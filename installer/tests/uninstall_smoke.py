@@ -25,7 +25,8 @@ window.__TAURI_INTERNALS__.invoke=async(command,args={})=>{
    const preserve=window.__fixture.removePreserve;
    const plan={...result.plan,method:'uninstall',wipe,data_action:preserve?'grow-ext4':wipe?'reset':'gap',two_stage:true,offline:true,grow:false,
      target:'mmcblk0p5',previous_android_bytes:28*1073741824,android_bytes:((wipe||preserve)?32:28)*1073741824,
-     openwrt_bytes:4*1073741824,reclaimed_bytes:(wipe||preserve)?4*1073741824:0};
+     openwrt_bytes:4*1073741824,reclaimed_bytes:(wipe||preserve)?4*1073741824:0,
+     layout_source:window.__fixture.layoutSource,released_unallocated_bytes:(wipe||preserve)?0:4*1073741824};
    window.__fixture.tx.plan=plan;result.plan=plan;
  }
  if(command==='backend_request' && args.command==='start'){
@@ -40,12 +41,12 @@ window.__TAURI_INTERNALS__.invoke=async(command,args={})=>{
 def main(url='http://127.0.0.1:1420'):
     with sync_playwright() as p:
         browser=p.chromium.launch()
-        for language,wipe,theme,preserve in (('zh',True,'dark',False),('en',False,'light',False),('zh',False,'light',True),('en',True,'light',False)):
+        for language,wipe,theme,preserve,basis in (('zh',True,'dark',False,'original_record'),('en',False,'light',False,'original_record'),('zh',False,'light',True,'original_record'),('en',True,'light',False,'original_record'),('zh',False,'light',True,'device'),('en',False,'dark',False,'device')):
             context=fixture_context(browser,viewport={'width':1120,'height':900},device_scale_factor=1)
             context.add_init_script(BRIDGE+UNINSTALL+
                 'localStorage.setItem("language",'+json.dumps(language)+');'+
                 'localStorage.setItem("theme",'+json.dumps(theme)+');'+
-                'window.__fixture.removeWipe='+json.dumps(wipe)+';window.__fixture.removePreserve='+json.dumps(preserve)+';')
+                'window.__fixture.removeWipe='+json.dumps(wipe)+';window.__fixture.removePreserve='+json.dumps(preserve)+';window.__fixture.layoutSource='+json.dumps(basis)+';')
             page=context.new_page();errors=[]
             page.set_default_timeout(10000)
             page.on('pageerror',lambda error:errors.append(str(error)))
@@ -83,6 +84,10 @@ def main(url='http://127.0.0.1:1420'):
             assert button.is_disabled()
             assert page.locator('.plan-list').get_by_text('4.00 GiB',exact=True).count()>=1
             assert page.locator('.confirmation').count()==1
+            if basis=='device':
+                page.get_by_text('未找到可用的原安装备份' if zh else 'No usable original installation backup',exact=False).wait_for()
+            if not wipe and not preserve:
+                page.locator('.plan-list').get_by_text('释放为空闲的空间' if zh else 'Space released as unallocated',exact=True).wait_for()
             assert page.get_by_text('保留 Android 数据' if preserve else '全部清空' if zh else 'All Android apps' if wipe else 'Android userdata is not enlarged',exact=False).count()>=1
             layout(page)
             page.set_viewport_size({'width':800,'height':650});settle(page)
@@ -91,7 +96,7 @@ def main(url='http://127.0.0.1:1420'):
             assert impact and impact['y']+impact['height']<650
             page.set_viewport_size({'width':1120,'height':900});settle(page)
             output=ROOT/'screenshots';output.mkdir(exist_ok=True)
-            page.screenshot(path=str(output/('uninstall-plan-preserve-zh.png' if preserve else 'uninstall-plan-reset-zh.png' if zh else 'uninstall-plan-reset-en.png' if wipe else 'uninstall-plan-gap-en.png')))
+            page.screenshot(path=str(output/(('uninstall-plan-device-zh.png' if zh else 'uninstall-plan-device-gap-en.png') if basis=='device' else 'uninstall-plan-preserve-zh.png' if preserve else 'uninstall-plan-reset-zh.png' if zh else 'uninstall-plan-reset-en.png' if wipe else 'uninstall-plan-gap-en.png')))
             page.locator('.confirmation input').check();button.click();settle(page)
             page.get_by_text('不会撤回设备上的卸载或已确认的重置' if zh else 'does not withdraw device removal or an approved reset',exact=False).wait_for()
             assert 'verify_openwrt' not in page.evaluate('window.__fixture.requests')
@@ -119,7 +124,7 @@ def main(url='http://127.0.0.1:1420'):
             assert not errors,errors
             context.close()
         browser.close()
-    print('PASS: reset consent/cancel before plan, preservation/gap/reset impacts, bilingual UI, Android completion, bounded layout; simulated backend only')
+    print('PASS: reset consent/cancel, original-record and device-evidence plans, preservation/release/reset impacts, bilingual UI, Android completion, bounded layout; simulated backend only')
 
 
 def source():

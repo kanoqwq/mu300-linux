@@ -77,3 +77,25 @@ check(!a.automatic('garbage'),'invalid IMSI');
 check(a.change(c,'save',{id:privateId,name:'Private cleared',apn:'private.apn',pdptype:'IPV4V6',auth:'chap',username:'account',password:''},reload).ok,'explicit password clear');
 check(!a.resolve(c,card1,{}).settings.password,'cleared secret persisted');
 printf('apn extended: %d checks passed\n',n);
+
+// Vendor identifiers are opaque alphanumeric card keys, never digit-filtered.
+for(let value in ['898604E112345678901F','898604Z11234567890af'])
+    check(a.valid_identity({iccid:value}),'letter ICCID accepted intact');
+for(let value in ['', 'short', 'x12345678901234567890123', '898604/112345678901F', '898604Z11234567890af\n', 1234567890123456789, null, {}, '卡卡卡卡卡卡卡卡卡卡卡卡卡卡卡卡卡卡卡卡'])
+    check(!a.valid_identity({iccid:value}),'malformed ICCID rejected');
+let letterCard={iccid:'898604Z112345678901F',imsi:'460001234567890'};
+let otherLetterCard={iccid:'898604Y112345678901F',imsi:'460001234567890'};
+c=cursor(dir,dir+'/delta');
+let letterProfile=a.change(c,'save',{name:'Letter card',apn:'letter.apn',pdptype:'IP'},reload);
+check(letterProfile.ok,'letter card profile saved');
+c=cursor(dir,dir+'/delta');
+check(a.change(c,'apply',{id:letterProfile.id,remember:true},reload,letterCard).ok,'letter card binding applied');
+c=cursor(dir,dir+'/delta');
+check(a.get(c,letterCard).identity_ready && a.get(c,letterCard).remembered,'letter identity visible and bound');
+check(a.resolve(c,letterCard,{}).settings.apn=='letter.apn','letter binding used by dialer');
+check(a.resolve(c,otherLetterCard,{apn:'other.apn',pdptype:'IP'}).settings.apn=='other.apn','different letter is a different SIM');
+check(a.change(c,'auto',{},reload,otherLetterCard).ok,'letter card automatic selection applied');
+c=cursor(dir,dir+'/delta');
+check(a.resolve(c,otherLetterCard,{}).settings.apn=='cmnet','letter auto binding survives reload');
+check(a.resolve(c,letterCard,{}).settings.apn=='letter.apn','other letter binding unchanged');
+printf('alphanumeric APN identities: %d checks passed\n',n);

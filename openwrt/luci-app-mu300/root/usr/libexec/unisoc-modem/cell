@@ -456,7 +456,7 @@ if [ "$MODE" = full ]; then
         i_fw=$(at 'AT+CGMR' 2 | grep -v '^OK' | head -n1)
         i_imei=$(at 'AT+CGSN' 2 | tr -cd '0-9' | cut -c1-15)
         i_imsi=$(at 'AT+CIMI' 2 | tr -cd '0-9' | cut -c1-15)
-        i_iccid=$(at 'AT+CCID' 2 | tr -cd '0-9' | cut -c1-20)
+        i_iccid=$(at 'AT+CCID' 2 | tr -d '\r' | sed -n 's/^+CCID:[[:space:]]*"\{0,1\}\([A-Za-z0-9]*\)"\{0,1\}[[:space:]]*$/\1/p' | head -n1)
         if [ -n "$i_imei$i_imsi$i_iccid" ]; then
             # Persist static identity only; legacy caches with an own-number
             # field are rebuilt once so they cannot leak a stale number.

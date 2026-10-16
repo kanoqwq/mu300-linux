@@ -7,6 +7,54 @@ APP=TOP/'openwrt/luci-app-mu300'
 LIB=APP/'root/usr/libexec/unisoc-modem'
 
 class APN(ShellTest):
+    def test_alphanumeric_identity_adapter_preserves_key(self):
+        import json
+        source=(LIB/'apn-identity').read_text().replace('/run/unisoc-apn-sim',str(self.tmp/'sim'))
+        path=self.tmp/'identity';path.write_text(source)
+        adapter=self.tmp/'adapter';adapter.mkdir()
+        at=adapter/'at'
+        at.write_text('#!/bin/sh\nprintf \'%s\\r\\n\' "${TEST_REPLY}"\n')
+        at.chmod(0o755)
+        for shell in self.each_shell():
+            for value in ('898604E112345678901F','898604Z11234567890af'):
+                for reply in ('+CCID: '+value, '+CCID: "'+value+'"'):
+                    r=self.script(shell,path,'1',MU300_DASH_BIN=adapter,TEST_REPLY=reply)
+                    self.assertEqual(r.returncode,0,r.stderr)
+                    self.assertEqual(json.loads(r.stdout)['iccid'],value)
+                    self.assertEqual(json.loads((self.tmp/'sim1.json').read_text())['iccid'],value)
+            for value in ('short','898604/112345678901F','x'*23,'卡'*20):
+                r=self.script(shell,path,'1',MU300_DASH_BIN=adapter,TEST_REPLY='+CCID: '+value)
+                self.assertNotEqual(r.returncode,0)
+                self.assertEqual(r.stdout,'')
+
+    def test_dialer_reads_letter_identity_without_losing_characters(self):
+        source=(TOP/'rootfs/overlay/opt/mu300/bin/mobile-data').read_text()
+        function=source[source.index('resolve_apn_selection() {'):source.index('\nconfigure_initial_apn() {')]
+        helper=self.tmp/'apn'
+        helper.write_text('''#!/bin/sh
+if [ "$1" = needs-identity ]; then echo 1; exit; fi
+cat > "$STUBLOG/resolved-identity"
+echo '{"ok":1,"source":"sim","settings":{"apn":"letter.apn","pdptype":"IP","auth":"none","username":"","password":"","roaming":"IP","attach":"0"}}'
+''')
+        helper.chmod(0o755)
+        filter_path=self.stubs/'jsonfilter'
+        filter_path.write_text('''#!/usr/bin/env python3
+import json,sys
+value=json.load(sys.stdin)
+for key in sys.argv[2].split('.')[1:]: value=value[key]
+print(value)
+''')
+        filter_path.chmod(0o755)
+        path=self.tmp/'dialer.sh'
+        path.write_text('set -eu\n'+function.replace('/usr/libexec/unisoc-modem/apn',str(helper)).replace('/run/unisoc-apn-sim',str(self.tmp/'sim'))+'''
+at() { printf '%s\\n' '+CCID: "898604Z11234567890af"'; }
+resolve_apn_selection
+[ "$RESOLVED_APN:$MU300_PDP_TYPE" = 'letter.apn:IP' ]
+''')
+        r=self.script(['bash'],path,MU300_SIM_SLOT='1')
+        self.assertEqual(r.returncode,0,r.stderr)
+        self.assertEqual(json.loads((self.tmp/'resolved-identity').read_text())['iccid'],'898604Z11234567890af')
+
     def test_hot_global_settings_without_identity_queries(self):
         source=(TOP/'rootfs/overlay/opt/mu300/bin/mobile-data').read_text()
         function=source[source.index('resolve_apn_selection() {'):source.index('\nconfigure_initial_apn() {')]

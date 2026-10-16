@@ -18,7 +18,8 @@ function credentials(p) {
     return type(user)=='string' && type(password)=='string' && length(user)<=64 && length(password)<=64 &&
         !match(user+password,/["\\[:cntrl:]]/) && !match(user+password,/[^ -~]/);
 }
-export function valid_identity(p) { return type(p)=='object' && match(p.iccid || '',/^[0-9]{18,22}$/); };
+// Preserve the modem's identifier, including vendor/card letters and padding.
+export function valid_identity(p) { return type(p)=='object' && type(p.iccid)=='string' && match(p.iccid,/^[A-Za-z0-9]{18,22}$/); };
 function options(p) { return {apn:p.apn || '',pdptype:p.pdptype || 'IP',auth:auth(p),username:p.username || '',password:p.password || '',roaming:p.roaming || p.pdptype || 'IP',attach:p.attach=='1'?'1':'0'}; }
 function same(a,b) { return sprintf('%J',options(a))==sprintf('%J',options(b)); }
 function binding(c,identity) {

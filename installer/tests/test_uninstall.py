@@ -187,7 +187,7 @@ class Journal(unittest.TestCase):
         context=Context(self.store,record,lambda *_:None);persist(context,metadata,files)
         return context
 
-    def test_plan_is_read_only_and_requires_verified_original_backups(self):
+    def test_plan_is_read_only_and_damaged_backups_need_device_evidence(self):
         context=self.plan()
         self.assertTrue(context.record['plan']['wipe'])
         self.assertEqual(context.record['plan']['reclaimed_bytes'],4*GIB)
@@ -206,7 +206,7 @@ class Journal(unittest.TestCase):
         self.assertEqual(context.record['plan']['reclaimed_bytes'],0)
         self.assertEqual(context.record['plan']['openwrt_bytes'],4*GIB)
 
-    def test_missing_original_record_stops_before_device_volume_reads(self):
+    def test_missing_original_record_and_missing_device_evidence_stop_before_volume_reads(self):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaisesRegex(RecoveryRequired,'original'):
                 prepare(self.adapter,Store(directory),self.device)

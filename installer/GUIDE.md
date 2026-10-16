@@ -66,13 +66,15 @@ Linux、Intel Mac 或需要 Python 命令行入口时，可使用 **OpenWrt-Inst
 
 ### 卸载内置 OpenWrt 并归还空间
 
-先在 OpenWrt 管理页面导出需要保留的配置，再通过设备的系统切换功能回到 Android，开启调试并授予 root。在安装器的“高级选项”中选择“卸载并归还空间”，检查设备并查看卸载计划。需要电脑上最初创建该分区的安装记录和完整备份；换过电脑时，先从“继续未完成的安装”导入原备份目录。记录不匹配或缺失时，安装器会停止，请保留现有分区，不要用旧版卸载脚本尝试。
+先在 OpenWrt 管理页面导出需要保留的配置，再通过设备的系统切换功能回到 Android，开启调试并授予 root。在安装器的“高级选项”中选择“卸载并归还空间”，检查设备并查看卸载计划。有原安装记录和完整备份时，优先按原记录归还空间；换过电脑时可以先导入原备份目录。
+
+**没有原安装记录也可以检查卸载。** 安装器会核验当前分区表、启动镜像和设备上的安装标记。核验通过后，仅将紧邻 userdata 的 OpenWrt 分区容量归还 Android，不合并其他空闲空间；不相邻的 OpenWrt 分区只释放为空闲，不扩大 Android。请以计划中的“Android 容量”“归还 Android 的空间”和“释放为空闲的空间”为准。无法核实安装归属或分区边界时会停止，不能只凭分区名称删除。执行前会为本次卸载新建记录和备份，请保留。
 
 卸载时会重新检查当前 Android 的加密状态、data 所在设备和文件系统工具。**确认未加密、data 直接位于 userdata 且工具支持时，离线检查并扩容 userdata，保留 Android 数据。** OpenWrt 系统及配置仍会删除，请先备份需要保留的内容。
 
-无法确认可保留 Android 数据时，安装器先报出具体原因，再询问“无法保留 Android 数据卸载，是否格式化？”。取消不会写入设备；同意后仅生成新的卸载计划。**格式化会清空 Android 应用、账号、照片和内部存储。** 请备份个人文件，并在最终计划中核对数据影响及容量后再确认执行。缺失原安装记录、布局不符等错误不能通过同意格式化绕过。
+无法确认可保留 Android 数据时，安装器先报出具体原因，再询问“无法保留 Android 数据卸载，是否格式化？”。取消不会写入设备；同意后仅生成新的卸载计划。**格式化会清空 Android 应用、账号、照片和内部存储。** 请备份个人文件，并在最终计划中核对数据影响及容量后再确认执行。安装归属不明、布局不符等错误不能通过同意格式化绕过。
 
-原本装在未分配空间中的 OpenWrt，卸载后该空间恢复为空闲；不会额外扩大 Android，也不要求重置 Android。TF 卡和 userdata 镜像不使用此内置分区卸载入口。TF 卡安装请先回到 Android 并设为默认启动，卸载对应 Magisk 模块（如有），再自行格式化安装 OpenWrt 的目标分区；不必整卡格式化，其他分区的文件可以保留。
+有原记录证明 OpenWrt 装在未分配空间时，卸载后该空间恢复为空闲，不额外扩大 Android，也不要求重置。没有原记录时不会猜测历史用途，而按上面的相邻分区规则生成计划。TF 卡、userdata 镜像和未列入 GPT 的旧版隐藏区域安装不使用此内置分区卸载入口。TF 卡安装请先回到 Android 并设为默认启动，卸载对应 Magisk 模块（如有），再自行格式化安装 OpenWrt 的目标分区；不必整卡格式化，其他分区的文件可以保留。
 
 确认后保持供电，等待离线卸载及自动重启。如果设备一直停留在原来的 Android，请手动重启一次；已经开始重启时不要反复重启。需要重置时，完成 Android 初始设置、重新启用调试并授权电脑。root 仍可用时直接继续；否则恢复 Magisk 并允许 root 请求。安装器确认同一设备、Android 启动状态和实际容量后才显示完成。
 
@@ -188,13 +190,15 @@ If the device has started but the installer keeps waiting, check the connected n
 
 ### Remove internal OpenWrt and return space
 
-First export needed configuration from the OpenWrt management page, then return to rooted Android using the device’s system switch, enable debugging and authorize this computer. Under Advanced options, choose Uninstall and return space, inspect the device and review the plan. Keep the original record and full backups from the installation that created this partition. On another computer, import that recovery folder through Continue an unfinished installation first. If evidence is missing or does not match, stop and keep the partition; do not try legacy uninstall scripts.
+First export needed configuration from the OpenWrt management page, then return to rooted Android using the device’s system switch, enable debugging and authorize this computer. Under Advanced options, choose Uninstall and return space, inspect the device and review the plan. Matching original installation records and full backups are preferred; they can be imported on another computer.
+
+**Original installation records are not mandatory.** Without usable original backups, the installer verifies the current partition table, boot image and installed-system markers. Only an OpenWrt partition immediately after userdata can return its capacity to Android; other free space is not merged. A nonadjacent partition becomes unallocated without enlarging Android. Review Android capacity, Space returned to Android and Space released as unallocated. Uncertain ownership or boundaries stop removal; a partition name alone is insufficient. A new removal record and backups are created before execution. Keep them for recovery.
 
 Removal rechecks current Android encryption, the data device and filesystem tools. **Confirmed unencrypted data directly on userdata with supported tools is checked and grown offline while preserving Android data.** OpenWrt and its settings are still deleted. Back up what you need first.
 
-If preservation cannot be confirmed, the installer reports the reason and asks “Cannot preserve Android data. Format instead?”. Cancel writes nothing to the device. Agreeing only creates a new removal plan. **Formatting erases Android apps, accounts, photos and internal storage.** Back up personal files, review the capacity and data impact, then confirm the final plan. Missing original records or mismatched layouts cannot be bypassed by agreeing to format.
+If preservation cannot be confirmed, the installer reports the reason and asks “Cannot preserve Android data. Format instead?”. Cancel writes nothing to the device. Agreeing only creates a new removal plan. **Formatting erases Android apps, accounts, photos and internal storage.** Back up personal files, review the capacity and data impact, then confirm the final plan. Uncertain installation ownership or mismatched layouts cannot be bypassed by agreeing to format.
 
-For an installation in previously unallocated space, only OpenWrt is removed. That space becomes free again; Android is not enlarged or reset. This internal-partition option does not remove TF-card or userdata-image installations. For TF, return to Android, set Android as the default, remove the related Magisk module if installed, then format the OpenWrt target partition yourself; other card partitions can be kept.
+If original records prove that OpenWrt used previously unallocated space, it becomes free again without enlarging or resetting Android. Without those records, the adjacent-partition rule above applies instead of guessing the historical layout. This option does not remove TF-card, userdata-image or old hidden-area installations outside GPT. For TF, return to Android, set Android as the default, remove the related Magisk module if installed, then format the OpenWrt target partition yourself; other card partitions can be kept.
 
 Keep power connected after confirmation and wait for offline removal and automatic restart. If the original Android session never restarts, restart it once. Avoid repeated restarts once removal has begun. After a required reset, finish Android setup, enable debugging and authorize the computer. Existing working root is accepted; restore Magisk only when necessary. Completion requires verification of the same device, Android boot and actual capacity.
 

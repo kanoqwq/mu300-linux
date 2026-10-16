@@ -1,4 +1,4 @@
-"""Journaled removal of a proven installer-created internal partition.
+"""Journaled removal of a verified internal OpenWrt partition.
 
 No device writes during planning. All GPT changes run in the existing model's
 initramfs, with stock recovery owning Android reset and encryption.
@@ -12,6 +12,7 @@ import struct
 import subprocess
 import time
 import zlib
+import uuid
 
 from . import gpt
 from .boot_image import inspect_linux_boot, trial_control
@@ -19,6 +20,7 @@ from .state import Cancelled, RecoveryRequired, atomic_json, sha
 from .transport import push_chunks
 from .uninstall_boot import build
 from .uninstall_growth import PreservationUnavailable, eligible, growth_tools, base_boot
+from .install_evidence import inspect_installation
 
 
 def partition(info, name):
@@ -31,6 +33,45 @@ def partition(info, name):
 def table(first):
     at, count = struct.unpack_from('<QI', first, 584)
     return first[at*512:at*512+count*128]
+
+
+def with_table(current, updated, sectors):
+    output = []
+    for raw, header, offset in ((current[0], 512, struct.unpack_from('<Q', current[0], 584)[0]*512),
+                                (current[1], len(current[1])-512, 0)):
+        raw = bytearray(raw); raw[offset:offset+len(updated)] = updated
+        struct.pack_into('<I', raw, header+88, zlib.crc32(updated))
+        struct.pack_into('<I', raw, header+16, 0)
+        length = struct.unpack_from('<I', raw, header+12)[0]
+        struct.pack_into('<I', raw, header+16, zlib.crc32(raw[header:header+length]))
+        output.append(bytes(raw))
+    gpt.gpt_space(*output,sectors)
+    return output
+
+
+def device_layout(current, sectors, name):
+    """Remove only this root; extend userdata only into its contiguous extent.
+
+    This is a new, bounded allocation, never a reconstruction of historical GPT.
+    Unlisted space and any partition before/after the root remain untouched.
+    """
+    info = gpt.gpt_space(*current,sectors)
+    data, root = partition(info,'userdata'), partition(info,name)
+    updated = bytearray(table(current[0]))
+    entry = updated[(root['n']-1)*128:root['n']*128]
+    if (entry[:16] != uuid.UUID('0fc63daf-8483-4772-8e79-3d69d8477de4').bytes_le or
+            entry[16:32] == bytes(16) or entry[48:56] != bytes(8) or
+            root['start'] % 2048 or (root['end']+1) % 2048 or
+            root['end']-root['start']+1 < 4194304):
+        raise RecoveryRequired('Unsupported OpenWrt partition type, identity or alignment / OpenWrt 分区类型、身份或对齐方式不受支持')
+    if any(updated[(p['n']-1)*128+16:(p['n']-1)*128+32] == entry[16:32]
+           for p in info['parts'] if p['n'] != root['n']):
+        raise RecoveryRequired('OpenWrt partition GUID is duplicated / OpenWrt 分区 GUID 存在重复')
+    expands = root['start'] == data['end']+1
+    target = {**data,'end':root['end']} if expands else data
+    updated[(root['n']-1)*128:root['n']*128] = bytes(128)
+    struct.pack_into('<Q',updated,(data['n']-1)*128+40,target['end'])
+    return with_table(current,updated,sectors), target, root, expands
 
 
 def restored_layout(original, current, sectors, name):
@@ -63,15 +104,7 @@ def restored_layout(original, current, sectors, name):
     updated = bytearray(newtable)
     updated[(root['n']-1)*128:root['n']*128] = oldtable[(root['n']-1)*128:root['n']*128]
     struct.pack_into('<Q', updated, (data['n']-1)*128+40, prior['end'])
-    output = []
-    for raw, header, offset in ((current[0], 512, struct.unpack_from('<Q', current[0], 584)[0]*512),
-                                (current[1], len(current[1])-512, 0)):
-        raw = bytearray(raw); raw[offset:offset+len(updated)] = updated
-        struct.pack_into('<I', raw, header+88, zlib.crc32(updated))
-        struct.pack_into('<I', raw, header+16, 0)
-        length = struct.unpack_from('<I', raw, header+12)[0]
-        struct.pack_into('<I', raw, header+16, zlib.crc32(raw[header:header+length]))
-        output.append(bytes(raw))
+    output = with_table(current,updated,sectors)
     verified = gpt.gpt_space(*output, sectors)
     if any(p['name'] == name for p in verified['parts']):
         raise RecoveryRequired('Root entry was not removed')
@@ -135,12 +168,16 @@ def prepare(adapter, store, device, authorize_reset=None):
             matches.append((source, after, data, root, wipe))
         except (OSError, ValueError, KeyError, RecoveryRequired):
             continue
-    if not matches:
-        raise RecoveryRequired('No matching original installation record and verified GPT backup. Import the original recovery folder; do not use legacy uninstall scripts. / 缺少匹配的原安装记录和已校验 GPT 备份。请导入原安装备份目录；不要运行旧卸载脚本。')
     # Conflicting historical layouts must be reviewed rather than guessed.
-    if any(item[1] != matches[0][1] for item in matches[1:]):
+    if matches and any(item[1] != matches[0][1] for item in matches[1:]):
         raise RecoveryRequired('Original records disagree about Android capacity / 原安装记录对 Android 容量的记载冲突')
-    source, after, data, root, expands = matches[0]
+    proof = None
+    if matches:
+        source, after, data, root, expands = matches[0]
+    else:
+        after, data, root, expands = device_layout(current,total,name)
+        proof = inspect_installation(adapter,device,root)
+        source = None
     node = storage['NODE'].split('p')[0]
     if (storage['ROOT'] != node+'p'+str(root['n']) or storage['START'] != data['start'] or
             storage['SIZE']*512 != device['userdata_bytes']):
@@ -167,6 +204,7 @@ def prepare(adapter, store, device, authorize_reset=None):
             reason = str(error)
             evidence = {'cid':device['cid'],'slot':device['slot'],'profile':device['profile'],
                         'layout':[hashlib.sha256(raw).hexdigest() for raw in current],
+                        'installation':proof,
                         'encryption':[device.get(k) for k in ('encrypted','encryption_state','encryption_type')],
                         'volume':volume,'reason':reason}
             fingerprint = hashlib.sha256(json.dumps(evidence,sort_keys=True).encode()).hexdigest()
@@ -180,12 +218,16 @@ def prepare(adapter, store, device, authorize_reset=None):
             'android_bytes':(data['end']-data['start']+1)*512,
             'previous_android_bytes':device['userdata_bytes'],
             'reclaimed_bytes':(data['end']-data['start']+1)*512-device['userdata_bytes'],
-            'source_transaction':source['id']}
-    metadata = {'version':2,'action':action,'reset_authorized':wipe,'total':total,'front':space['front'],'tail':space['tail'],
+            'source_transaction':source['id'] if source else None,
+            'layout_source':'original_record' if source else 'device',
+            'released_unallocated_bytes':0 if expands else (root['end']-root['start']+1)*512}
+    metadata = {'version':2 if source else 3,'action':action,'reset_authorized':wipe,'total':total,'front':space['front'],'tail':space['tail'],
                 'tool_hashes':{name:hashlib.sha256(content).hexdigest() for name,content in tools.items()},
                 'root_start':root['start'],'root_size':root['end']-root['start']+1,
                 'nodes':{p['name']:node+'p'+str(p['n']) for p in space['parts']
                          if p['name'] in ('userdata',name,'misc','boot_a','boot_b')}, 'volume':volume}
+    if proof:
+        metadata['installation_evidence'] = proof
     files = dict(zip(('before-first','before-last','after-first','after-last'), (*current,*after)))
     return plan, metadata, files
 
@@ -218,17 +260,33 @@ class Uninstaller:
         """Imported journals must prove the same limited edits, not just hashes."""
         required = {'before-first','before-last','after-first','after-last'}
         version = self.meta.get('version')
-        if set(self.files) != required or version not in (1,2) or self.r['plan'].get('method') != 'uninstall':
+        if set(self.files) != required or version not in (1,2,3) or self.r['plan'].get('method') != 'uninstall':
             raise RecoveryRequired('Incomplete uninstall journal / 卸载记录不完整')
         storage = self.r['device']['storage']
+        if (self.r['package'].get('adapter') not in ('e5','mu300') or
+                not re.fullmatch(r'mmcblk[0-9]p[1-9][0-9]*',storage.get('NODE',''))):
+            raise RecoveryRequired('Invalid uninstall disk node / 卸载记录中的磁盘节点无效')
         total = storage['DISK_SIZE']
         before = (self.files['before-first'],self.files['before-last'])
         after = (self.files['after-first'],self.files['after-last'])
         family = self.r['package']['adapter']
         name = 'e5root' if family == 'e5' else 'mu300root'
-        calculated, prior, root, expands = restored_layout(after,before,total,name)
+        if version == 3:
+            calculated, prior, root, expands = device_layout(before,total,name)
+            proof = self.meta.get('installation_evidence',{})
+            paths = {'etc/e5/part-root','etc/openwrt_release'} if family == 'e5' else {
+                'openwrt/etc/mu300/desktop-mode','.mu300/boot-os','openwrt/etc/openwrt_release'}
+            hashes = [proof.get(key,'') for key in ('boot_header_sha256','ramdisk_sha256','superblock_sha256')]
+            hashes += list(proof.get('markers',{}).values())
+            if (self.r['plan'].get('layout_source') != 'device' or self.r['plan'].get('source_transaction') is not None or
+                    proof.get('version') != 1 or set(proof.get('markers',{})) != paths or
+                    any(not isinstance(value,str) or not re.fullmatch('[a-f0-9]{64}',value) for value in hashes) or
+                    self.r['plan'].get('released_unallocated_bytes') != (0 if expands else (root['end']-root['start']+1)*512)):
+                raise RecoveryRequired('Device installation evidence is incomplete / 设备端安装证据不完整')
+        else:
+            calculated, prior, root, expands = restored_layout(after,before,total,name)
         wipe = expands
-        if version == 2:
+        if version >= 2:
             action = self.meta.get('action')
             if action != self.r['plan'].get('data_action') or action not in ('gap','reset','grow-ext4','grow-f2fs'):
                 raise RecoveryRequired('Uninstall data action differs / 卸载数据处理方式不一致')
@@ -282,6 +340,19 @@ class Uninstaller:
     def arm(self, device):
         from .adapter import debug_output
         adb = self.adapter.adb
+        if self.meta['version'] == 3:
+            info = gpt.gpt_space(self.files['before-first'],self.files['before-last'],self.meta['total'])
+            root = partition(info,'e5root' if self.adapter.kind == 'e5' else 'mu300root')
+            original_boot = None
+            if self.r.get('uninstall_retry_linux_sha256'):
+                other = 'b' if device['slot'] == '_a' else 'a'
+                path = self.ctx.directory/'backup'/('boot_'+other+'.bin')
+                sums = json.loads((path.parent/'checksums.json').read_text())
+                if path.stat().st_size != 64 << 20 or sha(path) != sums.get(path.name):
+                    raise RecoveryRequired('Original Linux boot backup is damaged / 原 Linux 启动备份已损坏')
+                original_boot = path.read_bytes()
+            if inspect_installation(self.adapter,device,root,boot_backup=original_boot) != self.meta['installation_evidence']:
+                raise RecoveryRequired('Installed OpenWrt changed; create a new removal plan / 设备上的 OpenWrt 已变化，请重新生成卸载计划')
         tools = {}
         if self.meta.get('action','').startswith('grow-'):
             volume = android_volume(adb,device)
@@ -326,7 +397,7 @@ class Uninstaller:
                    nodes['misc'],nodes['boot_'+slot],nodes['boot_'+other]]
         request += [self.meta[k] for k in ('total','front','tail','root_start','root_size')]
         request += [int(self.r['plan']['wipe']),boot_bytes,android_sha]
-        if self.meta['version'] == 2:
+        if self.meta['version'] >= 2:
             volume = self.meta['volume']
             request += [self.meta['action'],device['storage']['START'],self.r['plan']['android_bytes']//512,
                         volume['filesystem_bytes'],volume.get('uuid','0'*32)]

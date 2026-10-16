@@ -32,7 +32,7 @@ def plan_install(package, device, choices):
     if device.get('readiness') != 'ready':
         raise ValueError('Device is not ready / 设备尚未就绪')
     if method == 'uninstall':
-        raise ValueError('Uninstall requires verified original installation backups / 卸载需要验证原安装备份')
+        raise ValueError('Uninstall requires device evidence planning / 卸载需要专用的设备证据检查与卸载计划')
     if method == 'update':
         return {'method': method, 'wipe': False, 'openwrt_bytes': device['capacity'], 'two_stage': False,
                 'preserves_settings': True, 'host': choices['host'], 'grow': True}
