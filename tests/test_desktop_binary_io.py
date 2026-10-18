@@ -2,7 +2,10 @@
 import hashlib
 import importlib.util
 from pathlib import Path
+import shlex
+import shutil
 import struct
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
@@ -14,6 +17,31 @@ installer=importlib.util.module_from_spec(spec);spec.loader.exec_module(installe
 
 
 class CLIBinaryBackup(unittest.TestCase):
+    @unittest.skipUnless(shutil.which('busybox'), 'actual shell fixture requires BusyBox')
+    def test_preparation_marker_with_nul_padding_roundtrips_without_console_framing(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp); staging=root/'android-tmp';staging.mkdir()
+            marker=(b'MU300-PART-PREPARED-V2 '+b'a'*32+b'\n').ljust(512,b'\0')
+            source=root/'partition-head';source.write_bytes(marker)
+            android=object.__new__(installer.Android);android.su=False
+            shell_results=[]
+            def call(*args,**kwargs):
+                if args[0]=='shell':
+                    # Execute the real generated script against private files.
+                    script=shlex.split(args[1])[-1].replace('/data/local/tmp',str(staging))
+                    result=subprocess.run(['busybox','ash','-c',script],capture_output=True,check=True)
+                    shell_results.append(result.stdout)
+                    return result.stdout
+                self.assertEqual(args[0],'pull')
+                shutil.copyfile(args[1].replace('/data/local/tmp',str(staging)),args[2])
+                return b'1 file pulled'
+            with patch.object(installer,'package_root',return_value=TOP),patch.object(android,'call',side_effect=call):
+                result=android.read('head -c 512 '+shlex.quote(str(source)))
+            self.assertEqual(result,marker)
+            self.assertEqual(result.split(b'\0',1)[0],marker.rstrip(b'\0'))
+            self.assertFalse(any(b'\0' in output for output in shell_results))
+            self.assertEqual(list(staging.iterdir()),[])
+
     def test_helper_is_generated_from_the_shared_backend(self):
         self.assertEqual((TOP/'desktop/binary_io.py').read_bytes(),(TOP/'installer/backend/binary_io.py').read_bytes())
 
