@@ -9,6 +9,7 @@ permissions:
 jobs:
   native:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - runner: windows-latest
@@ -65,7 +66,12 @@ jobs:
           compiled=Path('installer/ui/src-tauri/target/release');compiled.mkdir(parents=True)
           mac=target=='macos-arm64'
           shutil.copy2(original/('OpenWrt-Installer.app/Contents/MacOS/openwrt-installer' if mac else 'OpenWrt-Installer.exe'),compiled/('openwrt-installer' if mac else 'openwrt-installer.exe'))
-          subprocess.run([sys.executable,'installer/build.py','--skip-ui','--adb-dir',str(original/('tools/macos' if mac else 'tools'))],check=True)
+          adb_input=Path('native-adb-input');adb_input.mkdir()
+          tools=original/('tools/macos' if mac else 'tools')
+          for name in (('adb',) if mac else ('adb.exe','AdbWinApi.dll','AdbWinUsbApi.dll')):
+            shutil.copy2(tools/name,adb_input/name)
+          shutil.copy2(tools/'ADB-NOTICE.txt',adb_input/'NOTICE.txt')
+          subprocess.run([sys.executable,'installer/build.py','--skip-ui','--adb-dir',str(adb_input)],check=True)
       - name: Backend regression
         run: python -m unittest discover -s installer/tests -v
       - name: Frozen ARM64 smoke
