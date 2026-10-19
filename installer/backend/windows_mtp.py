@@ -101,7 +101,7 @@ def prepare_devices(devices, notify=None):
         return
     targets = [d for d in devices if not d.get('wireless') and ':' not in d['serial'] and
                not d['serial'].startswith('adb-') and
-               re.search(r'\b(?:MU300|F50|V50|MU3351|U30.?AIR)(?:$|[_ -])', d.get('label', ''), re.I)]
+               re.search(r'\b(?:MU300|F50|V50|MU3351|U30.?AIR)(?:$|[_ -])', d.get('label', '').replace('_', ' '), re.I)]
     if not targets:
         return
     def announce(code, device):

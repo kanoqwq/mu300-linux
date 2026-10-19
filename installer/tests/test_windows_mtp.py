@@ -78,6 +78,16 @@ class WindowsMtpTest(unittest.TestCase):
             self.assertEqual(run.call_count, 1)
             notice.assert_called_once_with(dict(code='mtp_disabled', label='V50'))
 
+    def test_adb_model_names_with_vendor_and_escaped_spaces(self):
+        for label in ('ZTE_F50', 'ZTE_MU300', 'ZTE_V50', 'ZTE_U30_Air', 'F50_SP', 'U30Air_HT'):
+            mtp._inventory=(0, [])
+            mtp._announced.clear()
+            with self.subTest(label=label), patch.object(mtp.sys, 'platform', 'win32'), patch.object(mtp, 'powershell', return_value=json.dumps(tree(22))) as run:
+                notice=Mock()
+                mtp.prepare_devices([dict(self.device, label=label)], notice)
+                self.assertEqual(run.call_count, 1)
+                notice.assert_called_once_with(dict(code='mtp_disabled', label=label))
+
     def test_access_denied_reports_warning_and_does_not_retry_uac(self):
         notice = Mock()
         with patch.object(mtp.sys, 'platform', 'win32'), patch.object(mtp, 'powershell', side_effect=[json.dumps(tree()), RuntimeError('denied')]) as run:

@@ -1,0 +1,86 @@
+name: MU300 installer backend refresh
+on:
+  push:
+    branches: ['build/mtp-native-*']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  native:
+    strategy:
+      matrix:
+        include:
+          - runner: windows-latest
+            platform: windows-x64
+            architecture: x64
+            original_run: 39275244805
+            artifact: openwrt-installer-windows
+          - runner: macos-15
+            platform: macos-arm64
+            architecture: arm64
+            original_run: 39275244804
+            artifact: openwrt-installer-macos-arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    env:
+      PYTHONUTF8: '1'
+      GH_TOKEN: ${{ github.token }}
+      MACOSX_DEPLOYMENT_TARGET: '11.0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: ${{ matrix.architecture }}
+      - name: Build dependencies
+        run: python -m pip install pyinstaller paramiko lz4
+      - name: Reuse verified unchanged GUI and rebuild backend
+        shell: python
+        run: |
+          import sys, subprocess, json, tarfile, shutil, time
+          from pathlib import Path
+          sys.path.insert(0,'installer')
+          from package_gui import sources, validate_artifact
+          target='${{ matrix.platform }}'
+          download=Path('native-previous');download.mkdir()
+          for attempt in range(30):
+            row=json.loads(subprocess.check_output(['gh','api','repos/kanoqwq/mu300-linux/actions/runs/${{ matrix.original_run }}']))
+            if row['status']=='completed':
+              assert row['conclusion']=='success', row['conclusion']
+              break
+            time.sleep(10)
+          else:raise RuntimeError('Previous GUI build is not ready')
+          subprocess.run(['gh','run','download','${{ matrix.original_run }}','--repo','kanoqwq/mu300-linux','--name','${{ matrix.artifact }}','--dir',str(download)],check=True)
+          if target=='macos-arm64':
+            original=Path('native-verified');original.mkdir()
+            with tarfile.open(download/'openwrt-installer-macos-arm64.tar.gz') as archive:
+              archive.extractall(original,filter='data')
+          else:original=download
+          metadata=json.loads((original/'build.json').read_text())
+          validate_artifact(original,target,metadata['source'])
+          current=sources()
+          different={n for n in set(current)|set(metadata['source']) if current.get(n)!=metadata['source'].get(n)}
+          assert different=={'backend/windows_mtp.py'},different
+          compiled=Path('installer/ui/src-tauri/target/release');compiled.mkdir(parents=True)
+          mac=target=='macos-arm64'
+          shutil.copy2(original/('OpenWrt-Installer.app/Contents/MacOS/openwrt-installer' if mac else 'OpenWrt-Installer.exe'),compiled/('openwrt-installer' if mac else 'openwrt-installer.exe'))
+          subprocess.run([sys.executable,'installer/build.py','--skip-ui','--adb-dir',str(original/('tools/macos' if mac else 'tools'))],check=True)
+      - name: Backend regression
+        run: python -m unittest discover -s installer/tests -v
+      - name: Frozen ARM64 smoke
+        if: matrix.platform == 'macos-arm64'
+        run: python installer/tests/macos_frozen_smoke.py
+      - name: Preserve macOS executable modes
+        if: matrix.platform == 'macos-arm64'
+        run: tar -czf openwrt-installer-macos-arm64.tar.gz -C installer/artifacts/macos-arm64 .
+      - uses: actions/upload-artifact@v4
+        if: matrix.platform == 'macos-arm64'
+        with:
+          name: openwrt-installer-macos-arm64
+          path: openwrt-installer-macos-arm64.tar.gz
+      - uses: actions/upload-artifact@v4
+        if: matrix.platform == 'windows-x64'
+        with:
+          name: openwrt-installer-windows
+          path: installer/artifacts/windows/

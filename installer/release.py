@@ -25,6 +25,7 @@ def refresh(package):
         shutil.copy2(TOP/'installer/backend/binary_io.py',package/'desktop/binary_io.py')
         shutil.copy2(TOP/'installer/backend/boot_image.py',package/'desktop/boot_control.py')
         shutil.copy2(TOP/'installer/backend/mu300_update.py',package/'desktop/update_control.py')
+        shutil.copy2(TOP/'installer/backend/windows_mtp.py',package/'desktop/windows_mtp.py')
         attach(package)
         manifest_path=package/'desktop/manifest.json'
         manifest=json.loads(manifest_path.read_text())

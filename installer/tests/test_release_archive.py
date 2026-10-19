@@ -35,7 +35,7 @@ class ReleaseArchiveTest(unittest.TestCase):
             for name in ('desktop/installer.py', 'desktop/boot_image.py',
                          'desktop/android-write-part.sh', 'desktop/android-write-free.sh',
                          'installer/backend/binary_io.py', 'installer/backend/boot_image.py',
-                         'installer/backend/mu300_update.py'):
+                         'installer/backend/mu300_update.py', 'installer/backend/windows_mtp.py'):
                 path = top/name
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text('source fixture')
@@ -49,6 +49,7 @@ class ReleaseArchiveTest(unittest.TestCase):
             self.assertIn('openwrt-backend --cli --package-root "$PWD" --resume "$@"', launcher.read_text())
             manifest = json.loads((package/'desktop/manifest.json').read_text())
             self.assertEqual(manifest['desktop']['launchers/start-installer.sh'], release.digest(launcher))
+            self.assertEqual(manifest['desktop']['desktop/windows_mtp.py'], release.digest(package/'desktop/windows_mtp.py'))
 
     def test_mac_executables_survive_windows_modes_and_share_one_payload(self):
         with tempfile.TemporaryDirectory() as folder:

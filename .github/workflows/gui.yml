@@ -1,12 +1,7 @@
 name: Portable Windows installer
 
 on:
-  workflow_call:
   workflow_dispatch:
-  push:
-    paths: ['installer/**', 'desktop/**', 'tools/add-desktop-installer.py', '.github/workflows/gui.yml']
-  pull_request:
-    paths: ['installer/**', 'desktop/**', 'tools/add-desktop-installer.py', '.github/workflows/gui.yml']
 
 permissions:
   contents: read
