@@ -220,6 +220,8 @@ class Adapter:
     def bind(self, serial):
         self.adb = Adb(self.root, serial)
         self.adb.context = self.ctx
+        self.adb.notice = getattr(self, 'notice', None)
+        self.adb.mtp_workaround = self.kind == 'mu300'
         if self.kind == 'e5':
             self.legacy.ADB = self.adb.exe
             self.legacy.SERIAL = serial

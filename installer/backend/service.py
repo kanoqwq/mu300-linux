@@ -111,7 +111,14 @@ class Service:
             self.output.flush()
 
     def adapter(self, package=None, context=None):
-        return self.adapters(package or self.package, context)
+        adapter = self.adapters(package or self.package, context)
+        adapter.notice = lambda data:self.emit('notice', data)
+        return adapter
+
+    def adb(self):
+        adb = Adb(self.package_root)
+        adb.notice = lambda data:self.emit('notice', data)
+        return adb
 
     def public(self, record):
         return Context(self.store, record, lambda *_: None).snapshot()
@@ -178,7 +185,7 @@ class Service:
                         record.get('stage') not in ('uninstall_offline','android_boot','android_setup','usb_debugging',
                                                     'debug_authorization','magisk','root_permission')):
                     raise ValueError('Pause before changing ADB connections / 请先暂停任务，再更改 ADB 连接')
-            return Adb(self.package_root).connect(p.get('address'))
+            return self.adb().connect(p.get('address'))
         if command == 'adb_disconnect':
             if self.worker and self.worker.is_alive():
                 raise ValueError('Pause before disconnecting a device / 请先暂停任务，再断开设备')
@@ -190,7 +197,7 @@ class Service:
                     locks.enter_context(DeviceLock(self.store.base, serial))
                 except (OSError, RuntimeError):
                     raise ValueError('Another installer is using this device; pause it first / 另一个安装器正在操作此设备，请先暂停其任务') from None
-                return Adb(self.package_root).disconnect(serial)
+                return self.adb().disconnect(serial)
         if self.worker and self.worker.is_alive() and command not in ('export',):
             raise ValueError('An operation is active / 任务正在执行')
         if command == 'package':
@@ -198,7 +205,7 @@ class Service:
             self.package_root = self.package['path']
             return self.package
         if command == 'devices':
-            return Adb(self.package_root).devices()
+            return self.adb().devices()
         if command == 'probe':
             if not self.package:
                 raise ValueError('Verify a package first / 请先校验安装包')

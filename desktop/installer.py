@@ -251,8 +251,8 @@ class Android:
         bundled=package_root()/('tools/adb.exe' if sys.platform=='win32' else
                                 'tools/macos/adb' if sys.platform=='darwin' else 'tools/adb')
         self.adb=args.adb or (str(bundled) if bundled.is_file() else shutil.which('adb')) or str(bundled)
-        listing=self.call('devices').decode(errors='replace')
-        serials=[l.split()[0] for l in listing.splitlines() if len(l.split())==2 and l.split()[1]=='device']
+        listing=self.call('devices','-l').decode(errors='replace')
+        serials=[l.split()[0] for l in listing.splitlines() if len(l.split())>=2 and l.split()[1]=='device']
         if args.serial: self.serial=args.serial
         elif len(serials)==1: self.serial=serials[0]
         elif len(serials)>1 and sys.stdin.isatty() and not GUI:
@@ -262,6 +262,18 @@ class Android:
             self.serial=serials[int(selected)-1]
         else: raise ValueError('Specify --serial; expected one online Android device: '+repr(serials))
         if self.serial not in serials: raise ValueError('Android is not online: '+self.serial)
+        if sys.platform=='win32' and not GUI:
+            helper=package_root()/'desktop/windows_mtp.py'
+            if helper.is_file():
+                spec=importlib.util.spec_from_file_location('_mu300_windows_mtp',helper)
+                module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+                entries=[]
+                for line in listing.splitlines():
+                    values=line.split()
+                    if len(values)>=2 and values[0]==self.serial:
+                        entries.append({'serial':self.serial,'wireless':':' in self.serial,
+                                        'label':next((v[6:] for v in values[2:] if v.startswith('model:')),'')})
+                module.prepare_devices(entries)
         if self.shell('id -u',root=False).strip()=='0': self.su=False
         else:
             self.su=True

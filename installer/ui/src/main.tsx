@@ -139,6 +139,16 @@ function App() {
         acceptTransaction(next);
       } else if (event.type === 'transfer') setTransfer(event.data as Transfer);
       else if (event.type === 'activity') setTransfer(undefined);
+      else if (event.type === 'notice') {
+        const notice = event.data as {code:string; label?:string};
+        if (notice.code === 'mtp_disabled') {
+          toast.info(t.mtpDisabled, {id:'usb-mtp', description:t.mtpDisabledDesc, duration:10000});
+          append(t.mtpDisabled);
+        } else if (notice.code === 'mtp_disable_failed') {
+          toast.warning(t.mtpDisableFailed, {id:'usb-mtp', description:t.mtpDisableFailedDesc, duration:12000});
+          append(t.mtpDisableFailed);
+        }
+      }
       else if (event.type === 'log') {
         const entry = event.data as {message:string; level?:string; scope?:string};
         append(`[${(entry.level || 'debug').toUpperCase()}]${entry.scope ? ' ['+entry.scope+']' : ''} ${entry.message}`);

@@ -6,6 +6,8 @@
 
 安装前备份重要文件，确认安装包适用于你的机型，并保持设备稳定供电。在 Android 中开启 USB 调试，允许这台电脑调试，并准备好 Magisk/root。
 
+MU300 系列在 Windows 通过有线 ADB 检查设备时，安装器会自动禁用该设备的 MTP 文件传输接口并显示通知，以避开原厂 USB 冲突。ADB、USB 网卡和串口保持启用，MTP 不会自动恢复。禁用失败只提示，不中断安装。无额外安装器确认步骤；Windows 可能请求管理权限。无线 ADB、macOS 和 E5 系列跳过处理。
+
 只有无线 ADB 时，先将电脑连接到设备所在网络，展开设备选择区的“无线 ADB 连接”，填写 `192.168.0.1` 并点击“连接”。地址或端口不同请填写实际值，例如 `192.168.0.1:5555`。设备需已开启无线 ADB；Android 要求配对时，先按设备提示完成配对。
 
 也可手动运行 `adb connect 192.168.0.1`。Windows 可在安装包目录打开 PowerShell，运行 `.\tools\adb.exe connect 192.168.0.1`。
@@ -135,6 +137,8 @@ TF 安装清空选定卡分区；重装替换已有 OpenWrt 及其设置；加�
 Extract the complete package and run **OpenWrt-Installer.exe** at its root. Keep all adjacent folders. Windows users do not need to install Python, Node or Rust. If prompted to install WebView2, follow the instructions and reopen the installer.
 
 Back up important files, check that the package matches your model and keep the device powered. Enable USB debugging in Android, authorize this computer and have Magisk/root ready.
+
+For MU300-series devices checked over wired ADB on Windows, the installer automatically disables only that device's MTP interface and displays a notification, avoiding the stock USB conflict. ADB, USB networking and serial interfaces stay enabled; MTP is not re-enabled. Failure only shows a warning and does not interrupt installation. There is no extra installer confirmation; Windows may request administrator permission. Wireless ADB, macOS and the E5 adapter skip this workaround.
 
 For wireless ADB only, connect the computer to the device’s network, expand Wireless ADB connection, enter `192.168.0.1` and select Connect. Use the actual address and port if different, for example `192.168.0.1:5555`. Wireless ADB must already be enabled. If Android requires pairing, complete it on the device first.
 

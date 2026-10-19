@@ -1,5 +1,7 @@
 export const strings = {
   zh: {
+    mtpDisabled:'已禁用设备的 MTP 接口', mtpDisabledDesc:'已自动处理 MU300 原厂 USB 冲突，以稳定有线 ADB。ADB、USB 网卡和串口不受影响；不会自动重新启用 MTP。',
+    mtpDisableFailed:'未能禁用设备的 MTP 接口', mtpDisableFailedDesc:'Windows 未完成操作。有线 ADB 可能仍不稳定；安装流程将继续。',
     uninstallCancel:'取消卸载', uninstallResetQuestion:'无法保留 Android 数据卸载，是否格式化？',
     uninstallResetExplanation:'格式化会清空 Android 应用、账号、照片和内部存储。取消不会写入设备；选择格式化后会先展示新的卸载计划，不会立即执行。',
     uninstallChooseReset:'选择格式化并查看计划', uninstallPreserve:'删除内置 OpenWrt 及其设置，在离线环境检查并扩容未加密 userdata，保留 Android 数据。请仍备份重要文件；检查失败会停止，不会自动格式化。',
@@ -65,6 +67,8 @@ export const strings = {
     noBackend:'安装器启动失败。请完整解压安装包，再运行 OpenWrt-Installer.exe。', error:'操作未完成', elapsed:'阶段用时', bytes:'已传输', speed:'速度', packageHint:'请完整解压安装包；载荷校验通过后才能操作设备。',
   },
   en: {
+    mtpDisabled:'Device MTP interface disabled', mtpDisabledDesc:'Applied the MU300 USB workaround for stable wired ADB. ADB, USB networking and serial interfaces are unaffected. MTP will not be re-enabled automatically.',
+    mtpDisableFailed:'Could not disable the device MTP interface', mtpDisableFailedDesc:'Windows did not complete the operation. Wired ADB may still be unstable; installation will continue.',
     uninstallCancel:'Cancel removal', uninstallResetQuestion:'Cannot preserve Android data. Format instead?',
     uninstallResetExplanation:'Formatting erases Android apps, accounts, photos and internal storage. Cancel writes nothing to the device. Choosing format first opens a new removal plan; it does not execute it.',
     uninstallChooseReset:'Choose format and review plan', uninstallPreserve:'Remove internal OpenWrt and its settings, then check and grow unencrypted userdata offline while preserving Android data. Back up important files. Failed checks stop the operation; they never trigger automatic formatting.',
