@@ -25,7 +25,12 @@ def main():
     with tempfile.TemporaryDirectory(prefix='ota-frozen-',dir=repo/'work') as directory:
         d=Path(directory)
         mu_release(d/'old','mu300-r1')
-        mu_release(d/'new','mu300-r2',{'usr/lib/test':b'new'})
+        # Exercise the shipped executable, not just source modules: different
+        # boot bytes and kernel labels must not block a system-file patch.
+        mu_release(d/'new','mu300-r2',{'usr/lib/test':b'new'},boot=b'changed-boot')
+        metadata=d/'new/desktop/release.json'
+        release=json.loads(metadata.read_text());release['kernel_release']='6.18.54'
+        metadata.write_text(json.dumps(release))
         requests=[dict(protocol=1,id=1,command='ota_analyze',params={'old':str(d/'old'),'new':str(d/'new')}),
                   dict(protocol=1,id=2,command='ota_export',params={'output':str(d/'patch.zip')})]
         if a.e5_release:

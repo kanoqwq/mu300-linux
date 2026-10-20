@@ -30,7 +30,7 @@ def main():
         print(json.dumps(result['check'], indent=2))
         if not result['check']['applicable']:
             raise ValueError('Device files conflict or lack space')
-        if input('Apply this file hotfix and retain rollback? Type yes: ') != 'yes':
+        if input('Apply this differential system update and retain rollback? Type yes: ') != 'yes':
             return
         result = d.dispatch('ota_apply', dict(params, token=result['token']))
     print(json.dumps(result, indent=2))

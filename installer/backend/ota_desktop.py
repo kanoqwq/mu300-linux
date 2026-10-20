@@ -50,12 +50,8 @@ def connect(host, password):
     return client
 
 
-def remote_inspect(client, archive, emit=lambda *_: None):
+def remote_prepare(client, archive, emit=lambda *_: None):
     with Patch(archive) as patch:
-        # Only the installed engine runs with root privileges. The package may
-        # contain data, never its own update program. Bootstrap older releases
-        # through a full installer rather than executing uploaded arbitrary code.
-        execute(client, 'test -f /usr/lib/unisoc-ota/engine.py && command -v python3 >/dev/null')
         destination = '/etc/unisoc-ota/upload-' + patch.id + '.ota'
         total = Path(archive).stat().st_size
         free = int(execute(client, "df -Pk /etc | awk 'END {print $4}'").strip()) * 1024
@@ -79,8 +75,41 @@ def remote_inspect(client, archive, emit=lambda *_: None):
         if got != expected:
             raise ValueError('Device upload checksum mismatch')
         execute(client, 'mv ' + shlex.quote(destination + '.new') + ' ' + shlex.quote(destination))
-        result = json.loads(execute(client, 'python3 /usr/lib/unisoc-ota/engine.py inspect ' + shlex.quote(destination)))
-        return dict(path=destination, check=result)
+        # Bootstrap runs from the reviewed archive's own isolated RAM runtime;
+        # the old image need not have Python or the OTA plugin installed.
+        if not patch.manifest.get('runtime'):
+            raise ValueError('This patch does not contain a portable updater runtime')
+        # Exclusive creation gives us a new root-owned directory without
+        # depending on stat (absent in reduced OpenWrt BusyBox builds). Never
+        # reuse a predictable directory or execute a helper from an old one.
+        runtime = '/tmp/unisoc-ota-'+secrets.token_hex(32)
+        execute(client, 'umask 077; mkdir '+shlex.quote(runtime))
+        for key, name in (('busybox', 'busybox'), ('bootstrap', 'bootstrap.sh')):
+            desc = patch.manifest[key]
+            content = patch.archive.read('blobs/'+desc['sha256'])
+            channel = client.get_transport().open_session(timeout=20)
+            channel.exec_command('umask 077; cat > '+shlex.quote(runtime+'/'+name))
+            channel.sendall(content); channel.shutdown_write()
+            if channel.recv_exit_status() != 0: raise ValueError('Runtime helper upload failed')
+            got = execute(client, 'sha256sum '+shlex.quote(runtime+'/'+name)).split()[0]
+            if got != desc['sha256']: raise ValueError('Runtime helper checksum mismatch')
+        execute(client, 'chmod 700 '+shlex.quote(runtime+'/busybox'))
+        return dict(path=destination, runtime=runtime)
+
+
+def runtime_call(client, session, command, setup=False):
+    home = session['runtime']
+    if setup:
+        shell = ' '.join(map(shlex.quote, [home+'/busybox', 'sh', home+'/bootstrap.sh', session['path'], command, home]))
+    else:
+        shell = 'UNISOC_OTA_ROOT=/target UNISOC_OTA_RAM=/ UNISOC_OTA_LIVE=1 PYTHONHOME=/usr '+shlex.quote(home+'/busybox')+' chroot '+shlex.quote(home+'/root')+' /usr/bin/python3 /ota/rpc.py '+shlex.quote(command)
+    return json.loads(execute(client, shell))
+
+
+def remote_inspect(client, archive, emit=lambda *_: None):
+    session = remote_prepare(client, archive, emit)
+    return dict(**session, check=runtime_call(client, session, 'inspect', setup=True))
+
 
 
 class Desktop:
@@ -89,6 +118,7 @@ class Desktop:
         self.emit = emit
         self.analysis = None
         self.review = None
+        self.runtime_session = None
         self.last_event = 0
 
     def progress(self, stage, path):
@@ -120,12 +150,14 @@ class Desktop:
                 with Patch(archive) as patch:
                     return dict(path=str(archive), id=patch.id, manifest=patch.manifest)
             if command == 'ota_probe':
+                self.review = None
                 archive = Path(p.get('path') or self.root / 'update.ota')
                 with connect(p['host'], p['password']) as client:
                     result = remote_inspect(client, archive, self.emit)
                     key = hashlib.sha256(client.get_transport().get_remote_server_key().asbytes()).hexdigest()
                 token = secrets.token_hex(24)
                 self.review = dict(host=p['host'], key=key, token=token, **result)
+                self.runtime_session = dict(host=p['host'], key=key, **result)
                 return dict(token=token, **result)
             if command == 'ota_apply':
                 r = self.review
@@ -137,12 +169,28 @@ class Desktop:
                         raise ValueError('Device SSH identity changed since review')
                     # Installed runner owns the detached transaction. Losing the
                     # PC connection does not kill an in-progress filesystem write.
-                    result = execute(client, 'python3 /usr/lib/unisoc-ota/rpc.py start ' + shlex.quote(r['path']))
+                    result = runtime_call(client, r, 'start', setup=True)
+                    self.runtime_session = r
                     self.review = None
-                    return json.loads(result)
+                    return result
             if command == 'ota_status':
                 with connect(p['host'], p['password']) as client:
-                    return json.loads(execute(client, 'python3 /usr/lib/unisoc-ota/rpc.py status'))
+                    key = hashlib.sha256(client.get_transport().get_remote_server_key().asbytes()).hexdigest()
+                    session = self.runtime_session
+                    setup = not session or session['host'] != p['host'] or session['key'] != key
+                    if not setup:
+                        home = session['runtime']
+                        ready = execute(client, 'if test -x '+shlex.quote(home+'/busybox')+' && test -x '+shlex.quote(home+'/root/usr/bin/python3')+' && test -d '+shlex.quote(home+'/root/target/etc')+'; then echo ready; fi').strip()
+                        setup = ready != 'ready'
+                    if setup:
+                        # Reopening the PC app, retrying after a failed probe,
+                        # and a reboot all use the package's RAM interpreter.
+                        # Status must also work after applying the patch, when
+                        # an inspection against its old base would be rejected.
+                        session = dict(host=p['host'], key=key, **remote_prepare(client, Path(p.get('path') or self.root/'update.ota'), self.emit))
+                    result = runtime_call(client, session, 'status', setup=setup)
+                    self.runtime_session = session
+                    return result
             raise ValueError('Unknown OTA command')
         finally:
             self.emit('ota_activity', {'busy': False})

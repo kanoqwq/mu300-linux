@@ -176,7 +176,7 @@ class MacIntegrationTest(unittest.TestCase):
         with patch.object(package_gui, 'HERE', self.installer):
             before = package_gui.sources()
             for name in names:
-                if Path(name).suffix not in ('.png', '.ico', '.icns'):
+                if Path(name).suffix not in ('.png', '.ico', '.icns', '.so'):
                     (self.installer/name).write_bytes(b'fixture\r\n')
             self.assertEqual(package_gui.sources(), before)
             (self.installer/'ui/src-tauri/icons/icon.icns').write_bytes(b'fixture\r\n')

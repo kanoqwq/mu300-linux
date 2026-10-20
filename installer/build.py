@@ -51,6 +51,10 @@ def main():
         '--hidden-import','tarfile','--hidden-import','gzip','--hidden-import','zlib','--hidden-import','lzma',
         '--hidden-import','bz2','--hidden-import','http.server','--hidden-import','decimal',
         '--add-data', str(HERE.parent/'openwrt/luci-app-unisoc-ota/root/usr/lib/unisoc-ota/engine.py')+os.pathsep+'.',
+        '--add-data', str(HERE.parent/'openwrt/luci-app-unisoc-ota/root/usr/lib/unisoc-ota/boot.py')+os.pathsep+'.',
+        '--add-data', str(HERE.parent/'openwrt/luci-app-unisoc-ota/root/usr/lib/unisoc-ota/rpc.py')+os.pathsep+'.',
+        '--add-data', str(HERE.parent/'openwrt/luci-app-unisoc-ota/root/usr/lib/unisoc-ota/proxy.sh')+os.pathsep+'.',
+        '--add-data', str(HERE/'ota-native/lz4raw-aarch64.so')+os.pathsep+'.',
         '--collect-all','paramiko','--collect-all','dissect.extfs',HERE/'backend_entry.py')
     artifact = HERE/('artifacts/macos-arm64' if mac else 'artifacts/windows')
     artifact.mkdir(parents=True,exist_ok=True)
