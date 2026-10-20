@@ -211,7 +211,8 @@ class DesktopTests(unittest.TestCase):
 
     def test_legacy_completion_registers_rpc_only_once(self):
         self.shell.status_result['job']['result'] = {}
-        self.status(); self.status()
+        self.assertEqual(self.status()['activation']['status'], 'ready')
+        self.assertEqual(self.status()['activation']['status'], 'ready')
         self.assertEqual(self.shell.reloads, 1)
 
     def test_modern_worker_already_registered_rpc(self):

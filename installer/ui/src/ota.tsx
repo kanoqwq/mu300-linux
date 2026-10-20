@@ -29,13 +29,17 @@ function Studio() {
   const [review,setReview] = useState<Review>(), [running,setRunning] = useState(false);
   const [autoReboot,setAutoReboot] = useState(true), [rebootReady,setRebootReady] = useState(false), [rebootDialog,setRebootDialog] = useState(false);
   function showStatus(s:Status) {
-    const done=s.job?.status==='complete' && s.transaction?.status==='complete';
+    const done=s.job?.status==='complete' && ['complete','rolled_back'].includes(s.transaction?.status||'');
+    setSuccess('');setError('');
     setRebootReady(done);
+    if(s.job?.status==='failed') {
+      setError(s.job.result?.error || tr('更新未完成，请检查设备事务状态。','Update incomplete. Review device transaction status.'));return;
+    }
     if(s.reboot?.status==='rebooting') {
       setRebootReady(false);setSuccess(tr('更新完成，设备正在重启。稍后可重新检查设备状态。','Update complete. The device is rebooting. Check its status again shortly.'));
     } else if(s.reboot?.error) {
       setError(tr('更新已完成，重启失败，可点击下方按钮重试：','Update completed, but reboot failed. Retry below: ')+s.reboot.error);
-    } else if(done) setSuccess(tr('更新完成，可在此直接重启设备使更新生效。','Update complete. Reboot the device here to activate the update.'));
+    } else if(done) setSuccess(s.transaction?.status==='rolled_back'?tr('回滚完成，可在此重启设备。','Rollback complete. Reboot the device here.'):tr('更新完成，可在此直接重启设备使更新生效。','Update complete. Reboot the device here to activate the update.'));
     else if(s.job?.status!=='running') setSuccess(tr('设备状态已读取。当前版本：','Device status loaded. Current version: ')+s.identity.version);
     if(s.activation?.status==='warning') setError(tr('系统文件已更新，网页插件重载失败：','System files are updated, but web plugin reload failed: ')+s.activation.error);
   }
@@ -57,19 +61,27 @@ function Studio() {
   useEffect(() => {
     if (!running) return;
     let alive = true;
-    const timer = setInterval(() => {
-      void request<Status>('ota_status',{host,password,path:patch}).then(s => {
+    let timer:ReturnType<typeof setTimeout>;
+    async function tick() {
+      let again=true;
+      try {
+        const s=await request<Status>('ota_status',{host,password,path:patch});
         if (!alive) return;
         if(s.transaction)setProgress(`${s.transaction.started} / ${s.transaction.total}`);
         if (s.job?.status !== 'running') {
+          again=false;
           setRunning(false);
-          if (s.job?.status === 'complete') showStatus(s);
-          else setError(s.job?.result?.error || tr('更新未完成，请检查设备事务状态。','Update incomplete. Review device transaction status.'));
+          showStatus(s);
         }
-      }).catch(e => {if (alive) setProgress(tr('连接中断；设备继续处理，可稍后重新检查状态。','Connection interrupted. The device continues processing; check status again later.') + ' ' + String(e));});
-    },2000);
-    return () => {alive=false;clearInterval(timer);};
-  },[running,host,password,en]);
+      } catch(e) {
+        if (alive) setProgress(tr('连接中断；设备继续处理，可稍后重新检查状态。','Connection interrupted. The device continues processing; check status again later.') + ' ' + String(e));
+      } finally {
+        if(alive && again)timer=setTimeout(()=>void tick(),2000);
+      }
+    }
+    timer=setTimeout(()=>void tick(),2000);
+    return () => {alive=false;clearTimeout(timer);};
+  },[running,host,password,en,patch]);
   async function work<T>(fn:()=>Promise<T>):Promise<T|undefined> {
     setBusy(true);setError('');setSuccess('');setProgress('');
     try { return await fn(); } catch(e) {setError(String(e));return undefined;}
@@ -78,10 +90,10 @@ function Studio() {
   async function pick(which:'old'|'new'|'patch') {
     const path = await native('pick_ota_input');
     if (!path) return;
-    setReview(undefined);setAnalysis(undefined);setSuccess('');
+    setReview(undefined);setAnalysis(undefined);setSuccess('');setRebootReady(false);
     if (which === 'old') setOld(path);
     else if (which === 'new') setNext(path);
-    else { setPatch(path); const r=await work(()=>request<{manifest:Manifest}>('ota_package',{path})); if(r){setManifest(r.manifest);if(host==='192.168.9.1'||host==='192.168.77.1')setHost(r.manifest.family==='mu300'?'192.168.77.1':'192.168.9.1');} }
+    else { setPatch(path);setManifest(undefined); const r=await work(()=>request<{manifest:Manifest}>('ota_package',{path})); if(r){setManifest(r.manifest);if(host==='192.168.9.1'||host==='192.168.77.1')setHost(r.manifest.family==='mu300'?'192.168.77.1':'192.168.9.1');} }
   }
   const blocked = busy || running;
   return <div className="ota-shell">
@@ -91,7 +103,7 @@ function Studio() {
     <div className="ota-grid"><section className="ota-card"><h2><span className="ota-number">1</span>{generator?tr('选择发行版本','Select releases'):tr('选择补丁与设备','Select patch and device')}</h2>
     {generator?<><label className="ota-label">{tr('旧版完整包','Old full release')}</label><button className="ota-picker" disabled={blocked} onClick={()=>void pick('old')}><FileArchive/><span>{old || tr('选择 ZIP 文件','Select ZIP file')}</span><FolderOpen size={18}/></button><div className="ota-arrow"><ArrowRight size={18}/></div><label className="ota-label">{tr('新版完整包','New full release')}</label><button className="ota-picker" disabled={blocked} onClick={()=>void pick('new')}><FileArchive/><span>{next || tr('选择 ZIP 文件','Select ZIP file')}</span><FolderOpen size={18}/></button>
       <Button className="ota-wide" disabled={blocked || !old || !next} onClick={()=>void work(async()=>{const r=await request<Analysis>('ota_analyze',{old,new:next});setAnalysis(r);})}>{busy?<LoaderCircle className="animate-spin" size={18}/>:<GitCompareArrows size={18}/>} {tr('分析差异','Analyze changes')}</Button></>
-      :<><button className="ota-picker" disabled={blocked} onClick={()=>void pick('patch')}><FileArchive/><span>{patch || tr('选择 .ota 差异包','Select .ota patch')}</span><FolderOpen size={18}/></button><label className="ota-label">{tr('设备管理地址','Device management address')}</label><input value={host} disabled={blocked} onChange={e=>{setHost(e.target.value);setReview(undefined);}}/><label className="ota-label">SSH root {tr('密码','password')}</label><input type="password" value={password} disabled={blocked} onChange={e=>{setPassword(e.target.value);setReview(undefined);}} autoComplete="off"/>
+      :<><button className="ota-picker" disabled={blocked} onClick={()=>void pick('patch')}><FileArchive/><span>{patch || tr('选择 .ota 差异包','Select .ota patch')}</span><FolderOpen size={18}/></button><label className="ota-label">{tr('设备管理地址','Device management address')}</label><input value={host} disabled={blocked} onChange={e=>{setHost(e.target.value);setReview(undefined);setRebootReady(false);}}/><label className="ota-label">SSH root {tr('密码','password')}</label><input type="password" value={password} disabled={blocked} onChange={e=>{setPassword(e.target.value);setReview(undefined);setRebootReady(false);}} autoComplete="off"/>
       <Button className="ota-wide" disabled={blocked || !patch || !host} onClick={()=>void work(async()=>{setReview(await request<Review>('ota_probe',{host,password,path:patch}));})}><ShieldCheck size={18}/>{tr('连接并检查','Connect and review')}</Button><Button variant="ghost" className="ota-wide" disabled={busy || !host} onClick={()=>void work(async()=>{const s=await request<Status>('ota_status',{host,password,path:patch});setRunning(s.job?.status==='running');showStatus(s);})}>{tr('重新检查设备状态','Check device status')}</Button></>}
     </section><section className="ota-card ota-result"><h2><span className="ota-number">2</span>{tr('检查并继续','Review and continue')}</h2><div className="ota-result-body" tabIndex={0} aria-label={tr('检查结果','Review results')}>
       {analysis || manifest?<><div className="ota-release"><small>{tr('目标设备','Target profile')}</small><strong>{(analysis?.manifest || manifest)!.profile}</strong><small>{(analysis?.manifest || manifest)!.kernel_release}</small></div><p className="ota-versions">{(analysis?.manifest || manifest)!.base_version}<ArrowRight size={16}/>{(analysis?.manifest || manifest)!.target_version}</p></>:<div className="ota-empty"><ShieldCheck size={42}/><p>{tr('选择文件后，在这里查看版本与兼容检查结果。','Select files to review versions and compatibility here.')}</p></div>}

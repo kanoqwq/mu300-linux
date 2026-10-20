@@ -27,6 +27,19 @@ def activate_rpc():
         return {'status': 'deferred', 'error': 'rpcd service is unavailable'}
     prefix = ['/ota/busybox', 'chroot', str(root)] if os.environ.get('UNISOC_OTA_RAM') else []
     try:
+        if prefix:
+            # A bind of / does not include its tmpfs/proc submounts. rc.common
+            # needs the real /var -> /tmp locks and ubus socket, not empty
+            # directories from the disk root. PID 1 remains the host init in
+            # this RAM chroot (no PID namespace is created).
+            for name in ('tmp', 'proc'):
+                destination = str(root/name)
+                probe = subprocess.run(['/ota/busybox', 'mountpoint', '-q', destination])
+                if probe.returncode:
+                    (root/name).mkdir(exist_ok=True)
+                    subprocess.run(['/ota/busybox', 'mount', '--bind',
+                                    '/proc/1/root/'+name, destination], check=True,
+                                   capture_output=True, text=True, timeout=5)
         reload = subprocess.run(prefix+['/etc/init.d/rpcd', 'reload'], capture_output=True, text=True, timeout=15)
         if reload.returncode:
             raise ValueError((reload.stderr or reload.stdout)[-1000:])

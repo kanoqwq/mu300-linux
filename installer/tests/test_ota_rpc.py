@@ -44,8 +44,20 @@ class RPCTests(unittest.TestCase):
             result = Mock(returncode=0, stdout=json.dumps({'identity':{'version':'test'}}), stderr='')
             with patch.dict(os.environ, {'UNISOC_OTA_RAM':'/'}), patch.object(self.rpc.subprocess,'run',return_value=result) as run:
                 self.assertEqual(self.rpc.activate_rpc(), {'status':'ready'})
-                self.assertEqual(run.call_args_list[0].args[0], ['/ota/busybox','chroot',d,'/etc/init.d/rpcd','reload'])
-                self.assertEqual(run.call_args_list[1].args[0][-1], 'ubus call unisoc-ota status')
+                self.assertEqual(run.call_args_list[0].args[0], ['/ota/busybox','mountpoint','-q',d+'/tmp'])
+                self.assertEqual(run.call_args_list[1].args[0], ['/ota/busybox','mountpoint','-q',d+'/proc'])
+                self.assertEqual(run.call_args_list[2].args[0], ['/ota/busybox','chroot',d,'/etc/init.d/rpcd','reload'])
+                self.assertEqual(run.call_args_list[3].args[0][-1], 'ubus call unisoc-ota status')
+
+    def test_ram_activation_binds_host_service_runtime_before_reload(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d); service=root/'etc/init.d/rpcd'; service.parent.mkdir(parents=True); service.touch(); self.rpc.ROOT=d
+            missing=Mock(returncode=1); ok=Mock(returncode=0,stdout='{"identity":{}}',stderr='')
+            with patch.dict(os.environ, {'UNISOC_OTA_RAM':'/'}), patch.object(self.rpc.subprocess,'run',side_effect=[missing,ok,missing,ok,ok,ok]) as run:
+                self.assertEqual(self.rpc.activate_rpc(), {'status':'ready'})
+                self.assertEqual(run.call_args_list[1].args[0], ['/ota/busybox','mount','--bind','/proc/1/root/tmp',d+'/tmp'])
+                self.assertEqual(run.call_args_list[3].args[0], ['/ota/busybox','mount','--bind','/proc/1/root/proc',d+'/proc'])
+                self.assertEqual(run.call_args_list[4].args[0][-2:], ['/etc/init.d/rpcd','reload'])
 
     def test_reload_failure_is_warning_not_filesystem_failure(self):
         with tempfile.TemporaryDirectory() as d:

@@ -19,7 +19,11 @@ window.__TAURI_INTERNALS__={transformCallback:()=>1,unregisterCallback:()=>{},in
  if(command==='ota_export')return {output:'D:/Releases/update.ota'};
  if(command==='ota_probe')return {token:'reviewed',check:{applicable:!window.testConflict,conflicts:window.testConflict?['usr/libexec/unisoc-modem/action']:[],package_conflicts:[],required_bytes:20000000,free_bytes:1000000000}};
  if(command==='ota_apply'){window.autoRebootRequested=args.params.auto_reboot;return {status:'running'};}
- if(command==='ota_status')return {identity:{version:manifest.target_version},job:{status:'complete'},transaction:{started:1,total:1,status:'complete'},reboot:window.autoRebootRequested?{status:'rebooting'}:undefined};
+ if(command==='ota_status'){
+  window.statusCalls=(window.statusCalls||0)+1;
+  if(window.deferStatus)return new Promise(resolve=>{window.statusResolve=resolve;});
+  return window.statusResult||{identity:{version:manifest.target_version},job:{status:'complete'},transaction:{started:1,total:1,status:'complete'},reboot:window.autoRebootRequested?{status:'rebooting'}:undefined};
+ }
  if(command==='ota_reboot'){window.rebootCalls=(window.rebootCalls||0)+1;return {status:'rebooting'};}
  return null;
 }};
@@ -115,6 +119,24 @@ async def main():
         await page.set_viewport_size({'width':800,'height':650})
         await check_footer_spacing(page)
         assert await page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+        assert not errors,errors
+        await page.goto(ORIGIN+'/ota.html')
+        await page.evaluate("window.statusResult={identity:{version:'test'},job:{status:'failed',result:{error:'Exploratory write failure'}},transaction:{status:'rolled_back'}}")
+        await page.get_by_role('button',name='重新检查设备状态').click()
+        await page.get_by_role('alert').filter(has_text='Exploratory write failure').wait_for(timeout=2500)
+        assert not await page.get_by_role('status').count(), 'Failed transaction displayed as success'
+        await page.evaluate("window.statusResult={identity:{version:'test'},job:{status:'complete'},transaction:{status:'rolled_back'}}")
+        await page.get_by_role('button',name='重新检查设备状态').click()
+        assert await page.get_by_role('button',name='重启设备',exact=True).is_enabled(), 'Rollback has no direct reboot'
+        await page.goto(ORIGIN+'/ota.html')
+        await page.get_by_role('button',name='连接并检查').click()
+        await page.evaluate('window.deferStatus=true')
+        await page.get_by_role('button',name='确认应用此补丁').click()
+        await page.wait_for_function('window.statusCalls===1')
+        await page.wait_for_timeout(4500)
+        assert await page.evaluate('window.statusCalls')==1, 'Slow status calls overlap and queue'
+        await page.evaluate("window.deferStatus=false;window.statusResolve({identity:{version:'test'},job:{status:'complete'},transaction:{status:'complete'}})")
+        await page.get_by_role('button',name='重启设备',exact=True).wait_for()
         assert not errors,errors
         await browser.close()
         print('OTA browser workflows passed:',output)

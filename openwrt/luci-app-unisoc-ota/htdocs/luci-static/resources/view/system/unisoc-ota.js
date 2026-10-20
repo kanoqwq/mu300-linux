@@ -21,7 +21,7 @@ return view.extend({
         var button = E('button', {class:'cbi-button cbi-button-action', disabled:!L.hasViewPermission()}, tr('导入差异包','Import patch'));
         var rollback = E('button', {class:'cbi-button', disabled:!L.hasViewPermission(), style:'margin-inline-start:12px'}, tr('撤销上次补丁','Roll back last patch'));
         var reboot = E('button', {class:'cbi-button', disabled:!L.hasViewPermission(), style:'margin-inline-start:12px'}, tr('重启生效','Reboot'));
-        var busy = false, watching = false;
+        var busy = false, watching = false, pollError = false;
         function show(r) {
             error(r);
             var identity = r.identity || {};
@@ -45,11 +45,20 @@ return view.extend({
             if (watching) return;
             watching = true;
             function tick() {
-                return callStatus().then(function(r) { show(r); if (!busy) {poll.remove(tick); watching=false;} });
+                return callStatus().then(function(r) { show(r); pollError=false; if (!busy) {poll.remove(tick); watching=false;} }).catch(function(e) {
+                    if (!pollError) failed(e);
+                    pollError=true;
+                });
             }
             poll.add(tick, 2);
         }
         function failed(e) { ui.addNotification(null, E('p', {}, e.message || String(e)), 'error'); }
+        function operationFailed(e) {
+            failed(e);
+            // A lost reply does not prove that the detached worker stopped.
+            // Read its state before enabling writes; keep watching on outage.
+            return callStatus().then(show).catch(function() { watch(); });
+        }
         button.onclick = function() {
             if (busy) return;
             return ui.uploadFile('/etc/unisoc-ota/upload.ota', button).then(function() { return callInspect(); }).then(function(r) {
@@ -66,15 +75,21 @@ return view.extend({
                     E('button', {class:'cbi-button', click:ui.hideModal}, tr('取消','Cancel')),
                     E('button', {class:'cbi-button cbi-button-action', disabled:!r.applicable, style:'margin-inline-start:12px', click:function() {
                         ui.hideModal(); busy=true; button.disabled=true;
-                        callStart(r.id).then(error).then(function() {detail.textContent=tr('正在更新，关闭网页不会中断写入。','Updating. Closing this page does not interrupt writes.'); watch();}).catch(failed);
+                        rollback.disabled=true; reboot.disabled=true;
+                        return callStart(r.id).then(error).then(function() {detail.textContent=tr('正在更新，关闭网页不会中断写入。','Updating. Closing this page does not interrupt writes.'); watch();}).catch(operationFailed);
                     }}, tr('应用补丁','Apply patch'))
                 ])]);
             }).catch(failed);
         };
         rollback.onclick = function() {
+            if (busy) return;
             ui.showModal(tr('撤销上次补丁？','Roll back the last patch?'), [E('p', {}, tr('已修改的系统文件会恢复为更新前版本。存在本地冲突时会停止。','Changed system files will return to their previous versions. Local conflicts stop rollback.')),
                 E('button', {class:'cbi-button',click:ui.hideModal}, tr('取消','Cancel')),
-                E('button', {class:'cbi-button cbi-button-action',style:'margin-inline-start:12px',click:function(){ui.hideModal();callRollback().then(error).then(watch).catch(failed);}},tr('撤销','Roll back'))]);
+                E('button', {class:'cbi-button cbi-button-action',style:'margin-inline-start:12px',click:function(){
+                    if (busy) return;
+                    ui.hideModal(); busy=true; button.disabled=true; rollback.disabled=true; reboot.disabled=true;
+                    return callRollback().then(error).then(watch).catch(operationFailed);
+                }},tr('撤销','Roll back'))]);
         };
         reboot.onclick = function() { callReboot().then(error).then(function(){ui.awaitReconnect();}).catch(failed); };
         show(state);

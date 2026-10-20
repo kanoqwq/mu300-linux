@@ -234,6 +234,8 @@ class Desktop:
                     if job.get('status') == 'complete' and transaction.get('status') in ('complete', 'rolled_back'):
                         marker = (p['host'], key, transaction.get('id'), transaction['status'])
                         activation = (job.get('result') or {}).get('activation') or {}
+                        if marker in self.activated:
+                            activation = {'status': 'ready'}
                         if marker not in self.activated and activation.get('status') != 'ready':
                             try:
                                 activation = refresh_rpc(client)
