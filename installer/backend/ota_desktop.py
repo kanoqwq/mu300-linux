@@ -119,6 +119,7 @@ class Desktop:
         self.analysis = None
         self.review = None
         self.runtime_session = None
+        self.archive_path = None
         self.last_event = 0
 
     def progress(self, stage, path):
@@ -148,10 +149,13 @@ class Desktop:
             if command == 'ota_package':
                 archive = Path(p.get('path') or self.root / 'update.ota')
                 with Patch(archive) as patch:
+                    self.archive_path = archive
+                    self.review = None
                     return dict(path=str(archive), id=patch.id, manifest=patch.manifest)
             if command == 'ota_probe':
                 self.review = None
-                archive = Path(p.get('path') or self.root / 'update.ota')
+                archive = Path(p.get('path') or self.archive_path or self.root / 'update.ota')
+                self.archive_path = archive
                 with connect(p['host'], p['password']) as client:
                     result = remote_inspect(client, archive, self.emit)
                     key = hashlib.sha256(client.get_transport().get_remote_server_key().asbytes()).hexdigest()
@@ -187,7 +191,10 @@ class Desktop:
                         # and a reboot all use the package's RAM interpreter.
                         # Status must also work after applying the patch, when
                         # an inspection against its old base would be rejected.
-                        session = dict(host=p['host'], key=key, **remote_prepare(client, Path(p.get('path') or self.root/'update.ota'), self.emit))
+                        archive = Path(p.get('path') or self.archive_path or self.root/'update.ota')
+                        if not archive.is_file():
+                            raise ValueError('Select the OTA patch before checking this old device')
+                        session = dict(host=p['host'], key=key, **remote_prepare(client, archive, self.emit))
                     result = runtime_call(client, session, 'status', setup=setup)
                     self.runtime_session = session
                     return result

@@ -154,6 +154,26 @@ class DesktopTests(unittest.TestCase):
         self.shell.inspect_error = True
         self.status()
 
+    def test_selected_external_patch_is_used_when_status_button_sends_no_path(self):
+        external = self.root/'selected.ota'
+        self.archive.rename(external)
+        self.app.dispatch('ota_package', {'path': str(external)})
+        self.shell.inspect_error = True
+        self.status()
+
+    def test_failed_probe_remembers_external_patch_for_status_retry(self):
+        external = self.root/'selected.ota'
+        self.archive.rename(external)
+        self.shell.inspect_error = True
+        with self.assertRaisesRegex(RuntimeError, 'Device/base'):
+            self.app.dispatch('ota_probe', dict(self.params, path=str(external)))
+        self.status()
+
+    def test_old_device_status_without_selected_patch_explains_required_input(self):
+        self.archive.unlink()
+        with self.assertRaisesRegex(ValueError, 'Select the OTA patch'):
+            self.status()
+
     def test_changed_device_key_does_not_reuse_previous_runtime(self):
         self.app.dispatch('ota_probe', self.params)
         old = self.app.runtime_session['runtime']
