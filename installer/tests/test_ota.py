@@ -212,7 +212,7 @@ class GenerationTests(unittest.TestCase):
                 with Release(d/'a'):pass
 
 
-@unittest.skipUnless(os.name=='posix', 'Linux permissions, xattrs and durable rename semantics')
+@unittest.skipUnless(sys.platform == 'linux', 'Device engine requires Linux permissions, xattrs and durable rename semantics')
 class EngineTests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
