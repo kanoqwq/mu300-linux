@@ -1,0 +1,10 @@
+{
+  "luci-app-unisoc-ota": {
+    "description": "Import reviewed system hotfixes and retain rollback",
+    "read": {"ubus": {"unisoc-ota": ["status", "inspect"]}},
+    "write": {
+      "ubus": {"unisoc-ota": ["start", "rollback", "reboot"]},
+      "file": {"/etc/unisoc-ota/upload.ota": ["write"]}
+    }
+  }
+}

@@ -19,6 +19,9 @@ esac
 KREL=5.4.254-gb50db5b6224c
 OUT=${1:-mu300-$FLAVOUR-$VER-rootfs.tar.gz}
 TOP=$(cd "$(dirname "$0")/.." && pwd)
+ROOTFS_DIR=${MU300_ROOTFS_OUT_DIR:-$TOP/openwrt}
+mkdir -p "$ROOTFS_DIR"
+ROOTFS_DIR=$(cd "$ROOTFS_DIR" && pwd)
 # build inputs (out/, firmware/, android-subset/, tools binaries, busybox) may live outside the checkout
 IN=${MU300_INPUTS:-$TOP}
 MAINLINE=${MU300_MAINLINE_OUT:-$IN/upstream/out}
@@ -134,12 +137,15 @@ docker run --rm --platform linux/arm64 \
   $(opt out/modules.builtin modules.builtin) $(opt out/modules.builtin.modinfo modules.builtin.modinfo) \
   $(opt firmware firmware) $(opt android-subset android-subset) $(opt android-gpu-subset android-gpu-subset) \
   $(opt tools/logdw/logdw logdw) $(opt tools/bt-init/mu300-bt-init bt-init) $(opt tools/keys/mu300-keys keys) $(opt tools/gpu/cltest cltest) \
-  $(opt busybox busybox) $(mainline_opt modules mainline-modules) $(plugin_opt) -v "$TOP/openwrt":/out -v "$REGDB":/in/regdb:ro \
+  $(opt busybox busybox) $(mainline_opt modules mainline-modules) $(plugin_opt) -v "$ROOTFS_DIR":/out -v "$REGDB":/in/regdb:ro \
   $(mainline_opt modules.builtin mainline-modules.builtin) $(mainline_opt modules.builtin.modinfo mainline-modules.builtin.modinfo) \
   -v "$THEME_APK":/in/luci-theme-aurora.apk:ro \
   -v "$BLOCK_APK":/in/block-mount-mu300.apk:ro \
   -v "$BLOCK_APK.build-id":/in/block-mount.build-id:ro \
   -v "$WIFI_APKS":/in/wifi-sae:ro \
+  -v "$TOP/openwrt/luci-app-mu300/root/usr/libexec/unisoc-modem/disable-stock-upgrade":/in/stock-upgrade-policy:ro \
+  -v "$TOP/installer":/in/ota-source/installer:ro \
+  -v "$TOP/openwrt/luci-app-unisoc-ota":/in/ota-source/openwrt/luci-app-unisoc-ota:ro \
   -v "$TOP/work/luci-app-aurora-config-1.2.5-r20260920.apk":/in/luci-app-aurora-config.apk:ro \
   -v "$TOP/work/luci-i18n-aurora-config-zh-cn-26.262.58276.362887a.apk":/in/aurora-config-zh-cn.apk:ro \
   -v "$TOP/work/luci-i18n-aurora-config-tr-26.262.58276.362887a.apk":/in/aurora-config-tr.apk:ro \
@@ -159,7 +165,7 @@ apk_retry update >/dev/null
 apk_retry add --allow-untrusted /in/wifi-sae/*.apk >/dev/null
 # The cipher capability helper needs the section omitted by reduced iw builds.
 apk_retry add iwinfo wireless-regdb iw-full bash ip-full coreutils-stty openssl-util curl ca-bundle msmtp ucode ucode-mod-fs ucode-mod-ubus ucode-mod-uci ucode-mod-uloop ucode-mod-socket \
-    i2c-tools gpiod-tools flock ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn luci-i18n-ttyd-tr >/dev/null
+    i2c-tools gpiod-tools flock ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn luci-i18n-ttyd-tr python3 >/dev/null
 apk_retry add --allow-untrusted /in/block-mount-mu300.apk >/dev/null
 apk_retry add --allow-untrusted /in/luci-theme-aurora.apk >/dev/null
 apk_retry add --allow-untrusted /in/luci-app-aurora-config.apk /in/aurora-config-zh-cn.apk /in/aurora-config-tr.apk >/dev/null
@@ -236,6 +242,7 @@ if [ -d /in/luci-plugin ]; then
     ucode $R/usr/libexec/unisoc-modem/filter-wifi-ciphers $R
     chmod 0755 $R/etc/init.d/unisoc-cpu $R/etc/init.d/unisoc-cpu-cores $R/usr/libexec/rpcd/unisoc-cpu-cores
     chmod 0600 $R/etc/config/unisoc_apn
+    chmod 0755 $R/etc/uci-defaults/97-unisoc-upgrade-policy
     chmod 0755 $R/etc/init.d/unisoc-modem-ui $R/etc/init.d/unisoc-sms-forward $R/etc/init.d/unisoc-traffic $R/etc/hotplug.d/net/90-unisoc-usb-host $R/etc/hotplug.d/iface/90-unisoc-usb-host $R/usr/libexec/rpcd/mu300dash $R/usr/libexec/unisoc-modem/*
     mkdir -p $R/usr/lib/lua/luci/i18n
     cp -a /in/luci-plugin/lmo/. $R/usr/lib/lua/luci/i18n/
@@ -324,11 +331,16 @@ if ls /in/mainline-modules/*.ko >/dev/null 2>&1; then
         [ ! -f /in/mainline-$f ] || cp /in/mainline-$f $R/lib/modules/$krel/$f
     done
 fi
+mkdir -p $R/usr/libexec/unisoc-modem
+cp /in/stock-upgrade-policy $R/usr/libexec/unisoc-modem/disable-stock-upgrade
+chmod 0755 $R/usr/libexec/unisoc-modem/disable-stock-upgrade
+ucode $R/usr/libexec/unisoc-modem/disable-stock-upgrade $R
+python3 /in/ota-source/installer/stage-ota.py --root $R
 cd $R && tar -czf /out/$OUT .
 ls -la /out/$OUT'
 # Remove optional VPN helpers and reject accidentally inherited VPN packages.
-python3 "$TOP/openwrt/no-vpn-payload.py" "$TOP/openwrt/$(basename "$OUT")"
+python3 "$TOP/openwrt/no-vpn-payload.py" "$ROOTFS_DIR/$(basename "$OUT")"
 if [ -d "$MAINLINE/modules" ]; then
-    python3 "$TOP/upstream/check-container-support.py" "$MAINLINE" --rootfs "$TOP/openwrt/$(basename "$OUT")"
+    python3 "$TOP/upstream/check-container-support.py" "$MAINLINE" --rootfs "$ROOTFS_DIR/$(basename "$OUT")"
 fi
 rm -rf "$REGDB"

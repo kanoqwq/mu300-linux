@@ -26,7 +26,7 @@ import subprocess
 import sys
 import tarfile
 import zlib
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 HERE = Path(__file__).resolve().parent
 PAGE = 4096
@@ -70,6 +70,9 @@ def lz4_legacy(data):
 
 
 def cpio_archive(dirs, files):
+    dirs = set(dirs)
+    for name in list(files) + list(dirs):
+        dirs.update(str(p) for p in PurePosixPath(name).parents if str(p) != '.')
     cpio = bytearray()
     ino = 1
     for d in sorted(dirs, key=lambda x: (x.count('/'), x)):

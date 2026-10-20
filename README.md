@@ -1,5 +1,7 @@
 # Linux on the ZTE F50 / MU300 and U30 Air
 
+Local builds and packaging: [workspace and release workflow](docs/LOCAL-BUILD.zh-CN.md).
+
 Maintainer notes: [stock behavior and new-device adaptation checklist](docs/NEW-DEVICE-STOCK-ADAPTATION.zh-CN.md),
 [U30 Air charge/power/recovery evidence](docs/U30AIR-STOCK-CHARGE-20261016.zh-CN.md).
 

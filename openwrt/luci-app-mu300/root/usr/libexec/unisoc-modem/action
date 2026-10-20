@@ -5,7 +5,7 @@
 #   mu300-dash-act wifi on|off      uci wireless disabled flag + wifi up/down
 #   mu300-dash-act modem-reset      the SFUN 5/3/2/4 sequence mobile-data uses for sim-reset
 #   mu300-dash-act vpn start|stop   /etc/init.d/mu300-vpn
-#   mu300-dash-act reboot           the whole box, after a 3 s grace for the HTTP reply
+#   mu300-dash-act reboot|poweroff  orderly restart/shutdown, after a 3 s grace for the HTTP reply
 #
 # Every op prints one JSON line on stdout. The rpcd backend (/usr/libexec/rpcd/mu300dash)
 # runs the slow ones via setsid and returns immediately: LuCI's /admin/ubus endpoint
@@ -61,9 +61,9 @@ case "${1:-}:${2:-}" in
             fail "vpn $2" "VPN integration is not provided by this platform"
         fi
         ;;
-    reboot:)
+    reboot:|poweroff:)
         sleep 3   # the reply has to make it out first
-        reboot
+        "$1"     # procd stops services and unmounts normally; never force
         ;;
     os:linux-default)
         if [ ! -x /opt/mu300/bin/mu300-next-boot ]; then
@@ -95,7 +95,7 @@ case "${1:-}:${2:-}" in
         fi
         ;;
     *)
-        echo "usage: $0 radio on|off | data up|down | wifi on|off | modem-reset | vpn start|stop | reboot | os android" >&2
+        echo "usage: $0 radio on|off | data up|down | wifi on|off | modem-reset | vpn start|stop | reboot | poweroff | os android" >&2
         printf '{"ok":0,"error":"unknown op"}\n'
         exit 2
         ;;

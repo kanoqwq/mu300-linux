@@ -169,7 +169,7 @@ m_act() {
             case "$arg" in on) enabled=1;; off) enabled=0;; *) printf '{"ok":0,"error":"Invalid radio request"}\n'; return;; esac
             "$DASH/data-sim" start "radio-${MU300_SIM_SLOT:-0}-$enabled"
             ;;
-        modem-reset|reboot|vpn)
+        modem-reset|reboot|poweroff|vpn)
             setsid "$DASH/action" "$op" "$arg" >/dev/null 2>&1 &
             printf '{"ok":1,"started":1,"op":"%s"}\n' "$op$arg"
             ;;

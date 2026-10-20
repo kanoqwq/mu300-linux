@@ -101,6 +101,8 @@ class Service:
         self.verification_lock = threading.Lock()
         self.verification_request = None
         self.verification_wake = threading.Event()
+        from .ota_desktop import Desktop
+        self.ota = Desktop(self.package_root, self.emit)
 
     def emit(self, kind, data, request_id=None):
         event = {'protocol': 1, 'type': kind, 'data': data}
@@ -129,6 +131,10 @@ class Service:
         command, p = request.get('command'), request.get('params', {})
         if not isinstance(p, dict):
             raise ValueError('Parameters must be an object')
+        if command.startswith('ota_'):
+            if self.worker and self.worker.is_alive():
+                raise ValueError('Another installer task is running')
+            return self.ota.dispatch(command, p)
         if command == 'hello':
             return {'protocol': 1, 'app_data': str(self.store.base), 'package_path': self.package_root,
                     'transactions': [self.public(r) for r in self.store.list()]}

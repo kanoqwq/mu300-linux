@@ -29,7 +29,7 @@ validate_apply() {
             pair=${val#*:}; fr=${pair%,*}; pc=${pair#*,}
             # Decimal comparisons via awk also reject leading-zero surprises.
             printf '%s\n' "$fr,$pc" | awk -F, -v rat="${val%%:*}" '
-                { exit !($1 > 0 && $1 <= (rat=="nr" ? 3279165 : 262143) &&
+                { exit !($1 >= (rat=="nr" ? 1 : 0) && $1 <= (rat=="nr" ? 3279165 : 262143) &&
                          $2 >= 0 && $2 <= (rat=="nr" ? 1007 : 503)) }' ||
                 { fail_apply '无效的小区参数'; return 1; }
             ;;

@@ -6,7 +6,7 @@ use std::{collections::HashMap, io::{BufRead, BufReader, Write}, path::PathBuf,
 use tauri::{Emitter, Manager, State};
 use tokio::sync::oneshot;
 
-const COMMANDS: &[&str] = &["hello","snapshot","list","package","devices","adb_connect","adb_disconnect","probe","probe_update","plan","start","resume","retry","cancel","can_close","export","import","diagnostics","verify_openwrt"];
+const COMMANDS: &[&str] = &["hello","snapshot","list","package","devices","adb_connect","adb_disconnect","probe","probe_update","plan","start","resume","retry","cancel","can_close","export","import","diagnostics","verify_openwrt","ota_analyze","ota_export","ota_package","ota_probe","ota_apply","ota_status"];
 struct Bridge {
     input: Mutex<Option<ChildStdin>>,
     pending: Mutex<HashMap<u64, oneshot::Sender<Result<Value, String>>>>,
@@ -38,6 +38,14 @@ async fn backend_request(state: State<'_, Arc<Bridge>>, command: String, params:
 #[tauri::command]
 async fn pick_package() -> Option<String> {
     tauri::async_runtime::spawn_blocking(|| rfd::FileDialog::new().set_title("OpenWrt package / 安装包目录").pick_folder().map(|p|p.to_string_lossy().to_string())).await.ok().flatten()
+}
+#[tauri::command]
+async fn pick_ota_input() -> Option<String> {
+    tauri::async_runtime::spawn_blocking(|| rfd::FileDialog::new().set_title("Select release ZIP or OTA / 选择发行包或差异包").add_filter("OpenWrt packages", &["zip","ota"]).pick_file().map(|p|p.to_string_lossy().to_string())).await.ok().flatten()
+}
+#[tauri::command]
+async fn save_ota() -> Option<String> {
+    tauri::async_runtime::spawn_blocking(|| rfd::FileDialog::new().set_file_name("OpenWrt-patch.zip").add_filter("Desktop + Web", &["zip"]).add_filter("Web OTA only", &["ota"]).save_file().map(|p|p.to_string_lossy().to_string())).await.ok().flatten()
 }
 #[tauri::command]
 async fn pick_recovery() -> Option<String> {
@@ -99,7 +107,8 @@ fn distribution_root(executable: &std::path::Path) -> Result<PathBuf, String> {
         if ancestor.extension().is_some_and(|ext| ext == "app") {
             let root = ancestor.parent().ok_or("Application has no parent directory")?;
             if root.join("OpenWrt-Installer.py").is_file()
-                && (root.join("desktop/manifest.json").is_file() || root.join("files/device-profile.json").is_file()) {
+                && (root.join("desktop/manifest.json").is_file() || root.join("files/device-profile.json").is_file())
+                || root.join("OpenWrt-Diff-Studio.py").is_file() || root.join("update.ota").is_file() {
                 return Ok(root.to_path_buf());
             }
             // Finder may translocate quarantined applications. Ask for the
@@ -111,15 +120,43 @@ fn distribution_root(executable: &std::path::Path) -> Result<PathBuf, String> {
     executable.parent().map(|p|p.to_path_buf()).ok_or_else(|| "Executable has no directory".into())
 }
 
-fn main() {
+fn entry_page(executable: &std::path::Path, has_patch: bool) -> (&'static str, &'static str) {
+    // Exported macOS updaters retain the studio's internal executable name.
+    // Their enclosing app bundle is the public entry point instead.
+    let entry = executable.ancestors().find(|p| p.extension().is_some_and(|ext| ext == "app"))
+        .unwrap_or(executable).file_stem().unwrap_or_default().to_string_lossy().to_lowercase();
+    if entry.contains("updater") {
+        ("ota.html", "OpenWrt Patch Updater")
+    } else if entry.contains("diff") {
+        ("diff.html", "OpenWrt Diff Studio")
+    } else if has_patch {
+        ("ota.html", "OpenWrt Patch Updater")
+    } else {
+        ("index.html", "OpenWrt Installer")
+    }
+}
+
+fn configure_entry(config: &mut tauri::Config, executable: &std::path::Path, has_patch: bool) {
+    let (page, title) = entry_page(executable, has_patch);
+    if let Some(window) = config.app.windows.iter_mut().find(|window| window.label == "main") {
+        // Choose the asset before webview creation. During setup the webview
+        // can still be about:blank, which cannot resolve relative URLs.
+        window.url = tauri::WebviewUrl::App(PathBuf::from(page));
+        window.title = title.into();
+    }
+}
+
+fn run() -> Result<(), Box<dyn std::error::Error>> {
+    let executable = std::env::current_exe()?;
+    let root = distribution_root(&executable).map_err(std::io::Error::other)?;
+    let mut context = tauri::generate_context!();
+    configure_entry(context.config_mut(), &executable, root.join("update.ota").is_file());
     let directory = data_directory();
     let bridge = Arc::new(Bridge {input:Mutex::new(None),pending:Mutex::new(HashMap::new()),sequence:AtomicU64::new(1),busy:AtomicBool::new(false),directory,export_log:Mutex::new(None)});
     let setup_state = bridge.clone();
     let app = tauri::Builder::default().manage(bridge.clone())
-        .invoke_handler(tauri::generate_handler![backend_request,pick_package,pick_recovery,save_backup,save_log,write_log,open_data,open_repository])
+        .invoke_handler(tauri::generate_handler![backend_request,pick_package,pick_ota_input,save_ota,pick_recovery,save_backup,save_log,write_log,open_data,open_repository])
         .setup(move |app| {
-            let executable = std::env::current_exe()?;
-            let root = distribution_root(&executable).map_err(std::io::Error::other)?;
             #[cfg(target_os = "macos")]
             let backend = "tools/macos/backend/openwrt-backend";
             #[cfg(not(target_os = "macos"))]
@@ -146,6 +183,9 @@ fn main() {
                                     }
                                 }
                             } else {
+                                if event["type"] == "ota_activity" {
+                                    state.busy.store(event["data"]["busy"].as_bool().unwrap_or(false), Ordering::SeqCst);
+                                }
                                 if event["type"] == "transaction" {
                                     let status = event["data"]["status"].as_str().unwrap_or("");
                                     state.busy.store(matches!(status,"running"|"waiting_user"|"waiting_device"),Ordering::SeqCst);
@@ -173,17 +213,52 @@ fn main() {
                     let _ = window.emit("backend",json!({"type":"close_blocked","data":{}}));
                 }
             }
-        }).build(tauri::generate_context!());
-    match app {
-        Ok(app) => app.run(move |_, event| {
-            if matches!(event,tauri::RunEvent::Exit) {bridge.input.lock().unwrap().take();}
-        }),
-        Err(error) => {
+        }).build(context)?;
+    app.run(move |_, event| {
+        if matches!(event,tauri::RunEvent::Exit) {bridge.input.lock().unwrap().take();}
+    });
+    Ok(())
+}
+
+fn main() {
+    if let Err(error) = run() {
             #[cfg(target_os = "macos")]
             let message = format!("Cannot start OpenWrt Installer. Keep the app beside tools and files in the extracted package.\n无法启动安装器，请将 app 与 tools、files 一起保留在完整解压目录。\n\n{error}");
             #[cfg(not(target_os = "macos"))]
-            let message = format!("Cannot start the system WebView2. Install Microsoft Edge WebView2 Evergreen Runtime and reopen the installer.\n无法启动系统 WebView2。请安装 Microsoft Edge WebView2 Evergreen Runtime 后重试。\nhttps://developer.microsoft.com/microsoft-edge/webview2/\n\n{error}");
+            let message = format!("Cannot start OpenWrt Installer. Keep the complete extracted package together and check that Microsoft Edge WebView2 Runtime is installed.\n无法启动程序。请保留完整解压目录，并检查是否已安装 Microsoft Edge WebView2 Runtime。\n\n{error}");
             rfd::MessageDialog::new().set_title("OpenWrt Installer").set_description(message).set_level(rfd::MessageLevel::Error).show();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    #[test]
+    fn public_entry_selects_page() {
+        for (path, patch, expected) in [
+            ("/tools/OpenWrt-Installer.exe", false, "index.html"),
+            ("/tools/OpenWrt-Installer.exe", true, "ota.html"),
+            ("/tools/OpenWrt-Diff-Studio.exe", false, "diff.html"),
+            ("/tools/OpenWrt-Diff-Studio.exe", true, "diff.html"),
+            ("/tools/OpenWrt-Updater.exe", false, "ota.html"),
+            ("/tools/OpenWrt-Updater.app/Contents/MacOS/openwrt-diff-studio", false, "ota.html"),
+            ("/tools/OpenWrt-Diff-Studio.app/Contents/MacOS/openwrt-installer", false, "diff.html"),
+        ] {
+            assert_eq!(entry_page(Path::new(path), patch).0, expected, "{path}");
         }
+    }
+
+    #[test]
+    fn initial_window_uses_app_asset_without_navigation() {
+        let mut config = tauri::Config::default();
+        let mut window = tauri::utils::config::WindowConfig::default();
+        window.label = "main".into();
+        config.app.windows.push(window);
+        configure_entry(&mut config, Path::new("OpenWrt-Diff-Studio.exe"), false);
+        assert!(matches!(&config.app.windows[0].url,
+            tauri::WebviewUrl::App(path) if path == Path::new("diff.html")));
+        assert_eq!(config.app.windows[0].title, "OpenWrt Diff Studio");
     }
 }

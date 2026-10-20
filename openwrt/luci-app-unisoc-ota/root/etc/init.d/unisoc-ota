@@ -1,0 +1,13 @@
+#!/bin/sh /etc/rc.common
+# No idle daemon, timer or polling. Only interrupted transactions need Python.
+START=06
+start() {
+    [ -s /etc/unisoc-ota/journal.json ] || return 0
+    case "$(jsonfilter -i /etc/unisoc-ota/journal.json -e '@.status')" in
+        applying|rolling_back) ;; *) return 0 ;;
+    esac
+    python3 /usr/lib/unisoc-ota/engine.py recover || {
+        logger -t unisoc-ota 'Interrupted OTA could not be recovered; review persistent journal'
+        return 1
+    }
+}

@@ -30,7 +30,7 @@ jobs:
         run: |
           test "$(uname -m)" = arm64
           rustup toolchain install 1.90.0 --profile minimal
-          python -m pip install pyinstaller paramiko lz4
+          python -m pip install pyinstaller paramiko lz4 -r installer/ota-requirements.txt
       - name: Installer tests (no device writes)
         run: python -m unittest discover -s installer/tests -v
       - name: Build native portable installer

@@ -783,6 +783,20 @@ var DASH_I18N = {
 	'Wi-Fi 热点': ['Wi-Fi hotspot', 'Wi-Fi erişim noktası'],
 	'重启调制解调器': ['Restart modem', 'Modemi yeniden başlat'],
 	'重启设备': ['Restart device', 'Cihazı yeniden başlat'],
+	"手动输入小区": ["Enter a cell manually", "Hücreyi elle gir"],
+	"制式": ["Radio technology", "Radyo teknolojisi"],
+	"频点（EARFCN / NR-ARFCN）": ["Channel number (EARFCN / NR-ARFCN)", "Kanal numarası (EARFCN / NR-ARFCN)"],
+	"锁定指定小区": ["Lock specified cell", "Belirtilen hücreyi kilitle"],
+	"LTE：EARFCN 0–262143，PCI 0–503；NR：NR-ARFCN 1–3279165，PCI 0–1007。": ["LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007.", "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007."],
+	"应用于当前查看的 SIM，无需小区出现在邻区列表中。请输入频点编号，不是 MHz 频率。": ["Applies to the SIM being viewed; the cell need not appear in the neighbor list. Enter the channel number, not a frequency in MHz.", "Görüntülenen SIM için uygulanır; hücrenin komşu listesinde olması gerekmez. MHz frekansı değil, kanal numarasını girin."],
+	"请输入范围内的十进制频点和 PCI": ["Enter a decimal channel number and PCI within the listed ranges", "Listelenen aralıklarda ondalık kanal numarası ve PCI girin"],
+	"手动锁定小区": ["Manual cell lock", "Elle hücre kilitleme"],
+	"关机或重启": ["Power off or restart", "Kapat veya yeniden başlat"],
+	"请选择关机或重启，执行后所有连接都会断开。": ["Choose power off or restart. All connections will be disconnected.", "Kapatmayı veya yeniden başlatmayı seçin. Tüm bağlantılar kesilecektir."],
+	"关机": ["Power off", "Kapat"],
+	"重启": ["Restart", "Yeniden başlat"],
+	"正在关机…": ["Powering off…", "Kapatılıyor…"],
+	"正在重启…": ["Restarting…", "Yeniden başlatılıyor…"],
 	'切换到 Android': ['Switch to Android', 'Android’e geç'],
 	'邻区': ['Neighbor cells', 'Komşu hücreler'],
 	'制式/频段': ['RAT/Band', 'Teknoloji/Bant'],
@@ -1412,6 +1426,14 @@ html.mud-bootstrap-theme{--surface:var(--background-color-high);--surface-sunken
 .mud-meter i{display:block;height:100%;border-radius:3px}
 .mud-freq{display:flex;align-items:center;font-size:.76rem;font-variant-numeric:tabular-nums;padding:1px 0}
 .mud-freq .mud-k{flex:0 0 2.4em}
+.mud-manual-cell{margin:12px 0;max-width:720px;min-width:0}
+.mud-manual-cell summary{cursor:pointer;padding:8px 0;font-size:.85rem;font-weight:600}
+.mud-manual-cell form{margin:4px 0 12px}
+.mud-manual-cell-fields{display:flex;flex-wrap:wrap;align-items:end;gap:12px}
+.mud-manual-cell-fields label{display:flex;flex:1 1 140px;flex-direction:column;gap:6px;margin:0;min-width:0;font-size:.82rem}
+.mud-manual-cell-fields input,.mud-manual-cell-fields select{box-sizing:border-box;width:100%;max-width:100%;min-width:0;min-height:38px;margin:0;padding:8px 10px;border:1px solid var(--hairline,var(--border,#ccc));border-radius:var(--radius-base,.5rem);background:var(--surface,var(--background,#fff));color:var(--text,#222);font:inherit}
+.mud-manual-cell-fields button{min-height:38px;margin:0;white-space:normal}
+.mud-manual-cell-fields input:focus,.mud-manual-cell-fields select:focus{outline:2px solid var(--brand,var(--primary,#37a));outline-offset:1px}
 .mud-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;border:1px solid var(--hairline,var(--border,#ccc));border-radius:var(--radius-base,.5rem);background:var(--surface,var(--background,#fff));color:var(--text,#222);font-size:.82rem;cursor:pointer;user-select:none}
 .mud-btn:active{transform:scale(.97)}
 .mud-voice-row{align-items:center;gap:12px;padding:8px 0}

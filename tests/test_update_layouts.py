@@ -52,7 +52,11 @@ class Layouts(UpdateBase):
             struct.pack_into('<I',bc,28,zlib.crc32(bc[:28]))
             (run/'mu300/linux-slot').write_text(slot+'\n')
             (run/'mu300/misc-bc-linux-trial.bin').write_bytes(bc)
-            (run/'mu300/misc-bc-android.bin').write_bytes(bc)
+            android=bytearray(bc)
+            android[:4]=b'_b\0\0' if slot=='a' else b'_a\0\0'
+            android[12],android[14]=(0x1e,0x9f) if slot=='a' else (0x9f,0x1e)
+            struct.pack_into('<I',android,28,zlib.crc32(android[:28]))
+            (run/'mu300/misc-bc-android.bin').write_bytes(android)
             for default in ('android','linux',None):
                 conf.unlink(missing_ok=True)
                 if default:conf.write_text(default+'\n')
@@ -65,6 +69,23 @@ class Layouts(UpdateBase):
                 block=after[2048:2080];self.assertEqual(block[12 if slot=='a' else 14],0x4f)
                 self.assertEqual(struct.unpack_from('<I',block,28)[0],zlib.crc32(block[:28]))
                 self.assertEqual((area/'.mu300/boot-tries').read_text(),'0\n')
+            # No role file is needed when the supplied Linux trial block
+            # identifies its slot. Unknown/conflicting roles may not write misc.
+            role=run/'mu300/linux-slot'
+            role.unlink()
+            result=subprocess.run(['bash',str(script),'--trial'],capture_output=True,text=True,timeout=10)
+            self.assertEqual(result.returncode,0,result.stderr)
+            original=misc.read_bytes()
+            role.write_text(('b' if slot=='a' else 'a')+'\n')
+            result=subprocess.run(['bash',str(script),'--trial'],capture_output=True,text=True,timeout=10)
+            self.assertNotEqual(result.returncode,0)
+            self.assertEqual(misc.read_bytes(),original)
+            role.write_text(slot+'\n')
+            (run/'mu300/misc-bc-android.bin').write_bytes(bc)
+            result=subprocess.run(['bash',str(script),'android'],capture_output=True,text=True,timeout=10)
+            self.assertNotEqual(result.returncode,0)
+            self.assertEqual(misc.read_bytes(),original)
+            (run/'mu300/misc-bc-android.bin').write_bytes(android)
 
     def test_root_device_detection_does_not_mount_userdata(self):
         sys=self.root/'sys/class/block'

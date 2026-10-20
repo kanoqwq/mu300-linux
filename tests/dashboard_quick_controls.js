@@ -11,6 +11,7 @@ function fixture(on) {
     }};
     const M = {
         confirmBox(title,body,options) { dialogs.push({title,body,options}); return new Promise(resolve => { decide=resolve; }); },
+        choiceBox(title,body,choices) { dialogs.push({title,body,choices}); return new Promise(resolve => { decide=resolve; }); },
         callAct(op,arg) { requests.push([op,arg]); return new Promise(resolve => { complete=resolve; }); },
         busy(btn,on) { btn.busy=on; }, toast(message,options){toasts.push({message,options});}
     };
@@ -28,7 +29,7 @@ function fixture(on) {
         ['data',true,'data','down'], ['data',false,'data','up'],
         ['radio',true,'radio','off'], ['radio',false,'radio','on'],
         ['wifi',true,'wifi','off'], ['wifi',false,'wifi','on'],
-        ['modem',true,'modem-reset',null], ['reboot',true,'reboot',null], ['android',true,'os','android']
+        ['modem',true,'modem-reset',null], ['android',true,'os','android']
     ];
     for (const [id,on,op,arg] of cases) {
         for (const decision of ['cancel','confirm','unload','detach']) {
@@ -54,6 +55,31 @@ function fixture(on) {
             assert(!f.view._quickPending,id+' left confirmation locked');
         }
     }
+    for (const op of ['poweroff','reboot']) {
+        for (const decision of ['cancel','confirm','unload','detach','error']) {
+            const f=fixture(true), button=f.buttons['#mud-btn-reboot'];
+            button.onclick();
+            assert.equal(f.dialogs.length,1);
+            assert.deepEqual(f.dialogs[0].choices.map(c=>c.value),[undefined,'poweroff','reboot']);
+            assert.equal(f.requests.length,0,'power request before choosing');
+            button.onclick();f.buttons['#mud-btn-data'].onclick();
+            assert.equal(f.dialogs.length,1,'duplicate power chooser');
+            if(decision==='unload') f.view.unload();
+            if(decision==='detach') f.root.isConnected=false;
+            f.decide(decision==='cancel'?undefined:op);await tick();
+            if(decision==='confirm'||decision==='error') {
+                assert.deepEqual(f.requests,[[op,null]],'wrong power operation');
+                button.onclick();assert.equal(f.requests.length,1);
+                assert(button.busy && f.view._quickPending);
+                f.complete(decision==='error'?{ok:0,error:'unavailable'}:{ok:1,started:1,op});await tick();
+                assert(!button.busy && !f.view._quickPending,'power action left busy');
+                assert.equal(f.toasts.at(-1).options.type,decision==='error'?'error':'success');
+            } else {
+                assert.equal(f.requests.length,0,'power executed after '+decision);
+                assert(!f.view._quickPending);
+            }
+        }
+    }
     for(const outcome of ['done','error','leave']) {
         const f=fixture(true),b=f.buttons['#mud-btn-radio'];
         b.onclick();f.decide(true);await tick();
@@ -75,5 +101,5 @@ function fixture(on) {
         if(state==='busy')f.view._wifiBusy=true;
         f.buttons['#mud-btn-wifi'].onclick(); assert.equal(f.dialogs.length,0,state);
     }
-    console.log('PASS: all six quick controls confirmed; on/off, cancellation, leaving view, duplicate clicks, busy cleanup and fixed targets');
+    console.log('PASS: quick controls and power chooser; shutdown/restart, cancellation, view lifecycle, duplicates, RPC errors and busy cleanup');
 })().catch(e=>{console.error(e);process.exitCode=1;});

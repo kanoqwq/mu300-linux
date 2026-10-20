@@ -14,16 +14,25 @@
 export PATH="$PATH:/opt/mu300/busybox-bin"
 set -eu
 CONF=/etc/mu300/default-boot
-LINUX_SLOT=$(cat /run/mu300/linux-slot 2>/dev/null || echo b)
-case $LINUX_SLOT in a|b) ;; *) echo 'invalid Linux slot' >&2; exit 1 ;; esac
+LINUX_SLOT=$(cat /run/mu300/linux-slot 2>/dev/null || true)
 BC_ANDROID=/run/mu300/misc-bc-android.bin
 BC_LINUX=/run/mu300/misc-bc-linux-trial.bin
-if [ "$LINUX_SLOT" = b ]; then
-    [ -s "$BC_ANDROID" ] || BC_ANDROID=/run/mu300/misc-bc-slot-a.bin
-    [ -s "$BC_LINUX" ] || BC_LINUX=/run/mu300/misc-bc-slot-b-trial.bin
-fi
+[ -s "$BC_LINUX" ] || BC_LINUX=/run/mu300/misc-bc-slot-b-trial.bin
+case "$(dd if="$BC_LINUX" bs=1 count=2 2>/dev/null)" in
+    _a) detected_slot=a; android_slot=b ;;
+    _b) detected_slot=b; android_slot=a ;;
+    *) echo 'Linux slot metadata unavailable; boot control unchanged' >&2; exit 1 ;;
+esac
+[ -z "$LINUX_SLOT" ] || [ "$LINUX_SLOT" = "$detected_slot" ] || {
+    echo 'Conflicting Linux slot metadata; boot control unchanged' >&2; exit 1;
+}
+LINUX_SLOT=$detected_slot
+[ -s "$BC_ANDROID" ] || BC_ANDROID=/run/mu300/misc-bc-slot-$android_slot.bin
 [ -s "$BC_ANDROID" ] && [ -s "$BC_LINUX" ] || {
     echo 'boot control blocks for the active slot are unavailable' >&2; exit 1;
+}
+[ "$(dd if="$BC_ANDROID" bs=1 count=2 2>/dev/null)" = "_$android_slot" ] || {
+    echo 'Conflicting Android/Linux slot metadata; boot control unchanged' >&2; exit 1;
 }
 MISC=$(cat /run/mu300/misc-dev 2>/dev/null || readlink -f /dev/block/by-name/misc)
 DEFAULT_ATTEMPTS=5

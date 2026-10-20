@@ -1,0 +1,75 @@
+#!/usr/bin/ucode
+// Stock whole-disk flashing is unsupported; keep configuration backup/restore.
+import { glob, readfile, writefile, rename, unlink } from 'fs';
+let root = ARGV[0] || '';
+let changes = [];
+let marker = '/* unisoc: configuration backups only */';
+let view = root + '/www/luci-static/resources/view/system/flash.js';
+let text = readfile(view);
+if (text != null && index(text, marker) < 0) {
+    // OpenWrt 25.12's installed, minified LuCI view. A changed upstream
+    // layout must be reviewed rather than removing unknown backup controls.
+    let begin = index(text, "o=s.option(form.SectionValue,'actions',form.NamedSection,'actions','actions',_('Flash new firmware image')");
+    if (begin < 0)
+        die('Unknown LuCI flash view; inspect before changing update policy\n');
+    let tail = substr(text, begin);
+    let end = index(tail, "s=m.section(form.NamedSection,'config'");
+    if (end < 0)
+        die('Missing LuCI backup configuration boundary\n');
+    text = substr(text, 0, begin) + marker + '\n' + substr(tail, end);
+    text = replace(text, "_('Flash operations')", "_('Backup')");
+    push(changes, [ view, text ]);
+}
+for (let path in glob(root + '/usr/share/luci/menu.d/*.json')) {
+    let data = json(readfile(path));
+    if (type(data) != 'object') die('Invalid menu: ' + path + '\n');
+    let changed = false;
+    for (let key in keys(data)) {
+        let route = data[key];
+        if (key == 'admin/system/flash' && route.action?.path == 'system/flash') {
+            if (route.title != 'Backup') { route.title = 'Backup'; changed = true; }
+        }
+        else if (key == 'admin/system/attendedsysupgrade' || route.action?.path == 'system/attendedsysupgrade' || (key == 'admin/system/upgrade' && route.action?.path in [ 'system/upgrade', 'system/flash' ])) {
+            delete data[key]; changed = true;
+        }
+    }
+    if (changed) push(changes, [ path, sprintf('%J\n', data) ]);
+}
+let backup = {
+    '/sbin/sysupgrade --list-backup': true,
+    '/sbin/sysupgrade -l': true,
+    '/sbin/sysupgrade --restore-backup /tmp/backup.tar.gz': true
+};
+for (let path in glob(root + '/usr/share/rpcd/acl.d/*.json')) {
+    let data = json(readfile(path));
+    if (type(data) != 'object') die('Invalid ACL: ' + path + '\n');
+    let changed = false;
+    for (let group in keys(data)) {
+        if (group in [ 'luci-app-attendedsysupgrade', 'luci-mod-system-attendedsysupgrade' ]) {
+            delete data[group]; changed = true; continue;
+        }
+        if (group != 'luci-mod-system-flash') continue;
+        for (let access in values(data[group])) {
+            if (type(access) != 'object') continue;
+            for (let name in keys(access.file || {})) {
+                if (name == '/tmp/firmware.bin' || (substr(name, 0, 17) == '/sbin/sysupgrade ' && !backup[name])) {
+                    delete access.file[name]; changed = true;
+                }
+            }
+            let methods = access.ubus?.system;
+            if (type(methods) == 'array' && index(methods, 'validate_firmware_image') >= 0) {
+                access.ubus.system = filter(methods, method => method != 'validate_firmware_image');
+                changed = true;
+            }
+        }
+    }
+    if (changed) push(changes, [ path, sprintf('%J\n', data) ]);
+}
+// Do not write any menu/ACL if the view or input JSON failed validation.
+for (let change in changes) {
+    let temporary = change[0] + '.upgrade-policy.tmp';
+    if (writefile(temporary, change[1]) != length(change[1]) || !rename(temporary, change[0])) {
+        unlink(temporary);
+        die('Could not disable stock flashing: ' + change[0] + '\n');
+    }
+}

@@ -16,11 +16,15 @@ UO=${MU300_UPSTREAM_OUT:-$DEFAULT_UO}
 PLUGIN=${MU300_LUCI_PLUGIN_SRC:-$TOP/openwrt/luci-app-mu300}
 [ -s "$PLUGIN/Makefile" ] || { echo "standalone LuCI plugin missing: $PLUGIN (set MU300_LUCI_PLUGIN_SRC)" >&2; exit 1; }
 OUT=${1:-}
-ROOTFS=$TOP/openwrt/mu300-openwrt-tf-$KERNEL-rootfs.tar.gz
-BOOT=$TOP/work/boot-linux-tf-$KERNEL.img
-GENERIC=$TOP/work/ramdisk-$KERNEL-tf.lz4
-WRAPPED=$TOP/work/Image-$KERNEL.lk
-mkdir -p "$TOP/work"
+PACKAGE_WORK=${MU300_PACKAGE_WORK:-$TOP/work}
+ROOTFS_DIR=${MU300_ROOTFS_OUT_DIR:-$TOP/openwrt}
+mkdir -p "$PACKAGE_WORK" "$ROOTFS_DIR"
+PACKAGE_WORK=$(cd "$PACKAGE_WORK" && pwd)
+ROOTFS_DIR=$(cd "$ROOTFS_DIR" && pwd)
+ROOTFS=$ROOTFS_DIR/mu300-openwrt-tf-$KERNEL-rootfs.tar.gz
+BOOT=$PACKAGE_WORK/boot-linux-tf-$KERNEL.img
+GENERIC=$PACKAGE_WORK/ramdisk-$KERNEL-tf.lz4
+WRAPPED=$PACKAGE_WORK/Image-$KERNEL.lk
 
 # Hybrid layout relocates original deployment files behind a thin Magisk entry;
 # desktop code is not added to the Magisk boot image.
@@ -60,7 +64,7 @@ grep -qx 'CONFIG_LEDS_AW9523B=y' "$UO/kernel.config" || {
 }
 rel=$(strings "$UO/Image" | sed -n 's/^Linux version \([^ ]*\) .*/\1/p' | head -n1)
 case $rel in "$KERNEL".*) ;; *) echo "$UO is kernel '$rel', expected $KERNEL.x" >&2; exit 1 ;; esac
-RELEASE_JSON=$TOP/work/release-$KERNEL.json
+RELEASE_JSON=$PACKAGE_WORK/release-$KERNEL.json
 if [ -n "${MU300_VERSION:-}" ]; then
     VERSION=$(python3 "$TOP/tools/release-identity.py" --profile mu300 --kernel "$rel" --version "$MU300_VERSION" --output "$RELEASE_JSON" --field image_version)
 else
@@ -101,7 +105,7 @@ done
 
 echo "==> OpenWrt rootfs ($rel modules included)"
 MU300_GPU=0 MU300_INPUTS="$IN" MU300_MAINLINE_OUT="$UO" MU300_LUCI_PLUGIN_SRC="$PLUGIN" \
-  MU300_VERSION="$VERSION" MU300_RELEASE_JSON="$RELEASE_JSON" \
+  MU300_VERSION="$VERSION" MU300_RELEASE_JSON="$RELEASE_JSON" MU300_ROOTFS_OUT_DIR="$ROOTFS_DIR" \
   sh "$TOP/openwrt/build-rootfs.sh" "$(basename "$ROOTFS")"
 for f in ./lib/netifd/proto/mu300cell.sh ./lib/netifd/proto/mu300cell-v6.sh \
     ./sbin/block ./lib/libblkid-tiny.so ./etc/init.d/fstab ./etc/mu300/block-mount.build-id \
@@ -176,7 +180,7 @@ python3 "$TOP/boot/build-boot-image.py" \
   --ueventd-perms "$TOP/android-vendor/ueventd-perms.sh" \
   --android-subset "$IN/android-subset" --root-target sd --out "$BOOT" >/dev/null
 
-STAGE=$(mktemp -d "$TOP/work/tf-magisk-stage.XXXXXX")
+STAGE=$(mktemp -d "$PACKAGE_WORK/tf-magisk-stage.XXXXXX")
 trap 'rm -rf "$STAGE"' EXIT
 cp "$TOP/android/magisk/mu300-openwrt-tf/module.prop" \
    "$TOP/android/magisk/mu300-openwrt-tf/customize.sh" \

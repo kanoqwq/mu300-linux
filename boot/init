@@ -156,7 +156,9 @@ detect_linux_slot() {
         linux_slot=$(tr '\000' ' ' < "$src" | sed -n 's/.*androidboot.slot_suffix=_\([ab]\).*/\1/p')
         case $linux_slot in a|b) return ;; esac
     done
-    case $linux_slot in a|b) ;; *) linux_slot=b; log 'stage=slot-unknown (legacy b fallback)' ;; esac
+    linux_slot=
+    log 'stage=slot-unknown boot-partition-writes-disabled'
+    return 1
 }
 find_partitions() {
     for n in $(seq 1 20); do
@@ -168,7 +170,7 @@ find_partitions() {
         mdev -s
     done
     [ -b "$misc" ] || misc=
-    detect_linux_slot
+    detect_linux_slot || { bootdev=; return 1; }
     for u in /sys/class/block/mmcblk*p*/uevent; do
         grep -qx "PARTNAME=boot_$linux_slot" "$u" 2>/dev/null && bootdev=/dev/$(basename "$(dirname "$u")")
     done
@@ -187,6 +189,7 @@ write_misc_bc() {  # write_misc_bc FILE STAGE
     if cmp -s /run/bc-check.bin "$1"; then log "stage=$2 dev=$misc"; else log "stage=$2-MISMATCH dev=$misc"; return 1; fi
 }
 restore_android() {
+    case "$linux_slot" in a|b) ;; *) log 'stage=slot-unknown misc-unchanged'; return 1 ;; esac
     if [ "$linux_slot" = a ]; then
         write_misc_bc /etc/misc-bc-slot-b.bin misc-restored
     else
@@ -347,6 +350,12 @@ EOF
 # server starts right after switch_root), the more reliably the host gets an address.
 load_vendor_modules
 find_partitions
+case "$linux_slot" in
+    a|b) ;;
+    *) setup_usb_gadget
+       log 'stage=slot-unknown rescue-only (no root or radio handoff)'
+       while :; do sleep 1; done ;;
+esac
 # Read the optional LuCI package's USB policy before configfs enumeration.
 # Use the already-mounted TF root: a separate ro,noload peek can miss a new
 # setting still in the ext4 journal, even after the block device appears.

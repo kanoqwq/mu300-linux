@@ -145,7 +145,8 @@ MODEL=$(rd /tmp/sysinfo/model 2>/dev/null)
 [ -n "$MODEL" ] || MODEL=$(cat /proc/device-tree/model 2>/dev/null | tr -d '\0')
 FW=$(sed -n "s/^DISTRIB_DESCRIPTION='\(.*\)'$/\1/p" /etc/openwrt_release 2>/dev/null)
 [ -n "$FW" ] || FW=$(uname -sr)
-PRIVATE_FW=$(rd /etc/mu300/image-version 2>/dev/null)
+PRIVATE_FW=$(jval "$(rd /etc/unisoc-ota/current.json 2>/dev/null)" version)
+[ -n "$PRIVATE_FW" ] || PRIVATE_FW=$(rd /etc/mu300/image-version 2>/dev/null)
 [ -z "$PRIVATE_FW" ] || FW="$PRIVATE_FW ($FW)"
 
 # /proc/stat first line: cpu user nice system idle iowait irq softirq steal ...

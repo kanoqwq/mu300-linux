@@ -245,7 +245,7 @@ return view.extend({
     <button class="mud-btn" id="mud-btn-radio">蜂窝射频</button>
     <button class="mud-btn" id="mud-btn-wifi">Wi-Fi 热点</button>
     <button class="mud-btn warn" id="mud-btn-modem">重启调制解调器</button>
-    <button class="mud-btn warn" id="mud-btn-reboot">重启设备</button>
+    <button class="mud-btn warn" id="mud-btn-reboot">关机或重启</button>
     <button class="mud-btn warn" id="mud-btn-android">切换到 Android</button>
   </div>
 </div>
@@ -329,8 +329,17 @@ return view.extend({
 				{ danger: true }, 'modem-reset', null);
 		};
 		q('btn-reboot').onclick = function() {
-			return confirmAction(this, '重启整个设备', '所有连接会断开。',
-				{ danger: true }, 'reboot', null);
+			var btn = this;
+			if (self._disposed || self._quickPending || btn.disabled) return;
+			self._quickPending = true;
+			return M.choiceBox('关机或重启', '请选择关机或重启，执行后所有连接都会断开。', [
+				{ label: '取消', value: undefined },
+				{ label: '关机', value: 'poweroff', danger: true },
+				{ label: '重启', value: 'reboot', danger: true }
+			]).then(function(op) {
+				if ((op !== 'poweroff' && op !== 'reboot') || self._disposed || !root.isConnected) return;
+				return act(op, null, op === 'poweroff' ? '正在关机…' : '正在重启…', btn);
+			}).finally(function() { self._quickPending = false; });
 		};
 		q('btn-default').onclick = function() {
 			return confirmAction(this, '设为默认启动',

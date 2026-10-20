@@ -44,7 +44,7 @@ function transport(info, options = {}) {
     const fn = async command => {
         commands.push(command);
         if (command.includes('echo SLOT=')) return {success: true, content:
-            `SLOT=${options.slot === undefined ? '_' + info.slot : options.slot}\nMODEL=${options.model || (info.family === 'e5' ? 'E5' : 'MU300')}\nDEVICE=${options.device || 'MU300'}\nPLATFORM=${options.platform || 'ums9620'}\nUNLOCKED=orange`};
+            `SLOT=${options.slot === undefined ? '_' + info.slot : options.slot}\nMODEL=${options.model || (info.family === 'e5' ? 'E5' : 'MU300')}\nDEVICE=${options.device || 'MU300'}\nPLATFORM=${options.platform || 'ums9620'}\nUNLOCKED=${options.unlocked || 'orange'}`};
         if (command.includes('blockdev --getsize64')) return {success: true, content: String(info.size)};
         if (command.includes('if=/dev/block/by-name/misc')) return {success: true, content: options.live || info.live};
         if (command.includes('if=/dev/block/by-name/boot_' + info.other)) return {success: true, content: command.includes('bs=512') ? info.tail : info.head};
@@ -83,8 +83,8 @@ test('recognition accepts current boot families and refuses stock, corrupt and p
         assert.throws(() => api.inspectBoot(info.head, info.tail, 2 ** 20, family));
     }
 });
-test('probe E5 family A and MU family A/B with actual getprop slot', async () => {
-    for (const [family, models, slots] of [['e5', ['E5', 'T551M', 'VIPME M8'], ['a']], ['mu300', ['MU300', 'F50', 'U30AIR', 'V50'], ['a', 'b']]]) {
+test('probe every supported family in either Android slot using actual getprop slot', async () => {
+    for (const [family, models, slots] of [['e5', ['E5', 'T551M', 'VIPME M8', 'T512N', 'ZTE 7546N', 'angelcare K1'], ['a', 'b']], ['mu300', ['MU300', 'F50', 'U30AIR', 'V50'], ['a', 'b']]]) {
         for (const model of models) for (const slot of slots) {
             const info = fixture(family, slot), tr = transport(info, {model, device: model === 'V50' ? 'MU3351' : model});
             const result = await load(tr.fn).probe(); assert.equal(result.slot, slot); assert.equal(result.family, family);
@@ -92,12 +92,18 @@ test('probe E5 family A and MU family A/B with actual getprop slot', async () =>
         }
     }
 });
-test('missing current slot never falls back to misc; unsupported models, E5 B and identical boots stop', async () => {
+test('installed E5-family images do not require an orange verified-boot property', async () => {
+    for (const slot of ['a', 'b']) for (const unlocked of ['green', 'yellow', 'unknown']) {
+        const info = fixture('e5', slot), tr = transport(info, {unlocked, model: 'angelcare K1'});
+        const result = await load(tr.fn).probe(); assert.equal(result.slot, slot); assert.equal(result.family, 'e5');
+    }
+});
+
+test('missing current slot never falls back to misc; unsupported models and identical boots stop', async () => {
     for (const options of [{slot: ''}, {slot: '_c'}, {model: 'FM_U20', device: 'FM_U20'}, {model: 'V50', device: 'MU3351', platform: 'wrong'}, {identical: true}]) {
         const tr = transport(fixture(), options); await assert.rejects(load(tr.fn).probe());
         if ('slot' in options) assert.equal(tr.commands.length, 1);
     }
-    const tr = transport(fixture('e5', 'b')); await assert.rejects(load(tr.fn).probe(), /A 槽/);
 });
 function fixtureFiles(root, info) {
     fs.mkdirSync(path.join(root, 'by'));
@@ -121,8 +127,8 @@ function commandFor(root, info, prefix = '') {
 }
 const posix = process.platform !== 'win32';
 for (const shell of ['bash', 'busybox']) {
-    test(`${shell}: real writes change exactly 32 bytes for both families and MU Android B`, {skip: !posix}, () => {
-        for (const [family, slot] of [['e5', 'a'], ['mu300', 'a'], ['mu300', 'b']]) {
+    test(`${shell}: real writes change exactly 32 bytes for both families and either Android slot`, {skip: !posix}, () => {
+        for (const [family, slot] of [['e5', 'a'], ['e5', 'b'], ['mu300', 'a'], ['mu300', 'b']]) {
             const root = fs.mkdtempSync(path.join(os.tmpdir(), 'switch-plugin-'));
             try {
                 const info = fixture(family, slot), before = fixtureFiles(root, info), script = commandFor(root, info);

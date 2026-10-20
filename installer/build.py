@@ -50,7 +50,8 @@ def main():
         '--hidden-import','lz4.block','--hidden-import','xml.etree.ElementTree','--hidden-import','xml.parsers.expat',
         '--hidden-import','tarfile','--hidden-import','gzip','--hidden-import','zlib','--hidden-import','lzma',
         '--hidden-import','bz2','--hidden-import','http.server','--hidden-import','decimal',
-        '--collect-all','paramiko',HERE/'backend_entry.py')
+        '--add-data', str(HERE.parent/'openwrt/luci-app-unisoc-ota/root/usr/lib/unisoc-ota/engine.py')+os.pathsep+'.',
+        '--collect-all','paramiko','--collect-all','dissect.extfs',HERE/'backend_entry.py')
     artifact = HERE/('artifacts/macos-arm64' if mac else 'artifacts/windows')
     artifact.mkdir(parents=True,exist_ok=True)
     tools = artifact/('tools/macos' if mac else 'tools')

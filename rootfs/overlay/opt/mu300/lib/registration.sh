@@ -5,15 +5,21 @@
 # Stock onSimStatusChanged() treats these ECIND values as a request to read
 # CPIN. They do NOT prove removal: SIM errors and PIN changes also use them.
 mu300_sim_changed() {
-    local slot=$1 line=$2 type value cause extra
+    local slot=$1 line=$2 type value cause extra field
     case "$slot:$line" in 0:+ECIND:*|1:+ECIND:*) ;; *) return 0 ;; esac
     case "$line" in '+ECIND: 3,'*|'+ECIND:3,'*) ;; *) return 0 ;; esac
     line=${line#*:}
     line=$(printf '%s' "$line" | tr -d ' \r\t')
+    # Ready can be 3,0,0,1 after a transient SIM-busy indication. The stock
+    # RIL ignores numeric metadata after cause; CPIN confirms our own slot.
+    case "$line" in ''|,*|*,|*,,*|*[!0-9,]*) return 0 ;; esac
+    for field in $(printf '%s' "$line" | tr ',' ' '); do
+        [ "${#field}" -le 10 ] && [ "$field" -le 4294967295 ] || return 0
+    done
     IFS=, read -r type value cause extra <<EOF
 $line
 EOF
-    [ "$type" = 3 ] && [ -z "$extra" ] || return 0
+    [ "$type" = 3 ] || return 0
     case "$value:$cause" in
         0:|2:|100:|4:|0:[0-9]*|2:[0-9]*|100:[0-9]*|4:[0-9]*|1:2|1:34|1:25|1:1|1:7) ;;
         *) return 0 ;;

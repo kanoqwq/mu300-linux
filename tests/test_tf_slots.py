@@ -25,6 +25,36 @@ def misc_head():
 
 
 class BootBlocks(unittest.TestCase):
+    @unittest.skipIf(os.name=='nt','Requires POSIX shell')
+    def test_init_detects_both_slots_and_refuses_unknown(self):
+        source=(TOP/'boot/init').read_text()
+        function=source[source.index('detect_linux_slot() {'):source.index('\nfind_partitions() {')]
+        for prefix,args,wanted in [(b'_a',b'','a'),(b'_b',b'','b'),
+                                   (b'??',b'androidboot.slot_suffix=_a\0','a'),
+                                   (b'??',b'androidboot.slot_suffix=_b','b'),(b'??',b'','')]:
+            with self.subTest(prefix=prefix,args=args),tempfile.TemporaryDirectory() as temp:
+                root=Path(temp);misc=root/'misc';misc.write_bytes(b'\0'*2048+prefix)
+                dt=root/'bootargs';dt.write_bytes(args);cmd=root/'cmdline';cmd.write_bytes(b'')
+                text=function.replace('/proc/device-tree/chosen/bootargs',str(dt)).replace('/proc/cmdline',str(cmd))
+                script='log(){ :; }; misc='+str(misc)+'; linux_slot=;\n'+text+'\ndetect_linux_slot; r=$?; printf "%s:%s" "$r" "$linux_slot"'
+                result=subprocess.run(['sh','-c',script],capture_output=True,text=True)
+                self.assertEqual(result.stdout,('0:' if wanted else '1:')+wanted)
+
+    def test_cpio_slot_metadata_has_its_parent_directory(self):
+        build=runpy.run_path(str(TOP/'boot/build-boot-image.py'))
+        raw=build['cpio_archive']({'dev'}, {'etc/mu300/linux-slot': (b'a\n', 0o100644)})
+        offset=0;seen=set()
+        while offset<len(raw):
+            self.assertEqual(raw[offset:offset+6],b'070701')
+            fields=[int(raw[offset+6+i*8:offset+14+i*8],16) for i in range(13)]
+            size,namesize=fields[6],fields[11]
+            name=raw[offset+110:offset+110+namesize-1].decode()
+            start=(offset+110+namesize+3)&~3
+            if name=='TRAILER!!!':break
+            if '/' in name:self.assertIn(name.rsplit('/',1)[0],seen)
+            seen.add(name);offset=(start+size+3)&~3
+        self.assertIn('etc/mu300/linux-slot',seen)
+
     def test_both_android_and_linux_blocks_have_valid_crc(self):
         build = runpy.run_path(str(TOP / 'boot/build-boot-image.py'))
         android_a, linux_b, android_b, linux_a = build['bootloader_control'](misc_head())

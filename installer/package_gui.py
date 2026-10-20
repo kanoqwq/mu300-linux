@@ -17,14 +17,15 @@ def digest(path):
 
 
 def sources():
-    paths = [HERE/n for n in ('backend_entry.py','build.py','package_gui.py','platform-tools.json','platform-tools-macos.json','GUIDE.md')]
+    paths = [HERE/n for n in ('backend_entry.py','build.py','package_gui.py','platform-tools.json','platform-tools-macos.json','GUIDE.md','ota-tool.py','stage-ota.py','build-ota.py','ota-requirements.txt')]
     paths += list((HERE/'backend').glob('*.py'))
+    paths += [HERE.parent/'openwrt/luci-app-unisoc-ota/root/usr/lib/unisoc-ota/engine.py']
     paths += [p for p in (HERE/'ui/src').rglob('*') if p.is_file()]
-    paths += [HERE/'ui'/n for n in ('package.json','package-lock.json','vite.config.ts','tailwind.config.js','postcss.config.js','tsconfig.json','index.html','rust-toolchain.toml')]
+    paths += [HERE/'ui'/n for n in ('package.json','package-lock.json','vite.config.ts','tailwind.config.js','postcss.config.js','tsconfig.json','index.html','diff.html','ota.html','rust-toolchain.toml')]
     paths += [HERE/'ui/src-tauri'/n for n in ('Cargo.toml','Cargo.lock','build.rs','tauri.conf.json','src/main.rs','capabilities/default.json','icons/icon.ico','icons/icon.icns','icons/icon.png')]
     # Native Windows and macOS checkouts must identify the same source revision.
-    text = {'.py','.ts','.tsx','.json','.toml','.rs','.js','.html','.md','.css','.lock'}
-    return {p.relative_to(HERE).as_posix(): hashlib.sha256(p.read_bytes().replace(b'\r\n', b'\n')).hexdigest()
+    text = {'.py','.ts','.tsx','.json','.toml','.rs','.js','.html','.md','.css','.lock','.txt'}
+    return {os.path.relpath(p,HERE).replace('\\','/'): hashlib.sha256(p.read_bytes().replace(b'\r\n', b'\n')).hexdigest()
             if p.suffix in text else digest(p) for p in sorted(paths)}
 
 

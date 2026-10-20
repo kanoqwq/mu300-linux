@@ -1,0 +1,8 @@
+{
+  "admin/system/unisoc-ota": {
+    "title": "系统补丁 / System patches",
+    "order": 65,
+    "action": {"type": "view", "path": "system/unisoc-ota"},
+    "depends": {"acl": ["luci-app-unisoc-ota"]}
+  }
+}

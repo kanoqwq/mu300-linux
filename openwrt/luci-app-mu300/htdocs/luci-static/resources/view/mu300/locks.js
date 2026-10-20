@@ -99,6 +99,19 @@ return view.extend({
     <button class="mud-btn" id="mud-lock-cell">锁定当前服务小区</button>
     <button class="mud-btn warn" id="mud-lock-cell-off">解除小区锁定</button>
   </div>
+  <details class="mud-manual-cell">
+    <summary>手动输入小区</summary>
+    <form id="mud-lock-manual-form" novalidate>
+      <div class="mud-manual-cell-fields">
+        <label><span>制式</span><select id="mud-lock-manual-rat"><option value="lte">LTE (4G)</option><option value="nr">NR (5G)</option></select></label>
+        <label><span>频点（EARFCN / NR-ARFCN）</span><input id="mud-lock-manual-frequency" type="text" inputmode="numeric" autocomplete="off" required></label>
+        <label><span>PCI</span><input id="mud-lock-manual-pci" type="text" inputmode="numeric" autocomplete="off" required></label>
+        <button type="submit" class="mud-btn" id="mud-lock-manual-apply">锁定指定小区</button>
+      </div>
+      <div class="mud-note">LTE：EARFCN 0–262143，PCI 0–503；NR：NR-ARFCN 1–3279165，PCI 0–1007。</div>
+      <div class="mud-note">应用于当前查看的 SIM，无需小区出现在邻区列表中。请输入频点编号，不是 MHz 频率。</div>
+    </form>
+  </details>
   <div class="mud-scroll">
   <table class="mud-table"><thead><tr><th>制式/频段</th><th>PCI</th><th>频点</th><th>RSRP</th><th>RSRQ</th><th>SINR</th><th></th></tr></thead>
   <tbody id="mud-neigh"><tr><td colspan="7" style="color:var(--text-muted,var(--text-light,#777))">--</td></tr></tbody></table>
@@ -131,11 +144,11 @@ return view.extend({
 			opts = opts || {};
 			var slot = M.selectedSlot();
 			opts.slot = slot;
-			M.confirmBox(opts.title || ('应用「' + what + '」？'),
+			return M.confirmBox(opts.title || ('应用「' + what + '」？'),
 				opts.message || (opts.noSfun ? '' : '协议栈会重启（SFUN），蜂窝断开约半分钟。'),
 				{ danger: !opts.noSfun, okText: opts.okText || '应用' })
 				.then(function(go) {
-			if (self._disposed || !go) return;
+			if (self._disposed || !go || !root.isConnected) return;
 			if (M.selectedSlot() !== slot) { self.note('查看卡槽已改变，请重新确认操作', 'info'); return; }
 			applyNow(kind, val, what, opts); });
 		};
@@ -273,6 +286,27 @@ return view.extend({
 		};
 		this.Q('lock-cell').onclick = function() { apply('cell', 'auto', '锁定当前服务小区', { btn: this }); };
 		this.Q('lock-cell-off').onclick = function() { apply('cell', 'off', '解除小区锁定', { btn: this }); };
+
+		this.Q('lock-manual-form').onsubmit = function(ev) {
+			ev.preventDefault();
+			if (self._disposed || self._applying || self._manualConfirm) return;
+			var rat = self.Q('lock-manual-rat').value;
+			var frequency = self.Q('lock-manual-frequency').value.trim();
+			var pci = self.Q('lock-manual-pci').value.trim();
+			var nr = rat === 'nr';
+			if ((rat !== 'lte' && !nr) || !/^[0-9]{1,7}$/.test(frequency) || !/^[0-9]{1,4}$/.test(pci) ||
+				Number(frequency) < (nr ? 1 : 0) || Number(frequency) > (nr ? 3279165 : 262143) ||
+				Number(pci) > (nr ? 1007 : 503)) {
+				self.note('请输入范围内的十进制频点和 PCI', 'error');
+				return;
+			}
+			var value = rat + ':' + Number(frequency) + ',' + Number(pci);
+			self._manualConfirm = true;
+			return apply('cell', value, M.translate('手动锁定小区') + ' ' + (nr ? 'NR' : 'LTE') +
+				' / ' + Number(frequency) + ' / PCI ' + Number(pci), {btn:self.Q('lock-manual-apply')})
+				.finally(function() { self._manualConfirm = false; });
+		};
+
 		this.Q('lock-reset').onclick = function() {
 			apply('reset', 'auto', '清除当前 SIM 全部锁定', {
 				btn: this, okText: '确认清除',

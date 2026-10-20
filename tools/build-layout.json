@@ -1,0 +1,11 @@
+{
+  "format": 1,
+  "inputs": "{repo}/../mu300-linux/work",
+  "desktop_tools": "{repo}/work/v50-20261014/installer-final/desktop/files/boot/repair",
+  "block_apk": "{repo}/work/block-mount-mu300.apk",
+  "wifi_apks": "{repo}/work/wifi-sae",
+  "profiles": {
+    "mu300-7.2": {"kernel": "{workspace}/kernels/mu300-7.2.8"},
+    "mu300-6.18": {"kernel": "{workspace}/kernels/mu300-6.18.54"}
+  }
+}

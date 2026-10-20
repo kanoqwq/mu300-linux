@@ -19,17 +19,23 @@ mu300_sim_changed 0 '+ECIND: 3,1,2'
 mu300_sim_changed 1 '+ECIND: 3,2'
 mu300_sim_changed 1 '+ECIND: 3,4'
 mu300_sim_changed 0 '+ECIND: 3,100'
+mu300_sim_changed 0 '+ECIND: 3,0,0,1'
+mu300_sim_changed 1 '+ECIND: 3,1,2,0,1'
 mu300_sim_changed 0 '+ECIND: 2,1,2'
 mu300_sim_changed 0 '+ECIND: 3,1,99'
 mu300_sim_changed 0 '+ECIND: 3,2junk'
-mu300_sim_changed 0 '+ECIND: 3,1,2,7'
+mu300_sim_changed 0 '+ECIND: 3,1,2,7junk'
+mu300_sim_changed 0 '+ECIND: 3,0,0,-1'
+mu300_sim_changed 0 '+ECIND: 3,0,0,4294967296'
+mu300_sim_changed 0 '+ECIND: 3,0,0,'
+mu300_sim_changed 0 '+ECIND: 3,0,,1'
 mu300_sim_changed 2 '+ECIND: 3,2'
 wait
 '''
             cache = self.tmp / 'sim'
             r = self.sh(shell, source, MU300_REGISTRATION_DIR=cache)
             self.assertEqual(r.returncode, 0, r.stderr)
-            self.assertEqual(len(events.read_text().splitlines()), 4)
+            self.assertEqual(len(events.read_text().splitlines()), 6)
             self.assertFalse(cache.exists())
 
     def test_confirmed_cpin_scopes_and_unknown_reply(self):

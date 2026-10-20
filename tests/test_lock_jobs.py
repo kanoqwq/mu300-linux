@@ -741,6 +741,19 @@ print('OK')
                 self.assertNotEqual(r.returncode, 0, (kind,val))
                 self.assertEqual((self.tmp / 'commands').read_text(), '')
 
+    def test_manual_cell_channel_boundaries(self):
+        for shell in self.each_shell():
+            for value in ('lte:0,0', 'lte:262143,503', 'nr:1,0', 'nr:3279165,1007'):
+                self.reset()
+                result = self.apply(shell, 'cell', value)
+                self.assertEqual(result.returncode, 0, (value, result.stderr))
+                self.assertIn(value, (self.state / 'cell').read_text().splitlines())
+            for value in ('nr:0,0', 'lte:262144,0', 'nr:3279166,0', 'lte:1,-1', 'nr:1,1008'):
+                self.reset()
+                result = self.apply(shell, 'cell', value)
+                self.assertNotEqual(result.returncode, 0, value)
+                self.assertEqual((self.tmp / 'commands').read_text(), '')
+
     def test_duplicate_bands_and_multi_rat_cells(self):
         for shell in self.each_shell():
             self.reset()

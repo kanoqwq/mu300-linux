@@ -1,7 +1,7 @@
 //<script>
 /*
- * OpenWrt system switch v4 — Minikano
- * Android web-panel plugin; E5/T551M/VIPME M8 and MU300/F50/V50/U30Air.
+ * OpenWrt system switch v5 — Minikano
+ * Android web-panel plugin; all supported E5-family and MU300-family models.
  * Select the installed OpenWrt for the next boot, preserving default policy.
  * Write only misc[2048:2080]. No root mount, boot flash or boot-chain sync.
  * Shared with mu300-linux/android/magisk/webui-plugins/mu300-system-switch.js.
@@ -85,8 +85,7 @@
     const probe = async () => {
         const result = await run('set -e; [ "$(id -u)" = 0 ]; [ -n "$(getprop ro.build.version.release)" ]; ' +
             'echo SLOT=$(getprop ro.boot.slot_suffix); echo MODEL=$(getprop ro.product.model); ' +
-            'echo DEVICE=$(getprop ro.product.device); echo PLATFORM=$(getprop ro.board.platform); ' +
-            'echo UNLOCKED=$(getprop ro.boot.verifiedbootstate)');
+            'echo DEVICE=$(getprop ro.product.device); echo PLATFORM=$(getprop ro.board.platform)');
         if (!result.ok) throw new Error('请在 Android 中打开插件，并授予网页管理面板 root 权限');
         const values = {};
         for (const line of result.text.split(/\r?\n/)) {
@@ -96,13 +95,12 @@
         if (!/^_[ab]$/.test(values.SLOT || '')) throw new Error('无法确定当前 Android 槽位，已取消；不会使用 misc 猜测');
         const slot = values.SLOT.slice(1), names = [values.MODEL || '', values.DEVICE || ''].map(name => name.toUpperCase());
         let family;
-        if (['E5', 'T551M', 'VIPME M8'].includes(values.MODEL)) family = 'e5';
+        if (['E5', 'T551M', 'VIPME M8', 'T512N', 'ZTE 7546N', 'ANGELCARE K1'].some(model => names.includes(model))) family = 'e5';
         else if (names.includes('V50') || names.includes('MU3351')) {
             if (!names.includes('V50') || !names.includes('MU3351') || values.PLATFORM !== 'ums9620') throw new Error('V50 的型号或平台信息不匹配');
             family = 'mu300';
         } else if (/U30.?AIR|MU300|F50/i.test(names.join('\n'))) family = 'mu300';
         else throw new Error('此机型不在两个项目支持范围内，未切换');
-        if (family === 'e5' && (slot !== 'a' || values.UNLOCKED !== 'orange')) throw new Error('E5 系列要求已解锁且 Android 运行在 A 槽');
         const live = await readHex(MISC, 2048, 32);
         control(live, slot);
         const other = slot === 'a' ? 'b' : 'a', target = '/dev/block/by-name/boot_' + other;
