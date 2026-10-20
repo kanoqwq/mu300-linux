@@ -29,7 +29,7 @@ jobs:
       - name: Rust build toolchain
         run: rustup toolchain install 1.90.0 --profile minimal
       - name: Python build dependencies
-        run: python -m pip install pyinstaller paramiko lz4
+        run: python -m pip install pyinstaller paramiko lz4 -r installer/ota-requirements.txt
       - name: State and recovery tests (no device writes)
         run: python -m unittest discover -s installer/tests -v
       - name: Build portable release

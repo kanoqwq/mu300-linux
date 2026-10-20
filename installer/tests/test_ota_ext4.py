@@ -16,9 +16,19 @@ from backend.ota_engine import Patch
 
 
 class Ext4Tests(unittest.TestCase):
-    @unittest.skipUnless(os.name=='nt', 'Windows userspace ext4 reader integration with WSL-created fixture')
     def test_e5_ext4_and_symlink_reader(self):
+        if os.name == 'nt':
+            try:
+                available = subprocess.run(['wsl', '-d', 'Ubuntu-22.04', '--', 'true'],
+                                           capture_output=True, timeout=10).returncode == 0
+            except (OSError, subprocess.TimeoutExpired):
+                available = False
+            if not available:
+                self.skipTest('Creating the Windows ext4 test fixture requires Ubuntu-22.04 in WSL')
+        elif not shutil.which('mke2fs'):
+            self.skipTest('Creating the ext4 test fixture requires mke2fs')
         repo=Path(__file__).resolve().parents[2]
+        (repo/'work').mkdir(exist_ok=True)
         with tempfile.TemporaryDirectory(prefix='ota-test-',dir=repo/'work') as d:
             d=Path(d)
             for i in (1,2):
@@ -28,8 +38,13 @@ class Ext4Tests(unittest.TestCase):
                 (source/'etc/config/network').write_bytes(('user '+str(i)).encode())
                 image=release/'root.ext4'
                 linux=lambda p:'/mnt/'+p.drive[0].lower()+p.as_posix()[2:]
-                subprocess.run(['wsl','-d','Ubuntu-22.04','--','ln','-s','example',linux(source/'usr/lib/link')],check=True,capture_output=True)
-                subprocess.run(['wsl','-d','Ubuntu-22.04','--','mke2fs','-q','-t','ext4','-F','-d',linux(source),linux(image),'16M'],check=True,capture_output=True)
+                if os.name == 'nt':
+                    subprocess.run(['wsl','-d','Ubuntu-22.04','--','ln','-s','example',linux(source/'usr/lib/link')],check=True,capture_output=True)
+                    command = ['wsl','-d','Ubuntu-22.04','--','mke2fs','-q','-t','ext4','-F','-d',linux(source),linux(image),'16M']
+                else:
+                    (source/'usr/lib/link').symlink_to('example')
+                    command = ['mke2fs','-q','-t','ext4','-F','-d',str(source),str(image),'16M']
+                subprocess.run(command,check=True,capture_output=True)
                 files=release/'files';files.mkdir()
                 with image.open('rb') as src,gzip.open(files/'openwrt.ext4.gz','wb') as dest:shutil.copyfileobj(src,dest)
                 image.unlink()

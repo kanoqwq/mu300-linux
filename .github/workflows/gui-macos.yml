@@ -3,6 +3,12 @@ name: Apple Silicon installer
 on:
   workflow_call:
   workflow_dispatch:
+    inputs:
+      runner:
+        description: Native Apple Silicon runner
+        type: choice
+        options: [macos-15, macos-14]
+        default: macos-15
   push:
     branches: ['build/macos-*']
 
@@ -11,7 +17,7 @@ permissions:
 
 jobs:
   macos:
-    runs-on: macos-15
+    runs-on: ${{ inputs.runner || 'macos-15' }}
     timeout-minutes: 45
     env:
       MACOSX_DEPLOYMENT_TARGET: '11.0'
