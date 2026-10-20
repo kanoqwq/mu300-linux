@@ -112,6 +112,36 @@ class FormatTests(unittest.TestCase):
 
 
 class GenerationTests(unittest.TestCase):
+    def test_boot_changes_do_not_block_file_patch_export(self):
+        with tempfile.TemporaryDirectory() as d:
+            d=Path(d)
+            mu_release(d/'a','mu300-r1',boot=b'old boot')
+            mu_release(d/'b','mu300-r2',{'usr/lib/test':b'new'},boot=b'new boot')
+            result=analyze(d/'a',d/'b',d/'patch.ota')
+            self.assertTrue(result['can_export'],result['blockers'])
+            with Patch(d/'patch.ota') as patch:
+                self.assertEqual(patch.manifest['operations'][0]['path'],'usr/lib/test')
+
+    def test_kernel_version_labels_do_not_block_file_patch_export(self):
+        with tempfile.TemporaryDirectory() as d:
+            d=Path(d)
+            mu_release(d/'a','mu300-r1')
+            mu_release(d/'b','mu300-r2',{'usr/lib/test':b'new'},boot=b'another boot')
+            meta=d/'b/desktop/release.json'
+            values=json.loads(meta.read_text());values['kernel_release']='6.18.54'
+            meta.write_text(json.dumps(values))
+            result=analyze(d/'a',d/'b',d/'patch.ota')
+            self.assertTrue(result['can_export'],result['blockers'])
+
+    def test_first_engine_install_reports_missing_bootstrap(self):
+        with tempfile.TemporaryDirectory() as d:
+            d=Path(d)
+            mu_release(d/'a','mu300-r1')
+            mu_release(d/'b','mu300-r2',{'usr/lib/test':b'new','usr/lib/unisoc-ota/engine.py':b'engine'})
+            result=analyze(d/'a',d/'b')
+            self.assertFalse(result['can_export'])
+            self.assertTrue(any('First-time OTA installation:' in b for b in result['blockers']))
+
     @unittest.skipUnless(os.name=='posix','Linux release staging permissions')
     def test_stage_built_in_plugin_and_preserve_state(self):
         import runpy
@@ -197,14 +227,6 @@ class GenerationTests(unittest.TestCase):
                         if p.is_file():out.write(p,'release/'+p.relative_to(root).as_posix())
             self.assertTrue(analyze(*archives)['can_export'])
 
-    def test_kernel_change_blocks_export(self):
-        with tempfile.TemporaryDirectory() as d:
-            d=Path(d);mu_release(d/'a','mu300-r1');mu_release(d/'b','mu300-r2',{'usr/lib/test':b'new'},boot=b'newboot')
-            result=analyze(d/'a',d/'b')
-            self.assertFalse(result['can_export'])
-            with self.assertRaises(ValueError):analyze(d/'a',d/'b',d/'p.ota')
-            self.assertFalse((d/'p.ota').exists())
-
     def test_corrupt_full_release_rejected(self):
         with tempfile.TemporaryDirectory() as d:
             d=Path(d);mu_release(d/'a','mu300-r1');(d/'a/payload/boot-linux.img').write_bytes(b'bad')
@@ -234,6 +256,16 @@ class EngineTests(unittest.TestCase):
         self.assertEqual((self.root/'usr/lib/test').read_bytes(),b'new')
         self.assertEqual((self.root/'usr/lib/extra-plugin').read_bytes(),b'keep')
         self.assertEqual((self.root/'etc/config/network').read_bytes(),b'user')
+        self.assertEqual(self.e.identity()['version'],'e5-r2')
+
+    def test_different_kernel_label_applies_without_relabeling_device_kernel(self):
+        self.m['kernel_release']='7.2.8-different'
+        package(self.p,self.m)
+        with Patch(self.p) as patch:
+            self.assertTrue(self.e.inspect(patch)['applicable'])
+            self.assertEqual(self.e.apply(patch)['status'],'complete')
+        self.assertEqual((self.root/'usr/lib/test').read_bytes(),b'new')
+        self.assertEqual(self.e.identity()['kernel_release'],'6.18.54-e5-test')
         self.assertEqual(self.e.identity()['version'],'e5-r2')
 
     def test_conflict_does_not_mutate(self):

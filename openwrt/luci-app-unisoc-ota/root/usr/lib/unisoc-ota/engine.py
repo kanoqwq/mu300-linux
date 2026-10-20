@@ -277,11 +277,9 @@ class Engine:
         m = patch.manifest
         identity = self.identity()
         for key, expected in (('family', m['family']), ('profile', m['profile']),
-                              ('version', m['base_version']), ('kernel_release', m['kernel_release'])):
+                              ('version', m['base_version'])):
             if identity.get(key) != expected:
                 raise ValueError('Device/base mismatch: ' + key)
-        if self.root == Path('/') and os.uname().release != m['kernel_release']:
-            raise ValueError('Running kernel differs from release identity')
         conflicts, backup, incoming = [], 0, 0
         package_conflicts = []
         db = self.root / 'lib/apk/db/installed'
@@ -402,6 +400,9 @@ class Engine:
             check = self.inspect(patch)
             if not check['applicable']:
                 raise ValueError('Conflicting files/packages or insufficient space: ' + ', '.join((check['conflicts'] + check['package_conflicts'])[:20]))
+            # File hotfixes do not flash boot. Keep the actual installed kernel
+            # identity even when the selected target release has another label.
+            kernel_release = self.identity()['kernel_release']
             journal = self.state / 'journal.json'
             # Preserve the preceding transaction's recovery data until the new
             # journal is durable. A crash during backup must not invalidate it.
@@ -442,7 +443,7 @@ class Engine:
                         raise ValueError('Written file verification failed: ' + op['path'])
                     progress(i + 1, len(ops), op['path'])
                 identity = dict(family=patch.manifest['family'], profile=patch.manifest['profile'],
-                                version=patch.manifest['target_version'], kernel_release=patch.manifest['kernel_release'])
+                                version=patch.manifest['target_version'], kernel_release=kernel_release)
                 atomic_json(self.state / 'current.json', identity)
                 data['status'] = 'complete'
                 atomic_json(journal, data)

@@ -18,6 +18,18 @@ function Studio() {
   const [en,setEn] = useState(localStorage.getItem('language') === 'en');
   const [dark,setDark] = useState(matchMedia('(prefers-color-scheme: dark)').matches);
   const tr = (zh:string,english:string) => en ? english : zh;
+  const explainBlocker = (message:string) => {
+    if (en) return message;
+    const reasons:[string,string][] = [
+      ['First-time OTA installation: the old release has no OTA engine; bootstrap migration is not implemented','旧版没有 OTA 引擎；当前工具尚未实现首次安装 OTA 环境的迁移流程。'],
+      ['Core runtime/module/updater changed; use the full installer: ','核心运行库、模块或更新器变化，当前工具尚不能更新：'],
+      ['Installed package set changed; dependency migration is not implemented: ','基础软件包集合变化，当前工具尚未实现依赖迁移（新增／移除数量及软件包）：'],
+      ['Package ABI/dependencies changed: ','软件包 ABI 或依赖变化：'],
+      ['No hotfixable system files changed','没有可生成文件热补丁的系统变更。'],
+    ];
+    for (const [prefix,label] of reasons) if (message.startsWith(prefix)) return label+message.slice(prefix.length);
+    return message;
+  };
   const [old,setOld] = useState(''), [next,setNext] = useState('');
   const [analysis,setAnalysis] = useState<Analysis>();
   const [patch,setPatch] = useState(''), [manifest,setManifest] = useState<Manifest>();
@@ -79,13 +91,13 @@ function Studio() {
       <Button className="ota-wide" disabled={blocked || !old || !next} onClick={()=>void work(async()=>{const r=await request<Analysis>('ota_analyze',{old,new:next});setAnalysis(r);})}>{busy?<LoaderCircle className="animate-spin" size={18}/>:<GitCompareArrows size={18}/>} {tr('分析差异','Analyze changes')}</Button></>
       :<><button className="ota-picker" disabled={blocked} onClick={()=>void pick('patch')}><FileArchive/><span>{patch || tr('选择 .ota 差异包','Select .ota patch')}</span><FolderOpen size={18}/></button><label className="ota-label">{tr('设备管理地址','Device management address')}</label><input value={host} disabled={blocked} onChange={e=>{setHost(e.target.value);setReview(undefined);}}/><label className="ota-label">SSH root {tr('密码','password')}</label><input type="password" value={password} disabled={blocked} onChange={e=>{setPassword(e.target.value);setReview(undefined);}} autoComplete="off"/>
       <Button className="ota-wide" disabled={blocked || !patch || !host} onClick={()=>void work(async()=>{setReview(await request<Review>('ota_probe',{host,password,path:patch}));})}><ShieldCheck size={18}/>{tr('连接并检查','Connect and review')}</Button><Button variant="ghost" className="ota-wide" disabled={busy || !host} onClick={()=>void work(async()=>{const s=await request<Status>('ota_status',{host,password});setRunning(s.job?.status==='running');setSuccess(JSON.stringify(s));})}>{tr('重新检查设备状态','Check device status')}</Button></>}
-    </section><section className="ota-card"><h2><span className="ota-number">2</span>{tr('检查并继续','Review and continue')}</h2>
+    </section><section className="ota-card ota-result"><h2><span className="ota-number">2</span>{tr('检查并继续','Review and continue')}</h2><div className="ota-result-body" tabIndex={0} aria-label={tr('检查结果','Review results')}>
       {analysis || manifest?<><div className="ota-release"><small>{tr('目标设备','Target profile')}</small><strong>{(analysis?.manifest || manifest)!.profile}</strong><small>{(analysis?.manifest || manifest)!.kernel_release}</small></div><p className="ota-versions">{(analysis?.manifest || manifest)!.base_version}<ArrowRight size={16}/>{(analysis?.manifest || manifest)!.target_version}</p></>:<div className="ota-empty"><ShieldCheck size={42}/><p>{tr('选择文件后，在这里查看版本与兼容检查结果。','Select files to review versions and compatibility here.')}</p></div>}
       {analysis && <><div className="ota-stats"><div><strong>{analysis.files}</strong><small>{tr('文件变更','Changed files')}</small></div><div><strong>{size(analysis.payload_bytes)}</strong><small>{tr('未压缩载荷','Uncompressed payload')}</small></div><div><strong>{analysis.added} / {analysis.removed}</strong><small>{tr('新增 / 删除','Added / removed')}</small></div></div>
-        {!!analysis.blockers.length && <div className="ota-error">{analysis.blockers.map((b,i)=><p key={i}>{b}</p>)}</div>}<details className="ota-files"><summary>{tr('查看文件清单','View file list')}</summary>{analysis.manifest.operations.map(o=><div key={o.path}>{o.before?(o.after?'~':'−'):'+'} {o.path}</div>)}</details>
+        {!!analysis.blockers.length && <div className="ota-error ota-blockers" tabIndex={0} role="region" aria-label={tr('无法生成的原因','Reasons export is unavailable')}>{analysis.blockers.map((b,i)=><p key={i}>{explainBlocker(b)}</p>)}</div>}<details className="ota-files"><summary>{tr('查看文件清单','View file list')}</summary>{analysis.manifest.operations.map(o=><div key={o.path}>{o.before?(o.after?'~':'−'):'+'} {o.path}</div>)}</details>
         <Button className="ota-wide" disabled={blocked || !analysis.can_export} onClick={()=>void work(async()=>{const output=await native('save_ota');if(!output)return;const r=await request<Analysis>('ota_export',{output});setSuccess(tr('已生成差异包：','Patch saved: ')+r.output);})}><Upload size={18}/>{tr('导出差异包','Export patch')}</Button></>}
       {review && <><p>{tr('所需空间 / 可用空间：','Required / available: ')}{size(review.check.required_bytes)} / {size(review.check.free_bytes)}</p>{!![...review.check.conflicts,...review.check.package_conflicts].length && <div className="ota-error">{tr('本地文件或依赖冲突，未写入：','Local file or dependency conflicts; nothing written: ')}{[...review.check.conflicts,...review.check.package_conflicts].join(', ')}</div>}<Button className="ota-wide" disabled={blocked || !review.check.applicable} onClick={()=>void work(async()=>{await request('ota_apply',{host,password,token:review.token});setRunning(true);setReview(undefined);})}><PackageCheck size={18}/>{tr('确认应用此补丁','Apply reviewed patch')}</Button></>}
-    </section></div>
+    </div></section></div>
     {(busy || running) && <div className="ota-notice"><LoaderCircle className="animate-spin" size={18}/><span>{running?tr('设备正在写入，关闭电脑更新器不会终止设备事务。','Device is writing. Closing this app does not cancel its transaction.'):tr('正在处理，请稍候…','Processing…')}<small>{progress}</small></span></div>}
     {error && <div className="ota-error" role="alert"><CircleAlert size={18}/>{error}</div>}{success && <div className="ota-notice" role="status"><CheckCircle2 size={18}/><span>{success}</span></div>}
     <footer className="ota-footer"><ShieldCheck size={16}/>{tr('保留配置、额外插件和用户数据。检测到本地冲突时停止，写入前保留恢复副本。仅导入可信来源的补丁。','Settings, extra packages and user data are retained. Local conflicts stop the update. Recovery copies precede writes. Import trusted patches only.')}</footer>

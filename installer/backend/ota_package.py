@@ -165,11 +165,6 @@ class Release:
         for k in ('image_version', 'profile', 'kernel_release', 'openwrt'):
             if not isinstance(self.meta.get(k), str):
                 raise ValueError('Full release has no versioned ' + k)
-        # Hash the meaningful boot as a whole; any initramfs change needs the
-        # full installer until a bound, offline kernel transaction is supported.
-        with self.open(self.boot_name) as f:
-            self.boot_hash = digest(f)
-
     def exists(self, name):
         return self.prefix + name in self.files.namelist() if self.files else (self.source / name).is_file()
 
@@ -221,8 +216,9 @@ def compare(old, new):
         if old.meta[k] != new.meta[k]:
             raise ValueError('Incompatible full releases: ' + k)
     operations, preserved, blockers = [], [], []
-    if old.meta['kernel_release'] != new.meta['kernel_release'] or old.boot_hash != new.boot_hash:
-        blockers.append('Kernel/boot changed: use the full installer for this release')
+    if ('usr/lib/unisoc-ota/engine.py' not in old.entries and
+            'usr/lib/unisoc-ota/engine.py' in new.entries):
+        blockers.append('First-time OTA installation: the old release has no OTA engine; bootstrap migration is not implemented')
     for name in sorted(set(old.entries) | set(new.entries)):
         before, after = old.entries.get(name), new.entries.get(name)
         if before == after:
@@ -247,7 +243,11 @@ def compare(old, new):
             blockers.append('Package database format changed')
     owned = {'luci-app-t551m', 'luci-app-mu300'}
     if set(old.packages) != set(new.packages):
-        blockers.append('Installed package set changed; use the full installer')
+        added = sorted(set(new.packages) - set(old.packages))
+        removed = sorted(set(old.packages) - set(new.packages))
+        blockers.append('Installed package set changed; dependency migration is not implemented: '
+                        f'{len(added)} added, {len(removed)} removed; '
+                        + ', '.join((added + removed)[:8]))
     for name in sorted(set(old.packages) & set(new.packages)):
         a, b = old.packages[name], new.packages[name]
         if name in owned:
