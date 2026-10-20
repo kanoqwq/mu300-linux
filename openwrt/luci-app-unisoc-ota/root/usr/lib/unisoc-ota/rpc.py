@@ -20,6 +20,32 @@ JOB = STATE / 'job.json'
 METHODS = {'status': {}, 'inspect': {}, 'start': {'id':''}, 'rollback': {}, 'reboot': {}}
 
 
+def activate_rpc():
+    """Register newly installed plugins without restarting rpcd or its sessions."""
+    root = Path(ROOT or '/')
+    if not (root/'etc/init.d/rpcd').is_file():
+        return {'status': 'deferred', 'error': 'rpcd service is unavailable'}
+    prefix = ['/ota/busybox', 'chroot', str(root)] if os.environ.get('UNISOC_OTA_RAM') else []
+    try:
+        reload = subprocess.run(prefix+['/etc/init.d/rpcd', 'reload'], capture_output=True, text=True, timeout=15)
+        if reload.returncode:
+            raise ValueError((reload.stderr or reload.stdout)[-1000:])
+        deadline = time.monotonic()+5
+        while True:
+            probe = subprocess.run(prefix+['/bin/sh', '-c', 'ubus call unisoc-ota status'], capture_output=True, text=True, timeout=3)
+            if not probe.returncode:
+                data = json.loads(probe.stdout)
+                if 'identity' in data and not data.get('error'):
+                    return {'status': 'ready'}
+            if time.monotonic() >= deadline:
+                raise ValueError('unisoc-ota RPC did not register after reload')
+            time.sleep(.1)
+    except Exception as error:
+        # Files are already committed. A reload error must not be reported as
+        # a failed filesystem transaction or trigger an unrelated rollback.
+        return {'status': 'warning', 'error': str(error)}
+
+
 def worker(command, path=None, expected_id=None):
     if path and not os.environ.get('UNISOC_OTA_RAM'):
         STATE.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -102,6 +128,15 @@ def dispatch(method, path=None, review_id=None):
     if method == 'status':
         result = Engine().status()
         result['job'] = json.loads(JOB.read_text()) if JOB.exists() else {'status': 'idle'}
+        if result['job']['status'] == 'complete':
+            with (STATE/'job.lock').open('a') as lock:
+                try:
+                    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                except BlockingIOError:
+                    # The worker has published completion but still owns its
+                    # final cleanup. Do not race it with an automatic reboot.
+                    result['job'] = dict(result['job'], status='running')
+                    return result
         if result['job']['status'] == 'running':
             with (STATE / 'job.lock').open('a') as lock:
                 try:
@@ -155,6 +190,8 @@ def main():
             detail = json.loads(result.stdout)
         except ValueError:
             detail = {'error': (result.stderr or result.stdout)[-4000:]}
+        if result.returncode == 0:
+            detail['activation'] = activate_rpc()
         atomic_json(JOB, dict(status='failed' if result.returncode else 'complete', result=detail))
         if path and result.returncode == 0:
             uploaded = Path(path)
@@ -167,6 +204,11 @@ def main():
     if sys.argv[1:2] == ['call']:
         # Standard rpcd plugins receive arguments via stdin. No dynamic command.
         args = json.loads(sys.stdin.read(4096) or '{}')
+        if not isinstance(args, dict):
+            raise ValueError('RPC arguments must be an object')
+        # rpcd injects the authenticated session for LuCI/HTTP calls. It is
+        # transport metadata, not a method argument. ACLs are enforced by rpcd.
+        args.pop('ubus_rpc_session', None)
         method, path = sys.argv[2], None
         if method == 'start' and isinstance(args,dict) and set(args) == {'id'}:
             review_id = args['id']

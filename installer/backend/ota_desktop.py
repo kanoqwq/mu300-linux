@@ -111,6 +111,21 @@ def remote_inspect(client, archive, emit=lambda *_: None):
     return dict(**session, check=runtime_call(client, session, 'inspect', setup=True))
 
 
+def refresh_rpc(client):
+    execute(client, '/etc/init.d/rpcd reload', timeout=15)
+    deadline = time.monotonic()+5
+    while True:
+        try:
+            value = json.loads(execute(client, 'ubus call unisoc-ota status', timeout=3))
+            if 'identity' in value and not value.get('error'):
+                return {'status': 'ready'}
+        except (RuntimeError, ValueError):
+            pass
+        if time.monotonic() >= deadline:
+            raise ValueError('unisoc-ota RPC did not register after reload')
+        time.sleep(.1)
+
+
 
 class Desktop:
     def __init__(self, root, emit):
@@ -120,6 +135,8 @@ class Desktop:
         self.review = None
         self.runtime_session = None
         self.archive_path = None
+        self.activated = set()
+        self.pending_reboot = None
         self.last_event = 0
 
     def progress(self, stage, path):
@@ -167,6 +184,9 @@ class Desktop:
                 r = self.review
                 if not r or p.get('token') != r['token'] or p['host'] != r['host']:
                     raise ValueError('Review this device and patch before applying')
+                auto_reboot = p.get('auto_reboot', False)
+                if type(auto_reboot) is not bool:
+                    raise ValueError('auto_reboot must be a boolean')
                 with connect(p['host'], p['password']) as client:
                     key = hashlib.sha256(client.get_transport().get_remote_server_key().asbytes()).hexdigest()
                     if key != r['key']:
@@ -175,8 +195,20 @@ class Desktop:
                     # PC connection does not kill an in-progress filesystem write.
                     result = runtime_call(client, r, 'start', setup=True)
                     self.runtime_session = r
+                    self.pending_reboot = dict(host=r['host'], key=r['key'], id=r['check']['id']) if auto_reboot else None
                     self.review = None
                     return result
+            if command == 'ota_reboot':
+                with connect(p['host'], p['password']) as client:
+                    key = hashlib.sha256(client.get_transport().get_remote_server_key().asbytes()).hexdigest()
+                    session = self.runtime_session
+                    if not session or session['host'] != p['host'] or session['key'] != key:
+                        raise ValueError('Check this device before rebooting')
+                    status = runtime_call(client, session, 'status')
+                    if status.get('job', {}).get('status') == 'running' or (status.get('transaction') or {}).get('status') in ('applying', 'rolling_back'):
+                        raise ValueError('The device is still updating; do not reboot')
+                    self.pending_reboot = None
+                    return runtime_call(client, session, 'reboot')
             if command == 'ota_status':
                 with connect(p['host'], p['password']) as client:
                     key = hashlib.sha256(client.get_transport().get_remote_server_key().asbytes()).hexdigest()
@@ -197,6 +229,27 @@ class Desktop:
                         session = dict(host=p['host'], key=key, **remote_prepare(client, archive, self.emit))
                     result = runtime_call(client, session, 'status', setup=setup)
                     self.runtime_session = session
+                    transaction = result.get('transaction') or {}
+                    job = result.get('job') or {}
+                    if job.get('status') == 'complete' and transaction.get('status') in ('complete', 'rolled_back'):
+                        marker = (p['host'], key, transaction.get('id'), transaction['status'])
+                        activation = (job.get('result') or {}).get('activation') or {}
+                        if marker not in self.activated and activation.get('status') != 'ready':
+                            try:
+                                activation = refresh_rpc(client)
+                            except Exception as error:
+                                activation = {'status': 'warning', 'error': str(error)}
+                        if activation.get('status') == 'ready': self.activated.add(marker)
+                        result['activation'] = activation
+                        pending = self.pending_reboot
+                        if pending and (pending['host'], pending['key'], pending['id']) == (p['host'], key, transaction.get('id')):
+                            self.pending_reboot = None
+                            try:
+                                result['reboot'] = runtime_call(client, session, 'reboot')
+                            except Exception as error:
+                                result['reboot'] = {'status': 'failed', 'error': str(error)}
+                    elif job.get('status') == 'failed':
+                        self.pending_reboot = None
                     return result
             raise ValueError('Unknown OTA command')
         finally:

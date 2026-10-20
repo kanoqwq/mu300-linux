@@ -44,6 +44,9 @@ class ReducedShell:
         self.ready = True
         self.inspect_error = False
         self.corrupt_checksum = False
+        self.reloads = self.reboots = 0
+        self.status_result = {'job': {'status': 'complete', 'result': {'activation': {'status': 'ready'}}},
+                              'transaction': {'id': 'test-patch', 'status': 'complete'}, 'identity': {'version': 'e5-r2'}}
 
     def __enter__(self): return self
     def __exit__(self, *args): pass
@@ -52,13 +55,15 @@ class ReducedShell:
     def asbytes(self): return self.key
     def open_session(self, **kwargs): return Channel(self)
 
-    def execute(self, client, command):
+    def execute(self, client, command, **kwargs):
         self.commands.append(command)
         if re.search(r'\bstat\b', command):
             raise RuntimeError('ash: stat: not found')
         if command.startswith('python3 '):
             raise RuntimeError('ash: python3: not found')
         if command.startswith('df '): return '99999999\n'
+        if command == '/etc/init.d/rpcd reload': self.reloads += 1; return ''
+        if command == 'ubus call unisoc-ota status': return json.dumps(self.status_result)
         if command.startswith('sha256sum '):
             name = shlex.split(command)[1]
             h = '0'*64 if self.corrupt_checksum else hashlib.sha256(self.files[name]).hexdigest()
@@ -75,12 +80,15 @@ class ReducedShell:
             mode = shlex.split(command)[-2]
             if mode == 'inspect':
                 if self.inspect_error: raise RuntimeError('Device/base mismatch: version')
-                return json.dumps({'applicable': True})
+                return json.dumps({'applicable': True, 'id': 'test-patch'})
             if mode == 'start': return json.dumps({'status': 'running'})
             self.ready = True
-            return json.dumps({'job': {'status': 'complete'}, 'identity': {'version': 'e5-r2'}})
+            return json.dumps(self.status_result)
         if ' /ota/rpc.py status' in command:
-            return json.dumps({'job': {'status': 'complete'}, 'identity': {'version': 'e5-r2'}})
+            return json.dumps(self.status_result)
+        if ' /ota/rpc.py reboot' in command:
+            self.reboots += 1
+            return json.dumps({'status': 'rebooting'})
         return ''
 
 
@@ -200,3 +208,58 @@ class DesktopTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'checksum'):
             self.app.dispatch('ota_probe', self.params)
         self.assertFalse(any('/bootstrap.sh ' in c for c in self.shell.commands))
+
+    def test_legacy_completion_registers_rpc_only_once(self):
+        self.shell.status_result['job']['result'] = {}
+        self.status(); self.status()
+        self.assertEqual(self.shell.reloads, 1)
+
+    def test_modern_worker_already_registered_rpc(self):
+        self.status()
+        self.assertEqual(self.shell.reloads, 0)
+
+    def test_reboot_requires_checking_same_device(self):
+        with self.assertRaisesRegex(ValueError, 'Check this device'):
+            self.app.dispatch('ota_reboot', self.params)
+        self.app.dispatch('ota_probe', self.params)
+        self.shell.key = b'changed-device'
+        with self.assertRaisesRegex(ValueError, 'Check this device'):
+            self.app.dispatch('ota_reboot', self.params)
+        self.assertEqual(self.shell.reboots, 0)
+
+    def test_manual_reboot_after_completed_update(self):
+        self.status()
+        self.assertEqual(self.app.dispatch('ota_reboot', self.params)['status'], 'rebooting')
+        self.assertEqual(self.shell.reboots, 1)
+
+    def test_running_job_or_pending_recovery_blocks_reboot(self):
+        self.app.dispatch('ota_probe', self.params)
+        for job, transaction in (('running','complete'), ('complete','applying'), ('complete','rolling_back')):
+            self.shell.status_result['job']['status'] = job
+            self.shell.status_result['transaction']['status'] = transaction
+            with self.assertRaisesRegex(ValueError, 'still updating'):
+                self.app.dispatch('ota_reboot', self.params)
+        self.assertEqual(self.shell.reboots, 0)
+
+    def test_auto_reboot_is_once_and_only_after_commit(self):
+        review = self.app.dispatch('ota_probe', self.params)
+        self.app.dispatch('ota_apply', dict(self.params, token=review['token'], auto_reboot=True))
+        self.shell.status_result['job']['status'] = 'running'
+        self.app.dispatch('ota_status', self.params)
+        self.assertEqual(self.shell.reboots, 0)
+        self.shell.status_result['job']['status'] = 'complete'
+        self.status(); self.status()
+        self.assertEqual(self.shell.reboots, 1)
+
+    def test_auto_reboot_disabled_stays_off(self):
+        review = self.app.dispatch('ota_probe', self.params)
+        self.app.dispatch('ota_apply', dict(self.params, token=review['token'], auto_reboot=False))
+        self.status()
+        self.assertEqual(self.shell.reboots, 0)
+
+    def test_unrelated_completed_transaction_never_triggers_auto_reboot(self):
+        review = self.app.dispatch('ota_probe', self.params)
+        self.app.dispatch('ota_apply', dict(self.params, token=review['token'], auto_reboot=True))
+        self.shell.status_result['transaction']['id'] = 'different-patch'
+        self.status()
+        self.assertEqual(self.shell.reboots, 0)

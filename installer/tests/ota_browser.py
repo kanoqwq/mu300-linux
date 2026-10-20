@@ -18,8 +18,9 @@ window.__TAURI_INTERNALS__={transformCallback:()=>1,unregisterCallback:()=>{},in
  if(command==='ota_analyze')return {manifest:window.testBlocked?{...manifest,operations:Array.from({length:180},(_,i)=>({path:`usr/lib/example/changed-file-${i}.js`,before:{},after:{}}))}:manifest,blockers:window.testBlocked?Array.from({length:12},(_,i)=>`Core runtime/module/updater changed; use the full installer: usr/lib/unisoc-ota/changed-file-${i}.py`):[],can_export:!window.testBlocked,payload_bytes:53720,files:window.testBlocked?180:1,added:0,removed:0};
  if(command==='ota_export')return {output:'D:/Releases/update.ota'};
  if(command==='ota_probe')return {token:'reviewed',check:{applicable:!window.testConflict,conflicts:window.testConflict?['usr/libexec/unisoc-modem/action']:[],package_conflicts:[],required_bytes:20000000,free_bytes:1000000000}};
- if(command==='ota_apply')return {status:'running'};
- if(command==='ota_status')return {identity:{version:manifest.target_version},job:{status:'complete'},transaction:{started:1,total:1}};
+ if(command==='ota_apply'){window.autoRebootRequested=args.params.auto_reboot;return {status:'running'};}
+ if(command==='ota_status')return {identity:{version:manifest.target_version},job:{status:'complete'},transaction:{started:1,total:1,status:'complete'},reboot:window.autoRebootRequested?{status:'rebooting'}:undefined};
+ if(command==='ota_reboot'){window.rebootCalls=(window.rebootCalls||0)+1;return {status:'rebooting'};}
  return null;
 }};
 '''
@@ -95,8 +96,19 @@ async def main():
         await page.goto(ORIGIN+'/ota.html')
         await check_footer_spacing(page)
         await page.get_by_role('button',name='连接并检查').click()
+        assert await page.get_by_role('checkbox',name='更新完成后自动重启').is_checked()
         await page.get_by_role('button',name='确认应用此补丁').click()
-        await page.get_by_text('更新完成，请在网页系统补丁页重启设备。').wait_for(timeout=10000)
+        await page.get_by_text('更新完成，设备正在重启。稍后可重新检查设备状态。').wait_for(timeout=10000)
+        await page.evaluate('window.autoRebootRequested=false')
+        await page.get_by_role('button',name='重新检查设备状态').click()
+        await page.get_by_role('button',name='重启设备',exact=True).click()
+        await page.get_by_role('dialog').wait_for()
+        await page.get_by_role('button',name='取消',exact=True).click()
+        assert await page.evaluate('window.rebootCalls||0')==0
+        await page.get_by_role('button',name='重启设备',exact=True).click()
+        await page.get_by_role('button',name='确认重启',exact=True).click()
+        await page.get_by_text('重启命令已发送，设备正在重新启动。').wait_for()
+        assert await page.evaluate('window.rebootCalls')==1
         await page.evaluate('window.testConflict=true')
         await page.get_by_role('button',name='连接并检查').click()
         assert await page.get_by_role('button',name='确认应用此补丁').is_disabled()
