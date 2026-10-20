@@ -58,6 +58,7 @@ return view.extend({
                 var text = E('div', {}, [E('p', {}, m.base_version + ' → ' + m.target_version),
                     E('p', {}, m.operations.length + tr(' 个系统文件变更；保留配置、插件及用户数据。',' system file changes. Settings, extra plugins and user data are retained.')),
                     E('p', {}, tr('仅导入可信来源的补丁。哈希校验不等同于发布者签名。','Import only trusted patches. Checksums do not authenticate the publisher.'))]);
+                if (m.boot) text.appendChild(E('p', {}, tr('包含内核／启动镜像与配套模块更新，完成后重启生效。','Includes kernel/boot and matching module updates. Reboot after completion.')));
                 if (!r.applicable) {
                     text.appendChild(E('p', {}, tr('无法应用。冲突文件或依赖：','Cannot apply. File/dependency conflicts: ') + r.conflicts.concat(r.package_conflicts || []).join(', ') + tr('；所需空间：','; required space: ') + r.required_bytes));
                 }
@@ -78,7 +79,7 @@ return view.extend({
         reboot.onclick = function() { callReboot().then(error).then(function(){ui.awaitReconnect();}).catch(failed); };
         show(state);
         return E('div', {class:'cbi-map'}, [E('h2', {}, tr('系统补丁','System patches')), status,
-            E('p', {}, tr('从新版与旧版完整包生成的文件差异更新。应用前检查版本、机型及本地文件冲突，写入前保留恢复副本。','File hotfixes generated from two full releases. The updater checks model, base version and local conflicts, and keeps recovery copies before writing.')),
+            E('p', {}, tr('从两版完整包生成差异更新。保留用户插件、配置及数据，支持内核、模块、依赖和更新器自身升级；写入前保存恢复副本。','Differential updates from two full releases. Retains user packages, settings and data; updates kernel, modules, dependencies and the updater, with recovery copies.')),
             E('div', {style:'margin:20px 0'}, [button,rollback,reboot]), detail]);
     },
     handleSaveApply: null, handleSave: null, handleReset: null

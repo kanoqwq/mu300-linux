@@ -41,7 +41,7 @@ def export_bundle(patch, output, runtime):
                 else:
                     continue
                 z.write(runtime / name, dest)
-            z.writestr('README.md', '# OpenWrt file hotfix\n\n'
+            z.writestr('README.md', '# OpenWrt differential OTA\n\n'
                         'Web: import update.ota in System > System patches.\n'
                         'Desktop: extract the complete folder and open OpenWrt-Updater.exe / .app.\n'
                         'Python: python OpenWrt-Updater.py update update.ota --host DEVICE_IP '
@@ -49,7 +49,9 @@ def export_bundle(patch, output, runtime):
                         '网页：系统 → 系统补丁，导入 update.ota。\n'
                         '电脑：完整解压后打开 OpenWrt-Updater.exe。\n'
                         '仅使用可信补丁；先核对目标版本、机型和冲突检查。\n'
-                        '更新后请重启；网页支持撤销上次补丁。\n')
+                        '更新后请重启；网页支持撤销上次补丁。\n'
+                        '旧系统没有 OTA 插件／Python：使用电脑更新程序首次更新，完成后即可在网页导入后续补丁。\n'
+                        'Old system without OTA/Python: use the desktop updater once; subsequent patches can be imported in LuCI.\n')
         os.rename(tmp, output)
     finally:
         if tmp.exists():

@@ -52,10 +52,6 @@ def connect(host, password):
 
 def remote_inspect(client, archive, emit=lambda *_: None):
     with Patch(archive) as patch:
-        # Only the installed engine runs with root privileges. The package may
-        # contain data, never its own update program. Bootstrap older releases
-        # through a full installer rather than executing uploaded arbitrary code.
-        execute(client, 'test -f /usr/lib/unisoc-ota/engine.py && command -v python3 >/dev/null')
         destination = '/etc/unisoc-ota/upload-' + patch.id + '.ota'
         total = Path(archive).stat().st_size
         free = int(execute(client, "df -Pk /etc | awk 'END {print $4}'").strip()) * 1024
@@ -79,8 +75,27 @@ def remote_inspect(client, archive, emit=lambda *_: None):
         if got != expected:
             raise ValueError('Device upload checksum mismatch')
         execute(client, 'mv ' + shlex.quote(destination + '.new') + ' ' + shlex.quote(destination))
-        result = json.loads(execute(client, 'python3 /usr/lib/unisoc-ota/engine.py inspect ' + shlex.quote(destination)))
-        return dict(path=destination, check=result)
+        # Bootstrap runs from the reviewed archive's own isolated RAM runtime;
+        # the old image need not have Python or the OTA plugin installed.
+        runtime = '/tmp/unisoc-ota-'+patch.id
+        execute(client, 'umask 077; mkdir -p '+shlex.quote(runtime))
+        execute(client, 'test ! -L '+shlex.quote(runtime)+' && test "$(stat -c %u '+shlex.quote(runtime)+')" = 0 && chmod 700 '+shlex.quote(runtime))
+        if not patch.manifest.get('runtime'):
+            raise ValueError('This patch does not contain a portable updater runtime')
+        for key, name in (('busybox', 'busybox'), ('bootstrap', 'bootstrap.sh')):
+            desc = patch.manifest[key]
+            content = patch.archive.read('blobs/'+desc['sha256'])
+            channel = client.get_transport().open_session(timeout=20)
+            channel.exec_command('umask 077; cat > '+shlex.quote(runtime+'/'+name))
+            channel.sendall(content); channel.shutdown_write()
+            if channel.recv_exit_status() != 0: raise ValueError('Runtime helper upload failed')
+            got = execute(client, 'sha256sum '+shlex.quote(runtime+'/'+name)).split()[0]
+            if got != desc['sha256']: raise ValueError('Runtime helper checksum mismatch')
+        execute(client, 'chmod 700 '+shlex.quote(runtime+'/busybox'))
+        command = ' '.join(map(shlex.quote, [runtime+'/busybox', 'sh', runtime+'/bootstrap.sh', destination, 'inspect', runtime]))
+        result = json.loads(execute(client, command))
+        return dict(path=destination, runtime=runtime, check=result)
+
 
 
 class Desktop:
@@ -137,12 +152,22 @@ class Desktop:
                         raise ValueError('Device SSH identity changed since review')
                     # Installed runner owns the detached transaction. Losing the
                     # PC connection does not kill an in-progress filesystem write.
-                    result = execute(client, 'python3 /usr/lib/unisoc-ota/rpc.py start ' + shlex.quote(r['path']))
+                    command = ' '.join(map(shlex.quote, [r['runtime']+'/busybox', 'sh', r['runtime']+'/bootstrap.sh', r['path'], 'start', r['runtime']]))
+                    result = execute(client, command)
+                    self.active_runtime = r['runtime']
+                    self.active_path = r['path']
                     self.review = None
                     return json.loads(result)
             if command == 'ota_status':
                 with connect(p['host'], p['password']) as client:
-                    return json.loads(execute(client, 'python3 /usr/lib/unisoc-ota/rpc.py status'))
+                    if getattr(self, 'active_runtime', None):
+                        home = self.active_runtime
+                        # Status uses the already isolated interpreter even while
+                        # root files and the installed OTA plugin are changing.
+                        command = 'UNISOC_OTA_ROOT=/target UNISOC_OTA_RAM=/ UNISOC_OTA_LIVE=1 PYTHONHOME=/usr '+shlex.quote(home+'/busybox')+' chroot '+shlex.quote(home+'/root')+' /usr/bin/python3 /ota/rpc.py status'
+                    else:
+                        command = 'python3 /usr/lib/unisoc-ota/rpc.py status'
+                    return json.loads(execute(client, command))
             raise ValueError('Unknown OTA command')
         finally:
             self.emit('ota_activity', {'busy': False})

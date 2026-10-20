@@ -10,16 +10,47 @@ import re
 import shutil
 import time
 
-from engine import Engine, Patch, atomic_json
+from engine import Engine, Patch, atomic_json, prepare_runtime
 
-ENGINE = '/usr/lib/unisoc-ota/engine.py'
-STATE = Path('/etc/unisoc-ota')
+ROOT = os.environ.get('UNISOC_OTA_ROOT', '')
+ENGINE = str(Path(__file__).with_name('engine.py'))
+STATE = Path(ROOT+'/etc/unisoc-ota')
 UPLOAD = STATE / 'upload.ota'
 JOB = STATE / 'job.json'
 METHODS = {'status': {}, 'inspect': {}, 'start': {'id':''}, 'rollback': {}, 'reboot': {}}
 
 
 def worker(command, path=None, expected_id=None):
+    if path and not os.environ.get('UNISOC_OTA_RAM'):
+        STATE.mkdir(mode=0o700, parents=True, exist_ok=True)
+        with (STATE/'job.lock').open('a') as held:
+            fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        with Patch(path) as patch:
+            if patch.id != expected_id:
+                raise ValueError('Upload differs from the reviewed patch')
+            home = prepare_runtime(patch)
+        result = subprocess.run([str(home/'busybox'), 'sh', str(home/'bootstrap.sh'),
+                                 str(path), 'start', str(home)], capture_output=True, text=True)
+        if result.returncode: raise ValueError(result.stderr or result.stdout)
+        return json.loads(result.stdout)
+    if command == 'rollback' and not os.environ.get('UNISOC_OTA_RAM'):
+        import tempfile
+        home = Path(tempfile.mkdtemp(prefix='unisoc-ota-rollback-'))
+        source = STATE/'runtime'
+        if not (source/'ota/busybox').is_file():
+            raise ValueError('Missing transaction recovery runtime')
+        shutil.copytree(source, home/'root', symlinks=True)
+        bb = str(home/'root/ota/busybox')
+        for name, mounted in (('target', '/'), ('dev', '/dev'), ('target/dev', '/dev'), ('target/run', '/run'), ('sys', '/sys'), ('target/sys', '/sys')):
+            dest = home/'root'/name; dest.mkdir(parents=True, exist_ok=True)
+            subprocess.run([bb, 'mount', '--bind', mounted, str(dest)], check=True)
+        proc = home/'root/proc'; proc.mkdir(exist_ok=True)
+        subprocess.run([bb, 'mount', '-t', 'proc', 'proc', str(proc)], check=True)
+        env = dict(os.environ, UNISOC_OTA_ROOT='/target', UNISOC_OTA_RAM='/', UNISOC_OTA_LIVE='1', PYTHONHOME='/usr')
+        result = subprocess.run([bb, 'chroot', str(home/'root'), '/usr/bin/python3', '/ota/rpc.py', 'rollback'],
+                                env=env, capture_output=True, text=True)
+        if result.returncode: raise ValueError(result.stderr or result.stdout)
+        return json.loads(result.stdout)
     STATE.mkdir(mode=0o700, exist_ok=True)
     with (STATE / 'job.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)

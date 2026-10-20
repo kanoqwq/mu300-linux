@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""Unisoc file hotfix protocol 1. Standard-library-only device/desktop verifier.
+"""Unisoc differential OTA protocol 2. Standard-library-only device/desktop verifier.
 
-No package supplied programs, no root extraction, no configuration replacement.
+An isolated RAM interpreter supports core, dependency and updater migration.
 The transaction journal is durable before its first mutation. Recovery is also
 run before network/modem startup by the packaged init service.
 """
 import argparse
+import io
+import tarfile
+import subprocess
 import base64
 import contextlib
 import hashlib
@@ -19,24 +22,20 @@ import sys
 import time
 import zipfile
 
-FORMAT = 'unisoc-file-ota-1'
+FORMAT = 'unisoc-diff-ota-2'
 MAX_MANIFEST = 16 << 20
 MAX_BYTES = 2 << 30
 MAX_FILES = 50000
 STATE = 'etc/unisoc-ota'
 HEX = re.compile(r'[0-9a-f]{64}')
 # Persistent state, board firmware/NV and package-manager ownership are never
-# overwritten by an arbitrary file update. New packages require a full installer.
+# overwritten by release diffs. APK metadata uses explicit per-package merging.
 PROTECTED = ('lib/firmware', 'lib/apk', 'usr/lib/opkg', 'usr/lib/apk',
-             'lib/modules', 'bin/busybox', 'sbin/init', 'sbin/procd',
-             'lib/ld-musl-aarch64.so.1', 'lib/libc.so',
-             'usr/lib/unisoc-ota', 'usr/libexec/unisoc-ota',
-             'usr/share/unisoc-ota', 'etc/init.d/unisoc-ota',
              'opt/e5/vendor', 'opt/e5/firmware', 'opt/e5/nv', 'opt/e5/android',
-             'opt/mu300/vendor', 'opt/mu300/firmware', 'opt/mu300/nv', 'etc/uci-defaults')
-OFFLINE_ONLY = ('lib/modules', 'bin/busybox', 'sbin/init', 'sbin/procd',
-                'lib/ld-musl-aarch64.so.1', 'lib/libc.so', 'usr/lib/unisoc-ota',
-                'usr/libexec/unisoc-ota', 'usr/libexec/rpcd/unisoc-ota', 'etc/init.d/unisoc-ota')
+             'opt/mu300/vendor', 'opt/mu300/firmware', 'opt/mu300/nv',
+             'etc/unisoc-ota', 'etc/uci-defaults')
+# Retained as an empty API alias for older desktop imports, not a scope gate.
+OFFLINE_ONLY = ()
 
 
 def canonical(data):
@@ -78,6 +77,55 @@ def package_versions(raw):
         if 'P' in fields:
             result[fields['P']] = {key:fields.get(key, '') for key in ('V', 'A', 'D')}
     return result
+
+
+def package_records(raw):
+    result = {}
+    for paragraph in raw.decode('utf-8').split('\n\n'):
+        name = next((line[2:] for line in paragraph.splitlines() if line.startswith('P:')), None)
+        if name: result[name] = paragraph
+    return result
+
+
+def package_paths(record):
+    directory = ''; paths = set()
+    for line in record.splitlines():
+        if line.startswith('F:'): directory = line[2:]
+        elif line.startswith('R:'): paths.add(directory+'/'+line[2:] if directory else line[2:])
+    return paths
+
+
+def merge_scripts(current, target):
+    members = {}
+    for raw in (current, target):
+        if not raw: continue
+        with tarfile.open(fileobj=io.BytesIO(raw)) as archive:
+            for node in archive:
+                safe_name(node.name)
+                if not node.isfile(): raise ValueError('Invalid APK script record')
+                members[node.name] = (node, archive.extractfile(node).read())
+    out = io.BytesIO()
+    with tarfile.open(fileobj=out, mode='w') as archive:
+        for name in sorted(members):
+            node, data = members[name]; archive.addfile(node, io.BytesIO(data))
+    return out.getvalue()
+
+
+def prepare_runtime(patch):
+    """Prepare the very same isolated updater for browser and desktop entry."""
+    if not patch.manifest.get('runtime'):
+        raise ValueError('Patch has no portable runtime')
+    home = Path('/tmp')/('unisoc-ota-'+patch.id)
+    home.mkdir(mode=0o700, exist_ok=True)
+    if home.is_symlink() or home.stat().st_uid != 0:
+        raise ValueError('Unsafe RAM runtime directory')
+    for key, name, mode in (('busybox', 'busybox', 0o700), ('bootstrap', 'bootstrap.sh', 0o600)):
+        desc = patch.manifest[key]
+        data = patch.archive.read('blobs/'+desc['sha256'])
+        path = home/name
+        if path.is_symlink(): raise ValueError('Unsafe RAM helper')
+        path.write_bytes(data); path.chmod(mode)
+    return home
 
 
 def descriptor(path):
@@ -130,12 +178,22 @@ def validate_manifest(m):
     if m['base_version'] == m['target_version']:
         raise ValueError('Release versions are identical')
     ops = m.get('operations')
-    if not isinstance(ops, list) or not 0 < len(ops) <= MAX_FILES:
+    if not isinstance(ops, list) or not 0 <= len(ops) <= MAX_FILES or not ops and not m.get('boot'):
         raise ValueError('Empty or excessive OTA operations')
     seen = set()
     for op in ops:
         name = safe_name(op['path'])
-        if name in seen or protected(name):
+        merge = op.get('merge')
+        special = (merge == 'apk-db' and name == 'lib/apk/db/installed' or
+                   merge == 'apk-scripts' and name == 'lib/apk/db/scripts.tar' or
+                   merge == 'apk-triggers' and name == 'lib/apk/db/triggers' or
+                   merge == 'release' and name in ('etc/e5/release.json', 'etc/mu300/release.json') or
+                   merge == 'accounts' and name in ('etc/passwd', 'etc/shadow', 'etc/group', 'etc/gshadow') or
+                   merge == 'world' and name == 'etc/apk/world' or
+                   merge == 'default' and name.startswith('etc/') and not name.startswith(('etc/unisoc-ota/', 'etc/uci-defaults/')))
+        if merge is not None and not special:
+            raise ValueError('Invalid merge operation')
+        if name in seen or protected(name) and not special:
             raise ValueError('Duplicate/protected OTA path: ' + name)
         seen.add(name)
         before, after = op.get('before'), op.get('after')
@@ -146,8 +204,7 @@ def validate_manifest(m):
         # Directory removal or type changes could remove user-owned descendants.
         if before and before['kind'] == 'dir' and (not after or after['kind'] != 'dir'):
             raise ValueError('Directory removal/type change is not supported: ' + name)
-        if before and after and before['kind'] != after['kind']:
-            raise ValueError('File type changes require full installation: ' + name)
+        # File/symlink transitions are atomic; nonempty directories remain protected.
     for name in seen:
         for parent in PurePosixPath(name).parents:
             p = str(parent)
@@ -155,8 +212,17 @@ def validate_manifest(m):
                 op = next(o for o in ops if o['path'] == p)
                 if not op['after'] or op['after']['kind'] != 'dir':
                     raise ValueError('Operation below a non-directory: ' + name)
-    if m.get('boot') is not None:
-        raise ValueError('Kernel/boot updates require the full installer in protocol 1')
+    for key in ('boot', 'busybox', 'bootstrap'):
+        if key in m:
+            value = m[key]
+            if not isinstance(value, dict) or not HEX.fullmatch(value.get('sha256', '')) or type(value.get('size')) is not int or not 0 < value['size'] <= MAX_BYTES:
+                raise ValueError('Invalid '+key+' payload')
+    for name, value in m.get('runtime', {}).items():
+        safe_name(name)
+        if name.split('/')[0] not in ('lib', 'lib64', 'usr', 'ota'):
+            raise ValueError('Invalid runtime path')
+        validate_descriptor(value)
+        if value is None or value['kind'] == 'dir': raise ValueError('Invalid runtime entry')
     return m
 
 
@@ -174,6 +240,11 @@ class Patch:
             self.id = hashlib.sha256(canonical(self.manifest)).hexdigest()
             blobs = {o['after']['sha256']: o['after']['size'] for o in self.manifest['operations']
                      if o['after'] and o['after']['kind'] == 'file'}
+            for d in self.manifest.get('runtime', {}).values():
+                if d['kind'] == 'file': blobs[d['sha256']] = d['size']
+            for key in ('boot', 'busybox', 'bootstrap'):
+                if key in self.manifest:
+                    d = self.manifest[key]; blobs[d['sha256']] = d['size']
             if set(names) != {'manifest.json', *('blobs/' + h for h in blobs)}:
                 raise ValueError('Unexpected or missing archive entries')
             if sum(blobs.values()) > MAX_BYTES:
@@ -219,8 +290,8 @@ def atomic_json(path, value):
 
 
 class Engine:
-    def __init__(self, root='/'):
-        self.root = Path(root).resolve()
+    def __init__(self, root=None):
+        self.root = Path(root or os.environ.get('UNISOC_OTA_ROOT', '/')).resolve()
         self.state = self.path(STATE)
 
     def path(self, name):
@@ -244,7 +315,11 @@ class Engine:
         with contextlib.ExitStack() as stack:
             stream = stack.enter_context((self.state / 'lock').open('a'))
             fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            if self.root == Path('/'):
+            apk_lock = self.root/'lib/apk/db/lock'
+            if apk_lock.parent.is_dir():
+                held = stack.enter_context(apk_lock.open('a'))
+                fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            if self.root == Path('/') or os.environ.get('UNISOC_OTA_LIVE') == '1':
                 if (self.root / '.e5-update/request').exists() or (self.root / '.e5-update/request.ready').exists():
                     raise ValueError('A full system update is pending')
                 paths = ['run/e5-part-update.lock', 'run/e5-upgrade/lock'] if (self.root / 'etc/e5/release.json').exists() else ['run/mu300-update/lock']
@@ -259,14 +334,17 @@ class Engine:
 
     def identity(self):
         current = self.state / 'current.json'
-        if current.exists():
-            return json.loads(current.read_text())
+        stored = json.loads(current.read_text()) if current.exists() else None
         for family in ('e5', 'mu300'):
             path = self.root / ('etc/' + family + '/release.json')
             if path.is_file():
                 m = json.loads(path.read_text())
+                marker = hashlib.sha256(path.read_bytes()).hexdigest()
+                if stored and stored.get('release_marker', marker) == marker:
+                    return stored
                 return dict(family=family, profile=m['profile'], version=m['image_version'],
                             kernel_release=m['kernel_release'])
+        if stored: return stored
         raise ValueError('Missing release identity; use full installer once')
 
     def status(self):
@@ -277,35 +355,81 @@ class Engine:
         m = patch.manifest
         identity = self.identity()
         for key, expected in (('family', m['family']), ('profile', m['profile']),
-                              ('version', m['base_version']), ('kernel_release', m['kernel_release'])):
+                              ('version', m['base_version'])):
             if identity.get(key) != expected:
                 raise ValueError('Device/base mismatch: ' + key)
-        if self.root == Path('/') and os.uname().release != m['kernel_release']:
-            raise ValueError('Running kernel differs from release identity')
         conflicts, backup, incoming = [], 0, 0
-        package_conflicts = []
-        db = self.root / 'lib/apk/db/installed'
-        installed = package_versions(db.read_bytes()) if db.is_file() else {}
-        owned = {'luci-app-t551m', 'luci-app-mu300'}
-        for name, expected in m.get('base_packages', {}).items():
-            actual = installed.get(name)
-            if name in owned and actual:
-                actual = dict(actual, V=expected['V'])
-            if actual != expected:
-                package_conflicts.append(name)
-        for op in m['operations']:
-            actual = descriptor(self.path(op['path']))
-            if actual != op['before']:
-                conflicts.append(op['path'])
-            if actual and actual['kind'] == 'file':
-                backup += actual['size']
-            if op['after'] and op['after']['kind'] == 'file':
-                incoming += op['after']['size']
-        required = backup + incoming + (16 << 20)
+        ops, generated, preserved = self.plan(patch)
+        for op in ops:
+            actual = op['before']
+            if actual and actual['kind'] == 'file': backup += actual['size']
+            if op['after'] and op['after']['kind'] == 'file': incoming += op['after']['size']
+        if m.get('boot'):
+            from boot import target, layout
+            path = target(self.root, m['family'])
+            with path.open('rb') as stream: layout(stream.read(64 << 20), m['family'])
+            backup += 64 << 20; incoming += m['boot']['size']
+        required = backup + incoming + (32 << 20)
+        required += sum(d.get('size', 0) for d in m.get('runtime', {}).values())
         free = shutil.disk_usage(self.root).free
-        return dict(id=patch.id, manifest=m, conflicts=conflicts, package_conflicts=package_conflicts,
-                    required_bytes=required, free_bytes=free,
-                    applicable=not conflicts and not package_conflicts and free >= required)
+        return dict(id=patch.id, manifest=m, conflicts=conflicts, package_conflicts=[],
+                    preserved=preserved, required_bytes=required, free_bytes=free,
+                    applicable=free >= required)
+
+    def plan(self, patch):
+        """Merge package ownership; replace release files, leave user state alone.
+
+        A locally hotfixed system file is backed up as it actually is, not used
+        as an excuse to reject the entire update. Extra installed packages and
+        their owned files survive even when removed from the new base image.
+        """
+        m = patch.manifest
+        installed_path = self.root/'lib/apk/db/installed'
+        installed = package_records(installed_path.read_bytes()) if installed_path.is_file() else {}
+        retained = set(installed)-set(m.get('base_packages', {}))
+        retained.update(set(m.get('base_packages', {}))-set(m.get('target_packages', {})))
+        owned = set()
+        for name in retained:
+            if name in installed: owned.update(package_paths(installed[name]))
+        ops = []; generated = {}; preserved = []
+        for raw in m['operations']:
+            op = dict(raw); name = op['path']; actual = descriptor(self.path(name))
+            after = op['after']; merge = op.get('merge')
+            if merge == 'default' and actual is not None or name in owned and merge not in ('apk-db', 'apk-scripts'):
+                preserved.append(name); continue
+            if merge in ('apk-db', 'apk-scripts', 'apk-triggers', 'accounts', 'world'):
+                if not after or after['kind'] != 'file': continue
+                with patch.archive.open('blobs/'+after['sha256']) as stream: new = stream.read()
+                current = self.path(name).read_bytes() if actual else b''
+                if merge == 'apk-db':
+                    records = package_records(current)
+                    records.update(package_records(new))
+                    new = ('\n\n'.join(records[n].rstrip('\n') for n in sorted(records))+'\n\n').encode()
+                elif merge == 'apk-scripts':
+                    new = merge_scripts(current, new)
+                elif merge == 'apk-triggers':
+                    new = ('\n'.join(dict.fromkeys(current.decode().splitlines()+new.decode().splitlines()))+'\n').encode()
+                else:
+                    separator = ':' if merge == 'accounts' else None
+                    lines = current.decode().splitlines()
+                    keys = {line.split(separator, 1)[0] if separator else re.split(r'[<>=~]', line, 1)[0] for line in lines}
+                    for line in new.decode().splitlines():
+                        key = line.split(separator, 1)[0] if separator else re.split(r'[<>=~]', line, 1)[0]
+                        if key not in keys: lines.append(line); keys.add(key)
+                        elif merge == 'world' and key in m.get('base_packages', {}):
+                            lines = [line if re.split(r'[<>=~]', old, 1)[0] == key else old for old in lines]
+                    new = ('\n'.join(lines)+'\n').encode()
+                after = dict(after, size=len(new), sha256=hashlib.sha256(new).hexdigest())
+                generated[after['sha256']] = new
+            if actual and actual['kind'] == 'dir' and (not after or after['kind'] != 'dir'):
+                raise ValueError('Cannot replace a user directory: '+name)
+            if actual == after: continue
+            # Package directories may already contain additional user data. Keep
+            # their current permissions rather than rewriting a whole tree.
+            if actual and after and actual['kind'] == after['kind'] == 'dir': continue
+            op.update(before=actual, after=after)
+            ops.append(op)
+        return sorted(ops, key=lambda o:(o['path'].count('/'), o['path'])), generated, preserved
 
     def install_descriptor(self, name, value, source=None):
         path = self.path(name)
@@ -375,7 +499,11 @@ class Engine:
             if old is None and op['after']['kind'] == 'dir':
                 # Only our empty new directory may disappear; keep user files.
                 if path.exists():
-                    path.rmdir()
+                    try:
+                        path.rmdir()
+                    except OSError as error:
+                        import errno
+                        if error.errno != errno.ENOTEMPTY: raise
                     sync_dir(path.parent)
             elif old and old['kind'] == 'file':
                 backup = self.state / data['backup'] / str(i)
@@ -386,6 +514,12 @@ class Engine:
                     self.install_descriptor(op['path'], old, stream)
             else:
                 self.install_descriptor(op['path'], old)
+        if data.get('boot'):
+            from boot import write
+            original = (self.state/data['backup']/'boot.img').read_bytes()
+            if hashlib.sha256(original).hexdigest() != data['boot_sha256']:
+                raise ValueError('Boot recovery backup checksum mismatch')
+            write(self.path(data['boot']), original, data['boot_family'])
         previous = data.get('previous_identity')
         if previous:
             atomic_json(self.state / 'current.json', previous)
@@ -402,18 +536,20 @@ class Engine:
             check = self.inspect(patch)
             if not check['applicable']:
                 raise ValueError('Conflicting files/packages or insufficient space: ' + ', '.join((check['conflicts'] + check['package_conflicts'])[:20]))
+            # A boot payload updates the kernel identity; file-only deltas retain it.
+            kernel_release = patch.manifest['kernel_release'] if patch.manifest.get('boot') else self.identity()['kernel_release']
             journal = self.state / 'journal.json'
             # Preserve the preceding transaction's recovery data until the new
             # journal is durable. A crash during backup must not invalidate it.
             backup = self.state / ('backup-' + str(time.time_ns()))
             backup.mkdir(mode=0o700)
-            ops = sorted(patch.manifest['operations'], key=lambda o: (o['path'].count('/'), o['path']))
+            ops, generated, preserved = self.plan(patch)
             data = dict(id=patch.id, status='preparing', started=0, total=len(ops), backup=backup.name,
                         previous_identity=json.loads((self.state / 'current.json').read_text())
                         if (self.state / 'current.json').exists() else None,
                         target_version=patch.manifest['target_version'])
             # The large immutable plan is written once, not rewritten for every
-            # file. A compact count journal keeps update writes O(n), not O(n²).
+            # file. A compact count journal keeps update writes O(n), not O(n虏).
             atomic_json(backup / 'plan.json', ops)
             for i, op in enumerate(ops):
                 if op['before'] and op['before']['kind'] == 'file':
@@ -424,10 +560,43 @@ class Engine:
                     with (backup / str(i)).open('rb') as verified:
                         if digest(verified) != op['before']['sha256']:
                             raise ValueError('Backup verification failed: ' + op['path'])
+            boot_images = None
+            if patch.manifest.get('boot') or os.environ.get('UNISOC_OTA_LIVE') == '1':
+                from boot import target, bind
+                boot_path = target(self.root, patch.manifest['family'])
+                with boot_path.open('rb') as stream: original = stream.read(64 << 20)
+                with (backup/'boot.img').open('xb') as stream:
+                    stream.write(original); stream.flush(); os.fsync(stream.fileno())
+                incoming_boot = original
+                if patch.manifest.get('boot'):
+                    with patch.archive.open('blobs/'+patch.manifest['boot']['sha256']) as stream:
+                        incoming_boot = stream.read()
+                boot_images = (bind(original, original, patch.manifest['family']),
+                               bind(incoming_boot, original, patch.manifest['family']))
+                data['boot'] = str(boot_path.relative_to(self.root))
+                data['boot_sha256'] = hashlib.sha256(original).hexdigest()
+                data['boot_family'] = patch.manifest['family']
+                del original, incoming_boot
+            ram = os.environ.get('UNISOC_OTA_RAM')
+            if ram:
+                runtime = self.state/'runtime'
+                runtime.mkdir(mode=0o700, exist_ok=True)
+                for name in ('lib', 'lib64', 'usr', 'ota'):
+                    source = Path(ram)/name
+                    if source.is_dir(): shutil.copytree(source, runtime/name, dirs_exist_ok=True, symlinks=True)
+                for path in runtime.rglob('*'):
+                    if path.is_file() and not path.is_symlink():
+                        with path.open('rb') as stream: os.fsync(stream.fileno())
+                sync_dir(runtime)
+            elif patch.manifest.get('boot') and (self.root == Path('/') or os.environ.get('UNISOC_OTA_LIVE') == '1'):
+                raise ValueError('Boot updates must run from the isolated RAM runtime')
             sync_dir(backup)
             data['status'] = 'applying'
             atomic_json(journal, data)
             try:
+                if boot_images:
+                    from boot import write
+                    write(self.root/data['boot'], boot_images[0], data['boot_family'])
                 for i, op in enumerate(ops):
                     # Recheck at commit time; a concurrent user edit is a conflict.
                     if descriptor(self.path(op['path'])) != op['before']:
@@ -436,13 +605,17 @@ class Engine:
                     atomic_json(journal, data)
                     value = op['after']
                     with contextlib.ExitStack() as stack:
-                        source = stack.enter_context(patch.archive.open('blobs/' + value['sha256'])) if value and value['kind'] == 'file' else None
+                        source = (io.BytesIO(generated[value['sha256']]) if value['sha256'] in generated else stack.enter_context(patch.archive.open('blobs/' + value['sha256']))) if value and value['kind'] == 'file' else None
                         self.install_descriptor(op['path'], value, source)
                     if descriptor(self.path(op['path'])) != value:
                         raise ValueError('Written file verification failed: ' + op['path'])
                     progress(i + 1, len(ops), op['path'])
+                if boot_images:
+                    write(self.root/data['boot'], boot_images[1], data['boot_family'])
                 identity = dict(family=patch.manifest['family'], profile=patch.manifest['profile'],
-                                version=patch.manifest['target_version'], kernel_release=patch.manifest['kernel_release'])
+                                version=patch.manifest['target_version'], kernel_release=kernel_release)
+                release_file = self.root/('etc/'+patch.manifest['family']+'/release.json')
+                if release_file.is_file(): identity['release_marker'] = hashlib.sha256(release_file.read_bytes()).hexdigest()
                 atomic_json(self.state / 'current.json', identity)
                 data['status'] = 'complete'
                 atomic_json(journal, data)
@@ -463,7 +636,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('command', choices=('inspect', 'apply', 'recover', 'status', 'rollback'))
     p.add_argument('package', nargs='?')
-    p.add_argument('--root', default='/')
+    p.add_argument('--root')
     args = p.parse_args()
     engine = Engine(args.root)
     if args.command in ('recover', 'rollback'):
