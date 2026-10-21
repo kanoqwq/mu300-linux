@@ -6,7 +6,7 @@ use std::{collections::HashMap, io::{BufRead, BufReader, Write}, path::PathBuf,
 use tauri::{Emitter, Manager, State};
 use tokio::sync::oneshot;
 
-const COMMANDS: &[&str] = &["hello","snapshot","list","package","devices","adb_connect","adb_disconnect","probe","probe_update","plan","start","resume","retry","cancel","can_close","export","import","diagnostics","verify_openwrt","ota_analyze","ota_export","ota_package","ota_probe","ota_apply","ota_status"];
+const COMMANDS: &[&str] = &["hello","snapshot","list","package","devices","adb_connect","adb_disconnect","probe","probe_update","plan","start","resume","retry","cancel","can_close","export","import","diagnostics","verify_openwrt","ota_analyze","ota_export","ota_package","ota_probe","ota_apply","ota_status","ota_reboot"];
 struct Bridge {
     input: Mutex<Option<ChildStdin>>,
     pending: Mutex<HashMap<u64, oneshot::Sender<Result<Value, String>>>>,
@@ -44,8 +44,36 @@ async fn pick_ota_input() -> Option<String> {
     tauri::async_runtime::spawn_blocking(|| rfd::FileDialog::new().set_title("Select release ZIP or OTA / 选择发行包或差异包").add_filter("OpenWrt packages", &["zip","ota"]).pick_file().map(|p|p.to_string_lossy().to_string())).await.ok().flatten()
 }
 #[tauri::command]
-async fn save_ota() -> Option<String> {
-    tauri::async_runtime::spawn_blocking(|| rfd::FileDialog::new().set_file_name("OpenWrt-patch.zip").add_filter("Desktop + Web", &["zip"]).add_filter("Web OTA only", &["ota"]).save_file().map(|p|p.to_string_lossy().to_string())).await.ok().flatten()
+async fn save_ota(base_version: Option<String>, target_version: Option<String>, release_path: Option<String>) -> Option<String> {
+    let name = suggested_patch_name(base_version.as_deref(), target_version.as_deref(), release_path.as_deref());
+    tauri::async_runtime::spawn_blocking(move || rfd::FileDialog::new().set_file_name(name).add_filter("Desktop + Web", &["zip"]).add_filter("Web OTA only", &["ota"]).save_file().map(|p|p.to_string_lossy().to_string())).await.ok().flatten()
+}
+
+fn release_marker(version: &str) -> Option<String> {
+    let parts: Vec<_> = version.split('-').collect();
+    let date = parts.iter().find_map(|part| {
+        let text = part.strip_prefix('r').unwrap_or(part);
+        let valid = match text.split_once('.') {
+            Some((day, time)) => day.len()==8 && time.len()==6 && day.bytes().chain(time.bytes()).all(|b|b.is_ascii_digit()),
+            None => text.len()==8 && text.bytes().all(|b|b.is_ascii_digit()),
+        };
+        valid.then_some(text)
+    })?;
+    let commit = parts.iter().find(|part|part.strip_prefix('g').is_some_and(|hash| (7..=64).contains(&hash.len()) && hash.bytes().all(|b|b.is_ascii_hexdigit())))?;
+    Some(format!("{date}-{commit}"))
+}
+
+fn suggested_patch_name(base_version: Option<&str>, target_version: Option<&str>, release_path: Option<&str>) -> String {
+    if let (Some(old), Some(new)) = (base_version.and_then(release_marker), target_version.and_then(release_marker)) {
+        return format!("OpenWrt-patch-{old}-{new}.zip");
+    }
+    // Old/custom releases may omit either marker. Naming is only a suggestion:
+    // fall back to the new ZIP's leaf, without failing or blocking export.
+    let leaf = release_path.unwrap_or("").rsplit(['/', '\\']).next().unwrap_or("");
+    let stem = if leaf.to_ascii_lowercase().ends_with(".zip") { &leaf[..leaf.len()-4] } else { leaf };
+    let safe: String = stem.chars().map(|c| if c.is_control() || "<>:\"/\\|?*".contains(c) { '_' } else { c }).collect();
+    let safe = safe.trim().trim_end_matches(['.', ' ']);
+    if safe.is_empty() { "OpenWrt-patch.zip".into() } else { format!("OpenWrt-patch-{safe}.zip") }
 }
 #[tauri::command]
 async fn pick_recovery() -> Option<String> {
@@ -234,6 +262,36 @@ fn main() {
 mod tests {
     use super::*;
     use std::path::Path;
+
+    #[test]
+    fn patch_name_uses_both_release_markers() {
+        assert_eq!(suggested_patch_name(Some("t551m-r20261020.215049-gb8d4f222-s12345678"), Some("t551m-r20261021.075202-g99570375-sabcdef12"), Some("/release/renamed.zip")),
+            "OpenWrt-patch-20261020.215049-gb8d4f222-20261021.075202-g99570375.zip");
+        assert_eq!(suggested_patch_name(Some("mu300-r20261020-gb8d4f222"), Some("mu300-r20261021-g99570375"), None),
+            "OpenWrt-patch-20261020-gb8d4f222-20261021-g99570375.zip");
+    }
+
+    #[test]
+    fn patch_name_falls_back_without_errors_on_both_platforms() {
+        for (path, name) in [
+            (Some(r"D:\Releases\t551m-openwrt-r123-k6.18.54.zip"), "OpenWrt-patch-t551m-openwrt-r123-k6.18.54.zip"),
+            (Some("/Users/test/MU300-发行包.ZIP"), "OpenWrt-patch-MU300-发行包.zip"),
+            (Some("/release/new:bad?.zip"), "OpenWrt-patch-new_bad_.zip"),
+            (Some(".zip"), "OpenWrt-patch.zip"),
+            (None, "OpenWrt-patch.zip"),
+        ] {
+            assert_eq!(suggested_patch_name(None, None, path), name);
+            assert_eq!(suggested_patch_name(Some("legacy-7.2"), Some("mu300-r20261021-g99570375"), path), name);
+            assert_eq!(suggested_patch_name(Some("mu300-r20261020-gb8d4f222"), Some("custom-version"), path), name);
+        }
+    }
+
+    #[test]
+    fn updater_actions_are_exposed_by_native_bridge() {
+        for command in ["ota_package", "ota_probe", "ota_apply", "ota_status", "ota_reboot"] {
+            assert!(COMMANDS.contains(&command), "{command} missing from the native bridge");
+        }
+    }
 
     #[test]
     fn public_entry_selects_page() {
