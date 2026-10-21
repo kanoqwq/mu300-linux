@@ -24,7 +24,8 @@ class BootstrapTests(unittest.TestCase):
             # This stand-in deliberately implements only the packaged applets;
             # absent applets, including mountpoint, fail instead of succeeding.
             bb = home/'busybox'
-            bb.write_text('#!'+sys.executable+'\n'+r'''
+            # Ignore the generated target PYTHONHOME only in this host-side stub.
+            bb.write_text('#!'+sys.executable+' -E\n'+r'''
 import hashlib,json,os,pathlib,shutil,sys,zipfile
 app,*args=sys.argv[1:]
 with open(os.environ['TEST_LOG'],'a') as f: f.write(json.dumps([app,*args])+'\n')

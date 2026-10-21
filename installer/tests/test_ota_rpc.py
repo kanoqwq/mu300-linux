@@ -105,20 +105,22 @@ class RPCTests(unittest.TestCase):
     def test_reboot_ack_window_retains_job_lock_until_child_exits(self):
         import fcntl
         import subprocess
+        import shutil
         with tempfile.TemporaryDirectory() as d:
             self.rpc.STATE=Path(d)
             launch=subprocess.Popen
             children=[]
             def harmless(command, **kwargs):
-                command=list(command); command[-1]='/bin/true'
+                command=list(command); command[-1]=shutil.which('true')
+                kwargs['stderr']=subprocess.PIPE
                 child=launch(command,**kwargs);children.append(child);return child
             try:
                 with patch.dict(os.environ,{'UNISOC_OTA_RAM':''}), patch.object(self.rpc.subprocess,'Popen',side_effect=harmless):
                     self.assertEqual(self.rpc.dispatch('reboot')['status'],'rebooting')
                 with (Path(d)/'job.lock').open('a') as held:
                     with self.assertRaises(BlockingIOError): fcntl.flock(held,fcntl.LOCK_EX|fcntl.LOCK_NB)
-                    children[0].wait(timeout=10)
-                    self.assertEqual(children[0].returncode,0)
+                    _, stderr = children[0].communicate(timeout=10)
+                    self.assertEqual(children[0].returncode,0,stderr.decode())
                     fcntl.flock(held,fcntl.LOCK_EX|fcntl.LOCK_NB)
             finally:
                 for child in children:
