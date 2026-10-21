@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import stat
+import shutil
 import subprocess
 import sys
 import tarfile
@@ -66,12 +67,13 @@ def mu_release(root, version, files=None, boot=b'boot'):
 class FormatTests(unittest.TestCase):
     def test_protected_state(self):
         for path in ('etc/config/wireless','etc/shadow','lib/firmware/modem.bin','etc/e5/release.json',
-                     'var/traffic.db','root/file','lib/apk/db/installed','usr/lib/unisoc-ota/engine.py'):
+                     'var/traffic.db','root/file','lib/apk/db/installed'):
             self.assertTrue(protected(path), path)
         self.assertFalse(protected('usr/libexec/unisoc-modem/action'))
         self.assertFalse(protected('etc/init.d/e5-modemd'))
         self.assertFalse(protected('www/luci-static/resources/view/mu300/locks.js'))
-        self.assertTrue(protected('lib/modules/current/wifi.ko'))
+        self.assertFalse(protected('lib/modules/current/wifi.ko'))
+        self.assertFalse(protected('usr/lib/unisoc-ota/engine.py'))
 
     def test_path_traversal(self):
         for name in ('../etc/shadow','/etc/shadow','usr//lib/x','usr/./a','usr/a/../x','usr\\lib\\x','usr/x\0y'):
@@ -82,9 +84,9 @@ class FormatTests(unittest.TestCase):
         m=manifest();m['operations']*=2
         with self.assertRaises(ValueError):validate_manifest(m)
 
-    def test_type_change(self):
+    def test_regular_file_to_symlink_transition(self):
         m=manifest();m['operations'][0]['after']=dict(kind='symlink',mode=0o777,uid=0,gid=0,target='/tmp',xattrs={})
-        with self.assertRaises(ValueError):validate_manifest(m)
+        self.assertEqual(validate_manifest(m), m)
 
     def test_directory_removal(self):
         m=manifest();m['operations'][0].update(before=dict(kind='dir',mode=0o755,uid=0,gid=0,xattrs={}),after=None)
@@ -112,6 +114,36 @@ class FormatTests(unittest.TestCase):
 
 
 class GenerationTests(unittest.TestCase):
+    def test_boot_changes_do_not_block_file_patch_export(self):
+        with tempfile.TemporaryDirectory() as d:
+            d=Path(d)
+            mu_release(d/'a','mu300-r1',boot=b'old boot')
+            mu_release(d/'b','mu300-r2',{'usr/lib/test':b'new'},boot=b'new boot')
+            result=analyze(d/'a',d/'b',d/'patch.ota')
+            self.assertTrue(result['can_export'],result['blockers'])
+            with Patch(d/'patch.ota') as patch:
+                self.assertEqual(patch.manifest['operations'][0]['path'],'usr/lib/test')
+
+    def test_kernel_version_labels_do_not_block_file_patch_export(self):
+        with tempfile.TemporaryDirectory() as d:
+            d=Path(d)
+            mu_release(d/'a','mu300-r1')
+            mu_release(d/'b','mu300-r2',{'usr/lib/test':b'new'},boot=b'another boot')
+            meta=d/'b/desktop/release.json'
+            values=json.loads(meta.read_text());values['kernel_release']='6.18.54'
+            meta.write_text(json.dumps(values))
+            result=analyze(d/'a',d/'b',d/'patch.ota')
+            self.assertTrue(result['can_export'],result['blockers'])
+
+    def test_first_engine_install_is_included(self):
+        with tempfile.TemporaryDirectory() as d:
+            d=Path(d)
+            mu_release(d/'a','mu300-r1')
+            mu_release(d/'b','mu300-r2',{'usr/lib/test':b'new','usr/lib/unisoc-ota/engine.py':b'engine'})
+            result=analyze(d/'a',d/'b')
+            self.assertTrue(result['can_export'])
+            self.assertIn('usr/lib/unisoc-ota/engine.py', [o['path'] for o in result['manifest']['operations']])
+
     @unittest.skipUnless(os.name=='posix','Linux release staging permissions')
     def test_stage_built_in_plugin_and_preserve_state(self):
         import runpy
@@ -128,7 +160,25 @@ class GenerationTests(unittest.TestCase):
             acl=json.loads((root/'usr/share/rpcd/acl.d/unisoc-ota.json').read_text())
             self.assertNotIn('exec',acl['luci-app-unisoc-ota']['write']['ubus'])
 
-    def test_web_assets_are_hotfixable_but_core_runtime_is_not(self):
+    def test_new_patch_carries_current_plugin_view_errors_and_acl(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)
+            mu_release(root/'old','mu300-r1')
+            mu_release(root/'new','mu300-r2',{'usr/bin/python3':b'fixture interpreter'})
+            (root/'new/payload/busybox').write_bytes(b'fixture static helper')
+            output=root/'patch.ota'
+            analyze(root/'old',root/'new',output)
+            with Patch(output) as patch:
+                paths={op['path']:op for op in patch.manifest['operations']}
+                for name in ('www/luci-static/resources/view/system/unisoc-ota.js',
+                             'www/luci-static/resources/unisoc-ota/errors.js',
+                             'usr/share/rpcd/acl.d/unisoc-ota.json'):
+                    self.assertIn(name,paths)
+                acl=paths['usr/share/rpcd/acl.d/unisoc-ota.json']['after']['sha256']
+                data=json.loads(patch.archive.read('blobs/'+acl))
+                self.assertIn('rollback_check',data['luci-app-unisoc-ota']['read']['ubus']['unisoc-ota'])
+
+    def test_web_assets_and_core_runtime_are_updatable(self):
         with tempfile.TemporaryDirectory() as d:
             d=Path(d)
             mu_release(d/'a','mu300-r1',{'www/style.css':b'old'})
@@ -141,7 +191,7 @@ class GenerationTests(unittest.TestCase):
             mu_release(d/'a','mu300-r1',{'bin/busybox':b'old'})
             mu_release(d/'b','mu300-r2',{'bin/busybox':b'new'})
             result=analyze(d/'a',d/'b')
-            self.assertFalse(result['can_export'])
+            self.assertTrue(result['can_export'])
     def test_native_tool_refresh_verifies_owned_files(self):
         installer=Path(__file__).resolve().parents[1]
         spec=importlib.util.spec_from_file_location('ota_builder_test',installer/'build-ota.py')
@@ -164,15 +214,16 @@ class GenerationTests(unittest.TestCase):
                     with self.assertRaises(ValueError):builder.main()
                 self.assertEqual((output/'personal.txt').read_text(),'keep me')
 
-    def test_package_abi_change_blocks_export(self):
+    def test_package_changes_create_a_merge_operation(self):
         with tempfile.TemporaryDirectory() as d:
             d=Path(d)
             for n in (1,2):
                 db=f'P:libc\nV:{n}\nA:aarch64\nD:\n\n'.encode()
                 mu_release(d/str(n),'mu300-r'+str(n),{'usr/lib/test':str(n).encode(),'lib/apk/db/installed':db})
             result=analyze(d/'1',d/'2')
-            self.assertFalse(result['can_export'])
-            self.assertTrue(any('ABI' in b for b in result['blockers']))
+            self.assertTrue(result['can_export'])
+            op=next(o for o in result['manifest']['operations'] if o['path']=='lib/apk/db/installed')
+            self.assertEqual(op['merge'],'apk-db')
 
     def test_generate_tar_release_preserves_configs_deduplicates(self):
         with tempfile.TemporaryDirectory() as d:
@@ -196,14 +247,6 @@ class GenerationTests(unittest.TestCase):
                     for p in root.rglob('*'):
                         if p.is_file():out.write(p,'release/'+p.relative_to(root).as_posix())
             self.assertTrue(analyze(*archives)['can_export'])
-
-    def test_kernel_change_blocks_export(self):
-        with tempfile.TemporaryDirectory() as d:
-            d=Path(d);mu_release(d/'a','mu300-r1');mu_release(d/'b','mu300-r2',{'usr/lib/test':b'new'},boot=b'newboot')
-            result=analyze(d/'a',d/'b')
-            self.assertFalse(result['can_export'])
-            with self.assertRaises(ValueError):analyze(d/'a',d/'b',d/'p.ota')
-            self.assertFalse((d/'p.ota').exists())
 
     def test_corrupt_full_release_rejected(self):
         with tempfile.TemporaryDirectory() as d:
@@ -236,26 +279,53 @@ class EngineTests(unittest.TestCase):
         self.assertEqual((self.root/'etc/config/network').read_bytes(),b'user')
         self.assertEqual(self.e.identity()['version'],'e5-r2')
 
-    def test_conflict_does_not_mutate(self):
+    def test_different_kernel_label_applies_without_relabeling_device_kernel(self):
+        self.m['kernel_release']='7.2.8-different'
+        package(self.p,self.m)
+        with Patch(self.p) as patch:
+            self.assertTrue(self.e.inspect(patch)['applicable'])
+            self.assertEqual(self.e.apply(patch)['status'],'complete')
+        self.assertEqual((self.root/'usr/lib/test').read_bytes(),b'new')
+        self.assertEqual(self.e.identity()['kernel_release'],'6.18.54-e5-test')
+        self.assertEqual(self.e.identity()['version'],'e5-r2')
+
+    def test_local_system_hotfix_is_backed_up_and_updated(self):
         (self.root/'usr/lib/test').write_bytes(b'custom')
         with Patch(self.p) as patch:
-            self.assertFalse(self.e.inspect(patch)['applicable'])
-            with self.assertRaises(ValueError):self.e.apply(patch)
-        self.assertEqual((self.root/'usr/lib/test').read_bytes(),b'custom')
-        self.assertFalse((self.e.state/'journal.json').exists())
+            self.assertTrue(self.e.inspect(patch)['applicable'])
+            self.e.apply(patch)
+        self.assertEqual((self.root/'usr/lib/test').read_bytes(),b'new')
+        data=json.loads((self.e.state/'journal.json').read_text())
+        self.assertEqual((self.e.state/data['backup']/'0').read_bytes(),b'custom')
 
     def test_wrong_device_base(self):
         self.m['profile']='m8';package(self.p,self.m)
         with Patch(self.p) as patch:
             with self.assertRaises(ValueError):self.e.inspect(patch)
 
-    def test_package_dependency_mismatch_no_write(self):
+    def test_reversed_patch_explains_device_base_and_target_without_writing(self):
+        self.m.update(base_version='e5-r2', target_version='e5-r1')
+        package(self.p, self.m)
+        with Patch(self.p) as patch:
+            with self.assertRaisesRegex(ValueError, 'device=e5-r1; patch base=e5-r2; patch target=e5-r1.*old/new package selection'):
+                self.e.apply(patch)
+        self.assertEqual((self.root/'usr/lib/test').read_bytes(), b'old')
+        self.assertFalse((self.e.state/'journal.json').exists())
+
+    def test_unknown_base_explains_required_release(self):
+        self.m['base_version'] = 'e5-r0'
+        package(self.p, self.m)
+        with Patch(self.p) as patch:
+            with self.assertRaisesRegex(ValueError, 'old release matches this device'):
+                self.e.inspect(patch)
+
+    def test_local_package_version_does_not_block_unrelated_update(self):
         self.m['base_packages']={'libc':{'V':'1','A':'aarch64','D':''}}
         package(self.p,self.m)
         with Patch(self.p) as patch:
-            self.assertEqual(self.e.inspect(patch)['package_conflicts'],['libc'])
-            with self.assertRaises(ValueError):self.e.apply(patch)
-        self.assertEqual((self.root/'usr/lib/test').read_bytes(),b'old')
+            self.assertEqual(self.e.inspect(patch)['package_conflicts'],[])
+            self.e.apply(patch)
+        self.assertEqual((self.root/'usr/lib/test').read_bytes(),b'new')
 
     def test_manual_rollback(self):
         with Patch(self.p) as patch:self.e.apply(patch)
@@ -273,6 +343,124 @@ class EngineTests(unittest.TestCase):
         self.assertNotEqual(result.returncode,0)
         self.assertEqual((self.root/'usr/lib/test').read_bytes(),b'local edit')
 
+    def test_rollback_preflight_and_already_restored_file(self):
+        with Patch(self.p) as patch: self.e.apply(patch)
+        self.assertTrue(self.e.rollback_check()['available'])
+        (self.root/'usr/lib/test').write_bytes(b'old')
+        self.assertTrue(self.e.rollback_check()['available'])
+        engine=Path(__file__).resolve().parents[2]/'openwrt/luci-app-unisoc-ota/root/usr/lib/unisoc-ota/engine.py'
+        result=subprocess.run([sys.executable,str(engine),'rollback','--root',str(self.root)],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        self.assertEqual((self.root/'usr/lib/test').read_bytes(),b'old')
+
+    def test_rollback_preflight_distinguishes_contents_from_permissions(self):
+        with Patch(self.p) as patch: self.e.apply(patch)
+        (self.root/'usr/lib/test').chmod(0o600)
+        check=self.e.rollback_check()
+        self.assertFalse(check['available'])
+        self.assertEqual(check['conflicts'],[{'path':'usr/lib/test','fields':['mode']}])
+        (self.root/'usr/lib/test').write_bytes(b'local-edit')
+        self.assertIn('sha256',self.e.rollback_check()['conflicts'][0]['fields'])
+        self.assertEqual(json.loads((self.e.state/'journal.json').read_text())['status'],'complete')
+
+    def test_rollback_preflight_checks_all_backups_before_any_restore(self):
+        with Patch(self.p) as patch: self.e.apply(patch)
+        data=json.loads((self.e.state/'journal.json').read_text())
+        (self.e.state/data['backup']/'0').write_bytes(b'corrupt')
+        with self.assertRaisesRegex(ValueError,'Rollback backup corrupt'): self.e.rollback_check()
+        self.assertEqual((self.root/'usr/lib/test').read_bytes(),b'new')
+
+    def test_updater_can_restore_its_own_rpc_source_after_python_import(self):
+        target=self.root/'usr/lib/unisoc-ota/rpc.py'
+        target.parent.mkdir(parents=True)
+        target.write_bytes(b"VERSION='before'\n");target.chmod(0o644)
+        new=b"VERSION='after'\n"
+        self.m['operations']=[dict(path='usr/lib/unisoc-ota/rpc.py',before=descriptor(target),after=dict(file(new),uid=os.getuid(),gid=os.getgid()))]
+        package(self.p,self.m,{hashlib.sha256(new).hexdigest():new})
+        with Patch(self.p) as patch:self.e.apply(patch)
+        subprocess.run([sys.executable,'-c',"import sys;sys.path.insert(0,sys.argv[1]);import rpc;assert rpc.VERSION=='after'",str(target.parent)],check=True)
+        self.assertTrue(self.e.rollback_check()['available'])
+        engine=Path(__file__).resolve().parents[2]/'openwrt/luci-app-unisoc-ota/root/usr/lib/unisoc-ota/engine.py'
+        result=subprocess.run([sys.executable,str(engine),'rollback','--root',str(self.root)],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        self.assertEqual(target.read_bytes(),b"VERSION='before'\n")
+
+    def runtime_fixture(self):
+        ram=self.root/'ram'; (ram/'lib').mkdir(parents=True)
+        (ram/'lib/libatomic.so.1.2.0').write_bytes(b'fixture-library')
+        (ram/'lib/libatomic.so.1').symlink_to('libatomic.so.1.2.0')
+        (ram/'lib/libc.so').write_bytes(b'fixture-loader')
+        (ram/'lib/ld-musl-aarch64.so.1').symlink_to('libc.so')
+        return ram
+
+    def rollback_cli(self):
+        engine=Path(__file__).resolve().parents[2]/'openwrt/luci-app-unisoc-ota/root/usr/lib/unisoc-ota/engine.py'
+        result=subprocess.run([sys.executable,str(engine),'rollback','--root',str(self.root)],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+
+    def test_update_rollback_update_reuses_no_symlinks_and_keeps_one_runtime(self):
+        ram=self.runtime_fixture()
+        for _ in range(3):
+            with mock.dict(os.environ,{'UNISOC_OTA_RAM':str(ram)}), Patch(self.p) as patch:
+                self.e.apply(patch)
+            data=json.loads((self.e.state/'journal.json').read_text())
+            runtime=self.e.state/data['runtime']
+            self.assertTrue((runtime/'lib/libatomic.so.1').is_symlink())
+            self.assertEqual(os.readlink(runtime/'lib/libatomic.so.1'),'libatomic.so.1.2.0')
+            self.assertEqual(os.readlink(runtime/'lib/ld-musl-aarch64.so.1'),'libc.so')
+            self.assertEqual(len(list(self.e.state.glob('backup-*'))),1)
+            self.rollback_cli()
+        self.assertEqual(len(list(self.e.state.glob('backup-*/runtime'))),1)
+
+    def test_failed_runtime_preparation_keeps_previous_recovery_and_removes_staging(self):
+        ram=self.runtime_fixture()
+        with mock.dict(os.environ,{'UNISOC_OTA_RAM':str(ram)}), Patch(self.p) as patch:self.e.apply(patch)
+        original=(self.e.state/'journal.json').read_bytes()
+        data=json.loads(original); runtime=self.e.state/data['runtime']
+        self.m.update(base_version='e5-r2',target_version='e5-r3')
+        self.m['operations'][0].update(before=descriptor(self.root/'usr/lib/test'),after=file(b'third'))
+        self.m['operations'][0]['after'].update(uid=os.getuid(),gid=os.getgid())
+        package(self.p,self.m,{hashlib.sha256(b'third').hexdigest():b'third'})
+        with mock.dict(os.environ,{'UNISOC_OTA_RAM':str(ram)}), mock.object(shutil,'copytree',side_effect=OSError('fixture copy failure')), Patch(self.p) as patch:
+            with self.assertRaisesRegex(OSError,'fixture copy failure'):self.e.apply(patch)
+        self.assertEqual((self.e.state/'journal.json').read_bytes(),original)
+        self.assertEqual(len(list(self.e.state.glob('backup-*'))),1)
+        self.assertEqual((runtime/'lib/libatomic.so.1.2.0').read_bytes(),b'fixture-library')
+        self.rollback_cli()
+
+    def test_failed_new_write_preserves_last_successful_undo_and_does_not_accumulate(self):
+        ram=self.runtime_fixture()
+        with mock.dict(os.environ,{'UNISOC_OTA_RAM':str(ram)}), Patch(self.p) as patch:self.e.apply(patch)
+        original=(self.e.state/'journal.json').read_bytes()
+        self.m.update(base_version='e5-r2',target_version='e5-r3')
+        self.m['operations'][0].update(before=descriptor(self.root/'usr/lib/test'),after=file(b'third'))
+        self.m['operations'][0]['after'].update(uid=os.getuid(),gid=os.getgid())
+        package(self.p,self.m,{hashlib.sha256(b'third').hexdigest():b'third'})
+        install=self.e.install_descriptor;calls=[]
+        def fail_once(*args):
+            calls.append(args)
+            if len(calls)==1:raise OSError('fixture write failure')
+            return install(*args)
+        with mock.dict(os.environ,{'UNISOC_OTA_RAM':str(ram)}), mock.object(self.e,'install_descriptor',side_effect=fail_once), Patch(self.p) as patch:
+            with self.assertRaisesRegex(OSError,'fixture write failure'):self.e.apply(patch)
+        self.assertEqual((self.e.state/'journal.json').read_bytes(),original)
+        self.assertEqual(len(list(self.e.state.glob('backup-*'))),1)
+        self.assertEqual(self.e.identity()['version'],'e5-r2')
+        self.rollback_cli()
+        self.assertEqual((self.root/'usr/lib/test').read_bytes(),b'old')
+
+    def test_orphaned_staging_and_legacy_runtime_are_cleaned_on_next_update(self):
+        ram=self.runtime_fixture()
+        self.e.state.mkdir(parents=True,exist_ok=True)
+        orphan=self.e.state/'backup-123';orphan.mkdir();(orphan/'partial').touch()
+        legacy=self.e.state/'runtime/lib';legacy.mkdir(parents=True)
+        (legacy/'libatomic.so.1').symlink_to('libatomic.so.1.2.0')
+        personal=self.e.state/'backup-personal';personal.mkdir()
+        with mock.dict(os.environ,{'UNISOC_OTA_RAM':str(ram)}), Patch(self.p) as patch:self.e.apply(patch)
+        self.assertFalse(orphan.exists())
+        self.assertFalse((self.e.state/'runtime').exists())
+        self.assertTrue(personal.exists())
+
     def test_rpc_upload_lock_and_arbitrary_paths(self):
         import importlib.util
         import fcntl
@@ -280,6 +468,8 @@ class EngineTests(unittest.TestCase):
         sys.path.insert(0,str(directory));self.addCleanup(lambda:sys.path.remove(str(directory)))
         spec=importlib.util.spec_from_file_location('ota_test_rpc',directory/'rpc.py')
         rpc=importlib.util.module_from_spec(spec);spec.loader.exec_module(rpc)
+        environment=mock.dict(os.environ,{'UNISOC_OTA_RAM':'/'})
+        environment.start();self.addCleanup(environment.stop)
         self.e.state.mkdir(parents=True)
         rpc.STATE=self.e.state;rpc.UPLOAD=self.e.state/'upload.ota';rpc.JOB=self.e.state/'job.json';rpc.Engine=lambda:self.e
         rpc.UPLOAD.write_bytes(self.p.read_bytes())
@@ -301,6 +491,19 @@ class EngineTests(unittest.TestCase):
                 rpc.dispatch('start',review_id=review_id)
             launch.assert_not_called()
         self.assertTrue(rpc.UPLOAD.exists())
+
+    def test_ram_rpc_reboot_uses_isolated_busybox(self):
+        directory=Path(__file__).resolve().parents[2]/'openwrt/luci-app-unisoc-ota/root/usr/lib/unisoc-ota'
+        sys.path.insert(0,str(directory));self.addCleanup(lambda:sys.path.remove(str(directory)))
+        spec=importlib.util.spec_from_file_location('ota_reboot_rpc',directory/'rpc.py')
+        rpc=importlib.util.module_from_spec(spec);spec.loader.exec_module(rpc)
+        rpc.STATE=self.e.state
+        with mock.dict(os.environ,{'UNISOC_OTA_RAM':'/'}), mock.object(rpc.subprocess,'Popen') as launch:
+            self.assertEqual(rpc.dispatch('reboot')['status'],'rebooting')
+            self.assertEqual(launch.call_args.args[0][-2:],['/ota/busybox','reboot'])
+            self.assertIn('time.sleep(2)',launch.call_args.args[0][2])
+            self.assertIn('os.sync()',launch.call_args.args[0][2])
+            self.assertTrue(launch.call_args.kwargs['pass_fds'])
 
     def test_recovery_cleans_partial_temp_file(self):
         with Patch(self.p) as patch:

@@ -25,7 +25,12 @@ def main():
     with tempfile.TemporaryDirectory(prefix='ota-frozen-',dir=repo/'work') as directory:
         d=Path(directory)
         mu_release(d/'old','mu300-r1')
-        mu_release(d/'new','mu300-r2',{'usr/lib/test':b'new'})
+        # Exercise the shipped executable, not just source modules: different
+        # boot bytes and kernel labels must not block a system-file patch.
+        mu_release(d/'new','mu300-r2',{'usr/lib/test':b'new'},boot=b'changed-boot')
+        metadata=d/'new/desktop/release.json'
+        release=json.loads(metadata.read_text());release['kernel_release']='6.18.54'
+        metadata.write_text(json.dumps(release))
         requests=[dict(protocol=1,id=1,command='ota_analyze',params={'old':str(d/'old'),'new':str(d/'new')}),
                   dict(protocol=1,id=2,command='ota_export',params={'output':str(d/'patch.zip')})]
         if a.e5_release:
@@ -47,6 +52,13 @@ def main():
         if a.e5_release:
             assert replies[3]['ok'],replies[3]
             assert replies[3]['result']['manifest']['family']=='e5'
+            name=replies[3]['result']['suggested_name']
+            assert name.startswith('OpenWrt-patch-E5-25.12.5-k6.18.54-'), name
+            assert '-to-' in name and name.endswith('.zip'), name
+            paths={op['path'] for op in replies[3]['result']['manifest']['operations']}
+            assert 'www/luci-static/resources/unisoc-ota/errors.js' in paths
+            assert 'www/luci-static/resources/view/system/unisoc-ota.js' in paths
+            assert 'usr/share/rpcd/acl.d/unisoc-ota.json' in paths
         if a.native:
             from ota_native_smoke import check_launch
             check_launch(a.runtime/'OpenWrt-Diff-Studio.exe')

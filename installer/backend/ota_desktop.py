@@ -50,20 +50,42 @@ def connect(host, password):
     return client
 
 
-def remote_inspect(client, archive, emit=lambda *_: None):
+def remote_prepare(client, archive, emit=lambda *_: None):
     with Patch(archive) as patch:
-        # Only the installed engine runs with root privileges. The package may
-        # contain data, never its own update program. Bootstrap older releases
-        # through a full installer rather than executing uploaded arbitrary code.
-        execute(client, 'test -f /usr/lib/unisoc-ota/engine.py && command -v python3 >/dev/null')
+        if not patch.manifest.get('runtime'):
+            raise ValueError('This patch does not contain a portable updater runtime')
+        # Only mkdir/cat/chmod and shell builtins are needed to upload the first
+        # static executable over SSH (old Dropbear may have no SFTP server).
+        # All subsequent filesystem/hash/space operations use that executable.
+        runtime = '/tmp/unisoc-ota-'+secrets.token_hex(32)
+        execute(client, 'umask 077; mkdir '+shlex.quote(runtime))
+        bb = shlex.quote(runtime+'/busybox')
+        for key, name in (('busybox', 'busybox'), ('bootstrap', 'bootstrap.sh')):
+            desc = patch.manifest[key]
+            content = patch.archive.read('blobs/'+desc['sha256'])
+            channel = client.get_transport().open_session(timeout=20)
+            cat = 'cat' if key == 'busybox' else bb+' cat'
+            channel.exec_command('umask 077; '+cat+' > '+shlex.quote(runtime+'/'+name))
+            channel.sendall(content); channel.shutdown_write()
+            if channel.recv_exit_status() != 0: raise ValueError('Runtime helper upload failed')
+            if key == 'busybox':
+                execute(client, 'chmod 700 '+shlex.quote(runtime+'/busybox'))
+            got = execute(client, bb+' sha256sum '+shlex.quote(runtime+'/'+name)).split()[0]
+            if got != desc['sha256']: raise ValueError('Runtime helper checksum mismatch')
+        available = set(execute(client, bb+' --list').splitlines())
+        required = {'sh', 'cat', 'chmod', 'mkdir', 'df', 'sha256sum', 'mv',
+                    'unzip', 'cp', 'ln', 'rm', 'mount', 'chroot', 'reboot'}
+        if missing := required-available:
+            raise ValueError('Packaged updater BusyBox lacks: '+', '.join(sorted(missing)))
         destination = '/etc/unisoc-ota/upload-' + patch.id + '.ota'
         total = Path(archive).stat().st_size
-        free = int(execute(client, "df -Pk /etc | awk 'END {print $4}'").strip()) * 1024
+        # POSIX -P layout: filesystem, blocks, used, available, use%, mount.
+        free = int(execute(client, bb+' df -Pk /etc').splitlines()[-1].split()[-3]) * 1024
         if total + (32 << 20) > free:
             raise ValueError('Insufficient device staging space')
-        execute(client, 'umask 077; mkdir -p /etc/unisoc-ota')
+        execute(client, 'umask 077; '+bb+' mkdir -p /etc/unisoc-ota')
         channel = client.get_transport().open_session(timeout=20)
-        channel.exec_command('umask 077; cat > ' + shlex.quote(destination + '.new'))
+        channel.exec_command('umask 077; '+bb+' cat > ' + shlex.quote(destination + '.new'))
         sent = 0
         with Path(archive).open('rb') as stream:
             expected = digest(stream)
@@ -75,12 +97,41 @@ def remote_inspect(client, archive, emit=lambda *_: None):
         channel.shutdown_write()
         if channel.recv_exit_status() != 0:
             raise ValueError('Device upload failed')
-        got = execute(client, 'sha256sum ' + shlex.quote(destination + '.new')).split()[0]
+        got = execute(client, bb+' sha256sum ' + shlex.quote(destination + '.new')).split()[0]
         if got != expected:
             raise ValueError('Device upload checksum mismatch')
-        execute(client, 'mv ' + shlex.quote(destination + '.new') + ' ' + shlex.quote(destination))
-        result = json.loads(execute(client, 'python3 /usr/lib/unisoc-ota/engine.py inspect ' + shlex.quote(destination)))
-        return dict(path=destination, check=result)
+        execute(client, bb+' mv ' + shlex.quote(destination + '.new') + ' ' + shlex.quote(destination))
+        return dict(path=destination, runtime=runtime)
+
+
+def runtime_call(client, session, command, setup=False):
+    home = session['runtime']
+    if setup:
+        shell = ' '.join(map(shlex.quote, [home+'/busybox', 'sh', home+'/bootstrap.sh', session['path'], command, home]))
+    else:
+        shell = 'UNISOC_OTA_ROOT=/target UNISOC_OTA_RAM=/ UNISOC_OTA_LIVE=1 PYTHONHOME=/usr '+shlex.quote(home+'/busybox')+' chroot '+shlex.quote(home+'/root')+' /usr/bin/python3 /ota/rpc.py '+shlex.quote(command)
+    return json.loads(execute(client, shell))
+
+
+def remote_inspect(client, archive, emit=lambda *_: None):
+    session = remote_prepare(client, archive, emit)
+    return dict(**session, check=runtime_call(client, session, 'inspect', setup=True))
+
+
+def refresh_rpc(client):
+    execute(client, '/etc/init.d/rpcd reload', timeout=15)
+    deadline = time.monotonic()+5
+    while True:
+        try:
+            value = json.loads(execute(client, 'ubus call unisoc-ota status', timeout=3))
+            if 'identity' in value and not value.get('error'):
+                return {'status': 'ready'}
+        except (RuntimeError, ValueError):
+            pass
+        if time.monotonic() >= deadline:
+            raise ValueError('unisoc-ota RPC did not register after reload')
+        time.sleep(.1)
+
 
 
 class Desktop:
@@ -89,6 +140,10 @@ class Desktop:
         self.emit = emit
         self.analysis = None
         self.review = None
+        self.runtime_session = None
+        self.archive_path = None
+        self.activated = set()
+        self.pending_reboot = None
         self.last_event = 0
 
     def progress(self, stage, path):
@@ -118,31 +173,93 @@ class Desktop:
             if command == 'ota_package':
                 archive = Path(p.get('path') or self.root / 'update.ota')
                 with Patch(archive) as patch:
+                    self.archive_path = archive
+                    self.review = None
                     return dict(path=str(archive), id=patch.id, manifest=patch.manifest)
             if command == 'ota_probe':
-                archive = Path(p.get('path') or self.root / 'update.ota')
+                self.review = None
+                archive = Path(p.get('path') or self.archive_path or self.root / 'update.ota')
+                self.archive_path = archive
                 with connect(p['host'], p['password']) as client:
                     result = remote_inspect(client, archive, self.emit)
                     key = hashlib.sha256(client.get_transport().get_remote_server_key().asbytes()).hexdigest()
                 token = secrets.token_hex(24)
                 self.review = dict(host=p['host'], key=key, token=token, **result)
+                self.runtime_session = dict(host=p['host'], key=key, **result)
                 return dict(token=token, **result)
             if command == 'ota_apply':
                 r = self.review
                 if not r or p.get('token') != r['token'] or p['host'] != r['host']:
                     raise ValueError('Review this device and patch before applying')
+                auto_reboot = p.get('auto_reboot', False)
+                if type(auto_reboot) is not bool:
+                    raise ValueError('auto_reboot must be a boolean')
                 with connect(p['host'], p['password']) as client:
                     key = hashlib.sha256(client.get_transport().get_remote_server_key().asbytes()).hexdigest()
                     if key != r['key']:
                         raise ValueError('Device SSH identity changed since review')
                     # Installed runner owns the detached transaction. Losing the
                     # PC connection does not kill an in-progress filesystem write.
-                    result = execute(client, 'python3 /usr/lib/unisoc-ota/rpc.py start ' + shlex.quote(r['path']))
+                    result = runtime_call(client, r, 'start', setup=True)
+                    self.runtime_session = r
+                    self.pending_reboot = dict(host=r['host'], key=r['key'], id=r['check']['id']) if auto_reboot else None
                     self.review = None
-                    return json.loads(result)
+                    return result
+            if command == 'ota_reboot':
+                with connect(p['host'], p['password']) as client:
+                    key = hashlib.sha256(client.get_transport().get_remote_server_key().asbytes()).hexdigest()
+                    session = self.runtime_session
+                    if not session or session['host'] != p['host'] or session['key'] != key:
+                        raise ValueError('Check this device before rebooting')
+                    status = runtime_call(client, session, 'status')
+                    if status.get('job', {}).get('status') == 'running' or (status.get('transaction') or {}).get('status') in ('applying', 'rolling_back'):
+                        raise ValueError('The device is still updating; do not reboot')
+                    self.pending_reboot = None
+                    return runtime_call(client, session, 'reboot')
             if command == 'ota_status':
                 with connect(p['host'], p['password']) as client:
-                    return json.loads(execute(client, 'python3 /usr/lib/unisoc-ota/rpc.py status'))
+                    key = hashlib.sha256(client.get_transport().get_remote_server_key().asbytes()).hexdigest()
+                    session = self.runtime_session
+                    setup = not session or session['host'] != p['host'] or session['key'] != key
+                    if not setup:
+                        home = session['runtime']
+                        ready = execute(client, 'if test -x '+shlex.quote(home+'/busybox')+' && test -x '+shlex.quote(home+'/root/usr/bin/python3')+' && test -d '+shlex.quote(home+'/root/target/etc')+'; then echo ready; fi').strip()
+                        setup = ready != 'ready'
+                    if setup:
+                        # Reopening the PC app, retrying after a failed probe,
+                        # and a reboot all use the package's RAM interpreter.
+                        # Status must also work after applying the patch, when
+                        # an inspection against its old base would be rejected.
+                        archive = Path(p.get('path') or self.archive_path or self.root/'update.ota')
+                        if not archive.is_file():
+                            raise ValueError('Select the OTA patch before checking this old device')
+                        session = dict(host=p['host'], key=key, **remote_prepare(client, archive, self.emit))
+                    result = runtime_call(client, session, 'status', setup=setup)
+                    self.runtime_session = session
+                    transaction = result.get('transaction') or {}
+                    job = result.get('job') or {}
+                    if job.get('status') == 'complete' and transaction.get('status') in ('complete', 'rolled_back'):
+                        marker = (p['host'], key, transaction.get('id'), transaction['status'])
+                        activation = (job.get('result') or {}).get('activation') or {}
+                        if marker in self.activated:
+                            activation = {'status': 'ready'}
+                        if marker not in self.activated and activation.get('status') != 'ready':
+                            try:
+                                activation = refresh_rpc(client)
+                            except Exception as error:
+                                activation = {'status': 'warning', 'error': str(error)}
+                        if activation.get('status') == 'ready': self.activated.add(marker)
+                        result['activation'] = activation
+                        pending = self.pending_reboot
+                        if pending and (pending['host'], pending['key'], pending['id']) == (p['host'], key, transaction.get('id')):
+                            self.pending_reboot = None
+                            try:
+                                result['reboot'] = runtime_call(client, session, 'reboot')
+                            except Exception as error:
+                                result['reboot'] = {'status': 'failed', 'error': str(error)}
+                    elif job.get('status') == 'failed':
+                        self.pending_reboot = None
+                    return result
             raise ValueError('Unknown OTA command')
         finally:
             self.emit('ota_activity', {'busy': False})

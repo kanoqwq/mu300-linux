@@ -29,7 +29,7 @@ def main():
             raise ValueError('Select a new output directory (Windows --refresh requires an unchanged owned directory)')
         recorded=json.loads((a.output/'diff-tool.json').read_text(encoding='utf-8'))
         expected={'OpenWrt-Diff-Studio.exe','OpenWrt-Diff-Studio.py'}
-        expected.update('backend/'+n for n in ('__init__.py','ota_engine.py','ota_package.py','ota_desktop.py','ota_bundle.py'))
+        expected.update('backend/'+n for n in ('__init__.py','ota_engine.py','ota_package.py','ota_desktop.py','ota_bundle.py','ota_runtime.py','boot.py','rpc.py','proxy.sh','lz4raw-aarch64.so','errors.js','unisoc-ota.js','unisoc-ota.json'))
         expected.update(path.relative_to(artifact).as_posix() for path in (artifact/'tools/backend').rglob('*') if path.is_file())
         actual={path.relative_to(a.output).as_posix() for path in a.output.rglob('*') if path.is_file() and path.name!='diff-tool.json'}
         if recorded.get('protocol')!=1 or set(recorded.get('files',{}))!=expected or actual!=expected:
@@ -61,8 +61,11 @@ def main():
             shutil.copytree(artifact / 'tools/backend', a.output / 'tools/backend', dirs_exist_ok=a.refresh)
         shutil.copy2(installer / 'ota-tool.py', a.output / 'OpenWrt-Diff-Studio.py')
         (a.output / 'backend').mkdir(exist_ok=a.refresh)
-        for name in ('__init__.py', 'ota_engine.py', 'ota_package.py', 'ota_desktop.py', 'ota_bundle.py'):
-            source = installer.parent/'openwrt/luci-app-unisoc-ota/root/usr/lib/unisoc-ota/engine.py' if name=='ota_engine.py' else installer/'backend'/name
+        for name in ('__init__.py', 'ota_engine.py', 'ota_package.py', 'ota_desktop.py', 'ota_bundle.py', 'ota_runtime.py', 'boot.py', 'rpc.py', 'proxy.sh', 'lz4raw-aarch64.so', 'errors.js', 'unisoc-ota.js', 'unisoc-ota.json'):
+            source = installer.parent/'openwrt/luci-app-unisoc-ota/root/usr/lib/unisoc-ota/engine.py' if name=='ota_engine.py' else installer.parent/'openwrt/luci-app-unisoc-ota/root/usr/lib/unisoc-ota'/name if name in ('boot.py','rpc.py','proxy.sh','lz4raw-aarch64.so','errors.js','unisoc-ota.js','unisoc-ota.json') else installer/'backend'/name
+            if name == 'lz4raw-aarch64.so': source = installer/'ota-native'/name
+            extra = {'errors.js':'htdocs/luci-static/resources/unisoc-ota/errors.js','unisoc-ota.js':'htdocs/luci-static/resources/view/system/unisoc-ota.js','unisoc-ota.json':'root/usr/share/rpcd/acl.d/unisoc-ota.json'}
+            if name in extra: source = installer.parent/'openwrt/luci-app-unisoc-ota'/extra[name]
             shutil.copy2(source, a.output / 'backend' / name)
         files = {path.relative_to(a.output).as_posix(): digest(path)
                  for path in a.output.rglob('*') if path.is_file() and path.name!='diff-tool.json'}

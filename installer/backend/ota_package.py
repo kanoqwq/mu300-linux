@@ -5,6 +5,7 @@ import gzip
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import stat
@@ -12,7 +13,42 @@ import tarfile
 import tempfile
 import zipfile
 
-from .ota_engine import FORMAT, MAX_BYTES, OFFLINE_ONLY, canonical, digest, package_versions, protected, safe_name, validate_manifest
+from .ota_engine import FORMAT, MAX_BYTES, canonical, digest, package_versions, protected, safe_name, validate_manifest
+
+
+def patch_filename(old, new, source):
+    """Human-readable save suggestion from release metadata, never an export gate."""
+    def safe(text, limit=180):
+        text = re.sub(r'[<>:"/\\|?*\x00-\x1f\x7f]', '_', str(text)).strip().rstrip('. ')
+        return text.encode('utf-8')[:limit].decode('utf-8', 'ignore').rstrip('. ')
+
+    def marker(meta):
+        version = meta.get('image_version', '')
+        date = re.search(r'(?:^|-)r?(\d{8}(?:\.\d{6})?)(?=-|$)', version)
+        commit = re.search(r'(?:^|-)g([a-fA-F0-9]{7,64})(?=-|$)', version)
+        if date and commit: return date[1]+'-g'+commit[1][:8].lower()
+
+    start, end = marker(old), marker(new)
+    if not start or not end:
+        # A renamed release still gets a usable name even for legacy metadata.
+        leaf = str(source).replace('\\', '/').rsplit('/', 1)[-1]
+        stem = leaf[:-4] if leaf.lower().endswith('.zip') else leaf
+        stem = safe(stem)
+        return 'OpenWrt-patch'+('-'+stem if stem else '')+'.zip'
+    models = {'e5':'E5', 't551m':'T551M', 't512n':'T512N', 'm8':'M8',
+              'yuanhang41s':'Yuanhang41S', 'k1':'K1', 'u30air':'U30Air',
+              'mu300':'MU300-F50-V50-U30Air', 'f50':'F50', 'v50':'V50'}
+    profile = new.get('profile', '')
+    model = models.get(profile, safe(profile, 32) or 'Device')
+    version = safe(new.get('openwrt', ''), 24)
+    previous = safe(old.get('openwrt', ''), 24)
+    if previous and version and previous != version: version = previous+'-to-'+version
+    kernel = re.match(r'\d+(?:\.\d+){1,3}', new.get('kernel_release', ''))
+    parts = ['OpenWrt', 'patch', model]
+    if version: parts.append(version)
+    if kernel: parts.append('k'+kernel[0])
+    parts += [start, 'to', end]
+    return safe('-'.join(parts), 220)+'.zip'
 
 
 class Release:
@@ -22,6 +58,7 @@ class Release:
         self.stack = ExitStack()
         self.entries = {}
         self.packages = {}
+        self.package_db = b''
 
     def __enter__(self):
         try:
@@ -85,6 +122,7 @@ class Release:
                         raw = stream.read(32 << 20)
                         if len(raw) != node.size:
                             raise ValueError('Oversized package database')
+                        self.package_db = raw
                         self.packages = package_versions(raw)
                         d.update(kind='file', size=node.size, sha256=hashlib.sha256(raw).hexdigest())
                     else:
@@ -153,7 +191,8 @@ class Release:
                             d.update(kind='file', size=child.size, sha256=digest(f))
                             if name == 'lib/apk/db/installed':
                                 f.seek(0)
-                                self.packages = package_versions(f.read(32 << 20))
+                                self.package_db = f.read(32 << 20)
+                                self.packages = package_versions(self.package_db)
                     else:
                         continue
                     self.entries[name] = d
@@ -162,14 +201,11 @@ class Release:
                         walk(child, name + '/')
                 seen.remove(node.inum)
             walk(self.extfs.root)
+        with self.open(self.boot_name) as stream:
+            self.boot_digest = digest(stream)
         for k in ('image_version', 'profile', 'kernel_release', 'openwrt'):
             if not isinstance(self.meta.get(k), str):
                 raise ValueError('Full release has no versioned ' + k)
-        # Hash the meaningful boot as a whole; any initramfs change needs the
-        # full installer until a bound, offline kernel transaction is supported.
-        with self.open(self.boot_name) as f:
-            self.boot_hash = digest(f)
-
     def exists(self, name):
         return self.prefix + name in self.files.namelist() if self.files else (self.source / name).is_file()
 
@@ -217,60 +253,97 @@ def compare(old, new):
     for name in ('family',):
         if getattr(old, name) != getattr(new, name):
             raise ValueError('Packages belong to different device families')
-    for k in ('profile', 'openwrt'):
+    for k in ('profile',):
         if old.meta[k] != new.meta[k]:
             raise ValueError('Incompatible full releases: ' + k)
+    from .ota_runtime import build, bootstrap
+    runtime, busybox, support = build(new)
+    # The exported updater must also install the protocol engine capable of
+    # accepting its future patches, including on the very first migration.
+    if busybox and 'usr/bin/python3' in runtime:
+        for name in ('engine.py', 'boot.py', 'rpc.py', 'proxy.sh'):
+            new.entries['usr/lib/unisoc-ota/'+name] = runtime['ota/'+name]
+        new.entries['usr/libexec/rpcd/unisoc-ota'] = dict(runtime['ota/proxy.sh'], mode=0o755)
+        for name, destination in (
+            ('unisoc-ota.js', 'www/luci-static/resources/view/system/unisoc-ota.js'),
+            ('errors.js', 'www/luci-static/resources/unisoc-ota/errors.js'),
+            ('unisoc-ota.json', 'usr/share/rpcd/acl.d/unisoc-ota.json')):
+            new.entries[destination] = runtime['ota/'+name]
+        for name in ('usr/lib/unisoc-ota', 'usr/libexec', 'usr/libexec/rpcd'):
+            new.entries.setdefault(name, dict(kind='dir', mode=0o755, uid=0, gid=0, xattrs={}))
     operations, preserved, blockers = [], [], []
-    if old.meta['kernel_release'] != new.meta['kernel_release'] or old.boot_hash != new.boot_hash:
-        blockers.append('Kernel/boot changed: use the full installer for this release')
     for name in sorted(set(old.entries) | set(new.entries)):
         before, after = old.entries.get(name), new.entries.get(name)
         if before == after:
             continue
-        if any(name == p or name.startswith(p + '/') for p in OFFLINE_ONLY):
-            blockers.append('Core runtime/module/updater changed; use the full installer: ' + name)
-            continue
-        if protected(name):
-            preserved.append(name)
-            continue
+        merge = None
+        if name in ('etc/e5/release.json', 'etc/mu300/release.json'):
+            merge = 'release'
+        elif name in ('etc/passwd', 'etc/shadow', 'etc/group', 'etc/gshadow'):
+            merge = 'accounts'
+        elif name == 'etc/apk/world':
+            merge = 'world'
+        elif name == 'lib/apk/db/installed':
+            merge = 'apk-db'
+        elif name == 'lib/apk/db/scripts.tar':
+            merge = 'apk-scripts'
+        elif name == 'lib/apk/db/triggers':
+            merge = 'apk-triggers'
+        elif protected(name):
+            # Config defaults may be introduced, but never overwrite a device's
+            # existing value or re-create an already-consumed uci-default script.
+            if name.startswith('etc/') and before is None and after and after['kind'] != 'dir' and not name.startswith(('etc/unisoc-ota/', 'etc/uci-defaults/')):
+                merge = 'default'
+            else:
+                preserved.append(name)
+                continue
         if before and before['kind'] == 'dir' and not after:
-            # Keeping an unused directory preserves user-installed contents.
             preserved.append(name)
             continue
-        operations.append(dict(path=name, before=before, after=after))
-    # Do not silently install files of new/removed APK packages without running
-    # package ownership/dependency/script handling. Same package set hotfixes are
-    # explicitly tracked as file overrides, leaving user packages untouched.
-    for name in ('lib/apk/db/installed', 'usr/lib/opkg/status'):
-        a, b = old.entries.get(name), new.entries.get(name)
-        if (a is None) != (b is None):
-            blockers.append('Package database format changed')
-    owned = {'luci-app-t551m', 'luci-app-mu300'}
-    if set(old.packages) != set(new.packages):
-        blockers.append('Installed package set changed; use the full installer')
-    for name in sorted(set(old.packages) & set(new.packages)):
-        a, b = old.packages[name], new.packages[name]
-        if name in owned:
-            a = dict(a, V=b['V'])
-        if a != b:
-            blockers.append('Package ABI/dependencies changed: ' + name)
+        op = dict(path=name, before=before, after=after)
+        if merge: op['merge'] = merge
+        operations.append(op)
+    # The release database is merged by package name on the device. User-added
+    # packages, ownership records, world selections and data are never replaced
+    # with the build machine's package database.
     m = dict(format=FORMAT, family=new.family, profile=new.meta['profile'],
              base_version=old.meta['image_version'], target_version=new.meta['image_version'],
              kernel_release=new.meta['kernel_release'], operations=operations,
-             preserved=preserved, mode='file-hotfix', base_packages=old.packages)
-    if operations:
-        try:
-            validate_manifest(m)
-        except ValueError as e:
-            blockers.append(str(e))
-    else:
-        blockers.append('No hotfixable system files changed')
+             preserved=preserved, mode='differential', base_packages=old.packages,
+             target_packages=new.packages)
+    old_boot = old.boot_digest
+    with new.open(new.boot_name) as stream:
+        content = stream.read(128 << 20)
+    new_boot = hashlib.sha256(content).hexdigest()
+    extra = {}
+    if old_boot != new_boot:
+        m['boot'] = dict(sha256=new_boot, size=len(content))
+        extra[new_boot] = content
+    if busybox and 'usr/bin/python3' in runtime:
+        m['runtime'] = runtime
+        m['busybox'] = busybox
+        script = bootstrap(runtime, busybox)
+        h = hashlib.sha256(script).hexdigest()
+        m['bootstrap'] = dict(sha256=h, size=len(script))
+        support[h] = script
+        extra.update(support)
+    # Missing runtime only matters to actual bootstrap, not to generation of
+    # synthetic/test releases. Real full releases contain static BusyBox/Python.
+    try:
+        validate_manifest(m)
+    except ValueError as e:
+        blockers.append(str(e))
     blobs = {o['after']['sha256']: o['after']['size'] for o in operations
              if o['after'] and o['after']['kind'] == 'file'}
+    for desc in m.get('runtime', {}).values():
+        if desc['kind'] == 'file': blobs[desc['sha256']] = desc['size']
+    for key in ('boot', 'busybox', 'bootstrap'):
+        if key in m: blobs[m[key]['sha256']] = m[key]['size']
     return dict(manifest=m, blockers=blockers, can_export=not blockers,
+                suggested_name=patch_filename(old.meta, new.meta, new.source),
                 payload_bytes=sum(blobs.values()), files=len(operations),
                 added=sum(o['before'] is None for o in operations),
-                removed=sum(o['after'] is None for o in operations))
+                removed=sum(o['after'] is None for o in operations)), extra
 
 
 def analyze(old_path, new_path, output=None, progress=lambda *_: None):
@@ -279,7 +352,7 @@ def analyze(old_path, new_path, output=None, progress=lambda *_: None):
     with Release(old_path, progress) as old:
         pass
     with Release(new_path, progress) as new:
-        result = compare(old, new)
+        result, extra = compare(old, new)
         if output:
             if result['blockers']:
                 raise ValueError('; '.join(result['blockers'][:12]))
@@ -294,7 +367,11 @@ def analyze(old_path, new_path, output=None, progress=lambda *_: None):
                     archive.writestr('manifest.json', canonical(result['manifest']))
                     wanted = {o['after']['sha256'] for o in result['manifest']['operations']
                               if o['after'] and o['after']['kind'] == 'file'}
-                    new.write_blobs(archive, wanted)
+                    for desc in result['manifest'].get('runtime', {}).values():
+                        if desc['kind'] == 'file': wanted.add(desc['sha256'])
+                    for h, content in extra.items():
+                        archive.writestr('blobs/'+h, content)
+                    new.write_blobs(archive, wanted-set(extra))
                 from .ota_engine import Patch
                 with Patch(tmp):
                     pass

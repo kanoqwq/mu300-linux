@@ -16,7 +16,7 @@ export interface Transfer {name: string; bytes: number; total: number; bytes_per
 export interface BackendEvent {type: string; data: unknown}
 export const request = <T = unknown>(command: string, params: Record<string, unknown> = {}) => invoke<T>('backend_request', {command, params});
 export const subscribe = (handler: (event: BackendEvent) => void) => listen<BackendEvent>('backend', event => handler(event.payload));
-export const native = <T = string | null>(command: string) => invoke<T>(command);
+export const native = <T = string | null>(command: string, args?: Record<string, unknown>) => invoke<T>(command, args);
 export const gib = (bytes = 0) => (bytes / 1073741824).toFixed(2) + ' GiB';
 export function stateGroup(stage: string): number {
   if (['plan', 'package', 'device', 'environment'].includes(stage)) return 0;

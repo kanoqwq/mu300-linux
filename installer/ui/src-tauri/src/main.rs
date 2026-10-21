@@ -6,7 +6,7 @@ use std::{collections::HashMap, io::{BufRead, BufReader, Write}, path::PathBuf,
 use tauri::{Emitter, Manager, State};
 use tokio::sync::oneshot;
 
-const COMMANDS: &[&str] = &["hello","snapshot","list","package","devices","adb_connect","adb_disconnect","probe","probe_update","plan","start","resume","retry","cancel","can_close","export","import","diagnostics","verify_openwrt","ota_analyze","ota_export","ota_package","ota_probe","ota_apply","ota_status"];
+const COMMANDS: &[&str] = &["hello","snapshot","list","package","devices","adb_connect","adb_disconnect","probe","probe_update","plan","start","resume","retry","cancel","can_close","export","import","diagnostics","verify_openwrt","ota_analyze","ota_export","ota_package","ota_probe","ota_apply","ota_status","ota_reboot"];
 struct Bridge {
     input: Mutex<Option<ChildStdin>>,
     pending: Mutex<HashMap<u64, oneshot::Sender<Result<Value, String>>>>,
@@ -44,8 +44,23 @@ async fn pick_ota_input() -> Option<String> {
     tauri::async_runtime::spawn_blocking(|| rfd::FileDialog::new().set_title("Select release ZIP or OTA / 选择发行包或差异包").add_filter("OpenWrt packages", &["zip","ota"]).pick_file().map(|p|p.to_string_lossy().to_string())).await.ok().flatten()
 }
 #[tauri::command]
-async fn save_ota() -> Option<String> {
-    tauri::async_runtime::spawn_blocking(|| rfd::FileDialog::new().set_file_name("OpenWrt-patch.zip").add_filter("Desktop + Web", &["zip"]).add_filter("Web OTA only", &["ota"]).save_file().map(|p|p.to_string_lossy().to_string())).await.ok().flatten()
+async fn save_ota(suggested_name: Option<String>, release_path: Option<String>) -> Option<String> {
+    let name = suggested_patch_name(suggested_name.as_deref(), release_path.as_deref());
+    tauri::async_runtime::spawn_blocking(move || rfd::FileDialog::new().set_file_name(name).add_filter("Desktop + Web", &["zip"]).add_filter("Web OTA only", &["ota"]).save_file().map(|p|p.to_string_lossy().to_string())).await.ok().flatten()
+}
+
+fn suggested_patch_name(suggested_name: Option<&str>, release_path: Option<&str>) -> String {
+    // Analyze once using verified release metadata; native dialog only sanitizes.
+    let candidate = if let Some(name) = suggested_name.filter(|name| !name.trim().is_empty()) {
+        name.to_owned()
+    } else {
+        let leaf = release_path.unwrap_or("").rsplit(['/', '\\']).next().unwrap_or("");
+        let stem = if leaf.to_ascii_lowercase().ends_with(".zip") { &leaf[..leaf.len()-4] } else { leaf };
+        if stem.is_empty() { "OpenWrt-patch.zip".into() } else { format!("OpenWrt-patch-{stem}.zip") }
+    };
+    let safe: String = candidate.chars().map(|c| if c.is_control() || "<>:\"/\\|?*".contains(c) { '_' } else { c }).collect();
+    let safe = safe.trim().trim_end_matches(['.', ' ']);
+    if safe.is_empty() { "OpenWrt-patch.zip".into() } else { safe.into() }
 }
 #[tauri::command]
 async fn pick_recovery() -> Option<String> {
@@ -234,6 +249,34 @@ fn main() {
 mod tests {
     use super::*;
     use std::path::Path;
+
+    #[test]
+    fn patch_name_uses_analyzed_identity_without_reparsing_the_zip_name() {
+        let name = "OpenWrt-patch-T551M-25.12.5-k6.18.54-20261020.215049-gb8d4f222-to-20261021.075202-g99570375.zip";
+        assert_eq!(suggested_patch_name(Some(name), Some("/release/renamed.zip")), name);
+        assert_eq!(suggested_patch_name(Some("bad/name?.zip"), None), "bad_name_.zip");
+    }
+
+    #[test]
+    fn patch_name_falls_back_without_errors_on_both_platforms() {
+        for (path, name) in [
+            (Some(r"D:\Releases\t551m-openwrt-r123-k6.18.54.zip"), "OpenWrt-patch-t551m-openwrt-r123-k6.18.54.zip"),
+            (Some("/Users/test/MU300-发行包.ZIP"), "OpenWrt-patch-MU300-发行包.zip"),
+            (Some("/release/new:bad?.zip"), "OpenWrt-patch-new_bad_.zip"),
+            (Some(".zip"), "OpenWrt-patch.zip"),
+            (None, "OpenWrt-patch.zip"),
+        ] {
+            assert_eq!(suggested_patch_name(None, path), name);
+            assert_eq!(suggested_patch_name(Some("   "), path), name);
+        }
+    }
+
+    #[test]
+    fn updater_actions_are_exposed_by_native_bridge() {
+        for command in ["ota_package", "ota_probe", "ota_apply", "ota_status", "ota_reboot"] {
+            assert!(COMMANDS.contains(&command), "{command} missing from the native bridge");
+        }
+    }
 
     #[test]
     fn public_entry_selects_page() {
