@@ -1,0 +1,10 @@
+{
+    "data-root": "/mnt/mu300-disk/docker/openwrt",
+    "storage-driver": "overlay2",
+    "features": { "containerd-snapshotter": false },
+    "firewall-backend": "nftables",
+    "ip6tables": false,
+    "default-address-pools": [ { "base": "172.16.0.0/12", "size": 20 } ],
+    "log-driver": "local",
+    "log-level": "warn"
+}

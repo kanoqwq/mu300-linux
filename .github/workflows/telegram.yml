@@ -1,0 +1,39 @@
+name: Telegram
+
+# The project's Telegram channel hears about a release when it is published (a prerelease too) and when a prerelease
+# becomes the latest release (tools/telegram-announce.sh). The Magisk zips say so from magisk.yml once they are
+# attached. Pushes to main are not announced. For a message about an existing release: Actions > Telegram > Run
+# workflow, with its tag. Secrets: TELEGRAM_BOT_TOKEN (the bot is an admin of the channel), TELEGRAM_CHAT_ID.
+on:
+  release:
+    types: [published, released]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag, e.g. v2026.10.21'
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: telegram-${{ github.event.release.tag_name || github.event.inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  announce:
+    # only the project's releases (vYYYY.MM.DD.N; up to v2026.10.27 vYYYY.MM.DD - docs/FINDINGS.md 125): a test build
+    # for an issue, published as a pre-release under another tag (test-issue-102), is neither announced nor given
+    # Magisk zips
+    if: startsWith(github.event.release.tag_name || github.event.inputs.tag, 'v')
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || github.event.inputs.tag }}
+      ACTION: ${{ github.event.action || 'published' }}
+      GH_TOKEN: ${{ github.token }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Announce
+        run: sh tools/telegram-announce.sh release "$TAG" "$ACTION"

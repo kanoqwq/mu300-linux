@@ -1,0 +1,7 @@
+#!/bin/sh /etc/rc.common
+# Before dropbear: carry the accounts over from the system an older mu300-update replaced (mu300-update accounts)
+START=11
+boot() {
+	[ -e /etc/.mu300-accounts-from-image ] && /opt/mu300/bin/mu300-update accounts >/tmp/mu300-accounts.log 2>&1
+	return 0
+}

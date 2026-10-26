@@ -1,0 +1,13 @@
+#!/bin/sh /etc/rc.common
+# keep the modem's log channel empty (see /opt/mu300/bin/modem-log-drain)
+START=92
+USE_PROCD=1
+export PATH="$PATH:/opt/mu300/busybox-bin"
+
+start_service() {
+	[ -x /opt/mu300/bin/modem-log-drain ] || return 0
+	procd_open_instance slog
+	procd_set_param command /opt/mu300/bin/modem-log-drain
+	procd_set_param respawn 3600 10 0
+	procd_close_instance
+}

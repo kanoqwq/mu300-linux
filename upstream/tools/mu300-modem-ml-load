@@ -1,0 +1,14 @@
+#!/bin/sh
+# load the vendor modem stack in the 5.4 order, logging each step to the kernel log.
+# sipa-dele is deliberately absent: its DT node (/soc/ipa-apb/sipa-dele) carries only a compatible string with no
+# registers, and the 5.4 vendor kernel never loads the driver either - loading it on 6.18 only produced a
+# "get resource failed for remote-base" error that looked like a modem failure but is not one.
+for m in sprd_systimer sprd_time_sync sprd_time_sync_cp trusty trusty-pm trusty-log trusty-irq trusty-ipc trusty-virtio sprd_shm unisoc-mailbox sprd-sipc-virt-bus \
+         sprd_power_manager sipc-core spipe spool sipx seth slog_bridge sbuf_bridge sblock_bridge sprd_modem_loader \
+         sipa-sys sipa-core sipa_eth; do
+    echo "MU300-ML load $m" > /dev/kmsg
+    timeout 30 modprobe "$m" || { echo "MU300-ML FAIL $m" > /dev/kmsg; echo "FAIL $m"; exit 1; }
+    sync; sleep 1
+done
+echo "MU300-ML all loaded" > /dev/kmsg
+echo done

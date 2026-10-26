@@ -1,0 +1,17 @@
+{
+    "version": 0,
+    "requires": {
+        "cockpit": "300"
+    },
+    "menu": {
+        "index": {
+            "label": "MU300",
+            "order": 5,
+            "keywords": [
+                {
+                    "matches": [ "mu300", "modem", "signal", "sms", "vpn", "battery", "hotspot", "wifi", "cpu", "update", "apn", "sim", "ttl", "ussd", "backup", "led", "zram" ]
+                }
+            ]
+        }
+    }
+}

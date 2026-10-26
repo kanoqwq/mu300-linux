@@ -1,0 +1,38 @@
+{
+  "version": "v2.0.0-test",
+  "enabled": true,
+  "running": true,
+  "since": null,
+  "kill_switch": {
+    "setting": true,
+    "active": false
+  },
+  "ipv6": {
+    "setting": "auto",
+    "tunnel": false,
+    "guard": false
+  },
+  "profile": {
+    "id": "office",
+    "name": "Office",
+    "type": "xray",
+    "engine": "sing-box"
+  },
+  "engine": {
+    "name": "sing-box",
+    "extra": "vpn-singbox",
+    "installed": true,
+    "usable": true,
+    "reason": null
+  },
+  "tunnel": {
+    "iface": "lo",
+    "up": true,
+    "addresses": [
+      "127.0.0.1/8",
+      "::1/128"
+    ]
+  },
+  "exit_ip": "203.0.113.77",
+  "missing_engine": null
+}

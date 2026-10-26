@@ -1,0 +1,88 @@
+sipa_delegate: an "already active" power domain is success (pm_runtime_resume_and_get), a failure is answered instead of spun on, runtime PM is on before the connection thread starts
+
+Same fix as upstream/modules (docs/FINDINGS.md 31f): pm_runtime_get_sync() returns 1 when the device is active
+already, and the vendor loop took any non-zero value for a failure and retried every millisecond for ever - a
+soft lockup panic in dele-4-5 (seen at a 6.18 shutdown on the U30 Air).
+
+--- a/drivers/net/sprd/sipa_delegate/sipa_dele_cp_in_ap.c	2026-10-05 03:01:27
++++ b/drivers/net/sprd/sipa_delegate/sipa_dele_cp_in_ap.c	2026-10-05 03:01:51
+@@ -16,7 +16,6 @@
+ #endif
+ #define pr_fmt(fmt) "sipa_dele: " fmt
+ 
+-#include <linux/delay.h>
+ #include <linux/slab.h>
+ #include <linux/device.h>
+ #include <linux/init.h>
+@@ -42,28 +41,38 @@
+ 	switch (flag) {
+ 	case SMSG_FLG_DELE_ENABLE:
+ 		delegator->pd_eb_flag = true;
+-check_again:
+-		ret = pm_runtime_get_sync(delegator->pdev);
+-		if (ret) {
+-			pm_runtime_put(delegator->pdev);
+-			pr_warn("sipa_dele get pd fail ret = %d\n", ret);
+-			mdelay(1);
+-			goto check_again;
+-		} else {
+-			delegator->pd_get_flag = true;
+-			sipa_set_enabled(true);
++		/* A repeated ENABLE must not take another runtime-PM reference. */
++		if (delegator->pd_get_flag) {
+ 			sipa_dele_start_done_work(delegator,
+ 						  SMSG_FLG_DELE_ENABLE,
+ 						  SMSG_VAL_DELE_REQ_SUCCESS);
+-			pr_info("sipa_dele get pd success ret = %d\n", ret);
++			break;
+ 		}
++		/* get_sync() can return 1 on success and keeps its reference on error. */
++		ret = pm_runtime_resume_and_get(delegator->pdev);
++		if (ret < 0) {
++			delegator->pd_eb_flag = false;
++			pr_err("sipa_dele get pd fail ret = %d, ENABLE answered with FAIL\n", ret);
++			sipa_dele_start_done_work(delegator,
++						  SMSG_FLG_DELE_ENABLE,
++						  SMSG_VAL_DELE_REQ_FAIL);
++			break;
++		}
++		delegator->pd_get_flag = true;
++		sipa_set_enabled(true);
++		sipa_dele_start_done_work(delegator,
++					  SMSG_FLG_DELE_ENABLE,
++					  SMSG_VAL_DELE_REQ_SUCCESS);
++		pr_info("sipa_dele get pd success ret = %d\n", ret);
+ 
+ 		break;
+ 	case SMSG_FLG_DELE_DISABLE:
+ 		delegator->pd_eb_flag = false;
+-		sipa_set_enabled(false);
+-		pm_runtime_put(delegator->pdev);
+-		delegator->pd_get_flag = false;
++		if (delegator->pd_get_flag) {
++			sipa_set_enabled(false);
++			pm_runtime_put(delegator->pdev);
++			delegator->pd_get_flag = false;
++		}
+ 		break;
+ 	default:
+ 		break;
+@@ -177,10 +186,16 @@
+ 	s_cp_delegator->delegator.pd_get_flag = false;
+ 	s_cp_delegator->delegator.smsg_cnt = 0;
+ 	/* MU300: its result used to be ignored, so a PROD_CP it had deleted again went unnoticed */
++	/*
++	 * MU300: runtime PM before the start: the connection thread starts in there and can be handed an ENABLE at
++	 * once, which now fails on a device whose runtime PM is still off (-EACCES) instead of spinning until it is on
++	 */
++	pm_runtime_enable(s_cp_delegator->delegator.pdev);
+ 	ret = sipa_delegator_start(&s_cp_delegator->delegator);
+-	if (ret)
++	if (ret) {
++		pm_runtime_disable(s_cp_delegator->delegator.pdev);
+ 		return ret;
+-	pm_runtime_enable(s_cp_delegator->delegator.pdev);
++	}
+ 
+ 	/*
+ 	 * MU300: the Wi-Fi offload path, which this device does not use (the CONS_WIFI resources stay released): a

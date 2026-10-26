@@ -1,0 +1,241 @@
+--- a/adb/daemon/main.cpp
++++ b/adb/daemon/main.cpp
+@@ -194,7 +194,12 @@
+ }
+ 
+ int adbd_main(int server_port) {
++#if defined(__ANDROID__)
+     umask(0);
++#else
++    // MU300 Linux: the shells and the files of a root daemon are not world-writable
++    umask(022);
++#endif
+ 
+     signal(SIGPIPE, SIG_IGN);
+ 
+@@ -209,7 +214,9 @@
+ 
+     // We need to call this even if auth isn't enabled because the file
+     // descriptor will always be open.
++#if defined(__ANDROID__)
+     adbd_cloexec_auth_socket();
++#endif
+ 
+ #if defined(__ANDROID__)
+     bool device_unlocked = android::base::GetProperty("ro.boot.verifiedbootstate", "") == "orange";
+@@ -225,6 +232,15 @@
+         auth_required = android::base::GetBoolProperty("ro.adb.secure", false);
+ #endif
+     }
++#else
++    // MU300 Linux: one switch, set by mu300-adbd from "mu300-usb adb auth open|keys" when it starts this daemon.
++    // MU300_ADB_AUTH=open is Android's ro.adb.secure=0: every computer on the USB cable is accepted without a
++    // key and gets a root shell (the default since the owner's decision of 2026-10-13, FINDINGS 70). Anything
++    // else, a missing variable included, is ro.adb.secure=1: only a key in /etc/mu300/adb_keys or
++    // /root/.android/adb_keys gets in. No property and no option does the same.
++    const char* mu300_adb_auth = getenv("MU300_ADB_AUTH");
++    auth_required = !(mu300_adb_auth != nullptr && std::string(mu300_adb_auth) == "open");
++    LOG(INFO) << "authentication: " << (auth_required ? "keys" : "open (every computer is accepted)");
+ #endif
+ 
+     // Our external storage path may be different than apps, since
+@@ -252,7 +268,7 @@
+ 
+     bool is_usb = false;
+ 
+-#if defined(__ANDROID__)
++#if defined(__linux__)
+     if (access(USB_FFS_ADB_EP0, F_OK) == 0) {
+         // Listen on USB.
+         usb_init();
+@@ -260,6 +276,16 @@
+     }
+ #endif
+ 
++#if !defined(__ANDROID__)
++    // MU300 Linux: USB only. No TCP or vsock listener, whatever the properties or the environment say: the
++    // device's LAN and Wi-Fi clients must never reach a root shell.
++    if (!is_usb) {
++        LOG(ERROR) << "no FunctionFS at " << USB_FFS_ADB_EP0 << " (mu300-usb adb on sets it up)";
++        return 1;
++    }
++    (void)setup_adb;
++#else
++
+     // If one of these properties is set, also listen on that port.
+     // If one of the properties isn't set and we couldn't listen on usb, listen
+     // on the default port.
+@@ -296,6 +322,7 @@
+         addrs = android::base::Split(prop_addr, ",");
+         setup_adb(addrs);
+     }
++#endif
+ 
+     LOG(INFO) << "adbd started";
+ 
+--- a/adb/daemon/usb.cpp
++++ b/adb/daemon/usb.cpp
+@@ -48,7 +48,9 @@
+ 
+ #include "adb_unique_fd.h"
+ #include "adb_utils.h"
++#if defined(__ANDROID__)
+ #include "daemon/property_monitor.h"
++#endif
+ #include "daemon/usb_ffs.h"
+ #include "sysdeps/chrono.h"
+ #include "transfer_id.h"
+@@ -270,2 +272,8 @@
+-                // If we don't see our first bind within a second, try again.
++                // Linux's supervisor waits five seconds before recovering an unbound
++                // gadget. Keep these descriptors alive across that grace period instead
++                // of closing ep0 every second while it is about to bind them.
++#if defined(__ANDROID__)
+                 int timeout_ms = bound ? -1 : 1000;
++#else
++                int timeout_ms = bound ? -1 : 10000;
++#endif
+@@ -401,6 +409,13 @@
+         CHECK(!worker_started_);
+         worker_started_ = true;
+         worker_thread_ = std::thread([this]() {
++            // MU300 Linux: say when this thread is done. StopWorker waited for pthread_kill(t, 0) to fail with
++            // ESRCH, which musl never does for a thread that has exited but is not joined yet: adbd hung for good
++            // at the end of every USB connection (an unbind, a computer that unplugs).
++            struct ExitFlag {
++                std::atomic<bool>* f;
++                ~ExitFlag() { *f = true; }
++            } exit_flag{&worker_exited_};
+             adb_thread_setname("UsbFfs-worker");
+             LOG(INFO) << "UsbFfs-worker thread spawned";
+ 
+@@ -434,7 +449,7 @@
+         }
+ 
+         pthread_t worker_thread_handle = worker_thread_.native_handle();
+-        while (true) {
++        while (!worker_exited_) {
+             int rc = pthread_kill(worker_thread_handle, kInterruptionSignal);
+             if (rc != 0) {
+                 LOG(ERROR) << "failed to send interruption signal to worker: " << strerror(rc);
+@@ -707,6 +722,7 @@
+ 
+     bool worker_started_;
+     std::thread worker_thread_;
++    std::atomic<bool> worker_exited_ = false;
+ 
+     std::atomic<bool> stopped_;
+     std::promise<void> destruction_notifier_;
+@@ -744,6 +760,7 @@
+ static void usb_ffs_open_thread() {
+     adb_thread_setname("usb ffs open");
+ 
++#if defined(__ANDROID__)
+     // When the device is acting as a USB host, we'll be unable to bind to the USB gadget on kernels
+     // that don't carry a downstream patch to enable that behavior.
+     //
+@@ -757,6 +774,7 @@
+         // Return false (i.e. break out of PropertyMonitor::Run) when the property != 1.
+         return android::base::ParseBool(value) == android::base::ParseBoolResult::kTrue;
+     });
++#endif
+ 
+     while (true) {
+         unique_fd control;
+@@ -767,11 +785,13 @@
+             continue;
+         }
+ 
++#if defined(__ANDROID__)
+         if (android::base::GetBoolProperty(kPropertyUsbDisabled, false)) {
+             LOG(INFO) << "pausing USB due to " << kPropertyUsbDisabled;
+             prop_mon.Run();
+             LOG(INFO) << "resuming USB";
+         }
++#endif
+ 
+         atransport* transport = new atransport();
+         transport->serial = "UsbFfs";
+--- a/adb/daemon/shell_service.cpp
++++ b/adb/daemon/shell_service.cpp
+@@ -269,12 +269,18 @@
+         }
+     }
+ 
++    std::string login_shell;
++    if (pw != nullptr && pw->pw_shell != nullptr) login_shell = pw->pw_shell;
+     if (pw != nullptr) {
+         env["HOME"] = pw->pw_dir;
+         env["HOSTNAME"] = GetHostName();
+         env["LOGNAME"] = pw->pw_name;
+         env["SHELL"] = pw->pw_shell;
++#if defined(__ANDROID__)
+         env["TMPDIR"] = "/data/local/tmp";
++#else
++        env["TMPDIR"] = "/tmp";
++#endif
+         env["USER"] = pw->pw_name;
+     }
+ 
+@@ -388,6 +394,13 @@
+ 
+         if (command_.empty()) {
+             // Spawn a login shell if we don't have a command.
++#if !defined(__ANDROID__)
++            // MU300 Linux: the user's own login shell (bash on Ubuntu, ash on OpenWrt), as over SSH
++            if (!login_shell.empty() && access(login_shell.c_str(), X_OK) == 0) {
++                std::string argv0 = "-" + login_shell.substr(login_shell.rfind('/') + 1);
++                execle(login_shell.c_str(), argv0.c_str(), nullptr, cenv.data());
++            }
++#endif
+             execle(_PATH_BSHELL, "-" _PATH_BSHELL, nullptr, cenv.data());
+         } else {
+             execle(_PATH_BSHELL, _PATH_BSHELL, "-c", command_.c_str(), nullptr, cenv.data());
+--- a/adb/daemon/file_sync_service.cpp
++++ b/adb/daemon/file_sync_service.cpp
+@@ -524,8 +524,13 @@
+     } else {
+         // Copy user permission bits to "group" and "other" permissions.
+         mode &= 0777;
++#if defined(__ANDROID__)
+         mode |= ((mode >> 3) & 0070);
+         mode |= ((mode >> 3) & 0007);
++#else
++        // MU300 Linux: the computer's bits, never writable by group and others (a root daemon's files)
++        mode &= ~022;
++#endif
+ 
+         uid_t uid = -1;
+         gid_t gid = -1;
+--- a/native/libs/adbd_auth/adbd_auth.cpp
++++ b/native/libs/adbd_auth/adbd_auth.cpp
+@@ -93,9 +93,17 @@
+             PLOG(FATAL) << "adbd_auth: failed to create eventfd";
+         }
+ 
++#if defined(__ANDROID__)
+         sock_fd_.reset(android_get_control_socket("adbd"));
++#else
++        // MU300 Linux: no framework that could approve a key (Android hands its socket over in the environment,
++        // ANDROID_SOCKET_adbd): a key is authorised by its line in an adb_keys file, and only so.
++        sock_fd_.reset(-1);
++#endif
+         if (sock_fd_ == -1) {
++#if defined(__ANDROID__)
+             PLOG(ERROR) << "adbd_auth: failed to get adbd authentication socket";
++#endif
+         } else {
+             if (fcntl(sock_fd_.get(), F_SETFD, FD_CLOEXEC) != 0) {
+                 PLOG(FATAL) << "adbd_auth: failed to make adbd authentication socket cloexec";
+@@ -390,7 +398,11 @@
+         }
+     }
+ 
++#if defined(__ANDROID__)
+     static constexpr const char* key_paths[] = {"/adb_keys", "/data/misc/adb/adb_keys"};
++#else
++    static constexpr const char* key_paths[] = {"/etc/mu300/adb_keys", "/root/.android/adb_keys"};
++#endif
+     void IteratePublicKeys(bool (*callback)(void*, const char*, size_t), void* opaque) {
+         for (const auto& path : key_paths) {
+             if (access(path, R_OK) == 0) {

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "home-wg",
+    "host": "wg.example.org",
+    "port": 51820,
+    "ms": null,
+    "via": "direct",
+    "error": "udp"
+  },
+  {
+    "id": "office",
+    "host": "vpn.example.com",
+    "port": 443,
+    "ms": 40,
+    "via": "direct",
+    "error": null
+  },
+  {
+    "id": "trojan",
+    "host": "tr.example.net",
+    "port": 443,
+    "ms": 10,
+    "via": "direct",
+    "error": null
+  }
+]

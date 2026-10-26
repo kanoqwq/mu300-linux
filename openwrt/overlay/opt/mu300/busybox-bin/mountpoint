@@ -1,0 +1,5 @@
+#!/bin/sh
+# mountpoint [-q] DIR: neither OpenWrt's nor the static busybox has this applet; our scripts only need the test
+[ "$1" = -q ] && shift
+d=$(cd "$1" 2>/dev/null && pwd -P) || exit 1
+awk -v m="$d" '$2 == m { f = 1 } END { exit !f }' /proc/mounts

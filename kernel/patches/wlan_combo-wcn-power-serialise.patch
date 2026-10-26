@@ -1,0 +1,199 @@
+sprd_wlan_combo: one WCN power transition at a time; an RX interrupt without a context is dropped, not a panic
+
+power_cnt is atomic, the transitions behind it are not. The probe powers the chip off after it registered wlan0,
+outside RTNL, so userspace (hostapd, netifd) can open the interface meanwhile: the open's power-on ran
+start_marlin + post_init while the probe's power-off was still in post_deinit, which then cleared the channels and
+sc2355_hif.hif that post_init had just set; the next RX interrupt read hif->rx_mgmt from NULL in hard IRQ
+(pcie_rx_handle+0x34, "paging request at 00000000000030b8", seen under 6.18 in FINDINGS 31n; the 5.4 driver has
+the same code). sprd_iface_set_power holds a mutex across the transition; pcie_rx_handle drops a list that
+arrives with no context and logs it once; the context pointer is published with release/acquire.
+On the way: probe's error paths and remove powered off after sprd_core_free had freed hif (now before), and a
+power-on that failed in post_init or the version sync left the chip started, and after a failed sync the
+channels registered, with the count at 0 (now undone as a power-off does).
+
+--- a/common/hif.h
++++ b/common/hif.h
+@@ -12,6 +12,7 @@
+ #ifndef __HIF_H__
+ #define __HIF_H__
+ 
++#include <linux/mutex.h>
+ #include <linux/platform_device.h>
+ #include <misc/marlin_platform.h>
+ 
+@@ -117,6 +118,8 @@
+ 
+ 	int exit;
+ 	atomic_t power_cnt;
++	/* MU300: one WCN power transition at a time (sprd_iface_set_power) */
++	struct mutex power_lock;
+ 	int flag;
+ 	int lastflag;
+ 	u8 cp_asserted;
+@@ -289,6 +292,9 @@
+ 	}
+ 
+ 	if (sprd_hif_post_init(hif)) {
++		/* MU300: post_init unwound its channels; the chip was started, stop it as a power-off would */
++		if (stop_marlin(MARLIN_WIFI))
++			pr_err("stop_marlin failed!!\n");
+ 		atomic_sub(1, &hif->power_cnt);
+ 		return -ENODEV;
+ 	}
+@@ -301,6 +307,15 @@
+ 	}
+ 
+ 	if (sprd_sync_version(hif)) {
++		/*
++		 * MU300: undo the power-on as sprd_hif_power_off() does.  The vendor left the channels registered
++		 * and the chip started with the count at 0: the next power-on registered them again over live ones,
++		 * and a probe that failed here freed hif under channels that could still interrupt.
++		 */
++		sprd_clean_work(hif->priv);
++		sprd_hif_post_deinit(hif);
++		if (stop_marlin(MARLIN_WIFI))
++			pr_err("stop_marlin failed!!\n");
+ 		atomic_sub(1, &hif->power_cnt);
+ 		return -EIO;
+ 	}
+--- a/common/iface.c
++++ b/common/iface.c
+@@ -270,6 +270,15 @@
+ {
+ 	int ret = 0;
+ 
++	/*
++	 * MU300: power_cnt is atomic, the transitions behind it are not.  Probe powers the chip off after it
++	 * registered wlan0, outside RTNL, so userspace (hostapd, netifd) can open the interface meanwhile: the
++	 * open's power-on (1st count) ran start_marlin + post_init while the probe's power-off (last count) was
++	 * still in post_deinit.  post_deinit then cleared the channels and sc2355_hif.hif that post_init had just
++	 * set, stop_marlin powered the chip down, and the next RX interrupt read hif->rx_mgmt from NULL
++	 * (pcie_rx_handle+0x34, "paging request at 00000000000030b8", FINDINGS 31n).  One transition at a time.
++	 */
++	mutex_lock(&hif->power_lock);
+ 	if (val) {
+ 		sprd_wlan_power_status_sync(1, 1);
+ 		ret = sprd_hif_power_on(hif);
+@@ -280,12 +289,14 @@
+ 			else if (ret == -EIO)
+ 				pr_err("SYNC cmd error!\n");
+ 
+-			return ret;
++			goto out;
+ 		}
+ 		if (atomic_read(&hif->power_cnt) == 1)
+ 			sprd_get_fw_info(hif->priv);
+ 	} else
+ 		sprd_hif_power_off(hif);
++out:
++	mutex_unlock(&hif->power_lock);
+ 	return ret;
+ }
+ #ifdef DRV_RESET_SELF
+@@ -1768,6 +1779,7 @@
+ 	iface_set_priv(priv);
+ 	platform_set_drvdata(pdev, priv);
+ 	hif = &priv->hif;
++	mutex_init(&hif->power_lock);
+ 	hif->priv = priv;
+ 	hif->pdev = pdev;
+ 	hif->ops = hif_ops;
+@@ -1790,9 +1802,10 @@
+ 	ret = iface_core_init(&pdev->dev, priv);
+ 	if (ret) {
+ 		pr_err("%s core init failed: %d\n", __func__, ret);
++		/* MU300: power off while hif still exists (sprd_core_free frees priv, and hif with it) */
++		sprd_iface_set_power(hif, false);
+ 		sprd_hif_deinit(hif);
+ 		sprd_core_free(priv);
+-		sprd_iface_set_power(hif, false);
+ 		return ret;
+ 	}
+ 
+@@ -1800,9 +1813,9 @@
+ 	if (ret) {
+ 		pr_err("%s notify init failed: %d\n", __func__, ret);
+ 		iface_core_deinit(priv);
++		sprd_iface_set_power(hif, false);
+ 		sprd_hif_deinit(hif);
+ 		sprd_core_free(priv);
+-		sprd_iface_set_power(hif, false);
+ 		return ret;
+ 	}
+ 
+@@ -1829,11 +1842,12 @@
+ 
+ 	iface_notify_deinit(priv);
+ 	iface_core_deinit(priv);
++	/* MU300: power off while hif still exists (sprd_core_free frees priv, and hif and its lock with it) */
++	pr_info("Power off WCN (%d time)\n", atomic_read(&hif->power_cnt));
++	sprd_iface_set_power(hif, false);
+ 	sprd_hif_deinit(hif);
+ 	sprd_core_free(priv);
+ 	iface_set_priv(NULL);
+-	pr_info("Power off WCN (%d time)\n", atomic_read(&hif->power_cnt));
+-	sprd_iface_set_power(hif, false);
+ 
+ 	return 0;
+ }
+--- a/sc2355/pcie.c
++++ b/sc2355/pcie.c
+@@ -372,7 +372,7 @@
+ 			  struct mbuf_t *tail, int num)
+ {
+ 	struct sprd_hif *hif = sc2355_pcie_get_hif();
+-	struct rx_mgmt *rx_mgmt = (struct rx_mgmt *)hif->rx_mgmt;
++	struct rx_mgmt *rx_mgmt;
+ 	struct sprd_msg *msg = NULL;
+ 	int buf_num = 0, len = 0, ret = 0;
+ 	struct mbuf_t *pos = head;
+@@ -380,6 +380,20 @@
+ 	pr_debug("%s: channel:%d head:%p tail:%p num:%d\n",
+ 	       __func__, chn, head, tail, num);
+ 
++	/*
++	 * MU300: an RX interrupt outside the channels' lifetime (post_init publishes hif before it registers
++	 * them, post_deinit clears it after it unregistered them, sprd_iface_set_power serialises the two).
++	 * Without hif there is no device to unmap the buffers from and no queue to hand them to, and the
++	 * channel's mbuf pool is already freed (no sprdwcn_bus_list_free): the data buffers of this one list
++	 * leak, and it is said once.  A NULL here was a panic in hard IRQ (FINDINGS 31n).
++	 */
++	rx_mgmt = hif ? (struct rx_mgmt *)READ_ONCE(hif->rx_mgmt) : NULL;
++	if (unlikely(!rx_mgmt)) {
++		pr_err_once("%s: RX on channel %d with no Wi-Fi context, %d buffer(s) dropped\n",
++			    __func__, chn, num);
++		return 0;
++	}
++
+ 	for (buf_num = num; buf_num > 0; buf_num--, pos = pos->next) {
+ 		if (unlikely(!pos)) {
+ 			pr_err("%s: NULL mbuf\n", __func__);
+@@ -646,7 +660,7 @@
+ 
+ struct sprd_hif *sc2355_pcie_get_hif(void)
+ {
+-	return (struct sprd_hif *)sc2355_hif.hif;
++	return (struct sprd_hif *)smp_load_acquire(&sc2355_hif.hif);
+ }
+ 
+ #define INTF_IS_PCIE \
+@@ -1994,7 +2008,8 @@
+ {
+ 	int ret = -EINVAL, chn = 0;
+ 
+-	sc2355_hif.hif = (void *)hif;
++	/* MU300: published before any channel can interrupt (the RX/TX callbacks read it in hard IRQ) */
++	smp_store_release(&sc2355_hif.hif, (void *)hif);
+ 	/*
+ 	 * MU300 (from kanoqwq/mu300-linux): a failed/aborted earlier power cycle clears this pointer in the
+ 	 * error path below.  The vendor driver only restores it in pcie_init(),
+@@ -2040,7 +2055,8 @@
+ 
+ 	for (chn = 0; chn < sc2355_hif.max_num; chn++)
+ 		sprdwcn_bus_chn_deinit(&sc2355_hif.mchn_ops[chn]);
+-	sc2355_hif.hif = NULL;
++	/* MU300: cleared only after every channel is unregistered (the callbacks check for NULL) */
++	WRITE_ONCE(sc2355_hif.hif, NULL);
+ 	sc2355_hif.max_num = 0;
+ 
+ }

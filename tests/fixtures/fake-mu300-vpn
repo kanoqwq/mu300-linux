@@ -1,0 +1,227 @@
+#!/bin/sh
+# A stand-in for the VPN module's mu300-vpn with the machine-readable CLI of its spec (2026-10-11-engine-extras,
+# section 4), its JSON shaped as the real CLI's (tests/fixtures/mu300-vpn-cli has what the real one printed), for
+# trying the panel's VPN pages without the module or a device: an OpenWrt LuCI rootfs in a container,
+# this file as /opt/mu300/bin/mu300-vpn. It keeps a pretend store under FAKE_VPN_DIR (default /tmp/fake-vpn) and runs
+# nothing: no tunnel, no kill switch, no download. Needs jq.
+set -u
+D=${FAKE_VPN_DIR:-/tmp/fake-vpn}
+P=$D/profiles
+S=$D/subs
+mkdir -p "$P" "$S"
+[ -f "$D/settings" ] || printf 'KILL_SWITCH=1\nTAILSCALE=1\nIPV6=auto\nREMOTE_DNS=1.1.1.1\nBOOTSTRAP_DNS=1.1.1.1\nLAN_CIDRS=\n' > "$D/settings"
+[ -f "$D/engines" ] || echo '{"xray":1,"sing-box":1,"mihomo":0,"dae":0,"wireguard":1,"openvpn":0}' > "$D/engines"
+die() { echo "$1" >&2; exit "${2:-1}"; }
+jerr() { jq -cn --arg e "$1" '{error:$e}'; echo "$1" >&2; exit 1; }
+setting() { sed -n "s/^$1=//p" "$D/settings" | head -n1; }
+active() { cat "$D/active" 2>/dev/null; }
+enabled() { [ -f "$D/enabled" ]; }
+slug() { printf '%s' "$1" | tr 'A-Z' 'a-z' | tr -cs 'a-z0-9' '-' | sed 's/^-*//' | cut -c1-32 | sed 's/-*$//'; }
+engine_of() { case $1 in xray) echo xray ;; *) echo "$1" ;; esac; }
+extra_of() { case $1 in xray) echo vpn-xray ;; sing-box) echo vpn-singbox ;; mihomo) echo vpn-mihomo ;; dae) echo vpn-dae ;; *) echo null ;; esac; }
+installed() { jq -e --arg n "$1" '.[$n] == 1' "$D/engines" >/dev/null; }
+valid_id() { case $1 in ''|*[!a-z0-9-]*) return 1 ;; esac; [ ${#1} -le 32 ]; }
+need() { valid_id "${1:-}" || die "invalid profile id" 2; [ -d "$P/$1" ] || die "no such profile: $1"; }
+
+# sniff TEXT-FILE: the type
+sniff() {
+    if grep -q '^vless://\|^vmess://\|^trojan://\|^ss://' "$1"; then echo xray
+    elif grep -q '^hysteria2://\|^hy2://\|^tuic://' "$1"; then echo dae
+    elif grep -qi '^\[Interface\]' "$1"; then echo wireguard
+    elif grep -q '^client\|^remote ' "$1"; then echo openvpn
+    elif grep -q '^proxies:' "$1"; then echo mihomo
+    elif grep -q '"protocol"' "$1"; then echo xray
+    elif grep -q '"type"' "$1"; then echo sing-box
+    else return 1; fi
+}
+# new_profile TYPE NAME FILE SOURCE SUB: prints the id
+new_profile() {
+    id=$(slug "$2"); [ -n "$id" ] || id=$1
+    base=$id; n=2
+    while [ -d "$P/$id" ]; do id=$(printf '%s' "$base" | cut -c1-29)-$n; n=$((n + 1)); done
+    mkdir -p "$P/$id"
+    cp "$3" "$P/$id/config"
+    host=$(grep -o '@[A-Za-z0-9.-]*:[0-9]*' "$3" | head -n1 | tr -d @)
+    [ -n "$host" ] || host=$(sed -n 's/^[Ee]ndpoint *= *//p; s/^remote \([^ ]*\) \([0-9]*\).*/\1:\2/p; s/^ *server: *//p' "$3" | head -n1)
+    proto=$(sed -n 's#^\([a-z0-9]*\)://.*#\1#p' "$3" | head -n1)
+    case $1 in mihomo) opts='{"MIHOMO_STACK":""}' ;; xray) opts='{"UPSTREAM_HTTP_PROXY":"","TLS_PIN_SHA256":""}' ;;
+        sing-box) opts='{"UPSTREAM_HTTP_PROXY":""}' ;; openvpn) opts='{"OVPN_USER":"","OVPN_PASS":""}' ;; *) opts='{}' ;; esac
+    jq -cn --arg id "$id" --arg name "$2" --arg type "$1" --arg eng "$(engine_of "$1")" --arg extra "$(extra_of "$1")" \
+        --arg host "${host%:*}" --arg port "${host##*:}" --arg proto "$proto" --arg src "$4" --arg sub "${5:-}" \
+        --argjson opts "$opts" --argjson now "$(date +%s)" \
+        '{id:$id, name:$name, type:$type, engine:$eng, extra:(if $extra == "null" then null else $extra end),
+          source:$src, subscription:(if $sub == "" then null else $sub end), stale:false, created:$now,
+          server:(if $host == "" then null else {host:$host, port:($port|tonumber? // null)} end),
+          protocol:(if $proto == "" then null else $proto end), transport:(if $proto == "" then null else "tcp" end),
+          security:(if $proto == "" then null else "tls" end), options:$opts}' > "$P/$id/meta.json"
+    echo "$id"
+}
+profile_json() {
+    a=$(active)
+    jq -c --arg a "$a" --argjson inst "$(cat "$D/engines")" \
+        '. + {active:(.id == $a), engine_installed:($inst[.engine] == 1)}' "$P/$1/meta.json"
+}
+src_file() {  # SRC: a file to read, from - (stdin) or a path
+    f=$D/.in.$$
+    if [ "$1" = - ]; then cat > "$f"; else cat "$1" > "$f" 2>/dev/null || die "neither a link nor a readable file"; fi
+    [ -s "$f" ] || die "nothing on stdin"
+    echo "$f"
+}
+
+cmd=${1:-}; [ $# -eq 0 ] || shift
+case $cmd in
+status)
+    a=$(active); prof=null; eng='{"name":null,"extra":null,"installed":false,"usable":false,"reason":null}'; miss=null
+    if [ -n "$a" ] && [ -d "$P/$a" ]; then
+        prof=$(jq -c '{id, name, type, engine}' "$P/$a/meta.json")
+        e=$(jq -r .engine "$P/$a/meta.json")
+        if installed "$e"; then
+            eng=$(jq -cn --arg n "$e" --arg x "$(extra_of "$e")" '{name:$n, extra:$x, installed:true, usable:($n != "dae"), reason:(if $n == "dae" then "the kernel has no BTF (/sys/kernel/btf/vmlinux): dae needs kernel 5.17 or newer with BTF, e.g. mu300-update kernel 6.18" else null end)}')
+        else
+            miss=$(jq -cn --arg x "$(extra_of "$e")" '$x')
+            eng=$(jq -cn --arg n "$e" --arg x "$(extra_of "$e")" '{name:$n, extra:$x, installed:false, usable:false, reason:null}')
+        fi
+    fi
+    run=false; up=false
+    if enabled && [ "$prof" != null ] && [ "$miss" = null ]; then run=true; up=true; fi
+    exit_ip=null
+    for x in "$@"; do [ "$x" = --exit-ip ] && [ "$up" = true ] && exit_ip='"203.0.113.77"'; done
+    ks=$(setting KILL_SWITCH); v6=$(setting IPV6)
+    jq -cn --argjson en "$(enabled && echo true || echo false)" --argjson run "$run" --argjson up "$up" \
+        --argjson ks "$([ "$ks" = 1 ] && echo true || echo false)" --arg v6 "${v6:-auto}" --argjson prof "$prof" \
+        --argjson eng "$eng" --argjson miss "$miss" --argjson exit_ip "$exit_ip" \
+        --argjson since "$( [ -s /run/mu300-vpn/iface ] && date -r /run/mu300-vpn/iface +%s || echo null)" \
+        '{version:"v2.0.0-fake", enabled:$en, running:$run, since:(if $run then $since else null end),
+          kill_switch:{setting:$ks, active:($ks and $en)},
+          ipv6:{setting:$v6, tunnel:($up and $prof.type == "wireguard" and $v6 != "0"), guard:($up and ($prof.type != "wireguard" or $v6 == "0"))},
+          profile:$prof, engine:$eng,
+          tunnel:{iface:(if $up then "sbtun" else null end), up:$up, addresses:(if $up then ["172.19.0.1/30"] else [] end)},
+          exit_ip:$exit_ip, missing_engine:$miss}'
+    ;;
+on|start) [ -n "$(active)" ] || die "no active profile: mu300-vpn profile use ID"; touch "$D/enabled"; mkdir -p /run/mu300-vpn; echo sbtun > /run/mu300-vpn/iface ;;
+off|stop) rm -f "$D/enabled" /run/mu300-vpn/iface ;;
+restart) enabled || die "the VPN is off"; echo sbtun > /run/mu300-vpn/iface ;;
+enabled) enabled && echo 1 || echo 0 ;;
+killswitch)
+    case ${1:-} in on) sed -i 's/^KILL_SWITCH=.*/KILL_SWITCH=1/' "$D/settings" ;; off) sed -i 's/^KILL_SWITCH=.*/KILL_SWITCH=0/' "$D/settings" ;;
+        '') setting KILL_SWITCH ;; *) die "usage: mu300-vpn killswitch [on|off]" 2 ;; esac ;;
+use) need "${1:-}"; echo "$1" > "$D/active"; echo "profile $1 is the active one" ;;
+version) echo '{"version":"v2.0.0-fake","components":{}}' ;;
+profile)
+    sub=${1:-list}; [ $# -eq 0 ] || shift
+    case $sub in
+    list) printf '['; first=1; for d in "$P"/*/; do [ -f "$d/meta.json" ] || continue; [ $first = 1 ] || printf ','; first=0; profile_json "$(basename "$d")"; done; echo ']' ;;
+    show) need "${1:-}"
+        if [ "${3:-}" = --reveal ] || [ "${2:-}" = --reveal ]; then profile_json "$1" | jq -c --rawfile c "$P/$1/config" '. + {config:$c}'
+        else profile_json "$1"; fi ;;
+    import)
+        if [ "${1:-}" = --url ]; then
+            read -r url || true; f=$D/.in.$$
+            printf 'proxies:\n  - name: dl\n    type: ss\n    server: dl.example.net\n    port: 8388\n' > "$f"; sleep 2
+            new_profile mihomo "${3:-$(slug "${url#*://}" | cut -c1-20)}" "$f" manual; rm -f "$f"; exit 0
+        fi
+        f=$(src_file "${1:--}"); t=$(sniff "$f") || { rm -f "$f"; die "cannot tell what kind of config this is: mu300-vpn profile add TYPE NAME FILE"; }
+        n=${2:-}; [ -n "$n" ] || n=$(sed -n 's/.*#//p' "$f" | head -n1); [ -n "$n" ] || n=$t
+        if grep -q 'INVALID' "$f"; then rm -f "$f"; die "the config does not pass the check: unknown field INVALID"; fi
+        new_profile "$t" "$n" "$f" manual; rm -f "$f" ;;
+    add) case ${1:-} in xray|sing-box|mihomo|wireguard|openvpn|dae) ;; *) die "not a profile type" 2 ;; esac
+        f=$(src_file "${3:--}"); new_profile "$1" "$2" "$f" manual; rm -f "$f" ;;
+    edit) need "${1:-}"; f=$(src_file "${2:--}")
+        if grep -q 'INVALID' "$f"; then rm -f "$f"; die "the config does not pass the check: unknown field INVALID"; fi
+        mv "$f" "$P/$1/config"; echo "profile $1 changed" ;;
+    set) need "${1:-}"; k=${2:-}; v=${3:-}; [ "$v" = - ] && { IFS= read -r v || true; }
+        case $k in
+            NAME) jq -c --arg v "$v" '.name = $v' "$P/$1/meta.json" > "$P/$1/m" && mv "$P/$1/m" "$P/$1/meta.json" ;;
+            OVPN_PASS) jq -c --arg v "$([ -n "$v" ] && echo set)" '.options.OVPN_PASS = $v' "$P/$1/meta.json" > "$P/$1/m" && mv "$P/$1/m" "$P/$1/meta.json" ;;
+            *) jq -e --arg k "$k" '.options | has($k)' "$P/$1/meta.json" >/dev/null || die "$k is not an option of $(jq -r .type "$P/$1/meta.json") profiles" 2
+               jq -c --arg k "$k" --arg v "$v" '.options[$k] = $v' "$P/$1/meta.json" > "$P/$1/m" && mv "$P/$1/m" "$P/$1/meta.json" ;;
+        esac ;;
+    remove) need "${1:-}"; if [ "$1" = "$(active)" ] && enabled; then die "profile $1 is in use and the VPN is on: mu300-vpn off, or profile use another one, first"; fi
+        rm -rf "${P:?}/$1"; [ "$1" != "$(active)" ] || rm -f "$D/active"; echo "profile $1 removed" ;;
+    check) need "${1:-}"; grep -q INVALID "$P/$1/config" && die "the config does not pass the check"; echo ok ;;
+    *) die "usage: mu300-vpn profile ..." 2 ;;
+    esac ;;
+engines)
+    if [ "${1:-}" = install ]; then shift; exec "$0" engine install "$@"; fi
+    chk=0; [ "${2:-}" = --check ] || [ "${1:-}" = --check ] && chk=1
+    sleep "$chk"
+    jq -c --argjson chk "$chk" --argjson prof "$(for d in "$P"/*/; do [ -f "$d/meta.json" ] && cat "$d/meta.json"; done | jq -cs '.')" '
+        def ver: {"xray":"26.3.27","sing-box":"1.12.9","mihomo":"1.19.14","dae":"1.0.0","wireguard":"1.0.20210914","openvpn":"2.6.14"};
+        def avail: {"xray":"26.4.1","sing-box":"1.12.9","mihomo":"1.19.14","dae":"1.0.0"};
+        def size: {"xray":31457280,"sing-box":28311552,"mihomo":35651584,"dae":45088768};
+        def extra: {"xray":"vpn-xray","sing-box":"vpn-singbox","mihomo":"vpn-mihomo","dae":"vpn-dae"};
+        ["xray","sing-box","mihomo","dae","wireguard","openvpn"] | map(. as $n | {
+          name:$n, extra:(extra[$n]), kind:(if extra[$n] then "extra" else "package" end), installed:($inst[$n] == 1),
+          path:(if $inst[$n] == 1 then (if extra[$n] then "/mnt/mu300-disk/extra/\(extra[$n])/bin/\($n)" else "/usr/sbin/\($n)" end) else null end),
+          version:(if $inst[$n] == 1 then ver[$n] else null end),
+          available:(if $chk == 1 then avail[$n] else null end),
+          size:(if $inst[$n] == 1 or $chk == 1 then size[$n] else null end),
+          needed_by:[$prof[] | select(.engine == $n) | .id],
+          usable:(if $n == "dae" and $inst[$n] == 1 then false else ($inst[$n] == 1) end),
+          reason:(if $n == "dae" and $inst[$n] == 1 then "the kernel has no BTF (/sys/kernel/btf/vmlinux): dae needs kernel 5.17 or newer with BTF, e.g. mu300-update kernel 6.18" else null end),
+          install:(if extra[$n] then "mu300-vpn engines install \($n) (mu300-extra install \(extra[$n]))" else "mu300-vpn engines install \($n)" end)})' --argjson inst "$(cat "$D/engines")" -n ;;
+engine)
+    case ${1:-} in
+    install) n=${2:-}; echo "mu300-extra: downloading mu300-linux-vpn-$n.tar.gz"; i=0
+        while [ $i -lt 5 ]; do i=$((i + 1)); echo "  $((i * 20))% of 30 MB"; sleep 1; done
+        echo "mu300-extra: checked against SHA256SUMS, installed vpn-$n"
+        jq -c --arg n "$n" '.[$n] = 1' "$D/engines" > "$D/e" && mv "$D/e" "$D/engines" ;;
+    remove) n=${2:-}; a=$(active)
+        if enabled && [ -n "$a" ] && [ "$(jq -r .engine "$P/$a/meta.json")" = "$n" ]; then die "the running profile $a needs $n: mu300-vpn off first, or --force"; fi
+        jq -c --arg n "$n" '.[$n] = 0' "$D/engines" > "$D/e" && mv "$D/e" "$D/engines"; echo "removed vpn-$n" ;;
+    *) die "usage" 2 ;;
+    esac ;;
+subscription)
+    sub=${1:-list}; [ $# -eq 0 ] || shift
+    case $sub in
+    add) name=$1; read -r url || true; type=auto; iv=; shift 2
+        while [ $# -gt 0 ]; do case $1 in --type) type=$2; shift 2 ;; --interval) iv=$2; shift 2 ;; *) shift ;; esac; done
+        id=$(slug "$name"); sleep 2
+        case $url in *fail*) die "the subscription could not be fetched: HTTP 403" ;; esac
+        mkdir -p "$S/$id"; (umask 077; echo "$url" > "$S/$id/url")
+        host=${url#*://}; host=${host%%/*}
+        f=$D/.sub.$$; ids=
+        for i in 1 2 3; do echo "vless://00000000-0000-0000-0000-00000000000$i@node$i.$host:443?security=tls#$name $i" > "$f"
+            ids="$ids $(new_profile xray "$name $i" "$f" subscription "$id")"; done; rm -f "$f"
+        jq -cn --arg id "$id" --arg name "$name" --arg type "$type" --arg host "$host" --arg ids "$ids" --argjson now "$(date +%s)" \
+            --arg iv "$iv" \
+            '{id:$id, name:$name, type:$type, format:(if $type == "auto" then "links" else $type end), host:("http://" + $host), updated:$now,
+              count:($ids | split(" ") | map(select(. != "")) | length), interval:($iv | tonumber? // null), insecure:false,
+              profiles:($ids | split(" ") | map(select(. != "")))}' > "$S/$id/meta.json"
+        echo "subscription $id: 3 profiles" ;;
+    list) printf '['; first=1; for d in "$S"/*/; do [ -f "$d/meta.json" ] || continue; [ $first = 1 ] || printf ','; first=0; cat "$d/meta.json" | tr -d '\n'; done; echo ']' ;;
+    refresh) sleep 2; for d in "$S"/*/; do [ -f "$d/meta.json" ] || continue
+            jq -c --argjson now "$(date +%s)" '.updated = $now' "$d/meta.json" > "$d/m" && mv "$d/m" "$d/meta.json"; done
+        echo "refreshed" ;;
+    remove) id=${1:-}; [ -d "$S/$id" ] || die "no such subscription: $id"
+        if [ "${2:-}" != --keep-profiles ]; then for p in $(jq -r '.profiles[]' "$S/$id/meta.json"); do [ "$p" = "$(active)" ] || rm -rf "${P:?}/$p"; done; fi
+        rm -rf "${S:?}/$id"; echo "subscription $id removed" ;;
+    show) jq -c . "$S/${1:-x}/meta.json" ;;
+    *) die "usage" 2 ;;
+    esac ;;
+latency)
+    one() {
+        jq -c --arg ks "$(setting KILL_SWITCH)" --arg a "$(active)" --argjson en "$(enabled && echo true || echo false)" '
+            (if $en then "tunnel" else "direct" end) as $via
+            | if .server == null then {id, host:null, port:null, ms:null, via:$via, error:"no server"}
+            elif .type == "wireguard" or .type == "openvpn" then {id, host:.server.host, port:.server.port, ms:null, via:$via, error:"udp"}
+            elif .id == $a and $ks == "1" and $en then {id, host:.server.host, port:.server.port, ms:null, via:$via, error:"kill switch"}
+            else {id, host:.server.host, port:.server.port, ms:((.id | explode | add) % 300 + 20), via:$via, error:null} end' "$P/$1/meta.json"
+    }
+    if [ "${1:-}" = --all ]; then sleep 2; for d in "$P"/*/; do [ -f "$d/meta.json" ] && one "$(basename "$d")"; done | jq -s 'if length == 1 then .[0] else . end'
+    else need "${1:-}"; r=$(one "$1"); if printf '%s' "$r" | jq -e '.ms == null' >/dev/null; then
+        printf '%s' "$r" | jq -c '{error}'; printf '%s' "$r" | jq -r .error >&2; exit 1; fi; printf '%s\n' "$r"; fi ;;
+settings)
+    case ${1:-get} in
+    get) cat "$D/settings"; echo "XRAY="; echo "DAE=" ;;
+    set) grep -q "^$2=" "$D/settings" || die "unknown setting" 2
+        sed -i "s|^$2=.*|$2=$3|" "$D/settings" ;;
+    --json) jq -Rn '[inputs | split("=") | {(.[0]): (.[1:] | join("="))}] | add' < "$D/settings" ;;
+    esac ;;
+logs)
+    e=all; n=100
+    while [ $# -gt 0 ]; do case $1 in -n) n=$2; shift 2 ;; *) e=$1; shift ;; esac; done
+    i=0; while [ $i -lt "$n" ] && [ $i -lt 60 ]; do i=$((i + 1))
+        printf 'Oct 11 10:%02d:%02d mu300-vpn[%d]: %s: %s\n' $((i / 60)) $((i % 60)) 1234 "${e#all}" "line $i of the pretend log <b>no html</b>"; done ;;
+*) die "usage: mu300-vpn on|off|restart|status|..." 2 ;;
+esac

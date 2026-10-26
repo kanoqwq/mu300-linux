@@ -1,0 +1,54 @@
+#!/bin/sh /etc/rc.common
+# After boot: keep mobile data up across modem resets, and mark the boot successful (re-arm the Linux slot if Linux
+# is the default)
+START=99
+USE_PROCD=1
+export PATH="$PATH:/opt/mu300/busybox-bin"
+
+start_service() {
+	# the commands on the PATH (/usr/bin): new ones on a system installed before they existed, and the extras'
+	/opt/mu300/bin/mu300-extra link >/dev/null 2>&1
+
+	# the host gives up asking for a DHCP lease long before this device finishes booting; if nothing took an
+	# address, make the gadget re-enumerate once, which looks like a fresh cable to the host
+	procd_open_instance usb-lease
+	procd_set_param command /opt/mu300/bin/mu300-usb-reset --if-no-lease 25
+	procd_close_instance
+	# K13 (ported from the kanoqwq fork, cd4fb28): the U30 Air has a second gadget netdev on some kernels; it
+	# belongs to the LAN like usb0
+	[ -e /sys/class/net/usb1 ] && ip link set usb1 master br-lan 2>/dev/null && ip link set usb1 up
+
+	procd_open_instance cellwatch
+	procd_set_param command /opt/mu300/bin/mobile-data watch
+	procd_set_param env MU300_NETIFD=1 PATH="$PATH"
+	procd_set_param respawn 3600 30 0
+	# its messages ("mobile data lost ... reconnecting", "no answer about the data context") go to stderr: into the
+	# system log, as on Ubuntu's journal (procd kept none of them; FINDINGS 90)
+	procd_set_param stderr 1
+	procd_close_instance
+	# the Wi-Fi LED follows hostapd's ubus object, whoever starts or stops the access point (LuCI's wireless page,
+	# the panel, "wifi down", a WCN reset, a hostapd that died): no hook of hostapd's tells mu300-led, and this
+	# replaced two minutes of looking at wlan0 after every wireless reload (and missed everything else)
+	procd_open_instance ledevents
+	procd_set_param command /opt/mu300/bin/mu300-led events
+	procd_set_param env PATH="$PATH"
+	procd_set_param respawn 3600 5 0
+	procd_close_instance
+	procd_open_instance thermalguard
+	procd_set_param command /opt/mu300/bin/thermal-guard
+	procd_set_param env PATH="$PATH"
+	procd_close_instance
+	# the SC2355 sometimes refuses the first IFF_UP (EIO); if the AP did not come up, try once more
+	procd_open_instance wifiretry
+	procd_set_param command /bin/sh -c "sleep 45; [ -e /sys/class/net/wlan0 ] || exit 0; ubus call hostapd.wlan0 get_status >/dev/null 2>&1 || { logger -t mu300-post 'AP not up, retrying'; wifi up; sleep 15; }; /opt/mu300/bin/mu300-led wifi sync"
+	procd_close_instance
+	# a newer release: a note at login (/etc/profile.d/mu300-update.sh) and in mu300-toolkit, nothing installed
+	procd_open_instance updatenotice
+	procd_set_param command /bin/sh -c "sleep 300; while :; do /opt/mu300/bin/mu300-update notice >/dev/null 2>&1 && s=21600 || s=3600; sleep \$s; done"
+	procd_set_param env PATH="$PATH"
+	procd_close_instance
+	procd_open_instance bootok
+	procd_set_param command /bin/sh -c "sleep 30; exec /opt/mu300/bin/mu300-next-boot --rearm"
+	procd_set_param env PATH="$PATH"
+	procd_close_instance
+}

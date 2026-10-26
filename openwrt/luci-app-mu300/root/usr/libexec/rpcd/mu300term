@@ -1,0 +1,62 @@
+#!/bin/sh
+# mu300term -- the RPC object of System > Terminal (luci-app-mu300, view mu300/terminal).
+#
+#   ubus call mu300term token     (rpcd runs this script as: mu300term call token)
+#
+# token: a one-time token for the terminal, and where ttyd listens. The page loads ttyd with ?arg=<token>, and ttyd's
+# command, /usr/libexec/mu300-terminal-login, gives a root shell for a token from here and nothing else (one
+# connection, TTL seconds). Only a LuCI session with the luci-app-mu300-terminal ACL may call it (rpcd checks the
+# ACL before this script runs; root's own login has every group). No parameters: nothing from the browser is read.
+# Reply: {"ok":1,"token":"<32 hex>","port":7681,"lan":"192.168.x.1","ttl":60,"idle":900}. Otherwise
+# {"ok":0,"code":"..."}, a fixed code the page words itself: missing (no ttyd), off (the image's ttyd instance, lan,
+# is off or gone), busy (16 tokens wait already), internal.
+DIR=${MU300_TERM_DIR:-/var/run/mu300-terminal}
+TTL=${MU300_TERM_TTL:-60}
+TTYD=${MU300_TTYD:-/usr/bin/ttyd}
+
+fail() { printf '{"ok":0,"code":"%s"}\n' "$1"; exit 0; }
+
+token() {
+    [ -x "$TTYD" ] || fail missing
+    # the ttyd section the image sets up (/etc/config/ttyd)
+    [ "$(uci -q get ttyd.lan)" = ttyd ] && [ "$(uci -q get ttyd.lan.enable)" != 0 ] || fail off
+    [ "$(uci -q get ttyd.lan.command)" = /usr/libexec/mu300-terminal-login ] || fail off
+    port=$(uci -q get ttyd.lan.port)
+    case $port in ''|*[!0-9]*) port=7681 ;; esac
+    umask 077
+    # root's directory: one someone else made, or a link, is replaced
+    if [ -L "$DIR" ] || { [ -e "$DIR" ] && [ ! -O "$DIR" ]; }; then rm -rf "$DIR"; fi
+    mkdir -p "$DIR" && chmod 0700 "$DIR" || fail internal
+    # the old tokens go (a page that never connected), and never more than 16 wait
+    now=$(date +%s)
+    for f in "$DIR"/*; do
+        [ -f "$f" ] || continue
+        t=$(date -r "$f" +%s 2>/dev/null) || t=0
+        [ $((now - t)) -gt "$TTL" ] && rm -f "$f"
+    done
+    [ "$(ls "$DIR" | wc -l)" -lt 16 ] || fail busy
+    tok=$(hexdump -n 16 -e '16/1 "%02x"' /dev/urandom 2>/dev/null)
+    case $tok in *[!0-9a-f]*|'') fail internal ;; esac
+    [ ${#tok} -eq 32 ] || fail internal
+    : >"$DIR/$tok" || fail internal
+    lan=
+    if [ -f "${MU300_NETWORK_SH:-/lib/functions/network.sh}" ]; then
+        . "${MU300_NETWORK_SH:-/lib/functions/network.sh}"
+        network_get_ipaddr lan lan 2>/dev/null || lan=
+    fi
+    case $lan in *[!0-9.]*) lan= ;; esac
+    # the idle limit mu300-terminal-login applies (seconds, 0: none)
+    idle=$(uci -q get ttyd.mu300.idle)
+    case $idle in ''|*[!0-9]*) idle=900 ;; esac
+    printf '{"ok":1,"token":"%s","port":%s,"lan":"%s","ttl":%s,"idle":%s}\n' "$tok" "$port" "$lan" "$TTL" "$idle"
+}
+
+case $1 in
+list) echo '{"token":{}}' ;;
+call)
+    case $2 in
+    token) token ;;
+    *) fail internal ;;
+    esac
+    ;;
+esac

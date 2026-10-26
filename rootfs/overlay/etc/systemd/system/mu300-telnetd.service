@@ -1,0 +1,10 @@
+[Unit]
+Description=Telnet server (busybox telnetd, login required)
+After=network.target
+
+[Service]
+ExecStart=/bin/busybox telnetd -F -p 23 -l /bin/login
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

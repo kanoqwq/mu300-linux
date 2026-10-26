@@ -1,0 +1,11 @@
+# Everything here runs on the device, whose shells take a CR for part of a word ("do\r"): text files are checked
+# out with LF on every system, Windows included (issue #7). install.ps1 and build-boot-image.py also convert what
+# they send, for clones made before this file.
+* text=auto eol=lf
+*.img binary
+*.bin binary
+*.gz binary
+*.tar binary
+*.lz4 binary
+*.ko binary
+*.gpg binary

@@ -1,0 +1,22 @@
+usb: dwc3: let userspace choose the role on UMS9620
+
+The ZTE U30 Air's USB-C role would come from its PMIC's Type-C block, which has no mainline driver. With the role
+switch open to userspace (as dwc3-rtk and dwc3-meson-g12a do), mu300-usb switches the port between device (the
+default: USB network to a computer) and host (an OTG adapter, with 5 V from the charger's boost). 7.2 has it
+upstream (dwc3 opens its role switch to userspace on every platform), hence 6.18 only.
+
+--- a/drivers/usb/dwc3/drd.c
++++ b/drivers/usb/dwc3/drd.c
+@@ -515,6 +515,12 @@
+ 	dwc3_role_switch.set = dwc3_usb_role_switch_set;
+ 	dwc3_role_switch.get = dwc3_usb_role_switch_get;
+ 	dwc3_role_switch.driver_data = dwc;
++	/*
++	 * UMS9620 (ZTE U30 Air): no Type-C driver to tell what is plugged in under mainline, so the role is chosen
++	 * from userspace (/sys/class/usb_role/<dev>-role-switch/role, mu300-usb)
++	 */
++	if (of_device_is_compatible(dwc->dev->of_node, "snps,sprd-dwc3"))
++		dwc3_role_switch.allow_userspace_control = true;
+ 	dwc->role_sw = usb_role_switch_register(dwc->dev, &dwc3_role_switch);
+ 	if (IS_ERR(dwc->role_sw))
+ 		return PTR_ERR(dwc->role_sw);

@@ -1,0 +1,11 @@
+[Unit]
+Description=MU300 look for a newer release at boot and every 6 hours
+
+[Timer]
+# mobile data takes a minute or two after boot
+OnBootSec=5min
+OnUnitActiveSec=6h
+RandomizedDelaySec=15min
+
+[Install]
+WantedBy=timers.target

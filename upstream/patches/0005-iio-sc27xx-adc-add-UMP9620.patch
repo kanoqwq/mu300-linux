@@ -1,0 +1,278 @@
+iio: adc: sc27xx: UMP9620 (UMS9620's PMIC)
+
+Its own scales and ratios, the battery voltage detection graph (scale 1), calibration from two efuse words per
+graph (bits 15:4), and the 26 MHz clock vote in an AON register around each conversion (sprd_adc_pm_reg).
+Values from Unisoc's 5.4 driver. The fuel gauge reads the battery temperature and charger voltage through it.
+
+--- a/drivers/iio/adc/sc27xx_adc.c	2026-09-28 10:26:09
++++ b/drivers/iio/adc/sc27xx_adc.c	2026-09-28 10:26:09
+@@ -3,6 +3,7 @@
+ 
+ #include <linux/hwspinlock.h>
+ #include <linux/iio/iio.h>
++#include <linux/mfd/syscon.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+ #include <linux/nvmem-consumer.h>
+@@ -15,10 +16,12 @@
+ /* PMIC global registers definition */
+ #define SC2730_MODULE_EN		0x1808
+ #define SC2731_MODULE_EN		0xc08
++#define UMP9620_MODULE_EN		0x2008
+ #define SC27XX_MODULE_ADC_EN		BIT(5)
+ #define SC2721_ARM_CLK_EN		0xc0c
+ #define SC2730_ARM_CLK_EN		0x180c
+ #define SC2731_ARM_CLK_EN		0xc10
++#define UMP9620_ARM_CLK_EN		0x200c
+ #define SC27XX_CLK_ADC_EN		BIT(5)
+ #define SC27XX_CLK_ADC_CLK_EN		BIT(6)
+ 
+@@ -94,6 +97,9 @@
+ 	u32 base;
+ 	int irq;
+ 	const struct sc27xx_adc_variant_data *var_data;
++	/* UMP9620: the ADC's 26 MHz clock is voted for in an AON register around every conversion */
++	struct regmap *vote_regmap;
++	u32 vote_reg, vote_mask;
+ };
+ 
+ /*
+@@ -111,6 +117,7 @@
+ 	void (*init_scale)(struct sc27xx_adc_data *data);
+ 	int (*get_ratio)(int channel, int scale);
+ 	bool set_volref;
++	bool ump96xx;
+ };
+ 
+ struct sc27xx_adc_linear_graph {
+@@ -136,6 +143,12 @@
+ 	100, 341,
+ };
+ 
++/* UMP9620: battery voltage detection (scale 1), calibrated from efuse like the others */
++static struct sc27xx_adc_linear_graph ump9620_bat_det_graph = {
++	1400, 3482,
++	200, 476,
++};
++
+ static const struct sc27xx_adc_linear_graph sc2731_big_scale_graph_calib = {
+ 	4200, 850,
+ 	3600, 728,
+@@ -215,8 +228,89 @@
+ 						calib_graph->adc1);
+ 
+ 	return 0;
++}
++
++/*
++ * UMP9620 keeps two efuse words per graph, the ADC value of each point in bits 15:4 (Unisoc's 5.4 driver);
++ * a graph without programmed values keeps its defaults.
++ */
++static int ump96xx_adc_graph_calibration(struct sc27xx_adc_data *data,
++					 struct sc27xx_adc_linear_graph *graph,
++					 const char *cell1, const char *cell2)
++{
++	int d1, d2, adc0, adc1;
++
++	d1 = adc_nvmem_cell_calib_data(data, cell1);
++	if (d1 < 0)
++		return d1;
++	d2 = adc_nvmem_cell_calib_data(data, cell2);
++	if (d2 < 0)
++		return d2;
++	adc0 = (d1 & 0xfff0) >> 4;
++	adc1 = (d2 & 0xfff0) >> 4;
++	if (adc0 > 0 && adc1 > 0 && adc0 != adc1) {
++		graph->adc0 = adc0;
++		graph->adc1 = adc1;
++	}
++	return 0;
++}
++
++static int ump96xx_adc_scale_calibration(struct sc27xx_adc_data *data)
++{
++	int ret;
++
++	ret = ump96xx_adc_graph_calibration(data, &big_scale_graph, "big_scale_calib1", "big_scale_calib2");
++	if (ret)
++		return ret;
++	ret = ump96xx_adc_graph_calibration(data, &ump9620_bat_det_graph, "vbat_det_cal1", "vbat_det_cal2");
++	if (ret)
++		return ret;
++	return ump96xx_adc_graph_calibration(data, &small_scale_graph, "small_scale_calib1", "small_scale_calib2");
+ }
+ 
++static int ump9620_adc_get_ratio(int channel, int scale)
++{
++	switch (channel) {
++	case 11:
++		return SC27XX_VOLT_RATIO(1, 1);
++	case 14:
++		return scale ? SC27XX_VOLT_RATIO(1, 1) : SC27XX_VOLT_RATIO(68, 900);
++	case 15:
++		return scale ? SC27XX_VOLT_RATIO(1, 1) : SC27XX_VOLT_RATIO(1, 3);
++	case 21:
++	case 22:
++	case 23:
++		return scale ? SC27XX_VOLT_RATIO(1, 1) : SC27XX_VOLT_RATIO(3, 8);
++	default:
++		switch (scale) {
++		case 1:
++			return SC27XX_VOLT_RATIO(1000, 1955);
++		case 2:
++			return SC27XX_VOLT_RATIO(1000, 2600);
++		case 3:
++			return SC27XX_VOLT_RATIO(1000, 4060);
++		default:
++			return SC27XX_VOLT_RATIO(1, 1);
++		}
++	}
++}
++
++static void ump9620_adc_scale_init(struct sc27xx_adc_data *data)
++{
++	int i;
++
++	for (i = 0; i < SC27XX_ADC_CHANNEL_MAX; i++) {
++		if (i == 10 || i == 19 || i == 30 || i == 31)
++			data->channel_scale[i] = 3;
++		else if (i == 7 || i == 9)
++			data->channel_scale[i] = 2;
++		else if (i == 0 || i == 13)
++			data->channel_scale[i] = 1;
++		else
++			data->channel_scale[i] = 0;
++	}
++}
++
+ static int sc2720_adc_get_ratio(int channel, int scale)
+ {
+ 	switch (channel) {
+@@ -508,6 +602,12 @@
+ 		}
+ 	}
+ 
++	if (data->vote_regmap) {
++		ret = regmap_set_bits(data->vote_regmap, data->vote_reg, data->vote_mask);
++		if (ret)
++			goto regulator_restore;
++	}
++
+ 	ret = regmap_set_bits(data->regmap, data->base + SC27XX_ADC_CTL,
+ 			      SC27XX_ADC_EN);
+ 	if (ret)
+@@ -562,6 +662,8 @@
+ 	regmap_clear_bits(data->regmap, data->base + SC27XX_ADC_CTL,
+ 			  SC27XX_ADC_EN);
+ regulator_restore:
++	if (data->vote_regmap)
++		regmap_clear_bits(data->vote_regmap, data->vote_reg, data->vote_mask);
+ 	if ((data->var_data->set_volref) && (channel == 30 || channel == 31)) {
+ 		ret_volref = regulator_set_voltage(data->volref,
+ 					    SC27XX_ADC_REFVOL_VDD28,
+@@ -611,6 +713,34 @@
+ 	tmp = adc_to_volt(graph, raw_adc);
+ 
+ 	return tmp < 0 ? 0 : tmp;
++}
++
++/* UMP9620: the small-scale graph is scaled up for scales 2 and 3; scale 1 is the battery voltage detection */
++static int ump96xx_adc_convert_volt(struct sc27xx_adc_data *data, int channel,
++				   int scale, int raw_adc)
++{
++	struct u32_fract fract;
++	int volt;
++
++	if (channel == 11) {
++		volt = sc27xx_adc_to_volt(&big_scale_graph, raw_adc);
++	} else if (scale == 1) {
++		volt = sc27xx_adc_to_volt(&ump9620_bat_det_graph, raw_adc);
++		if (channel == 0)
++			return volt;
++	} else {
++		volt = adc_to_volt(&small_scale_graph, raw_adc);
++		if (scale == 2)
++			volt = volt * 2600 / 1000;
++		else if (scale == 3)
++			volt = volt * 4060 / 1000;
++		if (volt < 0)
++			volt = 0;
++	}
++
++	sc27xx_adc_volt_ratio(data, channel, scale, &fract);
++
++	return DIV_ROUND_CLOSEST(volt * fract.denominator, fract.numerator);
+ }
+ 
+ static int sc27xx_adc_convert_volt(struct sc27xx_adc_data *data, int channel,
+@@ -619,6 +749,9 @@
+ 	struct u32_fract fract;
+ 	u32 volt;
+ 
++	if (data->var_data->ump96xx)
++		return ump96xx_adc_convert_volt(data, channel, scale, raw_adc);
++
+ 	/*
+ 	 * Convert ADC values to voltage values according to the linear graph,
+ 	 * and channel 5 and channel 1 has been calibrated, so we can just
+@@ -777,6 +910,13 @@
+ 		goto disable_adc;
+ 
+ 	/* ADC channel scales' calibration from nvmem device */
++	if (data->var_data->ump96xx) {
++		ret = ump96xx_adc_scale_calibration(data);
++		if (ret)
++			goto disable_clk;
++		return 0;
++	}
++
+ 	ret = sc27xx_adc_scale_calibration(data, true);
+ 	if (ret)
+ 		goto disable_clk;
+@@ -854,7 +994,20 @@
+ 	.sscale_cal = &small_scale_graph_calib,
+ 	.init_scale = sc2720_adc_scale_init,
+ 	.get_ratio = sc2720_adc_get_ratio,
++	.set_volref = false,
++};
++
++static const struct sc27xx_adc_variant_data ump9620_data = {
++	.module_en = UMP9620_MODULE_EN,
++	.clk_en = UMP9620_ARM_CLK_EN,
++	.scale_shift = SC27XX_ADC_SCALE_SHIFT,
++	.scale_mask = SC27XX_ADC_SCALE_MASK,
++	.bscale_cal = &big_scale_graph_calib,
++	.sscale_cal = &small_scale_graph_calib,
++	.init_scale = ump9620_adc_scale_init,
++	.get_ratio = ump9620_adc_get_ratio,
+ 	.set_volref = false,
++	.ump96xx = true,
+ };
+ 
+ static int sc27xx_adc_probe(struct platform_device *pdev)
+@@ -918,6 +1071,17 @@
+ 	sc27xx_data->var_data = pdata;
+ 	sc27xx_data->var_data->init_scale(sc27xx_data);
+ 
++	if (pdata->ump96xx) {
++		u32 args[2];
++		struct regmap *vote = syscon_regmap_lookup_by_phandle_args(np, "sprd_adc_pm_reg", 2, args);
++
++		if (!IS_ERR(vote)) {
++			sc27xx_data->vote_regmap = vote;
++			sc27xx_data->vote_reg = args[0];
++			sc27xx_data->vote_mask = args[1];
++		}
++	}
++
+ 	ret = sc27xx_adc_enable(sc27xx_data);
+ 	if (ret) {
+ 		dev_err(dev, "failed to enable ADC module\n");
+@@ -950,6 +1114,7 @@
+ 	{ .compatible = "sprd,sc2730-adc", .data = &sc2730_data},
+ 	{ .compatible = "sprd,sc2721-adc", .data = &sc2721_data},
+ 	{ .compatible = "sprd,sc2720-adc", .data = &sc2720_data},
++	{ .compatible = "sprd,ump9620-adc", .data = &ump9620_data},
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, sc27xx_adc_of_match);

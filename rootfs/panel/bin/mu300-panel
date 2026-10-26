@@ -1,0 +1,357 @@
+#!/bin/sh
+# mu300-panel: the web panel for Ubuntu - Cockpit (Ubuntu's own web console: its Terminal, Logs, Services, Networking
+# and Storage pages) and the MU300 page in it. The command of the panel extra (mu300-extra install panel).
+#   mu300-panel install        Cockpit from this extra's packages for this Ubuntu release (an offline extra), else
+#                              from Ubuntu's archive (online); the MU300 page and the configuration below
+#   mu300-panel remove         Cockpit's packages (cockpit-ws, cockpit-system, cockpit-bridge), the page and the
+#                              configuration off again
+#   mu300-panel link           the page into Cockpit, and Cockpit back after an update replaced the system (a
+#                              background job, the boot never waits for it); mu300-extra link runs it at every boot
+#   mu300-panel restore        that background job: install, again until the device is online (10 tries)
+#   mu300-panel configure      the configuration files only (no systemctl): mu300-update, for a system it installed
+#                              (MU300_SYSROOT)
+#   mu300-panel status         installed or not, and the address
+#   mu300-panel info           the device in one JSON object (the MU300 page's Overview)
+#   mu300-panel hotspot-set SSID    the hotspot's name and, from stdin (one line), its password; restarts it
+#
+# The panel is the LAN's only (spec: never on the cellular uplink): cockpit.socket listens on port 9090 of the LAN
+# address (lan.conf's LAN_IP, else the device's default: br-lan, USB and the hotspot), with FreeBind so it listens
+# from the start of the boot, before mu300-lan has put the address on br-lan; the firewall drops everything new from
+# sipa_eth* and a Wi-Fi uplink in front of that anyway. Not BindToDevice=br-lan: systemd makes the socket wait for
+# the device then, which only mu300-lan creates (after basic.target) - each boot waited 90 s for it and Cockpit's
+# socket failed (F50, 7.2.11). A changed LAN address: lan-start runs mu300-panel link, which moves the socket along.
+# Login is the Ubuntu account's password (PAM; root cannot log in, Cockpit's own default), HTTPS with the certificate
+# Cockpit makes itself, logged out after 15 minutes idle, and the login page offers no "connect to another host".
+# Root commands on the MU300 page run through Cockpit's administrative access (sudo), argument by argument, never
+# through a shell.
+set -u
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+R=${MU300_SYSROOT:-}
+# this extra's directory (DISK/extra/panel): bin/mu300-panel lives in it (the command on the PATH is a link to it)
+SELF=$(readlink -f "$0" 2>/dev/null) || SELF=$0
+case $SELF in */*) HERE=$(cd "$(dirname "$SELF")/.." 2>/dev/null && pwd) ;; *) HERE= ;; esac
+PANEL=${MU300_PANEL_DIR:-$HERE}
+PKGS="cockpit-ws cockpit-system cockpit-bridge"
+PAGE=$R/usr/share/cockpit/mu300
+CONF=$R/etc/cockpit/cockpit.conf
+DROPIN=$R/etc/systemd/system/cockpit.socket.d/mu300-listen.conf
+MARK='# mu300-panel'
+RUN=${MU300_RUN:-/run}/mu300-panel
+HOTSPOT=$R/etc/mu300/hotspot.conf
+IDLE=${MU300_PANEL_IDLE:-15}
+
+say() { echo "mu300-panel: $*" >&2; }
+die() { say "$*"; exit 1; }
+is_ubuntu() { [ ! -e "$R/etc/openwrt_release" ] && grep -q '^ID=ubuntu' "$R/etc/os-release" 2>/dev/null; }
+release() { sed -n 's/^VERSION_ID="\{0,1\}\([0-9.]*\)"\{0,1\}$/\1/p' "$R/etc/os-release" 2>/dev/null | head -n1; }
+need_root() { [ "$(id -u)" = 0 ] || die "run as root (sudo mu300-panel $*)"; }
+have_cockpit() { [ -x "$R/usr/libexec/cockpit-ws" ] || [ -x "$R/usr/lib/cockpit/cockpit-ws" ]; }
+
+# ---- configuration ---------------------------------------------------------------------------------------------
+conf_text() {
+    printf '%s (the panel extra): rewritten by mu300-panel link, edits are lost\n' "$MARK"
+    printf '[WebService]\nLoginTitle = MU300\n# no "connect to another host" on the login page\nLoginTo = false\n'
+    printf '\n[Session]\n# minutes without activity before the session ends\nIdleTimeout = %s\n' "$IDLE"
+}
+# One IPv4 address, never a wildcard (no 0.0.0.0, no ::, no IPv6 at all): lan_ip always yields an address, a
+# malformed lan.conf falls back to the device's default. A packet from the uplink addressed to the LAN address
+# (Linux accepts it on any interface) meets the firewall's sipa_eth* drop, and before the firewall is loaded,
+# IPAddressAllow: only the LAN's /24 and the device itself may connect (cgroup BPF on the socket; reverse-path
+# filtering keeps LAN sources off the uplink).
+dropin_text() {
+    _ip=$(lan_ip)
+    printf '%s (the panel extra): Cockpit on the LAN address only (USB and the hotspot), never on the uplink\n' "$MARK"
+    printf '[Socket]\nListenStream=\nListenStream=%s:9090\nFreeBind=yes\n' "$_ip"
+    printf 'IPAddressDeny=any\nIPAddressAllow=localhost %s.0/24\n' "${_ip%.*}"
+}
+# put_file FILE TEXT: written when it differs (atomically); 0 when it changed. A file of somebody else's
+# (no mark) is left alone, except the listen drop-in, which is ours by name.
+put_file() {
+    if [ -f "$1" ]; then
+        [ "$(cat "$1")" = "$2" ] && return 1
+        case $1 in "$DROPIN") ;; *) head -n1 "$1" | grep -qF "$MARK" || { say "$1 is not ours: left as it is"; return 1; } ;; esac
+    fi
+    mkdir -p "${1%/*}" && printf '%s\n' "$2" > "$1.new" && mv "$1.new" "$1"
+}
+configure() {
+    _ch=1
+    put_file "$CONF" "$(conf_text)" && _ch=0
+    put_file "$DROPIN" "$(dropin_text)" && _ch=0
+    return $_ch
+}
+# the page: a copy in Cockpit's own directory that every user can read. A link into the extra's directory was not
+# enough: the extras on the disk are root's alone (0700), and Cockpit reads the pages as the user who logged in - with
+# limited access (Cockpit's default) the MU300 page was not even in the menu. Copied again when the extra's differs.
+link_page() {
+    [ -d "$PANEL/cockpit/mu300" ] || return 0
+    mkdir -p "${PAGE%/*}"
+    [ ! -L "$PAGE" ] || rm -f "$PAGE"
+    if [ -d "$PAGE" ] && diff -r "$PANEL/cockpit/mu300" "$PAGE" >/dev/null 2>&1; then return 0; fi
+    rm -rf "$PAGE.new" && cp -R "$PANEL/cockpit/mu300" "$PAGE.new" && chmod -R u=rwX,go=rX "$PAGE.new" &&
+        rm -rf "$PAGE" && mv "$PAGE.new" "$PAGE"
+}
+reload_socket() {
+    systemctl daemon-reload 2>/dev/null || true
+    systemctl enable cockpit.socket >/dev/null 2>&1 || true
+    # --no-block: link runs early in the boot (mu300-fixups, before sysinit.target), and the socket comes after it
+    systemctl --no-block restart cockpit.socket 2>/dev/null || true
+}
+
+# ---- packages ---------------------------------------------------------------------------------------------------
+apt_env() { DEBIAN_FRONTEND=noninteractive APT_LISTCHANGES_FRONTEND=none "$@"; }
+# apt_net ARGS: apt-get for what needs the network, never without an end. Offline (or with only the VPN server
+# answering, as in some regions) a plain apt-get update waited on its connections for more than 10 minutes, while the
+# restore job and its lock held every other apt off (F50, after an offline mu300-update apply): 10 s per connection,
+# no retry, and the whole call ends after MU300_PANEL_APT_TIMEOUT seconds (300). Measured offline on F50-B: 8
+# addresses of ports.ubuntu.com, the update failed after 81 s. --error-on=any: offline is a failure (apt-get update
+# returns 0 otherwise, and the install after it then waited again).
+APT_NET_OPTS="-o Acquire::http::Timeout=10 -o Acquire::https::Timeout=10 -o Acquire::Retries=0"
+apt_net() {
+    _cmd=$1; shift
+    if command -v timeout >/dev/null 2>&1; then
+        # shellcheck disable=SC2086
+        apt_env timeout "${MU300_PANEL_APT_TIMEOUT:-300}" apt-get "$_cmd" $APT_NET_OPTS "$@"
+    else
+        # shellcheck disable=SC2086
+        apt_env apt-get "$_cmd" $APT_NET_OPTS "$@"
+    fi
+}
+# install_pkgs: this extra's packages for this release first (offline), then Ubuntu's archive. What the archive gives
+# is kept in the extra (debs/RELEASE, as the offline extra has them): an update replaces the system and its packages,
+# and the restore at its first boot then installs Cockpit from there, online or not.
+install_pkgs() {
+    _rel=$(release)
+    _debs=$PANEL/debs/$_rel
+    if ls "$_debs"/*.deb >/dev/null 2>&1; then
+        say "installing Cockpit from the extra's packages for Ubuntu $_rel"
+        # shellcheck disable=SC2046
+        apt_env apt-get install -y -q --no-install-recommends -o Dpkg::Options::=--force-confold $(ls "$_debs"/*.deb) && return 0
+        say "the extra's packages did not install; trying Ubuntu's archive"
+    fi
+    say "installing Cockpit from Ubuntu's archive ($PKGS)"
+    apt_net update -q --error-on=any >/dev/null || { say "Ubuntu's archive cannot be reached (offline?)"; return 1; }
+    # downloaded into the extra first, then installed from there: the files stay for the next time
+    _dl=$PANEL/.debs-new
+    rm -rf "$_dl"
+    if [ -n "$_rel" ] && mkdir -p "$_dl/partial" &&
+        apt_net install -y -q --download-only --no-install-recommends -o Dir::Cache::archives="$_dl" \
+            -o APT::Sandbox::User=root $PKGS >/dev/null && ls "$_dl"/*.deb >/dev/null 2>&1; then
+        # shellcheck disable=SC2046
+        if apt_env apt-get install -y -q --no-install-recommends -o Dpkg::Options::=--force-confold $(ls "$_dl"/*.deb); then
+            rm -rf "$_dl/partial" "$_dl/lock" "$_debs"
+            mkdir -p "$PANEL/debs" && mv "$_dl" "$_debs" && chmod -R go-w "$_debs" ||
+                say "Cockpit is installed, but its packages could not be kept in $_debs"
+            rm -rf "$_dl"
+            return 0
+        fi
+    fi
+    rm -rf "$_dl"
+    # shellcheck disable=SC2086
+    apt_net install -y -q --no-install-recommends -o Dpkg::Options::=--force-confold $PKGS
+}
+
+do_install() {
+    need_root install
+    is_ubuntu || die "the panel extra is Cockpit, for Ubuntu (OpenWrt has its own panel: openwrt-luci)"
+    # the configuration before the packages: their postinst starts cockpit.socket, which then never listens beyond
+    # the LAN, not even for a moment
+    configure || true
+    link_page
+    if ! have_cockpit; then
+        install_pkgs || die "Cockpit could not be installed (is the device online? Offline: copy mu300-extra-panel-offline.tar.gz of the release onto it and run: sudo mu300-extra install panel --from FILE)"
+    fi
+    reload_socket
+    do_status
+}
+
+do_remove() {
+    need_root remove
+    is_ubuntu || return 0
+    systemctl disable --now cockpit.socket cockpit.service >/dev/null 2>&1 || true
+    rm -rf "$PAGE"
+    rm -f "$DROPIN"; rmdir "${DROPIN%/*}" 2>/dev/null || true
+    [ -f "$CONF" ] && head -n1 "$CONF" | grep -qF "$MARK" && rm -f "$CONF"
+    if have_cockpit || dpkg-query -W cockpit-bridge >/dev/null 2>&1; then
+        # shellcheck disable=SC2086
+        apt_env apt-get purge -y -q $PKGS || say "the packages could not be removed: sudo apt-get purge $PKGS"
+    fi
+    systemctl daemon-reload 2>/dev/null || true
+    echo "the panel is off; the packages Cockpit pulled in (python3 and others) stay: sudo apt autoremove"
+}
+
+# link: at every boot (mu300-extra link, early) and after an install. Never waits for the network or apt.
+do_link() {
+    is_ubuntu || return 0
+    link_page
+    if have_cockpit; then
+        # only when a file of ours was changed or deleted since (an update brings no Cockpit, see below)
+        if configure; then reload_socket; fi
+        return 0
+    fi
+    # Cockpit gone: this system was replaced by an update (its packages are not carried over). Put it back in the
+    # background, the configuration first.
+    configure || true
+    if command -v systemd-run >/dev/null 2>&1; then
+        systemd-run --no-block --quiet --collect --unit=mu300-panel-restore \
+            --description="MU300 web panel: install Cockpit again" \
+            --property=After=network-online.target --property=Wants=network-online.target \
+            sh "$PANEL/bin/mu300-panel" restore >/dev/null 2>&1 ||
+            say "Cockpit is not installed: sudo mu300-panel install"
+    fi
+    return 0
+}
+
+do_restore() {
+    need_root restore
+    is_ubuntu || return 0
+    mkdir -p "$RUN"
+    exec 9>"$RUN/restore.lock"
+    if command -v flock >/dev/null 2>&1; then flock -n 9 || return 0; fi
+    _try=1
+    while ! have_cockpit; do
+        install_pkgs && break
+        [ "$_try" -ge "${MU300_PANEL_TRIES:-10}" ] && die "Cockpit could not be installed again: the device is offline and the panel extra has no packages for Ubuntu $(release). Copy mu300-extra-panel-offline.tar.gz of the release onto the device and run: sudo mu300-extra install panel --from FILE (or, once online: sudo mu300-panel install)"
+        _try=$((_try + 1))
+        sleep "${MU300_PANEL_RETRY:-60}"
+    done
+    configure || true
+    link_page
+    reload_socket
+}
+
+# the LAN address as lan-start takes it: lan.conf's LAN_IP, else the device's default (mu300-lan-ip)
+lan_ip() {
+    _ip=$(sed -n 's/^LAN_IP=//p' "$R/etc/mu300/lan.conf" 2>/dev/null | tr -d "\"' " | head -n1)
+    case $_ip in *[!0-9.]*|*..*|.*|*.) _ip= ;; *.*.*.*) ;; *) _ip= ;; esac
+    # another system (MU300_SYSROOT, an update, maybe from Android): its own mu300-lan-ip
+    if [ -z "$_ip" ] && [ -n "$R" ] && [ -f "$R/opt/mu300/bin/mu300-lan-ip" ]; then
+        _ip=$(MU300_BIN=$R/opt/mu300/bin sh "$R/opt/mu300/bin/mu300-lan-ip" 2>/dev/null)
+    fi
+    [ -n "$_ip" ] || _ip=$(mu300-lan-ip 2>/dev/null)
+    echo "${_ip:-192.168.77.1}"
+}
+do_status() {
+    if have_cockpit; then st=installed; else st="not installed"; fi
+    printf 'cockpit   %s\n' "$st"
+    printf 'address   https://%s:9090 (the LAN only: USB and the hotspot)\n' "$(lan_ip)"
+    printf 'login     your Ubuntu account and its password; root cannot log in\n'
+    [ -d "$PAGE" ] && printf 'page      MU300 (%s, from %s)\n' "$PAGE" "$PANEL/cockpit/mu300"
+    if have_cockpit; then printf 'socket    %s\n' "$(systemctl is-active cockpit.socket 2>/dev/null || echo unknown)"; fi
+}
+
+# ---- info: the Overview's JSON ----------------------------------------------------------------------------------
+# a JSON string of $1: backslash and quote escaped, control characters dropped
+js() { printf '"%s"' "$(printf '%s' "$1" | tr -d '\000-\037' | sed 's/\\/\\\\/g; s/"/\\"/g')"; }
+num() { case $1 in ''|*[!0-9-]*|-) echo null ;; *) echo "$1" ;; esac; }
+at() { mu300-at -t "${2:-5}" "$1" 2>/dev/null | tr -d '\r'; }
+# the radio readings, cached for 15 s: the AT channel is the modem's, mobile-data's watchdog uses it too
+signal_json() {
+    mkdir -p "$RUN" 2>/dev/null || { echo null; return; }
+    _c=$RUN/signal.json
+    if [ -s "$_c" ] && [ $(( $(date +%s) - $(date -r "$_c" +%s 2>/dev/null || echo 0) )) -lt "${MU300_PANEL_SIGNAL_TTL:-15}" ]; then
+        cat "$_c"; return
+    fi
+    if ! command -v mu300-at >/dev/null 2>&1; then echo null; return; fi
+    cops=$(at 'AT+COPS?' | grep '^+COPS:' | head -n1)
+    cereg=$(at 'AT+CEREG?' | grep '^+CEREG:' | head -n1)
+    cesq=$(at 'AT+CESQ' | grep '^+CESQ:' | head -n1)
+    oper=$(printf '%s' "$cops" | sed -n 's/.*"\([^"]*\)".*/\1/p')
+    act=$(printf '%s' "$cops" | awk -F, '{gsub(/ /, "", $4); print $4}')
+    reg=$(printf '%s' "$cereg" | awk -F, '{gsub(/ /, "", $2); print $2}')
+    rsrq=$(printf '%s' "$cesq" | awk -F'[,:]' '{gsub(/ /, "", $6); print $6}')
+    rsrp=$(printf '%s' "$cesq" | awk -F'[,:]' '{gsub(/ /, "", $7); print $7}')
+    case $act in 7) rat=LTE ;; 13) rat="5G NSA" ;; 11|12) rat=5G ;; 2|4|5|6) rat=3G ;; 0|1|3) rat=2G ;; *) rat= ;; esac
+    # 8: emergency services only (no SIM, as on a board without one)
+    case $reg in 1) regs=home ;; 5) regs=roaming ;; 2) regs=searching ;; 3) regs=denied ;; 0) regs=none ;; 8) regs=emergency ;; *) regs= ;; esac
+    rsrp_dbm=null; rsrq_db=null
+    case $rsrp in ''|255|*[!0-9]*) ;; *) rsrp_dbm=$((rsrp - 140)) ;; esac
+    case $rsrq in ''|255|*[!0-9]*) ;; *) rsrq_db=$(awk -v i="$rsrq" 'BEGIN { printf "%.1f", -19.5 + i * 0.5 }') ;; esac
+    printf '{"operator":%s,"rat":%s,"registration":%s,"rsrp":%s,"rsrq":%s}' "$(js "$oper")" "$(js "$rat")" \
+        "$(js "$regs")" "$rsrp_dbm" "$rsrq_db" > "$_c.new" && mv "$_c.new" "$_c"
+    cat "$_c"
+}
+# the battery of the U30 Air (the F50 has none; its charger driver still lists a "Battery" supply that reads 19 %)
+battery_json() {
+    [ "$(mu300-device 2>/dev/null)" = u30air ] || { echo null; return; }
+    for s in "$R"/sys/class/power_supply/*; do
+        [ "$(cat "$s/type" 2>/dev/null)" = Battery ] || continue
+        printf '{"capacity":%s,"status":%s,"voltage_uv":%s,"current_ua":%s}' "$(num "$(cat "$s/capacity" 2>/dev/null)")" \
+            "$(js "$(cat "$s/status" 2>/dev/null)")" "$(num "$(cat "$s/voltage_now" 2>/dev/null)")" \
+            "$(num "$(cat "$s/current_now" 2>/dev/null)")"
+        return
+    done
+    echo null
+}
+temps_json() {
+    printf '['
+    _first=1
+    for z in "$R"/sys/class/thermal/thermal_zone*; do
+        [ -r "$z/temp" ] || continue
+        t=$(num "$(cat "$z/temp" 2>/dev/null)")
+        [ "$t" = null ] && continue
+        [ -n "$_first" ] || printf ','
+        _first=
+        printf '{"name":%s,"millicelsius":%s}' "$(js "$(cat "$z/type" 2>/dev/null)")" "$t"
+    done
+    printf ']'
+}
+cpu_json() {
+    _j=$(mu300-cpu status --json 2>/dev/null)
+    case $_j in '{'*'}') printf '%s' "$_j" ;; *) echo null ;; esac
+}
+# data roaming (mobile-data roaming --json, docs/FINDINGS.md 120): the setting and whether data is held back; files
+# only, no modem question. null when there is no such command (an older system) or it says something else.
+roaming_json() {
+    _j=$(mobile-data roaming --json 2>/dev/null | head -n 1)
+    case $_j in '{"allowed":'*'}') printf '%s' "$_j" ;; *) echo null ;; esac
+}
+do_info() {
+    md=$(systemctl is-active mu300-mobile-data 2>/dev/null) || true
+    ip4=$(ip -4 -o addr show dev sipa_eth0 2>/dev/null | awk '{print $4; exit}')
+    ssid=$(sed -n 's/^SSID=//p' "$HOTSPOT" 2>/dev/null | head -n1)
+    # vpn: the VPN module is installed - its mu300-vpn in the vpn extra on the disk (mu300-extra's test, vpn_module_in)
+    if [ -x "${MU300_DISK:-/mnt/mu300-disk}/extra/vpn/bin/mu300-vpn" ]; then vpn=true; else vpn=false; fi
+    printf '{"device":%s,"version":%s,"mobile_data":{"service":%s,"address":%s,"roaming":%s},"signal":%s,"battery":%s,' \
+        "$(js "$(mu300-device 2>/dev/null)")" "$(js "$(cat "$R/etc/mu300/image-version" 2>/dev/null)")" \
+        "$(js "${md:-unknown}")" "$(js "$ip4")" "$(roaming_json)" "$(signal_json)" "$(battery_json)"
+    printf '"temperatures":%s,"cpu":%s,"hotspot":{"ssid":%s},"vpn":%s,"lan":%s}\n' "$(temps_json)" "$(cpu_json)" \
+        "$(js "$ssid")" "$vpn" "$(js "$(lan_ip)")"
+}
+
+# ---- the hotspot ------------------------------------------------------------------------------------------------
+# SSID: 1-32 bytes, printable, no leading/trailing space; the password from stdin: 8-63 printable ASCII (WPA2)
+do_hotspot_set() {
+    need_root hotspot-set
+    ssid=${1:-}
+    [ -n "$ssid" ] || die "usage: printf '%s\\n' PASSWORD | mu300-panel hotspot-set SSID"
+    n=$(printf '%s' "$ssid" | wc -c)
+    [ "$n" -ge 1 ] && [ "$n" -le 32 ] || die "the name must be 1 to 32 bytes"
+    printf '%s' "$ssid" | LC_ALL=C grep -q '[[:cntrl:]]' && die "the name has a control character"
+    case $ssid in ' '*|*' ') die "the name must not start or end with a space" ;; esac
+    IFS= read -r psk || [ -n "$psk" ] || die "no password on stdin"
+    n=$(printf '%s' "$psk" | wc -c)
+    [ "$n" -ge 8 ] && [ "$n" -le 63 ] || die "the password must be 8 to 63 characters"
+    printf '%s' "$psk" | LC_ALL=C grep -q '[^ -~]' && die "the password must be printable ASCII"
+    [ -f "$HOTSPOT" ] || die "$HOTSPOT not found"
+    umask 077
+    # the other lines as they are; SSID and PSK replaced (no shell: the values are never sourced, hotspot-start
+    # reads them with sed)
+    { grep -v '^SSID=\|^PSK=' "$HOTSPOT"; printf 'SSID=%s\nPSK=%s\n' "$ssid" "$psk"; } > "$HOTSPOT.new" &&
+        chmod 600 "$HOTSPOT.new" && mv "$HOTSPOT.new" "$HOTSPOT" || die "could not write $HOTSPOT"
+    systemctl restart mu300-hotspot 2>/dev/null || say "restart the hotspot: sudo systemctl restart mu300-hotspot"
+    echo "hotspot: $ssid"
+}
+
+[ -z "${MU300_LIB:-}" ] || return 0
+case ${1:-status} in
+    install) do_install ;;
+    remove) do_remove ;;
+    link) do_link ;;
+    restore) do_restore ;;
+    configure) is_ubuntu || exit 0; configure || true ;;
+    status) do_status ;;
+    info) do_info ;;
+    hotspot-set) shift; do_hotspot_set "$@" ;;
+    -h|--help|help) sed -n '2,25s/^# \{0,1\}//p' "$0" ;;
+    *) echo "usage: mu300-panel install|remove|link|restore|configure|status|info|hotspot-set SSID" >&2; exit 2 ;;
+esac

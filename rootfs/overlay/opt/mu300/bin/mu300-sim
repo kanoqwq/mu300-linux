@@ -1,0 +1,303 @@
+#!/bin/sh
+# Select one SIM for the whole boot. Reopening SIPC channels is not a hot switch.
+# OpenWrt: network.wan.sim_slot; other systems: /etc/mu300/sim-slot.
+# The ZTE V50 also chooses one of its cards (FINDINGS 204): `card N` saves the card and the slot it is on, and
+# `v50-boot` (android-vendor-start, before the modem's CP starts) sets the board's SIM switch for it.
+# Shared boot preferences are saved here; live modem operations dispatch only to the gated U30 backend.
+set -eu
+umask 077
+root=${MU300_SIM_ROOT:-}
+state=$root/run/mu300/sim-slot
+conf=$root/etc/mu300/sim-slot
+device_cmd=${MU300_DEVICE_CMD:-/opt/mu300/bin/mu300-device}
+backend=${MU300_SIM_U30_BACKEND:-/opt/mu300/bin/mu300-sim-u30}
+lib=${MU300_SIM_CONFIG_LIB:-/opt/mu300/lib/sim-config.sh}
+# The short way. Every AT client asks "active" before every command (mu300-at, mobile-data, the panel's collectors),
+# and on nearly every device the answer is the pinned 0: one file read, as it was before the U30 backend existed
+# (measured on a U30 Air: 2.8 ms a call; with the library and the device's name read first, 6.7 ms).
+if [ "${1:-}" = active ] && [ "$#" = 1 ] && [ -f "$state" ] && [ "$(cat "$state" 2>/dev/null)" = 0 ]; then
+    echo 0
+    exit 0
+fi
+. "$lib"
+device_name() {
+    [ -x "$device_cmd" ] || return 0
+    "$device_cmd" 2>/dev/null || true
+}
+SIM_CONFIG_U30=0
+if [ -e "$root/etc/openwrt_release" ] && [ "$(device_name)" = u30air ]; then SIM_CONFIG_U30=1; fi
+export SIM_CONFIG_U30
+u30_supported() { [ "$SIM_CONFIG_U30" = 1 ]; }
+
+ensure_f50() {
+    local device
+    device=$(device_name)
+    case $device in f50|v50) return 0;; esac
+    u30_supported || {
+        echo "mu300-sim: SIM selection is supported on F50 and V50 only (detected $device)" >&2
+        return 1
+    }
+}
+# the V50 boots either of the modem's two SIM interfaces as the F50 does (FINDINGS 204): the same modem, the same
+# second channel set (nr3/nr4/nr5, sipa_eth8)
+slot1_supported() {
+    local device
+    device=$(device_name)
+    case $device in f50|v50) return 0;; esac
+    u30_supported
+}
+# --- the ZTE V50's cards (FINDINGS 204) ---
+v50_lib=${MU300_V50_CARD_LIB:-/opt/mu300/lib/v50-card.sh}
+is_v50() { [ "$(device_name)" = v50 ]; }
+card_name() {
+    case $1 in 0) echo 'built-in SIM 1';; 1) echo 'built-in SIM 2';; 2) echo 'built-in SIM 3';; 3) echo 'external SIM';; esac
+}
+say() { if command -v logger >/dev/null 2>&1; then logger -t mu300-sim "$*"; fi; echo "mu300-sim: $*" >&2; }
+# the saved card when the board has it, else nothing
+v50_saved() {
+    local card
+    card=$(sim_cfg_card)
+    [ -n "$card" ] && [ -n "${board:-}" ] && v50_card_map "$board" "$card" >/dev/null || return 0
+    printf '%s\n' "$card"
+}
+# v50_json SLOT: status --json's "v50" member; no AT command, the switches' levels only
+v50_json() {
+    local cards=null saved=null card=null chip=null psim=null detect=null mux
+    . "$v50_lib"
+    board=$(v50_board_id) || board=
+    if [ -n "$board" ]; then cards="[$(v50_cards "$board" | tr ' ' ',')]"; saved=$(v50_saved); fi
+    if mux=$(v50_mux); then
+        chip=$(cat "$mux/chip_select" 2>/dev/null) || chip=
+        psim=$(cat "$mux/psim_select" 2>/dev/null) || psim=
+        detect=$(cat "$mux/psim_present" 2>/dev/null) || detect=
+        case $chip in 0|1) ;; *) chip=null;; esac
+        case $psim in 0|1) ;; *) psim=null;; esac
+        case $detect in 0|1) ;; *) detect=null;; esac
+        card=$(v50_active_card "$1" "$chip" "$psim") || card=null
+        [ -z "$board" ] || [ "$card" = null ] || v50_card_map "$board" "$card" >/dev/null || card=null
+    fi
+    printf '{"board_id":%s,"cards":%s,"card":%s,"saved_card":%s,"switches":%s,"chip_select":%s,"psim_select":%s,"psim_detect":%s}' \
+        "${board:-null}" "$cards" "$card" "${saved:-null}" "$([ -n "${mux:-}" ] && echo true || echo false)" \
+        "$chip" "$psim" "$detect"
+}
+# v50_boot: before the CP starts, the saved card's switch set; once a boot, never a reason not to start the modem
+v50_boot() {
+    local marker=$root/run/mu300/v50-card-applied card map slot attr value want mux cur ident
+    is_v50 || return 0
+    [ ! -e "$marker" ] || return 0
+    mkdir -p "${marker%/*}" && : > "$marker" || return 0
+    card=$(sim_cfg_card)
+    [ -n "$card" ] || return 0
+    . "$v50_lib"
+    board=$(v50_board_id) || { say "the V50's board ID is not one ZTE's firmware knows: SIM switches left as they are"; return 0; }
+    map=$(v50_card_map "$board" "$card") || { say "this V50 (board $board) has no card $card: SIM switches left as they are"; return 0; }
+    set -- $map; slot=$1 attr=$2 value=$3
+    want=$(configured 2>/dev/null) || want=0
+    [ "$want" = "$slot" ] || {
+        say "card $card is on SIM$((slot + 1)), but SIM$((want + 1)) is chosen for this boot: SIM switches left as they are"
+        return 0; }
+    mux=$(v50_mux) || { say 'no SIM switches (a kernel without zte-v50-sim): the card is the one the bootloader left'; return 0; }
+    cur=$(cat "$mux/$attr" 2>/dev/null) || cur=
+    if [ "$cur" = "$value" ]; then say "card $card ($(card_name "$card")) on SIM$((slot + 1))"; return 0; fi
+    printf '%s\n' "$value" > "$mux/$attr" 2>/dev/null || {
+        say "could not set the SIM switch for card $card: the card is the one the bootloader left"; return 0; }
+    # another card on this slot: what the dashboard keeps of the previous one (operator, IMSI, ICCID) is not this one's
+    ident=${MU300_SIM_IDENT_DIR:-$root/etc/unisoc-modem}
+    if [ "$slot" = 1 ]; then rm -f "$ident/sim-slot1.json"; else rm -f "$ident/sim.json"; fi
+    say "card $card ($(card_name "$card")) switched onto SIM$((slot + 1))"
+}
+# v50_live CARD (opt-in, `card N --now`): kanoqwq's live switch of the card on the slot in use (his mu300-v50-sim,
+# f0ed60ff), in ZTE's order (VendorTelephonyManager.setProtocolStack, UniSubscriptionInfoUpdater): the card's radio
+# and power off (SFUN=5, SFUN=3), the switch, ZTE's 5 s, power on (SFUN=2), the card's answer (CPIN, up to 8 s), the
+# radio on if allowed (SFUN=4). Runs under mobile-data's radio lock (radio-locked), so no dial or warm-up runs beside
+# it. On a failure after the switch the previous card is switched back the same way. Not validated on any V50 board's
+# physical switch by kano or here: the next-boot choice stays the default.
+v50_at() {  # v50_at CMD SECONDS: OK or fail
+    local out
+    out=$("${MU300_MOBILE_DATA:-/opt/mu300/bin/mobile-data}" at "$1" "${2:-8}" 2>/dev/null | tr -d '\r') || return 1
+    printf '%s\n' "$out" | awk '/^(ERROR|\+CME ERROR|\+CMS ERROR)(:|$)/ { bad = 1 } NF { last = $0 } END { exit (bad || last != "OK") }'
+}
+v50_route() {  # v50_route ATTR VALUE: the card on the slot in use powered down, switched, powered up
+    local n=0
+    v50_at 'AT+SFUN=5' 30 && v50_at 'AT+SFUN=3' 8 || return 1
+    printf '%s\n' "$2" > "$mux/$1" 2>/dev/null && [ "$(cat "$mux/$1")" = "$2" ] || return 1
+    sleep "${MU300_V50_SWITCH_WAIT:-5}"
+    v50_at 'AT+SFUN=2' 8 || return 1
+    while [ "$n" -lt 8 ]; do
+        "${MU300_MOBILE_DATA:-/opt/mu300/bin/mobile-data}" at 'AT+CPIN?' 3 2>/dev/null | grep -q '+CPIN:' && break
+        n=$((n + 1)); [ "$n" -ge 8 ] || sleep 1
+    done
+    [ "$n" -lt 8 ] || return 1
+    if "${MU300_SIM_RADIO:-/opt/mu300/bin/mu300-sim-radio}" allowed "$slot" 2>/dev/null; then v50_at 'AT+SFUN=4' 20 || return 1; fi
+}
+v50_live() {
+    local card=$1 map attr value old ident
+    [ "$(readlink "$root/run/mu300-radio-on.owner" 2>/dev/null)" = "$PPID" ] || { echo 'mu300-sim: the radio lock is not held' >&2; return 1; }
+    . "$v50_lib"
+    board=$(v50_board_id) || return 1
+    map=$(v50_card_map "$board" "$card") || return 1
+    set -- $map; slot=$1 attr=$2 value=$3
+    [ "$slot" = "$(active)" ] || { echo "mu300-sim: card $card is on SIM$((slot + 1)), not the SIM in use: choose it for the next boot" >&2; return 1; }
+    mux=$(v50_mux) || { echo 'mu300-sim: no SIM switches in this kernel (zte-v50-sim)' >&2; return 1; }
+    old=$(cat "$mux/$attr")
+    [ "$old" != "$value" ] || return 0
+    if ! v50_route "$attr" "$value"; then
+        say "the live switch to card $card failed; switching the previous card back"
+        v50_route "$attr" "$old" || say 'the previous card did not come back either: reboot'
+        return 1
+    fi
+    ident=${MU300_SIM_IDENT_DIR:-$root/etc/unisoc-modem}
+    if [ "$slot" = 1 ]; then rm -f "$ident/sim-slot1.json"; else rm -f "$ident/sim.json"; fi
+    rm -rf "$root/var/run/unisoc-modem/cell.json" "$root/var/run/unisoc-modem/sig.json" 2>/dev/null || true
+    say "card $card ($(card_name "$card")) switched onto SIM$((slot + 1)) live"
+}
+ensure_slot_supported() {
+    [ "$1" != 1 ] || ensure_f50
+}
+valid() { case "$1" in 0|1) return 0 ;; *) echo 'SIM slot must be 0 (external) or 1 (internal)' >&2; return 1 ;; esac; }
+# `default` takes the public card numbers (1 external, 2 internal), unlike `select`'s slot numbers. The old error
+# reused valid()'s 0/1 text, so `default 0` said "must be 0 or 1" and looked like a bug in the command.
+valid_default() { case "$1" in 1|2) return 0 ;; *) echo 'SIM card must be 1 (external) or 2 (internal)' >&2; return 1 ;; esac; }
+configured() { sim_cfg_default; }
+
+active() {
+    local slot tmp
+    if [ ! -e "$state" ]; then
+        # A value that is not 0 or 1 (hand-edited, a half-written config) pins the external card: every AT owner
+        # asks this at start, and failing here would leave the device without AT, data or SMS for the whole boot.
+        slot=$(configured 2>/dev/null) || {
+            echo 'mu300-sim: the configured SIM slot is not 0 or 1; using external slot 0 for this boot' >&2
+            slot=0
+        }
+        mkdir -p "${state%/*}"
+        # Publish once, atomically. Concurrent daemon starts keep the same boot slot.
+        tmp=$(mktemp "${state}.XXXXXX") || return 1
+        printf '%s\n' "$slot" > "$tmp"
+        ln "$tmp" "$state" 2>/dev/null || { [ -f "$state" ] || { rm -f "$tmp"; return 1; }; }
+        rm -f "$tmp"
+    fi
+    slot=$(cat "$state")
+    valid "$slot" || return 1
+    if [ "$slot" = 1 ] && ! slot1_supported; then
+        echo 'mu300-sim: ignoring unsupported slot 1; using external slot 0' >&2
+        slot=0
+    fi
+    printf '%s\n' "$slot"
+}
+case ${1:-status} in
+    migrate)
+        [ "$#" = 1 ] || exit 2
+        u30_supported || exit 1
+        sim_cfg_migrate
+        exit $?
+        ;;
+    active) active ;;
+    configured) configured ;;
+    status)
+        case ${2:-} in ''|--json) ;; *) exit 2;; esac
+        [ "$#" -le 2 ] || exit 2
+        if u30_supported && [ "${2:-}" = --json ]; then exec "$backend" status --json; fi
+        old=$(active) || exit 1
+        next=$(configured) || exit 1
+        supported=0
+        slot1_supported && supported=1
+        v50=
+        ! is_v50 || v50=",\"v50\":$(v50_json "$old")"
+        if [ "${2:-}" = --json ]; then
+            printf '{"version":1,"ok":1,"active":%s,"default":%s,"slot1_supported":%s,"hot":0,"available":false,"busy":false,"phase":"idle","result":"reboot_required","error":null,"capabilities":{"boot_selection":%s,"live_switch":false},"radio_ready":null,"registered":null,"wan_up":null%s}\n' "$((old + 1))" "$((next + 1))" "$supported" "$([ "$supported" = 1 ] && echo true || echo false)" "$v50"
+        else
+            printf 'active slot: %s\nnext boot slot: %s\n' "$old" "$next"
+            if is_v50; then
+                j=$(v50_json "$old")
+                printf 'card in use: %s\nnext boot card: %s\n' "$(printf '%s' "$j" | sed -n 's/.*"card":\([^,]*\),.*/\1/p')" \
+                    "$(printf '%s' "$j" | sed -n 's/.*"saved_card":\([^,]*\),.*/\1/p')"
+            fi
+        fi
+        ;;
+    select|default)
+        # "|| exit 2": under set -e a failing "valid" would end the script with its own status 1
+        if [ "$1" = default ]; then
+            case ${2:-} in 1) next=0 ;; 2) next=1 ;; *) valid_default invalid || exit 2 ;; esac
+        else
+            case ${2:-} in external|0) next=0 ;; internal|1) next=1 ;; *) valid invalid || exit 2 ;; esac
+        fi
+        ensure_slot_supported "$next" || exit 1
+        # Pin the current slot before changing the next-boot setting.
+        old=$(active) || exit 1
+        if u30_supported; then
+            command -v flock >/dev/null 2>&1 || exit 1
+            mkdir -p "$root/run/mu300"
+            exec 9>"$root/run/mu300/sim-control.lock"
+            flock -n 9 || { echo 'mu300-sim: SIM control is busy' >&2; exit 1; }
+        fi
+        sim_cfg_save_default "$next" || exit 1
+        # V50: a saved card on the other slot is no longer the boot's card; one on this slot stays chosen
+        if is_v50 && [ -n "$(sim_cfg_card)" ]; then
+            . "$v50_lib"
+            board=$(v50_board_id) || board=
+            map=$( [ -n "$board" ] && v50_card_map "$board" "$(sim_cfg_card)") || map=
+            [ "${map%% *}" = "$next" ] || sim_cfg_save_card '' || exit 1
+        fi
+        if u30_supported; then
+            rm -f "$root/etc/mu300-sim-fallback"
+            MU300_SIM_LOCKED=1 "$backend" status --json
+            exit $?
+        fi
+        echo "SIM slot $next saved. Active slot remains $old until reboot."
+        ;;
+    card)
+        now=
+        [ "$#" = 3 ] && [ "$3" = --now ] && now=1 && set -- "$1" "$2"
+        [ "$#" = 2 ] || exit 2
+        is_v50 || { echo 'mu300-sim: choosing a card is for the ZTE V50 only' >&2; exit 1; }
+        . "$v50_lib"
+        board=$(v50_board_id) || {
+            echo "mu300-sim: this V50's board ID is not one ZTE's firmware knows: no card can be chosen" >&2; exit 1; }
+        old=$(active) || exit 1
+        case $2 in
+            none|clear)
+                sim_cfg_save_card '' || exit 1
+                echo "No card chosen: the SIM switches stay as the bootloader leaves them. Active slot remains $old until reboot."
+                exit 0 ;;
+        esac
+        map=$(v50_card_map "$board" "$2") || {
+            echo "mu300-sim: this V50 (board $board) has no card $2; it has: $(v50_cards "$board")" >&2; exit 1; }
+        v50_mux >/dev/null || { echo 'mu300-sim: no SIM switches in this kernel (zte-v50-sim): update the kernel first' >&2; exit 1; }
+        slot=${map%% *}
+        if [ -n "$now" ]; then
+            # kanoqwq's live switch (opt-in): only a card on the slot in use; the data goes down around it
+            [ "$slot" = "$old" ] || { echo "mu300-sim: card $2 is on SIM$((slot + 1)), not the SIM in use: choose it for the next boot" >&2; exit 1; }
+            wan=${MU300_WAN:-wan} auto=
+            if command -v ifdown >/dev/null 2>&1 && [ -e "$root/etc/openwrt_release" ]; then
+                auto=$(ubus call "network.interface.$wan" status 2>/dev/null | jsonfilter -e '@.autostart' 2>/dev/null) || auto=
+                ifdown "$wan" 2>/dev/null || true
+            elif systemctl is-active -q mu300-mobile-data.service 2>/dev/null; then
+                auto=systemd; systemctl stop mu300-mobile-data.service || true
+            fi
+            rc=0
+            MU300_RADIO_LOCK_WAIT=30 "${MU300_MOBILE_DATA:-/opt/mu300/bin/mobile-data}" radio-locked "$0" v50-live "$2" || rc=$?
+            case $auto in true) ifup "$wan" || true ;; systemd) systemctl start mu300-mobile-data.service || true ;; esac
+            [ "$rc" = 0 ] || { echo "mu300-sim: the live switch to card $2 failed" >&2; exit 1; }
+        fi
+        sim_cfg_save_default "$slot" || exit 1
+        sim_cfg_save_card "$2" || exit 1
+        if [ -n "$now" ]; then echo "Card $2 ($(card_name "$2")) in use on SIM$((slot + 1)) and saved for the next boot."
+        else echo "Card $2 ($(card_name "$2")) on SIM$((slot + 1)) saved: in use after a reboot. Active slot remains $old until reboot."; fi
+        ;;
+    v50-live)
+        [ "$#" = 2 ] || exit 2
+        is_v50 || exit 1
+        v50_live "$2"
+        ;;
+    v50-boot)
+        [ "$#" = 1 ] || exit 2
+        v50_boot
+        ;;
+    hot|switch)
+        [ "$#" = 2 ] || exit 2
+        if u30_supported; then exec "$backend" "$@"; fi
+        echo 'mu300-sim: live SIM switching is not supported on F50; select a slot and reboot' >&2
+        exit 1
+        ;;
+    *) echo 'usage: mu300-sim status [--json]|active|configured|select external|internal|0|1, default 1|2 (default: 1 external, 2 internal; U30 Air on OpenWrt also: hot 0|1, switch 1|2; V50 also: card 0|1|2|3|none [--now])' >&2; exit 2 ;;
+esac

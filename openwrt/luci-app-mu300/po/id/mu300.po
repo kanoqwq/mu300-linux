@@ -1,0 +1,4050 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: id\n"
+
+msgid "Status dashboard"
+msgstr "Dasbor status"
+
+msgid "Cellular"
+msgstr "Seluler"
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM"
+msgstr "Dual SIM"
+
+msgid "SIM settings"
+msgstr "Pengaturan SIM"
+
+msgid "Network locks"
+msgstr "Kunci jaringan"
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "SMS forwarding"
+msgstr "Penerusan SMS"
+
+msgid "AT terminal"
+msgstr "Terminal AT"
+
+msgid "Adapter settings"
+msgstr "Pengaturan adaptor"
+
+msgid "TTL"
+msgstr "TTL"
+
+msgid "Data usage"
+msgstr "Penggunaan data"
+
+msgid "Device management"
+msgstr "Manajemen perangkat"
+
+msgid "Update"
+msgstr "Perbarui"
+
+msgid "Backup of settings"
+msgstr "Cadangan pengaturan"
+
+msgid "Languages"
+msgstr "Bahasa"
+
+msgid "Power"
+msgstr "Daya"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Terminal"
+msgstr "Terminal"
+
+msgid "Terminal settings"
+msgstr "Pengaturan terminal"
+
+msgid "Overview"
+msgstr "Ikhtisar"
+
+msgid "Profiles"
+msgstr "Profil"
+
+msgid "Subscriptions"
+msgstr "Langganan"
+
+msgid "Engines"
+msgstr "Mesin"
+
+msgid "Settings"
+msgstr "Pengaturan"
+
+msgid "Logs"
+msgstr "Log"
+
+msgid "Packages after an update"
+msgstr "Paket setelah pembaruan"
+
+msgid "MU300 control center: status dashboard, network locks, AT terminal, SMS and VPN"
+msgstr "Pusat kendali MU300: dasbor status, kunci jaringan, terminal AT, SMS, dan VPN"
+
+msgid "Terminal: a root shell on the device in the browser"
+msgstr "Terminal: shell root perangkat di peramban"
+
+msgid "China Mobile"
+msgstr "China Mobile"
+
+msgid "China Unicom"
+msgstr "China Unicom"
+
+msgid "China Telecom"
+msgstr "China Telecom"
+
+msgid "China Broadnet"
+msgstr "China Broadnet"
+
+msgid "China Tietong"
+msgstr "China Tietong"
+
+msgid "Excellent"
+msgstr "Sangat baik"
+
+msgid "Good"
+msgstr "Baik"
+
+msgid "Fair"
+msgstr "Cukup"
+
+msgid "Poor"
+msgstr "Buruk"
+
+msgid "Unknown"
+msgstr "Tidak diketahui"
+
+msgid "%d d %d h"
+msgstr "%d h %d j"
+
+msgid "%d h %d min"
+msgstr "%d j %d mnt"
+
+msgid "%d min"
+msgstr "%d mnt"
+
+msgid "No neighbor-cell data"
+msgstr "Tidak ada data sel tetangga"
+
+msgid "Locked"
+msgstr "Terkunci"
+
+msgid "Lock"
+msgstr "Kunci"
+
+msgid "Unknown error"
+msgstr "Kesalahan tidak diketahui"
+
+msgid "Confirm"
+msgstr "Konfirmasi"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Batal"
+
+msgid "%d s"
+msgstr "%d dtk"
+
+msgid "%d h"
+msgstr "%d j"
+
+msgid "New SMS · %s"
+msgstr "SMS baru · %s"
+
+msgid "Unknown number"
+msgstr "Nomor tidak diketahui"
+
+msgid "Select"
+msgstr "Pilih"
+
+msgid "never"
+msgstr "tidak pernah"
+
+msgid "just now"
+msgstr "baru saja"
+
+msgid "%s ago"
+msgstr "%s yang lalu"
+
+msgid "Failed: %s"
+msgstr "Gagal: %s"
+
+msgid "Management connection lost"
+msgstr "Koneksi manajemen terputus"
+
+msgid "Installing the VPN module"
+msgstr "Memasang modul VPN"
+
+msgid "Installing the engine"
+msgstr "Memasang mesin"
+
+msgid "Adding the subscription"
+msgstr "Menambahkan langganan"
+
+msgid "Refreshing the subscriptions"
+msgstr "Menyegarkan langganan"
+
+msgid "Testing the latency of every profile"
+msgstr "Menguji latensi setiap profil"
+
+msgid "Downloading the config"
+msgstr "Mengunduh konfigurasi"
+
+msgid "Working…"
+msgstr "Sedang bekerja…"
+
+msgid "done"
+msgstr "selesai"
+
+msgid "failed"
+msgstr "gagal"
+
+msgid "Verify the uploaded file"
+msgstr "Verifikasi berkas yang diunggah"
+
+msgid "The uploaded file is checked against the SHA256SUMS of the VPN module's latest release, downloaded over HTTPS. When that is not possible (offline, an older release), it is installed only if you allow an unverified file: it then runs as root with no check."
+msgstr "Berkas yang diunggah diperiksa dengan SHA256SUMS dari rilis terbaru modul VPN yang diunduh melalui HTTPS. Jika tidak memungkinkan (luring, rilis lama), berkas hanya dipasang bila Anda mengizinkan berkas yang tidak terverifikasi: berkas itu lalu berjalan sebagai root tanpa pemeriksaan apa pun."
+
+msgid "Install it even if it cannot be verified"
+msgstr "Pasang meski tidak dapat diverifikasi"
+
+msgid "Install only a verified file"
+msgstr "Hanya pasang berkas yang terverifikasi"
+
+msgid "Upload failed: %s"
+msgstr "Gagal mengunggah: %s"
+
+msgid "The VPN module is too old for this panel"
+msgstr "Modul VPN terlalu usang untuk panel ini"
+
+msgid "The VPN module is not installed"
+msgstr "Modul VPN belum terpasang"
+
+msgid "This page needs the VPN module with the machine-readable mu300-vpn (module v2 or newer). Updating it keeps the profiles and the settings."
+msgstr "Halaman ini memerlukan modul VPN dengan mu300-vpn yang dapat dibaca mesin (modul v2 atau lebih baru). Memperbaruinya mempertahankan profil dan pengaturan."
+
+msgid "The VPN is a module of its own: mu300-vpn with its kill switch and profiles, and one extra per engine (Xray, sing-box, mihomo, dae). It is installed with mu300-extra install vpn."
+msgstr "VPN adalah modul tersendiri: mu300-vpn dengan kill switch dan profilnya, ditambah satu ekstra per mesin (Xray, sing-box, mihomo, dae). Modul ini dipasang dengan mu300-extra install vpn."
+
+msgid "The download is a few MB for the module and up to tens of MB per engine: on mobile data it counts towards your plan."
+msgstr "Unduhannya beberapa MB untuk modul dan hingga puluhan MB per mesin: pada data seluler, ini memotong kuota Anda."
+
+msgid "Update the VPN module"
+msgstr "Perbarui modul VPN"
+
+msgid "Install the VPN module"
+msgstr "Pasang modul VPN"
+
+msgid "Upload the file…"
+msgstr "Unggah berkas…"
+
+msgid "Offline: upload mu300-linux-vpn-core.tar.gz (or the bundle mu300-linux-vpn.tar.gz) from the release page of the VPN module."
+msgstr "Offline: unggah mu300-linux-vpn-core.tar.gz (atau bundel mu300-linux-vpn.tar.gz) dari halaman rilis modul VPN."
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "This is a network or frequency scan: it takes one to three minutes, holds the modem's AT channel all that time, and mobile data may pause meanwhile. It runs in the background; the reply appears here when it is done."
+msgstr "Ini adalah pemindaian jaringan atau frekuensi: memakan waktu satu sampai tiga menit, menahan kanal AT modem selama itu, dan data seluler bisa terhenti sementara. Berjalan di latar belakang; balasannya muncul di sini setelah selesai."
+
+msgid "This changes a network mode, band or cell setting the modem stores: it stays in force after a reboot, and in Android too, where a network that does not match it shows as No Service. The Locks page shows these settings and resets them."
+msgstr "Ini mengubah mode jaringan, pita, atau pengaturan sel yang disimpan modem: tetap berlaku setelah reboot, dan juga di Android, tempat jaringan yang tidak cocok tampil sebagai Tidak ada layanan. Halaman Kunci menampilkan pengaturan ini dan mengatur ulangnya."
+
+msgid "This switches the radio, the data connection or the modem itself: mobile data drops until it is restored, and this page may lose its connection for a while."
+msgstr "Ini mengalihkan radio, koneksi data, atau modem itu sendiri: data seluler terputus sampai dipulihkan, dan halaman ini bisa kehilangan koneksi untuk sementara."
+
+msgid "This changes the data profiles (APNs) stored in the modem, which mobile data and Android use."
+msgstr "Ini mengubah profil data (APN) yang tersimpan di modem, yang digunakan data seluler dan Android."
+
+msgid "This changes the SIM's PIN lock or enters a PIN: wrong PINs block the SIM until its PUK is entered."
+msgstr "Ini mengubah kunci PIN SIM atau memasukkan PIN: PIN yang salah memblokir SIM sampai PUK-nya dimasukkan."
+
+msgid "Basic"
+msgstr "Dasar"
+
+msgid "Registration/signal"
+msgstr "Registrasi/sinyal"
+
+msgid "Bearer"
+msgstr "Bearer"
+
+msgid "Engineering mode"
+msgstr "Mode rekayasa"
+
+msgid "AT command (↑↓ history, Enter to send)"
+msgstr "Perintah AT (↑↓ riwayat, Enter untuk mengirim)"
+
+msgid "Send"
+msgstr "Kirim"
+
+msgid "Clear screen"
+msgstr "Bersihkan layar"
+
+msgid "Ready."
+msgstr "Siap."
+
+msgid "Session history (click to reuse)"
+msgstr "Riwayat sesi (klik untuk menggunakan lagi)"
+
+msgid "Running in the background (at most %d s); the reply appears here when it is done…"
+msgstr "Berjalan di latar belakang (paling lama %d dtk); balasannya muncul di sini setelah selesai…"
+
+msgid "The modem gave no final answer in time"
+msgstr "Modem tidak memberi jawaban akhir tepat waktu"
+
+msgid "%d s in the background"
+msgstr "%d dtk di latar belakang"
+
+msgid "(no output)"
+msgstr "(tidak ada keluaran)"
+
+msgid "This command changes the modem's state."
+msgstr "Perintah ini mengubah status modem."
+
+msgid "Not sent yet: waiting for confirmation"
+msgstr "Belum dikirim: menunggu konfirmasi"
+
+msgid "Send this AT command?"
+msgstr "Kirim perintah AT ini?"
+
+msgid "Send anyway"
+msgstr "Tetap kirim"
+
+msgid "Not sent"
+msgstr "Tidak dikirim"
+
+msgid "Request failed"
+msgstr "Permintaan gagal"
+
+msgid "(empty)"
+msgstr "(kosong)"
+
+msgid "Passphrase (8 characters or more)"
+msgstr "Frasa sandi (8 karakter atau lebih)"
+
+msgid "The passphrase again"
+msgstr "Frasa sandi sekali lagi"
+
+msgid "Download the backup"
+msgstr "Unduh cadangan"
+
+msgid "Back up the settings"
+msgstr "Cadangkan pengaturan"
+
+msgid "One file with the hotspot, mobile data and the APN, the network locks, the VPN profiles and settings, SMS forwarding, the LAN address, the host name, the time zone and the SSH keys. It holds passwords: with a passphrase it is encrypted, and only that passphrase opens it again."
+msgstr "Satu berkas berisi hotspot, data seluler dan APN, kunci jaringan, profil dan pengaturan VPN, penerusan SMS, alamat LAN, nama host, zona waktu, dan kunci SSH. Berkas ini berisi kata sandi: dengan frasa sandi berkas dienkripsi, dan hanya frasa itu yang dapat membukanya lagi."
+
+msgid "Include the login password"
+msgstr "Sertakan kata sandi login"
+
+msgid "Passphrase, if the file is encrypted"
+msgstr "Frasa sandi, jika berkas terenkripsi"
+
+msgid "Show what would change"
+msgstr "Tampilkan apa yang akan berubah"
+
+msgid "Restore"
+msgstr "Pulihkan"
+
+msgid "The file is larger than 4 MiB"
+msgstr "Berkas lebih besar dari 4 MiB"
+
+msgid "The settings of the file replace these. The hotspot, mobile data or the LAN may restart, and this page may lose its connection for a moment."
+msgstr "Pengaturan dari berkas menggantikan yang ini. Hotspot, data seluler, atau LAN dapat dimulai ulang, dan halaman ini dapat kehilangan koneksi sesaat."
+
+msgid "Restore from a backup"
+msgstr "Pulihkan dari cadangan"
+
+msgid "Every value of the file is checked first; one that is refused and nothing is changed. What is the same is left alone, and no VPN profile, subscription or SSH key of this device is removed."
+msgstr "Setiap nilai berkas diperiksa lebih dulu; jika satu ditolak, tidak ada yang diubah. Yang sama dibiarkan, dan tidak ada profil VPN, langganan, atau kunci SSH perangkat ini yang dihapus."
+
+msgid "Keep this device's login password"
+msgstr "Pertahankan kata sandi login perangkat ini"
+
+msgid "Take a file of another device model"
+msgstr "Terima berkas dari model perangkat lain"
+
+msgid "The two passphrases differ"
+msgstr "Kedua frasa sandi berbeda"
+
+msgid "The passphrase needs 8 characters or more"
+msgstr "Frasa sandi perlu 8 karakter atau lebih"
+
+msgid "Saved (encrypted)"
+msgstr "Tersimpan (terenkripsi)"
+
+msgid "Saved. The file is not encrypted: it holds passwords, keep it safe."
+msgstr "Tersimpan. Berkas tidak terenkripsi: berisi kata sandi, simpan dengan aman."
+
+msgid "Choose a backup file first"
+msgstr "Pilih berkas cadangan dulu"
+
+msgid "Restoring…"
+msgstr "Memulihkan…"
+
+msgid "Restored"
+msgstr "Dipulihkan"
+
+msgid "The restore did not finish: see the lines above"
+msgstr "Pemulihan tidak selesai: lihat baris di atas"
+
+msgid "Loading…"
+msgstr "Memuat…"
+
+msgid "Channel Analysis"
+msgstr "Analisis Kanal"
+
+msgid "A scan takes the Wi-Fi hotspot off its channel for a moment: connected devices drop, and some (macOS in particular) may not reconnect by themselves. This page scans as soon as it opens and again every few seconds. Reach the panel over USB or another way first if you depend on the hotspot."
+msgstr "Pemindaian membuat hotspot Wi-Fi meninggalkan kanalnya sesaat: perangkat yang terhubung terputus, dan beberapa (terutama macOS) mungkin tidak tersambung kembali sendiri. Halaman ini memindai begitu dibuka lalu setiap beberapa detik. Jika Anda bergantung pada hotspot, akses panel lewat USB atau cara lain terlebih dahulu."
+
+msgid "Scan anyway"
+msgstr "Tetap pindai"
+
+msgid "Saved"
+msgstr "Disimpan"
+
+msgid "CPU profile unavailable"
+msgstr "CPU profile unavailable"
+
+msgid "Power saving"
+msgstr "Power saving"
+
+msgid "Balanced"
+msgstr "Balanced"
+
+msgid "Performance"
+msgstr "Performance"
+
+msgid "Cores capped at about 60 %% of their maximum (cooler, less power)."
+msgstr "Cores capped at about 60 %% of their maximum (cooler, less power)."
+
+msgid "Schedutil across the full hardware range (the stock behaviour)."
+msgstr "Schedutil across the full hardware range (the stock behaviour)."
+
+msgid "Every cluster pinned at its hardware maximum."
+msgstr "Every cluster pinned at its hardware maximum."
+
+msgid "CPU profile"
+msgstr "CPU profile"
+
+msgid "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+msgstr "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+
+msgid "Saved profile: %s"
+msgstr "Saved profile: %s"
+
+msgid "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+msgstr "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+
+msgid "Clusters"
+msgstr "Clusters"
+
+msgid "Cores"
+msgstr "Cores"
+
+msgid "Governor"
+msgstr "Governor"
+
+msgid "Now"
+msgstr "Now"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Hardware max"
+msgstr "Hardware max"
+
+msgid "Frequencies in MHz."
+msgstr "Frequencies in MHz."
+
+msgid "Highlighted cores are online. A core taken offline stays offline, also after a reboot, until it is brought back. CPU0 always stays online."
+msgstr "Inti yang disorot sedang online. Inti yang dimatikan tetap offline, juga setelah mulai ulang, sampai dinyalakan kembali. CPU0 selalu tetap online."
+
+msgid "Low latency: on"
+msgstr "Latensi rendah: aktif"
+
+msgid "Low latency: off"
+msgstr "Latensi rendah: nonaktif"
+
+msgid "Low latency keeps CPU0 out of its idle states, as ZTE's U30 Air firmware does: Wi-Fi delays are much shorter, and the device draws more power. Off by default."
+msgstr "Latensi rendah menjaga CPU0 tidak masuk ke status diamnya, seperti firmware U30 Air dari ZTE: jeda Wi-Fi jauh lebih singkat, dan perangkat memakai lebih banyak daya. Nonaktif secara bawaan."
+
+msgid "Thermal"
+msgstr "Termal"
+
+msgid "The kernel's thermal zones, read only. A zone with trip points throttles the cooling devices bound to it at its passive trip; a cooling state of 0 is no throttling."
+msgstr "Zona termal kernel, hanya baca. Zona dengan titik pemicu membatasi perangkat pendingin yang terikat padanya pada titik pasifnya; status pendinginan 0 berarti tidak ada pembatasan."
+
+msgid "Zone"
+msgstr "Zona"
+
+msgid "Temperature"
+msgstr "Suhu"
+
+msgid "Trip points"
+msgstr "Titik pemicu"
+
+msgid "Cooling devices"
+msgstr "Perangkat pendingin"
+
+msgid "Stress test started"
+msgstr "Uji stres dimulai"
+
+msgid "Saved: it takes effect at the next reboot"
+msgstr "Tersimpan: berlaku pada boot ulang berikutnya"
+
+msgid "CPU voltage offset (EXPERIMENTAL)"
+msgstr "Offset tegangan CPU (EKSPERIMENTAL)"
+
+msgid "Experimental: changing the CPU voltage can make the device unstable, corrupt your data and permanently damage your device. Use it entirely at your own risk."
+msgstr "Eksperimental: mengubah tegangan CPU dapat membuat perangkat tidak stabil, merusak data Anda, dan merusak perangkat Anda secara permanen. Gunakan sepenuhnya atas risiko Anda sendiri."
+
+msgid "CPU voltage offset unavailable"
+msgstr "Offset tegangan CPU tidak tersedia"
+
+msgid "Not available with this kernel (a mainline kernel of this release or later has it)."
+msgstr "Tidak tersedia dengan kernel ini (kernel mainline dari rilis ini atau yang lebih baru memilikinya)."
+
+msgid "Off: the stock voltages"
+msgstr "Mati: tegangan bawaan pabrik"
+
+msgid "Changes at the next reboot"
+msgstr "Berubah pada boot ulang berikutnya"
+
+msgid "Trial boot: kept once this boot has been up 10 minutes"
+msgstr "Boot percobaan: dipertahankan setelah boot ini berjalan 10 menit"
+
+msgid "Kept: this offset passed its trial boot"
+msgstr "Dipertahankan: offset ini lolos boot percobaannya"
+
+msgid "a boot with it ended without a clean shutdown"
+msgstr "sebuah boot dengannya berakhir tanpa pematian yang bersih"
+
+msgid "its trial boot ended before 10 minutes"
+msgstr "boot percobaannya berakhir sebelum 10 menit"
+
+msgid "invalid value"
+msgstr "nilai tidak valid"
+
+msgid "unknown SoC firmware"
+msgstr "firmware SoC tidak dikenal"
+
+msgid "refused by the kernel"
+msgstr "ditolak oleh kernel"
+
+msgid "the kernel could not start CPU scaling with it"
+msgstr "kernel tidak dapat memulai penskalaan CPU dengannya"
+
+msgid "Offsets in µV for the three CPU domains (cores 0-3, 4-6 and 7), in whole steps. A new offset takes effect at the next reboot, as a trial: it is kept once that boot has been up 10 minutes, and dropped (back to 0) if a boot with it ends in a crash, a watchdog reset or a power cut."
+msgstr "Offset dalam µV untuk tiga domain CPU (inti CPU 0-3, 4-6, dan 7), dalam langkah utuh. Offset baru berlaku pada boot ulang berikutnya sebagai percobaan: dipertahankan setelah boot itu berjalan 10 menit, dan dibuang (kembali ke 0) jika boot dengannya berakhir karena crash, reset watchdog, atau listrik padam."
+
+msgid "Running now (µV)"
+msgstr "Berjalan sekarang (µV)"
+
+msgid "Saved for the next boot (µV)"
+msgstr "Tersimpan untuk boot berikutnya (µV)"
+
+msgid "State"
+msgstr "Keadaan"
+
+msgid "Taken back automatically: %s µV (%s)"
+msgstr "Ditarik kembali otomatis: %s µV (%s)"
+
+msgid "The SoC firmware of this device is not one whose voltage encoding is known: only the stock voltages are possible."
+msgstr "Firmware SoC perangkat ini bukan salah satu yang pengodean tegangannya diketahui: hanya tegangan bawaan pabrik yang dimungkinkan."
+
+msgid "Domain"
+msgstr "Domain"
+
+msgid "Offset now (µV)"
+msgstr "Offset sekarang (µV)"
+
+msgid "Highest step"
+msgstr "Langkah tertinggi"
+
+msgid "New offset (µV)"
+msgstr "Offset baru (µV)"
+
+msgid "Limits: %d to %d µV, in steps of %d µV."
+msgstr "Batas: %d hingga %d µV, dengan langkah %d µV."
+
+msgid "Save for the next boot"
+msgstr "Simpan untuk boot berikutnya"
+
+msgid "Each offset must be a multiple of %d µV between %d and %d."
+msgstr "Setiap offset harus kelipatan %d µV antara %d dan %d."
+
+msgid "Type %s to confirm."
+msgstr "Ketik %s untuk mengonfirmasi."
+
+msgid "Back to the stock voltages"
+msgstr "Kembali ke tegangan bawaan pabrik"
+
+msgid "Type %s to confirm:"
+msgstr "Ketik %s untuk mengonfirmasi:"
+
+msgid "Run a 10-minute CPU stress test"
+msgstr "Jalankan uji stres CPU 10 menit"
+
+msgid "Test a new offset under load during its trial boot. The device may crash if the voltage is too low; the next boot then runs at the stock voltages."
+msgstr "Uji offset baru di bawah beban selama boot percobaannya. Perangkat dapat crash jika tegangan terlalu rendah; boot berikutnya lalu berjalan dengan tegangan bawaan pabrik."
+
+msgid "A stress test is running."
+msgstr "Uji stres sedang berjalan."
+
+msgid "USB role"
+msgstr "Peran USB"
+
+msgid "Current role"
+msgstr "Peran saat ini"
+
+msgid "Switch USB role"
+msgstr "Ganti peran USB"
+
+msgid "Device mode"
+msgstr "Mode perangkat"
+
+msgid "Host mode"
+msgstr "Mode host"
+
+msgid "Enable host mode at boot"
+msgstr "Aktifkan mode host saat boot"
+
+msgid "Apply role"
+msgstr "Terapkan peran"
+
+msgid "Host mode disconnects USB networking and serial on this port. F50 has no battery; management may be lost and a USB adapter usually needs a powered hub."
+msgstr "Mode host memutus jaringan USB dan serial pada port ini. F50 tidak memiliki baterai; akses manajemen bisa hilang dan adaptor USB biasanya memerlukan hub berdaya."
+
+msgid "USB network mode"
+msgstr "Mode jaringan USB"
+
+msgid "Network protocol"
+msgstr "Protokol jaringan"
+
+msgid "Apply duration"
+msgstr "Durasi penerapan"
+
+msgid "Next reboot only"
+msgstr "Hanya boot ulang berikutnya"
+
+msgid "Permanent"
+msgstr "Permanen"
+
+msgid "Enable selected protocol"
+msgstr "Aktifkan protokol terpilih"
+
+msgid "Save; apply after reboot"
+msgstr "Simpan; terapkan setelah boot ulang"
+
+msgid "NCM is the default. Windows does not natively support ECM; RNDIS changes enumeration. With Enable selected protocol off, only your choice is saved. Next reboot only applies once, then returns to NCM."
+msgstr "NCM adalah bawaan. Windows tidak mendukung ECM secara native; RNDIS mengubah enumerasi. Jika Aktifkan protokol terpilih mati, hanya pilihan Anda yang disimpan. Hanya boot ulang berikutnya diterapkan sekali, lalu kembali ke NCM."
+
+msgid "USB adapters"
+msgstr "Adaptor USB"
+
+msgid "Refresh"
+msgstr "Segarkan"
+
+msgid "Available only in host mode. Refresh brings discovered USB adapters up; adding to LAN saves the bridge and reloads networking."
+msgstr "Hanya tersedia dalam mode host. Segarkan menyalakan adaptor USB yang ditemukan; menambahkan ke LAN menyimpan bridge dan memuat ulang jaringan."
+
+msgid "Recent modem operations"
+msgstr "Operasi modem terbaru"
+
+msgid "Show"
+msgstr "Tampilkan"
+
+msgid "The control panel's recent calls, of this boot and the one before: when, which page call or AT command, how long it took and how it ended (ok, error, busy, killed). No values, replies or messages are kept. Useful when the panel was stuck."
+msgstr "Panggilan terbaru panel kontrol, dari boot ini dan sebelumnya: kapan, panggilan halaman atau perintah AT apa, berapa lama, dan bagaimana berakhirnya (ok, galat, sibuk, dihentikan). Tidak ada nilai, balasan, atau pesan yang disimpan. Berguna saat panel macet."
+
+msgid "Unavailable"
+msgstr "Tidak tersedia"
+
+msgid "USB network mode is unavailable in host mode; host auto-start also disables USB network auto-start."
+msgstr "Mode jaringan USB tidak tersedia dalam mode host; mulai otomatis host juga menonaktifkan mulai otomatis jaringan USB."
+
+msgid "Host mode immediately disconnects USB management. F50 has no battery and peripherals may need external power; make sure another management path exists."
+msgstr "Mode host langsung memutus manajemen USB. F50 tidak memiliki baterai dan periferal mungkin memerlukan daya eksternal; pastikan ada jalur manajemen lain."
+
+msgid "USB networking and serial will re-enumerate in device mode."
+msgstr "Jaringan USB dan serial akan dienumerasi ulang dalam mode perangkat."
+
+msgid "Switch USB role?"
+msgstr "Ganti peran USB?"
+
+msgid "Apply"
+msgstr "Terapkan"
+
+msgid "Switching USB role…"
+msgstr "Mengganti peran USB…"
+
+msgid "Switch failed: %s"
+msgstr "Gagal mengganti: %s"
+
+msgid "Management connection lost; reconnect to confirm the USB role."
+msgstr "Koneksi manajemen terputus; sambungkan ulang untuk memastikan peran USB."
+
+msgid "Switch request accepted; the USB connection may briefly disconnect."
+msgstr "Permintaan penggantian diterima; koneksi USB mungkin terputus sebentar."
+
+msgid "USB role applied"
+msgstr "Peran USB diterapkan"
+
+msgid "Save USB network mode?"
+msgstr "Simpan mode jaringan USB?"
+
+msgid "The network mode applies on the next reboot; USB management may need to reconnect."
+msgstr "Mode jaringan diterapkan pada boot ulang berikutnya; manajemen USB mungkin perlu tersambung ulang."
+
+msgid "Save the selection only; with the selected protocol disabled, the next boot still uses default NCM."
+msgstr "Hanya simpan pilihan; dengan protokol terpilih nonaktif, boot berikutnya tetap menggunakan NCM bawaan."
+
+msgid "Save"
+msgstr "Simpan"
+
+msgid "Saving USB network settings…"
+msgstr "Menyimpan pengaturan jaringan USB…"
+
+msgid "Settings saved"
+msgstr "Pengaturan disimpan"
+
+msgid "Save failed: %s"
+msgstr "Gagal menyimpan: %s"
+
+msgid "This boot"
+msgstr "Boot ini"
+
+msgid "Previous boot"
+msgstr "Boot sebelumnya"
+
+msgid "Unable to confirm the role yet; reconnect and refresh the page."
+msgstr "Peran belum dapat dipastikan; sambungkan ulang dan segarkan halaman."
+
+msgid "Switch to host mode to see USB adapters."
+msgstr "Beralih ke mode host untuk melihat adaptor USB."
+
+msgid "Scanning USB adapters…"
+msgstr "Memindai adaptor USB…"
+
+msgid "No USB adapters found."
+msgstr "Tidak ada adaptor USB yang ditemukan."
+
+msgid "Link connected"
+msgstr "Link tersambung"
+
+msgid "No link; enable attempted"
+msgstr "Tidak ada link; sudah dicoba diaktifkan"
+
+msgid "Added to LAN"
+msgstr "Ditambahkan ke LAN"
+
+msgid "Add to LAN"
+msgstr "Tambahkan ke LAN"
+
+msgid "Add USB adapter to LAN?"
+msgstr "Tambahkan adaptor USB ke LAN?"
+
+msgid "This saves the bridge configuration and reloads networking; existing connections may briefly drop."
+msgstr "Ini menyimpan konfigurasi bridge dan memuat ulang jaringan; koneksi yang ada mungkin terputus sebentar."
+
+msgid "Add"
+msgstr "Tambah"
+
+msgid "Adding USB adapter…"
+msgstr "Menambahkan adaptor USB…"
+
+msgid "Add failed: %s"
+msgstr "Gagal menambahkan: %s"
+
+msgid "Leave empty to keep the saved value"
+msgstr "Biarkan kosong untuk mempertahankan nilai yang tersimpan"
+
+msgid "Saved: %s"
+msgstr "Tersimpan: %s"
+
+msgid "Remove the saved value"
+msgstr "Hapus nilai yang tersimpan"
+
+msgid "Presets"
+msgstr "Prasetel"
+
+msgid "Form (URL-encoded)"
+msgstr "Formulir (dienkode URL)"
+
+msgid "Plain text"
+msgstr "Teks biasa"
+
+msgid "Received messages are sent on as they reach the SMS pool. A failed delivery is retried after 30 s, then after twice as long each time (an hour at most), ten times in all."
+msgstr "Pesan yang diterima diteruskan begitu sampai di pool SMS. Pengiriman yang gagal dicoba lagi setelah 30 dtk, lalu setiap kali setelah waktu dua kali lebih lama (paling lama satu jam), sepuluh kali seluruhnya."
+
+msgid "Forward received messages"
+msgstr "Teruskan pesan yang diterima"
+
+msgid "Message template"
+msgstr "Templat pesan"
+
+msgid "Placeholders: {sender}, {time}, {text}, {device}"
+msgstr "Placeholder: {sender}, {time}, {text}, {device}"
+
+msgid "Only these senders"
+msgstr "Hanya pengirim ini"
+
+msgid "One per line; empty: every sender. A * at the end matches the start of a sender."
+msgstr "Satu per baris; kosong: semua pengirim. Tanda * di akhir cocok dengan awal pengirim."
+
+msgid "Never these senders"
+msgstr "Jangan pernah pengirim ini"
+
+msgid "Only messages containing one of these words"
+msgstr "Hanya pesan yang memuat salah satu kata ini"
+
+msgid "One per line; empty: every message."
+msgstr "Satu per baris; kosong: semua pesan."
+
+msgid "Webhook"
+msgstr "Webhook"
+
+msgid "Enabled"
+msgstr "Aktif"
+
+msgid "Address (http:// or https://)"
+msgstr "Alamat (http:// atau https://)"
+
+msgid "Body"
+msgstr "Isi"
+
+msgid "Fields: sender, time, text, device, message (the template filled in)"
+msgstr "Kolom: sender, time, text, device, message (templat yang sudah diisi)"
+
+msgid "Custom body"
+msgstr "Isi kustom"
+
+msgid "Empty: the standard fields (plain text: the message). Placeholders: {sender}, {time}, {text}, {device}, {message}. Each value is escaped for the chosen type. This body is shown again here: keep secrets in the address or a header."
+msgstr "Kosong: bidang standar (teks biasa: pesannya). Placeholder: {sender}, {time}, {text}, {device}, {message}. Setiap nilai di-escape sesuai jenis yang dipilih. Isi ini ditampilkan lagi di sini: simpan rahasia di alamat atau di header."
+
+msgid "Extra headers (one \"Name: value\" per line)"
+msgstr "Header tambahan (satu \"Nama: nilai\" per baris)"
+
+msgid "The answer must contain"
+msgstr "Jawaban harus memuat"
+
+msgid "Empty: every HTTP 2xx answer counts as delivered. With key=value (for example errcode=0), the answer must also be a JSON object that has this value under this key at its top level; otherwise the delivery fails. Only the result of the check is logged, never the answer."
+msgstr "Kosong: setiap jawaban HTTP 2xx dihitung sebagai terkirim. Dengan kunci=nilai (misalnya errcode=0), jawaban juga harus berupa objek JSON yang memiliki nilai ini di bawah kunci ini pada tingkat teratasnya; jika tidak, pengiriman gagal. Hanya hasil pemeriksaan yang dicatat, jawabannya tidak pernah."
+
+msgid "Bot token"
+msgstr "Token bot"
+
+msgid "Chat ID (a number, or @channel)"
+msgstr "ID obrolan (angka atau @kanal)"
+
+msgid "E-mail"
+msgstr "Email"
+
+msgid "E-mail needs msmtp, which this image does not have"
+msgstr "Email memerlukan msmtp, yang tidak ada di image ini"
+
+msgid "Mail server"
+msgstr "Server email"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Security"
+msgstr "Keamanan"
+
+msgid "None"
+msgstr "Tidak ada"
+
+msgid "User name"
+msgstr "Nama pengguna"
+
+msgid "Password"
+msgstr "Kata sandi"
+
+msgid "From"
+msgstr "Dari"
+
+msgid "To"
+msgstr "Kepada"
+
+msgid "SMS to another phone"
+msgstr "SMS ke ponsel lain"
+
+msgid "Phone number"
+msgstr "Nomor telepon"
+
+msgid "Sent as one SMS: a longer message is cut short."
+msgstr "Dikirim sebagai satu SMS: pesan yang lebih panjang dipotong."
+
+msgid "Send test"
+msgstr "Kirim uji"
+
+msgid "Tokens, passwords and the webhook address and headers stay on the device and are never shown again."
+msgstr "Token, kata sandi, serta alamat dan header webhook tetap di perangkat dan tidak pernah ditampilkan lagi."
+
+msgid "Delivered"
+msgstr "Terkirim"
+
+msgid "Will retry"
+msgstr "Akan dicoba lagi"
+
+msgid "Failed"
+msgstr "Gagal"
+
+msgid "Filtered out"
+msgstr "Tersaring"
+
+msgid "Dropped"
+msgstr "Dibuang"
+
+msgid "Clear"
+msgstr "Kosongkan"
+
+msgid "Test"
+msgstr "Uji"
+
+msgid "Delivery log"
+msgstr "Log pengiriman"
+
+msgid "Waiting to be delivered"
+msgstr "Menunggu dikirim"
+
+msgid "Time"
+msgstr "Waktu"
+
+msgid "Message"
+msgstr "Pesan"
+
+msgid "Target"
+msgstr "Tujuan"
+
+msgid "Result"
+msgstr "Hasil"
+
+msgid "Detail"
+msgstr "Rincian"
+
+msgid "No deliveries yet"
+msgstr "Belum ada pengiriman"
+
+msgid "Test started with the saved settings; the result appears in the delivery log."
+msgstr "Uji dimulai dengan pengaturan tersimpan; hasilnya muncul di log pengiriman."
+
+msgid "Automatic without 2G (152)"
+msgstr "Otomatis tanpa 2G (152)"
+
+msgid "4G only"
+msgstr "Hanya 4G"
+
+msgid "Network mode: %s"
+msgstr "Mode jaringan: %s"
+
+msgid "EN-DC off"
+msgstr "EN-DC mati"
+
+msgid "NR band lock: %s"
+msgstr "Kunci band NR: %s"
+
+msgid "LTE band lock: %s"
+msgstr "Kunci band LTE: %s"
+
+msgid "Cell lock: %s"
+msgstr "Kunci sel: %s"
+
+msgid "Modulation DL/UL"
+msgstr "Modulasi DL/UL"
+
+msgid "Estimated from current MCS"
+msgstr "Diperkirakan dari MCS saat ini"
+
+msgid "MCS DL/UL"
+msgstr "MCS DL/UL"
+
+msgid "BLER DL/UL"
+msgstr "BLER DL/UL"
+
+msgid "%s of %s"
+msgstr "%s dari %s"
+
+msgid "The monthly cap is reached"
+msgstr "Batas bulanan tercapai"
+
+msgid "%d%% of the monthly cap is used"
+msgstr "%d%% dari batas bulanan terpakai"
+
+msgid "This billing cycle"
+msgstr "Siklus tagihan ini"
+
+msgid "Link & traffic"
+msgstr "Link & lalu lintas"
+
+msgid "Download rate"
+msgstr "Laju unduh"
+
+msgid "Upload rate"
+msgstr "Laju unggah"
+
+msgid "Total received"
+msgstr "Total diterima"
+
+msgid "Total sent"
+msgstr "Total dikirim"
+
+msgid "Used today"
+msgstr "Terpakai hari ini"
+
+msgid "SIM source"
+msgstr "Sumber SIM"
+
+msgid "Session duration"
+msgstr "Durasi sesi"
+
+msgid "Registration"
+msgstr "Registrasi"
+
+msgid "Data roaming"
+msgstr "Roaming data"
+
+msgid "Bandwidth"
+msgstr "Lebar pita"
+
+msgid "AMBR DL/UL"
+msgstr "AMBR DL/UL"
+
+msgid "Wi-Fi · LAN · Device · SIM"
+msgstr "Wi-Fi · LAN · Perangkat · SIM"
+
+msgid "CPU usage"
+msgstr "Penggunaan CPU"
+
+msgid "Memory"
+msgstr "Memori"
+
+msgid "Storage"
+msgstr "Penyimpanan"
+
+msgid "Battery"
+msgstr "Baterai"
+
+msgid "Channel"
+msgstr "Kanal"
+
+msgid "Encryption"
+msgstr "Enkripsi"
+
+msgid "Hidden SSID"
+msgstr "SSID tersembunyi"
+
+msgid "Country"
+msgstr "Negara"
+
+msgid "AP status"
+msgstr "Status AP"
+
+msgid "USB network"
+msgstr "Jaringan USB"
+
+msgid "Connection tracking"
+msgstr "Pelacakan koneksi"
+
+msgid "LAN address"
+msgstr "Alamat LAN"
+
+msgid "Wi-Fi clients"
+msgstr "Klien Wi-Fi"
+
+msgid "DHCP leases"
+msgstr "Sewa DHCP"
+
+msgid "Device model"
+msgstr "Model perangkat"
+
+msgid "System"
+msgstr "Sistem"
+
+msgid "Modem"
+msgstr "Modem"
+
+msgid "Carrier"
+msgstr "Operator"
+
+msgid "Own number"
+msgstr "Nomor sendiri"
+
+msgid "Module"
+msgstr "Modul"
+
+msgid "Firmware"
+msgstr "Firmware"
+
+msgid "Show SIM identifiers"
+msgstr "Tampilkan pengenal SIM"
+
+msgid "Quick controls"
+msgstr "Kontrol cepat"
+
+msgid "Data connection"
+msgstr "Koneksi data"
+
+msgid "Cellular radio"
+msgstr "Radio seluler"
+
+msgid "Wi-Fi hotspot"
+msgstr "Hotspot Wi-Fi"
+
+msgid "Restart modem"
+msgstr "Mulai ulang modem"
+
+msgid "Power off or restart"
+msgstr "Matikan atau mulai ulang"
+
+msgid "Switch to Android"
+msgstr "Beralih ke Android"
+
+msgid "Lock Linux"
+msgstr "Kunci Linux"
+
+msgid "Neighbor cells"
+msgstr "Sel tetangga"
+
+msgid "RAT/Band"
+msgstr "RAT/Band"
+
+msgid "Frequency"
+msgstr "Frekuensi"
+
+msgid "Running %s…"
+msgstr "Menjalankan %s…"
+
+msgid "Started in background: %s"
+msgstr "Dimulai di latar belakang: %s"
+
+msgid "Done: %s"
+msgstr "Selesai: %s"
+
+msgid "Disconnecting data…"
+msgstr "Memutus data…"
+
+msgid "Connecting data…"
+msgstr "Menyambungkan data…"
+
+msgid "Turn off cellular radio"
+msgstr "Matikan radio seluler"
+
+msgid "This SIM will have no calls, SMS or data, and its radio stays off after a reboot until you turn it on again."
+msgstr "SIM ini tidak akan bisa menelepon, SMS, atau data, dan radionya tetap mati setelah reboot sampai Anda menyalakannya lagi."
+
+msgid "Turn on cellular radio"
+msgstr "Nyalakan radio seluler"
+
+msgid "The radio of the SIM in use comes on and stays on after a reboot (up to about 1 minute)."
+msgstr "Radio SIM yang digunakan menyala dan tetap menyala setelah reboot (hingga sekitar 1 menit)."
+
+msgid "Turn data roaming off"
+msgstr "Matikan roaming data"
+
+msgid "While the SIM is registered on a roaming network, mobile data stays off; SMS, calls and the registration are not affected. Some SIMs report roaming at home (an MVNO, national roaming): there, data would stop as well."
+msgstr "Selama SIM terdaftar di jaringan roaming, data seluler tetap mati; SMS, panggilan, dan pendaftaran tidak terpengaruh. Beberapa SIM melaporkan roaming bahkan di dalam negeri (MVNO, roaming nasional): di sana data juga akan berhenti."
+
+msgid "Allow data roaming"
+msgstr "Izinkan roaming data"
+
+msgid "Mobile data is used on roaming networks too, which can cost extra. Some SIMs report roaming at home (an MVNO, national roaming) and need this to have data at all."
+msgstr "Data seluler juga digunakan di jaringan roaming, yang bisa menambah biaya. Beberapa SIM melaporkan roaming bahkan di dalam negeri (MVNO, roaming nasional) dan memerlukan ini agar mendapat data."
+
+msgid "Cellular connectivity may stop for 1–2 minutes."
+msgstr "Konektivitas seluler mungkin berhenti selama 1–2 menit."
+
+msgid "All connections will be interrupted."
+msgstr "Semua koneksi akan terputus."
+
+msgid "Power off"
+msgstr "Matikan"
+
+msgid "Restart"
+msgstr "Mulai ulang"
+
+msgid "The next boot will enter Android and reboot now. This management page and cellular sharing will disconnect."
+msgstr "Boot berikutnya akan masuk ke Android dan perangkat dimulai ulang sekarang. Halaman manajemen ini dan berbagi seluler akan terputus."
+
+msgid "To return to OpenWrt, run mu300-next-boot linux in Android and reboot."
+msgstr "Untuk kembali ke OpenWrt, jalankan mu300-next-boot linux di Android lalu mulai ulang."
+
+msgid "Or do nothing: after five boots that do not finish, it falls back automatically."
+msgstr "Atau biarkan saja: setelah lima boot yang tidak selesai, sistem kembali secara otomatis."
+
+msgid "Preparing Android boot and rebooting…"
+msgstr "Menyiapkan boot Android dan memulai ulang…"
+
+msgid "Switch and reboot"
+msgstr "Beralih dan mulai ulang"
+
+msgid "Not automatic: %s. The network mode and band locks are stored in the modem and stay in force in Android too; if the network does not match them, Android shows No Service."
+msgstr "Tidak otomatis: %s. Mode jaringan dan kunci band disimpan di modem dan tetap berlaku di Android; jika jaringan tidak cocok, Android menampilkan \"Tidak ada layanan\"."
+
+msgid "Reset locks and switch"
+msgstr "Reset kunci lalu beralih"
+
+msgid "Unlock Linux"
+msgstr "Buka kunci Linux"
+
+msgid "After five boots in a row that do not finish, the device falls back to Android again."
+msgstr "Setelah lima kali boot berturut-turut yang tidak selesai, perangkat kembali lagi ke Android."
+
+msgid "Unlock"
+msgstr "Buka kunci"
+
+msgid "The device will never switch to Android by itself, not even after failed boots: Android only from this page (Switch to Android) or with mu300-next-boot android."
+msgstr "Perangkat tidak akan pernah beralih ke Android dengan sendirinya, bahkan setelah boot gagal: ke Android hanya dari halaman ini (Beralih ke Android) atau dengan mu300-next-boot android."
+
+msgid "A new kernel from an update still gets its first boots on trial, and locks again once one of them succeeds."
+msgstr "Kernel baru dari pembaruan tetap menjalani boot pertamanya sebagai percobaan, lalu terkunci lagi begitu salah satunya berhasil."
+
+msgid "If the system itself no longer starts, the device waits on USB (telnet) instead of going to Android."
+msgstr "Jika sistem itu sendiri tidak lagi berjalan, perangkat menunggu lewat USB (telnet) alih-alih beralih ke Android."
+
+msgid "Hide SIM identifiers"
+msgstr "Sembunyikan pengenal SIM"
+
+msgid "Lock cell %s?"
+msgstr "Kunci sel %s?"
+
+msgid "The radio stack will restart (SFUN); cellular service will stop for about 30 seconds."
+msgstr "Stack radio akan dimulai ulang (SFUN); layanan seluler akan berhenti sekitar 30 detik."
+
+msgid "Locking %s in the background, about 30 seconds"
+msgstr "Mengunci %s di latar belakang, sekitar 30 detik"
+
+msgid "Locked %s in the background; the status will refresh shortly"
+msgstr "%s dikunci di latar belakang; status akan segera disegarkan"
+
+msgid "Lock failed: %s"
+msgstr "Gagal mengunci: %s"
+
+msgid "Resetting the network locks to automatic (SFUN restart, about 30 seconds)…"
+msgstr "Mengembalikan kunci jaringan ke otomatis (restart SFUN, sekitar 30 detik)…"
+
+msgid "Reset failed: %s. The saved lock settings were kept."
+msgstr "Pengaturan ulang gagal: %s. Pengaturan kunci yang tersimpan dipertahankan."
+
+msgid "The lock reset was not confirmed in time; switching anyway."
+msgstr "Reset kunci tidak terkonfirmasi tepat waktu; tetap beralih."
+
+msgid "Internal SIM selected: in use after a reboot"
+msgstr "SIM internal dipilih: digunakan setelah boot ulang"
+
+msgid "Internal SIM selected, but not supported on this device: the external SIM is in use"
+msgstr "SIM internal dipilih, tetapi tidak didukung di perangkat ini: SIM eksternal yang digunakan"
+
+msgid "Uptime %s"
+msgstr "Waktu aktif %s"
+
+msgid "Radio off"
+msgstr "Radio mati"
+
+msgid "No response"
+msgstr "Tidak ada respons"
+
+msgid "Modem busy: cellular readings from %s ago"
+msgstr "Modem sibuk: pembacaan seluler dari %s yang lalu"
+
+msgid "%s · Signal %s %s/10"
+msgstr "%s · Sinyal %s %s/10"
+
+msgid "%s · Signal %s"
+msgstr "%s · Sinyal %s"
+
+msgid "Anchor B%s"
+msgstr "Anchor B%s"
+
+msgid "No serving cell"
+msgstr "Tidak ada sel layanan"
+
+msgid "Version %s is out: update"
+msgstr "Versi %s sudah keluar: perbarui"
+
+msgid "Not registered"
+msgstr "Tidak terdaftar"
+
+msgid "Registered"
+msgstr "Terdaftar"
+
+msgid "Searching"
+msgstr "Mencari"
+
+msgid "Registration denied"
+msgstr "Registrasi ditolak"
+
+msgid "Registered (roaming)"
+msgstr "Terdaftar (roaming)"
+
+msgid "Emergency only"
+msgstr "Hanya darurat"
+
+msgid "Status %s"
+msgstr "Status %s"
+
+msgid "Off: data held back while roaming"
+msgstr "Mati: data ditahan saat roaming"
+
+msgid "Allowed"
+msgstr "Diizinkan"
+
+msgid "Off"
+msgstr "Mati"
+
+msgid "LTE anchor"
+msgstr "Anchor LTE"
+
+msgid "LTE link"
+msgstr "Link LTE"
+
+msgid "Hidden"
+msgstr "Tersembunyi"
+
+msgid "No"
+msgstr "Tidak"
+
+msgid "Running"
+msgstr "Berjalan"
+
+msgid "Not running"
+msgstr "Tidak berjalan"
+
+msgid "Connected"
+msgstr "Tersambung"
+
+msgid "Disconnected"
+msgstr "Terputus"
+
+msgid "%s entries"
+msgstr "%s entri"
+
+msgid "%s clients"
+msgstr "%s klien"
+
+msgid "Recent DHCP leases"
+msgstr "Sewa DHCP terbaru"
+
+msgid "Board"
+msgstr "Papan"
+
+msgid "No temperature readings"
+msgstr "Tidak ada pembacaan suhu"
+
+msgid "Cluster %d"
+msgstr "Kluster %d"
+
+msgid "Total %s · free %s"
+msgstr "Total %s · bebas %s"
+
+msgid "charging %s W"
+msgstr "mengisi daya %s W"
+
+msgid "charging"
+msgstr "mengisi daya"
+
+msgid "drawing %s W"
+msgstr "memakai %s W"
+
+msgid "not charging"
+msgstr "tidak mengisi daya"
+
+msgid "on battery"
+msgstr "dengan baterai"
+
+msgid "full"
+msgstr "penuh"
+
+msgid "USB in %s W"
+msgstr "masukan USB %s W"
+
+msgid "Online"
+msgstr "Daring"
+
+msgid "AT adapter unavailable"
+msgstr "Adaptor AT tidak tersedia"
+
+msgid "Linux locked"
+msgstr "Linux terkunci"
+
+msgid "Installing the language pack…"
+msgstr "Memasang paket bahasa…"
+
+msgid "The language pack is installed"
+msgstr "Paket bahasa sudah terpasang"
+
+msgid "The language pack could not be installed"
+msgstr "Paket bahasa tidak dapat dipasang"
+
+msgid "Language of the browser"
+msgstr "Bahasa peramban"
+
+msgid "Language of the web interface"
+msgstr "Bahasa antarmuka web"
+
+msgid "English, Turkish and Chinese come with the system; the language pack adds the others."
+msgstr "Bahasa Inggris, Turki, dan Mandarin tersedia bersama sistem; paket bahasa menambahkan yang lain."
+
+msgid "The same setting is in System > System > Language and Style."
+msgstr "Pengaturan yang sama ada di Sistem > Sistem > Bahasa dan Gaya."
+
+msgid "Language pack"
+msgstr "Paket bahasa"
+
+msgid "The language pack (mu300-extra-lang.tar.gz, about 2 MB) adds LuCI in about 40 more languages and this panel in 29 of them. Download it from the release of this system, or upload the file from the release page when the device has no internet."
+msgstr "Paket bahasa (mu300-extra-lang.tar.gz, sekitar 2 MB) menambahkan LuCI dalam sekitar 40 bahasa lagi dan panel ini dalam 29 di antaranya. Unduh dari rilis sistem ini, atau unggah berkas dari halaman rilis bila perangkat tidak memiliki internet."
+
+msgid "Download from the release"
+msgstr "Unduh dari rilis"
+
+msgid "Release"
+msgstr "Rilis"
+
+msgid "Enable all"
+msgstr "Aktifkan semua"
+
+msgid "Disable all"
+msgstr "Nonaktifkan semua"
+
+msgid "Remove the language pack"
+msgstr "Hapus paket bahasa"
+
+msgid "Remove the language pack?"
+msgstr "Hapus paket bahasa?"
+
+msgid "Its languages disappear from the list; a page in one of them switches to English."
+msgstr "Bahasanya hilang dari daftar; halaman dalam salah satu bahasa tersebut beralih ke bahasa Inggris."
+
+msgid "Remove"
+msgstr "Hapus"
+
+msgid "Disable"
+msgstr "Nonaktifkan"
+
+msgid "Enable"
+msgstr "Aktifkan"
+
+msgid "LuCI and this panel"
+msgstr "LuCI dan panel ini"
+
+msgid "LuCI only"
+msgstr "Hanya LuCI"
+
+msgid "Disabled"
+msgstr "Nonaktif"
+
+msgid "Language"
+msgstr "Bahasa"
+
+msgid "Code"
+msgstr "Kode"
+
+msgid "Translated"
+msgstr "Diterjemahkan"
+
+msgid "LuCI's own translations come from OpenWrt. This panel's translations other than Turkish and Chinese are machine (AI) translations; corrections are welcome."
+msgstr "Terjemahan LuCI sendiri berasal dari OpenWrt. Terjemahan panel ini selain bahasa Turki dan Mandarin adalah terjemahan mesin (AI); koreksi dipersilakan."
+
+msgid "Automatic"
+msgstr "Otomatis"
+
+msgid "Serving network"
+msgstr "Jaringan layanan"
+
+msgid "Network mode · EN-DC"
+msgstr "Mode jaringan · EN-DC"
+
+msgid "Refresh lock status"
+msgstr "Segarkan status kunci"
+
+msgid "Apply at startup"
+msgstr "Terapkan saat startup"
+
+msgid "Turning this off only stops replay at the next boot; saved network mode, EN-DC, band and cell settings remain."
+msgstr "Menonaktifkan ini hanya menghentikan penerapan ulang pada boot berikutnya; pengaturan mode jaringan, EN-DC, band, dan sel yang tersimpan tetap ada."
+
+msgid "Band locking"
+msgstr "Penguncian band"
+
+msgid "NR bands"
+msgstr "Band NR"
+
+msgid "LTE bands"
+msgstr "Band LTE"
+
+msgid "Apply NR bands"
+msgstr "Terapkan band NR"
+
+msgid "Apply LTE bands"
+msgstr "Terapkan band LTE"
+
+msgid "Neighbor cells and cell locking"
+msgstr "Sel tetangga dan penguncian sel"
+
+msgid "Lock current serving cell"
+msgstr "Kunci sel layanan saat ini"
+
+msgid "Unlock cell"
+msgstr "Buka kunci sel"
+
+msgid "Enter a cell"
+msgstr "Masukkan sel"
+
+msgid "Type"
+msgstr "Jenis"
+
+msgid "Channel number (EARFCN / NR-ARFCN)"
+msgstr "Nomor kanal (EARFCN / NR-ARFCN)"
+
+msgid "Lock this cell"
+msgstr "Kunci sel ini"
+
+msgid "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. A channel number, not a frequency in MHz; the cell need not be in the neighbor list."
+msgstr "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. Nomor kanal, bukan frekuensi dalam MHz; sel tidak harus ada di daftar sel tetangga."
+
+msgid "Applying restarts the radio stack (SFUN) and briefly interrupts cellular service. Settings are saved and replayed by the plugin after AT is ready when Apply at startup is enabled. A platform pre-radio hook can replay without a restart. Apply with no bands selected to restore automatic mode."
+msgstr "Menerapkan akan memulai ulang stack radio (SFUN) dan memutus layanan seluler sebentar. Pengaturan disimpan dan diterapkan ulang oleh plugin setelah AT siap jika Terapkan saat startup diaktifkan. Hook pra-radio platform dapat menerapkan ulang tanpa memulai ulang. Terapkan tanpa band terpilih untuk mengembalikan mode otomatis."
+
+msgid "Back to automatic"
+msgstr "Kembali ke otomatis"
+
+msgid "The network mode and band locks are stored in the modem and stay in force in Android too. If you are not sure, reset them before switching to Android."
+msgstr "Mode jaringan dan kunci band disimpan di modem dan tetap berlaku di Android. Jika ragu, reset sebelum beralih ke Android."
+
+msgid "Reset all to automatic"
+msgstr "Reset semua ke otomatis"
+
+msgid "Apply “%s”?"
+msgstr "Terapkan “%s”?"
+
+msgid "Applying %s in the background…"
+msgstr "Menerapkan %s di latar belakang…"
+
+msgid "Applying %s in the background… (SFUN restart and re-registration, about 30 seconds)"
+msgstr "Menerapkan %s di latar belakang… (mulai ulang SFUN dan registrasi ulang, sekitar 30 detik)"
+
+msgid "Queued: another lock is being applied during SFUN restart; this will take effect afterward"
+msgstr "Antre: kunci lain sedang diterapkan selama mulai ulang SFUN; ini akan berlaku setelahnya"
+
+msgid "Confirming the EN-DC status…"
+msgstr "Memastikan status EN-DC…"
+
+msgid "Confirming apply at startup…"
+msgstr "Memastikan penerapan saat startup…"
+
+msgid "Started in background: %s (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Dimulai di latar belakang: %s (mulai ulang SFUN, sekitar 30 detik); membaca kembali status…"
+
+msgid "Disable EN-DC (NSA anchor)"
+msgstr "Nonaktifkan EN-DC (anchor NSA)"
+
+msgid "Enable EN-DC (NSA anchor)"
+msgstr "Aktifkan EN-DC (anchor NSA)"
+
+msgid "Disable apply at startup"
+msgstr "Nonaktifkan penerapan saat startup"
+
+msgid "Enable apply at startup"
+msgstr "Aktifkan penerapan saat startup"
+
+msgid "Reading the modem directly (a few seconds at most)…"
+msgstr "Membaca modem secara langsung (paling lama beberapa detik)…"
+
+msgid "Refresh failed"
+msgstr "Gagal menyegarkan"
+
+msgid "Refreshed"
+msgstr "Disegarkan"
+
+msgid "NR bands: back to automatic"
+msgstr "Band NR: kembali ke otomatis"
+
+msgid "LTE bands: back to automatic"
+msgstr "Band LTE: kembali ke otomatis"
+
+msgid "Network mode automatic, EN-DC on, all LTE and NR bands, no cell lock. The saved lock settings are cleared, so nothing is replayed at startup."
+msgstr "Mode jaringan otomatis, EN-DC aktif, semua band LTE dan NR, tanpa kunci sel. Pengaturan kunci yang tersimpan dihapus, jadi tidak ada yang diterapkan ulang saat startup."
+
+msgid "Reset"
+msgstr "Reset"
+
+msgid "Remove the %s cell lock"
+msgstr "Hapus kunci sel %s"
+
+msgid "The radio stack will restart (SFUN), taking about 30 seconds."
+msgstr "Stack radio akan dimulai ulang (SFUN), memakan waktu sekitar 30 detik."
+
+msgid "Removing the %s cell lock…"
+msgstr "Menghapus kunci sel %s…"
+
+msgid "Unlock failed: %s"
+msgstr "Gagal membuka kunci: %s"
+
+msgid "Unlock started in background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Buka kunci dimulai di latar belakang (mulai ulang SFUN, sekitar 30 detik); membaca kembali status…"
+
+msgid "Locking %s in the background…"
+msgstr "Mengunci %s di latar belakang…"
+
+msgid "Locked %s in the background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "%s dikunci di latar belakang (mulai ulang SFUN, sekitar 30 detik); membaca kembali status…"
+
+msgid "Enter a channel number and a PCI in the ranges below"
+msgstr "Masukkan nomor kanal dan PCI dalam rentang di bawah"
+
+msgid "No serving-network data"
+msgstr "Tidak ada data jaringan layanan"
+
+msgid "NR serving cell"
+msgstr "Sel layanan NR"
+
+msgid "Status confirmed"
+msgstr "Status dipastikan"
+
+msgid "Readback timed out; select “Refresh lock status”"
+msgstr "Waktu pembacaan habis; pilih “Segarkan status kunci”"
+
+msgid "Reset verified: network mode automatic, EN-DC on, all bands, no cell lock; the saved lock settings are cleared"
+msgstr "Pengaturan ulang terverifikasi: mode jaringan otomatis, EN-DC aktif, semua band, tanpa kunci sel; pengaturan kunci yang tersimpan dihapus"
+
+msgid "Applied (EN-DC does not require a radio-stack restart)"
+msgstr "Diterapkan (EN-DC tidak memerlukan mulai ulang stack radio)"
+
+msgid "Apply at startup is on"
+msgstr "Terapkan saat startup aktif"
+
+msgid "Apply at startup is off"
+msgstr "Terapkan saat startup nonaktif"
+
+msgid "EN-DC status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Waktu pembacaan status EN-DC habis; gunakan “Segarkan status kunci” untuk memastikan"
+
+msgid "Apply-at-startup status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Waktu pembacaan status penerapan saat startup habis; gunakan “Segarkan status kunci” untuk memastikan"
+
+msgid "Locked cells"
+msgstr "Sel terkunci"
+
+msgid "Unlock %s"
+msgstr "Buka kunci %s"
+
+msgid "Automatic (%d supported)"
+msgstr "Otomatis (%d didukung)"
+
+msgid "%d locked: %s"
+msgstr "%d terkunci: %s"
+
+msgid "Repair DNS?"
+msgstr "Perbaiki DNS?"
+
+msgid "This removes the DNS forwarder of a package that is no longer installed. If no other DNS server is left, the device then uses the DNS servers of the mobile connection: the carrier sees the names you look up, outside any proxy or VPN."
+msgstr "Ini menghapus penerusan DNS milik paket yang sudah tidak terpasang. Jika tidak ada server DNS lain yang tersisa, perangkat akan memakai server DNS koneksi seluler: operator dapat melihat nama yang Anda cari, di luar proxy atau VPN apa pun."
+
+msgid "Repair DNS"
+msgstr "Perbaiki DNS"
+
+msgid "Packages installed on the device are not part of a release image. An update writes them down, and the new system installs them again at its first boot, once it is online. Until a package is back its settings are set aside."
+msgstr "Paket yang dipasang di perangkat bukan bagian dari image rilis. Pembaruan mencatatnya, dan sistem baru memasangnya kembali saat boot pertama, begitu terhubung ke internet. Sampai paket kembali, pengaturannya disisihkan."
+
+msgid "No packages to install again."
+msgstr "Tidak ada paket untuk dipasang ulang."
+
+msgid "All back"
+msgstr "Semua kembali"
+
+msgid "Not installed yet"
+msgstr "Belum terpasang"
+
+msgid "Could not be installed again"
+msgstr "Tidak dapat dipasang ulang"
+
+msgid "Waiting for the internet"
+msgstr "Menunggu internet"
+
+msgid "Given up: no internet at five boots"
+msgstr "Dihentikan: tidak ada internet selama lima kali boot"
+
+msgid "Skipped"
+msgstr "Dilewati"
+
+msgid "Written down by the update from %s"
+msgstr "Dicatat oleh pembaruan dari %s"
+
+msgid "Installed again"
+msgstr "Dipasang ulang"
+
+msgid "Install them yourself from where you got them (a package file: apk add --allow-untrusted FILE.apk)."
+msgstr "Pasang sendiri dari tempat Anda mendapatkannya (berkas paket: apk add --allow-untrusted FILE.apk)."
+
+msgid "Settings set aside in /etc/mu300/orphaned-config"
+msgstr "Pengaturan yang disisihkan di /etc/mu300/orphaned-config"
+
+msgid "DNS still goes to a package that is not installed: the device has no DNS through it."
+msgstr "DNS masih mengarah ke paket yang tidak terpasang: perangkat tidak punya DNS melaluinya."
+
+msgid "Try again"
+msgstr "Coba lagi"
+
+msgid "Dismiss the note"
+msgstr "Tutup catatan"
+
+msgid "started"
+msgstr "dimulai"
+
+msgid "asleep now (asked)"
+msgstr "tidur sekarang (diminta)"
+
+msgid "woken: power daemon stopping"
+msgstr "bangun: layanan daya berhenti"
+
+msgid "woken by a key"
+msgstr "dibangunkan oleh tombol"
+
+msgid "woken by the Wi-Fi key"
+msgstr "dibangunkan oleh tombol Wi-Fi"
+
+msgid "woken (mu300-power wake)"
+msgstr "bangun (mu300-power wake)"
+
+msgid "woken by a computer on USB"
+msgstr "dibangunkan oleh komputer di USB"
+
+msgid "woken: plugged in"
+msgstr "bangun: dicolokkan ke listrik"
+
+msgid "woken by a Wi-Fi client"
+msgstr "dibangunkan oleh klien Wi-Fi"
+
+msgid "charging boot (powered on by the charger)"
+msgstr "boot pengisian (dinyalakan oleh pengisi daya)"
+
+msgid "the hotspot is down"
+msgstr "hotspot mati"
+
+msgid "the VPN is still stopped"
+msgstr "VPN masih berhenti"
+
+msgid "5G (EN-DC) is still off after a failed resume"
+msgstr "5G (EN-DC) masih mati setelah lanjut yang gagal"
+
+msgid "self-check: %s"
+msgstr "pemeriksaan mandiri: %s"
+
+msgid "asleep: no client for %d min (%s)"
+msgstr "tidur: tanpa klien selama %d mnt (%s)"
+
+msgid "asleep: profile now %s"
+msgstr "tidur: profil sekarang %s"
+
+msgid "woken by the %s key"
+msgstr "dibangunkan oleh tombol %s"
+
+msgid "the modem is suspended (%s)"
+msgstr "modem ditangguhkan (%s)"
+
+msgid "Enter a whole number from 0 to %d"
+msgstr "Masukkan bilangan bulat dari 0 hingga %d"
+
+msgid "Power status unavailable"
+msgstr "Status daya tidak tersedia"
+
+msgid "Plugged in"
+msgstr "Terhubung ke listrik"
+
+msgid "On battery"
+msgstr "Memakai baterai"
+
+msgid "Saver"
+msgstr "Hemat"
+
+msgid "Asleep: hotspot off"
+msgstr "Tidur: hotspot mati"
+
+msgid "Charging boot: press the Wi-Fi key to start"
+msgstr "Boot pengisian: tekan tombol Wi-Fi untuk memulai"
+
+msgid "Awake"
+msgstr "Aktif"
+
+msgid "forced"
+msgstr "dipaksa"
+
+msgid "automatic, battery under %d %%"
+msgstr "otomatis, baterai di bawah %d %%"
+
+msgid "automatic"
+msgstr "otomatis"
+
+msgid "Nobody connected for %d s"
+msgstr "Tidak ada yang terhubung selama %d dtk"
+
+msgid "Power source"
+msgstr "Sumber daya"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Profile in use: %s (%s)"
+msgstr "Profil yang dipakai: %s (%s)"
+
+msgid "%d %%, %s, %d mV, %d mA, %.1f °C"
+msgstr "%d %%, %s, %d mV, %d mA, %.1f °C"
+
+msgid "Charger"
+msgstr "Pengisi daya"
+
+msgid "Charger: %s, %s port"
+msgstr "Pengisi daya: %s, port %s"
+
+msgid "Charging paused: battery temperature"
+msgstr "Pengisian dijeda: suhu baterai"
+
+msgid "Charging paused: charge limit"
+msgstr "Pengisian dijeda: batas pengisian"
+
+msgid "Sleep now"
+msgstr "Tidurkan sekarang"
+
+msgid "Wake"
+msgstr "Bangunkan"
+
+msgid "Nobody connected means no Wi-Fi client and no computer on USB. The Wi-Fi key, a computer on USB or the charger wake the device."
+msgstr "Tidak ada yang terhubung berarti tidak ada klien Wi-Fi dan tidak ada komputer di USB. Tombol Wi-Fi, komputer di USB, atau pengisi daya membangunkan perangkat."
+
+msgid "Automatic: plugged in / on battery"
+msgstr "Otomatis: terhubung ke listrik / memakai baterai"
+
+msgid "Switch to Saver under %"
+msgstr "Beralih ke Hemat di bawah %"
+
+msgid "Stop charging at"
+msgstr "Hentikan pengisian pada"
+
+msgid "0 % never charges the battery (the device runs on the charger), 100 % charges it full; in between, charging stops at that level and starts again 5 points lower. Under 5 % the battery always charges."
+msgstr "0 % tidak pernah mengisi baterai (perangkat berjalan dari pengisi daya), 100 % mengisinya penuh; di antaranya, pengisian berhenti di tingkat itu dan mulai lagi 5 poin lebih rendah. Di bawah 5 % baterai selalu diisi."
+
+msgid "80 % keeps the battery healthier on a device that stays plugged in."
+msgstr "80 % menjaga baterai tetap sehat pada perangkat yang terus tercolok."
+
+msgid "When the charger switches the device on"
+msgstr "Saat pengisi daya menyalakan perangkat"
+
+msgid "Charge only, until a key starts it"
+msgstr "Hanya mengisi daya, sampai tombol menyalakannya"
+
+msgid "Start normally"
+msgstr "Mulai secara normal"
+
+msgid "Keep as is"
+msgstr "Biarkan apa adanya"
+
+msgid "LTE only (5G off)"
+msgstr "Hanya LTE (5G mati)"
+
+msgid "On"
+msgstr "Hidup"
+
+msgid "Full"
+msgstr "Penuh"
+
+msgid "Eco: big core off"
+msgstr "Eco: inti besar mati"
+
+msgid "Hotspot off after (min, 0 = never)"
+msgstr "Matikan hotspot setelah (menit, 0 = tidak pernah)"
+
+msgid "Modem when idle"
+msgstr "Modem saat siaga"
+
+msgid "LEDs when idle"
+msgstr "LED saat siaga"
+
+msgid "Ignored lines in power.conf: %s"
+msgstr "Baris yang diabaikan di power.conf: %s"
+
+msgid "Configure how this plugin connects to the current Unisoc OpenWrt platform. Changes do not require editing the dashboard, AT, locks or SMS pages."
+msgstr "Atur cara plugin ini terhubung ke platform OpenWrt Unisoc saat ini. Perubahan tidak memerlukan pengeditan halaman dasbor, AT, kunci, atau SMS."
+
+msgid "Platform adapter"
+msgstr "Adaptor platform"
+
+msgid "AT backend"
+msgstr "Backend AT"
+
+msgid "Auto-detect"
+msgstr "Deteksi otomatis"
+
+msgid "atinout + serial port"
+msgstr "atinout + port serial"
+
+msgid "Custom adapter"
+msgstr "Adaptor kustom"
+
+msgid "AT serial port"
+msgstr "Port serial AT"
+
+msgid "Custom AT adapter"
+msgstr "Adaptor AT kustom"
+
+msgid "The executable receives a timeout in seconds and the complete AT command, in that order. It must share the serial lock with the platform dialer."
+msgstr "Program menerima batas waktu dalam detik dan perintah AT lengkap, dengan urutan tersebut. Program harus berbagi kunci serial dengan dialer platform."
+
+msgid "SMS adapter"
+msgstr "Adaptor SMS"
+
+msgid "Implement the list, show, send, delete and sync subcommands; leave blank to find mu300-sms automatically."
+msgstr "Implementasikan subperintah list, show, send, delete, dan sync; biarkan kosong untuk mencari mu300-sms secara otomatis."
+
+msgid "SMS pool directory"
+msgstr "Direktori pool SMS"
+
+msgid "Cellular logical interface"
+msgstr "Antarmuka logis seluler"
+
+msgid "Cellular IPv6 interface"
+msgstr "Antarmuka IPv6 seluler"
+
+msgid "Cellular network device"
+msgstr "Perangkat jaringan seluler"
+
+msgid "Leave blank to detect from netifd"
+msgstr "Biarkan kosong untuk mendeteksi dari netifd"
+
+msgid "LAN bridge"
+msgstr "Bridge LAN"
+
+msgid "Wi-Fi device"
+msgstr "Perangkat Wi-Fi"
+
+msgid "USB device"
+msgstr "Perangkat USB"
+
+msgid "Maximum wait for AT readiness (seconds)"
+msgstr "Waktu tunggu maksimum hingga AT siap (detik)"
+
+msgid "Home dashboard refresh interval (seconds)"
+msgstr "Interval penyegaran dasbor beranda (detik)"
+
+msgid "Controls only the home dashboard refresh rate; 0.5–60 seconds. Reopen Home after saving to apply."
+msgstr "Hanya mengatur laju penyegaran dasbor beranda; 0,5–60 detik. Buka kembali Beranda setelah menyimpan untuk menerapkan."
+
+msgid "Persistent state directory"
+msgstr "Direktori status persisten"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM. Mobile data will disconnect briefly."
+msgstr "Switching SIM. Mobile data will disconnect briefly."
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switch failed; check SIM readiness and hot switching."
+msgstr "SIM switch failed; check SIM readiness and hot switching."
+
+# Source-language fallback for untranslated new controls.
+msgid "Ready"
+msgstr "Ready"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM"
+msgstr "Switching SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switched; saved as boot default"
+msgstr "SIM switched; saved as boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch failed; previous SIM restored"
+msgstr "Switch failed; previous SIM restored"
+
+msgid "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+msgstr "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+
+msgid "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+msgstr "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+
+# Source-language fallback for untranslated new controls.
+msgid "Radio state unknown; reboot required"
+msgstr "Radio state unknown; reboot required"
+
+msgid "Radio state unknown; the device is restarting."
+msgstr "Radio state unknown; the device is restarting."
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM control is only for the U30 Air on OpenWrt."
+msgstr "Dual SIM control is only for the U30 Air on OpenWrt."
+
+# Source-language fallback for untranslated new controls.
+msgid "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+msgstr "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+
+msgid "No card answered in the chosen SIM position at the last boot."
+msgstr "No card answered in the chosen SIM position at the last boot."
+
+msgid "The chosen SIM is locked by its PIN."
+msgstr "The chosen SIM is locked by its PIN."
+
+msgid "The chosen SIM got no mobile data within the time at its first boot."
+msgstr "The chosen SIM got no mobile data within the time at its first boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The second SIM's modem channels did not come up at the last boot."
+msgstr "The second SIM's modem channels did not come up at the last boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The last dual-SIM boot never confirmed itself."
+msgstr "The last dual-SIM boot never confirmed itself."
+
+msgid "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+msgstr "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+
+# Source-language fallback for untranslated new controls.
+msgid "Active SIM"
+msgstr "Active SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "Cold-boot default"
+msgstr "Cold-boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control unavailable"
+msgstr "SIM control unavailable"
+
+# Source-language fallback for untranslated new controls.
+msgid "The device is back on SIM1 without live switching; choose again below to try once more."
+msgstr "The device is back on SIM1 without live switching; choose again below to try once more."
+
+msgid "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+msgstr "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching"
+msgstr "Enable hot switching"
+
+msgid "This device supports next-boot SIM selection only; live switching is unavailable."
+msgstr "This device supports next-boot SIM selection only; live switching is unavailable."
+
+# Source-language fallback for untranslated new controls.
+msgid "Reboot after enabling hot switching to prepare both SIM channels."
+msgstr "Reboot after enabling hot switching to prepare both SIM channels."
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch to SIM%d"
+msgstr "Switch to SIM%d"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM%d at next boot"
+msgstr "Use SIM%d at next boot"
+
+msgid "Built-in SIM 1"
+msgstr "SIM bawaan 1"
+
+msgid "Built-in SIM 2"
+msgstr "SIM bawaan 2"
+
+msgid "Built-in SIM 3"
+msgstr "SIM bawaan 3"
+
+msgid "External SIM"
+msgstr "SIM eksternal"
+
+msgid "SIM card"
+msgstr "Kartu SIM"
+
+msgid "Built-in SIM 3 shares SIM2, the external SIM shares SIM1. The card chosen here is switched in before the modem starts, at the next boot; without a choice the cards stay as the bootloader sets them."
+msgstr "SIM bawaan 3 berbagi SIM2, SIM eksternal berbagi SIM1. Kartu yang dipilih di sini dialihkan sebelum modem menyala, pada boot berikutnya; tanpa pilihan, kartu tetap seperti yang diatur bootloader."
+
+msgid "As the bootloader sets them"
+msgstr "Seperti yang diatur bootloader"
+
+msgid "Applying the radio setting…"
+msgstr "Menerapkan pengaturan radio…"
+
+msgid "SIM settings are not available"
+msgstr "Pengaturan SIM tidak tersedia"
+
+msgid "Modem default"
+msgstr "Bawaan modem"
+
+msgid "SIM%d"
+msgstr "SIM%d"
+
+msgid "in use"
+msgstr "digunakan"
+
+msgid "Turn off the radio of SIM%d"
+msgstr "Matikan radio SIM%d"
+
+msgid "Radio"
+msgstr "Radio"
+
+msgid "VoLTE"
+msgstr "VoLTE"
+
+msgid "VoNR"
+msgstr "VoNR"
+
+msgid "Modem: %s"
+msgstr "Modem: %s"
+
+msgid "Sent to this SIM when its radio next starts."
+msgstr "Dikirim ke SIM ini saat radionya mulai lagi."
+
+msgid "VoLTE and VoNR for each SIM, kept across reboots and sent again whenever that SIM starts. VoLTE is on unless switched off; VoNR stays as the modem has it until set."
+msgstr "VoLTE dan VoNR untuk tiap SIM, tetap setelah reboot dan dikirim ulang setiap kali SIM itu mulai. VoLTE aktif kecuali dimatikan; VoNR tetap seperti di modem sampai diatur."
+
+msgid "All radios off (airplane mode)"
+msgstr "Semua radio mati (mode pesawat)"
+
+msgid "All radios on"
+msgstr "Semua radio menyala"
+
+msgid "No SIM will have calls, SMS or data, also after a reboot, until a radio is turned on again here or with the dashboard's radio button."
+msgstr "Tidak ada SIM yang bisa menelepon, SMS, atau data, juga setelah reboot, sampai radio dinyalakan lagi di sini atau dengan tombol radio di dasbor."
+
+msgid "Each SIM's radio stays as set here after a reboot. A SIM whose radio is off has no calls, SMS or data, and the device does not switch to it."
+msgstr "Radio tiap SIM tetap seperti diatur di sini setelah reboot. SIM yang radionya mati tidak bisa menelepon, SMS, atau data, dan perangkat tidak beralih ke SIM itu."
+
+msgid "The setting is saved, but the radio did not follow it yet."
+msgstr "Pengaturan tersimpan, tetapi radio belum mengikutinya."
+
+msgid "Recipient: number, e.g. 10086 or +86..."
+msgstr "Penerima: nomor, mis. 10086 atau +86..."
+
+msgid "Sync from SIM"
+msgstr "Sinkronkan dari SIM"
+
+msgid "Clear local pool"
+msgstr "Kosongkan pool lokal"
+
+msgid "Select a conversation on the left, or enter a number below to send."
+msgstr "Pilih percakapan di sebelah kiri, atau masukkan nomor di bawah untuk mengirim."
+
+msgid "Message (Enter to send, Shift+Enter for newline)"
+msgstr "Pesan (Enter untuk mengirim, Shift+Enter untuk baris baru)"
+
+msgid "Sending uses AT+CMGS (PDU mode); retry if the channel is busy. To delete one message, use the bin icon on its bubble."
+msgstr "Pengiriman menggunakan AT+CMGS (mode PDU); coba lagi jika kanal sibuk. Untuk menghapus satu pesan, gunakan ikon tempat sampah pada gelembungnya."
+
+msgid "Sending…"
+msgstr "Mengirim…"
+
+msgid "Sent; the list refreshes shortly."
+msgstr "Terkirim; daftar akan segera disegarkan."
+
+msgid "Sending failed"
+msgstr "Gagal mengirim"
+
+msgid "Syncing from the SIM in the background (AT+CMGL)…"
+msgstr "Menyinkronkan dari SIM di latar belakang (AT+CMGL)…"
+
+msgid "SIM sync started; the list refreshes in a few seconds."
+msgstr "Sinkronisasi SIM dimulai; daftar akan disegarkan dalam beberapa detik."
+
+msgid "Clear local SMS pool"
+msgstr "Kosongkan pool SMS lokal"
+
+msgid "Only local files will be deleted; messages on the SIM remain."
+msgstr "Hanya berkas lokal yang akan dihapus; pesan di SIM tetap ada."
+
+msgid "Delete this SMS"
+msgstr "Hapus SMS ini"
+
+msgid "Deletion cannot be undone."
+msgstr "Penghapusan tidak dapat dibatalkan."
+
+msgid "Local only"
+msgstr "Hanya lokal"
+
+msgid "Local + SIM"
+msgstr "Lokal + SIM"
+
+msgid "Delete failed"
+msgstr "Gagal menghapus"
+
+msgid "Deleted (local + SIM)"
+msgstr "Dihapus (lokal + SIM)"
+
+msgid "Deleted (local only)"
+msgstr "Dihapus (hanya lokal)"
+
+msgid "Enter both a number and a message."
+msgstr "Masukkan nomor dan pesan."
+
+msgid "· %d messages, %d unread · %d conversations"
+msgstr "· %d pesan, %d belum dibaca · %d percakapan"
+
+msgid "· %d messages · %d conversations"
+msgstr "· %d pesan · %d percakapan"
+
+msgid "The pool is empty. Incoming and sent messages appear here, or select “Sync from SIM”."
+msgstr "Pool kosong. Pesan masuk dan terkirim muncul di sini, atau pilih “Sinkronkan dari SIM”."
+
+msgid "Me: %s"
+msgstr "Saya: %s"
+
+msgid "Incomplete: %d of %d parts arrived"
+msgstr "Tidak lengkap: %d dari %d bagian tiba"
+
+msgid "Delete"
+msgstr "Hapus"
+
+msgid "ttyd is not installed."
+msgstr "ttyd tidak terpasang."
+
+msgid "The terminal is turned off (/etc/config/ttyd)."
+msgstr "Terminal dimatikan (/etc/config/ttyd)."
+
+msgid "Too many terminals are opening at once. Try again in a minute."
+msgstr "Terlalu banyak terminal dibuka sekaligus. Coba lagi dalam satu menit."
+
+msgid "The terminal is not available."
+msgstr "Terminal tidak tersedia."
+
+msgid "This is a root shell on the device: every command runs with full rights, and a mistake can make the device unbootable."
+msgstr "Ini adalah shell root perangkat: setiap perintah berjalan dengan hak penuh, dan satu kesalahan dapat membuat perangkat tidak bisa boot."
+
+msgid "It is reachable from the LAN only (USB and the hotspot), never from mobile data, and only from this logged-in page."
+msgstr "Hanya dapat dijangkau dari LAN (USB dan hotspot), tidak pernah dari data seluler, dan hanya dari halaman yang sudah login ini."
+
+msgid "It closes after a minute without activity."
+msgstr "Ditutup setelah satu menit tanpa aktivitas."
+
+msgid "It closes after %d minutes without activity."
+msgstr "Ditutup setelah %d menit tanpa aktivitas."
+
+msgid "Reconnect"
+msgstr "Sambung ulang"
+
+msgid "Open in a new tab"
+msgstr "Buka di tab baru"
+
+msgid "This page was opened over HTTPS, and the terminal is served over HTTP on the LAN: it opens in a tab of its own."
+msgstr "Halaman ini dibuka lewat HTTPS, dan terminal disajikan lewat HTTP di LAN: terminal dibuka di tab tersendiri."
+
+msgid "The data usage could not be read"
+msgstr "Penggunaan data tidak dapat dibaca"
+
+msgid "Today"
+msgstr "Hari ini"
+
+msgid "Days left in this cycle"
+msgstr "Sisa hari dalam siklus"
+
+msgid "Received"
+msgstr "Diterima"
+
+msgid "Sent"
+msgstr "Dikirim"
+
+msgid "Corrected by"
+msgstr "Dikoreksi sebesar"
+
+msgid "Monthly cap"
+msgstr "Batas bulanan"
+
+msgid "%s, warning at %d%%"
+msgstr "%s, peringatan pada %d%%"
+
+msgid "The monthly cap is reached: mobile data was turned off. It comes back on when the next cycle starts."
+msgstr "Batas bulanan tercapai: data seluler dimatikan. Data akan menyala lagi saat siklus berikutnya dimulai."
+
+msgid "%s waits for the clock: it has not been set over the network yet. It already counts towards this cycle and goes to its day once the clock is set."
+msgstr "%s menunggu jam: jam belum disetel dari jaringan. Ini sudah dihitung dalam siklus ini dan masuk ke harinya setelah jam disetel."
+
+msgid "The interface %s is not there right now: nothing is counted until it comes back."
+msgstr "Antarmuka %s tidak ada saat ini: tidak ada yang dihitung sampai antarmuka itu kembali."
+
+msgid "Counted on %s, both ways, as the operator counts it (a VPN's overhead included)."
+msgstr "Dihitung pada %s, dua arah, seperti operator menghitung (termasuk overhead VPN)."
+
+msgid "The count is kept in memory and written to the disk every 30 minutes and at shutdown: a power cut loses at most the last half hour."
+msgstr "Hitungan disimpan di memori dan ditulis ke disk setiap 30 menit dan saat dimatikan: pemadaman listrik paling banyak kehilangan setengah jam terakhir."
+
+msgid "Counting since %s."
+msgstr "Dihitung sejak %s."
+
+msgid "Per day"
+msgstr "Per hari"
+
+msgid "Date"
+msgstr "Tanggal"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "Per billing cycle"
+msgstr "Per siklus tagihan"
+
+msgid "Billing cycle"
+msgstr "Siklus tagihan"
+
+msgid "Enter a size in GB, for example 50 or 2.5"
+msgstr "Masukkan ukuran dalam GB, misalnya 50 atau 2.5"
+
+msgid "Enter a percentage from 1 to 100"
+msgstr "Masukkan persentase dari 1 sampai 100"
+
+msgid "Turn mobile data off at the cap"
+msgstr "Matikan data seluler saat batas tercapai"
+
+msgid "When this cycle reaches the cap, mobile data is turned off: no internet through the operator until the next cycle starts, the cap is raised or this is turned off again. Turning mobile data back on by hand keeps it on until the next reboot."
+msgstr "Saat siklus ini mencapai batas, data seluler dimatikan: tidak ada internet melalui operator sampai siklus berikutnya dimulai, batas dinaikkan, atau opsi ini dimatikan lagi. Data seluler yang dinyalakan kembali secara manual tetap menyala sampai reboot berikutnya."
+
+msgid "Set"
+msgstr "Atur"
+
+msgid "Clear the count"
+msgstr "Hapus hitungan"
+
+msgid "Every day and billing cycle counted so far is forgotten. Counting goes on from now."
+msgstr "Semua hari dan siklus tagihan yang dihitung sejauh ini dilupakan. Penghitungan berlanjut mulai sekarang."
+
+msgid "Billing cycle and cap"
+msgstr "Siklus tagihan dan batas"
+
+msgid "A billing cycle starts on day"
+msgstr "Siklus tagihan dimulai pada tanggal"
+
+msgid "31: on the last day of each month"
+msgstr "31: pada hari terakhir setiap bulan"
+
+msgid "Monthly cap (GB, 0: none)"
+msgstr "Batas bulanan (GB, 0: tidak ada)"
+
+msgid "Warning at this percentage of the cap"
+msgstr "Peringatkan pada persentase batas ini"
+
+msgid "Used so far in this cycle (GB)"
+msgstr "Terpakai sejauh ini dalam siklus ini (GB)"
+
+msgid "What the operator shows for this cycle (for example when counting started in the middle of it); the count is corrected to it."
+msgstr "Yang ditampilkan operator untuk siklus ini (misalnya jika penghitungan dimulai di tengah siklus); hitungan dikoreksi sesuai nilai itu."
+
+msgid "Current setting"
+msgstr "Pengaturan saat ini"
+
+msgid "Fixed at %d"
+msgstr "Tetap pada %d"
+
+msgid "Not changed (default)"
+msgstr "Tidak diubah (bawaan)"
+
+msgid "Rule in force"
+msgstr "Aturan yang berlaku"
+
+msgid "Flow offloading"
+msgstr "Flow offloading"
+
+msgid "TTL of mobile data"
+msgstr "TTL data seluler"
+
+msgid "Every packet that leaves through mobile data gets this TTL (IPv6: hop limit). A phone or laptop behind the hotspot sends 64 (Windows: 128) and the device forwards it with one less, which is how an operator can tell tethered traffic apart."
+msgstr "Setiap paket yang keluar melalui data seluler mendapat TTL ini (IPv6: hop limit). Ponsel atau laptop di balik hotspot mengirim 64 (Windows: 128) dan perangkat meneruskannya dengan nilai kurang satu, dari situlah operator dapat mengenali lalu lintas yang dibagikan."
+
+msgid "On this kernel the firewall fast-path is off while a TTL is set"
+msgstr "Pada kernel ini jalur cepat firewall nonaktif selama TTL diatur"
+
+msgid "Set %d"
+msgstr "Atur %d"
+
+msgid "Enter a number from 1 to 255"
+msgstr "Masukkan angka dari 1 sampai 255"
+
+msgid "Turn off"
+msgstr "Matikan"
+
+msgid "64 makes every packet leave like the device's own traffic"
+msgstr "Dengan 64 setiap paket keluar seperti lalu lintas perangkat itu sendiri"
+
+msgid "Check for updates"
+msgstr "Periksa pembaruan"
+
+msgid "Checking the file"
+msgstr "Memeriksa berkas"
+
+msgid "Update from a file"
+msgstr "Perbarui dari berkas"
+
+msgid "Back to the previous version"
+msgstr "Kembali ke versi sebelumnya"
+
+msgid "Back to the previous boot image"
+msgstr "Kembali ke image boot sebelumnya"
+
+msgid "Remove the previous version"
+msgstr "Hapus versi sebelumnya"
+
+msgid "Kernel change"
+msgstr "Ganti kernel"
+
+msgid "Starting…"
+msgstr "Memulai…"
+
+msgid "Downloading"
+msgstr "Mengunduh"
+
+msgid "All files are here and verified"
+msgstr "Semua berkas sudah ada dan terverifikasi"
+
+msgid "Unpacking the new system"
+msgstr "Membongkar sistem baru"
+
+msgid "Carrying over your settings"
+msgstr "Memindahkan pengaturan Anda"
+
+msgid "Writing down the packages you installed"
+msgstr "Mencatat paket yang Anda pasang"
+
+msgid "Switching to the new system"
+msgstr "Beralih ke sistem baru"
+
+msgid "Kernel and boot image"
+msgstr "Kernel dan image boot"
+
+msgid "Restart the device?"
+msgstr "Mulai ulang perangkat?"
+
+msgid "The device restarts now. The default boot is Android, so it starts Android: switch to Linux from there to start the updated system."
+msgstr "Perangkat dimulai ulang sekarang. Boot bawaan adalah Android, jadi Android yang berjalan: beralihlah ke Linux dari sana untuk menjalankan sistem yang sudah diperbarui."
+
+msgid "The device restarts now and is away for about a minute. If the new system does not start, the device goes back to Android by itself after the failed attempts."
+msgstr "Perangkat dimulai ulang sekarang dan tidak dapat diakses selama sekitar satu menit. Jika sistem baru tidak mau menyala, perangkat kembali ke Android dengan sendirinya setelah beberapa percobaan gagal."
+
+msgid "Restarting… open this page again in about a minute."
+msgstr "Memulai ulang… buka lagi halaman ini sekitar satu menit lagi."
+
+msgid "Running for %s. It goes on when this page is closed; do not switch the device off."
+msgstr "Sudah berjalan %s. Proses tetap berlanjut saat halaman ini ditutup; jangan matikan perangkat."
+
+msgid "Done. Restart the device to start it."
+msgstr "Selesai. Mulai ulang perangkat untuk menjalankannya."
+
+msgid "Done. Nothing needs a restart."
+msgstr "Selesai. Tidak perlu mulai ulang."
+
+msgid "It did not finish, and part of it was done: read the log before you restart."
+msgstr "Tidak selesai, dan sebagian sudah dikerjakan: baca log sebelum memulai ulang."
+
+msgid "It did not finish. Nothing was changed; the log says why."
+msgstr "Tidak selesai. Tidak ada yang diubah; log menjelaskan sebabnya."
+
+msgid "Log"
+msgstr "Log"
+
+msgid "Restart now"
+msgstr "Mulai ulang sekarang"
+
+msgid "Later"
+msgstr "Nanti"
+
+msgid "Close"
+msgstr "Tutup"
+
+msgid "Updating is not available on this system"
+msgstr "Pembaruan tidak tersedia di sistem ini"
+
+msgid "Another update is running on the device"
+msgstr "Pembaruan lain sedang berjalan di perangkat"
+
+msgid "It was started outside this page (a terminal, the toolkit). Nothing can be started here until it has finished."
+msgstr "Proses ini dimulai dari luar halaman ini (terminal, toolkit). Tidak ada yang dapat dimulai di sini sampai proses itu selesai."
+
+msgid "Restart needed"
+msgstr "Perlu mulai ulang"
+
+msgid "This system was updated and still runs the old version. The new one starts at the next restart."
+msgstr "Sistem ini sudah diperbarui dan masih menjalankan versi lama. Versi baru berjalan pada mulai ulang berikutnya."
+
+msgid "Installed"
+msgstr "Terpasang"
+
+msgid "This system"
+msgstr "Sistem ini"
+
+msgid "Also on this device"
+msgstr "Juga ada di perangkat ini"
+
+msgid "Kernel"
+msgstr "Kernel"
+
+msgid "choice %s"
+msgstr "pilihan %s"
+
+msgid "Boot image"
+msgstr "Image boot"
+
+msgid "from the installer"
+msgstr "dari penginstal"
+
+msgid "Default boot"
+msgstr "Boot bawaan"
+
+msgid "Free space"
+msgstr "Ruang kosong"
+
+msgid "Release signatures"
+msgstr "Tanda tangan rilis"
+
+msgid "checked with the project's key"
+msgstr "diperiksa dengan kunci proyek"
+
+msgid "this system has no release key"
+msgstr "sistem ini tidak punya kunci rilis"
+
+msgid "The default boot is Android: a restart goes to Android, and Linux is started from there."
+msgstr "Boot bawaan adalah Android: mulai ulang masuk ke Android, dan Linux dijalankan dari sana."
+
+msgid "Linux is locked as the default boot: a failed start does not send the device to Android by itself, except the first starts of a new boot image."
+msgstr "Linux dikunci sebagai boot bawaan: kegagalan menyala tidak membuat perangkat masuk ke Android dengan sendirinya, kecuali pada beberapa kali penyalaan pertama image boot baru."
+
+msgid "If Linux fails to start %d times in a row, the device starts Android by itself."
+msgstr "Jika Linux gagal menyala %d kali berturut-turut, perangkat menjalankan Android dengan sendirinya."
+
+msgid "Report of the last update"
+msgstr "Laporan pembaruan terakhir"
+
+msgid "Online update"
+msgstr "Pembaruan daring"
+
+msgid "Asking GitHub…"
+msgstr "Menanyakan ke GitHub…"
+
+msgid "Checked %s ago"
+msgstr "Diperiksa %s yang lalu"
+
+msgid "Not checked yet"
+msgstr "Belum diperiksa"
+
+msgid "Mirror (release files)"
+msgstr "Cermin (berkas rilis)"
+
+msgid "Leave empty for GitHub."
+msgstr "Biarkan kosong untuk GitHub."
+
+msgid "Install the packages I added again after the update (needs the device online at the first start)"
+msgstr "Pasang lagi paket yang saya tambahkan setelah pembaruan (perangkat harus daring pada penyalaan pertama)"
+
+msgid "Pre-release"
+msgstr "Pra-rilis"
+
+msgid "Newest release"
+msgstr "Rilis terbaru"
+
+msgid "Release notes"
+msgstr "Catatan rilis"
+
+msgid "Download"
+msgstr "Unduhan"
+
+msgid "Free space needed"
+msgstr "Ruang kosong yang diperlukan"
+
+msgid "not enough: remove the previous version first"
+msgstr "tidak cukup: hapus dulu versi sebelumnya"
+
+msgid "A pre-release is a release still being tried: it can have faults a release does not. The previous version is kept all the same."
+msgstr "Pra-rilis adalah rilis yang masih dicoba: bisa saja ada kesalahan yang tidak ada pada rilis. Versi sebelumnya tetap disimpan."
+
+msgid "This system is newer than the newest release (a test release)."
+msgstr "Sistem ini lebih baru daripada rilis terbaru (rilis uji)."
+
+msgid "Up to date."
+msgstr "Sudah yang terbaru."
+
+msgid "This release is not signed, and this system checks signatures: it is not installed from here. Update from its file below, which asks you to confirm."
+msgstr "Rilis ini tidak ditandatangani, dan sistem ini memeriksa tanda tangan: rilis ini tidak dipasang dari sini. Perbarui dari berkasnya di bawah, yang meminta Anda mengonfirmasi."
+
+msgid "Update to %s"
+msgstr "Perbarui ke %s"
+
+msgid "Choose at least one system"
+msgstr "Pilih setidaknya satu sistem"
+
+msgid "Update to %s?"
+msgstr "Perbarui ke %s?"
+
+msgid "The device downloads %s, puts the new system beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Perangkat mengunduh %s, menaruh sistem baru di samping sistem yang sedang berjalan, lalu beralih ke sistem itu pada mulai ulang berikutnya. Pengaturan Anda dipindahkan dan versi sebelumnya disimpan. Prosesnya beberapa menit; jangan matikan perangkat."
+
+msgid "Also offer the pre-release %s"
+msgstr "Tawarkan juga pra-rilis %s"
+
+msgid "Systems to update:"
+msgstr "Sistem yang diperbarui:"
+
+msgid "GitHub could not be reached: the device has no internet connection, or GitHub did not answer. Without internet, update from a file below."
+msgstr "GitHub tidak dapat dihubungi: perangkat tidak punya koneksi internet, atau GitHub tidak menjawab. Tanpa internet, perbarui dari berkas di bawah."
+
+msgid "release"
+msgstr "rilis"
+
+msgid "For a device without internet: download the Magisk zip of a release for this system and this kernel on another computer, from the release page on GitHub, and upload it here. For this device that is:"
+msgstr "Untuk perangkat tanpa internet: unduh zip Magisk dari sebuah rilis untuk sistem ini dan kernel ini di komputer lain, dari halaman rilis di GitHub, lalu unggah di sini. Untuk perangkat ini berkasnya adalah:"
+
+msgid "Uploaded file"
+msgstr "Berkas yang diunggah"
+
+msgid "Checking the file…"
+msgstr "Memeriksa berkas…"
+
+msgid "It says it is"
+msgstr "Menurut berkas ini"
+
+msgid "kernel %s"
+msgstr "kernel %s"
+
+msgid "Signature"
+msgstr "Tanda tangan"
+
+msgid "signed with the project's release key"
+msgstr "ditandatangani dengan kunci rilis proyek"
+
+msgid "WRONG: it does not match the project's release key"
+msgstr "SALAH: tidak cocok dengan kunci rilis proyek"
+
+msgid "not signed"
+msgstr "tidak ditandatangani"
+
+msgid "cannot be checked on this system"
+msgstr "tidak dapat diperiksa di sistem ini"
+
+msgid "Its system is not installed on this device."
+msgstr "Sistem dalam berkas ini tidak terpasang di perangkat ini."
+
+msgid "It is the other Ubuntu release, not the one installed."
+msgstr "Ini rilis Ubuntu yang lain, bukan yang terpasang."
+
+msgid "It carries another kernel than this device uses. Take the zip for kernel %s, or change the kernel first."
+msgstr "Berkas ini membawa kernel yang berbeda dari yang dipakai perangkat ini. Ambil zip untuk kernel %s, atau ganti kernelnya dulu."
+
+msgid "Its kernel does not run on this model."
+msgstr "Kernelnya tidak berjalan di model ini."
+
+msgid "The file is damaged: its contents do not match their checksums."
+msgstr "Berkas rusak: isinya tidak cocok dengan checksum-nya."
+
+msgid "Its signature is wrong. This file does not come from the project as it is; it is never installed."
+msgstr "Tanda tangannya salah. Berkas ini tidak berasal dari proyek dalam keadaan aslinya; berkas ini tidak akan pernah dipasang."
+
+msgid "This file cannot be used here."
+msgstr "Berkas ini tidak dapat dipakai di sini."
+
+msgid "Compare the SHA-256 with the one in SHA256SUMS-magisk on the release page: it is the only proof of where an unsigned file comes from."
+msgstr "Bandingkan SHA-256 dengan yang ada di SHA256SUMS-magisk pada halaman rilis: hanya itu bukti asal sebuah berkas yang tidak ditandatangani."
+
+msgid "This release is installed already; the update would only refresh the boot image."
+msgstr "Rilis ini sudah terpasang; pembaruan hanya akan menulis ulang image boot."
+
+msgid "I know this file is not signed: nothing proves that it comes from the project. I compared its SHA-256 myself and want it installed."
+msgstr "Saya tahu berkas ini tidak ditandatangani: tidak ada yang membuktikan bahwa berkas ini berasal dari proyek. Saya sudah membandingkan sendiri SHA-256-nya dan ingin berkas ini dipasang."
+
+msgid "I know this is %s, older than the installed %s, and want to go back to it."
+msgstr "Saya tahu ini %s, lebih lama daripada %s yang terpasang, dan ingin kembali ke versi itu."
+
+msgid "This is not a release file of this project: a Magisk zip of a release is expected."
+msgstr "Ini bukan berkas rilis proyek ini: yang diharapkan adalah zip Magisk dari sebuah rilis."
+
+msgid "Update from this file"
+msgstr "Perbarui dari berkas ini"
+
+msgid "Tick the confirmations above first"
+msgstr "Centang dulu konfirmasi di atas"
+
+msgid "The device puts the system of this file beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Perangkat menaruh sistem dari berkas ini di samping sistem yang sedang berjalan, lalu beralih ke sistem itu pada mulai ulang berikutnya. Pengaturan Anda dipindahkan dan versi sebelumnya disimpan. Prosesnya beberapa menit; jangan matikan perangkat."
+
+msgid "Check the file"
+msgstr "Periksa berkas"
+
+msgid "Remove the file"
+msgstr "Hapus berkas"
+
+msgid "Previous version"
+msgstr "Versi sebelumnya"
+
+msgid "No previous version is kept on this device."
+msgstr "Tidak ada versi sebelumnya yang disimpan di perangkat ini."
+
+msgid "replaced %s"
+msgstr "diganti pada %s"
+
+msgid "I want the previous system back; what I changed since the update stays in the version I leave."
+msgstr "Saya ingin sistem sebelumnya kembali; yang saya ubah sejak pembaruan tetap berada di versi yang saya tinggalkan."
+
+msgid "Back to the previous version?"
+msgstr "Kembali ke versi sebelumnya?"
+
+msgid "The previous system (%s) becomes the one that starts at the next restart. The version you leave is not kept; settings you changed since the update are not carried back."
+msgstr "Sistem sebelumnya (%s) menjadi sistem yang berjalan pada mulai ulang berikutnya. Versi yang Anda tinggalkan tidak disimpan; pengaturan yang Anda ubah sejak pembaruan tidak ikut dibawa kembali."
+
+msgid "Go back"
+msgstr "Kembali"
+
+msgid "The previous version is the one running now: restart first."
+msgstr "Versi sebelumnya adalah yang sedang berjalan sekarang: mulai ulang dulu."
+
+msgid "I want the previous kernel and boot image back."
+msgstr "Saya ingin kernel dan image boot sebelumnya kembali."
+
+msgid "Back to the previous boot image?"
+msgstr "Kembali ke image boot sebelumnya?"
+
+msgid "The previous boot image (%s) is written to the Linux slot and starts at the next restart. If it does not start, the device goes back to Android by itself."
+msgstr "Image boot sebelumnya (%s) ditulis ke slot Linux dan berjalan pada mulai ulang berikutnya. Jika tidak mau menyala, perangkat kembali ke Android dengan sendirinya."
+
+msgid "I do not need to go back: delete the previous system to free its space."
+msgstr "Saya tidak perlu kembali: hapus sistem sebelumnya untuk mengosongkan ruangnya."
+
+msgid "Remove the previous version?"
+msgstr "Hapus versi sebelumnya?"
+
+msgid "The kept copy of the previous system is deleted for good. After that there is no going back to it from this page."
+msgstr "Salinan sistem sebelumnya yang disimpan akan dihapus selamanya. Setelah itu tidak bisa lagi kembali ke sistem itu dari halaman ini."
+
+msgid "the vendor kernel"
+msgstr "kernel vendor"
+
+msgid "mainline"
+msgstr "mainline"
+
+msgid "not with Ubuntu 26.04"
+msgstr "tidak dengan Ubuntu 26.04"
+
+msgid "Change the kernel"
+msgstr "Ganti kernel"
+
+msgid "This kernel is the one in use"
+msgstr "Kernel ini sedang dipakai"
+
+msgid "Change the kernel to %s?"
+msgstr "Ganti kernel ke %s?"
+
+msgid "The device downloads that kernel from the newest release and writes a new boot image; it starts at the next restart. The previous boot image is kept, and if the new one does not start the device goes back to Android by itself. The device must be online."
+msgstr "Perangkat mengunduh kernel itu dari rilis terbaru dan menulis image boot baru; kernel itu berjalan pada mulai ulang berikutnya. Image boot sebelumnya disimpan, dan jika yang baru tidak mau menyala, perangkat kembali ke Android dengan sendirinya. Perangkat harus daring."
+
+msgid "Start Android at the next restart"
+msgstr "Jalankan Android pada mulai ulang berikutnya"
+
+msgid "Start Android at the next restart?"
+msgstr "Jalankan Android pada mulai ulang berikutnya?"
+
+msgid "The next restart, and the ones after it, start Android instead of Linux. Linux is started again from Android (the Magisk module's Action button, or mu300-linux)."
+msgstr "Mulai ulang berikutnya, dan yang sesudahnya, menjalankan Android, bukan Linux. Linux dijalankan lagi dari Android (tombol Action modul Magisk, atau mu300-linux)."
+
+msgid "Start Android next"
+msgstr "Jalankan Android berikutnya"
+
+msgid "What an update keeps"
+msgstr "Yang dipertahankan pembaruan"
+
+msgid "An update puts the system of the new release in place and carries over what is yours: the settings, the accounts and their passwords, the device's keys and the home directories. Packages you installed yourself are written down and installed again at the first start, once the device is online. The previous version stays on the device until you remove it, so you can go back."
+msgstr "Pembaruan memasang sistem dari rilis baru dan memindahkan milik Anda: pengaturan, akun beserta kata sandinya, kunci perangkat, dan direktori home. Paket yang Anda pasang sendiri dicatat dan dipasang lagi pada penyalaan pertama, setelah perangkat daring. Versi sebelumnya tetap ada di perangkat sampai Anda menghapusnya, sehingga Anda bisa kembali."
+
+msgid "The wiki's Updating page lists exactly what is kept."
+msgstr "Halaman Pembaruan di wiki memuat daftar persis apa saja yang dipertahankan."
+
+msgid "Choose a file first"
+msgstr "Pilih berkas dulu"
+
+msgid "Uploading: %s of %s"
+msgstr "Mengunggah: %s dari %s"
+
+msgid "running"
+msgstr "berjalan"
+
+msgid "(about %s)"
+msgstr "(sekitar %s)"
+
+msgid "Install %s?"
+msgstr "Pasang %s?"
+
+msgid "It is installed from this system's package feed."
+msgstr "Dipasang dari feed paket sistem ini."
+
+msgid "It is downloaded from the release of the VPN module and checked against its SHA256SUMS."
+msgstr "Diunduh dari rilis modul VPN dan diperiksa terhadap SHA256SUMS-nya."
+
+msgid "An engine is tens of MB: on mobile data the download counts towards your plan."
+msgstr "Satu mesin berukuran puluhan MB: pada data seluler, unduhan memotong kuota Anda."
+
+msgid "Install"
+msgstr "Pasang"
+
+msgid "Remove %s?"
+msgstr "Hapus %s?"
+
+msgid "Profiles run on it: %s. They cannot start until it is installed again (the module refuses while the running profile needs it)."
+msgstr "Profil yang berjalan di atasnya: %s. Profil tidak dapat dimulai sampai mesin dipasang lagi (modul menolak selama profil yang berjalan membutuhkannya)."
+
+msgid "No profile runs on it."
+msgstr "Tidak ada profil yang berjalan di atasnya."
+
+msgid "Removed"
+msgstr "Dihapus"
+
+msgid "Each engine is an extra of its own: install only the ones your profiles need. Xray runs vless, vmess, trojan and ss links (with hev-socks5-tunnel), sing-box the same links and its own JSON, mihomo Clash subscriptions, dae hysteria2, tuic and the rest on newer kernels. WireGuard and OpenVPN are packages of the system."
+msgstr "Setiap mesin adalah ekstra tersendiri: pasang hanya yang dibutuhkan profil Anda. Xray menjalankan tautan vless, vmess, trojan, dan ss (dengan hev-socks5-tunnel), sing-box tautan yang sama dan JSON-nya sendiri, mihomo langganan Clash, dae hysteria2, tuic, dan lainnya pada kernel yang lebih baru. WireGuard dan OpenVPN adalah paket sistem."
+
+msgid "Downloads are tens of MB per engine: on mobile data they count towards your plan. Offline, upload the engine's tarball from the release page of the VPN module."
+msgstr "Unduhan berukuran puluhan MB per mesin: pada data seluler, ini memotong kuota Anda. Secara offline, unggah tarball mesin dari halaman rilis modul VPN."
+
+msgid "The available versions come from the latest release of the VPN module."
+msgstr "Versi yang tersedia berasal dari rilis terbaru modul VPN."
+
+msgid "system package"
+msgstr "paket sistem"
+
+msgid "in the vpn bundle"
+msgstr "dalam bundel vpn"
+
+msgid "extra %s"
+msgstr "ekstra %s"
+
+msgid "not installed"
+msgstr "belum terpasang"
+
+msgid "cannot run here"
+msgstr "tidak dapat berjalan di sini"
+
+msgid "update available"
+msgstr "pembaruan tersedia"
+
+msgid "installed"
+msgstr "terpasang"
+
+msgid "Kind"
+msgstr "Jenis"
+
+msgid "Version"
+msgstr "Versi"
+
+msgid "Available"
+msgstr "Tersedia"
+
+msgid "not checked"
+msgstr "belum diperiksa"
+
+msgid "Size"
+msgstr "Ukuran"
+
+msgid "Needed by"
+msgstr "Dibutuhkan oleh"
+
+msgid "no profile"
+msgstr "tidak ada profil"
+
+msgid "dae needs a kernel with BTF, 5.17 or newer: not the 5.4 vendor kernel (mu300-update kernel 6.18). It can be installed anyway."
+msgstr "dae memerlukan kernel dengan BTF, 5.17 atau lebih baru: bukan kernel vendor 5.4 (mu300-update kernel 6.18). Tetap dapat dipasang."
+
+msgid "All engines"
+msgstr "Semua mesin"
+
+msgid "Last %s lines"
+msgstr "%s baris terakhir"
+
+msgid "VPN service log"
+msgstr "Log layanan VPN"
+
+msgid "Every 5 s"
+msgstr "Setiap 5 dtk"
+
+msgid "The log is empty."
+msgstr "Log kosong."
+
+msgid "The VPN is starting"
+msgstr "VPN sedang dimulai"
+
+msgid "The VPN is stopped"
+msgstr "VPN dihentikan"
+
+msgid "The VPN is restarting"
+msgstr "VPN sedang dimulai ulang"
+
+msgid "With the kill switch on, nothing leaves the device or the LAN outside the tunnel: while the VPN is down, starting or broken, every connection fails instead of going out directly. It stays up until you stop the VPN here (Stop removes it)."
+msgstr "Dengan kill switch aktif, tidak ada yang keluar dari perangkat atau LAN di luar terowongan: saat VPN mati, sedang dimulai, atau rusak, setiap koneksi gagal alih-alih keluar secara langsung. Tetap aktif sampai Anda menghentikan VPN di sini (Hentikan menghapusnya)."
+
+msgid "Without the kill switch, traffic goes out directly, unprotected, whenever the tunnel is down (while it starts, after a crash, when the engine is missing)."
+msgstr "Tanpa kill switch, lalu lintas keluar langsung tanpa perlindungan setiap kali terowongan mati (saat dimulai, setelah crash, saat mesin tidak ada)."
+
+msgid "Turn the kill switch on?"
+msgstr "Aktifkan kill switch?"
+
+msgid "Turn the kill switch off?"
+msgstr "Matikan kill switch?"
+
+msgid "Turn on"
+msgstr "Aktifkan"
+
+msgid "unknown"
+msgstr "tidak diketahui"
+
+msgid "The exit address could not be found (is the tunnel up?)"
+msgstr "Alamat keluar tidak ditemukan (apakah terowongan aktif?)"
+
+msgid "Connecting…"
+msgstr "Menghubungkan…"
+
+msgid "On, but not running"
+msgstr "Aktif, tetapi tidak berjalan"
+
+msgid "Stopped"
+msgstr "Dihentikan"
+
+msgid "Install it"
+msgstr "Pasang"
+
+msgid "The engine of the active profile is not installed: %s"
+msgstr "Mesin profil aktif belum terpasang: %s"
+
+msgid "The kill switch keeps everything closed until it is there; the service downloads it by itself when it can."
+msgstr "Kill switch menutup semuanya sampai mesin itu ada; layanan mengunduhnya sendiri bila bisa."
+
+msgid "The VPN cannot start until it is installed."
+msgstr "VPN tidak dapat dimulai sampai terpasang."
+
+msgid "%s cannot run on this system"
+msgstr "%s tidak dapat berjalan di sistem ini"
+
+msgid "The VPN is on, but no profile is active: choose one below."
+msgstr "VPN aktif, tetapi tidak ada profil aktif: pilih salah satu di bawah."
+
+msgid "Profile: %s"
+msgstr "Profil: %s"
+
+msgid "No active profile"
+msgstr "Tidak ada profil aktif"
+
+msgid "engine %s"
+msgstr "mesin %s"
+
+msgid "interface %s"
+msgstr "antarmuka %s"
+
+msgid "Kill switch active"
+msgstr "Kill switch aktif"
+
+msgid "Kill switch on"
+msgstr "Kill switch menyala"
+
+msgid "Kill switch off"
+msgstr "Kill switch mati"
+
+msgid "IPv6 in the tunnel"
+msgstr "IPv6 di terowongan"
+
+msgid "IPv6 blocked"
+msgstr "IPv6 diblokir"
+
+msgid "IPv6 untouched"
+msgstr "IPv6 tidak diubah"
+
+msgid "Module %s"
+msgstr "Modul %s"
+
+msgid "Check"
+msgstr "Periksa"
+
+msgid "Uptime"
+msgstr "Waktu aktif"
+
+msgid "Rate"
+msgstr "Kecepatan"
+
+msgid "Exit address"
+msgstr "Alamat keluar"
+
+msgid "Start"
+msgstr "Mulai"
+
+msgid "Stop"
+msgstr "Hentikan"
+
+msgid "Stop the VPN?"
+msgstr "Hentikan VPN?"
+
+msgid "Traffic then goes out directly, without the tunnel; the kill switch is taken down with it."
+msgstr "Lalu lintas kemudian keluar langsung tanpa terowongan; kill switch ikut dimatikan."
+
+msgid "The VPN is on: it starts again by itself after a reboot."
+msgstr "VPN menyala: akan dimulai lagi sendiri setelah reboot."
+
+msgid "The VPN is off."
+msgstr "VPN mati."
+
+msgid "Kill switch"
+msgstr "Kill switch"
+
+msgid "Setting"
+msgstr "Pengaturan"
+
+msgid "Active: only the tunnel can reach the internet"
+msgstr "Aktif: hanya terowongan yang dapat mencapai internet"
+
+msgid "Not active"
+msgstr "Tidak aktif"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down, so nothing ever leaves without the tunnel. If the tunnel cannot come up (a dead server, an expired account), the device stays offline until you fix the profile or stop the VPN. The panel itself stays reachable from the LAN."
+msgstr "Kill switch memblokir seluruh lalu lintas perangkat dan LAN saat VPN mati, sehingga tidak ada yang keluar tanpa terowongan. Jika terowongan tidak dapat naik (server mati, akun kedaluwarsa), perangkat tetap offline sampai Anda memperbaiki profil atau menghentikan VPN. Panel itu sendiri tetap dapat diakses dari LAN."
+
+msgid "Choose a profile"
+msgstr "Pilih profil"
+
+msgid "No profiles yet"
+msgstr "Belum ada profil"
+
+msgid "engine not installed"
+msgstr "mesin belum terpasang"
+
+msgid "Use"
+msgstr "Gunakan"
+
+msgid "Switched: the VPN restarts on the new profile"
+msgstr "Dialihkan: VPN dimulai ulang dengan profil baru"
+
+msgid "Active profile"
+msgstr "Profil aktif"
+
+msgid "A running VPN restarts on the profile you choose; the kill switch stays up in between."
+msgstr "VPN yang berjalan dimulai ulang dengan profil yang Anda pilih; kill switch tetap aktif di antaranya."
+
+msgid "Manage the profiles"
+msgstr "Kelola profil"
+
+msgid "Automatic: through the tunnel where the engine can carry it"
+msgstr "Otomatis: lewat terowongan bila mesin mampu membawanya"
+
+msgid "Ask the engine for IPv6 in the tunnel"
+msgstr "Minta IPv6 di terowongan dari mesin"
+
+msgid "Never through the tunnel (blocked while the VPN is up)"
+msgstr "Tidak pernah lewat terowongan (diblokir saat VPN aktif)"
+
+msgid "Saved: it applies from the next start (Restart)"
+msgstr "Tersimpan: berlaku mulai awal berikutnya (Mulai ulang)"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "The tunnel carries IPv6"
+msgstr "Terowongan membawa IPv6"
+
+msgid "Yes"
+msgstr "Ya"
+
+msgid "IPv6 guard"
+msgstr "Penjaga IPv6"
+
+msgid "Active: IPv6 outside the tunnel is refused"
+msgstr "Aktif: IPv6 di luar terowongan ditolak"
+
+msgid "While the VPN is up, IPv6 never leaves beside a tunnel that does not carry it: it is refused at once, so programs and LAN clients fall back to IPv4 instead of leaking or waiting. Automatic: WireGuard and OpenVPN use the IPv6 addresses of their config; Xray, sing-box and mihomo are asked at every start whether IPv6 works through the tunnel, and carry it only then; dae stays IPv4."
+msgstr "Saat VPN aktif, IPv6 tidak pernah keluar di samping terowongan yang tidak membawanya: langsung ditolak, sehingga program dan klien LAN beralih ke IPv4 alih-alih bocor atau menunggu. Otomatis: WireGuard dan OpenVPN memakai alamat IPv6 dari konfigurasinya; untuk Xray, sing-box, dan mihomo, setiap kali mulai diperiksa apakah IPv6 berfungsi melalui terowongan, dan hanya saat itu IPv6 dibawa; dae tetap IPv4."
+
+msgid "%d ms"
+msgstr "%d ms"
+
+msgid "UDP: not testable"
+msgstr "UDP: tidak dapat diuji"
+
+msgid "blocked by the kill switch"
+msgstr "diblokir oleh kill switch"
+
+msgid "A WireGuard or OpenVPN config, a Clash/mihomo YAML, an Xray or sing-box JSON, a dae config"
+msgstr "Konfigurasi WireGuard atau OpenVPN, YAML Clash/mihomo, JSON Xray atau sing-box, konfigurasi dae"
+
+msgid "After OK, choose the file: a WireGuard .conf, an OpenVPN .ovpn, a Clash/mihomo .yaml, an Xray or sing-box .json or a dae config (at most 1 MiB)."
+msgstr "Setelah OK, pilih file: .conf WireGuard, .ovpn OpenVPN, .yaml Clash/mihomo, .json Xray atau sing-box, atau konfigurasi dae (maksimal 1 MiB)."
+
+msgid "From the source"
+msgstr "Dari sumber"
+
+msgid "Detect"
+msgstr "Deteksi"
+
+msgid "The URL may hold a token: it goes to the device on its own, never into a command line or a log."
+msgstr "URL dapat memuat token: dikirim ke perangkat tersendiri, tidak pernah masuk ke baris perintah atau log."
+
+msgid "Share link"
+msgstr "Tautan bagikan"
+
+msgid "Paste"
+msgstr "Tempel"
+
+msgid "File"
+msgstr "File"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Not a share link this panel takes"
+msgstr "Bukan tautan bagikan yang diterima panel ini"
+
+msgid "The config is empty"
+msgstr "Konfigurasi kosong"
+
+msgid "Not an https URL"
+msgstr "Bukan URL https"
+
+msgid "Invalid name: 1-64 characters, no control characters"
+msgstr "Nama tidak valid: 1-64 karakter, tanpa karakter kontrol"
+
+msgid "Add a profile"
+msgstr "Tambah profil"
+
+msgid "Name"
+msgstr "Nama"
+
+msgid "Detect: the module tells the kind from the link or the file. Choose the type for a JSON that could be either Xray or sing-box, or for a link that should run on another engine."
+msgstr "Deteksi: modul menentukan jenis dari tautan atau file. Pilih jenisnya untuk JSON yang bisa berupa Xray atau sing-box, atau untuk tautan yang harus berjalan di mesin lain."
+
+msgid "The profile is added"
+msgstr "Profil ditambahkan"
+
+msgid "Rename the profile"
+msgstr "Ganti nama profil"
+
+msgid "Delete the profile %s?"
+msgstr "Hapus profil %s?"
+
+msgid "It is the active profile: with the VPN on, the module refuses; stop the VPN or choose another profile first."
+msgstr "Ini profil aktif: saat VPN menyala, modul menolak; hentikan VPN atau pilih profil lain terlebih dahulu."
+
+msgid "Its config and credentials are deleted from the device."
+msgstr "Konfigurasi dan kredensialnya dihapus dari perangkat."
+
+msgid "Deleted"
+msgstr "Dihapus"
+
+msgid "The profile passes the check"
+msgstr "Profil lolos pemeriksaan"
+
+msgid "Show the config?"
+msgstr "Tampilkan konfigurasi?"
+
+msgid "The config holds the credentials of the profile (keys, passwords, UUIDs). It is shown on this screen only; anyone who can see the screen can read it."
+msgstr "Konfigurasi memuat kredensial profil (kunci, kata sandi, UUID). Hanya ditampilkan di layar ini; siapa pun yang dapat melihat layar dapat membacanya."
+
+msgid "Saving checks the config with the engine first (profile edit); a config that does not pass is not saved and the old one stays."
+msgstr "Saat menyimpan, konfigurasi diperiksa dulu dengan mesin (profile edit); konfigurasi yang tidak lolos tidak disimpan dan yang lama tetap ada."
+
+msgid "This profile comes from a subscription: its next refresh replaces your changes."
+msgstr "Profil ini berasal dari langganan: penyegaran berikutnya menimpa perubahan Anda."
+
+msgid "Config of %s"
+msgstr "Konfigurasi %s"
+
+msgid "Rename"
+msgstr "Ganti nama"
+
+msgid "Show / edit the config"
+msgstr "Tampilkan / ubah konfigurasi"
+
+msgid "Test the latency of all"
+msgstr "Uji latensi semuanya"
+
+msgid "No profiles yet: add one from a share link, a config file or a subscription."
+msgstr "Belum ada profil: tambahkan dari tautan bagikan, file konfigurasi, atau langganan."
+
+msgid "Active"
+msgstr "Aktif"
+
+msgid "This profile is the active one now"
+msgstr "Profil ini sekarang yang aktif"
+
+msgid "More"
+msgstr "Lainnya"
+
+msgid "active"
+msgstr "aktif"
+
+msgid "subscription"
+msgstr "langganan"
+
+msgid "migrated"
+msgstr "dimigrasikan"
+
+msgid "gone from its subscription"
+msgstr "hilang dari langganannya"
+
+msgid "Server"
+msgstr "Server"
+
+msgid "Engine"
+msgstr "Mesin"
+
+msgid "Latency"
+msgstr "Latensi"
+
+msgid "The latency is a TCP connection to the server, through the tunnel when the VPN is up. WireGuard and OpenVPN servers usually speak UDP and cannot be tested this way."
+msgstr "Latensi adalah koneksi TCP ke server, lewat terowongan saat VPN aktif. Server WireGuard dan OpenVPN biasanya memakai UDP dan tidak dapat diuji dengan cara ini."
+
+msgid "Enter an IPv4 or IPv6 address"
+msgstr "Masukkan alamat IPv4 atau IPv6"
+
+msgid "On: nothing leaves outside the tunnel"
+msgstr "Aktif: tidak ada yang keluar di luar terowongan"
+
+msgid "Off: traffic goes out directly while the tunnel is down"
+msgstr "Mati: lalu lintas keluar langsung saat terowongan mati"
+
+msgid "Yes: Tailscale's own connections go through the tunnel"
+msgstr "Ya: koneksi Tailscale sendiri lewat terowongan"
+
+msgid "No: Tailscale connects directly"
+msgstr "Tidak: Tailscale terhubung langsung"
+
+msgid "Routing"
+msgstr "Perutean"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down."
+msgstr "Kill switch memblokir seluruh lalu lintas perangkat dan LAN saat VPN mati."
+
+msgid "Bypass the tunnel"
+msgstr "Lewati terowongan"
+
+msgid "Enter address ranges like 192.168.0.0/16, separated by commas"
+msgstr "Masukkan rentang alamat seperti 192.168.0.0/16, dipisahkan koma"
+
+msgid "Address ranges that never go into the tunnel, besides the LAN itself (which never does). Empty: the LAN only."
+msgstr "Rentang alamat yang tidak pernah masuk ke terowongan, selain LAN itu sendiri (yang tidak pernah). Kosong: hanya LAN."
+
+msgid "Tailscale through the VPN"
+msgstr "Tailscale lewat VPN"
+
+msgid "When Tailscale runs on the device, its WireGuard, DERP and control connections go through whichever tunnel runs (dae catches them like any other)."
+msgstr "Saat Tailscale berjalan di perangkat, koneksi WireGuard, DERP, dan kontrolnya lewat terowongan mana pun yang berjalan (dae menangkapnya seperti yang lain)."
+
+msgid "DNS"
+msgstr "DNS"
+
+msgid "DNS through the tunnel"
+msgstr "DNS lewat terowongan"
+
+msgid "The resolver the device's and the LAN's lookups go to, through the tunnel. Nothing goes to the carrier's resolver."
+msgstr "Resolver tempat kueri perangkat dan LAN dikirim, lewat terowongan. Tidak ada yang dikirim ke resolver operator."
+
+msgid "Bootstrap DNS"
+msgstr "DNS bootstrap"
+
+msgid "Finds the VPN server's own address before the tunnel is up (directly, on the engine's own connection)."
+msgstr "Menemukan alamat server VPN sendiri sebelum terowongan naik (secara langsung, lewat koneksi mesin sendiri)."
+
+msgid "Empty puts a setting back to its default."
+msgstr "Kosong mengembalikan pengaturan ke bawaannya."
+
+msgid "TUN stack"
+msgstr "Tumpukan TUN"
+
+msgid "Default (gvisor)"
+msgstr "Bawaan (gvisor)"
+
+msgid "system (not on the 5.4 kernel)"
+msgstr "system (tidak di kernel 5.4)"
+
+msgid "set (unchanged unless you type a new one)"
+msgstr "diatur (tidak berubah kecuali Anda mengetik yang baru)"
+
+msgid "not set"
+msgstr "belum diatur"
+
+msgid "Upstream HTTP proxy"
+msgstr "Proxy HTTP upstream"
+
+msgid "TLS certificate pin (SHA-256)"
+msgstr "Pin sertifikat TLS (SHA-256)"
+
+msgid "Enter host:port"
+msgstr "Masukkan host:port"
+
+msgid "Enter the SHA-256 in hex"
+msgstr "Masukkan SHA-256 dalam heksadesimal"
+
+msgid "Profile options"
+msgstr "Opsi profil"
+
+msgid "None of the profiles has options of its type."
+msgstr "Tidak ada profil yang memiliki opsi untuk jenisnya."
+
+msgid "mihomo's mode (rule, global, direct), the engines' log levels, dae's groups and routing are part of each profile's own config: VPN > Profiles, Show / edit the config."
+msgstr "Mode mihomo (rule, global, direct), tingkat log mesin, grup dan perutean dae adalah bagian dari konfigurasi masing-masing profil: VPN > Profil, Tampilkan / ubah konfigurasi."
+
+msgid "Delete the subscription %s?"
+msgstr "Hapus langganan %s?"
+
+msgid "Its profiles can go with it or stay as profiles of their own. The active profile is never removed while the VPN is on."
+msgstr "Profilnya dapat ikut dihapus atau tetap sebagai profil tersendiri. Profil aktif tidak pernah dihapus saat VPN menyala."
+
+msgid "Keep the profiles"
+msgstr "Pertahankan profil"
+
+msgid "Delete with its profiles"
+msgstr "Hapus beserta profilnya"
+
+msgid "Only by hand"
+msgstr "Hanya manual"
+
+msgid "Every %d h"
+msgstr "Setiap %d jam"
+
+msgid "Share links: one profile per link"
+msgstr "Tautan bagikan: satu profil per tautan"
+
+msgid "Clash/mihomo YAML: one mihomo profile"
+msgstr "YAML Clash/mihomo: satu profil mihomo"
+
+msgid "dae: one profile with every node in one group"
+msgstr "dae: satu profil dengan setiap node dalam satu grup"
+
+msgid "Add a subscription"
+msgstr "Tambah langganan"
+
+msgid "Format"
+msgstr "Format"
+
+msgid "The URL usually holds your account token: it is stored on the device readable by root only, and never shown again. The subscription is fetched over the device's own connection: through the tunnel when the VPN is up; with the kill switch up and the tunnel down it cannot be fetched."
+msgstr "URL biasanya memuat token akun Anda: disimpan di perangkat dan hanya dapat dibaca root, dan tidak pernah ditampilkan lagi. Langganan diambil lewat koneksi perangkat sendiri: lewat terowongan saat VPN aktif; dengan kill switch aktif dan terowongan mati, langganan tidak dapat diambil."
+
+msgid "Refresh all"
+msgstr "Segarkan semua"
+
+msgid "No subscriptions yet."
+msgstr "Belum ada langganan."
+
+msgid "Host"
+msgstr "Host"
+
+msgid "Updated"
+msgstr "Diperbarui"
+
+msgid "Share links"
+msgstr "Tautan bagikan"
+
+msgid "A refresh keeps the profiles whose name is unchanged, adds the new ones and removes the ones that are gone (the active one stays while the VPN is on, marked as gone). A refresh of the active profile restarts the running VPN."
+msgstr "Penyegaran mempertahankan profil yang namanya tidak berubah, menambah yang baru, dan menghapus yang hilang (profil aktif tetap ada saat VPN menyala, ditandai hilang). Penyegaran profil aktif memulai ulang VPN yang berjalan."
+
+msgid "Dashboard info failed"
+msgstr "Gagal memuat info dasbor"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch): no live signal right now"
+msgstr "The modem is restarting (network locks or a SIM switch): no live signal right now"
+
+msgid "Live signal read failed"
+msgstr "Gagal membaca sinyal langsung"
+
+msgid "Unknown op"
+msgstr "Operasi tidak diketahui"
+
+msgid "Invalid argument for this op"
+msgstr "Argumen tidak valid untuk operasi ini"
+
+msgid "The radio is busy: the dial or the watchdog is switching it, try again shortly"
+msgstr "Radio sedang sibuk: dial atau watchdog sedang mengalihkannya, coba lagi sebentar lagi"
+
+msgid "The action gave no valid reply"
+msgstr "Tindakan tidak memberikan balasan yang valid"
+
+msgid "The confirm parameter must be 0 or 1"
+msgstr "Parameter confirm harus 0 atau 1"
+
+msgid "An AT command is one line of printable ASCII, at most 512 characters"
+msgstr "Perintah AT adalah satu baris ASCII yang dapat dicetak, paling banyak 512 karakter"
+
+msgid "Must be an AT command"
+msgstr "Harus berupa perintah AT"
+
+msgid "No \";\" command chaining"
+msgstr "Tidak boleh merangkai perintah dengan \";\""
+
+msgid "Denied: this command wedges the AT port until a reboot"
+msgstr "Ditolak: perintah ini membuat port AT macet hingga boot ulang"
+
+msgid "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+msgstr "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+msgstr "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+
+msgid "A long AT command is still running in the background; try again when it has finished"
+msgstr "Perintah AT yang panjang masih berjalan di latar belakang; coba lagi setelah selesai"
+
+msgid "This command needs confirmation"
+msgstr "Perintah ini memerlukan konfirmasi"
+
+msgid "The AT channel is busy; the command was not sent, try again"
+msgstr "Kanal AT sedang sibuk; perintah tidak dikirim, coba lagi"
+
+msgid "The modem did not answer in time; the command may still run, check before sending it again"
+msgstr "Modem tidak menjawab tepat waktu; perintah mungkin masih berjalan, periksa sebelum mengirimnya lagi"
+
+msgid "The fresh parameter must be 0 or 1"
+msgstr "Parameter fresh harus 0 atau 1"
+
+msgid "Reading the locks from the modem; try again in a few seconds"
+msgstr "Membaca kunci dari modem; coba lagi dalam beberapa detik"
+
+msgid "Lock read failed"
+msgstr "Gagal membaca kunci"
+
+msgid "Unknown lock kind"
+msgstr "Jenis kunci tidak diketahui"
+
+msgid "Invalid value for this lock kind"
+msgstr "Nilai tidak valid untuk jenis kunci ini"
+
+msgid "None of these bands is supported by this modem"
+msgstr "Modem ini tidak mendukung satu pun dari band ini"
+
+msgid "Band, mode and cell locks are not supported for SIM2 yet"
+msgstr "Kunci band, mode, dan sel belum didukung untuk SIM2"
+
+msgid "Band, mode and cell locks are not supported while dual-SIM switching manages the radio"
+msgstr "Kunci band, mode, dan sel tidak didukung selama peralihan dual-SIM mengelola radio"
+
+msgid "Invalid page"
+msgstr "Halaman tidak valid"
+
+msgid "mu300-sms is not available (the SMS service is not installed or not running)"
+msgstr "mu300-sms tidak tersedia (layanan SMS tidak terpasang atau tidak berjalan)"
+
+msgid "No output"
+msgstr "Tidak ada keluaran"
+
+msgid "Bad ID"
+msgstr "ID tidak valid"
+
+msgid "Read failed"
+msgstr "Gagal membaca"
+
+msgid "The number may only contain digits (and a leading +)"
+msgstr "Nomor hanya boleh berisi angka (dan + di awal)"
+
+msgid "The message is empty"
+msgstr "Pesan kosong"
+
+msgid "The message is too long (over 480 characters)"
+msgstr "Pesan terlalu panjang (lebih dari 480 karakter)"
+
+msgid "The message contains a control character"
+msgstr "Pesan berisi karakter kontrol"
+
+msgid "The sim parameter must be 0 or 1"
+msgstr "Parameter sim harus 0 atau 1"
+
+msgid "The USB adapter (device-usb) gave no valid reply"
+msgstr "Adaptor USB (device-usb) tidak memberikan balasan yang valid"
+
+msgid "The auto parameter must be 0 or 1"
+msgstr "Parameter auto harus 0 atau 1"
+
+msgid "Invalid USB role"
+msgstr "Peran USB tidak valid"
+
+msgid "A USB role takes no scope"
+msgstr "Peran USB tidak menerima cakupan"
+
+msgid "Invalid USB network mode"
+msgstr "Mode jaringan USB tidak valid"
+
+msgid "Invalid USB network scope"
+msgstr "Cakupan jaringan USB tidak valid"
+
+msgid "Unknown USB setting"
+msgstr "Pengaturan USB tidak diketahui"
+
+msgid "Invalid interface name"
+msgstr "Nama antarmuka tidak valid"
+
+msgid "The power adapter gave no valid reply"
+msgstr "Adaptor daya tidak memberi balasan yang valid"
+
+msgid "Unknown power operation"
+msgstr "Operasi daya tidak dikenal"
+
+msgid "Unknown power setting"
+msgstr "Pengaturan daya tidak dikenal"
+
+msgid "Invalid power value"
+msgstr "Nilai daya tidak valid"
+
+msgid "Invalid power request"
+msgstr "Permintaan daya tidak valid"
+
+msgid "The languages adapter gave no valid reply"
+msgstr "Adaptor bahasa tidak memberikan balasan yang valid"
+
+msgid "Unknown language operation"
+msgstr "Operasi bahasa tidak diketahui"
+
+msgid "Invalid language code"
+msgstr "Kode bahasa tidak valid"
+
+msgid "Invalid language request"
+msgstr "Permintaan bahasa tidak valid"
+
+msgid "Unknown source"
+msgstr "Sumber tidak diketahui"
+
+msgid "The TTL adapter gave no valid reply"
+msgstr "Adaptor TTL tidak memberi balasan yang valid"
+
+msgid "Invalid TTL"
+msgstr "TTL tidak valid"
+
+msgid "The data usage adapter gave no valid reply"
+msgstr "Adaptor penggunaan data tidak memberi balasan yang valid"
+
+msgid "Unknown data usage setting"
+msgstr "Pengaturan penggunaan data tidak dikenal"
+
+msgid "Invalid value for this setting"
+msgstr "Nilai tidak valid untuk pengaturan ini"
+
+msgid "The forwarding adapter gave no valid reply"
+msgstr "Adaptor penerusan tidak memberi balasan yang valid"
+
+msgid "The CPU adapter gave no valid reply"
+msgstr "The CPU adapter gave no valid reply"
+
+msgid "Invalid CPU profile"
+msgstr "Invalid CPU profile"
+
+msgid "Invalid CPU core"
+msgstr "Inti CPU tidak valid"
+
+msgid "Unknown CPU operation"
+msgstr "Unknown CPU operation"
+
+msgid "Unknown CPU voltage operation"
+msgstr "Operasi tegangan CPU tidak dikenal"
+
+msgid "Invalid CPU voltage request"
+msgstr "Permintaan tegangan CPU tidak valid"
+
+msgid "Invalid CPU voltage offset"
+msgstr "Offset tegangan CPU tidak valid"
+
+msgid "Type the confirmation word to apply a voltage offset"
+msgstr "Ketik kata konfirmasi untuk menerapkan offset tegangan"
+
+msgid "Invalid stress test length"
+msgstr "Durasi uji stres tidak valid"
+
+msgid "The packages adapter gave no valid reply"
+msgstr "Adaptor paket tidak memberi balasan yang valid"
+
+msgid "Invalid packages operation"
+msgstr "Operasi paket tidak valid"
+
+msgid "The sizes parameter must be 0 or 1"
+msgstr "Parameter sizes harus 0 atau 1"
+
+msgid "The update adapter gave no valid reply"
+msgstr "Adaptor pembaruan tidak memberi jawaban yang valid"
+
+msgid "Unknown update operation"
+msgstr "Operasi pembaruan tidak dikenal"
+
+msgid "Invalid update request"
+msgstr "Permintaan pembaruan tidak valid"
+
+msgid "The backup tool gave no valid reply"
+msgstr "Alat cadangan tidak memberi jawaban yang valid"
+
+msgid "Mobile data integration is not provided by this platform"
+msgstr "Integrasi data seluler tidak disediakan oleh platform ini"
+
+msgid "The SIM settings could not be read"
+msgstr "Pengaturan SIM tidak dapat dibaca"
+
+msgid "Radio control is not provided by this platform"
+msgstr "Platform ini tidak menyediakan kontrol radio"
+
+msgid "A SIM radio change is already running"
+msgstr "Perubahan radio SIM sedang berjalan"
+
+# Source-language fallback for untranslated new controls.
+msgid "Invalid SIM setting"
+msgstr "Invalid SIM setting"
+
+msgid "The modem did not take the setting; nothing was saved"
+msgstr "Modem tidak menerima pengaturan; tidak ada yang disimpan"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control failed"
+msgstr "SIM control failed"
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching; reboot if channels are unavailable or wait until idle"
+msgstr "Enable hot switching; reboot if channels are unavailable or wait until idle"
+
+msgid "Request too large"
+msgstr "Permintaan terlalu besar"
+
+msgid "The runtime directory is not safe; nothing was run"
+msgstr "Direktori runtime tidak aman; tidak ada yang dijalankan"
+
+msgid "No such method"
+msgstr "Metode tidak ada"
+
+msgid "The VPN module refused the request"
+msgstr "Modul VPN menolak permintaan"
+
+msgid "The VPN panel is busy, try again"
+msgstr "Panel VPN sedang sibuk, coba lagi"
+
+msgid "Another VPN task is still running"
+msgstr "Tugas VPN lain masih berjalan"
+
+msgid "The exit_ip parameter must be 0 or 1"
+msgstr "Parameter exit_ip harus 0 atau 1"
+
+msgid "The VPN status could not be read"
+msgstr "Status VPN tidak dapat dibaca"
+
+msgid "The profiles could not be read"
+msgstr "Profil tidak dapat dibaca"
+
+msgid "The check parameter must be 0 or 1"
+msgstr "Parameter check harus 0 atau 1"
+
+msgid "The engines could not be read"
+msgstr "Mesin tidak dapat dibaca"
+
+msgid "The subscriptions could not be read"
+msgstr "Langganan tidak dapat dibaca"
+
+msgid "The VPN settings could not be read"
+msgstr "Pengaturan VPN tidak dapat dibaca"
+
+msgid "Unknown VPN operation"
+msgstr "Operasi VPN tidak dikenal"
+
+msgid "The VPN could not be switched"
+msgstr "VPN tidak dapat dialihkan"
+
+msgid "The kill switch is on or off"
+msgstr "Kill switch hidup atau mati"
+
+msgid "The kill switch could not be changed"
+msgstr "Kill switch tidak dapat diubah"
+
+msgid "Invalid profile id"
+msgstr "ID profil tidak valid"
+
+msgid "The profile could not be made the active one"
+msgstr "Profil tidak dapat dijadikan aktif"
+
+msgid "Unknown profile source"
+msgstr "Sumber profil tidak dikenal"
+
+msgid "Unknown profile type"
+msgstr "Jenis profil tidak dikenal"
+
+msgid "The config is empty, too large or holds control characters"
+msgstr "Konfigurasi kosong, terlalu besar, atau memuat karakter kontrol"
+
+msgid "Invalid profile request"
+msgstr "Permintaan profil tidak valid"
+
+msgid "A config from a URL takes the type it says"
+msgstr "Konfigurasi dari URL memakai jenis yang disebutkannya"
+
+msgid "No uploaded file"
+msgstr "Tidak ada file yang diunggah"
+
+msgid "The file is larger than 1 MiB"
+msgstr "File lebih besar dari 1 MiB"
+
+msgid "The profile could not be added"
+msgstr "Profil tidak dapat ditambahkan"
+
+msgid "The profile could not be renamed"
+msgstr "Profil tidak dapat diganti namanya"
+
+msgid "The profile could not be removed"
+msgstr "Profil tidak dapat dihapus"
+
+msgid "The profile does not pass the check"
+msgstr "Profil tidak lolos pemeriksaan"
+
+msgid "Unknown profile option"
+msgstr "Opsi profil tidak dikenal"
+
+msgid "Invalid value for this option"
+msgstr "Nilai tidak valid untuk opsi ini"
+
+msgid "The option could not be set"
+msgstr "Opsi tidak dapat diatur"
+
+msgid "The config could not be read"
+msgstr "Konfigurasi tidak dapat dibaca"
+
+msgid "The config was not saved"
+msgstr "Konfigurasi tidak disimpan"
+
+msgid "The latency test failed"
+msgstr "Pengujian latensi gagal"
+
+msgid "The refresh interval is 1 to 999 hours"
+msgstr "Interval penyegaran adalah 1 sampai 999 jam"
+
+msgid "Unknown subscription type"
+msgstr "Jenis langganan tidak dikenal"
+
+msgid "Invalid subscription id"
+msgstr "ID langganan tidak valid"
+
+msgid "The keep parameter must be 0 or 1"
+msgstr "Parameter keep harus 0 atau 1"
+
+msgid "The subscription could not be removed"
+msgstr "Langganan tidak dapat dihapus"
+
+msgid "The file is too large"
+msgstr "Berkas terlalu besar"
+
+msgid "Unknown engine"
+msgstr "Mesin tidak dikenal"
+
+msgid "The unverified parameter must be 0 or 1"
+msgstr "Parameter unverified harus 0 atau 1"
+
+msgid "This engine is a system package: it has no file to upload"
+msgstr "Mesin ini adalah paket sistem: tidak ada file untuk diunggah"
+
+msgid "The engine could not be removed"
+msgstr "Mesin tidak dapat dihapus"
+
+msgid "mu300-extra is not on this system"
+msgstr "mu300-extra tidak ada di sistem ini"
+
+msgid "Unknown VPN setting"
+msgstr "Pengaturan VPN tidak dikenal"
+
+msgid "The setting could not be saved"
+msgstr "Pengaturan tidak dapat disimpan"
+
+msgid "The number of lines is 1 to 1000"
+msgstr "Jumlah baris adalah 1 sampai 1000"
+
+msgid "The log could not be read"
+msgstr "Log tidak dapat dibaca"
+
+msgid "The radio of this SIM is switched off in its settings"
+msgstr "Radio SIM ini dimatikan di pengaturannya"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM control or reboot for managed dual-SIM radio"
+msgstr "Use SIM control or reboot for managed dual-SIM radio"
+
+msgid "The radio did not follow its setting"
+msgstr "Radio tidak mengikuti pengaturannya"
+
+msgid "The data roaming setting could not be saved"
+msgstr "Pengaturan roaming data tidak dapat disimpan"
+
+msgid "Expected on or off"
+msgstr "Diharapkan on atau off"
+
+msgid "VPN integration is not provided by this platform"
+msgstr "Integrasi VPN tidak disediakan oleh platform ini"
+
+msgid "Dual-boot integration is not provided by this platform"
+msgstr "Integrasi dual-boot tidak disediakan oleh platform ini"
+
+msgid "mu300-next-boot failed"
+msgstr "mu300-next-boot gagal"
+
+msgid "AT backend did not answer (radio off, modem restarting, or adapter unavailable)"
+msgstr "Backend AT tidak menjawab (radio mati, modem sedang dimulai ulang, atau adaptor tidak tersedia)"
+
+msgid "The CPU profile could not be read"
+msgstr "The CPU profile could not be read"
+
+msgid "The CPU profile could not be set"
+msgstr "The CPU profile could not be set"
+
+msgid "The CPU core could not be switched"
+msgstr "Inti CPU tidak dapat dialihkan"
+
+msgid "Invalid low latency setting"
+msgstr "Pengaturan latensi rendah tidak valid"
+
+msgid "The low latency setting could not be applied"
+msgstr "Pengaturan latensi rendah tidak dapat diterapkan"
+
+msgid "The CPU voltage offset could not be read"
+msgstr "Offset tegangan CPU tidak dapat dibaca"
+
+msgid "The CPU voltage offset was refused"
+msgstr "Offset tegangan CPU ditolak"
+
+msgid "The CPU voltage offset could not be turned off"
+msgstr "Offset tegangan CPU tidak dapat dimatikan"
+
+msgid "The stress test could not be started"
+msgstr "Uji stres tidak dapat dimulai"
+
+msgid "USB role adapter is not executable"
+msgstr "Adaptor peran USB tidak dapat dieksekusi"
+
+msgid "USB role adapter failed"
+msgstr "Adaptor peran USB gagal"
+
+msgid "USB role switch is unavailable"
+msgstr "Penggantian peran USB tidak tersedia"
+
+msgid "USB role switch failed"
+msgstr "Penggantian peran USB gagal"
+
+msgid "USB role switch was refused by platform safety checks"
+msgstr "Penggantian peran USB ditolak oleh pemeriksaan keamanan platform"
+
+msgid "Cannot create USB boot settings directory"
+msgstr "Tidak dapat membuat direktori pengaturan boot USB"
+
+msgid "Cannot write USB boot settings"
+msgstr "Tidak dapat menulis pengaturan boot USB"
+
+msgid "Cannot save USB boot settings"
+msgstr "Tidak dapat menyimpan pengaturan boot USB"
+
+msgid "Invalid boot-auto value"
+msgstr "Nilai boot-auto tidak valid"
+
+msgid "Device is the boot default; host auto-apply is the only persistent role"
+msgstr "Perangkat adalah bawaan saat boot; penerapan otomatis host adalah satu-satunya peran persisten"
+
+msgid "Cannot save USB role policy"
+msgstr "Tidak dapat menyimpan kebijakan peran USB"
+
+msgid "Cannot disable USB network boot policy"
+msgstr "Tidak dapat menonaktifkan kebijakan boot jaringan USB"
+
+msgid "Cannot commit USB role policy"
+msgstr "Tidak dapat meng-commit kebijakan peran USB"
+
+msgid "USB network mode is unavailable in host role"
+msgstr "Mode jaringan USB tidak tersedia dalam peran host"
+
+msgid "Disable host boot-auto before configuring USB network"
+msgstr "Nonaktifkan boot-auto host sebelum mengonfigurasi jaringan USB"
+
+msgid "Cannot save USB network policy"
+msgstr "Tidak dapat menyimpan kebijakan jaringan USB"
+
+msgid "Cannot commit USB network policy"
+msgstr "Tidak dapat meng-commit kebijakan jaringan USB"
+
+msgid "USB host mode is required"
+msgstr "Mode host USB diperlukan"
+
+msgid "Not a USB network interface"
+msgstr "Bukan antarmuka jaringan USB"
+
+msgid "LAN bridge device section was not found"
+msgstr "Bagian perangkat bridge LAN tidak ditemukan"
+
+msgid "Cannot bring USB network interface up"
+msgstr "Tidak dapat menyalakan antarmuka jaringan USB"
+
+msgid "Cannot add interface to LAN bridge"
+msgstr "Tidak dapat menambahkan antarmuka ke bridge LAN"
+
+msgid "Cannot save LAN bridge"
+msgstr "Tidak dapat menyimpan bridge LAN"
+
+msgid "Network reload failed"
+msgstr "Gagal memuat ulang jaringan"
+
+msgid "Cannot attach USB interface to LAN bridge"
+msgstr "Tidak dapat memasang antarmuka USB ke bridge LAN"
+
+msgid "Invalid forwarding setting"
+msgstr "Pengaturan penerusan tidak valid"
+
+msgid "The message template is too long or contains a control character"
+msgstr "Templat pesan terlalu panjang atau berisi karakter kontrol"
+
+msgid "Invalid filter list (at most 50 lines)"
+msgstr "Daftar filter tidak valid (paling banyak 50 baris)"
+
+msgid "The webhook address must be an http:// or https:// URL"
+msgstr "Alamat webhook harus berupa URL http:// atau https://"
+
+msgid "The webhook body is too long or contains a control character"
+msgstr "Isi webhook terlalu panjang atau mengandung karakter kontrol"
+
+msgid "The answer check must be key=value, like errcode=0 or ok=true (the value a whole number or lowercase letters, 16 at most)"
+msgstr "Pemeriksaan jawaban harus berbentuk kunci=nilai, seperti errcode=0 atau ok=true (nilainya bilangan bulat atau huruf kecil, paling banyak 16)"
+
+msgid "Invalid header (one \"Name: value\" per line; Host, Content-Type, Content-Length, Transfer-Encoding and Connection are set by the device)"
+msgstr "Header tidak valid (satu \"Nama: nilai\" per baris; Host, Content-Type, Content-Length, Transfer-Encoding, dan Connection diatur oleh perangkat)"
+
+msgid "Invalid Telegram bot token"
+msgstr "Token bot Telegram tidak valid"
+
+msgid "Invalid Telegram chat (a number, or @channel)"
+msgstr "Obrolan Telegram tidak valid (angka atau @kanal)"
+
+msgid "Invalid e-mail setting"
+msgstr "Pengaturan email tidak valid"
+
+msgid "The webhook needs an address"
+msgstr "Webhook memerlukan alamat"
+
+msgid "Telegram needs a bot token and a chat"
+msgstr "Telegram memerlukan token bot dan obrolan"
+
+msgid "E-mail needs a server, a sender and a recipient"
+msgstr "Email memerlukan server, pengirim, dan penerima"
+
+msgid "SMS forwarding needs a phone number"
+msgstr "Penerusan lewat SMS memerlukan nomor telepon"
+
+msgid "The forwarding settings could not be saved"
+msgstr "Pengaturan penerusan tidak dapat disimpan"
+
+msgid "SMS forwarding is not installed"
+msgstr "Penerusan SMS tidak terpasang"
+
+msgid "A test was started a moment ago; wait a few seconds"
+msgstr "Sebuah uji baru saja dimulai; tunggu beberapa detik"
+
+msgid "The delivery log could not be cleared"
+msgstr "Log pengiriman tidak dapat dikosongkan"
+
+msgid "Unknown forwarding operation"
+msgstr "Operasi penerusan tidak dikenal"
+
+msgid "The language pack is not installed"
+msgstr "Paket bahasa tidak terpasang"
+
+msgid "No language given"
+msgstr "Tidak ada bahasa yang diberikan"
+
+msgid "The language could not be changed"
+msgstr "Bahasa tidak dapat diubah"
+
+msgid "LuCI does not offer this language"
+msgstr "LuCI tidak menyediakan bahasa ini"
+
+msgid "No uploaded language pack"
+msgstr "Tidak ada paket bahasa yang diunggah"
+
+msgid "An installation is already running"
+msgstr "Instalasi sudah berjalan"
+
+msgid "The language pack could not be removed"
+msgstr "Paket bahasa tidak dapat dihapus"
+
+msgid "Lock cache unavailable"
+msgstr "Cache kunci tidak tersedia"
+
+msgid "The modem refused a write"
+msgstr "Modem menolak sebuah penulisan"
+
+msgid "The saved locks could not be cleared"
+msgstr "Kunci yang tersimpan tidak dapat dihapus"
+
+msgid "No serving cell to lock to"
+msgstr "Tidak ada sel layanan untuk dikunci"
+
+msgid "The modem did not answer the mode query; nothing was sent"
+msgstr "Modem tidak menjawab kueri mode; tidak ada yang dikirim"
+
+msgid "The read-back does not match the automatic values"
+msgstr "Pembacaan ulang tidak cocok dengan nilai otomatis"
+
+msgid "The read-back after the stack restart does not match the automatic values"
+msgstr "Pembacaan ulang setelah tumpukan dimulai ulang tidak cocok dengan nilai otomatis"
+
+msgid "The reset was interrupted"
+msgstr "Pengaturan ulang terputus"
+
+msgid "Reinstalling packages is not available on this system"
+msgstr "Pemasangan ulang paket tidak tersedia di sistem ini"
+
+msgid "No packages were written down by an update"
+msgstr "Tidak ada paket yang dicatat oleh pembaruan"
+
+msgid "Reinstalling is running already"
+msgstr "Pemasangan ulang sudah berjalan"
+
+msgid "The note could not be dropped"
+msgstr "Catatan tidak dapat dihapus"
+
+msgid "Unknown packages operation"
+msgstr "Operasi paket tidak dikenal"
+
+msgid "usage: power get|set KEY VALUE|wake|idle"
+msgstr "usage: power get|set KEY VALUE|wake|idle"
+
+msgid "Data usage is not available on this system"
+msgstr "Penggunaan data tidak tersedia di sistem ini"
+
+msgid "Unknown data usage operation"
+msgstr "Operasi penggunaan data tidak dikenal"
+
+msgid "The TTL setting could not be read"
+msgstr "Pengaturan TTL tidak dapat dibaca"
+
+msgid "The TTL could not be set"
+msgstr "TTL tidak dapat diatur"
+
+msgid "Unknown TTL operation"
+msgstr "Operasi TTL tidak dikenal"
+
+msgid "An update task is already running"
+msgstr "Tugas pembaruan sudah berjalan"
+
+msgid "The task could not be started"
+msgstr "Tugas tidak dapat dimulai"
+
+msgid "The updater gave no valid reply"
+msgstr "Pembaru tidak memberi jawaban yang valid"
+
+msgid "This needs confirmation"
+msgstr "Ini memerlukan konfirmasi"
+
+msgid "Check for updates first"
+msgstr "Periksa pembaruan terlebih dahulu"
+
+msgid "The upload directory is not safe; nothing was changed"
+msgstr "Direktori unggahan tidak aman; tidak ada yang diubah"
+
+msgid "Not enough memory for this upload"
+msgstr "Memori tidak cukup untuk unggahan ini"
+
+msgid "Not enough free space on the Linux partition"
+msgstr "Ruang kosong di partisi Linux tidak cukup"
+
+msgid "The file was not checked; upload it again"
+msgstr "Berkas belum diperiksa; unggah lagi"
+
+msgid "This file is not for this device"
+msgstr "Berkas ini bukan untuk perangkat ini"
+
+msgid "The signature of this file is wrong"
+msgstr "Tanda tangan berkas ini salah"
+
+msgid "This file is not signed: that needs confirmation"
+msgstr "Berkas ini tidak ditandatangani: perlu konfirmasi"
+
+msgid "This file is older than what is installed: that needs confirmation"
+msgstr "Berkas ini lebih lama daripada yang terpasang: perlu konfirmasi"
+
+msgid "The release source was not changed"
+msgstr "Sumber rilis tidak diubah"

@@ -1,0 +1,9 @@
+[Unit]
+Description=MU300 thermal guard (cpufreq capping on kernels without SoC trip points)
+
+[Service]
+ExecStart=/opt/mu300/bin/thermal-guard
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

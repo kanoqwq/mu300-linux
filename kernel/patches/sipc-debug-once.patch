@@ -1,0 +1,73 @@
+sipc: the smem, smsg, sbuf and sblock debug devices once, not once per SIPC device
+
+Same fix as upstream/modules: sprd_ipc_probe() calls the *_init_debug() functions for each of the SIPC devices;
+all but the first failed with "cannot create duplicate filename" and a stack dump each (12 per boot).
+
+--- a/drivers/soc/sprd/modem/sipc/smem.c
++++ b/drivers/soc/sprd/modem/sipc/smem.c
+@@ -542,6 +542,14 @@
+ {
+ 	int rval;
+ 	dev_t dev_no;
++
++	/*
++	 * MU300: sprd_ipc_probe() calls this once per SIPC device, but there is one class and one device of this
++	 * name: every later call failed with "cannot create duplicate filename '/class/smem'" and a stack dump, and
++	 * leaked a chrdev region and a cdev.
++	 */
++	if (smem_dev)
++		return 0;
+ 
+ 	smem_dev = kzalloc(sizeof(struct smem_device), GFP_KERNEL);
+ 	if (!smem_dev) {
+--- a/drivers/soc/sprd/modem/sipc/smsg.c
++++ b/drivers/soc/sprd/modem/sipc/smsg.c
+@@ -975,6 +975,14 @@
+ {
+ 	int rval;
+ 	dev_t dev_no;
++
++	/*
++	 * MU300: sprd_ipc_probe() calls this once per SIPC device, but there is one class and one device of this
++	 * name: every later call failed with "cannot create duplicate filename '/class/smsg'" and a stack dump, and
++	 * leaked a chrdev region and a cdev.
++	 */
++	if (smsg_dev)
++		return 0;
+ 
+ 	smsg_dev = kzalloc(sizeof(struct smsg_device), GFP_KERNEL);
+ 	if (!smsg_dev) {
+--- a/drivers/soc/sprd/modem/sipc/sbuf.c
++++ b/drivers/soc/sprd/modem/sipc/sbuf.c
+@@ -1679,6 +1679,14 @@
+ {
+ 	int rval;
+ 	dev_t dev_no;
++
++	/*
++	 * MU300: sprd_ipc_probe() calls this once per SIPC device, but there is one class and one device of this
++	 * name: every later call failed with "cannot create duplicate filename '/class/sbuf'" and a stack dump, and
++	 * leaked a chrdev region and a cdev.
++	 */
++	if (sbuf_dev)
++		return 0;
+ 
+ 	sbuf_dev = kzalloc(sizeof(struct sbuf_device), GFP_KERNEL);
+ 	if (!sbuf_dev) {
+--- a/drivers/soc/sprd/modem/sipc/sblock.c
++++ b/drivers/soc/sprd/modem/sipc/sblock.c
+@@ -2189,6 +2189,14 @@
+ {
+ 	int rval;
+ 	dev_t dev_no;
++
++	/*
++	 * MU300: sprd_ipc_probe() calls this once per SIPC device, but there is one class and one device of this
++	 * name: every later call failed with "cannot create duplicate filename '/class/sblock'" and a stack dump, and
++	 * leaked a chrdev region and a cdev.
++	 */
++	if (sblock_dev)
++		return 0;
+ 
+ 	sblock_dev = kzalloc(sizeof(struct sblock_device), GFP_KERNEL);
+ 	if (!sblock_dev) {

@@ -1,0 +1,16 @@
+[Unit]
+Description=MU300 modem AT channel keeper (see /opt/mu300/bin/mu300-atd)
+# the SIPC tty only exists once the vendor modem stack is up
+ConditionPathExists=|/dev/stty_nr1
+ConditionPathExists=|/dev/stty_nr4
+After=mu300-vendor.service
+Wants=mu300-vendor.service
+StartLimitIntervalSec=0
+
+[Service]
+ExecStart=/opt/mu300/bin/mu300-atd
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

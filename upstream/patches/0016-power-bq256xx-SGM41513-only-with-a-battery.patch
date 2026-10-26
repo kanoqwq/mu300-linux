@@ -1,0 +1,47 @@
+power: supply: bq256xx: the SGM41513 at 0x1a only on a board with a battery (issue #225)
+
+Patch 0015 goes on at I2C 0x1a when nothing answers at the node's address, for the SGM41513 that the ABSSV U30
+Air may carry (issue #102). The ZTE F50 has the same "ti,bq2560x_chg" node, no battery, and a charger at 0x1a all
+the same: its registers read 0e 1e b4 f7 c0 8f 64 40 34 00 80 00 (REG00-REG0B, measured on an F50 with v2026.10.25,
+part number 0). Bound and told to charge, the fuel gauge reported over-voltage and the PMIC reset the board about
+two seconds into the boot - in a loop on a router's USB port (GL.iNet GL-MT3600BE, Cudy TR3000), not on a
+computer's (v2026.10.25 and the v2026.10.26 pre-release; the reports are in issue #225).
+
+So the fallback is taken only where the device tree has the U30 Air's charger policy service
+(/charger_policy_service), the same test mu300-device uses to tell the two boards apart: both U30 Air variants
+have it, the F50 does not. On the F50 the probe ends at the first failed read again ("no charger: -5"), as before
+v2026.10.25. A check of the registers would not do (the F50's chip has them), nor one of the part number (ZTE's
+driver codes part 0 as the SGM41513 itself).
+
+A separate patch on top of 0015, so that a tree already prepared with 0015 takes it.
+
+--- a/drivers/power/supply/bq256xx_charger.c
++++ b/drivers/power/supply/bq256xx_charger.c
+@@ -2125,6 +2125,8 @@
+ 	if (bq->bq2560x_chg) {
+ 		struct bq256xx_chip_info *info;
+ 		int part, err;
++		struct device_node *np;
++		bool battery;
+ 
+ 		/* the bq25601 as it is, without a register cache and with its input detection */
+ 		info = devm_kmemdup(dev, bq->chip_info, sizeof(*info), GFP_KERNEL);
+@@ -2141,7 +2143,17 @@
+ 		 * neither chip (the F50) probes no further than these two reads.
+ 		 */
+ 		part = i2c_smbus_read_byte_data(client, BQ256XX_PART_INFORMATION);
+-		if (part < 0 && client->addr != SGM41513_I2C_ADDR) {
++		/*
++		 * Only on a board with a battery to charge: the U30 Air, whose device tree has the charger policy
++		 * service (as mu300-device tells the boards apart). The F50 has no battery, and a charger at 0x1a
++		 * all the same, with its registers set (0e 1e b4 f7 c0 8f 64 40 34 00 80 00 measured): bound and
++		 * told to charge, the fuel gauge reported over-voltage and the PMIC reset the board, over and over
++		 * on a router's USB port (issue #225). There it stays unbound, as before v2026.10.25.
++		 */
++		np = of_find_node_by_path("/charger_policy_service");
++		battery = np;
++		of_node_put(np);
++		if (part < 0 && client->addr != SGM41513_I2C_ADDR && battery) {
+ 			err = part;
+ 			chip = devm_i2c_new_dummy_device(dev, client->adapter, SGM41513_I2C_ADDR);
+ 			if (IS_ERR(chip))

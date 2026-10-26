@@ -1,0 +1,158 @@
+Do not log credentials or raw control payloads, including PCIe/SDIO transport dumps.
+
+diff --git a/common/cfg80211.c b/common/cfg80211.c
+index 717cb9e..cee7dbe 100755
+--- a/common/cfg80211.c
++++ b/common/cfg80211.c
+@@ -988,7 +988,6 @@ int sprd_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev,
+ 			if (ret)
+ 				goto err;
+ 		} else {
+-			netdev_info(ndev, "PSK %s\n", sme->key);
+ 			con.psk_len = sme->key_len;
+ 			memcpy(con.psk, sme->key, sme->key_len);
+ 		}
+diff --git a/sc2355/cmdevt.c b/sc2355/cmdevt.c
+index e3b6af7..817da5f 100644
+--- a/sc2355/cmdevt.c
++++ b/sc2355/cmdevt.c
+@@ -463,9 +463,7 @@ static int cmdevt_send_cmd(struct sprd_priv *priv, struct sprd_msg *msg)
+ 		le32_to_cpu(hdr->mstime),
+ 		hdr->common.mode, cmdevt_cmd2str(hdr->cmd_id));
+ 
+-	if (sprd_get_debug_level() >= L_DBG)
+-		print_hex_dump_debug("CMD: ", DUMP_PREFIX_OFFSET, 16, 1,
+-				     (u8 *)hdr, hdr->plen, 0);
++	/* Keep command identifiers above, never dump credential-bearing payloads. */
+ 
+ 	ret = sprd_chip_tx(&priv->chip, msg);
+ 	if (ret)
+@@ -3948,8 +3946,10 @@ unsigned short sc2355_rx_evt_process(struct sprd_priv *priv, u8 *msg)
+ 		return plen;
+ 	}
+ 
+-	print_hex_dump_debug("EVENT: ", DUMP_PREFIX_OFFSET, 16, 1,
+-			     (u8 *)hdr, hdr->plen, 0);
++	/* NEW_STATION can contain the firmware SAE PMK/PMKID. */
++	if (hdr->cmd_id != EVT_NEW_STATION)
++		print_hex_dump_debug("EVENT: ", DUMP_PREFIX_OFFSET, 16, 1,
++				     (u8 *)hdr, hdr->plen, 0);
+ 
+ 	len = plen - sizeof(*hdr);
+ 	vif = sc2355_ctxid_to_vif(priv, ctx_id);
+@@ -4103,8 +4103,7 @@ unsigned short sc2355_rx_rsp_process(struct sprd_priv *priv, u8 *msg)
+ 	hdr = (struct sprd_cmd_hdr *)msg;
+ 	plen = SPRD_GET_LE16(hdr->plen);
+ 
+-	print_hex_dump_debug("CMD RSP: ", DUMP_PREFIX_OFFSET, 16, 1,
+-			     (u8 *)hdr, hdr->plen, 0);
++	/* Command replies may echo credential-bearing payloads. */
+ 
+ 	/* 2048 use mac */
+ 	/*TODO here ctx_id range*/
+diff --git a/sc2355/pcie.c b/sc2355/pcie.c
+index 7a158fc..a899eb5 100644
+--- a/sc2355/pcie.c
++++ b/sc2355/pcie.c
+@@ -122,8 +122,7 @@ static int pcie_tx_one(struct sprd_hif *hif, unsigned char *data,
+ 	mbuf->buf = data;
+ 	mbuf->len = len;
+ 	mbuf->next = NULL;
+-	if (sprd_get_debug_level() >= L_DBG)
+-		sc2355_hex_dump("tx to cp2 cmd data dump", data + 4, len);
++	/* Command payloads may contain passphrases, PSKs or PMKs. */
+ 	if (hif->hw_type == SPRD_HW_SC2355_PCIE) {
+ 		mbuf->phy = sc2355_mm_virt_to_phys(&hif->pdev->dev, mbuf->buf,
+ 						   mbuf->len, DMA_TO_DEVICE);
+@@ -1847,7 +1846,6 @@ void sc2355_pcie_rx_work_queue(struct work_struct *work)
+ 	struct sprd_priv *priv;
+ 	struct rx_mgmt *rx_mgmt;
+ 	struct sprd_hif *hif;
+-	int print_len;
+ 
+ 	rx_mgmt = container_of(work, struct rx_mgmt, rx_work);
+ 	hif = rx_mgmt->hif;
+@@ -1861,13 +1859,7 @@ void sc2355_pcie_rx_work_queue(struct work_struct *work)
+ 			goto next;
+ 		pr_debug("%s: rx type:%d\n",  __func__, SPRD_HEAD_GET_TYPE(msg->data));
+ 
+-		if (msg->len > 400)
+-			print_len = 400;
+-		else
+-			print_len = msg->len;
+-
+-		if (sprd_get_debug_level() >= L_DBG)
+-			sc2355_hex_dump("rx data", (unsigned char *)msg->data, print_len);
++		/* RX control messages can include firmware key material. */
+ 
+ 		switch (SPRD_HEAD_GET_TYPE(msg->data)) {
+ 		case SPRD_TYPE_DATA:
+diff --git a/sc2355/sdio.c b/sc2355/sdio.c
+index eb05df5..734e1ad 100755
+--- a/sc2355/sdio.c
++++ b/sc2355/sdio.c
+@@ -116,8 +116,7 @@ static int sdio_tx_one(struct sprd_hif *hif, unsigned char *data,
+ 	mbuf->buf = data;
+ 	mbuf->len = len;
+ 	mbuf->next = NULL;
+-	if (sprd_get_debug_level() >= L_DBG)
+-		sc2355_hex_dump("tx to cp2 cmd data dump", data + 4, len);
++	/* Command payloads may contain passphrases, PSKs or PMKs. */
+ 
+ 	ret = sprdwcn_bus_push_list(chn, head, tail, num);
+ 
+@@ -1325,13 +1324,7 @@ void sc2355_rx_work_queue(struct work_struct *work)
+ 			/* len in mbuf_t just means buffer len in ADMA,
+ 			 * so need to get data len in sc2355_sdiohal_puh
+ 			 */
+-			if (sprd_get_debug_level() >= L_DBG) {
+-				int print_len = 100;
+-
+-				sc2355_hex_dump("rx data 100B",
+-						(unsigned char *)data,
+-						print_len);
+-			}
++			/* RX control messages can include firmware key material. */
+ 
+ 			/* to check is the rsp_cnt from CP2
+ 			 * eqaul to rsp_cnt count on driver side.
+diff --git a/sc2355/vendor.c b/sc2355/vendor.c
+index 6f58eb9..2a14d41 100644
+--- a/sc2355/vendor.c
++++ b/sc2355/vendor.c
+@@ -545,8 +545,6 @@ static int vendor_parse_sae_entry(struct sae_entry *entry,
+ #else
+ 				nla_strlcpy(entry->password, pos, data_len + 1);
+ #endif
+-				pr_info("entry->passwd: %s, entry->len:%d\n",
+-					entry->password, entry->passwd_len);
+ 			} else {
+ 				pr_err("entry->passwd_len(%d) is more than expected\n", data_len);
+ 				return -ENOEXEC;
+@@ -615,8 +613,6 @@ static int vendor_softap_convert_para(struct sprd_vif *vif,
+ 			tlv->len = tmp->passwd_len;
+ 
+ 			memcpy(tlv->data, tmp->password, tmp->passwd_len);
+-			pr_info("%s password: %s, len:%d\n", __func__,
+-				tmp->password, tmp->passwd_len);
+ 			pos += (header_len + tmp->passwd_len);
+ 			data_len += (header_len + tmp->passwd_len);
+ 		}
+@@ -668,8 +664,6 @@ static int vendor_softap_convert_para(struct sprd_vif *vif,
+ 		tlv->type = VENDOR_SAE_PWD - 1;
+ 		tlv->len = setting->passphrase_len;
+ 		memcpy(tlv->data, setting->passphrase, setting->passphrase_len);
+-		pr_info("%s passphrase: %s, len: %d\n", __func__,
+-			setting->passphrase, setting->passphrase_len);
+ 		pos += (header_len + setting->passphrase_len);
+ 		data_len += (header_len + setting->passphrase_len);
+ 	}
+@@ -3252,8 +3246,6 @@ static int vendor_set_sae_password(struct wiphy *wiphy,
+ 				nla_strlcpy(sae_para.passphrase, pos,
+ 					    sae_para.passphrase_len + 1);
+ #endif
+-				pr_info("pwd is :%s, len :%d\n", sae_para.passphrase,
+-					sae_para.passphrase_len);
+ 			} else {
+ 				pr_err("%s %d error.\n", __func__, __LINE__);
+ 				return -EINVAL;

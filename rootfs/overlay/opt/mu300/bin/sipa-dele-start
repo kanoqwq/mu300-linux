@@ -1,0 +1,107 @@
+#!/bin/sh
+# Load the IPA delegate once the modem is answering, and never before.
+#
+# The delegate is what makes downlink happen at all. Measured on stock Android, the modem asks permission over
+# SIPC channel 120 before it sends anything - "smsg_recv, dst=5, chan=120, type=5, flag=0x1" - the AP grants
+# SIPA_RM_RES_CONS_WWAN_DL and acks, and only then do packets arrive (docs/FINDINGS.md 13f). Never answer that
+# and the modem never sends, which is exactly our symptom: the call completes, the address is right, and
+# rx_packets stays at zero.
+#
+# Timing is the whole problem. sipa_dele's conn_thread opens the channel with smsg_ch_open(dst, chan, -1) as its
+# first act, and that call has two ways of ending badly when the modem is not there yet: it waits for ever for
+# an OPEN that never comes, or smsg_recv returns an error, the thread logs "sipa_delegator failed to open dst 5
+# channel 120" and *exits*. Either way nothing answers the modem for the rest of the boot, and there is no
+# second chance: sipa_dele is [permanent] in /proc/modules, so it cannot be unloaded and tried again.
+#
+# The initramfs used to load it with the rest of the modem stack, around twenty seconds in, while modem_control
+# does not have the CP up until about sixty. Android loads it the other way round. So this waits for the modem
+# to be talking before the module is ever inserted.
+#
+# Too late is as bad as too early (K45-K47). Started in the background by extra-modules, it raced the dial: inserted
+# after AT+CGACT had made the SIPA resources active, the delegate's probe hit a reproducible CFI panic (kanoqwq's
+# fork, cd4fb28). So the only caller is now mobile-data, between the registration and the PDP context, on every
+# system; and when the packet domain does not come up within MU300_DELE_WAIT seconds this refuses (exit 1) instead
+# of loading anyway: the dial stops there and its next attempt calls this again. Exit 0: loaded now, already loaded,
+# or a kernel without the module. Exit 1: not loaded, and the PDP context must not be activated.
+set -u
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+
+M=/lib/modules/$(uname -r)
+KO=$M/sipa-dele.ko
+[ -f "$KO" ] || KO=$M/extra/sipa-dele.ko   # the Ubuntu image keeps modules under extra/
+WAIT=${MU300_DELE_WAIT:-180}
+
+log() { echo "sipa-dele-start: $*"; }
+
+grep -q '^sipa_dele ' /proc/modules && { log "already loaded"; exit 0; }
+[ -f "$KO" ] || { log "no $KO (a kernel without the modem stack)"; exit 0; }
+
+# What counts as "the CP is talking" has to be the modem answering, not a log line on the way there.
+#
+# This used to grep dmesg for 'sprd-sbuf: channel 5-' / 'sbuf ready for pmic wdt init'. Both are printed while
+# the modem *loader* runs, long before modem_control has the CP up - so the wait was satisfied on its first
+# check ("modem is up after 0s"), sipa-dele went in early exactly as before, and the delegate thread found
+# nothing at the far end. The symptom is the one this script exists to prevent: rx_packets stays at zero for
+# the whole boot, the address is right, and there is no second chance because sipa_dele is [permanent].
+#
+# A bare AT coming back is not enough either: the AT channel answers about two seconds in, long before the
+# data side of the CP exists, so gating on it reproduces the same "modem is up after 2s" as the sbuf lines.
+#
+# AT+CGATT? is the signal that means what we need. 1 is the modem attached to the *packet* domain - the part
+# that carries data - so it cannot be true before the CP's data path is running.
+#
+# The sbuf line in dmesg used to be a precondition as well, so that the AT channel was not opened before it
+# existed. The caller now asks only after the modem has registered, over that same channel, so it proves nothing
+# more; and a first dial hours into the boot (no SIM or no signal until then) could find the line gone from the
+# kernel's ring buffer and refuse for the rest of the boot.
+SIM_SLOT=0
+if [ -x /opt/mu300/bin/mu300-sim ]; then
+    SIM_SLOT=$(/opt/mu300/bin/mu300-sim active) || exit 1
+fi
+modem_up() {
+    local slot directory device
+    slot=$SIM_SLOT
+    case "$slot" in
+        0) directory=/run/mu300-at; device=/dev/stty_nr1 ;;
+        1)
+            directory=/run/mu300-at; device=/dev/stty_nr4
+            [ ! -e /run/mu300-radio-freeze ] || directory=/run/mu300-at4
+            ;;
+        *) return 1 ;;
+    esac
+    [ -c "$device" ] || return 1
+    [ "$slot" = 0 ] || [ -p "$directory/cmd" ] || return 1
+    MU300_AT_DIR="$directory" mu300-at -t 8 'AT+CGATT?' 2>/dev/null | grep '+CGATT: *1' >/dev/null
+}
+
+# a deadline in seconds: one round is an AT answer (up to 8 s) plus the pause, not the 2 s the old count assumed
+start=$(date +%s)
+while :; do
+    if modem_up; then
+        log "packet domain attached after $(( $(date +%s) - start ))s"
+        if ! insmod "$KO" 2>/dev/null; then
+            log "FAILED sipa-dele"
+            exit 1
+        fi
+        log "loaded sipa-dele"
+        # Both halves of the handshake are pr_info, so this says immediately whether it took. Looked for every
+        # 0.1 s for up to 3 s (a fixed 3 s sleep here was 3 s of every boot's dial: the line is there at once).
+        n=0
+        while [ $n -lt 30 ] && ! dmesg | grep -q 'channel 5-120 send open msg'; do
+            /opt/mu300/bin/busybox sleep 0.1 2>/dev/null || sleep 0.1 2>/dev/null || { sleep 1; n=$((n + 9)); }
+            n=$((n + 1))
+        done
+        if dmesg | grep -q 'channel 5-120 send open msg'; then
+            log "channel open sent; handshake: $(dmesg | grep -c sipa_dele) sipa_dele messages so far"
+        else
+            log "no 'channel 5-120 send open msg' in dmesg - the delegate thread did not start"
+        fi
+        exit 0
+    fi
+    [ $(( $(date +%s) - start + 2 )) -lt "$WAIT" ] || break
+    # half a second between questions (it was 2 s): at boot the attach follows the registration closely
+    /opt/mu300/bin/busybox sleep 0.5 2>/dev/null || sleep 0.5 2>/dev/null || sleep 1
+done
+
+log "packet domain not attached after ${WAIT}s; refusing to load the delegate (it would race the PDP context)"
+exit 1

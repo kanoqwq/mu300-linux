@@ -1,0 +1,202 @@
+#!/bin/sh
+# Keep the SMS pool of the control panel (mu300-sms, /etc/mu300/sms-pool) in step with the modem. openwrt-luci only.
+#
+# Two ways in. Delivered directly, when the modem agrees: after the first sync this asks for AT+CMGF=0, AT+CSMS=1 and
+# AT+CNMI=3,2,2,0,1 - every new message then comes as a "+CMT:" frame (header and PDU) on the modem's unsolicited
+# channel, which mu300-atd hands to mu300-cmt-spool, and that puts the PDU in $POOL/incoming/*.ready, fsynced. Every
+# POLL seconds this pools what is there ("mu300-sms import-pdu FILE") and, only once that has succeeded, acknowledges
+# the message to the network (AT+CNMA=1; with CSMS=1 the modem forwards no second message until the first is
+# acknowledged, and one it never gets acknowledged for it stores on the SIM instead). An import or an acknowledgement
+# that fails stops this round and is tried again on the next; after three rounds that failed in a row direct delivery
+# is given up for the SIM path, and the files are set aside as *.failed. The message is never an argument: the
+# spooler reads it on stdin, import-pdu reads the file.
+#
+# Through the SIM, which is also where direct delivery falls back to, and what a message the modem keeps on the SIM
+# anyway (a class 2 one) takes: with AT+CNMI=2,1,0,0,0 the modem stores a new message and announces it (+CMTI).
+# mu300-atd appends every unsolicited line of the modem to $ATDIR/urc/*.log, so a new "+CMTI:" changes the checksum
+# of the +CMTI lines there, and that starts a sync (mu300-sms sync, which moves what it pooled off the SIM, so a full
+# SIM never refuses the next message). The logs are emptied when they grow too large, which changes the checksum
+# too: a sync is idempotent, so a spurious one costs one AT+CMGL. A full sync also runs every
+# MU300_SMS_SYNC_INTERVAL seconds, for an announcement that was missed, and it takes the parked parts of long
+# messages delivered directly along, so one whose other parts never come is pooled after the wait like one on the
+# SIM. At that interval the CNMI setting is checked too, and put back when the modem dropped it (which it does by
+# itself after an acknowledgement that never came).
+#
+# If the modem refuses any of the three commands (or MU300_SMS_DIRECT=0 says not to ask), AT+CNMI=2,1,0,0,0 is asked
+# again and only the SIM path runs, as before. $DIRECT_FLAG exists while direct delivery is on.
+#
+# Port of the fork's mu300-smsd (kanoqwq/clean-tf-7.2, cd4fb28, and its direct +CMT delivery), with the pool in
+# /etc/mu300/sms-pool (D11).
+set -u
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+# A client that is stuck or busy on the AT channel must not hold the receiver behind mu300-at's 90 s default: a
+# message waits for its acknowledgement meanwhile. A send holds the lock for its whole transaction (mu300-sms), so 8 s
+# of waiting still gets most of them.
+export MU300_AT_LOCK_WAIT=${MU300_AT_LOCK_WAIT:-8}
+
+POOL=${MU300_SMS_POOL:-/etc/mu300/sms-pool}
+export MU300_SMS_POOL=$POOL
+ATDIR=${MU300_AT_DIR:-/run/mu300-at}
+URCDIR=$ATDIR/urc
+POLL=${MU300_SMS_POLL:-5}
+SYNC_INTERVAL=${MU300_SMS_SYNC_INTERVAL:-30}
+SMS=${MU300_SMS_BIN:-/opt/mu300/bin/mu300-sms}
+SPOOL=$POOL/incoming
+DIRECT_FLAG=${MU300_SMS_DIRECT_FLAG:-/run/mu300-smsd.direct}
+# mode 3 (the URCs forwarded straight to us), mt=2 (every message delivered directly but class 2, which stays on the
+# SIM with its +CMTI), bm=2 (cell broadcasts likewise, they need no acknowledgement), ds=0 (no status reports: none is
+# ever asked for, and one routed here would need an acknowledgement of its own, or the modem drops the routing),
+# bfr=1 (what was buffered while the link was down is discarded, not replayed)
+DIRECT_CNMI='AT+CNMI=3,2,2,0,1'
+STORED_CNMI='AT+CNMI=2,1,0,0,0'
+
+# One daemon: a second one (a service started twice) leaves the pool to a live first one, and takes the lock over
+# from one that died without letting go of it.
+LOCK=${MU300_SMS_LOCK:-/run/mu300-smsd.lock}
+alive() {
+    [ -n "$1" ] && kill -0 "$1" 2>/dev/null || return 1
+    [ -d /proc/self ] || return 0
+    { tr '\0' ' ' < "/proc/$1/cmdline"; } 2>/dev/null | grep -q mu300-smsd
+}
+while ! mkdir "$LOCK" 2>/dev/null; do
+    owner=$(cat "$LOCK/pid" 2>/dev/null || true)
+    if alive "$owner"; then
+        echo "mu300-smsd: pid $owner is already pooling into $POOL" >&2
+        exit 0
+    fi
+    rm -rf "$LOCK"
+done
+echo $$ > "$LOCK/pid"
+release() { [ "$(cat "$LOCK/pid" 2>/dev/null)" = $$ ] && rm -rf "$LOCK" "$DIRECT_FLAG"; }
+trap release EXIT
+trap 'exit 0' INT TERM
+rm -f "$DIRECT_FLAG"
+
+# mu300-atd owns the AT channel; until its command fifo is there nothing can be asked
+n=0
+until [ -p "$ATDIR/cmd" ]; do
+    n=$((n + 1))
+    [ "$n" -gt 120 ] && { echo "mu300-smsd: no command fifo from mu300-atd after ten minutes, exiting" >&2; exit 1; }
+    sleep 5
+done
+
+# A slot with no card (mu300-sim-state, FINDINGS 186) is asked nothing - no CPIN, CNMI, CMGL or CNMA - until a card
+# answers there; then the setup below runs as at the start.
+SIM_STATE=${MU300_SIM_STATE_BIN:-/opt/mu300/bin/mu300-sim-state}
+sim_absent() { [ -x "$SIM_STATE" ] && [ "$("$SIM_STATE" get 2>/dev/null)" = absent ]; }
+
+# the SIM needs its time after a boot; a modem that never says READY still gets the periodic syncs below
+n=0
+until sim_absent || mu300-at -t 4 'AT+CPIN?' 2>/dev/null | grep -q READY; do
+    n=$((n + 1))
+    [ "$n" -gt 60 ] && { echo "mu300-smsd: the SIM never became ready, syncing anyway" >&2; break; }
+    sleep 10
+done
+
+# at_ok COMMAND: the modem said OK to it (a reply's lines come without their CR)
+at_ok() { mu300-at -t 5 "$1" 2>/dev/null | grep -qx 'OK'; }
+
+direct=0
+# direct_on: ask for direct delivery; direct_off: the SIM path, and the frames still spooled set aside
+direct_on() {
+    [ "${MU300_SMS_DIRECT:-1}" != 0 ] || return 1
+    at_ok 'AT+CMGF=0' && at_ok 'AT+CSMS=1' && at_ok "$DIRECT_CNMI" || return 1
+    direct=1
+    : > "$DIRECT_FLAG" 2>/dev/null || true
+    echo "mu300-smsd: direct delivery is on (+CMT frames into $SPOOL)" >&2
+}
+direct_off() {
+    at_ok "$STORED_CNMI" || true
+    direct=0
+    rm -f "$DIRECT_FLAG"
+    echo "mu300-smsd: $1; new messages are stored on the SIM and announced (+CMTI)" >&2
+}
+
+# What is on the SIM first (a message the modem stored before this started), and in the mode it is announced in;
+# then direct delivery, which a refusal of any of its commands leaves exactly as it was.
+setup() {
+    at_ok "$STORED_CNMI" || true
+    "$SMS" sync || echo "mu300-smsd: the first sync failed, retrying later" >&2
+    direct_on || direct_off "the modem did not take direct delivery (or MU300_SMS_DIRECT=0)"
+}
+configured=0
+if sim_absent; then
+    echo "mu300-smsd: no card in the SIM slot in use; nothing is asked until one answers" >&2
+else
+    setup; configured=1
+fi
+
+# process_spool: every spooled PDU into the pool, oldest first, each acknowledged only once the pool has it. False
+# as soon as one import or acknowledgement fails: the file stays, and the modem is holding the message until the
+# acknowledgement comes (it forwards no other meanwhile).
+process_spool() {
+    for f in "$SPOOL"/*.ready; do
+        [ -e "$f" ] || [ -L "$f" ] || continue
+        # the spooler writes regular files; a link here is somebody else's, and is never followed
+        if [ -L "$f" ] || [ ! -f "$f" ]; then
+            echo "mu300-smsd: $f is not a regular file; set aside" >&2
+            mv "$f" "${f%.ready}.failed" 2>/dev/null || rm -f "$f"
+            continue
+        fi
+        "$SMS" import-pdu "$f" || { echo "mu300-smsd: could not pool $f" >&2; return 1; }
+        at_ok 'AT+CNMA=1' || { echo "mu300-smsd: the modem did not take the acknowledgement of $f" >&2; return 1; }
+        rm -f "$f"
+        echo "mu300-smsd: pooled and acknowledged ${f##*/}" >&2
+    done
+    return 0
+}
+
+# md5sum first: OpenWrt's busybox has no cksum
+signature() {
+    cat "$URCDIR"/*nr*.log 2>/dev/null | grep -aF '+CMTI' | { md5sum 2>/dev/null || cksum; }
+}
+
+last=$(signature)
+elapsed=0
+failures=0
+echo "mu300-smsd: pooling into $POOL (a look every ${POLL} s, a full sync every ${SYNC_INTERVAL} s)" >&2
+while :; do
+    sleep "$POLL"
+    if sim_absent; then
+        configured=0; direct=0; rm -f "$DIRECT_FLAG"
+        continue
+    fi
+    if [ "$configured" = 0 ]; then
+        setup; configured=1; last=$(signature); elapsed=0
+        continue
+    fi
+    # the spool, whatever the mode: a frame the modem sent anyway is pooled and acknowledged like any other
+    if process_spool; then
+        failures=0
+    else
+        failures=$((failures + 1))
+        if [ "$failures" -ge 3 ]; then
+            # never keep asking the network's acknowledgement of a modem that refuses it; what was spooled stays,
+            # set aside, and the SIM path takes over (the modem re-delivers what was never acknowledged there)
+            failures=0
+            for f in "$SPOOL"/*.ready; do [ -f "$f" ] && mv "$f" "${f%.ready}.failed"; done
+            direct_off "three rounds of pooling or acknowledging failed"
+        fi
+    fi
+    s=$(signature)
+    if [ "$s" != "$last" ]; then
+        last=$s
+        sleep 2   # let the message land in the storage before listing it
+        "$SMS" sync || echo "mu300-smsd: sync failed, retrying on the next trigger" >&2
+        elapsed=0
+        continue
+    fi
+    elapsed=$((elapsed + POLL))
+    if [ "$elapsed" -ge "$SYNC_INTERVAL" ]; then
+        elapsed=0
+        "$SMS" sync >/dev/null || true
+        # the modem drops direct routing by itself (mt=0: no indication at all) after an acknowledgement that never
+        # came; the periodic sync above still finds such a message, and the routing is put back here. Only mt is
+        # looked at: the modem says OK and then keeps a setting of its own for the rest (measured on the U30 Air:
+        # "3,2,1,0,1" for the "3,2,2,0,1" it was asked)
+        if [ "$direct" = 1 ]; then
+            mu300-at -t 5 'AT+CNMI?' 2>/dev/null | grep -q '^+CNMI: [0-9],2,' ||
+                direct_on || direct_off "the modem dropped direct delivery and did not take it again"
+        fi
+    fi
+done

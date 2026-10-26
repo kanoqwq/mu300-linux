@@ -1,0 +1,29 @@
+[Unit]
+# a charging boot (a flat battery on the charger) keeps the radios off until the Wi-Fi key (see mu300-power)
+ConditionPathExists=!/run/mu300/charging-boot
+# the vendor modem loader exists only in the 5.4 kernel
+# the modem driver, not its device node: the driver is loaded in the initramfs on both kernels, but the node
+# appears later on mainline (+18 s, after sysinit), and a condition checked before that dropped these units
+ConditionPathExists=|/sys/module/sprd_modem_loader
+ConditionPathExists=|/dev/modem
+ConditionPathExists=|/dev/pmsys
+Description=MU300 mobile data (AT + sipa_eth0) with NAT for USB/Wi-Fi clients
+After=mu300-vendor.service mu300-atd.service mu300-usb-net.service systemd-resolved.service
+Wants=mu300-vendor.service mu300-atd.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# the modem needs a little time after "Modem Alive" before the SIM answers
+# APN and PDP type, if the carrier needs them set; absent is fine (the leading - makes it optional)
+EnvironmentFile=-/etc/mu300/mobile-data.conf
+ExecStartPre=/bin/sleep 15
+ExecStart=/opt/mu300/bin/mobile-data up
+ExecStop=/opt/mu300/bin/mobile-data down
+# tearing the data call down talks to the modem; a reboot must not wait for that
+TimeoutStopSec=15
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

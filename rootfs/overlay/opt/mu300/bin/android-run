@@ -1,0 +1,48 @@
+#!/bin/sh
+# Run an Android vendor daemon inside the chroot prepared by android-vendor-start (mu300-vendor.service).
+# The binary is exec'd directly so its task name (comm) matches what vendor drivers expect.
+set -e
+A=${MU300_ANDROID:-/opt/mu300/android}
+# Which account modem_control and refnotify start as is decided here and only here: android-vendor-start makes the
+# account and hands the nodes (ueventd-perms.sh) to the account this says, so nodes and daemons always agree.
+# The vendor account mu300vnd is used only where it exists AND setpriv can start a program as it: util-linux's has
+# --reuid, OpenWrt has none (busybox's setpriv applet, where built, rejects --reuid). Without both, chroot as root,
+# and the daemons switch to uid 1000 themselves - the nodes must then be uid 1000's too (issue #314: shadow-useradd
+# on OpenWrt made the account, the nodes went to it, the daemons stayed 1000 and the modem never started).
+#   android-run --switches  exit 0 when setpriv can start a daemon as another account here
+#   android-run --user      print the account modem_control/refnotify start as (nothing: they switch to 1000)
+switches() { command -v setpriv >/dev/null 2>&1 && setpriv --help 2>&1 | grep -q -e --reuid; }
+vendor_user() {
+    grep -q '^mu300vnd:' "${MU300_ETC:-/etc}/passwd" 2>/dev/null && switches && echo mu300vnd
+    return 0
+}
+case $1 in
+    --switches) switches; exit ;;
+    --user) vendor_user; exit 0 ;;
+esac
+for n in $(seq 1 60); do mountpoint -q $A/dev && break; sleep 1; done
+# OpenWrt's procd preloads /lib/libsetlbf.so into services; the bionic linker in the chroot cannot load it
+unset LD_PRELOAD
+export LD_LIBRARY_PATH=/apex/com.android.runtime/lib64/bionic:/system/lib64:/vendor/lib64
+# modem_control and refnotify switch to Android's system user themselves, right at the start: setgroups, then
+# setuid(1000) - the number is in the binaries - then capset down to what they keep. On a distribution uid 1000 is
+# the first human account (ubuntu; alarm on Arch), which then owned the daemons and every node they use, the modem's
+# calibration partitions among them (FINDINGS: "The vendor daemons' own account"). Where the system has the vendor
+# account (mu300vnd, see android-vendor-start) and setpriv can switch to it (vendor_user above) they start as it instead, with no other groups and only the
+# capabilities they keep on Android (plus chroot's, which their capset drops): their setgroups and setuid(1000)
+# then fail - they log it and carry on, as mu300vnd. cp_diskserver never switches: it stays root.
+# the program: Android's own, or for modem_control the copy android-vendor-start named (mu300-modem-coldboot: only that
+# path, whose name is still modem_control)
+exe=/vendor/bin/$1
+[ "$1" != modem_control ] || [ "${MU300_MODEM_CONTROL:-}" != /tmp/mu300-coldboot/modem_control ] || exe=$MU300_MODEM_CONTROL
+case $1 in
+    modem_control) caps=chown,block_suspend ;;
+    refnotify) caps=sys_time ;;
+    *) caps= ;;
+esac
+if [ -n "$caps" ] && [ -n "$(vendor_user)" ]; then
+    c=-all,+sys_chroot,+$(echo "$caps" | sed 's/,/,+/g')
+    exec setpriv --reuid=mu300vnd --regid=mu300vnd --clear-groups --no-new-privs \
+        --inh-caps="$c" --ambient-caps="$c" --bounding-set="$c" chroot $A "$exe"
+fi
+exec chroot $A "$exe"

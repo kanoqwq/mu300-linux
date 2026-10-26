@@ -1,0 +1,136 @@
+#
+# sprd_wlan_combo.ko
+#
+# Kbuild: for kernel building external module
+#
+# Note:
+# - Please refer to modules/sample/Kbuild to find out what should be
+#   done is this Kbuild file
+#
+
+ifeq ($(BSP_BUILD_VARIANT),userdebug)
+ccflags-y += -DCONFIG_SPRD_WLAN_DEBUG
+ccflags-y += -DCONFIG_SPRD_WCN_DEBUG
+endif
+
+ccflags-y += -DCONFIG_SPRD_WLAN_VENDOR_SPECIFIC
+# ccflags-y += -DCONFIG_SC2355_WLAN_NAN
+# ccflags-y += -DCONFIG_SC2355_WLAN_RTT
+# ccflags-y += -DDRV_RESET_SELF
+ccflags-y += -DSC2355_FTR -DSC2355_TX_FILTER -DSC2355_QOS_MAP
+ccflags-y += -DIBSS_SUPPORT -DIBSS_RSN_SUPPORT
+ccflags-y += -DNAN_SUPPORT
+ccflags-y += -DRTT_SUPPORT
+ccflags-y += -DACS_SUPPORT -DSC2355_HW_CSUM
+ccflags-y += -DWMMAC_WFA_CERTIFICATION
+ccflags-y += -DCOMPAT_SAMPILE_CODE
+ccflags-y += -DRND_MAC_SUPPORT
+ccflags-y += -DATCMD_ASSERT
+ccflags-y += -DTCPACK_DELAY_SUPPORT
+ccflags-y += -DSPLIT_STACK
+
+KO_MODULE_NAME := sprd_wlan_combo
+KO_MODULE_PATH := $(src)
+
+# vendor headers and 5.4 compat shared with wcn_bsp
+ccflags-y += -include $(src)/../wcn_bsp/kinclude/mu300_compat.h -I$(src)/../wcn_bsp/kinclude
+
+ccflags-y += -I$(KO_MODULE_PATH)
+ccflags-y += -I$(KO_MODULE_PATH)/common
+ccflags-y += -I$(KO_MODULE_PATH)/sc2355
+
+#
+# Final Objects
+#
+obj-m := $(KO_MODULE_NAME).o
+
+SPRD_WLAN_COMMON := \
+		common/sprd_wlan.o \
+		common/cfg80211.o \
+		common/debug.o \
+		common/delay_work.o \
+		common/iface.o \
+		common/msg.o \
+		common/npi.o \
+		common/report.o \
+		common/tdls.o
+
+SC2332_WLAN := \
+		sc2332/acs.o \
+		sc2332/init.o \
+		sc2332/cmdevt.o \
+		sc2332/qos.o \
+		sc2332/scan.o \
+		sc2332/tcp_ack.o \
+		sc2332/txrx.o \
+		sc2332/fcc.o \
+		sc2332/vendor.o \
+		sc2332/wapi.o
+
+SC2332_SIPC_WLAN := sc2332/sipc.o
+
+SC2332_SDIO_WLAN := sc2332/sdio.o
+
+SC2355_WLAN := \
+		sc2355/acs.o \
+		sc2355/api_version.o \
+		sc2355/cmdevt.o \
+		sc2355/defrag.o \
+		sc2355/hw_param.o \
+		sc2355/init.o \
+		sc2355/mm.o \
+		sc2355/qos.o \
+		sc2355/reorder.o \
+		sc2355/rx.o \
+		sc2355/scan.o \
+		sc2355/tcp_ack.o \
+		sc2355/tx.o \
+		sc2355/fcc.o \
+		sc2355/vendor.o \
+		sc2355/nan.o \
+		sc2355/rtt.o
+
+SC2355_SDIO_WLAN := sc2355/sdio.o
+
+SC2355_PCIE_WLAN := \
+		sc2355/pcie.o \
+		sc2355/pcie_buf.o
+
+SC2355_SIPC_WLAN := \
+		merlion/main.o \
+		merlion/cfg80211.o \
+		merlion/txrx.o \
+		merlion/cmdevt.o \
+		merlion/npi.o \
+		merlion/msg.o \
+		merlion/work.o \
+		merlion/vendor.o \
+		merlion/tcp_ack.o \
+		merlion/mm.o \
+		merlion/reorder.o \
+		merlion/core_sc2355.o \
+		merlion/tx_msg_sc2355.o \
+		merlion/rx_msg_sc2355.o \
+		merlion/if_sc2355.o \
+		merlion/qos.o \
+		merlion/edma_test.o \
+		merlion/defrag.o \
+		merlion/ibss.o \
+		merlion/nan.o \
+		merlion/tracer.o \
+		merlion/rf_marlin3.o \
+		merlion/rtt.o \
+		merlion/api_version.o \
+		merlion/rnd_mac_addr.o \
+		merlion/debug.o \
+		merlion/txrx_buf_mm.o \
+		merlion/sipc_txrx_mm.o \
+		merlion/sipc_debug.o \
+
+# MU300: only the SC2355 (Marlin3) PCIe variant
+$(KO_MODULE_NAME)-y += \
+		$(SPRD_WLAN_COMMON) \
+		$(SC2355_WLAN) \
+		$(SC2355_SDIO_WLAN) \
+		$(SC2355_PCIE_WLAN)
+ccflags-y += -Wno-error=strict-prototypes

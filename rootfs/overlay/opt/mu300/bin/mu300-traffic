@@ -1,0 +1,511 @@
+#!/bin/sh
+# mu300-traffic: how much mobile data was used, per day and per billing cycle, with an optional monthly cap
+# (Ubuntu and OpenWrt; the control panel's Data usage page shows the same).
+#   mu300-traffic                 today, this billing cycle and the cap
+#   mu300-traffic days [N]        the last N days with traffic (default 31)
+#   mu300-traffic cycles [N]      the last N billing cycles (default 12)
+#   mu300-traffic json            all of it as one JSON object (the panel)
+#   mu300-traffic set KEY VALUE   reset-day 1-31     the day a billing cycle starts (31: the month's last day)
+#                                 cap SIZE|off       the monthly cap, e.g. 50G (binary units: 1G = 1024M)
+#                                 warn 1-100         warn at this percentage of the cap (default 90)
+#                                 cut on|off         at the cap, turn mobile data off until the next cycle
+#                                 device IFACE       the interface counted (default sipa_eth0)
+#   mu300-traffic used SIZE       what the operator says this cycle has used so far (the count is corrected)
+#   mu300-traffic clear --yes     forget every count; counting goes on from now
+#   mu300-traffic save            write the count to the disk now
+#   mu300-traffic run             the service (mu300-traffic.service, init.d/mu300-traffic)
+#   mu300-traffic clock-synced    the clock is right now (OpenWrt's NTP hotplug says so)
+#
+# What is counted: the bytes of the cellular interface (sipa_eth0), both ways: what the operator sees, a VPN's own
+# overhead included. The kernel's counters are read every INTERVAL seconds (60); the modem is never asked.
+# Every byte counts once:
+#   * The counters start at 0 when the interface is made (each boot, a driver reload): a new boot or ifindex, or a
+#     counter lower than the last reading, means new counters, and all of them are new bytes.
+#   * The very first reading (and one after the counted interface changed) is only a base: what the interface
+#     carried before cannot be put on a day honestly.
+#   * The bytes of one interval go to the local days it covers, split at midnight in proportion to the time; the
+#     interval is measured with the uptime, so a clock jump does not stretch or squeeze it.
+#   * Until the clock is known to be right (there is no RTC: after a boot it is whatever sysfixtime or the last
+#     shutdown left), bytes wait, by uptime, in "pending"; once NTP has set it they go to the days they belong to.
+#     Pending bytes count towards the cycle (and the cap) at once. After six hours without NTP the clock is taken
+#     as it is (CLOCK=trust in the configuration: at once).
+# Flash wear: the live count is in /run/mu300/traffic (RAM). The disk copy is written every CHECKPOINT seconds
+# (1800), after CHECKPOINT_BYTES (1 GiB) more traffic but not within 5 minutes of the last one, at a clean shutdown
+# and after every change made here - always a new file renamed over the old one. A power cut loses what was counted
+# since the last write, never more; nothing is ever counted twice.
+# The count and its settings are on the Linux disk (.mu300/traffic), so OpenWrt, OpenWrt with the panel and Ubuntu
+# share one count; a system without that directory keeps it in /etc/mu300/traffic.
+# Cap: at WARN percent of it a warning (the panel, the log); with cut on, mobile data goes off at the cap (OpenWrt:
+# ifdown wan; Ubuntu: mu300-mobile-data.service stops). It is cut once per cycle, and again after a reboot; whoever
+# turns mobile data back on in the same boot keeps it on. It comes back on by itself when the next cycle starts,
+# the cap is raised or cut is turned off - if this tool was what turned it off.
+# (MU300_SYSROOT, MU300_DISK, MU300_TRAFFIC_STORE, MU300_TRAFFIC_RUN, MU300_TRAFFIC_NOW and MU300_TRAFFIC_TZOFF are
+# for tests/: a fake /, another disk or store, a fixed clock and UTC offset in seconds.)
+export PATH="$PATH:/opt/mu300/bin:/usr/sbin:/sbin"
+R=${MU300_SYSROOT:-}
+RUN=${MU300_TRAFFIC_RUN:-$R/run/mu300/traffic}
+store_dir() {
+    for d in "${MU300_DISK:-$R/mnt/mu300-disk}" "$R"; do
+        [ -d "$d/.mu300" ] && { printf '%s/.mu300/traffic' "$d"; return; }
+    done
+    printf '%s/etc/mu300/traffic' "$R"
+}
+STORE=${MU300_TRAFFIC_STORE:-$(store_dir)}
+CONF=$STORE/conf
+DISK=$STORE/ledger
+LIVE=$RUN/ledger
+SUMMARY=$RUN/summary
+LOCK=$RUN/lock
+SYNCED=$R/run/mu300/clock-synced
+
+die() { echo "mu300-traffic: $*" >&2; exit 1; }
+
+# ------------------------------------------------------------------ settings
+# conf KEY DEFAULT ERE: the setting, if it is one line matching ^ERE$ (the file is read, never sourced)
+conf() {
+    v=$(sed -n "s/^$1=//p" "$CONF" 2>/dev/null | tail -n1)
+    if printf '%s\n' "$v" | grep -Eqx -- "$3"; then printf '%s\n' "$v"; else printf '%s\n' "$2"; fi
+}
+load_conf() {
+    RESET_DAY=$(conf RESET_DAY 1 '[1-9]|[12][0-9]|3[01]')
+    CAP=$(conf CAP 0 '[0-9]{1,16}')
+    WARN=$(conf WARN 90 '[1-9]|[1-9][0-9]|100')
+    CUT=$(conf CUT 0 '[01]')
+    DEVICE=$(conf DEVICE sipa_eth0 '[A-Za-z0-9][A-Za-z0-9_.:-]{0,14}')
+    INTERVAL=$(conf INTERVAL 60 '[1-9][0-9]{1,3}')
+    CHECKPOINT=$(conf CHECKPOINT 1800 '[1-9][0-9]{2,5}')
+    CHECKPOINT_BYTES=$(conf CHECKPOINT_BYTES 1073741824 '[1-9][0-9]{5,15}')
+    CLOCK=$(conf CLOCK auto 'auto|trust')
+}
+# write_conf KEY VALUE: that setting changed, the others kept (a new file renamed over the old one)
+write_conf() {
+    mkdir -p "$STORE" || die "cannot create $STORE"
+    load_conf
+    eval "$1=\$2"
+    printf 'RESET_DAY=%s\nCAP=%s\nWARN=%s\nCUT=%s\nDEVICE=%s\nINTERVAL=%s\nCHECKPOINT=%s\nCHECKPOINT_BYTES=%s\nCLOCK=%s\n' \
+        "$RESET_DAY" "$CAP" "$WARN" "$CUT" "$DEVICE" "$INTERVAL" "$CHECKPOINT" "$CHECKPOINT_BYTES" "$CLOCK" \
+        > "$CONF.new" && mv "$CONF.new" "$CONF" || die "cannot write $CONF"
+}
+# size_bytes SIZE: 50G, 1.5T, 300M, 1024 (bytes) -> bytes; binary units, as the panel shows them
+size_bytes() {
+    printf '%s\n' "$1" | awk '{ s = toupper($0); sub(/I?B$/, "", s)
+        if (s !~ /^[0-9]+(\.[0-9]+)?[KMGT]?$/) exit 1
+        u = substr(s, length(s)); f = 1
+        if (u == "K") f = 1024; else if (u == "M") f = 1048576; else if (u == "G") f = 1073741824
+        else if (u == "T") f = 1099511627776
+        if (u ~ /[KMGT]/) s = substr(s, 1, length(s) - 1)
+        b = s * f; if (b >= 1e16) exit 1
+        printf "%.0f\n", b }'
+}
+
+# ------------------------------------------------------------------ readings
+now() { echo "${MU300_TRAFFIC_NOW:-$(date +%s)}"; }
+# the UTC offset in seconds of the local time now (+0300 -> 10800); days are local days
+tzoff() {
+    [ -n "${MU300_TRAFFIC_TZOFF:-}" ] && { echo "$MU300_TRAFFIC_TZOFF"; return; }
+    date +%z | awk '{ s = substr($0, 1, 1) == "-" ? -1 : 1; print s * (substr($0, 2, 2) * 3600 + substr($0, 4, 2) * 60) }'
+}
+uptime_s() { { read -r u _ < "$R/proc/uptime"; } 2>/dev/null; echo "${u%%.*}"; }
+# counters: BOOT IDX RX TX of the counted interface (BOOT alone without it)
+counters() {
+    BOOT= IDX= RX= TX=
+    { read -r BOOT < "$R/proc/sys/kernel/random/boot_id"; } 2>/dev/null
+    d=$R/sys/class/net/$DEVICE
+    { read -r IDX < "$d/ifindex" && read -r RX < "$d/statistics/rx_bytes" &&
+        read -r TX < "$d/statistics/tx_bytes"; } 2>/dev/null || { IDX= RX= TX=; }
+    case $IDX$RX$TX in *[!0-9]*) IDX= RX= TX= ;; esac
+    case $BOOT in *[!0-9a-f-]*) BOOT= ;; esac
+}
+# the clock is right: NTP said so (OpenWrt's hotplug, systemd-timesyncd), CLOCK=trust, or six hours went by without
+clock_ok() {
+    [ "$CLOCK" = trust ] || [ -e "$SYNCED" ] || [ -e "$R/run/systemd/timesync/synchronized" ] ||
+        [ "${UP:-0}" -ge 21600 ]
+}
+# mobile data is not down on purpose (mobile-data down leaves this file until the next up)
+data_up() { [ ! -e "$R/run/mu300-mobile-data-down" ]; }
+
+# ------------------------------------------------------------------- the ledger
+# One line per fact, in this order (numbers are bytes, times seconds):
+#   mu300-traffic 1                  the format
+#   since WALL                       counting started (the first reading with a right clock)
+#   base BOOT IFINDEX DEV RX TX UP   the last reading of the counters, and its uptime
+#   p BOOT UP RX TX                  pending: bytes counted while the clock was not right, per 15 minutes of uptime
+#   d YYYY-MM-DD RX TX               one local day, oldest first (800 days are kept)
+#   adj CYCLESTART BYTES             the correction "used" made to that billing cycle (may be negative)
+#   cut CYCLESTART BOOT OVERRIDE     the cap turned mobile data off in that cycle, in that boot; OVERRIDE 1: someone
+#                                    turned it back on, it stays on
+#   alert CYCLESTART warn|over       the last warning logged in that cycle
+# The awk program reads a ledger, adds the reading given in -v (op sample/view), and prints the new ledger (fmt
+# ledger) or a view of it (fmt text|json|days|cycles). It keeps to POSIX awk: no time functions (busybox, mawk,
+# gawk and the BSD awk all differ there): local days come from the UTC offset (off).
+AWK_LEDGER='
+function isnum(x) { return x ~ /^-?[0-9]+$/ }
+function civil(t,   z, era, doe, yoe, y, doy, mp, d, m) {
+    z = int((t + off) / 86400) + 719468
+    era = int(z / 146097); doe = z - era * 146097
+    yoe = int((doe - int(doe / 1460) + int(doe / 36524) - int(doe / 146096)) / 365)
+    y = yoe + era * 400; doy = doe - (365 * yoe + int(yoe / 4) - int(yoe / 100))
+    mp = int((5 * doy + 2) / 153); d = doy - int((153 * mp + 2) / 5) + 1
+    m = mp < 10 ? mp + 3 : mp - 9
+    return sprintf("%04d-%02d-%02d", y + (m <= 2), m, d)
+}
+function nextmid(t) { return t - (t + off) % 86400 + 86400 }
+function dim(y, m) {
+    if (m == 2) return (y % 4 == 0 && y % 100 != 0) || y % 400 == 0 ? 29 : 28
+    return m == 4 || m == 6 || m == 9 || m == 11 ? 30 : 31
+}
+function ymd(y, m, d) { return sprintf("%04d-%02d-%02d", y, m, d) }
+function rday(y, m) { return reset > dim(y, m) ? dim(y, m) : reset }
+# the first day of the billing cycle DAY is in, and of the one after the cycle starting at START
+function cstart(day,   y, m, d) {
+    y = substr(day, 1, 4) + 0; m = substr(day, 6, 2) + 0; d = substr(day, 9, 2) + 0
+    if (d >= rday(y, m)) return ymd(y, m, rday(y, m))
+    if (--m < 1) { m = 12; y-- }
+    return ymd(y, m, rday(y, m))
+}
+function cnext(start,   y, m) {
+    y = substr(start, 1, 4) + 0; m = substr(start, 6, 2) + 1
+    if (m > 12) { m = 1; y++ }
+    return ymd(y, m, rday(y, m))
+}
+# dnum DAY: the number of the day (1970-01-01 is 0)
+function dnum(s,   y, m, d, era, yoe, doy) {
+    y = substr(s, 1, 4) + 0; m = substr(s, 6, 2) + 0; d = substr(s, 9, 2) + 0
+    y -= m <= 2; era = int(y / 400); yoe = y - era * 400
+    doy = int((153 * (m > 2 ? m - 3 : m + 9) + 2) / 5) + d - 1
+    return era * 146097 + yoe * 365 + int(yoe / 4) - int(yoe / 100) + doy - 719468
+}
+function prevday(day,   y, m, d) {
+    y = substr(day, 1, 4) + 0; m = substr(day, 6, 2) + 0; d = substr(day, 9, 2) - 1
+    if (d < 1) { if (--m < 1) { m = 12; y-- }; d = dim(y, m) }
+    return ymd(y, m, d)
+}
+# addday DAY RX TX: the days stay in order (a day before the last one is rare: pending bytes dated late)
+function addday(k, rx, tx,   i) {
+    if (!(k in drx)) {
+        for (i = nk; i > 0 && key[i] > k; i--) key[i + 1] = key[i]
+        key[i + 1] = k; nk++; drx[k] = 0; dtx[k] = 0
+    }
+    drx[k] += rx; dtx[k] += tx
+}
+# addspan T0 T1 RX TX: bytes counted over [T0, T1], shared out over the local days it covers by time; the rounding
+# goes to the last day, so the sum is exact
+function addspan(t0, t1, rx, tx,   a, b, prx, ptx) {
+    if (t1 - t0 > 800 * 86400) t0 = t1 - 800 * 86400
+    a = t0
+    while (t1 > a && (b = nextmid(a)) < t1) {
+        prx = int(rx * (b - a) / (t1 - a)); ptx = int(tx * (b - a) / (t1 - a))
+        addday(civil(a), prx, ptx); rx -= prx; tx -= ptx; a = b
+    }
+    addday(civil(a), rx, tx)
+}
+function addpend(b, u, rx, tx,   k) {
+    k = int(u / 900) * 900
+    if (np > 0 && (np >= 2000 || (pb[np] == b && pu[np] == k))) { prx[np] += rx; ptx[np] += tx; return }
+    np++; pb[np] = b; pu[np] = k; prx[np] = rx; ptx[np] = tx
+}
+# date the pending bytes: those of this boot by their uptime; older ones (a boot that never had a right clock)
+# cannot be placed and go to today
+function datepend(   i, t0, t1) {
+    for (i = 1; i <= np; i++) {
+        if (pb[i] == cboot && pu[i] <= up) {
+            t0 = now - (up - pu[i]); t1 = t0 + 900; if (t1 > now) t1 = now
+            addspan(t0, t1, prx[i], ptx[i])
+        } else addday(civil(now), prx[i], ptx[i])
+    }
+    np = 0
+}
+function setbase() { hasb = 1; bboot = cboot; bidx = cidx; bdev = cdev; brx = crx; btx = ctx; bup = up }
+function sample(   drx, dtx, span) {
+    if (cboot == "" || crx == "") return
+    if (!hasb || bdev != cdev) { setbase(); return }
+    if (bboot == cboot && bidx == cidx) {
+        drx = crx >= brx ? crx - brx : crx; dtx = ctx >= btx ? ctx - btx : ctx; span = up - bup
+    } else {
+        drx = crx; dtx = ctx; span = bboot == cboot ? up - bup : up
+    }
+    if (span < 0) span = 0
+    setbase()
+    if (drx + dtx == 0) return
+    counted = drx + dtx
+    if (trusted) addspan(now - span, now, drx, dtx); else addpend(cboot, up, drx, dtx)
+}
+function n(x) { return sprintf("%.0f", x) }
+function hs(b,   u, i) {
+    split("B KB MB GB TB", u, " "); i = 1
+    while (b >= 1024 && i < 5) { b /= 1024; i++ }
+    return (i == 1 ? sprintf("%d", b) : sprintf(b >= 100 ? "%.0f" : "%.1f", b)) " " u[i]
+}
+function sums(s, e,   i) {
+    srx = 0; stx = 0
+    for (i = 1; i <= nk; i++) if (key[i] >= s && key[i] < e) { srx += drx[key[i]]; stx += dtx[key[i]] }
+}
+function rank(l) { return l == "over" ? 2 : l == "warn" ? 1 : 0 }
+
+$1 == "since" && isnum($2) { since = $2 }
+$1 == "base" && NF == 7 && isnum($3) && isnum($5) && isnum($6) && isnum($7) {
+    hasb = 1; bboot = $2; bidx = $3; bdev = $4; brx = $5; btx = $6; bup = $7
+}
+$1 == "p" && NF == 5 && isnum($3) && isnum($4) && isnum($5) { np++; pb[np] = $2; pu[np] = $3; prx[np] = $4; ptx[np] = $5 }
+$1 == "d" && NF == 4 && $2 ~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/ && isnum($3) && isnum($4) { addday($2, $3, $4) }
+$1 == "adj" && NF == 3 && isnum($3) { adjc = $2; adjb = $3 }
+$1 == "cut" && NF == 4 { cutc = $2; cutboot = $3; cutov = $4 == 1 }
+$1 == "alert" && NF == 3 { alc = $2; all = $3 }
+
+END {
+    today = civil(now)
+    if (op == "sample" || op == "view" || op == "clear" || op == "used") sample()
+    if (trusted && np) datepend()
+    if (trusted && since == "" && op != "view") since = now
+    if (op == "clear") { nk = 0; split("", drx); split("", dtx); np = 0; adjc = ""; cutc = ""; alc = ""; since = trusted ? now : "" }
+    cs = cstart(today); ce = cnext(cs)
+    prx_all = 0; ptx_all = 0
+    for (i = 1; i <= np; i++) { prx_all += prx[i]; ptx_all += ptx[i] }
+    sums(cs, ce); crx_c = srx + prx_all; ctx_c = stx + ptx_all
+    if (op == "used") { adjc = cs; adjb = usedarg - (crx_c + ctx_c) }
+    adj = adjc == cs ? adjb : 0
+    used = crx_c + ctx_c + adj; if (used < 0) used = 0
+    level = "ok"
+    if (cap > 0) level = used >= cap ? "over" : used * 100 >= cap * warn ? "warn" : "ok"
+    if (op == "sample") {
+        if (alc != cs) { alc = cs; all = "ok" }
+        if (rank(level) > rank(all)) { alert = level; all = level }
+        if (rank(level) < rank(all)) all = level
+        want = cap > 0 && cut && level == "over"
+        if (cutc != "" && (cutc != cs || !want)) {
+            if (!cutov && !dataup) restore = 1
+            cutc = ""
+        } else if (cutc != "" && !cutov) {
+            if (cutboot == cboot) { if (dataup) cutov = 1 }
+            else { if (dataup) docut = 1; cutboot = cboot }
+        }
+        if (want && cutc == "") { cutc = cs; cutboot = cboot; cutov = 0; if (dataup) docut = 1 }
+        # 800 days are kept
+        old = civil(now - 800 * 86400); j = 0
+        for (i = 1; i <= nk; i++) if (key[i] >= old) key[++j] = key[i]; else { delete drx[key[i]]; delete dtx[key[i]] }
+        nk = j
+        if (sumfile != "")
+            printf "level=%s\nalert=%s\ncut=%d\nrestore=%d\ncounted=%s\nused=%s\ncap=%s\nwarn=%d\ncycle_start=%s\ntoday_rx=%s\ntoday_tx=%s\npending=%s\nclock=%d\n", \
+                (cap > 0 ? level : "none"), alert, docut, restore, n(counted), n(used), n(cap), warn, cs, \
+                n(drx[today]), n(dtx[today]), n(prx_all + ptx_all), trusted > sumfile
+    }
+    if (fmt == "ledger") {
+        print "mu300-traffic 1"
+        if (since != "") print "since " since
+        if (hasb) printf "base %s %s %s %s %s %s\n", bboot, bidx, bdev, n(brx), n(btx), n(bup)
+        for (i = 1; i <= np; i++) printf "p %s %s %s %s\n", pb[i], pu[i], n(prx[i]), n(ptx[i])
+        for (i = 1; i <= nk; i++) printf "d %s %s %s\n", key[i], n(drx[key[i]]), n(dtx[key[i]])
+        if (adjc != "") printf "adj %s %s\n", adjc, n(adjb)
+        if (cutc != "") printf "cut %s %s %d\n", cutc, cutboot, cutov
+        if (alc != "") printf "alert %s %s\n", alc, all
+        exit
+    }
+    last = prevday(ce)
+    left = dnum(last) - dnum(today) + 1
+    if (fmt == "json") {
+        printf "{\"device\":\"%s\",\"available\":%d,\"clock\":%d,\"since\":%s,\"now\":%s,\"reset_day\":%d,", \
+            dev, (crx != ""), trusted, (since == "" ? "null" : n(since)), n(now), reset
+        printf "\"today\":{\"date\":\"%s\",\"rx\":%s,\"tx\":%s},", today, n(drx[today]), n(dtx[today])
+        printf "\"pending\":{\"rx\":%s,\"tx\":%s},", n(prx_all), n(ptx_all)
+        printf "\"cycle\":{\"start\":\"%s\",\"last\":\"%s\",\"days_left\":%d,\"rx\":%s,\"tx\":%s,\"adj\":%s,\"used\":%s},", \
+            cs, last, left, n(crx_c), n(ctx_c), n(adj), n(used)
+        printf "\"cap\":{\"bytes\":%s,\"warn\":%d,\"cut\":%d,\"level\":\"%s\",\"cut_active\":%d},", \
+            n(cap), warn, cut, (cap > 0 ? level : "none"), (cutc == cs && !cutov)
+        printf "\"days\":["
+        c = 0
+        for (i = nk; i > 0 && c < ndays; i--) if (key[i] <= today) printf "%s{\"date\":\"%s\",\"rx\":%s,\"tx\":%s}", (c++ ? "," : ""), key[i], n(drx[key[i]]), n(dtx[key[i]])
+        printf "],\"cycles\":["
+        s = cs
+        for (c = 0; c < ncyc; c++) {
+            sums(s, cnext(s)); if (s == cs) { srx += prx_all; stx += ptx_all }
+            if (c > 0 && (!nk || cnext(s) <= key[1])) break
+            printf "%s{\"start\":\"%s\",\"last\":\"%s\",\"rx\":%s,\"tx\":%s,\"adj\":%s}", (c ? "," : ""), s, prevday(cnext(s)), n(srx), n(stx), n(adjc == s ? adjb : 0)
+            s = cstart(prevday(s))
+        }
+        print "]}"
+    } else if (fmt == "days") {
+        c = 0
+        for (i = nk; i > 0 && c < ndays; i--) if (key[i] <= today) {
+            printf "%s  down %9s  up %9s  total %9s\n", key[i], hs(drx[key[i]]), hs(dtx[key[i]]), hs(drx[key[i]] + dtx[key[i]]); c++
+        }
+        if (!c) print "no traffic counted yet"
+    } else if (fmt == "cycles") {
+        s = cs
+        for (c = 0; c < ncyc; c++) {
+            sums(s, cnext(s)); if (s == cs) { srx += prx_all; stx += ptx_all }
+            if (c > 0 && (!nk || cnext(s) <= key[1])) break
+            a = adjc == s ? adjb : 0
+            printf "%s - %s  down %9s  up %9s  total %9s%s\n", s, prevday(cnext(s)), hs(srx), hs(stx), hs(srx + stx + a), \
+                (a ? " (corrected by " (a < 0 ? "-" hs(-a) : "+" hs(a)) ")" : "")
+            s = cstart(prevday(s))
+        }
+    } else {
+        printf "mobile data on %s%s\n", dev, (crx == "" ? " (not there now)" : "")
+        printf "today         %s  down %s, up %s\n", today, hs(drx[today]), hs(dtx[today])
+        printf "this cycle    %s - %s  %s used", cs, last, hs(used)
+        if (cap > 0) printf " of %s (%d%%)", hs(cap), int(used * 100 / cap)
+        printf ", %d day%s left\n", left, (left == 1 ? "" : "s")
+        if (adj) printf "              corrected by %s (mu300-traffic used)\n", (adj < 0 ? "-" hs(-adj) : "+" hs(adj))
+        if (prx_all + ptx_all) printf "not dated yet %s: the clock has not been set by NTP (counted in this cycle)\n", hs(prx_all + ptx_all)
+        if (cap > 0) {
+            printf "cap           %s, warning at %d%%; at the cap mobile data %s\n", hs(cap), warn, (cut ? "is turned off" : "stays on")
+            if (level == "over") print "              the cap is reached" (cutc == cs && !cutov ? ": mobile data was turned off" : "")
+            else if (level == "warn") print "              warning: " int(used * 100 / cap) "% of the cap is used"
+        } else print "cap           none (mu300-traffic set cap 50G)"
+        if (since != "") printf "counting since %s\n", civil(since)
+    }
+}
+'
+
+# ledger_run OP FMT [VAR=VALUE...]: the awk program on the current ledger with a reading taken now
+ledger_run() {
+    _op=$1 _fmt=$2; shift 2
+    counters
+    UP=$(uptime_s); NOW=$(now)
+    clock_ok && _t=1 || _t=0
+    data_up && _du=1 || _du=0
+    _src=$LIVE; [ -s "$_src" ] || _src=$DISK; [ -s "$_src" ] || _src=/dev/null
+    awk -v op="$_op" -v fmt="$_fmt" -v now="$NOW" -v off="$(tzoff)" -v up="${UP:-0}" -v trusted="$_t" \
+        -v cboot="$BOOT" -v cidx="$IDX" -v cdev="$DEVICE" -v crx="$RX" -v ctx="$TX" -v dev="$DEVICE" \
+        -v reset="$RESET_DAY" -v cap="$CAP" -v warn="$WARN" -v cut="$CUT" -v dataup="$_du" \
+        -v ndays="${NDAYS:-31}" -v ncyc="${NCYC:-12}" -v usedarg="${USED:-0}" -v sumfile="${SUMFILE:-}" \
+        "$@" "$AWK_LEDGER" "$_src"
+}
+
+# ------------------------------------------------------------------- locking
+# lock / unlock: one writer of the live ledger at a time (the service's reading, a change made here). A lock whose
+# owner is gone is taken over.
+lock() {
+    mkdir -p "$RUN" || die "cannot create $RUN"
+    i=0
+    while ! mkdir "$LOCK" 2>/dev/null; do
+        p=$(cat "$LOCK/pid" 2>/dev/null)
+        if [ -n "$p" ] && ! kill -0 "$p" 2>/dev/null; then rm -rf "$LOCK"; continue; fi
+        i=$((i + 1)); [ "$i" -le 50 ] || die "the ledger is locked ($LOCK)"
+        sleep 1
+    done
+    echo $$ > "$LOCK/pid"
+}
+unlock() { rm -rf "$LOCK"; }
+
+# update OP: a reading taken now, OP applied, the live ledger replaced (the caller holds the lock)
+update() {
+    ledger_run "$@" > "$RUN/ledger.new" && [ -s "$RUN/ledger.new" ] && mv "$RUN/ledger.new" "$LIVE"
+}
+# save: the live ledger onto the disk (a new file renamed over the old one)
+save() {
+    [ -s "$LIVE" ] || return 0
+    mkdir -p "$STORE" && cp "$LIVE" "$DISK.new" && mv "$DISK.new" "$DISK"
+}
+# change OP ...: a change made here, kept at once (live and on the disk)
+change() {
+    lock
+    if [ ! -s "$LIVE" ] && [ -s "$DISK" ]; then cp "$DISK" "$LIVE"; fi
+    update "$@" || { unlock; die "the ledger could not be written"; }
+    save || { unlock; die "the ledger could not be saved to $STORE"; }
+    unlock
+}
+
+# ---------------------------------------------------------------- the service
+log() { logger -t mu300-traffic "$*" 2>/dev/null || echo "mu300-traffic: $*" >&2; }
+openwrt() { [ -f "$R/etc/openwrt_release" ]; }
+wan() { w=$(uci -q get unisoc_modem.main.data_interface 2>/dev/null); case $w in ''|*[!A-Za-z0-9_]*) w=wan ;; esac; echo "$w"; }
+data_off() {
+    if openwrt; then ifdown "$(wan)"; else systemctl stop mu300-mobile-data.service; fi
+}
+data_on() {
+    if openwrt; then ifup "$(wan)"; else systemctl start mu300-mobile-data.service; fi
+}
+
+# one round: read, write the live ledger and the summary, act on what the summary says
+round() {
+    lock
+    SUMFILE=$SUMMARY.new update sample ledger && mv "$SUMMARY.new" "$SUMMARY"
+    unlock
+    s() { sed -n "s/^$1=//p" "$SUMMARY" 2>/dev/null; }
+    c=$(s counted); UNSAVED=$((UNSAVED + ${c:-0}))
+    case $(s alert) in
+        warn) log "$(s warn)% of the monthly cap is used ($(s used) of $(s cap) bytes this cycle)" ;;
+        over) log "the monthly cap is reached ($(s used) of $(s cap) bytes this cycle)" ;;
+    esac
+    if [ "$(s cut)" = 1 ]; then
+        log "turning mobile data off at the monthly cap (to keep it on: mu300-traffic set cut off, or a higher cap)"
+        data_off >/dev/null 2>&1 &
+    fi
+    if [ "$(s restore)" = 1 ]; then
+        log "turning mobile data back on: the cap no longer applies"
+        data_on >/dev/null 2>&1 &
+    fi
+}
+checkpoint() { save && LAST_SAVE=$(uptime_s) && UNSAVED=0; }
+
+run() {
+    load_conf
+    mkdir -p "$RUN" "$STORE" || die "cannot create $RUN or $STORE"
+    # one service: another one alive keeps its place
+    p=$(cat "$RUN/pid" 2>/dev/null)
+    if [ -n "$p" ] && [ "$p" != $$ ] && kill -0 "$p" 2>/dev/null; then die "already running (pid $p)"; fi
+    echo $$ > "$RUN/pid"
+    # the live ledger of this boot, or the one on the disk
+    [ -s "$LIVE" ] || { [ -s "$DISK" ] && cp "$DISK" "$LIVE"; }
+    stop= UNSAVED=0 LAST_SAVE=$(uptime_s)
+    trap 'stop=1' TERM INT HUP
+    round
+    checkpoint
+    while :; do
+        if [ -z "$stop" ]; then
+            sleep "$INTERVAL" & pid=$!
+            wait "$pid" 2>/dev/null || true
+            kill "$pid" 2>/dev/null
+        fi
+        load_conf   # a setting changed meanwhile applies to this round
+        round
+        if [ -n "$stop" ]; then checkpoint; rm -f "$RUN/pid"; exit 0; fi
+        UP=$(uptime_s)
+        if [ $((UP - LAST_SAVE)) -ge "$CHECKPOINT" ] ||
+           { [ "$UNSAVED" -ge "$CHECKPOINT_BYTES" ] && [ $((UP - LAST_SAVE)) -ge 300 ]; }; then
+            checkpoint
+        fi
+    done
+}
+
+load_conf
+case "${1:-status}" in
+    status) ledger_run view text ;;
+    days)   [ -z "${2:-}" ] || case $2 in *[!0-9]*) die "days N: a number" ;; esac
+            NDAYS=${2:-31} ledger_run view days ;;
+    cycles) [ -z "${2:-}" ] || case $2 in *[!0-9]*) die "cycles N: a number" ;; esac
+            NCYC=${2:-12} ledger_run view cycles ;;
+    json)   NDAYS=${2:-62} ledger_run view json ;;
+    set)
+        v=${3:-}
+        case ${2:-} in
+            reset-day) printf '%s\n' "$v" | grep -Eqx '[1-9]|[12][0-9]|3[01]' || die "reset-day: a day from 1 to 31"
+                       write_conf RESET_DAY "$v" ;;
+            cap)       case $v in off|0) v=0 ;; *) v=$(size_bytes "$v") || die "cap: a size like 50G, or off" ;; esac
+                       write_conf CAP "$v" ;;
+            warn)      printf '%s\n' "$v" | grep -Eqx '[1-9]|[1-9][0-9]|100' || die "warn: a percentage from 1 to 100"
+                       write_conf WARN "$v" ;;
+            cut)       case $v in on) v=1 ;; off) v=0 ;; *) die "cut: on or off" ;; esac
+                       write_conf CUT "$v" ;;
+            device)    printf '%s\n' "$v" | grep -Eqx '[A-Za-z0-9][A-Za-z0-9_.:-]{0,14}' || die "device: an interface name"
+                       write_conf DEVICE "$v" ;;
+            *) die "set reset-day|cap|warn|cut|device VALUE" ;;
+        esac
+        echo "saved" ;;
+    used)
+        USED=$(size_bytes "${2:-}") || die "used: a size like 12.5G"
+        change used ledger
+        echo "this cycle now counts as $2 used" ;;
+    clear)
+        [ "${2:-}" = --yes ] || die "clear --yes: forgets every count"
+        change clear ledger
+        echo "cleared" ;;
+    save)   # a round of the service now, and the disk copy
+        mkdir -p "$RUN" || die "cannot create $RUN"
+        [ -s "$LIVE" ] || { [ -s "$DISK" ] && cp "$DISK" "$LIVE"; }
+        UNSAVED=0; round; save || die "the ledger could not be saved to $STORE" ;;
+    run) run ;;
+    clock-synced) mkdir -p "${SYNCED%/*}" && : > "$SYNCED" ;;
+    *) sed -n '2,19s/^# \{0,1\}//p' "$0" >&2; exit 2 ;;
+esac

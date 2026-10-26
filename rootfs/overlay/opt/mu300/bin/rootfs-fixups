@@ -1,0 +1,13 @@
+#!/bin/sh
+# Archives extracted with busybox/toybox tar drop xattrs, so file capabilities disappear.
+for f in /usr/bin/ping /usr/bin/mtr-packet /usr/bin/arping; do
+    [ -x "$f" ] || continue
+    getcap "$f" 2>/dev/null | grep -q cap_net_raw || setcap cap_net_raw+ep "$f" 2>/dev/null || true
+done
+# docker export leaves an empty /etc/resolv.conf instead of the systemd-resolved stub
+[ -L /etc/resolv.conf ] || ln -sfn ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+# /opt/mu300/bin is on nobody's PATH, and sudo's secure_path cannot see it at all, so the commands the
+# documentation tells people to run need links from a directory that is. Systems installed before a command had its
+# link get it here instead of only after an update, and the extras' commands (mu300-extra) are linked too. The list
+# is the one the images are built with (/opt/mu300/lib/path-commands).
+/opt/mu300/bin/mu300-extra link 2>/dev/null || true

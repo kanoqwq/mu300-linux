@@ -1,0 +1,12 @@
+[Unit]
+Description=MU300 Wi-Fi (SC2355/Marlin3 over PCIe)
+After=mu300-vendor.service systemd-udevd.service
+Wants=mu300-vendor.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/mu300/bin/wifi-start
+
+[Install]
+WantedBy=multi-user.target

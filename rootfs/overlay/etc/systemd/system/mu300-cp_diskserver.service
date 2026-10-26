@@ -1,0 +1,26 @@
+[Unit]
+# the modem driver, not its device node: the driver is loaded in the initramfs on both kernels, but the node
+# appears later on mainline (+18 s, after sysinit), and a condition checked before that dropped these units
+ConditionPathExists=|/sys/module/sprd_modem_loader
+ConditionPathExists=|/dev/modem
+ConditionPathExists=|/dev/pmsys
+Description=MU300 Android vendor daemon cp_diskserver
+# the modem asks for its NV data while it boots, so bind the channel before modem_control starts it
+# (android-run waits for the chroot itself, so this does not need the vendor service to have finished)
+# It has to be up before modem_control (mu300-vendor), which starts before sysinit.target; with the default
+# dependencies it would wait for sysinit.target itself - an ordering cycle, which systemd broke by dropping this
+# unit and refnotify from the boot transaction (found on mainline, where it was the only reason they never ran).
+DefaultDependencies=no
+After=local-fs.target systemd-udevd.service
+Before=mu300-vendor.service shutdown.target
+Conflicts=shutdown.target
+Requires=mu300-vendor.service
+
+[Service]
+# modem_control needs a few seconds to bring the modem up before its helpers can attach
+ExecStart=/opt/mu300/bin/android-run cp_diskserver
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

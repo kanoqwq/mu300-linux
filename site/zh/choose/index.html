@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>Ubuntu 还是 OpenWrt？ZTE F50 / U30 Air 刷 Linux 的系统与内核选择</title>
+<meta name="description" content="ZTE F50 / U30 Air 该装 Ubuntu、OpenWrt 还是带控制面板的 OpenWrt，5.4、6.18、7.2、7.3 内核怎么选，一看就懂。">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/zh/choose/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/choose/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/choose/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/choose/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/choose/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="Ubuntu 还是 OpenWrt？ZTE F50 / U30 Air 刷 Linux 的系统与内核选择">
+<meta property="og:description" content="ZTE F50 / U30 Air 该装 Ubuntu、OpenWrt 还是带控制面板的 OpenWrt，5.4、6.18、7.2、7.3 内核怎么选，一看就懂。">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/zh/choose/">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="一台有两个房间的 5G 随身热点：一个给 Android，一个给 Linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ubuntu 还是 OpenWrt？ZTE F50 / U30 Air 刷 Linux 的系统与内核选择">
+<meta name="twitter:description" content="ZTE F50 / U30 Air 该装 Ubuntu、OpenWrt 还是带控制面板的 OpenWrt，5.4、6.18、7.2、7.3 内核怎么选，一看就懂。">
+<meta name="twitter:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;display=swap">
+<link rel="stylesheet" href="../../assets/style.css">
+<script src="../../assets/site.js" defer></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [
+  {
+   "@type": "ListItem",
+   "position": 1,
+   "name": "首页",
+   "item": "https://kaandikec.com/mu300-linux/zh/"
+  },
+  {
+   "@type": "ListItem",
+   "position": 2,
+   "name": "选择系统",
+   "item": "https://kaandikec.com/mu300-linux/zh/choose/"
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">跳到正文</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../../zh/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../../zh/install/">安装</a>
+<a href="../../zh/web-installer/">网页安装器</a>
+<a href="../../zh/choose/" aria-current="page">选择系统</a>
+<a href="../../zh/features/">功能</a>
+<a href="../../zh/updates/">更新与安全</a>
+<a href="../../zh/troubleshooting/">故障排除</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="语言"><a href="../../choose/" hreflang="en" lang="en">English</a><a href="../../tr/choose/" hreflang="tr" lang="tr">Türkçe</a><a href="../../zh/choose/" hreflang="zh-Hans" lang="zh-Hans" aria-current="true">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="主题|自动|浅色|深色|跟随系统|切换颜色主题"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">菜单</button>
+</div>
+</header>
+<main id="content">
+
+<header class="page-head">
+<div class="prose">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../../zh/">首页</a> <span aria-hidden="true">/</span> <span aria-current="page">选择系统</span></nav>
+<h1>选系统，选内核</h1>
+<p class="lede">安装程序会问两个大问题：装哪个系统，用哪个内核。下面说明它们是什么意思，以及拿不准时该怎么选。</p>
+</div>
+</header>
+
+<div class="prose">
+<div class="callout linux">
+<strong>一句话版本</strong>
+<p><strong>系统</strong>就是你住的房子：里面的工具、菜单、装软件的方式。<strong>内核</strong>是藏在下面、和硬件打交道的发动机。两样各选一个，以后都能换，不用重装。</p>
+</div>
+
+<h2 id="systems">三个系统</h2>
+<div class="cards">
+<div class="card linux">
+<h3>Ubuntu</h3>
+<p>完整的 Linux 发行版，和服务器上的一样：<code>apt</code> 能装成千上万个软件，有 systemd、用户和主目录。没有网页界面：通过 SSH 和 <code>mu300-toolkit</code> 菜单使用。</p>
+<p class="small muted">约占用 500 MiB 内存。24.04 LTS 或 26.04 LTS。</p>
+</div>
+<div class="card">
+<h3>OpenWrt</h3>
+<p>专为路由器打造的系统，自带 <strong>LuCI</strong> 网页界面：打开 <code>http://192.168.77.1</code>，在浏览器里设置网络、防火墙和 Wi-Fi。轻巧又快。</p>
+<p class="small muted">约占用 140 MiB 内存。OpenWrt 25.12。</p>
+</div>
+<div class="card">
+<h3>带控制面板的 OpenWrt</h3>
+<p>同一个 OpenWrt，再加上一套专为这些设备写的控制面板：实时信号、频段和小区、短信、网络锁定、AT 终端、USB 模式和电源设置，全在浏览器里。</p>
+<p class="small muted">面板作者：<a href="https://github.com/kanoqwq/mu300-linux">kanoqwq</a>。</p>
+</div>
+</div>
+
+<div class="table-scroll"><table>
+<thead><tr><th scope="col"></th><th scope="col">Ubuntu</th><th scope="col">OpenWrt</th><th scope="col">OpenWrt + 控制面板</th></tr></thead><tbody>
+<tr><th scope="row">最适合</th><td>小型服务器、跑自己的程序、学习 Linux</td><td>在浏览器里配置的 5G 路由器</td><td>还想随时看着基带的 5G 路由器：信号、频段、短信</td></tr>
+<tr><th scope="row">怎么用</th><td>SSH、<code>mu300-toolkit</code>；可选带 MU300 页面的 Cockpit（<code>panel</code> 扩展，从 v2026.10.20 起）</td><td>网页界面（LuCI）、SSH</td><td>带 MU300 页面的网页界面、SSH</td></tr>
+<tr><th scope="row">装软件</th><td><code>apt</code></td><td><code>apk</code></td><td><code>apk</code></td></tr>
+<tr><th scope="row">登录用户</th><td><code>ubuntu</code></td><td><code>root</code></td><td><code>root</code></td></tr>
+<tr><th scope="row">内存占用（约）</th><td>500 MiB</td><td>140 MiB</td><td>安装程序未列出</td></tr>
+<tr><th scope="row">网页界面语言</th><td>没有网页界面</td><td>英语、土耳其语、中文；装上 lang 扩展再多 40 种</td><td>英语、土耳其语、中文；装上 lang 扩展，面板再多 29 种</td></tr>
+<tr><th scope="row">Magisk 刷机包</th><td class="yes">有</td><td class="yes">有</td><td class="yes">有</td></tr>
+</tbody></table></div>
+
+<h3 id="panel">控制面板多了什么</h3>
+<ul>
+<li><strong>状态看板（Status dashboard）：</strong>实时无线读数（信号、频段、小区、温度）、运营商名称、移动数据状态，以及当前的下载和上传速度；U30 Air 上还有电池。</li>
+<li><strong>蜂窝 &gt; 网络锁定（Cellular &gt; Network locks）：</strong>网络模式、频段、小区和 EN-DC 锁定，重启后依然保留，还有“全部重置为自动”（Reset all to automatic）。</li>
+<li><strong>蜂窝 &gt; 短信</strong>和<strong>短信转发（SMS forwarding）：</strong>收发、删除短信，并把收到的短信转给 webhook、Telegram 聊天或另一部手机。</li>
+<li><strong>蜂窝 &gt; 流量统计（Data usage）：</strong>按天、按账单周期统计移动数据，可设每月上限。</li>
+<li><strong>蜂窝 &gt; AT 终端（AT terminal）：</strong>带保护的基带 AT 命令。</li>
+<li><strong>蜂窝 &gt; 设备管理（Device management）：</strong>USB 角色和 USB 网络模式（NCM、ECM 或 RNDIS）。</li>
+<li><strong>VPN</strong>（从 v2026.10.20 起，配合 VPN 模块）：概览、配置、订阅、引擎、设置和日志。</li>
+<li><strong>系统 &gt; 语言（System &gt; Languages）</strong>、<strong>系统 &gt; 电源（Power）</strong>和<strong>系统 &gt; CPU：</strong>界面语言、电源模式、充电上限（0-100 %）和 CPU 模式。</li>
+<li><strong>系统 &gt; 终端（Terminal）</strong>（从 v2026.10.20 起）：浏览器里的 root shell，只在局域网上，只为你已登录的会话打开。</li>
+<li><strong>系统 &gt; 更新后的软件包（Packages after an update）</strong>（从 v2026.10.20 起）：更新对你装过的软件包做了什么。</li>
+</ul>
+<p>主题是 eamonxg 的 <a href="https://github.com/eamonxg/luci-theme-aurora">Aurora</a>。完整列表见 <a href="https://github.com/dikeckaan/mu300-linux#openwrt-with-the-mu300-control-panel" hreflang="en">README</a>（英文）。</p>
+
+<h3 id="both">或者两个都装</h3>
+<p>选 <strong>3) 两者都装</strong>，Ubuntu 和 OpenWrt 会并排装在同一个 Linux 文件系统里；安装程序接着问先启动哪一个。切换只要一条命令加一次重启：</p>
+<pre><code>sudo mu300-os ubuntu          <span class="c"># 下次重启进入 Ubuntu</span>
+sudo mu300-os openwrt         <span class="c"># 普通 OpenWrt</span>
+sudo mu300-os openwrt-luci    <span class="c"># 带控制面板的 OpenWrt</span></code></pre>
+<p>每种选择需要多少空间（安装程序会替你检查）：</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">选择</th><th scope="col">需要的空闲空间</th></tr></thead><tbody>
+<tr><th scope="row">只装 OpenWrt</th><td>约 800 MiB</td></tr>
+<tr><th scope="row">只装 Ubuntu</th><td>约 1.6 GiB</td></tr>
+<tr><th scope="row">两个都装</th><td>约 2.4 GiB</td></tr>
+</tbody></table></div>
+<p>这已经算上了更新要用的空间：更新会保留上一个版本，方便回滚。</p>
+
+<h2 id="ubuntu">选哪个 Ubuntu？</h2>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col"></th><th scope="col">24.04 LTS</th><th scope="col">26.04 LTS</th></tr></thead><tbody>
+<tr><th scope="row">安装程序里的说法</th><td>“测试时间最长，支持到 2029 年”</td><td>“最新版本（systemd 259，更新的软件包），支持到 2031 年；需要 6.18、7.2 或 7.3 内核”</td></tr>
+<tr><th scope="row">可用内核</th><td>5.4、6.18、7.2、7.3</td><td>只能 6.18、7.2 或 7.3</td></tr>
+<tr><th scope="row">什么时候选它</th><td>想省心、开箱即用（默认）</td><td>想要最新的软件包，并使用主线内核</td></tr>
+</tbody></table></div>
+<p>Ubuntu 26.04 需要主线内核，因为它的程序用到了 5.4 没有的系统调用。已经装好的 Ubuntu 以后也能换到另一个版本，设置和数据都保留：</p>
+<pre><code>sudo MU300_UBUNTU=26.04 mu300-update apply   <span class="c"># 换回去就写 24.04</span></code></pre>
+
+<h2 id="kernels">选哪个内核？</h2>
+<p>四个内核跑的是同样的系统、同样的功能：热点、移动数据、短信、蓝牙、VPN、GPU，以及 KVM（<code>/dev/kvm</code>）。区别在于新旧程度和测试时间长短。安装程序是这样描述的：</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">选项</th><th scope="col">内核</th><th scope="col">说明</th></tr></thead><tbody>
+<tr><th scope="row">1</th><td>5.4</td><td>紫光展锐的厂商内核（基于 Android 12）：测试时间最长，支持本项目的全部功能</td></tr>
+<tr><th scope="row">2</th><td>6.18</td><td>主线 Linux，当前的长期支持（LTS）版本：更新的驱动和安全修复，功能相同（热点、移动数据、短信、蓝牙、VPN、GPU）；暂不支持 USB-C 视频输出</td></tr>
+<tr><th scope="row">3</th><td>7.2</td><td>7.2（稳定版）：主线 Linux 的稳定 7.2 系列，更新的驱动，功能与 6.18 相同；测试比 6.18 少</td></tr>
+<tr><th scope="row">4</th><td>7.3</td><td>最新的主线版本：最新的驱动，功能与 6.18 相同；测试比 7.2 少</td></tr>
+</tbody></table></div>
+<p>7.3 从 v2026.10.19.2 之后的下一个版本起提供；更早的版本只有前三个。</p>
+
+<h3>真正有区别的地方</h3>
+<ul>
+<li><strong>Ubuntu 26.04</strong> 需要 6.18、7.2 或 7.3。</li>
+<li><strong>U30 Air 的 USB 主机模式</strong>（通过 OTG 转接头接 U 盘、键盘、以太网转接器）只在主线内核上可用。</li>
+<li><strong>U30 Air 充电：</strong>5.4 上由厂商的充电驱动负责；6.18、7.2 和 7.3 上从 v2026.10.12 起由 <code>bq256xx</code> 驱动负责。v2026.10.11 及更早的主线内核不会开启充电，请先更新。从 v2026.10.20 起，主线内核还会读取 Type-C 口提供的电流（最高 2 A，而不是 500 mA）；充电上限（0-100 %）四个内核都能用。</li>
+<li><strong>dae</strong>（VPN 模块的 eBPF 引擎）需要 v2026.10.20 或更新的 6.18/7.2/7.3（从带 BTF 和 BPF JIT 的 6.18.56 和 7.2.10 起）；5.4 跑不了它。</li>
+<li><strong>WireGuard VPN 配置</strong>需要主线内核：按 <a href="https://github.com/dikeckaan/mu300-linux-vpn" hreflang="en">VPN 模块</a>的说明，5.4 厂商内核没有 WireGuard。其他 VPN 类型四个内核都能用。</li>
+<li><strong>内核模块：</strong>主线内核额外带了约 360 个模块：WireGuard、SQM、隧道、USB 转接器和上网卡、NTFS、exFAT、btrfs、NFS、CIFS、dm-crypt、容器。</li>
+<li><strong>6.18</strong> 在部分板子上偶尔会在启动的头几秒卡死（README 在一块板子上测得大约每 20 次启动一次）；这时设备会回到 Android，<code>su -c mu300-linux</code> 就能把 Linux 带回来。见<a href="../troubleshooting/#kernel-618">故障排除</a>。</li>
+</ul>
+
+<div class="callout">
+<strong>拿不准？</strong>
+<p>就用安装程序的默认值 <strong>5.4</strong>：它测试得最久。要用 Ubuntu 26.04、WireGuard，或者 U30 Air 的 USB 主机模式，就选 <strong>6.18</strong>。以后想换，一条命令加一次重启：</p>
+<pre><code>sudo mu300-update kernel             <span class="c"># 显示当前内核</span>
+sudo mu300-update kernel 6.18        <span class="c"># 或 5.4、7.2、7.3；然后重启</span>
+sudo reboot</code></pre>
+<p>如果新内核起不来，设备会在达到设定的失败次数后回到 Android，<code>sudo mu300-update rollback-boot</code> 能换回之前的内核。</p>
+</div>
+
+<h2 id="other">其他发行版</h2>
+<p>启动流程并不在乎启动的是哪个发行版：一个系统就是一个装着 arm64 根文件系统的目录。Debian 13、Kali Linux、Arch Linux ARM 和 ImmortalWrt 都可以用本仓库构建，然后解压到其他系统旁边（Arch Linux ARM 已能构建，但还没在真机上启动过）；Fedora、Alpine 等也做过调查。这部分适合自己动手构建的人：见 <a href="https://github.com/dikeckaan/mu300-linux/blob/main/docs/DISTROS.md" hreflang="en">docs/DISTROS.md</a>（英文）。</p>
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>项目</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">GitHub 上的源代码</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">支持本项目</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">发布版本（下载）</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN 模块</a></li>
+</ul>
+</div>
+<div>
+<h2>帮助</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki（英文）</a></li>
+<li><a href="../../zh/troubleshooting/">故障排除</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">报告问题</a></li>
+<li><a href="https://t.me/mu300project">Telegram 频道（动态与新版本）</a></li>
+</ul>
+</div>
+<div>
+<p>这是一个业余项目，风险自负，不提供任何担保。与 ZTE、紫光展锐或任何运营商无关，也未获其认可。脚本和文档：MIT；内核：GPL-2.0。</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

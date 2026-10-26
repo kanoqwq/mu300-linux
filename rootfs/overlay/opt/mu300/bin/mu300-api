@@ -1,0 +1,1952 @@
+#!/bin/sh
+# mu300-api: the device's settings and state for a program, one method per call (Ubuntu and OpenWrt; F50, U30 Air,
+# V50). The web installer's device manager uses it over adb (docs/ADB-INTERFACE.md, FINDINGS 110); Cockpit's MU300
+# page (the panel extra, FINDINGS 187) has no other backend.
+#
+#   mu300-api METHOD < REQUEST      REQUEST: one JSON object (at least {}), on stdin, never on the command line: it may
+#                                   hold a password. The answer: one JSON object on stdout, {"ok":1,...} or
+#                                   {"ok":0,"error":"CODE","detail":"..."}; exit 0, 1 (refused or failed) or 2 (usage)
+#   mu300-api --methods             the methods, one per line
+#
+# Every method is a fixed name; every field of a request is checked against its own rule before anything runs (a
+# fixed word, a number in a range, a name by the hotspot's or the dial's own rules) and an unknown field is refused.
+# A value reaches a tool as one argument that cannot start with "-" or, when it can be a secret, on the tool's stdin.
+# Nothing is composed into a shell command, nothing secret is ever printed back (the hotspot's and the APN's
+# passwords, VPN links, the login password: "password_set" says whether there is one), and nothing is logged.
+# The work is the device's own tools': hotspot.conf and mu300-wifi-band (Ubuntu) or UCI (OpenWrt) for the hotspot,
+# wifi-client, mobile-data's settings, mu300-sim, mu300-vpn (the VPN module), sms, mu300-usb, mu300-next-boot,
+# mu300-os, mu300-update, mu300-extra; the control panel's adapters for the band and cell locks and SMS forwarding
+# (/usr/libexec/unisoc-modem/lock and forward: openwrt-luci's, and the same programs on Ubuntu); on openwrt-luci the
+# control panel's backend (mu300dash, called as rpcd calls it) for what only the panel has: the SMS pool.
+#
+# Long work (an update, a kernel, an extra, a VPN download, joining a Wi-Fi network) runs as the one background job,
+# in its own session: it goes on when the caller goes (a closed browser tab, a cable pulled), and job.status follows
+# it from any later call.
+#
+# Error codes: bad-request (not one JSON object of plain values, or too large), unknown-method, unknown-field (detail:
+# the field), bad-value (detail: the field), missing (detail: the field), not-root, unsupported (detail: what), busy
+# (another job runs), not-installed (the VPN module), failed (detail: the tool's last line).
+# (MU300_SYSROOT, MU300_BIN, MU300_LIBDIR, MU300_DISK, MU300_API_RUN, MU300_DASH_RPC, MU300_LOCK_BIN, MU300_FWD_ADAPTER,
+# MU300_DASH_DIR are for tests/)
+set -u
+umask 077
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+API=1
+R=${MU300_SYSROOT:-}
+BIN=${MU300_BIN:-/opt/mu300/bin}
+SELF=$(cd "${0%/*}" 2>/dev/null && pwd)/${0##*/}
+LIBDIR=${MU300_LIBDIR:-/opt/mu300/lib}
+[ -r "$LIBDIR/json.awk" ] || LIBDIR=$(cd "${0%/*}/../lib" 2>/dev/null && pwd)
+JAWK=$LIBDIR/json.awk
+DISK=${MU300_DISK:-/mnt/mu300-disk}
+RUN=${MU300_API_RUN:-/run/mu300-api}
+JOB=$RUN/job
+DASH_RPC=${MU300_DASH_RPC:-$R/usr/libexec/rpcd/mu300dash}
+# the control panel's adapters (openwrt-luci; Ubuntu has the same programs) and their runtime directory: the lock
+# reading's cache, the AT terminal's history (root's only, in RAM)
+LOCKBIN=${MU300_LOCK_BIN:-$R/usr/libexec/unisoc-modem/lock}
+FWDA=${MU300_FWD_ADAPTER:-$R/usr/libexec/unisoc-modem/forward}
+DASHDIR=${MU300_DASH_DIR:-$R/var/run/unisoc-modem}
+HOTSPOT=$R/etc/mu300/hotspot.conf
+MDCONF=$R/etc/mu300/mobile-data.conf
+LANCONF=$R/etc/mu300/lan.conf
+INPUT_MAX=65536
+NL='
+'
+TAB=$(printf '\t')
+
+# ------------------------------------------------------------------ the methods
+METHODS='hello overview
+wifi.get wifi.set wifi.power wificlient.status wificlient.scan wificlient.join wificlient.leave
+data.get data.set data.power sim.get sim.select sim.card sim.state voice.get voice.set radio.get radio.set lock.get lock.set
+vpn.status vpn.profiles vpn.subs vpn.settings vpn.service vpn.killswitch vpn.use vpn.add vpn.add_url vpn.rename
+vpn.remove vpn.setting vpn.sub_add vpn.sub_refresh vpn.sub_remove vpn.logs vpn.install vpn.engine_install vpn.engines
+sms.list sms.read sms.send sms.job sms.delete sms.forward sms.forward_set sms.forward_test sms.forward_log_clear
+lan.get lan.set usb.role usb.net adb.auth
+system.get system.hostname system.timezone system.password system.ssh system.reboot system.boot system.bootos
+update.check update.apply kernel.set extra.list extra.install extra.remove logs
+backup.export backup.import
+at.send at.history ussd.send ussd.cancel modem.restart ttl.get ttl.set traffic.get traffic.set
+power.get power.set led.get led.set zram.get zram.set cpu.get cpu.profile cpu.core cpu.lowlatency cpu.voltage
+update.status update.source packages.get packages.act docker.status
+job.status job.cancel job.clear'
+
+# ------------------------------------------------------------------ JSON out
+# js TEXT: TEXT as a JSON string (plain words without a call to awk)
+js() {
+    case $1 in
+        *[!A-Za-z0-9\ ._:/+@,=-]*) printf '%s' "$1" | LC_ALL=C awk -v mode=str -f "$JAWK" | tr -d '\n' ;;
+        *) printf '"%s"' "$1" ;;
+    esac
+}
+# jn VALUE: an integer, or null
+jn() { case ${1:-} in ''|-|*[!0-9-]*|?*-*) printf null ;; *) printf '%s' "$1" | sed 's/^\(-\{0,1\}\)0*\([0-9]\)/\1\2/' ;; esac; }
+# jb VALUE: 1/true/yes/on -> true, anything else false
+jb() { case ${1:-} in 1|true|yes|on) printf true ;; *) printf false ;; esac; }
+# jcheck TEXT: TEXT re-serialised when it is one JSON value, else null
+jcheck() {
+    _j=$(printf '%s' "$1" | LC_ALL=C awk -v mode=check -f "$JAWK" 2>/dev/null) && [ -n "$_j" ] && { printf '%s' "$_j"; return 0; }
+    printf null; return 1
+}
+# the refusal: a fixed code and, maybe, a detail (a field's name, a tool's last line: sanitised, at most 200 bytes)
+refuse() {
+    if [ -n "${2:-}" ]; then
+        printf '{"ok":0,"error":"%s","detail":%s}\n' "$1" "$(js "$(printf '%s' "$2" | sanitize | head -c 200)")"
+    else
+        printf '{"ok":0,"error":"%s"}\n' "$1"
+    fi
+    exit 1
+}
+# sanitize: control characters out, and an address's path and query (a subscription's token) replaced by "..."
+sanitize() { LC_ALL=C tr -d '\000-\010\013-\037\177' | sed -E 's#((https?|wss?|vless|vmess|trojan|ss|hysteria2|hy2|tuic|wg|wireguard)://)[^ "]*#\1...#g'; }
+ok() { printf '{"ok":1%s}\n' "${1:+,$1}"; exit 0; }
+# checked: MU300_API_CHECK=1 stops a setter here, after every field passed its rules and before anything changes
+# ({"ok":1,"checked":true}); mu300-backup checks a whole restore this way before it changes anything (FINDINGS 155)
+checked() { [ -z "${MU300_API_CHECK:-}" ] || ok '"checked":true'; }
+lastline() { printf '%s\n' "$1" | sed '/^[[:space:]]*$/d' | tail -n 1; }
+# lastmsg TEXT: the last message of a tool's stderr, with the indented lines that continue it (the CLIs here write
+# "prog: first line" and indent the rest), on one line. Seen on an F50: "wifi-client scan" with the hotspot on ends
+# with a hint, and its last line alone ("That saves it, and after a reboot...") was the reason the page showed.
+lastmsg() {
+    printf '%s\n' "$1" | awk '/^[ \t]*$/ { next } /^[ \t]/ { sub(/^[ \t]+/, ""); m = (m == "" ? $0 : m " " $0); next } { m = $0 } END { print m }'
+}
+
+# ------------------------------------------------------------------ JSON in
+FIELDS=
+# fget KEY: FT the type (s n b z; empty when missing), FV the value exactly as sent
+fget() {
+    _l=$(printf '%s' "$FIELDS" | awk -F "$TAB" -v k="$1" '$1 == k { print $2 "\t" $3; exit }')
+    if [ -z "$_l" ]; then FT=; FV=; return 1; fi
+    FT=${_l%%"$TAB"*}
+    FV=$(printf '%s' "${_l#*"$TAB"}" | LC_ALL=C awk '{
+        s = $0; o = ""
+        while ((i = index(s, "\\")) > 0) {
+            c = substr(s, i + 1, 1)
+            o = o substr(s, 1, i - 1) (c == "n" ? "\n" : c == "t" ? "\t" : c == "r" ? "\r" : c)
+            s = substr(s, i + 2)
+        }
+        printf "%s", o s
+    }'; printf x)
+    FV=${FV%x}
+    [ "$FT" != z ] || FV=
+    return 0
+}
+# only KEY...: the request has no other field
+only() {
+    for _k in $(printf '%s' "$FIELDS" | cut -f1); do
+        case " $* " in *" $_k "*) ;; *) refuse unknown-field "$_k" ;; esac
+    done
+}
+is_ascii_line() { [ "$(printf '%s' "$1" | LC_ALL=C tr -d ' -~'; echo x)" = x ]; }
+# allowed VALUE ERE: one line of printable ASCII matching ^ERE$
+allowed() { is_ascii_line "$1" && printf '%s\n' "$1" | LC_ALL=C grep -Eqx -- "$2"; }
+# text_ok VALUE MAXBYTES [MAXCHARS]: one line of text (UTF-8 allowed), no control character
+text_ok() {
+    [ "$(printf '%s' "$1" | LC_ALL=C tr -d '\040-\176\200-\377'; echo x)" = x ] || return 1
+    [ "$(printf '%s' "$1" | wc -c)" -le "$2" ] || return 1
+    [ -z "${3:-}" ] || [ "$(printf '%s' "$1" | LC_ALL=C tr -d '\200-\277' | wc -c)" -le "$3" ]
+}
+bytes() { printf '%s' "$1" | wc -c | tr -d ' '; }
+# the getters: V the checked value, or the refusal. A missing field (or null) is V empty and 1.
+# word KEY ERE: a string matching ERE
+word() {
+    fget "$1" || { V=; return 1; }
+    [ "$FT" != z ] || { V=; return 1; }
+    [ "$FT" = s ] && allowed "$FV" "$2" || refuse bad-value "$1"
+    V=$FV
+}
+# int KEY MIN MAX: a whole number (a JSON number, or a string of digits)
+int() {
+    fget "$1" || { V=; return 1; }
+    [ "$FT" != z ] || { V=; return 1; }
+    { [ "$FT" = n ] || [ "$FT" = s ]; } && allowed "$FV" '0|[1-9][0-9]{0,8}' && [ "$FV" -ge "$2" ] && [ "$FV" -le "$3" ] ||
+        refuse bad-value "$1"
+    V=$FV
+}
+# flag KEY: true/false (or 1/0) -> V 1 or 0
+flag() {
+    fget "$1" || { V=; return 1; }
+    case $FT:$FV in b:true|n:1) V=1 ;; b:false|n:0) V=0 ;; z:*) V=; return 1 ;; *) refuse bad-value "$1" ;; esac
+}
+# text KEY MAXBYTES [MAXCHARS]: one line of text
+text() {
+    fget "$1" || { V=; return 1; }
+    [ "$FT" != z ] || { V=; return 1; }
+    [ "$FT" = s ] && text_ok "$FV" "$2" "${3:-}" || refuse bad-value "$1"
+    V=$FV
+}
+need() { [ -n "$V" ] || refuse missing "$1"; }
+# never a value that a tool would read as an option
+noopt() { case $1 in -*) refuse bad-value "$2" ;; esac; }
+
+# ------------------------------------------------------------------ the system
+if [ -e "$R/etc/openwrt_release" ]; then
+    SYS=openwrt
+    [ -x "$DASH_RPC" ] && SYS=openwrt-luci
+else
+    SYS=ubuntu
+fi
+is_openwrt() { [ "$SYS" != ubuntu ]; }
+is_luci() { [ "$SYS" = openwrt-luci ]; }
+device() { "$BIN/mu300-device" 2>/dev/null || echo f50; }
+first() { head -n 1 "$1" 2>/dev/null | tr -d '\r'; }
+conf() { sed -n "s/^$1=//p" "$2" 2>/dev/null | tail -n 1; }
+# conf_unq KEY FILE: KEY's value as systemd reads it (one pair of quotes taken off)
+conf_unq() { conf "$1" "$2" | sed -e 's/^"\(.*\)"$/\1/' -e "s/^'\(.*\)'$/\1/"; }
+# conf_put FILE MODE KEY=VALUE...: FILE with those keys replaced (the other lines as they were), written whole and
+# renamed over the old one; a KEY= with nothing after it removes the key
+conf_put() {
+    _f=$1 _m=$2; shift 2
+    _t=$(cat "$_f" 2>/dev/null) || _t=
+    for _kv in "$@"; do
+        _k=${_kv%%=*}
+        _t=$(printf '%s\n' "$_t" | grep -v "^$_k=")
+    done
+    for _kv in "$@"; do
+        [ -z "${_kv#*=}" ] || _t=$(printf '%s\n%s' "$_t" "$_kv")
+    done
+    mkdir -p "${_f%/*}" &&
+        printf '%s\n' "$_t" | sed '/./,$!d' > "$_f.new" && chmod "$_m" "$_f.new" && mv "$_f.new" "$_f"
+}
+uci_q() { uci -q ${R:+-c "$R/etc/config"} "$@"; }
+# uci_batch: stdin is uci batch commands; values in them go through uq
+uci_batch() { uci -q ${R:+-c "$R/etc/config"} batch; }
+# uq VALUE: VALUE single-quoted for uci batch
+uq() { printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"; }
+svc_active() {
+    if command -v systemctl >/dev/null 2>&1; then [ "$(systemctl is-active "$1" 2>/dev/null)" = active ]
+    elif [ -x "$R/etc/init.d/$1" ]; then "$R/etc/init.d/$1" running >/dev/null 2>&1
+    else return 1; fi
+}
+# hotspot_on: the Ubuntu hotspot is on, or on its way (systemd's "activating": mu300-hotspot's ExecStartPost checks
+# take about 20 s after a restart, seen on an F50, and the page read "off" right after every change it made)
+hotspot_on() {
+    case $(systemctl is-active mu300-hotspot 2>/dev/null) in active|activating|reloading) return 0 ;; esac
+    return 1
+}
+# later CMD...: CMD in a new session, two seconds from now (after the answer has gone out: a restart of the
+# hotspot, the LAN or adb, a reboot)
+later() { setsid sh -c 'sleep 2; "$@"' sh "$@" </dev/null >/dev/null 2>&1 & }
+need_root() { [ "$(id -u)" = 0 ] || [ -n "${MU300_API_NOROOT:-}" ] || refuse not-root; }
+# the runtime directory (job, caches): root's own and nobody else's (run-dir.sh: /run takes everybody's files)
+run_dir() {
+    if [ -r "$LIBDIR/run-dir.sh" ]; then
+        . "$LIBDIR/run-dir.sh"
+        run_dir_take "$RUN" "$(id -u)" mu300-api 2>/dev/null || refuse failed "$RUN is not root's own"
+    else
+        mkdir -p "$RUN" && chmod 700 "$RUN"
+    fi
+    mkdir -p "$JOB" && chmod 700 "$JOB"
+}
+# timed SECS CMD...: CMD bounded in time where the system has timeout
+timed() { _s=$1; shift; if command -v timeout >/dev/null 2>&1; then timeout "$_s" "$@"; else "$@"; fi; }
+# tool SECS CMD...: OUT its stdout (at most 256 KiB), ERR its last line of output, RC its status; stdin the caller's
+tool() {
+    _s=$1; shift
+    _o=$RUN/tool.$$.out; _e=$RUN/tool.$$.err
+    timed "$_s" "$@" >"$_o" 2>"$_e"; RC=$?
+    OUT=$(head -c 262144 "$_o" 2>/dev/null)
+    ERR=$(lastmsg "$(cat "$_e" 2>/dev/null)")
+    [ -n "$ERR" ] || ERR=$(lastline "$OUT")
+    rm -f "$_o" "$_e"
+    case $RC in 124|143) ERR="timed out" ;; esac
+    return "$RC"
+}
+# dash METHOD JSON: the control panel's backend (openwrt-luci), called as rpcd calls it: the request on its stdin
+dash() {
+    is_luci || refuse unsupported "$1"
+    _r=$(printf '%s' "$2" | timed 30 "$DASH_RPC" call "$1" 2>/dev/null)
+    _j=$(jcheck "$_r") || refuse failed "the control panel's backend gave no answer"
+    ok "\"data\":$_j"
+}
+
+# ------------------------------------------------------------------ facts
+uptime_s() { cut -d. -f1 "$R/proc/uptime" 2>/dev/null; }
+mem_kb() { sed -n "s/^$1: *\([0-9]*\) kB/\1/p" "$R/proc/meminfo" 2>/dev/null; }
+# df_json PATH: {"size":KB,"used":KB,"avail":KB} of the filesystem PATH is on, or null
+df_json() {
+    [ -e "$1" ] || { printf null; return; }
+    set -- $(df -kP "$1" 2>/dev/null | awk 'NR == 2 { print $2, $3, $4 }')
+    [ $# = 3 ] || { printf null; return; }
+    printf '{"size":%s,"used":%s,"avail":%s}' "$(jn "$1")" "$(jn "$2")" "$(jn "$3")"
+}
+lan_ip() {
+    if is_openwrt; then _ip=$(uci_q get network.lan.ipaddr)
+    else _ip=$(conf_unq LAN_IP "$LANCONF"); fi
+    _ip=${_ip%%/*}
+    [ -n "$_ip" ] || _ip=$("$BIN/mu300-lan-ip" 2>/dev/null)
+    echo "${_ip:-192.168.77.1}"
+}
+mu300_at() { "$BIN/mu300-at" -t "${2:-5}" "$1" 2>/dev/null | tr -d '\r'; }
+# the radio readings, cached for 15 s: the AT channel is the modem's, the dial's watchdog uses it too
+signal_json() {
+    _c=$RUN/signal.json
+    if [ -s "$_c" ] && [ $(( $(date +%s) - $(date -r "$_c" +%s 2>/dev/null || echo 0) )) -lt "${MU300_API_SIGNAL_TTL:-15}" ]; then
+        cat "$_c"; return
+    fi
+    [ -x "$BIN/mu300-at" ] || { printf null; return; }
+    _cops=$(mu300_at 'AT+COPS?' | grep '^+COPS:' | head -n1)
+    _cereg=$(mu300_at 'AT+CEREG?' | grep '^+CEREG:' | head -n1)
+    _cesq=$(mu300_at 'AT+CESQ' | grep '^+CESQ:' | head -n1)
+    _oper=$(printf '%s' "$_cops" | sed -n 's/.*"\([^"]*\)".*/\1/p')
+    _act=$(printf '%s' "$_cops" | awk -F, '{gsub(/ /, "", $4); print $4}')
+    _reg=$(printf '%s' "$_cereg" | awk -F, '{gsub(/ /, "", $2); print $2}')
+    _rsrq=$(printf '%s' "$_cesq" | awk -F'[,:]' '{gsub(/ /, "", $6); print $6}')
+    _rsrp=$(printf '%s' "$_cesq" | awk -F'[,:]' '{gsub(/ /, "", $7); print $7}')
+    case $_act in 7) _rat=LTE ;; 13) _rat="5G NSA" ;; 11|12) _rat=5G ;; 2|4|5|6) _rat=3G ;; 0|1|3) _rat=2G ;; *) _rat= ;; esac
+    case $_reg in 1) _regs=home ;; 5) _regs=roaming ;; 2) _regs=searching ;; 3) _regs=denied ;; 0) _regs=none ;; 8) _regs=emergency ;; *) _regs= ;; esac
+    _rsrp_dbm=null; _rsrq_db=null
+    case $_rsrp in ''|255|*[!0-9]*) ;; *) _rsrp_dbm=$((_rsrp - 140)) ;; esac
+    case $_rsrq in ''|255|*[!0-9]*) ;; *) _rsrq_db=$(awk -v i="$_rsrq" 'BEGIN { printf "%.1f", -19.5 + i * 0.5 }') ;; esac
+    printf '{"operator":%s,"rat":%s,"registration":%s,"rsrp":%s,"rsrq":%s}' "$(js "$_oper")" "$(js "$_rat")" \
+        "$(js "$_regs")" "$_rsrp_dbm" "$_rsrq_db" > "$_c.new" && mv "$_c.new" "$_c"
+    cat "$_c"
+}
+# the battery of the U30 Air (the F50 has none; its charger driver still lists a "Battery" supply that reads 19 %)
+battery_json() {
+    [ "$DEV" = u30air ] || { printf null; return; }
+    for _s in "$R"/sys/class/power_supply/*; do
+        [ "$(cat "$_s/type" 2>/dev/null)" = Battery ] || continue
+        printf '{"capacity":%s,"status":%s,"voltage_uv":%s,"current_ua":%s}' "$(jn "$(cat "$_s/capacity" 2>/dev/null)")" \
+            "$(js "$(cat "$_s/status" 2>/dev/null)")" "$(jn "$(cat "$_s/voltage_now" 2>/dev/null)")" \
+            "$(jn "$(cat "$_s/current_now" 2>/dev/null)")"
+        return
+    done
+    printf null
+}
+temps_json() {
+    printf '['
+    _first=1
+    for _z in "$R"/sys/class/thermal/thermal_zone*; do
+        [ -r "$_z/temp" ] || continue
+        _t=$(jn "$(cat "$_z/temp" 2>/dev/null)")
+        [ "$_t" = null ] && continue
+        [ -n "$_first" ] || printf ','
+        _first=
+        printf '{"name":%s,"millicelsius":%s}' "$(js "$(cat "$_z/type" 2>/dev/null)")" "$_t"
+    done
+    printf ']'
+}
+# the cellular interface with an address (SIM 1: sipa_eth0, SIM 2: sipa_eth8), and the address
+data_addr() {
+    for _i in sipa_eth0 sipa_eth8; do
+        _a=$(ip -4 -o addr show dev "$_i" 2>/dev/null | awk '{print $4; exit}')
+        [ -n "$_a" ] && { echo "$_i $_a"; return; }
+    done
+    echo "sipa_eth0 "
+}
+data_service() {
+    if is_openwrt; then
+        if [ "$(uci_q get network.wan.disabled)" = 1 ]; then echo off
+        elif ifstatus wan 2>/dev/null | grep -q '"up": *true'; then echo up
+        else echo down; fi
+    else
+        svc_active mu300-mobile-data && echo up || echo down
+    fi
+}
+vpn_cmd() {
+    if [ -x "$BIN/mu300-vpn" ]; then echo "$BIN/mu300-vpn"
+    elif [ -x "$DISK/extra/vpn/bin/mu300-vpn" ]; then echo "$DISK/extra/vpn/bin/mu300-vpn"; fi
+}
+default_boot() { [ "$(first "$R/etc/mu300/default-boot")" = linux ] && echo linux || echo android; }
+systems() { for _d in ubuntu openwrt openwrt-luci; do [ -d "$DISK/$_d/etc" ] && printf '%s ' "$_d"; done; }
+# jlist WORD...: a JSON array of the words
+jlist() { printf '['; _f=1; for _w in "$@"; do [ -n "$_f" ] || printf ','; _f=; js "$_w"; done; printf ']'; }
+release() { first "$R/etc/mu300/image-version"; }
+os_name() { (. "$R/etc/os-release" 2>/dev/null; echo "${ID:-} ${VERSION_ID:-}") | sed 's/^ *//; s/ *$//'; }
+
+# ------------------------------------------------------------------ hello, overview
+m_hello() {
+    only
+    _vpn=$(vpn_cmd)
+    _sim2=false
+    if [ -x "$BIN/mu300-sim" ]; then
+        timed 10 "$BIN/mu300-sim" status --json 2>/dev/null | grep -Eq '"slot1_supported": *(1|true)' && _sim2=true
+    fi
+    printf '{"ok":1,"api":%d,"system":"%s","device":%s,"release":%s,"methods":%s,"features":{' "$API" "$SYS" \
+        "$(js "$DEV")" "$(js "$(release)")" "$(jlist $METHODS)"
+    printf '"vpn":%s,"vpn_extra":%s,"wifi_client":%s,"sms":%s,"locks":%s,"forward":%s,"dual_sim":%s,' \
+        "$([ -n "$_vpn" ] && echo true || echo false)" "$([ -x "$BIN/mu300-extra" ] && echo true || echo false)" \
+        "$([ -x "$BIN/wifi-client" ] && echo true || echo false)" \
+        "$(if is_luci; then js pool; elif [ -x "$BIN/sms" ]; then js cli; else js ''; fi)" \
+        "$(have_locks && echo true || echo false)" "$(have_forward && echo true || echo false)" "$_sim2"
+    printf '"battery":%s,"usb_role":%s,"usb_net":%s,"wpa3":false,"luci":%s},"job":%s}\n' \
+        "$([ "$DEV" = u30air ] && echo true || echo false)" "$([ "$DEV" = u30air ] && echo true || echo false)" \
+        "$(usbnet_ok && echo true || echo false)" "$(is_luci && echo true || echo false)" "$(job_brief)"
+    exit 0
+}
+
+m_overview() {
+    only
+    _da=$(data_addr)
+    _traffic=null
+    if [ -x "$BIN/mu300-traffic" ]; then _traffic=$(jcheck "$(timed 10 "$BIN/mu300-traffic" json 2>/dev/null)"); fi
+    if is_openwrt; then
+        _ssid=$(uci_q get "$(wifi_iface).ssid"); _hs=$([ "$(uci_q get "$(wifi_radio).disabled")" = 1 ] && echo false || echo true)
+    else
+        _ssid=$(conf SSID "$HOTSPOT"); _hs=$(hotspot_on && echo true || echo false)
+    fi
+    printf '{"ok":1,"system":"%s","os":%s,"device":%s,"release":%s,"kernel":%s,"kernel_choice":%s,"hostname":%s,' \
+        "$SYS" "$(js "$(os_name)")" "$(js "$DEV")" "$(js "$(release)")" "$(js "$(uname -r)")" \
+        "$(js "$(first "$DISK/boot/kernel")")" "$(js "$(uname -n)")"
+    printf '"uptime":%s,"now":%s,"memory":{"total_kb":%s,"avail_kb":%s},"storage":{"root":%s,"disk":%s},' \
+        "$(jn "$(uptime_s)")" "$(date +%s)" "$(jn "$(mem_kb MemTotal)")" "$(jn "$(mem_kb MemAvailable)")" \
+        "$(df_json "$R/")" "$(df_json "$DISK")"
+    printf '"signal":%s,"data":{"state":%s,"iface":%s,"address":%s},"traffic":%s,"battery":%s,"temperatures":%s,' \
+        "$(signal_json)" "$(js "$(data_service)")" "$(js "${_da%% *}")" "$(js "${_da#* }")" "$_traffic" \
+        "$(battery_json)" "$(temps_json)"
+    printf '"hotspot":{"ssid":%s,"enabled":%s},"vpn":{"installed":%s},"lan":%s,"boot":{"default":"%s","os":%s,"systems":%s}}\n' \
+        "$(js "$_ssid")" "$_hs" "$([ -n "$(vpn_cmd)" ] && echo true || echo false)" "$(js "$(lan_ip)")" \
+        "$(default_boot)" "$(js "$(first "$DISK/.mu300/boot-os")")" "$(jlist $(systems))"
+    exit 0
+}
+
+# ------------------------------------------------------------------ the hotspot
+WIFI_CHANNELS=$LIBDIR/wifi-channels.sh
+[ -r "$WIFI_CHANNELS" ] && . "$WIFI_CHANNELS"
+# OpenWrt: the first radio, and the access point on it
+wifi_radio() { uci_q show wireless | sed -n "s/^wireless\.\([^.=]*\)=wifi-device$/\1/p" | head -n 1 | sed 's/^/wireless./'; }
+wifi_iface() {
+    _rd=$(wifi_radio); _rd=${_rd#wireless.}
+    for _s in $(uci_q show wireless | sed -n "s/^wireless\.\([^.=]*\)=wifi-iface$/\1/p"); do
+        [ "$(uci_q get "wireless.$_s.device")" = "$_rd" ] || continue
+        [ "$(uci_q get "wireless.$_s.mode")" = ap ] || continue
+        echo "wireless.$_s"; return
+    done
+    echo wireless.default_radio0
+}
+# the access point's interface (Ubuntu: wlan0; OpenWrt: phy0-ap0 or whatever iw calls it)
+ap_ifname() {
+    _n=$(iw dev 2>/dev/null | awk '/Interface/ { i = $2 } /type AP/ { print i; exit }')
+    echo "${_n:-wlan0}"
+}
+# clients_json: the stations of the access point, with the DHCP lease's address and name where there is one
+clients_json() {
+    _leases=$R/tmp/dhcp.leases
+    is_openwrt || _leases=$R/run/mu300-lan.leases
+    iw dev "$(ap_ifname)" station dump 2>/dev/null | awk '/^Station/ { print tolower($2) }' | head -n 64 | {
+        printf '['
+        _f=1
+        while read -r _mac; do
+            allowed "$_mac" '[0-9a-f]{2}(:[0-9a-f]{2}){5}' || continue
+            set -- $(awk -v m="$_mac" 'tolower($2) == m { print $3, $4; exit }' "$_leases" 2>/dev/null)
+            [ -n "$_f" ] || printf ','
+            _f=
+            printf '{"mac":"%s","ip":%s,"name":%s}' "$_mac" "$(js "${1:-}")" "$(js "$([ "${2:-*}" = '*' ] || echo "${2:-}")")"
+        done
+        printf ']'
+    }
+}
+wifi_country() {
+    if is_openwrt; then _cc=$(uci_q get "$(wifi_radio).country"); else _cc=$(conf COUNTRY "$HOTSPOT"); fi
+    allowed "${_cc:-}" '[A-Z0-9]{2}' && echo "$_cc" || echo TR
+}
+m_wifi_get() {
+    only
+    _cc=$(wifi_country)
+    _live=$(iw dev "$(ap_ifname)" info 2>/dev/null | sed -n 's/.*channel \([0-9]*\).*/\1/p' | head -n 1)
+    if is_openwrt; then
+        _rd=$(wifi_radio); _if=$(wifi_iface)
+        _ssid=$(uci_q get "$_if.ssid")
+        case $(uci_q get "$_rd.band") in 2g) _band=2.4 ;; *) _band=5 ;; esac
+        _ch=$(uci_q get "$_rd.channel"); [ -n "$_ch" ] || _ch=auto
+        _enc=$(uci_q get "$_if.encryption")
+        case $_enc in psk2*|psk-mixed*) _sec=wpa2 ;; sae-mixed*|sae-compat*|psk3-mixed*) _sec=wpa2-wpa3 ;; sae*|psk3*) _sec=wpa3 ;; none|'') _sec=open ;; *) _sec=other ;; esac
+        _hidden=$(uci_q get "$_if.hidden")
+        _pw=$([ -n "$(uci_q get "$_if.key")" ] && echo true || echo false)
+        _on=$({ [ "$(uci_q get "$_rd.disabled")" = 1 ] || [ "$(uci_q get "$_if.disabled")" = 1 ]; } && echo false || echo true)
+        _client=false
+    else
+        _ssid=$(conf SSID "$HOTSPOT")
+        case $(conf BAND "$HOTSPOT") in 2.4) _band=2.4 ;; *) _band=5 ;; esac
+        _ch=$(conf CHANNEL "$HOTSPOT"); [ -n "$_ch" ] || _ch=auto
+        _sec=wpa2
+        _hidden=$(conf HIDDEN "$HOTSPOT")
+        _pw=$([ -n "$(conf PSK "$HOTSPOT")" ] && echo true || echo false)
+        _on=$(hotspot_on && echo true || echo false)
+        _client=$([ -e "$R/run/mu300-wifi-client.active" ] && echo true || echo false)
+    fi
+    printf '{"ok":1,"enabled":%s,"client_mode":%s,"ssid":%s,"band":"%s","channel":%s,"channel_live":%s,"country":"%s",' \
+        "$_on" "$_client" "$(js "$_ssid")" "$_band" "$(js "$_ch")" "$(jn "$_live")" "$_cc"
+    printf '"security":"%s","hidden":%s,"password_set":%s,"channels":{"2.4":[1,2,3,4,5,6,7,8,9,10,11,12,13],"5":[%s]},"clients":%s}\n' \
+        "$_sec" "$(jb "$_hidden")" "$_pw" "$(wifi_ap5_channels "$_cc" | sed 's/ /,/g')" "$(clients_json)"
+    exit 0
+}
+# ssid_ok NAME: 1-32 bytes, no control character, no space first or last (as hostapd and wifi-client take it)
+ssid_ok() { text_ok "$1" 32 && [ -n "$1" ] && case $1 in ' '*|*' ') false ;; *) true ;; esac; }
+# psk_ok PASSWORD: WPA2's passphrase, 8-63 printable ASCII
+psk_ok() { is_ascii_line "$1" && [ "${#1}" -ge 8 ] && [ "$(bytes "$1")" -le 63 ]; }
+# hotspot_check: SSID PSK BAND CHAN HIDDEN from the request, checked (empty: unchanged)
+hotspot_check() {
+    SSID= PSK= BAND= CHAN= HIDDEN=
+    fget ssid && { [ "$FT" = s ] && ssid_ok "$FV" || refuse bad-value ssid; SSID=$FV; }
+    fget password && { [ "$FT" = s ] && psk_ok "$FV" || refuse bad-value password; PSK=$FV; }
+    word band '2\.4|5' && BAND=$V
+    word channel 'auto|[0-9]{1,3}' && CHAN=$V
+    flag hidden && HIDDEN=$V
+    _b=$BAND
+    [ -n "$_b" ] || _b=$(m_band_now)
+    if [ -n "$CHAN" ] && [ "$CHAN" != auto ]; then
+        case $_b in
+            2.4) [ "$CHAN" -ge 1 ] && [ "$CHAN" -le 13 ] || refuse bad-value channel ;;
+            *) wifi_ap5_allowed "$(wifi_country)" "$CHAN" || refuse bad-value channel ;;
+        esac
+    fi
+    [ -n "$SSID$PSK$BAND$CHAN$HIDDEN" ] || refuse missing ssid
+}
+m_band_now() {
+    if is_openwrt; then case $(uci_q get "$(wifi_radio).band") in 2g) echo 2.4 ;; *) echo 5 ;; esac
+    else case $(conf BAND "$HOTSPOT") in 2.4) echo 2.4 ;; *) echo 5 ;; esac; fi
+}
+# uci_channel RADIO: the uci batch lines for $CHAN on RADIO, and on 5 GHz the width the country allows there
+uci_channel() {
+    printf 'set %s.channel=%s\n' "$1" "$CHAN"
+    if [ "$CHAN" != auto ] && [ "$(m_band_now)" = 5 ]; then
+        _ht=$(uci_q get "$1.htmode"); _w=$(wifi_ap5_width "$(wifi_country)" "$CHAN")
+        case $_ht in NOHT|'') ;; HT*) [ "$_w" = 80 ] && _w=40; printf 'set %s.htmode=HT%s\n' "$1" "$_w" ;;
+            *) printf 'set %s.htmode=%s%s\n' "$1" "${_ht%%[0-9]*}" "$_w" ;; esac
+    fi
+}
+m_wifi_set() {
+    only ssid password band channel hidden
+    hotspot_check
+    is_openwrt || [ -f "$HOTSPOT" ] || refuse unsupported "hotspot.conf (the hotspot has not run yet)"
+    checked
+    if is_openwrt; then
+        _rd=$(wifi_radio); _if=$(wifi_iface)
+        _enc=$(uci_q get "$_if.encryption")
+        # WPA3/SAE is disabled on this Wi-Fi chip (the U30 Air's SAE offload, FINDINGS 80; the wifi-scripts refuse
+        # it): a hotspot still set to it becomes WPA2-PSK (CCMP) here, with its password or the one given
+        _sae=
+        case ${_enc%%+*} in sae|sae-mixed|sae-compat|psk3|psk3-mixed) _sae=1 ;; esac
+        [ -z "$_sae" ] || [ -n "$PSK" ] || psk_ok "$(uci_q get "$_if.key")" || refuse missing password
+        {
+            [ -z "$SSID" ] || printf 'set %s.ssid=%s\n' "$_if" "$(uq "$SSID")"
+            if [ -n "$PSK" ]; then
+                printf 'set %s.key=%s\n' "$_if" "$(uq "$PSK")"
+                # an open hotspot gets WPA2 with its first password; WPA3 is never switched on here
+                case $_enc in none|'') printf 'set %s.encryption=psk2\n' "$_if" ;; esac
+            fi
+            if [ -n "$_sae" ]; then
+                printf 'set %s.encryption=psk2+ccmp\n' "$_if"
+                for _o in ieee80211w sae_pwe; do [ -z "$(uci_q get "$_if.$_o")" ] || printf 'delete %s.%s\n' "$_if" "$_o"; done
+                uci_q get "$_if.hostapd_bss_options" | grep -q 'u30_sae_offload=1' &&
+                    printf 'del_list %s.hostapd_bss_options=u30_sae_offload=1\n' "$_if"
+            fi
+            [ -z "$HIDDEN" ] || printf 'set %s.hidden=%s\n' "$_if" "$HIDDEN"
+            [ -z "$CHAN" ] || [ -n "$BAND" ] || uci_channel "$_rd"
+            echo 'commit wireless'
+        } | uci_batch || refuse failed "uci"
+        if [ -n "$BAND" ]; then
+            tool 30 "$BIN/mu300-wifi-band" "$BAND" </dev/null || refuse failed "$ERR"
+            # mu300-wifi-band puts the new band on its automatic channel; a channel asked for with it comes after
+            # (a U30 Air: "2.4 GHz, channel 11" came up on channel 6)
+            if [ -n "$CHAN" ] && [ "$CHAN" != auto ]; then
+                { uci_channel "$_rd"; echo 'commit wireless'; } | uci_batch || refuse failed "uci"
+                later wifi reload
+            fi
+        else
+            # out of SAE: a full restart (the access point the wifi-scripts refused is not there to reload)
+            if [ -n "$_sae" ]; then later sh -c 'wifi down; sleep 1; wifi up'; else later wifi reload; fi
+        fi
+    else
+        [ -f "$HOTSPOT" ] || refuse unsupported "hotspot.conf (the hotspot has not run yet)"
+        set --
+        [ -z "$SSID" ] || set -- "$@" "SSID=$SSID"
+        [ -z "$PSK" ] || set -- "$@" "PSK=$PSK"
+        # a new band starts on its automatic channel (mu300-wifi-band's rule)
+        if [ -n "$BAND" ]; then set -- "$@" "BAND=$BAND" "CHANNEL=${CHAN:-auto}"
+        elif [ -n "$CHAN" ]; then set -- "$@" "CHANNEL=$CHAN"; fi
+        [ -z "$HIDDEN" ] || set -- "$@" "HIDDEN=$HIDDEN"
+        conf_put "$HOTSPOT" 600 "$@" || refuse failed "could not write hotspot.conf"
+        # the radio is a client of another network: the hotspot takes the settings when it comes back
+        [ -e "$R/run/mu300-wifi-client.active" ] || later systemctl restart mu300-hotspot
+    fi
+    ok '"restart":true'
+}
+m_wifi_power() {
+    only state
+    word state 'on|off'; need state
+    checked
+    if is_openwrt; then
+        _d=1; [ "$V" = on ] && _d=0
+        printf 'set %s.disabled=%s\ncommit wireless\n' "$(wifi_radio)" "$_d" | uci_batch || refuse failed uci
+        if [ "$V" = on ]; then later wifi up; else later wifi down; fi
+    elif [ "$V" = on ]; then
+        systemctl enable mu300-hotspot >/dev/null 2>&1
+        later systemctl start mu300-hotspot
+    else
+        systemctl disable mu300-hotspot >/dev/null 2>&1
+        later systemctl stop mu300-hotspot
+    fi
+    ok
+}
+
+# ------------------------------------------------------------------ Wi-Fi client (the uplink)
+need_wc() { [ -x "$BIN/wifi-client" ] || refuse unsupported wifi-client; }
+m_wificlient_status() {
+    only; need_wc
+    tool 20 "$BIN/wifi-client" status </dev/null
+    ok "\"active\":$([ -e "$R/run/mu300-wifi-client.active" ] && echo true || echo false),\"text\":$(js "$OUT")"
+}
+m_wificlient_scan() {
+    only; need_wc
+    tool 40 "$BIN/wifi-client" scan </dev/null || refuse failed "$ERR"
+    ok "\"text\":$(js "$OUT")"
+}
+m_wificlient_join() {
+    only ssid password open
+    need_wc
+    fget ssid && [ "$FT" = s ] && ssid_ok "$FV" || refuse bad-value ssid
+    _ssid=$FV
+    noopt "$_ssid" ssid
+    flag open; _open=${V:-0}
+    _pw=
+    if fget password && [ "$FT" != z ]; then
+        # WPA2/WPA3 passphrase (8-63 printable ASCII) or a raw key (64 hex digits)
+        [ "$FT" = s ] && { psk_ok "$FV" || allowed "$FV" '[0-9A-Fa-f]{64}'; } || refuse bad-value password
+        _pw=$FV
+    fi
+    [ -n "$_pw" ] || [ "$_open" = 1 ] || refuse missing password
+    if [ "$_open" = 1 ]; then
+        job_start wifi-join 180 "" "$BIN/wifi-client" connect "$_ssid" --open
+    else
+        job_start wifi-join 180 "$_pw$NL" "$BIN/wifi-client" connect "$_ssid" -
+    fi
+}
+m_wificlient_leave() {
+    only forget
+    need_wc
+    flag forget
+    if [ "${V:-0}" = 1 ]; then job_start wifi-leave 120 "" "$BIN/wifi-client" forget
+    else job_start wifi-leave 120 "" "$BIN/wifi-client" disconnect; fi
+}
+
+# ------------------------------------------------------------------ mobile data, the SIM, the locks
+m_data_get() {
+    only
+    _da=$(data_addr)
+    if is_openwrt; then
+        _apn=$(uci_q get network.wan.apn); _pdp=$(uci_q get network.wan.pdptype)
+        _user=$(uci_q get network.wan.username); _auth=$(uci_q get network.wan.auth)
+        _pw=$([ -n "$(uci_q get network.wan.password)" ] && echo true || echo false)
+    else
+        _apn=$(conf_unq MU300_APN "$MDCONF"); _pdp=$(conf_unq MU300_PDP_TYPE "$MDCONF")
+        _user=$(conf_unq MU300_APN_USER "$MDCONF"); _auth=$(conf_unq MU300_APN_AUTH "$MDCONF")
+        _pw=$([ -n "$(conf_unq MU300_APN_PASSWORD "$MDCONF")" ] && echo true || echo false)
+    fi
+    _sim=null
+    [ -x "$BIN/mu300-sim" ] && _sim=$(jcheck "$(timed 10 "$BIN/mu300-sim" status --json 2>/dev/null)")
+    # data roaming (mobile-data roaming --json, FINDINGS 120): {"allowed","held","slot","per_sim","slots"}; null where
+    # the system's mobile-data has no such command (then there is no switch)
+    _roam=null _rsw=false
+    if [ -x "$BIN/mobile-data" ]; then
+        _rj=$(timed 10 "$BIN/mobile-data" roaming --json 2>/dev/null | head -n 1)
+        case $_rj in '{"allowed":'*) _roam=$(jcheck "$_rj") && _rsw=true ;; esac
+    fi
+    printf '{"ok":1,"state":%s,"iface":%s,"address":%s,"apn":%s,"pdp":%s,"auth":%s,"user":%s,"password_set":%s,' \
+        "$(js "$(data_service)")" "$(js "${_da%% *}")" "$(js "${_da#* }")" "$(js "$_apn")" "$(js "${_pdp:-IP}")" \
+        "$(js "$_auth")" "$(js "$_user")" "$_pw"
+    printf '"signal":%s,"sim":%s,"roaming":%s,"roaming_switch":%s}\n' "$(signal_json)" "$_sim" "$_roam" "$_rsw"
+    exit 0
+}
+# the dial's own rules (mobile-data.conf, FINDINGS 65): an APN of 3GPP's characters, credentials of printable ASCII
+# without a quote or a backslash, at most 64 each
+cred_ok() { allowed "$1" '[ -~]{0,64}' && case $1 in *[\"\'\\]*|' '*|*' ') false ;; *) true ;; esac; }
+m_data_set() {
+    only apn pdp auth user password clear_credentials roaming
+    _apn=- _pdp=- _auth=- _user=- _pw=- _roam=-
+    fget apn && { [ "$FT" = s ] && { [ -z "$FV" ] || allowed "$FV" '[A-Za-z0-9]([A-Za-z0-9.-]{0,98}[A-Za-z0-9])?'; } || refuse bad-value apn; _apn=$FV; }
+    word pdp 'IP|IPV6|IPV4V6' && _pdp=$V
+    word auth 'none|pap|chap|both' && _auth=$V
+    fget user && { [ "$FT" = s ] && cred_ok "$FV" || refuse bad-value user; _user=$FV; }
+    fget password && { [ "$FT" = s ] && [ -n "$FV" ] && cred_ok "$FV" || refuse bad-value password; _pw=$FV; }
+    flag clear_credentials
+    if [ "${V:-0}" = 1 ]; then _user= _pw= _auth=; fi
+    # roaming: true allows data while roaming, false keeps it down there (the SIM in use; mobile-data roaming on|off)
+    if flag roaming; then
+        if [ "$V" = 1 ]; then _roam=on; else _roam=off; fi
+    fi
+    [ "$_apn$_pdp$_auth$_user$_pw$_roam" != ------ ] || refuse missing apn
+    checked
+    if [ "$_roam" != - ]; then
+        [ -x "$BIN/mobile-data" ] || refuse unsupported roaming
+        tool 15 "$BIN/mobile-data" roaming "$_roam"
+        [ "$RC" = 0 ] || refuse failed "$ERR"
+        # the setting alone: the dial and its watchdog take it up within half a minute, nothing is restarted
+        [ "$_apn$_pdp$_auth$_user$_pw" != ----- ] || ok '"restart":false'
+    fi
+    [ "$_apn$_pdp$_auth$_user$_pw" != ----- ] || refuse missing apn
+    if is_openwrt; then
+        {
+            [ "$_apn" = - ] || printf 'set network.wan.apn=%s\n' "$(uq "$_apn")"
+            [ "$_pdp" = - ] || printf 'set network.wan.pdptype=%s\n' "$_pdp"
+            [ "$_auth" = - ] || printf 'set network.wan.auth=%s\n' "$(uq "$_auth")"
+            [ "$_user" = - ] || printf 'set network.wan.username=%s\n' "$(uq "$_user")"
+            [ "$_pw" = - ] || printf 'set network.wan.password=%s\n' "$(uq "$_pw")"
+            echo 'commit network'
+        } | uci_batch || refuse failed uci
+        later ifup wan
+    else
+        set --
+        [ "$_apn" = - ] || set -- "$@" "MU300_APN=$_apn"
+        [ "$_pdp" = - ] || set -- "$@" "MU300_PDP_TYPE=$_pdp"
+        [ "$_auth" = - ] || set -- "$@" "MU300_APN_AUTH=$_auth"
+        [ "$_user" = - ] || set -- "$@" "MU300_APN_USER=$_user"
+        [ "$_pw" = - ] || set -- "$@" "MU300_APN_PASSWORD=$_pw"
+        conf_put "$MDCONF" 600 "$@" || refuse failed "could not write mobile-data.conf"
+        later systemctl restart mu300-mobile-data
+    fi
+    ok '"restart":true'
+}
+m_data_power() {
+    only state
+    word state 'on|off'; need state
+    # as mu300-traffic's cap does it
+    if is_openwrt; then
+        if [ "$V" = on ]; then later ifup wan; else later ifdown wan; fi
+    elif [ "$V" = on ]; then later systemctl start mu300-mobile-data.service
+    else later systemctl stop mu300-mobile-data.service; fi
+    ok
+}
+m_sim_get() {
+    only
+    [ -x "$BIN/mu300-sim" ] || refuse unsupported mu300-sim
+    tool 15 "$BIN/mu300-sim" status --json </dev/null
+    _j=$(jcheck "$OUT") || refuse failed "$ERR"
+    ok "\"sim\":$_j"
+}
+m_sim_select() {
+    only slot
+    int slot 1 2; need slot
+    [ -x "$BIN/mu300-sim" ] || refuse unsupported mu300-sim
+    checked
+    tool 60 "$BIN/mu300-sim" default "$V" </dev/null || refuse failed "$ERR"
+    ok "\"sim\":$(jcheck "$OUT"),\"text\":$(js "$OUT")"
+}
+# the ZTE V50's card for the next boot (mu300-sim card, FINDINGS 204): ZTE's card ID 0-3, or "none" (the switches as
+# the bootloader leaves them); mu300-sim refuses a card the board has not, on another device too
+m_sim_card() {
+    only card
+    fget card || refuse missing card
+    case $FT:$FV in [ns]:[0-3]|s:none) V=$FV ;; *) refuse bad-value card ;; esac
+    [ -x "$BIN/mu300-sim" ] || refuse unsupported mu300-sim
+    checked
+    tool 60 "$BIN/mu300-sim" card "$V" </dev/null || refuse failed "$ERR"
+    _t=$OUT
+    tool 15 "$BIN/mu300-sim" status --json </dev/null
+    ok "\"sim\":$(jcheck "$OUT"),\"text\":$(js "$_t")"
+}
+# what the card in use says of itself (mu300-sim-state, FINDINGS 186): ready, locked (a PIN or PUK) or absent; the
+# answer kept for this boot, or the card asked (AT+CPIN?, one command) when there is none or "fresh" says so
+m_sim_state() {
+    only fresh
+    flag fresh; _f=${V:-0}
+    _b=$BIN/mu300-sim-state
+    [ -x "$_b" ] || refuse unsupported mu300-sim-state
+    _st=
+    [ "$_f" = 1 ] || { tool 10 "$_b" get </dev/null; _st=$(printf '%s\n' "$OUT" | head -n 1 | tr -cd 'a-z'); }
+    if [ -z "$_st" ]; then tool 20 "$_b" check </dev/null; _st=$(printf '%s\n' "$OUT" | head -n 1 | tr -cd 'a-z'); fi
+    case $_st in absent|ready|locked) ;; *) _st= ;; esac
+    _sl=
+    [ -x "$BIN/mu300-sim" ] && _sl=$(timed 10 "$BIN/mu300-sim" active 2>/dev/null | head -n 1)
+    case $_sl in 0|1) _sl=$((_sl + 1)) ;; *) _sl= ;; esac
+    ok "\"state\":$([ -n "$_st" ] && js "$_st" || printf null),\"slot\":$(jn "$_sl")"
+}
+# VoLTE and VoNR per card (mobile-data voice, FINDINGS 184): the saved choices, and what the card in use says now
+m_voice_get() {
+    only
+    [ -x "$BIN/mobile-data" ] || refuse unsupported mobile-data
+    tool 20 "$BIN/mobile-data" voice --json --read </dev/null
+    _j=$(jcheck "$OUT") || refuse failed "$ERR"
+    ok "\"voice\":$_j"
+}
+m_voice_set() {
+    only slot kind state
+    int slot 1 2; need slot; _sl=$V
+    word kind 'volte|vonr'; need kind; _k=$V
+    word state 'on|off'; need state
+    [ -x "$BIN/mobile-data" ] || refuse unsupported mobile-data
+    checked
+    tool 30 "$BIN/mobile-data" voice "$_k" "$V" --slot "$((_sl - 1))" </dev/null || refuse failed "$ERR"
+    ok "\"text\":$(js "$OUT")"
+}
+# each SIM's radio on or off, kept across reboots (mu300-sim-radio, FINDINGS 185); slot 1, 2 or "all" (airplane mode)
+m_radio_get() {
+    only
+    [ -x "$BIN/mu300-sim-radio" ] || refuse unsupported mu300-sim-radio
+    tool 15 "$BIN/mu300-sim-radio" status --json </dev/null
+    _j=$(jcheck "$OUT") || refuse failed "$ERR"
+    ok "\"radio\":$_j"
+}
+m_radio_set() {
+    only slot state
+    fget slot || refuse missing slot
+    case $FT:$FV in n:1|s:1) _sl=0 ;; n:2|s:2) _sl=1 ;; s:all) _sl=all ;; *) refuse bad-value slot ;; esac
+    word state 'on|off'; need state
+    [ -x "$BIN/mu300-sim-radio" ] || refuse unsupported mu300-sim-radio
+    checked
+    tool 150 "$BIN/mu300-sim-radio" set "$_sl" "$V" </dev/null
+    case $RC in 0) ;; 75) refuse busy "$ERR" ;; *) refuse failed "$ERR" ;; esac
+    ok "\"text\":$(js "$OUT")"
+}
+# The network, band and cell locks (unisoc-modem/lock): openwrt-luci's panel backend, or the same lock program on
+# Ubuntu (mu300-lock-replay.service sends the saved ones again at boot). A reading is eight AT commands, never made
+# inside a request: the cache is served, and a missing one (or fresh) starts a reading in the background, waited for
+# up to 12 s. A setting is applied in the background too: it restarts the protocol stack (half a minute without
+# cellular); the answer says it started, and "queued" when another apply or a SIM switch runs first.
+have_locks() { is_luci || [ -x "$LOCKBIN" ]; }
+lock_reading() {
+    _p=$(cat "$DASHDIR/lock-read.lck/pid" 2>/dev/null)
+    [ -n "$_p" ] && [ -d "/proc/$_p" ] && { tr '\0' ' ' < "/proc/$_p/cmdline"; } 2>/dev/null | grep -q '/unisoc-modem/lock'
+}
+lock_busy() { [ -d /run/unisoc-modem-lock-apply ] || [ -e /run/mu300/sim-switching ] || [ -e /run/mu300/sim-active-unknown ]; }
+m_lock_get() {
+    only fresh
+    flag fresh; _f=${V:-0}
+    is_luci && dash lock_get "{\"fresh\":\"$_f\"}"
+    [ -x "$LOCKBIN" ] || refuse unsupported locks
+    _lf=$DASHDIR/lock.json
+    if [ "$_f" = 1 ] || [ ! -s "$_lf" ]; then
+        _before=$(date -r "$_lf" +%s 2>/dev/null || echo 0)
+        setsid "$LOCKBIN" refresh </dev/null >/dev/null 2>&1 &
+        _end=$(( $(date +%s) + ${MU300_API_LOCK_WAIT:-12} ))
+        sleep 1
+        while [ "$(date +%s)" -lt "$_end" ] && lock_reading; do
+            [ "$(date -r "$_lf" +%s 2>/dev/null || echo 0)" -gt "$_before" ] && break
+            sleep 1
+        done
+    fi
+    if [ ! -s "$_lf" ] && lock_reading; then ok '"data":{"busy":1}'; fi
+    tool 20 "$LOCKBIN" get cached </dev/null
+    _j=$(jcheck "$OUT") || refuse failed "the lock program gave no answer"
+    ok "\"data\":$_j"
+}
+m_lock_set() {
+    only kind val
+    word kind 'mode|endc|lte|nr|cell|reset|auto_apply'; need kind; _k=$V
+    case $_k in
+        mode)    word val 'auto|auto152|4g|sa|nsa' ;;
+        endc|auto_apply) word val 'on|off' ;;
+        lte|nr)  word val '([0-9]{1,3}(,[0-9]{1,3}){0,31})?' ;;
+        cell)    word val 'auto|off|off-nr|off-lte|(nr|lte):[0-9]{1,7},[0-9]{1,4}' ;;
+        reset)   word val 'auto' ;;
+    esac || V=
+    [ -n "$V" ] || [ "$_k" = lte ] || [ "$_k" = nr ] || refuse missing val
+    checked
+    is_luci && dash lock_set "{\"kind\":\"$_k\",\"val\":$(js "$V")}"
+    [ -x "$LOCKBIN" ] || refuse unsupported locks
+    _q=0; lock_busy && _q=1
+    if [ "$_k" = reset ]; then setsid "$LOCKBIN" reset </dev/null >/dev/null 2>&1 &
+    else setsid "$LOCKBIN" apply "$_k" "$V" </dev/null >/dev/null 2>&1 &
+    fi
+    ok "\"data\":{\"ok\":1,\"started\":1,\"queued\":$_q,\"op\":$(js "lock $_k=$V")}"
+}
+
+# ------------------------------------------------------------------ VPN (the module's machine-readable CLI)
+VPN_ID='[a-z0-9][a-z0-9-]{0,31}'
+need_vpn() { VPN=$(vpn_cmd); [ -n "$VPN" ] || refuse not-installed vpn; }
+# vpn_json KEY ARG...: the CLI's JSON answer as {"ok":1,KEY:...}
+vpn_json() {
+    _k=$1; shift
+    tool 25 "$VPN" "$@" </dev/null || refuse failed "$ERR"
+    _j=$(jcheck "$OUT") || refuse failed "the VPN module gave no JSON"
+    ok "\"$_k\":$_j"
+}
+vpn_name_ok() { text_ok "$1" 128 64 && [ -n "$1" ] && case $1 in -*|' '*|*' ') false ;; *) true ;; esac; }
+m_vpn_status() {
+    only exit_ip
+    flag exit_ip; _x=${V:-0}
+    VPN=$(vpn_cmd)
+    [ -n "$VPN" ] || ok "\"installed\":false,\"extra\":$([ -x "$BIN/mu300-extra" ] && echo true || echo false)"
+    if [ "$_x" = 1 ]; then tool 25 "$VPN" status --json --exit-ip </dev/null; else tool 25 "$VPN" status --json </dev/null; fi
+    _j=$(jcheck "$OUT")
+    case $_j in '{'*) ;; *) ok '"installed":true,"legacy":true' ;; esac
+    ok "\"installed\":true,\"status\":$_j"
+}
+m_vpn_profiles() { only; need_vpn; vpn_json profiles profile list --json; }
+m_vpn_subs() { only; need_vpn; vpn_json subscriptions subscription list --json; }
+m_vpn_settings() {
+    only; need_vpn
+    tool 25 "$VPN" settings --json </dev/null || refuse failed "$ERR"
+    # the keys this page shows (the binaries' paths are not the page's)
+    _f=$(printf '%s' "$OUT" | LC_ALL=C awk -v mode=flat -v anykey=1 -f "$JAWK" 2>/dev/null) || refuse failed "the VPN module gave no JSON"
+    _o=
+    for _k in KILL_SWITCH IPV6; do
+        _v=$(printf '%s' "$_f" | awk -F "$TAB" -v k="$_k" '$1 == k { print $3; exit }')
+        allowed "$_v" '[A-Za-z0-9]{0,8}' || _v=
+        _o="$_o${_o:+,}\"$_k\":$(js "$_v")"
+    done
+    ok "\"settings\":{$_o}"
+}
+m_vpn_service() {
+    only op; word op 'on|off|restart'; need op; need_vpn
+    tool 60 "$VPN" "$V" </dev/null || refuse failed "$ERR"
+    ok
+}
+m_vpn_killswitch() {
+    only value; word value 'on|off'; need value; need_vpn
+    tool 25 "$VPN" killswitch "$V" </dev/null || refuse failed "$ERR"
+    ok
+}
+m_vpn_use() {
+    only id; word id "$VPN_ID"; need id; need_vpn
+    tool 60 "$VPN" use "$V" </dev/null || refuse failed "$ERR"
+    ok
+}
+# a share link of the kinds the module takes, or a config pasted whole; either way on the CLI's stdin, never in argv
+VPN_LINK='(vless|vmess|trojan|ss|hysteria2|hy2|tuic|wireguard|wg)://[!-~]+'
+m_vpn_add() {
+    only source data name
+    word source 'link|text'; need source; _src=$V
+    _name=
+    text name 128 64 && { vpn_name_ok "$V" || refuse bad-value name; _name=$V; }
+    fget data && [ "$FT" = s ] || refuse missing data
+    _d=$FV
+    if [ "$_src" = link ]; then
+        _d=$(printf '%s' "$_d" | tr -d '\r' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+        [ "${#_d}" -le 8000 ] && allowed "$_d" "$VPN_LINK" || refuse bad-value data
+    else
+        [ -n "$_d" ] && [ "$(bytes "$_d")" -le 65536 ] || refuse bad-value data
+        [ "$(printf '%s' "$_d" | LC_ALL=C tr -d '\011\012\015\040-\176\200-\377'; echo x)" = x ] || refuse bad-value data
+    fi
+    need_vpn
+    # (a here-document, not a pipe: tool sets OUT and ERR in this shell; what is expanded in it is never read again)
+    if [ -n "$_name" ]; then tool 60 "$VPN" profile import - "$_name" <<EOF
+$_d
+EOF
+    else tool 60 "$VPN" profile import - <<EOF
+$_d
+EOF
+    fi || refuse failed "$ERR"
+    _id=$(lastline "$OUT")
+    allowed "$_id" "$VPN_ID" || _id=
+    ok "\"id\":$(js "$_id")"
+}
+VPN_URL='https://[A-Za-z0-9.-]{1,253}(:[0-9]{1,5})?(/[!-~]*)?'
+url_field() { fget "$1" && [ "$FT" = s ] && [ "${#FV}" -le 2048 ] && allowed "$FV" "$VPN_URL" || refuse bad-value "$1"; V=$FV; }
+m_vpn_add_url() {
+    only url name
+    url_field url; _url=$V
+    _name=
+    text name 128 64 && { vpn_name_ok "$V" || refuse bad-value name; _name=$V; }
+    need_vpn
+    if [ -n "$_name" ]; then job_start vpn-import 180 "$_url$NL" "$VPN" profile import --url - "$_name"
+    else job_start vpn-import 180 "$_url$NL" "$VPN" profile import --url -; fi
+}
+m_vpn_rename() {
+    only id name
+    word id "$VPN_ID"; need id; _id=$V
+    text name 128 64; vpn_name_ok "$V" || refuse bad-value name
+    need_vpn
+    tool 25 "$VPN" profile set "$_id" NAME "$V" </dev/null || refuse failed "$ERR"
+    ok
+}
+m_vpn_remove() {
+    only id; word id "$VPN_ID"; need id; need_vpn
+    tool 25 "$VPN" profile remove "$V" </dev/null || refuse failed "$ERR"
+    ok
+}
+m_vpn_setting() {
+    only key value
+    word key 'IPV6'; need key; _k=$V
+    word value '0|1|auto'
+    need_vpn
+    tool 25 "$VPN" settings set "$_k" "$V" </dev/null || refuse failed "$ERR"
+    ok
+}
+m_vpn_sub_add() {
+    only name url interval
+    text name 128 64; vpn_name_ok "$V" || refuse bad-value name; _name=$V
+    url_field url; _url=$V
+    int interval 0 720; _int=$V
+    need_vpn
+    if [ -n "$_int" ]; then job_start vpn-sub-add 180 "$_url$NL" "$VPN" subscription add "$_name" - --type auto --interval "$_int"
+    else job_start vpn-sub-add 180 "$_url$NL" "$VPN" subscription add "$_name" - --type auto; fi
+}
+m_vpn_sub_refresh() {
+    only id
+    word id "all|$VPN_ID"; need id
+    need_vpn
+    if [ "$V" = all ]; then job_start vpn-sub-refresh 300 "" "$VPN" subscription refresh --all
+    else job_start vpn-sub-refresh 180 "" "$VPN" subscription refresh "$V"; fi
+}
+m_vpn_sub_remove() {
+    only id keep
+    word id "$VPN_ID"; need id; _id=$V
+    flag keep
+    need_vpn
+    if [ "${V:-0}" = 1 ]; then tool 25 "$VPN" subscription remove "$_id" --keep-profiles </dev/null
+    else tool 25 "$VPN" subscription remove "$_id" </dev/null; fi || refuse failed "$ERR"
+    ok
+}
+m_vpn_logs() {
+    only lines
+    int lines 1 1000; _n=${V:-100}
+    need_vpn
+    tool 25 "$VPN" logs -n "$_n" </dev/null || refuse failed "$ERR"
+    ok "\"log\":$(js "$(printf '%s\n' "$OUT" | tail -c 65536 | sanitize)")"
+}
+m_vpn_install() {
+    only
+    [ -x "$BIN/mu300-extra" ] || refuse unsupported mu300-extra
+    job_start vpn-install 1200 "" "$BIN/mu300-extra" install vpn
+}
+# vpn.engines: every engine, installed or not, and how to get it (mu300-vpn engines --json)
+m_vpn_engines() { only; need_vpn; vpn_json engines engines --json; }
+m_vpn_engine_install() {
+    only name
+    word name 'xray|sing-box|mihomo|dae'; need name
+    need_vpn
+    job_start vpn-engine 1200 "" "$VPN" engine install "$V"
+}
+
+# ------------------------------------------------------------------ SMS
+need_sms() { [ -x "$BIN/sms" ] || refuse unsupported sms; }
+SMS_ID='[0-9]{1,6}'
+m_sms_list() {
+    only page
+    int page 1 9999; _p=${V:-1}
+    is_luci && dash sms_list "{\"page\":\"$_p\"}"
+    need_sms
+    tool 60 "$BIN/sms" json </dev/null || refuse failed "$ERR"
+    _j=$(jcheck "$OUT") || refuse failed "sms gave no JSON"
+    ok "\"data\":$_j"
+}
+m_sms_read() {
+    only id
+    word id "$SMS_ID"; need id
+    is_luci && dash sms_show "{\"id\":\"$V\"}"
+    need_sms
+    tool 30 "$BIN/sms" read "$V" </dev/null || refuse failed "$ERR"
+    ok "\"text\":$(js "$OUT")"
+}
+sms_text_ok() {
+    [ -n "$1" ] && [ "$(printf '%s' "$1" | LC_ALL=C tr -d '\011\012\040-\176\200-\377'; echo x)" = x ] &&
+        [ "$(printf '%s' "$1" | LC_ALL=C tr -d '\200-\277' | wc -c)" -le 480 ]
+}
+m_sms_send() {
+    only number text
+    word number '\+?[0-9]{1,20}'; need number; _n=$V
+    fget text && [ "$FT" = s ] && sms_text_ok "$FV" || refuse bad-value text
+    _t=$FV
+    is_luci && dash sms_send "{\"num\":\"$_n\",\"text\":$(js "$_t")}"
+    need_sms
+    # the number and the text on sms's stdin (send --stdin), never in its arguments: anyone may list those
+    _in=$RUN/sms.$$.txt
+    printf '%s\n%s' "$_n" "$_t" > "$_in"
+    tool 90 "$BIN/sms" send --stdin < "$_in"; _rc=$RC; rm -f "$_in"
+    [ "$_rc" = 0 ] || refuse failed "$ERR"
+    ok "\"text\":$(js "$OUT")"
+}
+m_sms_job() { only; dash sms_job '{}'; }
+m_sms_delete() {
+    only id sim
+    word id "all|$SMS_ID"; need id; _id=$V
+    flag sim; _s=${V:-0}
+    is_luci && dash sms_delete "{\"id\":\"$_id\",\"sim\":\"$_s\"}"
+    need_sms
+    tool 60 "$BIN/sms" delete "$_id" </dev/null || refuse failed "$ERR"
+    ok
+}
+# SMS forwarding (unisoc-modem/forward, mu300-sms-forward; openwrt-luci, and Ubuntu with mu300-sms-forward.service):
+# the settings go to the adapter on its stdin, never as arguments (they hold the webhook address and headers, the bot
+# token, the mail password), which checks every field by its own rules and never gives a secret back
+have_forward() { [ -x "$FWDA" ]; }
+need_forward() { have_forward || refuse unsupported "SMS forwarding"; }
+# fwd_answer: the adapter's answer (OUT) as data, its error as the refusal
+fwd_answer() {
+    _j=$(jcheck "$OUT") || refuse failed "the forwarding adapter gave no answer"
+    case $_j in *'"ok":1'*) ;; *) refuse failed "$(printf '%s' "$_j" | sed -n 's/.*"error":"\([^"]*\)".*/\1/p')" ;; esac
+}
+m_sms_forward() {
+    only
+    need_forward
+    tool 30 "$FWDA" get </dev/null
+    fwd_answer
+    ok "\"data\":$_j"
+}
+FWD_FLAGS='enabled webhook telegram email sms'
+FWD_TEXTS='template allow deny keywords clear webhook_url webhook_format webhook_headers webhook_body webhook_expect
+telegram_token telegram_chat email_host email_port email_tls email_user email_password email_from email_to sms_number'
+m_sms_forward_set() {
+    only $FWD_FLAGS $FWD_TEXTS
+    need_forward
+    _req='{'
+    for _k in $FWD_FLAGS; do flag "$_k"; _req="$_req\"$_k\":\"${V:-0}\","; done
+    for _k in $FWD_TEXTS; do
+        fget "$_k" || continue
+        case $FT in z) continue ;; s) ;; *) refuse bad-value "$_k" ;; esac
+        # the adapter has the exact rules; here only text of a sane size
+        [ "$(bytes "$FV")" -le 4096 ] && [ "$(printf '%s' "$FV" | LC_ALL=C tr -d '\011\012\040-\176\200-\377'; echo x)" = x ] ||
+            refuse bad-value "$_k"
+        _req="$_req\"$_k\":$(js "$FV"),"
+    done
+    _req="${_req%,}}"
+    # the request holds secrets: a root-only file in RAM, read by the adapter on its stdin, removed at once
+    _in=$RUN/fwd.$$.json
+    printf '%s' "$_req" > "$_in"; _req=
+    if [ -n "${MU300_API_CHECK:-}" ]; then
+        MU300_FWD_CHECK=1 tool 30 "$FWDA" set < "$_in"; rm -f "$_in"
+        fwd_answer; ok '"checked":true'
+    fi
+    tool 30 "$FWDA" set < "$_in"; rm -f "$_in"
+    fwd_answer
+    ok
+}
+m_sms_forward_test() { only; need_forward; tool 20 "$FWDA" test </dev/null; fwd_answer; ok '"started":true'; }
+m_sms_forward_log_clear() { only; need_forward; tool 20 "$FWDA" logclear </dev/null; fwd_answer; ok; }
+
+# ------------------------------------------------------------------ USB, the LAN, adb
+adb_state() { _a=$(first "$R/etc/mu300/adb"); echo "${_a:-on}"; }
+adb_auth() {
+    _a=$(first "$R/etc/mu300/adb_auth")
+    case $_a in open|keys) echo "$_a" ;; *) [ -s "$R/etc/mu300/adb_keys" ] && echo keys || echo open ;; esac
+}
+m_lan_get() {
+    only
+    _role=
+    if [ "$DEV" = u30air ] && [ -x "$BIN/mu300-usb" ]; then
+        _role=$(timed 10 "$BIN/mu300-usb" 2>/dev/null | sed -n 's/^[[:space:]]*\(usb \)\{0,1\}role[: ]*\([a-z]*\).*/\2/p' | head -n 1)
+    fi
+    _keys=$(grep -c . "$R/etc/mu300/adb_keys" 2>/dev/null) || _keys=0
+    printf '{"ok":1,"ip":%s,"default_ip":%s,"usb_role":%s,"usb_role_switch":%s,"adb":{"state":%s,"auth":"%s","keys":%s}}\n' \
+        "$(js "$(lan_ip)")" "$(js "$("$BIN/mu300-lan-ip" 2>/dev/null)")" "$(js "$_role")" \
+        "$([ "$DEV" = u30air ] && echo true || echo false)" "$(js "$(adb_state)")" "$(adb_auth)" "$(jn "$_keys")"
+    exit 0
+}
+OCTET='(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])'
+m_lan_set() {
+    only ip
+    # a private /24 with the device at .1 (DHCP hands out .2-.200 of it)
+    word ip "(10\\.$OCTET\\.$OCTET|172\\.(1[6-9]|2[0-9]|3[01])\\.$OCTET|192\\.168\\.$OCTET)\\.1"; need ip
+    checked
+    if is_openwrt; then
+        printf 'set network.lan.ipaddr=%s\ncommit network\n' "$V" | uci_batch || refuse failed uci
+        later /etc/init.d/network reload
+    else
+        conf_put "$LANCONF" 644 "LAN_IP=$V" || refuse failed "could not write lan.conf"
+        later systemctl restart mu300-lan
+    fi
+    ok '"restart":true'
+}
+m_usb_role() {
+    only role
+    word role 'host|device'; need role
+    [ "$DEV" = u30air ] && [ -x "$BIN/mu300-usb" ] || refuse unsupported "usb role"
+    later "$BIN/mu300-usb" "$V"
+    ok
+}
+# The USB network to a computer (NCM, ECM or RNDIS) from the next boot on, for good or for one boot: mu300-usb net
+# (Ubuntu, OpenWrt), the control panel's Device page on openwrt-luci (its backend, which keeps it in UCI). boot/init
+# reads the choice from the system it boots; without a request field this only reads it.
+USB_ADAPTER=$R/usr/libexec/unisoc-modem/device-usb
+usbnet_ok() { if is_luci; then [ -x "$USB_ADAPTER" ]; else [ -x "$BIN/mu300-usb" ]; fi; }
+m_usb_net() {
+    only mode scope
+    word mode 'ncm|ecm|rndis|default' && _m=$V || _m=
+    word scope 'once|permanent' && _s=$V || _s=permanent
+    usbnet_ok || refuse unsupported "USB network mode"
+    _a=$(head -n 1 "$R/run/mu300/usb-net-applied" 2>/dev/null | tr -cd 'a-z')
+    case $_a in ncm|ecm|rndis) ;; *) _a= ;; esac
+    if is_luci; then
+        # the panel's own adapter (device-usb, as mu300dash calls it): the choice in UCI, "auto" whether it is used
+        if [ -n "$_m" ]; then
+            checked
+            if [ "$_m" = default ]; then tool 20 "$USB_ADAPTER" set-net ncm permanent 0 </dev/null
+            else tool 20 "$USB_ADAPTER" set-net "$_m" "$_s" 1 </dev/null; fi
+            case $OUT in *'"ok":1'*) ;; *) refuse failed "$(printf '%s' "$OUT" | sed -n 's/.*"error":"\([^"]*\)".*/\1/p')" ;; esac
+        fi
+        tool 20 "$USB_ADAPTER" get </dev/null
+        _n=$(printf '%s' "$OUT" | sed -n 's/.*"net_mode":"\([a-z]*\)".*/\1/p')
+        _sc=$(printf '%s' "$OUT" | sed -n 's/.*"net_scope":"\([a-z]*\)".*/\1/p')
+        case $OUT in *'"net_auto":1'*) ;; *) _n=default ;; esac
+        _o=false; [ "$_n" != default ] && [ "$_sc" = once ] && _o=true
+        case $_n in ncm|ecm|rndis|default) ;; *) _n=default ;; esac
+        ok "\"mode\":\"$_n\",\"once\":$_o,\"now\":$([ -n "$_a" ] && js "$_a" || printf null)"
+    fi
+    if [ -n "$_m" ]; then
+        checked
+        if [ "$_m" = default ]; then tool 20 "$BIN/mu300-usb" net default </dev/null || refuse failed "$ERR"
+        elif [ "$_s" = once ]; then tool 20 "$BIN/mu300-usb" net "$_m" once </dev/null || refuse failed "$ERR"
+        else tool 20 "$BIN/mu300-usb" net "$_m" </dev/null || refuse failed "$ERR"; fi
+    fi
+    tool 20 "$BIN/mu300-usb" net </dev/null || refuse failed "$ERR"
+    _n=$(printf '%s\n' "$OUT" | sed -n 's/^USB network from the next boot: //p' | head -n 1)
+    _o=false; case $_n in *' once') _o=true; _n=${_n% once} ;; esac
+    case $_n in ncm|ecm|rndis|default) ;; *) _n=default ;; esac
+    ok "\"mode\":\"$_n\",\"once\":$_o,\"now\":$([ -n "$_a" ] && js "$_a" || printf null)"
+}
+# an adb public key as adb writes it (~/.android/adbkey.pub): base64 of the RSA key (524 characters for 2048 bits),
+# then a name (the length is checked apart: POSIX regular expressions count to 255 at most)
+ADB_KEY='[A-Za-z0-9+/]+={0,2}( [!-~]{1,64})?'
+m_adb_auth() {
+    only mode key
+    word mode 'open|keys'; need mode; _m=$V
+    _key=
+    fget key && { [ "$FT" = s ] && [ "${#FV}" -ge 300 ] && [ "${#FV}" -le 1100 ] && allowed "$FV" "$ADB_KEY" || refuse bad-value key; _key=$FV; }
+    [ -x "$BIN/mu300-usb" ] || refuse unsupported mu300-usb
+    if [ "$_m" = keys ]; then
+        # keys only: the caller's own key goes in first, or it would lock itself out
+        [ -n "$_key" ] || refuse missing key
+        tool 20 "$BIN/mu300-usb" adb key - <<EOF || refuse failed "$ERR"
+$_key
+EOF
+    fi
+    later "$BIN/mu300-usb" adb auth "$_m"
+    ok
+}
+
+# ------------------------------------------------------------------ the system
+login_user() { is_openwrt && echo root || echo ubuntu; }
+timezone() {
+    if is_openwrt; then uci_q get system.@system[0].zonename
+    else readlink "$R/etc/localtime" 2>/dev/null | sed -n 's#.*/zoneinfo/##p'; fi
+}
+ssh_on() {
+    if is_openwrt; then ls "$R"/etc/rc.d/S*dropbear >/dev/null 2>&1
+    else systemctl is-enabled ssh.socket >/dev/null 2>&1 || systemctl is-enabled ssh.service >/dev/null 2>&1; fi
+}
+m_system_get() {
+    only
+    printf '{"ok":1,"hostname":%s,"timezone":%s,"user":"%s","ssh":%s,"time":%s,"release":%s,"kernel":%s,"kernel_choice":%s,' \
+        "$(js "$(uname -n)")" "$(js "$(timezone)")" "$(login_user)" "$(ssh_on && echo true || echo false)" "$(date +%s)" \
+        "$(js "$(release)")" "$(js "$(uname -r)")" "$(js "$(first "$DISK/boot/kernel")")"
+    _att=$(first "$DISK/.mu300/boot-attempts")
+    printf '"boot":{"default":"%s","attempts":%s,"locked":%s,"os":%s,"systems":%s},"extras":%s}\n' \
+        "$(default_boot)" "$(jn "$_att")" "$([ -e "$DISK/.mu300/boot-lock" ] && echo true || echo false)" \
+        "$(js "$(first "$DISK/.mu300/boot-os")")" "$(jlist $(systems))" "$(extras_json)"
+    exit 0
+}
+m_system_hostname() {
+    only name
+    word name '[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?'; need name
+    checked
+    if is_openwrt; then
+        printf 'set system.@system[0].hostname=%s\ncommit system\n' "$V" | uci_batch || refuse failed uci
+        later /etc/init.d/system reload
+    else
+        if command -v hostnamectl >/dev/null 2>&1; then tool 20 hostnamectl set-hostname "$V" </dev/null || refuse failed "$ERR"
+        else printf '%s\n' "$V" > "$R/etc/hostname" && hostname "$V" || refuse failed hostname; fi
+    fi
+    ok
+}
+m_system_timezone() {
+    only zone
+    word zone 'UTC|[A-Z][A-Za-z_+-]{1,30}(/[A-Za-z0-9_+-]{1,30}){1,2}'; need zone; _z=$V
+    case $_z in *..*) refuse bad-value zone ;; esac
+    _zf=$R/usr/share/zoneinfo/$_z
+    if is_openwrt; then
+        # OpenWrt keeps a POSIX TZ string: the last line of the zone's file, where the system has the zoneinfo
+        if [ "$_z" = UTC ]; then _tz=UTC0
+        elif [ -f "$_zf" ]; then _tz=$(tail -n 1 "$_zf")
+        else refuse unsupported "zoneinfo for $_z"; fi
+        allowed "$_tz" '[A-Za-z0-9<>+,./:-]{1,64}' || refuse unsupported "zoneinfo for $_z"
+        checked
+        printf 'set system.@system[0].zonename=%s\nset system.@system[0].timezone=%s\ncommit system\n' "$(uq "$_z")" "$(uq "$_tz")" |
+            uci_batch || refuse failed uci
+        later /etc/init.d/system reload
+    else
+        [ -f "$_zf" ] || refuse bad-value zone
+        checked
+        if command -v timedatectl >/dev/null 2>&1; then tool 20 timedatectl set-timezone "$_z" </dev/null || refuse failed "$ERR"
+        else ln -sf "/usr/share/zoneinfo/$_z" "$R/etc/localtime" || refuse failed localtime; fi
+    fi
+    ok
+}
+m_system_password() {
+    only password
+    # any text of one line (no control character), 1-128 bytes; on chpasswd's stdin, never in argv
+    text password 128; need password
+    _u=$(login_user)
+    # Ubuntu's chpasswd (PAM's hash); OpenWrt's busybox has none, the static one next to us has it
+    if is_openwrt && [ -x "$BIN/busybox" ]; then set -- "$BIN/busybox" chpasswd -c sha512
+    else set -- chpasswd; fi
+    tool 20 "$@" <<EOF || refuse failed "$ERR"
+$_u:$V
+EOF
+    ok "\"user\":\"$_u\""
+}
+m_system_ssh() {
+    only state
+    word state 'on|off'; need state
+    ! is_openwrt || [ -x "$R/etc/init.d/dropbear" ] || refuse unsupported dropbear
+    checked
+    if is_openwrt; then
+        if [ "$V" = on ]; then "$R/etc/init.d/dropbear" enable; "$R/etc/init.d/dropbear" start
+        else "$R/etc/init.d/dropbear" stop; "$R/etc/init.d/dropbear" disable; fi >/dev/null 2>&1
+    elif [ "$V" = on ]; then
+        tool 30 systemctl enable --now ssh.socket </dev/null || refuse failed "$ERR"
+    else
+        tool 30 systemctl disable --now ssh.socket ssh.service </dev/null || refuse failed "$ERR"
+    fi
+    ok
+}
+m_system_reboot() { only; later sh -c 'sync; reboot'; ok; }
+m_system_boot() {
+    only target
+    word target 'linux|android|lock|unlock'; need target
+    tool 60 "$BIN/mu300-next-boot" "$V" </dev/null || refuse failed "$ERR"
+    ok
+}
+m_system_bootos() {
+    only os
+    word os 'ubuntu|openwrt|openwrt-luci'; need os
+    tool 60 "$BIN/mu300-os" "$V" </dev/null || refuse failed "$ERR"
+    ok
+}
+m_update_check() { only; job_start update-check 300 "" "$BIN/mu300-update" check; }
+m_update_apply() { only; job_start update-apply 7200 "" "$BIN/mu300-update" apply; }
+m_kernel_set() {
+    only version
+    word version '5\.4|6\.18|7\.2|7\.3'; need version
+    job_start kernel 3600 "" "$BIN/mu300-update" kernel "$V"
+}
+EXTRAS='vpn lang panel vpn-xray vpn-singbox vpn-mihomo vpn-dae'
+extras_json() {
+    printf '['
+    _f=1
+    for _x in $EXTRAS; do
+        _in=false; _rel=
+        if [ -d "$DISK/extra/$_x/bin" ] || [ -d "$DISK/extra/$_x/i18n" ]; then
+            _in=true
+            _rel=$(first "$DISK/extra/$_x/release"); [ -n "$_rel" ] || _rel=$(first "$DISK/extra/$_x/VERSION")
+        fi
+        [ -n "$_f" ] || printf ','
+        _f=
+        printf '{"name":"%s","installed":%s,"release":%s}' "$_x" "$_in" "$(js "$_rel")"
+    done
+    printf ']'
+}
+m_extra_list() { only; ok "\"extras\":$(extras_json)"; }
+m_extra_install() {
+    only name
+    word name "$(echo "$EXTRAS" | tr ' ' '|')"; need name
+    [ -x "$BIN/mu300-extra" ] || refuse unsupported mu300-extra
+    job_start extra-install 1200 "" "$BIN/mu300-extra" install "$V"
+}
+m_extra_remove() {
+    only name
+    word name "$(echo "$EXTRAS" | tr ' ' '|')"; need name
+    [ -x "$BIN/mu300-extra" ] || refuse unsupported mu300-extra
+    job_start extra-remove 300 "" "$BIN/mu300-extra" remove "$V"
+}
+m_logs() {
+    only lines
+    int lines 10 2000; _n=${V:-300}
+    _t=$( {
+        echo '--- mu300-update version'; timed 20 "$BIN/mu300-update" version 2>&1
+        echo "--- dmesg (last $_n lines)"; dmesg 2>/dev/null | tail -n "$_n"
+        echo "--- system log (last $_n lines)"
+        if command -v journalctl >/dev/null 2>&1; then journalctl -b -n "$_n" --no-pager 2>/dev/null
+        else logread 2>/dev/null | tail -n "$_n"; fi
+    } | tail -c 262144 | sanitize)
+    ok "\"text\":$(js "$_t")"
+}
+
+# ------------------------------------------------------------------ the modem's own tools (Cockpit's MU300 page)
+# The AT terminal: one command, on mu300-at's stdin (it may carry a secret: an APN password), as LuCI's AT terminal
+# sends it; whatever the modem answers comes back as text
+m_at_send() {
+    only command timeout
+    fget command && [ "$FT" = s ] || refuse missing command
+    _c=$(printf '%s' "$FV" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+    [ -n "$_c" ] && [ "$(bytes "$_c")" -le 512 ] && allowed "$_c" '[Aa][Tt][ -~]*' || refuse bad-value command
+    int timeout 1 60; _t=${V:-10}
+    [ -x "$BIN/mu300-at" ] || refuse unsupported mu300-at
+    tool $((_t + 10)) "$BIN/mu300-at" -t "$_t" - <<EOT
+$_c
+EOT
+    _rc=$RC
+    at_history_add "$_c"
+    ok "\"rc\":$_rc,\"text\":$(js "$(printf '%s\n' "$OUT" | tr -d '\r' | sanitize)")"
+}
+# The AT terminal's history: the last 40 commands of this boot, "MM-DD HH:MM:SS COMMAND", in the control panel's file
+# (openwrt-luci's AT terminal keeps the same one), root's only, in RAM. A command that carries a PIN or a password
+# (CPIN, CPWD, CLCK, CGAUTH) is kept without its arguments.
+AT_HIST=$DASHDIR/at-history
+at_history_add() {
+    (umask 077; mkdir -p "$DASHDIR") 2>/dev/null
+    [ -d "$DASHDIR" ] && [ ! -L "$DASHDIR" ] && [ -O "$DASHDIR" ] || return 0
+    _hc=$1
+    case $(printf '%s' "$_hc" | tr 'a-z' 'A-Z') in
+        AT+CPIN=*|AT+CPWD=*|AT+CLCK=*|AT+CGAUTH=*|AT\$QCPDPP=*) _hc="${_hc%%=*}=..." ;;
+    esac
+    printf '%s %s\n' "$(date '+%m-%d %H:%M:%S')" "$_hc" >> "$AT_HIST"
+    tail -n 40 "$AT_HIST" > "$AT_HIST.t" 2>/dev/null && mv "$AT_HIST.t" "$AT_HIST"
+}
+m_at_history() {
+    only
+    _l=$(tail -n 40 "$AT_HIST" 2>/dev/null | LC_ALL=C tr -d '\000-\010\013-\037\177')
+    printf '{"ok":1,"history":['
+    _f=1
+    printf '%s\n' "$_l" | sed '1!G;h;$!d' | while IFS= read -r _h; do
+        [ -n "$_h" ] || continue
+        _t=$(printf '%s' "$_h" | cut -d' ' -f1-2); _c=$(printf '%s' "$_h" | cut -d' ' -f3-)
+        [ -n "$_f" ] || printf ','
+        _f=
+        printf '{"time":%s,"command":%s}' "$(js "$_t")" "$(js "$_c")"
+    done
+    printf ']}\n'
+    exit 0
+}
+# USSD (mu300-ussd): a code (*100#), an answer in an open session (1), or the session dropped
+m_ussd_send() {
+    only code
+    word code '[0-9*#+]{1,40}'; need code
+    [ -x "$BIN/mu300-ussd" ] || refuse unsupported mu300-ussd
+    tool 70 "$BIN/mu300-ussd" -t 45 "$V" </dev/null || refuse failed "$ERR"
+    ok "\"text\":$(js "$(printf '%s\n' "$OUT" | sanitize)")"
+}
+m_ussd_cancel() {
+    only
+    [ -x "$BIN/mu300-ussd" ] || refuse unsupported mu300-ussd
+    tool 30 "$BIN/mu300-ussd" --cancel </dev/null || refuse failed "$ERR"
+    ok
+}
+# network recovery: the dial again, from the radio up (Ubuntu: the mobile-data service; OpenWrt: the WAN)
+m_modem_restart() {
+    only
+    checked
+    if is_openwrt; then later sh -c 'ifdown wan; sleep 3; ifup wan'
+    else later systemctl restart mu300-mobile-data.service; fi
+    ok
+}
+
+# ------------------------------------------------------------------ TTL, data usage
+m_ttl_get() {
+    only
+    [ -x "$BIN/mu300-ttl" ] || refuse unsupported mu300-ttl
+    tool 20 "$BIN/mu300-ttl" state </dev/null || refuse failed "$ERR"
+    _v=$(printf '%s\n' "$OUT" | sed -n 's/^TTL=//p' | head -n 1)
+    _b=$(printf '%s\n' "$OUT" | sed -n 's/^BACKEND=//p' | head -n 1)
+    case $_b in tc|nft) ;; *) _b=none ;; esac
+    allowed "$_v" '[1-9][0-9]{0,2}' && [ "$_v" -le 255 ] || _v=
+    ok "\"enabled\":$([ -n "$_v" ] && echo true || echo false),\"value\":$(jn "$_v"),\"backend\":\"$_b\""
+}
+m_ttl_set() {
+    only value
+    word value 'off|[1-9][0-9]{0,2}'; need value
+    [ "$V" = off ] || [ "$V" -le 255 ] || refuse bad-value value
+    [ -x "$BIN/mu300-ttl" ] || refuse unsupported mu300-ttl
+    checked
+    if [ "$V" = off ]; then tool 30 "$BIN/mu300-ttl" off </dev/null; else tool 30 "$BIN/mu300-ttl" set "$V" </dev/null; fi ||
+        refuse failed "$ERR"
+    ok
+}
+m_traffic_get() {
+    only
+    [ -x "$BIN/mu300-traffic" ] || refuse unsupported mu300-traffic
+    tool 20 "$BIN/mu300-traffic" json </dev/null || refuse failed "$ERR"
+    _j=$(jcheck "$OUT") || refuse failed "mu300-traffic gave no JSON"
+    ok "\"traffic\":$_j"
+}
+# traffic.set {key, value}: reset_day 1-31, cap bytes (0: none), warn 1-100, cut on|off, used bytes, clear "yes"
+m_traffic_set() {
+    only key value
+    word key 'reset_day|cap|warn|cut|used|clear'; need key; _k=$V
+    case $_k in
+        reset_day) int value 1 31 ;;
+        warn) int value 1 100 ;;
+        cut) word value 'on|off' ;;
+        clear) word value 'yes' ;;
+        cap|used) word value '0|[1-9][0-9]{0,15}' ;;
+    esac
+    need value
+    [ -x "$BIN/mu300-traffic" ] || refuse unsupported mu300-traffic
+    checked
+    case $_k in
+        reset_day) set -- set reset-day "$V" ;;
+        cap) if [ "$V" = 0 ]; then set -- set cap off; else set -- set cap "$V"; fi ;;
+        warn|cut) set -- set "$_k" "$V" ;;
+        used) set -- used "$V" ;;
+        clear) set -- clear --yes ;;
+    esac
+    tool 30 "$BIN/mu300-traffic" "$@" </dev/null || refuse failed "$ERR"
+    ok
+}
+
+# ------------------------------------------------------------------ power, LEDs, zram, CPU
+# power.get: mu300-power status, as one object (the reading of LuCI's power adapter): the state, the battery and the
+# charger, and the knobs of the three profiles
+power_knobs() {
+    _l=$(printf '%s\n' "$_pst" | sed -n "s/^$1: //p")
+    _w=$(echo "$_l" | sed -n 's/.*WIFI_IDLE=\([0-9]*\).*/\1/p'); _r=$(echo "$_l" | sed -n 's/.*RADIO_IDLE=\([a-z0-9]*\).*/\1/p')
+    _d=$(echo "$_l" | sed -n 's/.*LEDS_IDLE=\([a-z0-9]*\).*/\1/p'); _c=$(echo "$_l" | sed -n 's/.*CPU=\([a-z0-9]*\).*/\1/p')
+    printf '{"WIFI_IDLE":%s,"RADIO_IDLE":%s,"LEDS_IDLE":%s,"CPU":%s}' "$(jn "$_w")" "$(js "$_r")" "$(js "$_d")" "$(js "$_c")"
+}
+milli() { case ${1:-} in ''|-|*[!0-9-]*|?*-*) ;; *) echo $(( $1 / 1000 )) ;; esac; }
+m_power_get() {
+    only
+    [ -x "$BIN/mu300-power" ] || refuse unsupported mu300-power
+    tool 20 "$BIN/mu300-power" status </dev/null
+    _pst=$OUT
+    _prof=$(echo "$_pst" | sed -n 's/^profile: \([a-z]*\) (.*)$/\1/p'); _why=$(echo "$_pst" | sed -n 's/^profile: [a-z]* (\(.*\))$/\1/p')
+    _state=$(echo "$_pst" | sed -n 's/^state: //p' | head -n 1); _supply=$(echo "$_pst" | sed -n 's/^supply: //p' | head -n 1)
+    _sb=$(echo "$_pst" | sed -n 's/^SAVER_BELOW=\([0-9]*\) .*/\1/p'); _ct=$(echo "$_pst" | sed -n 's/.*CHARGE_TO=\([0-9]*\)$/\1/p')
+    _poc=$(echo "$_pst" | sed -n 's/^POWER_ON_CHARGER=\([01]\)$/\1/p')
+    _bat=null
+    if ! echo "$_pst" | grep -qx 'battery: none'; then
+        for _d in "$R"/sys/class/power_supply/*; do
+            [ "$(cat "$_d/type" 2>/dev/null)" = Battery ] || continue
+            [ ! -f "$_d/present" ] || [ "$(cat "$_d/present" 2>/dev/null)" = 1 ] || continue
+            _bat=$(printf '{"capacity":%s,"status":%s,"mv":%s,"ma":%s,"temp":%s}' "$(jn "$(cat "$_d/capacity" 2>/dev/null)")" \
+                "$(js "$(cat "$_d/status" 2>/dev/null | tr 'A-Z' 'a-z')")" "$(jn "$(milli "$(cat "$_d/voltage_now" 2>/dev/null)")")" \
+                "$(jn "$(milli "$(cat "$_d/current_now" 2>/dev/null)")")" "$(jn "$(cat "$_d/temp" 2>/dev/null)")")
+            break
+        done
+    fi
+    _conf=$(sed -n 's/^PROFILE=\(.*\)$/\1/p' "$R/etc/mu300/power.conf" 2>/dev/null | tail -n 1)
+    case $_conf in auto|plugged|battery|saver) ;; *) _conf=auto ;; esac
+    printf '{"ok":1,"state":%s,"profile":%s,"why":%s,"supply":%s,"battery":%s,"charge_off":%s,' \
+        "$(js "${_state:-active}")" "$(js "$_prof")" "$(js "$_why")" "$(js "$_supply")" "$_bat" \
+        "$(js "$(first "$R/run/mu300/power/charge-off")")"
+    printf '"conf":{"PROFILE":"%s","SAVER_BELOW":%s,"CHARGE_TO":%s,"POWER_ON_CHARGER":%s,"plugged":%s,"battery":%s,"saver":%s},"text":%s}\n' \
+        "$_conf" "$(jn "$_sb")" "$(jn "$_ct")" "$(jn "$_poc")" "$(power_knobs plugged)" "$(power_knobs battery)" "$(power_knobs saver)" \
+        "$(js "$_pst")"
+    exit 0
+}
+# power.set {key, value}: as mu300-power set takes them (it checks the value again): PROFILE, SAVER_BELOW, CHARGE_TO,
+# POWER_ON_CHARGER, PROFILE.KNOB
+m_power_set() {
+    only key value
+    word key 'PROFILE|SAVER_BELOW|CHARGE_TO|POWER_ON_CHARGER|(plugged|battery|saver)\.(WIFI_IDLE|RADIO_IDLE|LEDS_IDLE|CPU)'; need key; _k=$V
+    case $_k in
+        PROFILE) word value 'auto|plugged|battery|saver' ;;
+        SAVER_BELOW|CHARGE_TO) int value 0 100 ;;
+        POWER_ON_CHARGER) int value 0 1 ;;
+        *.WIFI_IDLE) int value 0 1440 ;;
+        *.RADIO_IDLE) word value 'keep|lte|off' ;;
+        *.LEDS_IDLE) word value 'on|off' ;;
+        *.CPU) word value 'full|eco' ;;
+    esac
+    need value
+    [ -x "$BIN/mu300-power" ] || refuse unsupported mu300-power
+    checked
+    if [ "$_k" = PROFILE ]; then tool 30 "$BIN/mu300-power" profile "$V" </dev/null
+    else tool 30 "$BIN/mu300-power" set "$_k" "$V" </dev/null; fi || refuse failed "$ERR"
+    ok
+}
+LEDCONF=$R/etc/mu300/led.conf
+m_led_get() {
+    only
+    _t=$(sed -n 's/^LED_TIMEOUT=\([0-9][0-9]*\)$/\1/p' "$LEDCONF" 2>/dev/null | tail -n 1)
+    ok "\"timeout\":$(jn "$_t"),\"device\":$(js "$DEV")"
+}
+# led.set {timeout}: seconds the LEDs stay on after a key or a change (0: always on); led.set {test:true}: each LED in
+# turn, 2 s each (to tell which one is where)
+m_led_set() {
+    only timeout test
+    int timeout 0 86400; _t=$V
+    flag test; _test=${V:-0}
+    [ -n "$_t" ] || [ "$_test" = 1 ] || refuse missing timeout
+    [ -x "$BIN/mu300-led" ] || refuse unsupported mu300-led
+    checked
+    if [ -n "$_t" ]; then
+        conf_put "$LEDCONF" 644 "LED_TIMEOUT=$_t" || refuse failed "could not write led.conf"
+        later "$BIN/mu300-led" wake
+    fi
+    [ "$_test" = 0 ] || later "$BIN/mu300-led" test
+    ok
+}
+m_zram_get() {
+    only
+    [ -x "$BIN/mu300-zram" ] || refuse unsupported mu300-zram
+    tool 20 "$BIN/mu300-zram" status </dev/null || refuse failed "$ERR"
+    _l=$(printf '%s\n' "$OUT" | head -n 1)
+    case $_l in *'swap: on'*) _a=true ;; *) _a=false ;; esac
+    case $_l in *'ZRAM_ENABLE=0'*) _e=false ;; *) _e=true ;; esac
+    ok "\"active\":$_a,\"enabled\":$_e,\"text\":$(js "$OUT")"
+}
+m_zram_set() {
+    only state
+    word state 'on|off'; need state
+    [ -x "$BIN/mu300-zram" ] || refuse unsupported mu300-zram
+    checked
+    tool 60 "$BIN/mu300-zram" "$V" </dev/null || refuse failed "$ERR"
+    ok "\"text\":$(js "$OUT")"
+}
+# cpu.get: the profile (mu300-cpu status --json) and the CPU voltage offset (EXPERIMENTAL: voltage status --json)
+m_cpu_get() {
+    only
+    [ -x "$BIN/mu300-cpu" ] || refuse unsupported mu300-cpu
+    tool 20 "$BIN/mu300-cpu" status --json </dev/null || refuse failed "$ERR"
+    _cj=$(jcheck "$OUT") || refuse failed "mu300-cpu gave no JSON"
+    tool 20 "$BIN/mu300-cpu" voltage status --json </dev/null
+    _v=$(jcheck "$OUT") || _v=null
+    ok "\"cpu\":$_cj,\"voltage\":$_v"
+}
+m_cpu_profile() {
+    only name
+    word name 'saving|balanced|performance'; need name
+    [ -x "$BIN/mu300-cpu" ] || refuse unsupported mu300-cpu
+    checked
+    tool 30 "$BIN/mu300-cpu" profile "$V" </dev/null || refuse failed "$ERR"
+    ok
+}
+# cpu.core {cpu: 1-63, state: on|off}: that core online or offline, saved (CPU0 always stays online, FINDINGS 200)
+m_cpu_core() {
+    only cpu state
+    int cpu 1 63; need cpu; _c=$V
+    word state 'on|off'; need state
+    [ -x "$BIN/mu300-cpu" ] || refuse unsupported mu300-cpu
+    checked
+    tool 30 "$BIN/mu300-cpu" core "$_c" "$V" </dev/null || refuse failed "$ERR"
+    ok
+}
+# cpu.lowlatency {state: on|off}: CPU0 without its idle states (shorter Wi-Fi delays, more power), saved (FINDINGS 200)
+m_cpu_lowlatency() {
+    only state
+    word state 'on|off'; need state
+    [ -x "$BIN/mu300-cpu" ] || refuse unsupported mu300-cpu
+    checked
+    tool 30 "$BIN/mu300-cpu" lowlatency "$V" </dev/null || refuse failed "$ERR"
+    ok
+}
+# cpu.voltage {op: set, offsets "A,B,C", confirm "EXPERIMENTAL"} | {op: off} | {op: stress, minutes 1-120}: the
+# request for the next boot (it can damage the device for good: the word is mu300-cpu's own confirmation), back to
+# the stock voltages, or the stress test in the background
+m_cpu_voltage() {
+    only op offsets confirm minutes
+    word op 'set|off|stress'; need op; _op=$V
+    [ -x "$BIN/mu300-cpu" ] || refuse unsupported mu300-cpu
+    case $_op in
+        set)
+            word offsets '-?[0-9]{1,6},-?[0-9]{1,6},-?[0-9]{1,6}'; need offsets; _o=$V
+            word confirm 'EXPERIMENTAL' || refuse missing confirm
+            checked
+            tool 30 "$BIN/mu300-cpu" voltage set "$_o" --confirm EXPERIMENTAL </dev/null ;;
+        off) checked; tool 30 "$BIN/mu300-cpu" voltage off </dev/null ;;
+        stress)
+            int minutes 1 120; _m=${V:-10}
+            checked
+            tool 30 "$BIN/mu300-cpu" voltage stress "$_m" --background </dev/null ;;
+    esac || refuse failed "$ERR"
+    ok
+}
+
+# ------------------------------------------------------------------ updates, packages, Docker
+# update.status: mu300-update status (JSON: the systems, their releases, the kernel, free space) and where the release
+# files come from (mu300-update source); no network
+m_update_status() {
+    only
+    [ -x "$BIN/mu300-update" ] || refuse unsupported mu300-update
+    tool 60 "$BIN/mu300-update" status </dev/null
+    _uj=$(jcheck "$OUT") || _uj=null
+    tool 20 "$BIN/mu300-update" source </dev/null
+    _src=$OUT
+    tool 20 "$BIN/mu300-update" version </dev/null
+    ok "\"status\":$_uj,\"source\":$(js "$(printf '%s\n' "$_src" | sanitize_keep_url)"),\"version\":$(js "$OUT")"
+}
+# a mirror's address is the user's own setting and carries no token: shown as it is (control characters out)
+sanitize_keep_url() { LC_ALL=C tr -d '\000-\010\013-\037\177'; }
+m_update_source() {
+    only url
+    fget url && [ "$FT" = s ] || refuse missing url
+    _u=$FV
+    if [ "$_u" != off ]; then
+        [ "${#_u}" -le 512 ] && allowed "$_u" 'https?://[A-Za-z0-9.-]{1,253}(:[0-9]{1,5})?(/[!-~]*)?' || refuse bad-value url
+    fi
+    [ -x "$BIN/mu300-update" ] || refuse unsupported mu300-update
+    checked
+    tool 30 "$BIN/mu300-update" source "$_u" </dev/null || refuse failed "$ERR"
+    ok "\"source\":$(js "$OUT")"
+}
+# packages.get: what mu300-user-packages put back after the last update (its status, as text)
+m_packages_get() {
+    only
+    [ -x "$BIN/mu300-user-packages" ] || refuse unsupported mu300-user-packages
+    tool 20 "$BIN/mu300-user-packages" status </dev/null
+    ok "\"text\":$(js "$(printf '%s\n' "$OUT" | sanitize)")"
+}
+m_packages_act() {
+    only op
+    word op 'retry|skip|dismiss'; need op
+    [ -x "$BIN/mu300-user-packages" ] || refuse unsupported mu300-user-packages
+    [ "$V" != retry ] || job_start packages-retry 3600 "" "$BIN/mu300-user-packages" retry
+    tool 30 "$BIN/mu300-user-packages" "$V" </dev/null || refuse failed "$ERR"
+    ok
+}
+# docker.status: whether Docker is here and running, and its containers (name, image, state, status); read only
+m_docker_status() {
+    only
+    command -v docker >/dev/null 2>&1 || ok '"installed":false'
+    _act=$(systemctl is-active docker 2>/dev/null) || true
+    # only a running Docker is asked: a "docker ps" would start one that is socket-activated
+    _c=
+    [ "$_act" != active ] || _c=$(timed 15 docker ps -a --format '{{.Names}}\t{{.Image}}\t{{.State}}\t{{.Status}}' 2>/dev/null | head -n 100)
+    _list=$(printf '%s\n' "$_c" | while IFS="$TAB" read -r _n _i _s _st; do
+        [ -n "$_n" ] || continue
+        printf ',{"name":%s,"image":%s,"state":%s,"status":%s}' "$(js "$_n")" "$(js "$_i")" "$(js "$_s")" "$(js "$_st")"
+    done)
+    ok "\"installed\":true,\"active\":$(js "${_act:-unknown}"),\"containers\":[${_list#,}]"
+}
+
+# ------------------------------------------------------------------ the background job
+# $JOB: kind, state (running, done), pid (the session's leader), started, ended, rc, log. One at a time; it outlives
+# the call that started it and the caller (setsid). A secret for it (a password, a URL with a token) is written into
+# a 0600 file of the root-only job directory and opened as its stdin, then removed before the command runs.
+job_alive() { _p=$(first "$JOB/pid"); [ -n "$_p" ] && kill -0 "$_p" 2>/dev/null; }
+job_state() {
+    [ -s "$JOB/kind" ] || { echo none; return; }
+    if [ -s "$JOB/rc" ]; then echo done
+    elif job_alive; then echo running
+    elif [ -n "$(first "$JOB/pid")" ]; then echo interrupted
+    # started a moment ago, its pid not written yet
+    elif [ $(( $(date +%s) - $(first "$JOB/started" || echo 0) )) -lt 10 ]; then echo running
+    else echo interrupted; fi
+}
+job_brief() {
+    printf '{"kind":%s,"state":"%s"}' "$(js "$(first "$JOB/kind")")" "$(job_state)"
+}
+# job_start KIND SECS STDIN CMD...: the job, and the answer {"ok":1,"job":"KIND"} (exits)
+job_start() {
+    _kind=$1 _secs=$2 _in=$3; shift 3
+    run_dir
+    exec 8>"$JOB.lock"
+    command -v flock >/dev/null 2>&1 && { flock -n 8 || refuse busy; }
+    [ "$(job_state)" != running ] || refuse busy "$(first "$JOB/kind")"
+    rm -f "$JOB/pid" "$JOB/rc" "$JOB/ended" "$JOB/in"
+    printf '%s\n' "$_kind" > "$JOB/kind"
+    date +%s > "$JOB/started"
+    : > "$JOB/log"
+    [ -z "$_in" ] || printf '%s' "$_in" > "$JOB/in"
+    setsid sh -c '
+        j=$1 secs=$2; shift 2
+        echo $$ > "$j/pid"
+        if [ -f "$j/in" ]; then exec 3<"$j/in"; rm -f "$j/in"; else exec 3</dev/null; fi
+        if command -v timeout >/dev/null 2>&1; then set -- timeout "$secs" "$@"; fi
+        "$@" <&3 >>"$j/log" 2>&1
+        rc=$?
+        exec 3<&-
+        date +%s > "$j/ended"
+        echo "$rc" > "$j/rc"
+    ' mu300-api-job "$JOB" "$_secs" "$@" </dev/null >/dev/null 2>&1 8>&- &
+    ok "\"job\":\"$_kind\""
+}
+m_job_status() {
+    only from
+    int from 0 999999999; _from=${V:-0}
+    run_dir
+    _st=$(job_state)
+    # whole lines only while the job runs (the last one may still be growing); all of them once it ended
+    if [ "$_st" = running ]; then _lines=$(wc -l < "$JOB/log" 2>/dev/null | tr -d ' ')
+    else _lines=$(awk 'END { print NR }' "$JOB/log" 2>/dev/null); fi
+    _lines=${_lines:-0}
+    # an offset past the end is one of a job that is gone: this one from its start
+    [ "$_from" -le "$_lines" ] || _from=0
+    _n=$((_lines - _from))
+    [ "$_n" -ge 0 ] || _n=0
+    [ "$_n" -le 400 ] || _n=400
+    # at most 400 lines a call, each at most 400 bytes, whatever the job printed (an address's token cut out); one
+    # string, the page splits it at \n
+    _text=
+    [ "$_n" = 0 ] || _text=$(tail -n "+$((_from + 1))" "$JOB/log" 2>/dev/null | head -n "$_n" | cut -c1-400 | sanitize)
+    printf '{"ok":1,"job":{"kind":%s,"state":"%s","rc":%s,"started":%s,"ended":%s,"text":%s,"next":%s,"cancel":%s}}\n' \
+        "$(js "$(first "$JOB/kind")")" "$_st" "$(jn "$(first "$JOB/rc")")" "$(jn "$(first "$JOB/started")")" \
+        "$(jn "$(first "$JOB/ended")")" "$(js "$_text")" "$((_from + _n))" "$(job_cancellable && echo true || echo false)"
+    exit 0
+}
+# what may be stopped half way: never an update's or a kernel's writes
+job_cancellable() { case $(first "$JOB/kind") in update-apply|kernel|extra-remove|'') return 1 ;; esac; return 0; }
+m_job_cancel() {
+    only
+    run_dir
+    [ "$(job_state)" = running ] || refuse failed "no job runs"
+    job_cancellable || refuse unsupported "$(first "$JOB/kind")"
+    _p=$(first "$JOB/pid")
+    kill -TERM -- "-$_p" 2>/dev/null || kill -TERM "$_p" 2>/dev/null
+    ok
+}
+m_job_clear() {
+    only
+    run_dir
+    [ "$(job_state)" != running ] || refuse busy
+    rm -f "$JOB/kind" "$JOB/pid" "$JOB/rc" "$JOB/ended" "$JOB/started" "$JOB/log" "$JOB/in"
+    ok
+}
+
+# ------------------------------------------------------------------ the settings as one file (mu300-backup, FINDINGS 155)
+BACKUP=${MU300_BACKUP:-${SELF%/*}/mu300-backup}
+SECTION_LIST='(wifi|data|sim|locks|vpn|sms_forward|lan|system|ssh_keys|password)(,(wifi|data|sim|locks|vpn|sms_forward|lan|system|ssh_keys|password)){0,9}'
+# pass_field: PASS the passphrase of the request (8-256 characters on one line), or empty
+pass_field() {
+    PASS=
+    text passphrase 256 && [ -n "$V" ] || return 0
+    [ "$(bytes "$V")" -ge 8 ] || refuse bad-value passphrase
+    PASS=$V
+}
+# backup.export {passphrase, with_password}: {"file": the backup as text, "name", "encrypted"} - the one reply that
+# carries secrets on purpose: the file is what the caller asked to keep. Sealed when a passphrase is given.
+m_backup_export() {
+    only passphrase with_password
+    [ -r "$BACKUP" ] || refuse unsupported mu300-backup
+    pass_field
+    flag with_password; _wp=${V:-0}
+    set -- sh "$BACKUP" export -o -
+    [ "$_wp" = 0 ] || set -- "$@" --with-password
+    [ -z "$PASS" ] || set -- "$@" --passphrase-stdin
+    _o=$RUN/backup.$$.out _e=$RUN/backup.$$.err
+    printf '%s\n' "$PASS" | timed 300 "$@" > "$_o" 2> "$_e"; RC=$?
+    if [ "$RC" != 0 ]; then
+        ERR=$(lastmsg "$(cat "$_e" 2>/dev/null)"); rm -f "$_o" "$_e"; refuse failed "$ERR"
+    fi
+    _ext=json; [ -z "$PASS" ] || _ext=enc
+    _name=mu300-backup-$(uname -n | tr -cd 'A-Za-z0-9-' | head -c 40)-$(date +%Y%m%d-%H%M%S).$_ext
+    printf '{"ok":1,"name":%s,"encrypted":%s,"file":%s}\n' "$(js "$_name")" "$([ -n "$PASS" ] && echo true || echo false)" \
+        "$(LC_ALL=C awk -v mode=str -f "$JAWK" < "$_o" | tr -d '\n')"
+    rm -f "$_o" "$_e"
+    exit 0
+}
+# backup.import {file, passphrase, dry_run, force, only, skip}: dry_run answers at once ({"valid", "text": what would
+# change, or why the file is refused}); otherwise the restore runs as the job (job.status follows it). The file and
+# the passphrase reach mu300-backup on its stdin only.
+m_backup_import() {
+    only file passphrase dry_run force only skip
+    [ -r "$BACKUP" ] || refuse unsupported mu300-backup
+    fget file && [ "$FT" = s ] && [ -n "$FV" ] || refuse missing file
+    _file=$FV
+    pass_field
+    set -- sh "$BACKUP" import -
+    [ -z "$PASS" ] || set -- "$@" --passphrase-stdin
+    flag force; [ "${V:-0}" = 0 ] || set -- "$@" --force
+    word only "$SECTION_LIST" && set -- "$@" --only "$V"
+    word skip "$SECTION_LIST" && set -- "$@" --skip "$V"
+    if [ -n "$PASS" ]; then _in="$PASS$NL$_file"; else _in=$_file; fi
+    flag dry_run
+    if [ "${V:-0}" = 1 ]; then
+        _o=$RUN/backup.$$.out
+        printf '%s' "$_in" | timed 300 "$@" --dry-run > "$_o" 2>&1; RC=$?
+        _in=
+        _t=$(tail -c 65536 "$_o" | sanitize); rm -f "$_o"
+        ok "\"valid\":$([ "$RC" = 0 ] && echo true || echo false),\"text\":$(js "$_t")"
+    fi
+    job_start backup-import 1800 "$_in" "$@"
+}
+
+# ------------------------------------------------------------------ main
+[ -z "${MU300_LIB:-}" ] || return 0 2>/dev/null || exit 0
+case ${1:-} in
+    --methods) printf '%s\n' $METHODS; exit 0 ;;
+    -h|--help|'') sed -n '2,26s/^# \{0,1\}//p' "$SELF" >&2; exit 2 ;;
+esac
+METHOD=$1
+case $METHOD in *[!a-z0-9._]*) refuse unknown-method ;; esac
+case " $(echo $METHODS) " in *" $METHOD "*) ;; *) refuse unknown-method ;; esac
+[ $# = 1 ] || refuse bad-request "arguments: the request is a JSON object on stdin"
+need_root
+[ -r "$JAWK" ] || refuse unsupported "json.awk"
+# a backup to restore may be larger than any other request (VPN configurations): 6 MiB, a 4 MiB file escaped
+[ "$METHOD" != backup.import ] || INPUT_MAX=6291456
+INPUT=$(head -c $((INPUT_MAX + 1)); printf x)
+INPUT=${INPUT%x}
+[ "$(bytes "$INPUT")" -le "$INPUT_MAX" ] || refuse bad-request "larger than $((INPUT_MAX / 1024)) KiB"
+# nothing at all (a person at a shell, stdin closed) is the empty request
+[ -n "$(printf '%s' "$INPUT" | tr -d ' \t\r\n')" ] || INPUT='{}'
+FIELDS=$(printf '%s' "$INPUT" | LC_ALL=C awk -v mode=flat -f "$JAWK") || refuse bad-request
+INPUT=
+run_dir
+DEV=$(device)
+case $METHOD in
+    hello) m_hello ;;
+    overview) m_overview ;;
+    wifi.get) m_wifi_get ;;
+    wifi.set) m_wifi_set ;;
+    wifi.power) m_wifi_power ;;
+    wificlient.status) m_wificlient_status ;;
+    wificlient.scan) m_wificlient_scan ;;
+    wificlient.join) m_wificlient_join ;;
+    wificlient.leave) m_wificlient_leave ;;
+    data.get) m_data_get ;;
+    data.set) m_data_set ;;
+    data.power) m_data_power ;;
+    sim.get) m_sim_get ;;
+    sim.select) m_sim_select ;;
+    sim.card) m_sim_card ;;
+    sim.state) m_sim_state ;;
+    voice.get) m_voice_get ;;
+    voice.set) m_voice_set ;;
+    radio.get) m_radio_get ;;
+    radio.set) m_radio_set ;;
+    lock.get) m_lock_get ;;
+    lock.set) m_lock_set ;;
+    vpn.status) m_vpn_status ;;
+    vpn.profiles) m_vpn_profiles ;;
+    vpn.subs) m_vpn_subs ;;
+    vpn.settings) m_vpn_settings ;;
+    vpn.service) m_vpn_service ;;
+    vpn.killswitch) m_vpn_killswitch ;;
+    vpn.use) m_vpn_use ;;
+    vpn.add) m_vpn_add ;;
+    vpn.add_url) m_vpn_add_url ;;
+    vpn.rename) m_vpn_rename ;;
+    vpn.remove) m_vpn_remove ;;
+    vpn.setting) m_vpn_setting ;;
+    vpn.sub_add) m_vpn_sub_add ;;
+    vpn.sub_refresh) m_vpn_sub_refresh ;;
+    vpn.sub_remove) m_vpn_sub_remove ;;
+    vpn.logs) m_vpn_logs ;;
+    vpn.install) m_vpn_install ;;
+    vpn.engine_install) m_vpn_engine_install ;;
+    vpn.engines) m_vpn_engines ;;
+    sms.list) m_sms_list ;;
+    sms.read) m_sms_read ;;
+    sms.send) m_sms_send ;;
+    sms.job) m_sms_job ;;
+    sms.delete) m_sms_delete ;;
+    sms.forward) m_sms_forward ;;
+    sms.forward_set) m_sms_forward_set ;;
+    sms.forward_test) m_sms_forward_test ;;
+    sms.forward_log_clear) m_sms_forward_log_clear ;;
+    lan.get) m_lan_get ;;
+    lan.set) m_lan_set ;;
+    usb.role) m_usb_role ;;
+    usb.net) m_usb_net ;;
+    adb.auth) m_adb_auth ;;
+    system.get) m_system_get ;;
+    system.hostname) m_system_hostname ;;
+    system.timezone) m_system_timezone ;;
+    system.password) m_system_password ;;
+    system.ssh) m_system_ssh ;;
+    system.reboot) m_system_reboot ;;
+    system.boot) m_system_boot ;;
+    system.bootos) m_system_bootos ;;
+    update.check) m_update_check ;;
+    update.apply) m_update_apply ;;
+    kernel.set) m_kernel_set ;;
+    extra.list) m_extra_list ;;
+    extra.install) m_extra_install ;;
+    extra.remove) m_extra_remove ;;
+    logs) m_logs ;;
+    backup.export) m_backup_export ;;
+    backup.import) m_backup_import ;;
+    at.send) m_at_send ;;
+    at.history) m_at_history ;;
+    ussd.send) m_ussd_send ;;
+    ussd.cancel) m_ussd_cancel ;;
+    modem.restart) m_modem_restart ;;
+    ttl.get) m_ttl_get ;;
+    ttl.set) m_ttl_set ;;
+    traffic.get) m_traffic_get ;;
+    traffic.set) m_traffic_set ;;
+    power.get) m_power_get ;;
+    power.set) m_power_set ;;
+    led.get) m_led_get ;;
+    led.set) m_led_set ;;
+    zram.get) m_zram_get ;;
+    zram.set) m_zram_set ;;
+    cpu.get) m_cpu_get ;;
+    cpu.profile) m_cpu_profile ;;
+    cpu.core) m_cpu_core ;;
+    cpu.lowlatency) m_cpu_lowlatency ;;
+    cpu.voltage) m_cpu_voltage ;;
+    update.status) m_update_status ;;
+    update.source) m_update_source ;;
+    packages.get) m_packages_get ;;
+    packages.act) m_packages_act ;;
+    docker.status) m_docker_status ;;
+    job.status) m_job_status ;;
+    job.cancel) m_job_cancel ;;
+    job.clear) m_job_clear ;;
+esac
+refuse unknown-method

@@ -1,0 +1,400 @@
+#!/bin/sh
+# Update adapter: mu300-update for the panel's System > Update page (mu300dash update_get, update_job, update_act).
+# It is not a second updater: everything that changes the device is one mu300-update command, and that command's own
+# lock decides whether it may run. This only reports, checks the request again, and runs the command as a task of
+# its own that outlives the request, the page, the session and rpcd (setsid; its files are in the runtime directory).
+# Every reply is one JSON object.
+#   update get [sizes]   {"ok":1,"status":{mu300-update status},"check":{mu300-update releases}|null,"check_age":N,
+#                        "upload":{"present":0|1,"size":N,"inspect":{mu300-update inspect}|null},"report":TEXT|null,
+#                        "report_new":0|1,"job":{...}}
+#                        report: the start of /etc/mu300/update-report, what the last updates carried over, set aside
+#                        or put back (mu300-update's carry block; the newest update first); report_new: it has not been
+#                        looked at with "mu300-update report" yet (the note at login)
+#   update job           {"ok":1,"job":{"kind","state":none|running|done|failed,"started","elapsed","rc","stage",
+#                        "stage_text","file":{"name","have","total"}|null,"changed":0|1,"log":TEXT}}
+#   update act OP TAG SYSTEMS KERNEL SHA256 SIZE FLAGS CONFIRM
+#       check                       ask GitHub for the releases (mu300-update releases), kept for the page
+#       apply TAG SYSTEMS FLAGS     mu300-update apply: TAG is the release the last check offered (the newest, or the
+#                                   pre-release), SYSTEMS none (all) or some of the installed ones, FLAGS no_reinstall
+#       upload_begin SIZE           make room for an upload of SIZE bytes: {"ok":1,"path":...}, the one path the panel
+#                                   may upload to
+#       upload_done                 take the upload and look at it (mu300-update inspect)
+#       upload_cancel               delete it
+#       apply_file SHA256 FLAGS     mu300-update apply --from the upload whose SHA-256 the page showed; FLAGS
+#                                   unsigned, downgrade (each needed when the file is that), no_reinstall
+#       rollback SYSTEMS | rollback_boot | clean | kernel KERNEL
+#       source URL|(empty)          where the release files come from: mu300-update source URL, or source off for
+#                                   GitHub (the panel's "Mirror (release files)"). Runs at once, not as a task, and
+#                                   its reply is a whole update_get: the page has the new state in one round trip
+#       dismiss                     forget a finished task
+#   Everything that changes the device wants CONFIRM, the word of its operation: a stray call does nothing.
+# The log a reply carries is redacted (redact_log): no address, no password or key, no long number.
+set -u
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+LIB=${0%/*}/../../share/unisoc-modem/lib.sh
+[ -f "$LIB" ] || LIB=/usr/share/unisoc-modem/lib.sh
+. "$LIB"
+
+# What turns a check of the updater off is said per run, by name, in a request that passed mu300dash's checks
+# (flags unsigned and downgrade of apply_file, which become --unsigned and --downgrade): never by the environment
+# this happens to run in, and never the key or the source.
+unset MU300_ALLOW_UNSIGNED MU300_ALLOW_DOWNGRADE MU300_FROM MU300_FROM_SHA MU300_RELEASE MU300_RELEASE_URL MU300_RELEASE_PUB \
+    MU300_API_URL MU300_DOWNLOAD_URL MU300_SOURCE_CONF MU300_FORCE MU300_SELF_UPDATED MU300_REPO MU300_KERNEL_BUNDLE \
+    MU300_MIRROR_FELL_BACK
+# Everything this writes - the task's files, the releases, what was said about an upload - is root's alone (the
+# pages read it through this program, never as files). The updater itself runs under the usual umask (run_cmd): it
+# makes the directories of the new system.
+umask 077
+run_cmd() { ( umask 022; exec "$@" ); }
+CMD=${MU300_UPDATE_CMD:-/opt/mu300/bin/mu300-update}
+DISK=${MU300_DISK:-/mnt/mu300-disk}
+RUN=${MU300_UPDATE_RUN_DIR:-$RUN_DIR}
+JOB=$RUN/update-job
+CHECK=$RUN/update-check.json
+INSPECT=$RUN/update-inspect.json
+# The upload: on the Linux partition (a zip is 40 to 400 MB, more than RAM should hold), in a directory only root can
+# enter. UPLOAD is the one path the panel's ACL may write; what is used is STAGED, the same file renamed.
+UPDIR=${MU300_UPDATE_UPLOAD_DIR:-$DISK/.mu300-upload}
+UPLOAD=$UPDIR/update.zip
+STAGED=$UPDIR/staged.zip
+UPLOAD_MAX=$((2047 << 20))
+# cgi-io keeps an upload in /tmp until it is complete and then moves it: /tmp needs the room too
+UPLOAD_TMP=${MU300_UPDATE_TMP:-/tmp}
+REPORT=${MU300_UPDATE_REPORT:-/etc/mu300/update-report}
+SYSTEMS='ubuntu openwrt openwrt-luci'
+
+error() { printf '{"ok":0,"error":%s}\n' "$(json_str "$1")"; exit 0; }
+now() { date +%s; }
+num() { case $1 in ''|*[!0-9]*) echo 0 ;; *) echo "$1" ;; esac; }
+# json_or_null FILE: the JSON object in FILE as jsonfilter writes it again, or null
+json_or_null() {
+    [ -s "$1" ] && _j=$(jsonfilter -i "$1" -e '@' 2>/dev/null) || { echo null; return; }
+    case $_j in '{'*'}') printf '%s\n' "$_j" ;; *) echo null ;; esac
+}
+jget() { jsonfilter -i "$1" -e "$2" 2>/dev/null | head -n1; }
+free_kb() { num "$(df -Pk "$1" 2>/dev/null | awk 'NR==2 {print $4}')"; }
+fsize() { [ -f "$1" ] && num "$(wc -c < "$1" 2>/dev/null | tr -d ' ')" || echo 0; }
+
+# redact_log: an update's output as the page may show it. Every URL reduced to its scheme and the target of a redirect
+# dropped (as the VPN pages do: a mirror's address can carry a token), what follows a password, key or token word,
+# and every long number: 15 to 20 digits (IMSI, ICCID, IMEI) and phone numbers (+ and digits, or a leading 0).
+# Sizes and dates are shorter, or do not start with 0, and stay.
+redact_log() {
+    sed -E -e 's#([A-Za-z][A-Za-z0-9+.-]{1,15}://)[^[:space:]"'"'"'<>]+#\1[hidden]#g' \
+        -e 's#([Rr]edirected to )[^[:space:]"'"'"'<>]+#\1[hidden]#g' \
+        -e 's#(([Pp]ass(word|wd|phrase)?|PASS(WORD)?|[Ss]ecret|SECRET|[Tt]oken|TOKEN|[Kk]ey|KEY|PSK|psk)[A-Za-z_]*[=:][[:space:]]*)[^[:space:]]+#\1[hidden]#g' \
+        -e 's#(^|[^0-9A-Za-z.])\+[0-9][0-9 -]{5,18}[0-9]#\1[hidden]#g' \
+        -e 's#(^|[^0-9A-Za-z.+])[0-9]{15,20}($|[^0-9A-Za-z.])#\1[hidden]\2#g' \
+        -e 's#(^|[^0-9A-Za-z.+])0[0-9]{9,13}($|[^0-9A-Za-z.])#\1[hidden]\2#g'
+}
+
+# ------------------------------------------------------------------ the task
+# One at a time. Running while it has a start and no end, and its process lives - or it was started a moment ago
+# and has not written its pid yet.
+alive() {
+    kill -0 "$1" 2>/dev/null || return 1
+    [ -r "/proc/$1/cmdline" ] || return 0
+    { tr '\0' ' ' < "/proc/$1/cmdline"; } 2>/dev/null | grep -q 'update'
+}
+job_running() {
+    [ -f "$JOB/start" ] && [ ! -f "$JOB/end" ] || return 1
+    _p=$(head -c 16 "$JOB/pid" 2>/dev/null | tr -cd 0-9)
+    if [ -n "$_p" ]; then alive "$_p"
+    else [ $(( $(now) - $(num "$(cat "$JOB/start" 2>/dev/null)") )) -lt 10 ]
+    fi
+}
+job_kind() {
+    _k=$(head -c 24 "$JOB/kind" 2>/dev/null | head -n1)
+    case $_k in check|inspect|apply|file|rollback|rollback_boot|clean|kernel) echo "$_k" ;; esac
+}
+# fingerprint: what a restart would start - the release of each system, the boot image and the kernel choice. A task
+# that changed it leaves a device that wants a restart.
+fingerprint() {
+    for _s in $SYSTEMS; do cat "$DISK/$_s/etc/mu300/image-version" 2>/dev/null || echo -; done
+    for _f in installed.tag installed.id written.sha256 kernel; do cat "$DISK/boot/$_f" 2>/dev/null || echo -; done
+}
+# stage_of TEXT: the step an update is at, from the last "==> ..." line of its output; "other" for one this does not
+# know (the page then shows the line itself)
+stage_of() {
+    case $1 in
+        'downloading '*) echo download ;;
+        *': unpacking') echo unpack ;;
+        *': keeping your settings'*) echo keep ;;
+        *': packages installed on the device') echo packages ;;
+        *': switching over') echo switch ;;
+        'boot: '*) echo boot ;;
+        '') echo start ;;
+        *) echo other ;;
+    esac
+}
+job_json() {
+    local kind state start end rc stage text name have total file changed log
+    kind=$(job_kind)
+    [ -n "$kind" ] && [ -f "$JOB/start" ] || { printf '{"kind":null,"state":"none"}'; return; }
+    start=$(num "$(cat "$JOB/start" 2>/dev/null)")
+    rc=$(cat "$JOB/rc" 2>/dev/null); case $rc in ''|*[!0-9]*) rc=1 ;; esac
+    if job_running; then state=running; end=$(now); rc=null
+    elif [ -f "$JOB/end" ] && [ "$rc" = 0 ]; then state=done; end=$(num "$(cat "$JOB/end")")
+    # (failed, or ended without a result: it was killed before it could say how it went)
+    else state=failed; end=$(num "$(cat "$JOB/end" 2>/dev/null)"); [ "$end" != 0 ] || end=$start
+    fi
+    text=$(tr '\r' '\n' < "$JOB/log" 2>/dev/null | sed -n 's/^==> //p' | tail -n1)
+    stage=$(stage_of "$text")
+    # past the downloads: apply's own line
+    [ "$stage" != download ] || ! grep -q '^all files are here and verified' "$JOB/log" 2>/dev/null || stage=verified
+    file=null
+    if [ "$state" = running ] && [ "$stage" = download ]; then
+        name=$(sed -n 's/^file //p' "$JOB/progress" 2>/dev/null | tail -n1)
+        case $name in ''|*[!A-Za-z0-9._-]*|.*) name= ;; esac
+        if [ -n "$name" ]; then
+            have=$(fsize "$DISK/.mu300-update/$name")
+            total=$(sed -n 's/.*{"name":"'"$name"'","size":\([0-9]*\)}.*/\1/p' "$CHECK" 2>/dev/null | head -n1)
+            file=$(printf '{"name":"%s","have":%s,"total":%s}' "$name" "$have" "${total:-null}")
+        fi
+    fi
+    changed=0
+    [ ! -f "$JOB/before" ] || [ "$(cat "$JOB/before")" = "$(fingerprint)" ] || changed=1
+    log=$(tail -c 24576 "$JOB/log" 2>/dev/null | tr '\r' '\n' | LC_ALL=C tr -d '\000-\011\013-\037\177' | grep -v '^[[:space:]]*$' |
+        tail -n 200 | redact_log)
+    printf '{"kind":"%s","state":"%s","started":%s,"elapsed":%s,"rc":%s,"stage":"%s","stage_text":%s,"file":%s,"changed":%s,"log":%s}' \
+        "$kind" "$state" "$start" "$((end - start))" "$rc" "$stage" "$(json_str_or_null "$(printf '%s\n' "$text" | redact_log | head -c 200)")" \
+        "$file" "$changed" "$(json_str "$log")"
+}
+
+# run_job: the detached half ("update run-job", started by start_job). The arguments of the command are in
+# $JOB/args, one a line, each one checked before it was written there.
+run_job() {
+    local kind rc=0 tag
+    kind=$(job_kind); [ -n "$kind" ] || exit 1
+    echo $$ > "$JOB/pid"
+    set --
+    while IFS= read -r _a; do set -- "$@" "$_a"; done < "$JOB/args"
+    tag=$(head -n1 "$JOB/tag" 2>/dev/null)
+    case $kind in
+        check)
+            run_cmd "$CMD" releases > "$JOB/out" 2> "$JOB/log" </dev/null || rc=$?
+            # an answer either way: the page shows the releases, or that GitHub could not be asked
+            [ "$(json_or_null "$JOB/out")" != null ] || echo '{"ok":0,"why":"offline"}' > "$JOB/out"
+            cp "$JOB/out" "$CHECK.part" && mv -f "$CHECK.part" "$CHECK" ;;
+        inspect)
+            run_cmd "$CMD" inspect "$STAGED" > "$JOB/out" 2> "$JOB/log" </dev/null || rc=$?
+            [ "$(json_or_null "$JOB/out")" != null ] || echo '{"ok":0,"why":"not-release"}' > "$JOB/out"
+            cp "$JOB/out" "$INSPECT.part" && mv -f "$INSPECT.part" "$INSPECT"
+            rc=0 ;;
+        *)
+            export MU300_PROGRESS="$JOB/progress"
+            : > "$JOB/progress"
+            [ -z "$tag" ] || export MU300_RELEASE="$tag"
+            run_cmd "$CMD" "$@" > "$JOB/log" 2>&1 </dev/null || rc=$?
+            # the upload has done its work, however it went: a failed run is tried again with a new upload
+            if [ "$kind" = file ]; then rm -f "$STAGED" "$UPLOAD" "$INSPECT"; fi ;;
+    esac
+    echo "$rc" > "$JOB/rc"
+    now > "$JOB/end"
+}
+# start_job KIND [TAG] -- ARG...: one task, detached; the reply
+start_job() {
+    local kind=$1 tag=
+    shift
+    [ "$1" = -- ] || { tag=$1; shift; }
+    shift
+    job_running && error 'An update task is already running'
+    rm -rf "$JOB"
+    (umask 077; mkdir -p "$JOB") 2>/dev/null || error 'The task could not be started'
+    echo "$kind" > "$JOB/kind"
+    [ -z "$tag" ] || echo "$tag" > "$JOB/tag"
+    : > "$JOB/args"
+    for _a in "$@"; do printf '%s\n' "$_a" >> "$JOB/args"; done
+    : > "$JOB/log"
+    case $kind in check|inspect) ;; *) fingerprint > "$JOB/before" ;; esac
+    now > "$JOB/start"
+    setsid "$0" run-job </dev/null >/dev/null 2>&1 &
+    printf '{"ok":1,"started":1,"kind":"%s"}\n' "$kind"
+}
+# lock_free: no mu300-update holds the updater's lock (mu300-update status says who does); else the refusal
+lock_free() {
+    local st pid
+    st=$("$CMD" status 2>/dev/null) || return 0
+    [ "$(printf '%s' "$st" | jsonfilter -e '@.lock.held' 2>/dev/null)" = 1 ] || return 0
+    pid=$(printf '%s' "$st" | jsonfilter -e '@.lock.pid' 2>/dev/null | tr -cd 0-9)
+    printf '{"ok":0,"busy":1,"error":"Another update is running on the device","detail":%s}\n' \
+        "$(json_str "$(printf '%s' "$st" | jsonfilter -e '@.lock.command' 2>/dev/null | head -c 160)${pid:+ (pid $pid)}")"
+    exit 0
+}
+
+# ------------------------------------------------------------------ the upload
+# upload_dir: UPDIR as it must be - a directory of root's own that nobody else can enter, on the Linux partition
+upload_dir() {
+    [ -d "$DISK" ] && [ ! -L "$DISK" ] || return 1
+    [ ! -L "$UPDIR" ] || return 1
+    private_dir "$UPDIR" 2>/dev/null
+}
+# upload_file PATH: a regular file of ours there, not a link, not empty
+upload_file() { [ -f "$1" ] && [ ! -L "$1" ] && [ -O "$1" ] && [ -s "$1" ]; }
+upload_json() {
+    local f=
+    if upload_file "$STAGED"; then f=$STAGED; elif upload_file "$UPLOAD"; then f=$UPLOAD; fi
+    if [ -n "$f" ]; then
+        printf '{"present":1,"size":%s,"inspect":%s}' "$(fsize "$f")" "$([ "$f" = "$STAGED" ] && json_or_null "$INSPECT" || echo null)"
+    else printf '{"present":0,"size":0,"inspect":null}'; fi
+}
+
+do_get() {
+    local st age report report_new
+    [ -x "$CMD" ] || error 'Updating is not available on this system'
+    st=$("$CMD" status ${1:+--sizes} 2>/dev/null)
+    st=$(printf '%s' "$st" | jsonfilter -e '@' 2>/dev/null) || st=
+    case $st in '{'*'}') ;; *) error 'The updater gave no valid reply' ;; esac
+    age=null
+    [ ! -s "$CHECK" ] || age=$(( $(now) - $(num "$(date -r "$CHECK" +%s 2>/dev/null)") ))
+    report=null report_new=0
+    if [ -s "$REPORT" ] && [ ! -L "$REPORT" ]; then
+        # (each update puts its part on top: the start is the newest; a long one is cut, and says where the rest is)
+        report=$(json_str "$( { head -c 6000 "$REPORT"
+            [ "$(fsize "$REPORT")" -le 6000 ] || printf '\n...\n(the whole report: mu300-update report)\n'; } |
+            LC_ALL=C tr -d '\000-\011\013-\037\177' | redact_log)")
+        [ ! -e "$REPORT.new" ] || report_new=1
+    fi
+    printf '{"ok":1,"status":%s,"check":%s,"check_age":%s,"upload":%s,"report":%s,"report_new":%d,"job":%s}\n' \
+        "$st" "$(json_or_null "$CHECK")" "$age" "$(upload_json)" "$report" "$report_new" "$(job_json)"
+}
+
+do_job() { printf '{"ok":1,"job":%s}\n' "$(job_json)"; }
+
+# systems_ok LIST: every word one of the three systems (the updater says which are installed)
+systems_ok() {
+    for _s in $1; do case $_s in ubuntu|openwrt|openwrt-luci) ;; *) return 1 ;; esac; done
+}
+# has_flag FLAGS NAME
+has_flag() { case " $1 " in *" $2 "*) return 0 ;; esac; return 1; }
+
+do_act() {  # do_act OP TAG SYSTEMS KERNEL SHA256 SIZE FLAGS CONFIRM URL
+    local op=${1:-} tag=${2:-} systems=${3:-} kernel=${4:-} sha=${5:-} size=${6:-} flags=${7:-} confirm=${8:-} url=${9:-}
+    local f offered need insp
+    [ -x "$CMD" ] || error 'Updating is not available on this system'
+    systems=$(printf '%s' "$systems" | tr ',' ' ')
+    flags=$(printf '%s' "$flags" | tr ',' ' ')
+    for f in $flags; do
+        case $f in no_reinstall|unsigned|downgrade) ;; *) error 'Invalid update request' ;; esac
+    done
+    systems_ok "$systems" || error 'Invalid update request'
+    case $op in
+        check)
+            start_job check -- ;;
+        apply)
+            [ "$confirm" = apply ] || error 'This needs confirmation'
+            # a release tag (docs/FINDINGS.md 125: vYYYY.MM.DD, and vYYYY.MM.DD.N after v2026.10.27)
+            printf '%s\n' "$tag" | LC_ALL=C grep -Eqx -- 'v[0-9]{4}\.[0-9]{2}\.[0-9]{2}|v[0-9]{4}\.(0[1-9]|1[0-2])\.(0[1-9]|[12][0-9]|3[01])\.[1-9][0-9]?' || error 'Invalid update request'
+            # only a release the last check offered: the newest one, or the pre-release
+            offered=0
+            for f in latest beta; do [ "$(jget "$CHECK" "@.$f.tag")" != "$tag" ] || offered=1; done
+            [ "$offered" = 1 ] || error 'Check for updates first'
+            job_running && error 'An update task is already running'
+            lock_free
+            set -- apply
+            ! has_flag "$flags" no_reinstall || set -- "$@" --no-reinstall
+            # shellcheck disable=SC2086
+            start_job apply "$tag" -- "$@" $systems ;;
+        upload_begin)
+            case $size in ''|*[!0-9]*|0*) error 'Invalid update request' ;; esac
+            [ ${#size} -le 10 ] && [ "$size" -le "$UPLOAD_MAX" ] || error 'The file is too large'
+            job_running && error 'An update task is already running'
+            upload_dir || error 'The upload directory is not safe; nothing was changed'
+            rm -f "$UPLOAD" "$STAGED" "$INSPECT"
+            # the file itself here and, until cgi-io has all of it, in /tmp; and the room the update then needs
+            need=$(jget_status '@.disk.need_one_kb'); need=$(num "$need")
+            [ "$(free_kb "$UPLOAD_TMP")" -gt $((size / 1024 + 16384)) ] || error 'Not enough memory for this upload'
+            [ "$(free_kb "$DISK")" -gt $((size / 1024 + need)) ] || error 'Not enough free space on the Linux partition'
+            printf '{"ok":1,"path":%s}\n' "$(json_str "$UPLOAD")" ;;
+        upload_done)
+            job_running && error 'An update task is already running'
+            upload_dir || error 'The upload directory is not safe; nothing was changed'
+            # the upload gets a name the panel cannot write to, and only that file is looked at and used
+            if [ -e "$UPLOAD" ] || [ -L "$UPLOAD" ]; then
+                upload_file "$UPLOAD" || { rm -f "$UPLOAD"; error 'No uploaded file'; }
+                rm -f "$STAGED" "$INSPECT"
+                mv -f -- "$UPLOAD" "$STAGED" 2>/dev/null || error 'No uploaded file'
+                chmod 600 "$STAGED"
+            fi
+            upload_file "$STAGED" || error 'No uploaded file'
+            start_job inspect -- ;;
+        upload_cancel)
+            job_running && [ "$(job_kind)" = file ] && error 'An update task is already running'
+            upload_dir || error 'The upload directory is not safe; nothing was changed'
+            rm -f "$UPLOAD" "$STAGED" "$INSPECT"
+            printf '{"ok":1}\n' ;;
+        apply_file)
+            [ "$confirm" = apply ] || error 'This needs confirmation'
+            printf '%s\n' "$sha" | grep -Eqx '[0-9a-f]{64}' || error 'Invalid update request'
+            job_running && error 'An update task is already running'
+            upload_dir && upload_file "$STAGED" || error 'No uploaded file'
+            # what the page showed is what is installed: the file it was shown for, fit for this device, and each
+            # thing wrong with it said yes to by name
+            insp=$INSPECT
+            [ "$(jget "$insp" '@.ok')" = 1 ] && [ "$(jget "$insp" '@.sha256')" = "$sha" ] || error 'The file was not checked; upload it again'
+            [ "$(jget "$insp" '@.fits')" = 1 ] || error 'This file is not for this device'
+            case $(jget "$insp" '@.signature') in
+                valid) ;;
+                bad) error 'The signature of this file is wrong' ;;
+                *) has_flag "$flags" unsigned || error 'This file is not signed: that needs confirmation' ;;
+            esac
+            [ "$(jget "$insp" '@.downgrade')" != 1 ] || has_flag "$flags" downgrade || error 'This file is older than what is installed: that needs confirmation'
+            lock_free
+            # (the updater takes the file only if it is still the one that was looked at)
+            set -- apply --from "$STAGED" "--sha256=$sha"
+            ! has_flag "$flags" unsigned || set -- "$@" --unsigned
+            ! has_flag "$flags" downgrade || set -- "$@" --downgrade
+            ! has_flag "$flags" no_reinstall || set -- "$@" --no-reinstall
+            start_job file -- "$@" ;;
+        rollback)
+            [ "$confirm" = rollback ] || error 'This needs confirmation'
+            job_running && error 'An update task is already running'
+            lock_free
+            # shellcheck disable=SC2086
+            start_job rollback -- rollback $systems ;;
+        rollback_boot)
+            [ "$confirm" = rollback ] || error 'This needs confirmation'
+            job_running && error 'An update task is already running'
+            lock_free
+            start_job rollback_boot -- rollback-boot ;;
+        clean)
+            [ "$confirm" = clean ] || error 'This needs confirmation'
+            job_running && error 'An update task is already running'
+            lock_free
+            start_job clean -- clean ;;
+        kernel)
+            [ "$confirm" = kernel ] || error 'This needs confirmation'
+            case $kernel in 5.4|6.18|7.2|7.3) ;; *) error 'Invalid update request' ;; esac
+            job_running && error 'An update task is already running'
+            lock_free
+            start_job kernel -- kernel "$kernel" ;;
+        source)
+            # the release source: one mu300-update command, run here rather than as a task (it downloads nothing),
+            # and the whole update_get back so the page needs no second call
+            [ "$confirm" = source ] || error 'This needs confirmation'
+            # (an empty URL means GitHub: the page's field, left empty)
+            case $url in ''|https://*|http://*) ;; *) error 'Invalid update request' ;; esac
+            job_running && error 'An update task is already running'
+            lock_free
+            if [ -n "$url" ]; then run_cmd "$CMD" source "$url" > "$RUN/source.log" 2>&1
+            else run_cmd "$CMD" source off > "$RUN/source.log" 2>&1; fi ||
+                { cat "$RUN/source.log" >&2 2>/dev/null; error 'The release source was not changed'; }
+            do_get ;;
+        dismiss)
+            job_running && error 'An update task is already running'
+            rm -rf "$JOB"
+            printf '{"ok":1}\n' ;;
+        *) error 'Unknown update operation' ;;
+    esac
+}
+jget_status() { "$CMD" status 2>/dev/null | jsonfilter -e "$1" 2>/dev/null | head -n1; }
+
+# the runtime directory holds the task's log and the releases: root's own, or nothing runs
+private_dir "$RUN" 2>/dev/null || error 'The runtime directory is not safe; nothing was run'
+case ${1:-} in
+    get) do_get "${2:-}" ;;
+    job) do_job ;;
+    act) shift; do_act "$@" ;;
+    run-job) run_job ;;
+    *) error 'Unknown update operation' ;;
+esac

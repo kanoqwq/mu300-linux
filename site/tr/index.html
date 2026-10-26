@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>ZTE F50 / MU300 ve U30 Air'e Linux: Ubuntu ve OpenWrt | MU300 Linux</title>
+<meta name="description" content="ZTE F50 / MU300 ve U30 Air'e Android'in yanına Ubuntu ya da OpenWrt kurun: 5G, hotspot, SSH ve VPN'li bir Linux yönlendirici. Android yerinde kalır.">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/tr/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="ZTE F50 / MU300 ve U30 Air'e Linux: Ubuntu ve OpenWrt | MU300 Linux">
+<meta property="og:description" content="ZTE F50 / MU300 ve U30 Air'e Android'in yanına Ubuntu ya da OpenWrt kurun: 5G, hotspot, SSH ve VPN'li bir Linux yönlendirici. Android yerinde kalır.">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/tr/">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="İki odalı bir 5G cep hotspot'u: biri Android'e, biri Linux'a ait">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ZTE F50 / MU300 ve U30 Air'e Linux: Ubuntu ve OpenWrt | MU300 Linux">
+<meta name="twitter:description" content="ZTE F50 / MU300 ve U30 Air'e Android'in yanına Ubuntu ya da OpenWrt kurun: 5G, hotspot, SSH ve VPN'li bir Linux yönlendirici. Android yerinde kalır.">
+<meta name="twitter:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/site.js" defer></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "SoftwareApplication",
+ "name": "MU300 Linux",
+ "alternateName": [
+  "mu300-linux",
+  "Linux for the ZTE F50 / MU300 and U30 Air"
+ ],
+ "description": "ZTE F50 / MU300 ve U30 Air'e Android'in yanına Ubuntu ya da OpenWrt kurun: 5G, hotspot, SSH ve VPN'li bir Linux yönlendirici. Android yerinde kalır.",
+ "url": "https://kaandikec.com/mu300-linux/",
+ "inLanguage": "tr",
+ "applicationCategory": "UtilitiesApplication",
+ "applicationSubCategory": "Operating system installer",
+ "operatingSystem": "Ubuntu 24.04 / 26.04 LTS, OpenWrt 25.12 (installer runs on Windows 10/11, macOS and Linux)",
+ "isAccessibleForFree": true,
+ "license": "https://github.com/dikeckaan/mu300-linux/blob/main/LICENSE",
+ "codeRepository": "https://github.com/dikeckaan/mu300-linux",
+ "downloadUrl": "https://github.com/dikeckaan/mu300-linux/releases/latest",
+ "softwareHelp": "https://github.com/dikeckaan/mu300-linux/wiki",
+ "offers": {
+  "@type": "Offer",
+  "price": "0",
+  "priceCurrency": "USD"
+ }
+}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "Linux kurmak Android'i ya da verilerimi siler mi?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Yaygın 64 GB cihazda hayır. Linux, hiçbir bölüme ait olmayan yaklaşık 32 GiB'lık alana kurulur; Android'in bölümlerine, verilerine ve bölüm tablosuna hiç yazılmaz. Kurulum yalnızca bir açılış bölümüne (Android'in kullanmadığı yuvaya) ve misc'in 32 baytına yazar.İstisna 32 GB sürümdür: onda hiç boş alan yoktur. Orada bir SD kart kullanabilir (F50) ya da kurulum programının userdata'yı küçültmesine izin verebilirsiniz; bu, Android'deki her şeyi siler. Bu yol deneyseldir ve önce ERASE yazmanızı ister."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Önce cihazı root'lamam gerekiyor mu?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Evet. Cihaz zaten root'lu ve kilidi açık olmalı: değiştirilmiş bir Android açılış imajıyla açılabiliyor ve USB hata ayıklama açık olmalı. Bu noktaya gelmek projenin parçası değildir; o araçların kendi talimatlarıyla ve kendi sorumluluğunuzda yaparsınız."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Linux açılmazsa ne olur?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Cihaz kendiliğinden Android'e döner. Linux'un her açılışı bir denemedir; arka arkaya 5 kez başarısız olursa (kurulumda 1 ile 6 arasında seçersiniz) bir sonraki açılış Android olur. Ayrıntılar güvenlik ağı bölümünde."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Android'e nasıl dönerim?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Linux'tan: sudo mu300-next-boot android, ardından sudo reboot. Linux'u tamamen kaldırmak için cihaz Android'deyken ./uninstall.sh (Windows: .\\uninstall.ps1) çalıştırın. Android'den su -c mu300-linux Linux'u yeniden başlatır."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Ubuntu mu OpenWrt mi, hangisini seçmeliyim?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Çoğunlukla web arayüzlü bir yönlendirici istiyorsanız OpenWrt; apt ile küçük bir sunucu istiyorsanız Ubuntu. İkisini birden kurup mu300-os ile geçiş de yapabilirsiniz. Sistem seçimi sayfası bunu dört çekirdekle birlikte anlatır."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "ZTE U30 Pro destekleniyor mu?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Hayır. U30 Pro'da farklı bir çip (UMS9632) var. Desteklenenler ZTE F50 / MU300 ve ZTE U30 Air'dir; ikisi aynı kartı ve çipi paylaşır, kurulum programı hangisiyle konuştuğunu kendisi tanır."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Bilgisayarsız kurabilir miyim?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Evet, cihaz zaten Magisk 26 veya daha yenisiyle root'lu bir Android çalıştırıyorsa: her sürümde, her sistem ve çekirdek için bir tane olmak üzere (kontrol panelli OpenWrt dahil toplam 11), Magisk uygulamasından kurulan Magisk zip'leri vardır. Bkz. Magisk zip'iyle kurulum."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Linux'u SD karta kurabilir miyim?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "F50'de evet: yuvada en az 700 MiB'lık bir kart varsa kurulum programı Linux'un oraya gidip gitmeyeceğini sorar. U30 Air'de kart yuvası yoktur."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Ekran ya da ses var mı?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Hayır. USB-C üzerinden HDMI çalışmaz, kartta hoparlör ve mikrofon yoktur. Cihazı SSH, bir web arayüzü ya da seri konsol üzerinden kullanırsınız."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Ücretli mi?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Hayır. Betikler ve belgeler MIT lisanslıdır, çekirdekler GPL-2.0'dır. Sürüm imajlarında tescilli dosya yoktur: kurulum programı Wi-Fi ve modem dosyalarını sizin cihazınızdan kopyalar."
+   }
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">İçeriğe geç</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../tr/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../tr/install/">Kurulum</a>
+<a href="../tr/web-installer/">Web kurucu</a>
+<a href="../tr/choose/">Sistem seçimi</a>
+<a href="../tr/features/">Özellikler</a>
+<a href="../tr/updates/">Güncelleme ve güvenlik</a>
+<a href="../tr/troubleshooting/">Sorun giderme</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="Dil"><a href="../" hreflang="en" lang="en">English</a><a href="../tr/" hreflang="tr" lang="tr" aria-current="true">Türkçe</a><a href="../zh/" hreflang="zh-Hans" lang="zh-Hans">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="Tema|Otomatik|Açık|Koyu|sisteminizi izler|Renk temasını değiştir"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menü</button>
+</div>
+</header>
+<main id="content">
+
+<section class="hero">
+<div class="wrap">
+<div>
+<h1>5G hotspot'unuz bir Linux bilgisayarı</h1>
+<p class="lede">ZTE F50 / MU300 ve ZTE U30 Air'e Android'in yanına <strong>Ubuntu</strong> ya da
+<strong>OpenWrt</strong> kurun. SSH, Wi-Fi, Bluetooth ve 5G modem çalışır. Android yerinde kalır; Linux bir gün
+açılamazsa cihaz kendiliğinden Android'e döner.</p>
+<div class="actions">
+<a class="btn primary" href="install/">Kurulum rehberini okuyun</a>
+<a class="btn" href="https://github.com/dikeckaan/mu300-linux/releases/latest">GitHub'daki son sürüm</a>
+<a class="btn sponsor" href="https://github.com/sponsors/dikeckaan"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="M8 14.2 6.9 13.2C3 9.7.5 7.4.5 4.6.5 2.4 2.2.7 4.4.7c1.2 0 2.4.6 3.1 1.5C8.2 1.3 9.4.7 10.6.7c2.2 0 3.9 1.7 3.9 3.9 0 2.8-2.5 5.1-6.4 8.6z"/></svg>Sponsor ol</a>
+</div>
+<p class="sponsor-note">Türkiye'de tek bir kişi tarafından, boş zamanlarında yapılıyor ve herkese ücretsiz. Bir cihazını ya da paranı kurtardıysa, sponsorluk projenin devam etmesini sağlar.</p>
+</div>
+<svg xmlns="http://www.w3.org/2000/svg" class="mu-dg hero-art" viewBox="0 0 440 440" width="440" height="440" role="img" aria-label="Üç durum LED'i olan küçük bir 5G hotspot çizimi. Ön yüzünde iki oda var: Android için yeşil, Linux için turuncu." lang="en">
+<title id="device-t">A 5G pocket hotspot running Linux</title>
+<desc id="device-d">A drawing of a small 5G hotspot with three status LEDs. Its face shows two rooms: a green one for Android and an amber one for Linux.</desc>
+<style>
+.mu-dg text { font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #142133; }
+.mu-dg .t-muted { fill: #526276; }
+.mu-dg .t-white { fill: #ffffff; }
+.mu-dg .t-mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.mu-dg .ink { fill: #142133; }
+.mu-dg .stroke-ink { stroke: #142133; }
+.mu-dg .paper { fill: #ffffff; }
+.mu-dg .soft { fill: #eef2f8; }
+.mu-dg .line { stroke: #c9d4e2; }
+.mu-dg .fill-line { fill: #c9d4e2; }
+.mu-dg .lx { fill: #f2b23a; }
+.mu-dg .lx-soft { fill: #fbf0d8; }
+.mu-dg .lx-stroke { stroke: #b97700; }
+.mu-dg .t-lx { fill: #8a5900; }
+.mu-dg .an { fill: #3fae6a; }
+.mu-dg .an-soft { fill: #def2e6; }
+.mu-dg .an-stroke { stroke: #217a47; }
+.mu-dg .t-an { fill: #17603a; }
+.mu-dg .bl { fill: #2259d6; }
+.mu-dg .bl-soft { fill: #e3ebfb; }
+.mu-dg .bl-stroke { stroke: #2259d6; }
+.mu-dg .t-bl { fill: #1b47ad; }
+.mu-dg .rd { fill: #c4302f; }
+.mu-dg .rd-soft { fill: #fbe3e2; }
+.mu-dg .rd-stroke { stroke: #c4302f; }
+.mu-dg .t-rd { fill: #a12625; }
+.mu-dg .body-top { fill: #fdfdfe; }
+.mu-dg .body-side { fill: #dde4ee; }
+.mu-dg .body-edge { stroke: #b6c2d2; }
+.mu-dg .led-white { fill: #ffffff; stroke: #b6c2d2; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .mu-dg text, .mu-dg:root text { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .t-muted, .mu-dg:root .t-muted { fill: #9cabbe; }
+  :root:not([data-theme="light"]) .mu-dg .ink, .mu-dg:root .ink { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .stroke-ink, .mu-dg:root .stroke-ink { stroke: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .paper, .mu-dg:root .paper { fill: #142031; }
+  :root:not([data-theme="light"]) .mu-dg .soft, .mu-dg:root .soft { fill: #1a283b; }
+  :root:not([data-theme="light"]) .mu-dg .line, .mu-dg:root .line { stroke: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .fill-line, .mu-dg:root .fill-line { fill: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-soft, .mu-dg:root .lx-soft { fill: #33290f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-stroke, .mu-dg:root .lx-stroke { stroke: #f2b740; }
+  :root:not([data-theme="light"]) .mu-dg .t-lx, .mu-dg:root .t-lx { fill: #f2c060; }
+  :root:not([data-theme="light"]) .mu-dg .an-soft, .mu-dg:root .an-soft { fill: #12301f; }
+  :root:not([data-theme="light"]) .mu-dg .an-stroke, .mu-dg:root .an-stroke { stroke: #5ccf8a; }
+  :root:not([data-theme="light"]) .mu-dg .t-an, .mu-dg:root .t-an { fill: #7ddba3; }
+  :root:not([data-theme="light"]) .mu-dg .bl, .mu-dg:root .bl { fill: #5b88f0; }
+  :root:not([data-theme="light"]) .mu-dg .bl-soft, .mu-dg:root .bl-soft { fill: #1a2a48; }
+  :root:not([data-theme="light"]) .mu-dg .bl-stroke, .mu-dg:root .bl-stroke { stroke: #7ea6ff; }
+  :root:not([data-theme="light"]) .mu-dg .t-bl, .mu-dg:root .t-bl { fill: #9dbbff; }
+  :root:not([data-theme="light"]) .mu-dg .rd-soft, .mu-dg:root .rd-soft { fill: #3a1a1a; }
+  :root:not([data-theme="light"]) .mu-dg .rd-stroke, .mu-dg:root .rd-stroke { stroke: #ff7b72; }
+  :root:not([data-theme="light"]) .mu-dg .t-rd, .mu-dg:root .t-rd { fill: #ff9b94; }
+  :root:not([data-theme="light"]) .mu-dg .body-top, .mu-dg:root .body-top { fill: #2a3a52; }
+  :root:not([data-theme="light"]) .mu-dg .body-side, .mu-dg:root .body-side { fill: #1c2a3d; }
+  :root:not([data-theme="light"]) .mu-dg .body-edge, .mu-dg:root .body-edge { stroke: #44587a; }
+  :root:not([data-theme="light"]) .mu-dg .led-white, .mu-dg:root .led-white { fill: #f4f7fb; stroke: #44587a; }
+}
+:root[data-theme="dark"] .mu-dg text { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .t-muted { fill: #9cabbe; }
+:root[data-theme="dark"] .mu-dg .ink { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .stroke-ink { stroke: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .paper { fill: #142031; }
+:root[data-theme="dark"] .mu-dg .soft { fill: #1a283b; }
+:root[data-theme="dark"] .mu-dg .line { stroke: #34465f; }
+:root[data-theme="dark"] .mu-dg .fill-line { fill: #34465f; }
+:root[data-theme="dark"] .mu-dg .lx-soft { fill: #33290f; }
+:root[data-theme="dark"] .mu-dg .lx-stroke { stroke: #f2b740; }
+:root[data-theme="dark"] .mu-dg .t-lx { fill: #f2c060; }
+:root[data-theme="dark"] .mu-dg .an-soft { fill: #12301f; }
+:root[data-theme="dark"] .mu-dg .an-stroke { stroke: #5ccf8a; }
+:root[data-theme="dark"] .mu-dg .t-an { fill: #7ddba3; }
+:root[data-theme="dark"] .mu-dg .bl { fill: #5b88f0; }
+:root[data-theme="dark"] .mu-dg .bl-soft { fill: #1a2a48; }
+:root[data-theme="dark"] .mu-dg .bl-stroke { stroke: #7ea6ff; }
+:root[data-theme="dark"] .mu-dg .t-bl { fill: #9dbbff; }
+:root[data-theme="dark"] .mu-dg .rd-soft { fill: #3a1a1a; }
+:root[data-theme="dark"] .mu-dg .rd-stroke { stroke: #ff7b72; }
+:root[data-theme="dark"] .mu-dg .t-rd { fill: #ff9b94; }
+:root[data-theme="dark"] .mu-dg .body-top { fill: #2a3a52; }
+:root[data-theme="dark"] .mu-dg .body-side { fill: #1c2a3d; }
+:root[data-theme="dark"] .mu-dg .body-edge { stroke: #44587a; }
+:root[data-theme="dark"] .mu-dg .led-white { fill: #f4f7fb; stroke: #44587a; }
+</style>
+<style>
+@media (prefers-reduced-motion: no-preference) {
+  .mu-dg .led { animation: led-on .5s ease-out both; }
+  .mu-dg .led-2 { animation-delay: .5s; } .mu-dg .led-3 { animation-delay: 1s; }
+  @keyframes led-on { from { opacity: .25; } to { opacity: 1; } }
+}
+</style><g transform="translate(78 64)">
+<g fill="none" stroke-linecap="round" class="bl-stroke" stroke-width="7">
+<path d="M 113.6 11.4 A 52 52 0 0 1 186.4 11.4"/>
+<path d="M 89.8 -7.3 A 86 86 0 0 1 210.2 -7.3"/>
+<path d="M 66 -26 A 120 120 0 0 1 234 -26"/>
+</g>
+<rect x="8" y="58" width="284" height="300" rx="46" class="body-side"/>
+<rect x="0" y="46" width="284" height="296" rx="44" class="body-top body-edge" stroke-width="2"/>
+<circle cx="92" cy="92" r="10" class="bl led led-1" stroke-width="2"/>
+<circle cx="142" cy="92" r="10" class="led-white led led-2" stroke-width="2"/>
+<circle cx="192" cy="92" r="10" class="lx led led-3" stroke-width="2"/>
+<rect x="36" y="136" width="100" height="150" rx="18" class="an-soft"/>
+<rect x="148" y="136" width="100" height="150" rx="18" class="lx-soft"/>
+<rect x="64" y="170" width="44" height="78" rx="9" fill="none" class="an-stroke" stroke-width="6"/>
+<circle cx="86" cy="234" r="4.5" class="an"/>
+<path d="M 170 186 l 24 22 l -24 22" fill="none" class="lx-stroke" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 204 238 h 26" class="lx-stroke" stroke-width="8" stroke-linecap="round"/>
+<rect x="118" y="334" width="48" height="12" rx="6" class="ink" opacity=".75"/>
+</g>
+</svg>
+</div>
+</section>
+
+<div class="prose">
+
+<h2 id="what">Bu nedir?</h2>
+<p>ZTE F50, içine SIM kart takılan ve 5G interneti Wi-Fi ile paylaşan küçük bir kutudur. İçinde Android çalıştıran
+küçük bir bilgisayar vardır. Bu proje, Android'in yanına gerçek bir Linux sistemi kurar.</p>
+<p>Onu <strong>içinde zaten bir 5G modem, bir Wi-Fi erişim noktası ve 32 GB depolama olan bir Raspberry Pi</strong>
+gibi düşünün. ZTE U30 Air aynı kart ve çipin pilli hâlidir; o da desteklenir.</p>
+
+<h2 id="why">Neden isteyesiniz?</h2>
+<ul class="dots">
+<li><strong>Kontrolü sizde bir 5G yönlendirici</strong>LuCI web arayüzlü OpenWrt, bir güvenlik duvarı ve kendi
+kurallarınız; hotspot'taki her telefon ve dizüstü için.</li>
+<li class="a"><strong>Cebinizde bir sunucu</strong>systemd ve <code>apt</code> ile Ubuntu 24.04 ya da 26.04 LTS:
+kendi internet bağlantısı olan kendi servisleriniz.</li>
+<li><strong>Konuşabildiğiniz bir modem</strong>SMS okuyun ve gönderin, USSD kodları gönderin; kontrol panelinde bant
+ve hücre kilitleyin.</li>
+<li class="a"><strong>Arkasındaki her şey için bir VPN</strong>WireGuard, OpenVPN, VLESS ve dahası, kill switch ile,
+isteğe bağlı bir modül olarak.</li>
+</ul>
+
+<h2 id="works">Neler çalışıyor</h2>
+<ul class="dots">
+<li><strong>Mobil veri, 5G NSA ve LTE</strong>Wi-Fi ve USB istemcileriyle paylaşılır; modem sıfırlanınca kendiliğinden yeniden bağlanır.</li>
+<li><strong>Wi-Fi hotspot</strong>5 GHz (802.11ac) ya da 2.4 GHz, aynı anda biri.</li>
+<li><strong>Wi-Fi istemcisi</strong>Başka bir ağa katılın (WPA2, WPA2/WPA3 karma) ve onu USB'den paylaşın.</li>
+<li><strong>USB ağı ve SSH</strong>Bir bilgisayara takın, ağ bağdaştırıcısı olarak görünür.</li>
+<li><strong>SMS ve USSD</strong>Komut satırında <code>sms</code> ve <code>mu300-ussd</code>, ayrıca kontrol panelinde.</li>
+<li><strong>VPN</strong>WireGuard, OpenVPN, VLESS, VMess, Trojan, Shadowsocks, Clash/mihomo profilleri; tünel üzerinden Tailscale.</li>
+<li><strong>Dört çekirdek</strong>Unisoc'un üretici çekirdeği 5.4, ana hat 6.18 LTS, ana hat 7.2 (kararlı) ve ana hat 7.3 (v2026.10.19.2'den sonraki sürümden itibaren); hepsinde KVM.</li>
+<li><strong>Web panelleri, terminal, adb</strong>OpenWrt'de LuCI ve MU300 paneli (VPN bölümü ve tarayıcıda terminalle), Ubuntu'da MU300 sayfalı Cockpit, ve USB üzerinden Linux'a <code>adb shell</code>.</li>
+<li><strong>Bluetooth ve GPU</strong>BlueZ ve OpenCL için Mali-G57 (görüntü çıkışı yok).</li>
+<li class="g"><strong>Android yerinde kalır</strong>Tek komutla geri dönülür, başarısız açılışlar kendiliğinden Android'e döner.</li>
+<li class="r"><strong>Ekran yok, ses yok</strong>USB-C görüntü çıkışı çalışmaz, kartta hoparlör ve mikrofon yoktur.</li>
+</ul>
+
+<h2 id="devices">Desteklenen cihazlar</h2>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col"></th><th scope="col">ZTE F50 / MU300</th><th scope="col">ZTE U30 Air</th></tr></thead><tbody>
+<tr><th scope="row">Çip</th><td>Unisoc T760 (UMS9620)</td><td>aynısı</td></tr>
+<tr><th scope="row">Güç</th><td>yalnızca USB</td><td>pil (4050 mAh), şarj devresi ve pil göstergesi</td></tr>
+<tr><th scope="row">USB ağ adresi</th><td><code>192.168.77.1</code></td><td><code>192.168.78.1</code></td></tr>
+<tr><th scope="row">SD kart</th><td class="yes">Linux dahili depolama yerine kartta durabilir</td><td class="no">kart yuvası yok</td></tr>
+<tr><th scope="row">Ekstralar</th><td>durum LED'leri</td><td>durum LED'leri, pil bilgileri, NFC etiketi, OTG adaptörüyle USB host (ana hat çekirdekler)</td></tr>
+</tbody></table></div>
+<p>Kurulum programı hangisi olduğunu Android'den okur; elle seçmeniz gerekmez. <strong>U30 Pro</strong> farklı bir
+çiptir (UMS9632) ve <strong>desteklenmez</strong>. Cihazların çoğunda 64 GB dahili depolama vardır; 32 GB sürümde
+her şeyden önce <a href="install/#check">kontrol adımını</a> okuyun.</p>
+
+<h2 id="how">Nasıl çalışır, bir masal gibi</h2>
+<p>Önemli olan her şeyi dört küçük resim anlatıyor.</p>
+
+<h3>1. Tek ev, iki oda</h3>
+<p>Cihazınız bir ev gibidir. Android bir odada, bütün eşyalarıyla zaten yaşıyor. Yaygın 64 GB cihazda kimsenin
+kullanmadığı ikinci, boş bir oda daha var: Android'in bölümlerinden sonra yaklaşık 32 GiB'lık depolama. Linux o boş
+odaya taşınır. Android'in odasındaki hiçbir şey yerinden oynamaz, değişmez.</p>
+<p>Evin iki ön kapısı da vardır: bunlara A ve B <strong>açılış yuvaları (slot)</strong> denir. Android bunlardan birini
+kullanır. Kurulum programı Linux'un kapısını, yani açılış imajını, diğerine koyar.</p>
+<figure class="wide"><div class="panel diagram" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" class="mu-dg" viewBox="0 0 960 440" width="960" height="440" role="img" aria-label="Çubuk olarak çizilmiş dahili depolama: soldaki Android bölümleri olduğu gibi kalır; sağdaki yaklaşık 32 GiB&#x27;lık boş alan Linux&#x27;un yaşadığı yerdir. Altta iki açılış yuvası: Android&#x27;in yuvasına hiç yazılmaz, diğer yuvada Linux&#x27;un açılış imajı durur. F50&#x27;de Linux SD kartta da durabilir." lang="tr">
+<title id="two-tr-t">Tek cihazda Android ve Linux</title>
+<desc id="two-tr-d">Dahili depolama: Android'in bölümleri olduğu gibi kalır, Linux onlardan sonraki boş alana kurulur. Cihazın iki açılış yuvası vardır; Android kendi yuvasında kalır, Linux'un açılış imajı diğerine yazılır.</desc>
+<style>
+.mu-dg text { font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #142133; }
+.mu-dg .t-muted { fill: #526276; }
+.mu-dg .t-white { fill: #ffffff; }
+.mu-dg .t-mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.mu-dg .ink { fill: #142133; }
+.mu-dg .stroke-ink { stroke: #142133; }
+.mu-dg .paper { fill: #ffffff; }
+.mu-dg .soft { fill: #eef2f8; }
+.mu-dg .line { stroke: #c9d4e2; }
+.mu-dg .fill-line { fill: #c9d4e2; }
+.mu-dg .lx { fill: #f2b23a; }
+.mu-dg .lx-soft { fill: #fbf0d8; }
+.mu-dg .lx-stroke { stroke: #b97700; }
+.mu-dg .t-lx { fill: #8a5900; }
+.mu-dg .an { fill: #3fae6a; }
+.mu-dg .an-soft { fill: #def2e6; }
+.mu-dg .an-stroke { stroke: #217a47; }
+.mu-dg .t-an { fill: #17603a; }
+.mu-dg .bl { fill: #2259d6; }
+.mu-dg .bl-soft { fill: #e3ebfb; }
+.mu-dg .bl-stroke { stroke: #2259d6; }
+.mu-dg .t-bl { fill: #1b47ad; }
+.mu-dg .rd { fill: #c4302f; }
+.mu-dg .rd-soft { fill: #fbe3e2; }
+.mu-dg .rd-stroke { stroke: #c4302f; }
+.mu-dg .t-rd { fill: #a12625; }
+.mu-dg .body-top { fill: #fdfdfe; }
+.mu-dg .body-side { fill: #dde4ee; }
+.mu-dg .body-edge { stroke: #b6c2d2; }
+.mu-dg .led-white { fill: #ffffff; stroke: #b6c2d2; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .mu-dg text, .mu-dg:root text { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .t-muted, .mu-dg:root .t-muted { fill: #9cabbe; }
+  :root:not([data-theme="light"]) .mu-dg .ink, .mu-dg:root .ink { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .stroke-ink, .mu-dg:root .stroke-ink { stroke: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .paper, .mu-dg:root .paper { fill: #142031; }
+  :root:not([data-theme="light"]) .mu-dg .soft, .mu-dg:root .soft { fill: #1a283b; }
+  :root:not([data-theme="light"]) .mu-dg .line, .mu-dg:root .line { stroke: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .fill-line, .mu-dg:root .fill-line { fill: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-soft, .mu-dg:root .lx-soft { fill: #33290f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-stroke, .mu-dg:root .lx-stroke { stroke: #f2b740; }
+  :root:not([data-theme="light"]) .mu-dg .t-lx, .mu-dg:root .t-lx { fill: #f2c060; }
+  :root:not([data-theme="light"]) .mu-dg .an-soft, .mu-dg:root .an-soft { fill: #12301f; }
+  :root:not([data-theme="light"]) .mu-dg .an-stroke, .mu-dg:root .an-stroke { stroke: #5ccf8a; }
+  :root:not([data-theme="light"]) .mu-dg .t-an, .mu-dg:root .t-an { fill: #7ddba3; }
+  :root:not([data-theme="light"]) .mu-dg .bl, .mu-dg:root .bl { fill: #5b88f0; }
+  :root:not([data-theme="light"]) .mu-dg .bl-soft, .mu-dg:root .bl-soft { fill: #1a2a48; }
+  :root:not([data-theme="light"]) .mu-dg .bl-stroke, .mu-dg:root .bl-stroke { stroke: #7ea6ff; }
+  :root:not([data-theme="light"]) .mu-dg .t-bl, .mu-dg:root .t-bl { fill: #9dbbff; }
+  :root:not([data-theme="light"]) .mu-dg .rd-soft, .mu-dg:root .rd-soft { fill: #3a1a1a; }
+  :root:not([data-theme="light"]) .mu-dg .rd-stroke, .mu-dg:root .rd-stroke { stroke: #ff7b72; }
+  :root:not([data-theme="light"]) .mu-dg .t-rd, .mu-dg:root .t-rd { fill: #ff9b94; }
+  :root:not([data-theme="light"]) .mu-dg .body-top, .mu-dg:root .body-top { fill: #2a3a52; }
+  :root:not([data-theme="light"]) .mu-dg .body-side, .mu-dg:root .body-side { fill: #1c2a3d; }
+  :root:not([data-theme="light"]) .mu-dg .body-edge, .mu-dg:root .body-edge { stroke: #44587a; }
+  :root:not([data-theme="light"]) .mu-dg .led-white, .mu-dg:root .led-white { fill: #f4f7fb; stroke: #44587a; }
+}
+:root[data-theme="dark"] .mu-dg text { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .t-muted { fill: #9cabbe; }
+:root[data-theme="dark"] .mu-dg .ink { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .stroke-ink { stroke: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .paper { fill: #142031; }
+:root[data-theme="dark"] .mu-dg .soft { fill: #1a283b; }
+:root[data-theme="dark"] .mu-dg .line { stroke: #34465f; }
+:root[data-theme="dark"] .mu-dg .fill-line { fill: #34465f; }
+:root[data-theme="dark"] .mu-dg .lx-soft { fill: #33290f; }
+:root[data-theme="dark"] .mu-dg .lx-stroke { stroke: #f2b740; }
+:root[data-theme="dark"] .mu-dg .t-lx { fill: #f2c060; }
+:root[data-theme="dark"] .mu-dg .an-soft { fill: #12301f; }
+:root[data-theme="dark"] .mu-dg .an-stroke { stroke: #5ccf8a; }
+:root[data-theme="dark"] .mu-dg .t-an { fill: #7ddba3; }
+:root[data-theme="dark"] .mu-dg .bl { fill: #5b88f0; }
+:root[data-theme="dark"] .mu-dg .bl-soft { fill: #1a2a48; }
+:root[data-theme="dark"] .mu-dg .bl-stroke { stroke: #7ea6ff; }
+:root[data-theme="dark"] .mu-dg .t-bl { fill: #9dbbff; }
+:root[data-theme="dark"] .mu-dg .rd-soft { fill: #3a1a1a; }
+:root[data-theme="dark"] .mu-dg .rd-stroke { stroke: #ff7b72; }
+:root[data-theme="dark"] .mu-dg .t-rd { fill: #ff9b94; }
+:root[data-theme="dark"] .mu-dg .body-top { fill: #2a3a52; }
+:root[data-theme="dark"] .mu-dg .body-side { fill: #1c2a3d; }
+:root[data-theme="dark"] .mu-dg .body-edge { stroke: #44587a; }
+:root[data-theme="dark"] .mu-dg .led-white { fill: #f4f7fb; stroke: #44587a; }
+</style>
+<defs><marker id="two-tr-ah" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="ink"/></marker></defs>
+<text x="24" y="40" font-size="20" text-anchor="start" font-weight="700">Dahili depolama (yaygın 64 GB cihaz)</text>
+<rect x="24" y="62" width="424" height="96" rx="14" class="an-soft"/>
+<rect x="434" y="62" width="502" height="96" rx="14" class="lx-soft"/>
+<rect x="431" y="62" width="6" height="96" class="an"/>
+<line x1="69.5556" y1="138" x2="69.5556" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<line x1="115.111" y1="138" x2="115.111" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<line x1="160.667" y1="138" x2="160.667" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<line x1="206.222" y1="138" x2="206.222" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<line x1="251.778" y1="138" x2="251.778" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<line x1="297.333" y1="138" x2="297.333" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<line x1="342.889" y1="138" x2="342.889" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<line x1="388.444" y1="138" x2="388.444" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<text x="44" y="104" font-size="19" text-anchor="start" font-weight="700" class="t-an">Android'in bölümleri</text>
+<text x="44" y="132" font-size="16" text-anchor="start" class="t-muted">sistem, uygulamalar, verileriniz</text>
+<text x="458" y="104" font-size="19" text-anchor="start" font-weight="700" class="t-lx">Boş alan, yaklaşık 32 GiB</text>
+<text x="458" y="132" font-size="16" text-anchor="start" class="t-muted">Ubuntu ve/veya OpenWrt</text>
+<path d="M 229 162 v 18" class="an-stroke" stroke-width="2"/>
+<text x="229" y="202" font-size="16" text-anchor="middle" font-weight="700" class="t-an">olduğu gibi kalır</text>
+<path d="M 685 162 v 18" class="lx-stroke" stroke-width="2"/>
+<text x="685" y="202" font-size="16" text-anchor="middle" font-weight="700" class="t-lx">Linux burada yaşar</text>
+<text x="24" y="262" font-size="20" text-anchor="start" font-weight="700">İki açılış yuvası: aynı evin iki ön kapısı</text>
+<rect x="24" y="284" width="300" height="118" rx="16" class="paper an-stroke" stroke-width="3" fill-opacity="1"/>
+<rect x="54" y="304" width="56" height="78" rx="8" class="an"/><circle cx="98" cy="346" r="4" class="paper"/>
+<text x="134" y="334" font-size="19" text-anchor="start" font-weight="700">Android'in yuvası</text>
+<text x="134" y="362" font-size="16" text-anchor="start" class="t-muted">hiç yazılmaz</text>
+<rect x="344" y="284" width="300" height="118" rx="16" class="paper lx-stroke" stroke-width="3" fill-opacity="1"/>
+<rect x="374" y="304" width="56" height="78" rx="8" class="lx"/><circle cx="418" cy="346" r="4" class="paper"/>
+<text x="454" y="334" font-size="19" text-anchor="start" font-weight="700">Diğer yuva</text>
+<text x="454" y="362" font-size="16" text-anchor="start" class="t-muted">Linux'un açılış imajı</text>
+<path d="M 702 292 h 46 l 18 18 v 68 a 6 6 0 0 1 -6 6 h -58 a 6 6 0 0 1 -6 -6 v -80 a 6 6 0 0 1 6 -6 z" class="bl-soft bl-stroke" stroke-width="3"/>
+<rect x="710" y="302" width="7" height="16" rx="2" class="bl"/>
+<rect x="722" y="302" width="7" height="16" rx="2" class="bl"/>
+<rect x="734" y="302" width="7" height="16" rx="2" class="bl"/>
+<rect x="746" y="302" width="7" height="16" rx="2" class="bl"/>
+<text x="780" y="326" font-size="16" text-anchor="start" class="t-bl">F50: Linux bunun yerine</text>
+<text x="780" y="346.8" font-size="16" text-anchor="start" class="t-bl">SD kartta da durabilir</text>
+</svg></div></figure>
+
+<h3>2. Her açılış bir denemedir</h3>
+<p>Cihaz Linux'u her başlattığında bunu bir deneme sayar ve bir hak harcar. Linux açılınca (USB ağı ve SSH çalışınca)
+cihaza "bu açılış iyiydi" der ve bütün haklar geri gelir. Linux açılmazsa harcanan hak gider. Arka arkaya 5 başarısız
+açılıştan sonra (1 ile 6 arasında siz seçersiniz) cihaz bu kez Android'i başlatır. Yanlışlıkla kendinizi dışarıda
+bırakamazsınız.</p>
+<figure class="wide"><div class="panel diagram" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" class="mu-dg" viewBox="0 0 960 860" width="960" height="860" role="img" aria-label="Akış şeması: cihaz açılır, önyükleyici Linux&#x27;u başlatır ve bir deneme hakkı harcar. Linux yaklaşık bir dakika içinde açılırsa açılış onaylanır ve bütün haklar geri gelir. Açılmazsa bir hak eksilir; hak kaldıkça cihaz yeniden dener, hak kalmayınca Android kendiliğinden açılır. Deneme hakkı 1 ile 6 arası, varsayılan 5. Kilitli Linux kendiliğinden Android&#x27;e dönmez." lang="tr">
+<title id="boot-tr-t">Cihaz açılırken ne olur</title>
+<desc id="boot-tr-d">Cihaz Linux'u deneme olarak başlatır. Linux açılırsa açılış onaylanır ve deneme hakları yeniden dolar. Açılmazsa bir hak gider; haklar bitince cihaz Android'i kendiliğinden başlatır.</desc>
+<style>
+.mu-dg text { font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #142133; }
+.mu-dg .t-muted { fill: #526276; }
+.mu-dg .t-white { fill: #ffffff; }
+.mu-dg .t-mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.mu-dg .ink { fill: #142133; }
+.mu-dg .stroke-ink { stroke: #142133; }
+.mu-dg .paper { fill: #ffffff; }
+.mu-dg .soft { fill: #eef2f8; }
+.mu-dg .line { stroke: #c9d4e2; }
+.mu-dg .fill-line { fill: #c9d4e2; }
+.mu-dg .lx { fill: #f2b23a; }
+.mu-dg .lx-soft { fill: #fbf0d8; }
+.mu-dg .lx-stroke { stroke: #b97700; }
+.mu-dg .t-lx { fill: #8a5900; }
+.mu-dg .an { fill: #3fae6a; }
+.mu-dg .an-soft { fill: #def2e6; }
+.mu-dg .an-stroke { stroke: #217a47; }
+.mu-dg .t-an { fill: #17603a; }
+.mu-dg .bl { fill: #2259d6; }
+.mu-dg .bl-soft { fill: #e3ebfb; }
+.mu-dg .bl-stroke { stroke: #2259d6; }
+.mu-dg .t-bl { fill: #1b47ad; }
+.mu-dg .rd { fill: #c4302f; }
+.mu-dg .rd-soft { fill: #fbe3e2; }
+.mu-dg .rd-stroke { stroke: #c4302f; }
+.mu-dg .t-rd { fill: #a12625; }
+.mu-dg .body-top { fill: #fdfdfe; }
+.mu-dg .body-side { fill: #dde4ee; }
+.mu-dg .body-edge { stroke: #b6c2d2; }
+.mu-dg .led-white { fill: #ffffff; stroke: #b6c2d2; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .mu-dg text, .mu-dg:root text { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .t-muted, .mu-dg:root .t-muted { fill: #9cabbe; }
+  :root:not([data-theme="light"]) .mu-dg .ink, .mu-dg:root .ink { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .stroke-ink, .mu-dg:root .stroke-ink { stroke: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .paper, .mu-dg:root .paper { fill: #142031; }
+  :root:not([data-theme="light"]) .mu-dg .soft, .mu-dg:root .soft { fill: #1a283b; }
+  :root:not([data-theme="light"]) .mu-dg .line, .mu-dg:root .line { stroke: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .fill-line, .mu-dg:root .fill-line { fill: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-soft, .mu-dg:root .lx-soft { fill: #33290f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-stroke, .mu-dg:root .lx-stroke { stroke: #f2b740; }
+  :root:not([data-theme="light"]) .mu-dg .t-lx, .mu-dg:root .t-lx { fill: #f2c060; }
+  :root:not([data-theme="light"]) .mu-dg .an-soft, .mu-dg:root .an-soft { fill: #12301f; }
+  :root:not([data-theme="light"]) .mu-dg .an-stroke, .mu-dg:root .an-stroke { stroke: #5ccf8a; }
+  :root:not([data-theme="light"]) .mu-dg .t-an, .mu-dg:root .t-an { fill: #7ddba3; }
+  :root:not([data-theme="light"]) .mu-dg .bl, .mu-dg:root .bl { fill: #5b88f0; }
+  :root:not([data-theme="light"]) .mu-dg .bl-soft, .mu-dg:root .bl-soft { fill: #1a2a48; }
+  :root:not([data-theme="light"]) .mu-dg .bl-stroke, .mu-dg:root .bl-stroke { stroke: #7ea6ff; }
+  :root:not([data-theme="light"]) .mu-dg .t-bl, .mu-dg:root .t-bl { fill: #9dbbff; }
+  :root:not([data-theme="light"]) .mu-dg .rd-soft, .mu-dg:root .rd-soft { fill: #3a1a1a; }
+  :root:not([data-theme="light"]) .mu-dg .rd-stroke, .mu-dg:root .rd-stroke { stroke: #ff7b72; }
+  :root:not([data-theme="light"]) .mu-dg .t-rd, .mu-dg:root .t-rd { fill: #ff9b94; }
+  :root:not([data-theme="light"]) .mu-dg .body-top, .mu-dg:root .body-top { fill: #2a3a52; }
+  :root:not([data-theme="light"]) .mu-dg .body-side, .mu-dg:root .body-side { fill: #1c2a3d; }
+  :root:not([data-theme="light"]) .mu-dg .body-edge, .mu-dg:root .body-edge { stroke: #44587a; }
+  :root:not([data-theme="light"]) .mu-dg .led-white, .mu-dg:root .led-white { fill: #f4f7fb; stroke: #44587a; }
+}
+:root[data-theme="dark"] .mu-dg text { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .t-muted { fill: #9cabbe; }
+:root[data-theme="dark"] .mu-dg .ink { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .stroke-ink { stroke: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .paper { fill: #142031; }
+:root[data-theme="dark"] .mu-dg .soft { fill: #1a283b; }
+:root[data-theme="dark"] .mu-dg .line { stroke: #34465f; }
+:root[data-theme="dark"] .mu-dg .fill-line { fill: #34465f; }
+:root[data-theme="dark"] .mu-dg .lx-soft { fill: #33290f; }
+:root[data-theme="dark"] .mu-dg .lx-stroke { stroke: #f2b740; }
+:root[data-theme="dark"] .mu-dg .t-lx { fill: #f2c060; }
+:root[data-theme="dark"] .mu-dg .an-soft { fill: #12301f; }
+:root[data-theme="dark"] .mu-dg .an-stroke { stroke: #5ccf8a; }
+:root[data-theme="dark"] .mu-dg .t-an { fill: #7ddba3; }
+:root[data-theme="dark"] .mu-dg .bl { fill: #5b88f0; }
+:root[data-theme="dark"] .mu-dg .bl-soft { fill: #1a2a48; }
+:root[data-theme="dark"] .mu-dg .bl-stroke { stroke: #7ea6ff; }
+:root[data-theme="dark"] .mu-dg .t-bl { fill: #9dbbff; }
+:root[data-theme="dark"] .mu-dg .rd-soft { fill: #3a1a1a; }
+:root[data-theme="dark"] .mu-dg .rd-stroke { stroke: #ff7b72; }
+:root[data-theme="dark"] .mu-dg .t-rd { fill: #ff9b94; }
+:root[data-theme="dark"] .mu-dg .body-top { fill: #2a3a52; }
+:root[data-theme="dark"] .mu-dg .body-side { fill: #1c2a3d; }
+:root[data-theme="dark"] .mu-dg .body-edge { stroke: #44587a; }
+:root[data-theme="dark"] .mu-dg .led-white { fill: #f4f7fb; stroke: #44587a; }
+</style>
+<defs><marker id="boot-tr-ah" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="ink"/></marker></defs>
+<rect x="160" y="24" width="240" height="60" rx="30" class="soft line" stroke-width="2.5"/>
+<text x="280" y="61" font-size="20" text-anchor="middle" font-weight="700">Cihaz açılır</text>
+<path d="M 280 84 L 280 120" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-tr-ah)"/>
+<rect x="100" y="122" width="360" height="92" rx="14" class="lx-soft lx-stroke" stroke-width="2.5"/>
+<text x="280" y="162" font-size="20" text-anchor="middle">Önyükleyici Linux'u başlatır</text>
+<text x="280" y="188" font-size="20" text-anchor="middle">ve bir deneme hakkı harcar</text>
+<path d="M 280 214 L 280 250" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-tr-ah)"/>
+<polygon points="280,251 480,356 280,461 80,356" class="bl-soft bl-stroke" stroke-width="2.5"/>
+<text x="280" y="337" font-size="20" text-anchor="middle" font-weight="700">Linux yaklaşık bir dakika</text>
+<text x="280" y="363" font-size="20" text-anchor="middle" font-weight="700">içinde açıldı mı?</text>
+<text x="280" y="389" font-size="17" text-anchor="middle" class="t-muted">USB ağı ve SSH</text>
+<path d="M 480 356 L 600 356" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-tr-ah)"/>
+<text x="504" y="342" font-size="18" text-anchor="start" font-weight="700" class="t-muted">evet</text>
+<rect x="602" y="310" width="330" height="92" rx="14" class="lx-soft lx-stroke" stroke-width="2.5"/>
+<text x="767" y="350" font-size="20" text-anchor="middle">Açılış onaylandı:</text>
+<text x="767" y="376" font-size="20" text-anchor="middle">bütün haklar geri geldi</text>
+<path d="M 767 402 L 767 450" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-tr-ah)"/>
+<rect x="637" y="452" width="260" height="60" rx="30" class="lx" stroke-width="2.5"/>
+<text x="767" y="489" font-size="20" text-anchor="middle" font-weight="700">Linux'u kullanırsınız</text>
+<path d="M 280 461 L 280 510" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-tr-ah)"/>
+<text x="294" y="492" font-size="18" text-anchor="start" font-weight="700" class="t-muted">hayır</text>
+<rect x="110" y="512" width="340" height="86" rx="14" class="rd-soft rd-stroke" stroke-width="2.5"/>
+<text x="280" y="549" font-size="20" text-anchor="middle">Onaylanmadı:</text>
+<text x="280" y="575" font-size="20" text-anchor="middle">bir hak eksildi</text>
+<path d="M 280 598 L 280 634" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-tr-ah)"/>
+<polygon points="280,635 415,700 280,765 145,700" class="bl-soft bl-stroke" stroke-width="2.5"/>
+<text x="280" y="707" font-size="20" text-anchor="middle" font-weight="700">Hak kaldı mı?</text>
+<path d="M 145 700 H 40 V 54 H 158" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-tr-ah)"/>
+<text x="130" y="688" font-size="18" text-anchor="end" font-weight="700" class="t-muted">evet</text>
+<g transform="translate(28 380) rotate(-90)"><text x="0" y="0" font-size="17" text-anchor="middle" class="t-muted">sonraki açılış</text></g>
+<path d="M 415 700 L 600 700" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-tr-ah)"/>
+<text x="440" y="688" font-size="18" text-anchor="start" font-weight="700" class="t-muted">hayır</text>
+<rect x="602" y="660" width="330" height="80" rx="14" class="an-soft an-stroke" stroke-width="2.5"/>
+<text x="767" y="694" font-size="20" text-anchor="middle" font-weight="700">Android kendiliğinden</text>
+<text x="767" y="720" font-size="20" text-anchor="middle" font-weight="700">açılır</text>
+<text x="40" y="806" font-size="17" text-anchor="start" class="t-muted">Deneme hakkı: 1 ile 6 arası (seçmezseniz 5).</text>
+<text x="40" y="828.1" font-size="17" text-anchor="start" class="t-muted">Kilitli Linux kendiliğinden Android'e dönmez.</text>
+</svg></div></figure>
+
+<h3>3. Android'e dönmek tek komut</h3>
+<p>Linux'tayken bir sonraki açılışta Android'i isteyin ve yeniden başlatın:</p>
+<pre><code>sudo mu300-next-boot android
+sudo reboot</code></pre>
+<p>Android'deyken Linux, <code>su -c mu300-linux</code> ile ya da kurulum programının eklediği "MU300 Linux" Magisk
+modülünün Action düğmesiyle geri gelir. Linux'u kalıcı olarak kaldırmak için bilgisayarınızdan kaldırma programını
+çalıştırın. Bunların hepsi <a href="updates/">güncelleme ve güvenlik</a> sayfasında.</p>
+
+<h3>4. Masanızda kendi ağınız</h3>
+<p>Telefonlar ve dizüstüler cihazın Wi-Fi hotspot'una katılır ya da USB'sine takılır. Cihaz onları SIM kartınızla 5G
+veya LTE üzerinden ya da katıldığı başka bir Wi-Fi ağı üzerinden internete çıkarır. USB üzerinden bilgisayarınız
+cihazın kendisine <code>192.168.77.1</code> (F50) ya da <code>192.168.78.1</code> (U30 Air) adresinden ulaşır.</p>
+<figure class="wide"><div class="panel diagram" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" class="mu-dg" viewBox="0 0 980 410" width="980" height="410" role="img" aria-label="Şema: bir telefon cihazın Wi-Fi hotspot&#x27;una katılır, bir dizüstü USB kablosuyla takılıdır. F50&#x27;de 192.168.77.1, U30 Air&#x27;de 192.168.78.1 adresindeki cihaz, SIM kartla 5G veya LTE üzerinden ya da başka bir Wi-Fi ağı üzerinden internete bağlanır." lang="tr">
+<title id="net-tr-t">Cihaz her şeyi nasıl bağlar</title>
+<desc id="net-tr-d">Telefonlar ve dizüstü bilgisayarlar cihazın Wi-Fi hotspot'una katılır ya da USB'den bağlanır. Cihaz onları SIM kartıyla 5G veya LTE üzerinden ya da başka bir Wi-Fi ağı üzerinden internete çıkarır.</desc>
+<style>
+.mu-dg text { font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #142133; }
+.mu-dg .t-muted { fill: #526276; }
+.mu-dg .t-white { fill: #ffffff; }
+.mu-dg .t-mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.mu-dg .ink { fill: #142133; }
+.mu-dg .stroke-ink { stroke: #142133; }
+.mu-dg .paper { fill: #ffffff; }
+.mu-dg .soft { fill: #eef2f8; }
+.mu-dg .line { stroke: #c9d4e2; }
+.mu-dg .fill-line { fill: #c9d4e2; }
+.mu-dg .lx { fill: #f2b23a; }
+.mu-dg .lx-soft { fill: #fbf0d8; }
+.mu-dg .lx-stroke { stroke: #b97700; }
+.mu-dg .t-lx { fill: #8a5900; }
+.mu-dg .an { fill: #3fae6a; }
+.mu-dg .an-soft { fill: #def2e6; }
+.mu-dg .an-stroke { stroke: #217a47; }
+.mu-dg .t-an { fill: #17603a; }
+.mu-dg .bl { fill: #2259d6; }
+.mu-dg .bl-soft { fill: #e3ebfb; }
+.mu-dg .bl-stroke { stroke: #2259d6; }
+.mu-dg .t-bl { fill: #1b47ad; }
+.mu-dg .rd { fill: #c4302f; }
+.mu-dg .rd-soft { fill: #fbe3e2; }
+.mu-dg .rd-stroke { stroke: #c4302f; }
+.mu-dg .t-rd { fill: #a12625; }
+.mu-dg .body-top { fill: #fdfdfe; }
+.mu-dg .body-side { fill: #dde4ee; }
+.mu-dg .body-edge { stroke: #b6c2d2; }
+.mu-dg .led-white { fill: #ffffff; stroke: #b6c2d2; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .mu-dg text, .mu-dg:root text { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .t-muted, .mu-dg:root .t-muted { fill: #9cabbe; }
+  :root:not([data-theme="light"]) .mu-dg .ink, .mu-dg:root .ink { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .stroke-ink, .mu-dg:root .stroke-ink { stroke: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .paper, .mu-dg:root .paper { fill: #142031; }
+  :root:not([data-theme="light"]) .mu-dg .soft, .mu-dg:root .soft { fill: #1a283b; }
+  :root:not([data-theme="light"]) .mu-dg .line, .mu-dg:root .line { stroke: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .fill-line, .mu-dg:root .fill-line { fill: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-soft, .mu-dg:root .lx-soft { fill: #33290f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-stroke, .mu-dg:root .lx-stroke { stroke: #f2b740; }
+  :root:not([data-theme="light"]) .mu-dg .t-lx, .mu-dg:root .t-lx { fill: #f2c060; }
+  :root:not([data-theme="light"]) .mu-dg .an-soft, .mu-dg:root .an-soft { fill: #12301f; }
+  :root:not([data-theme="light"]) .mu-dg .an-stroke, .mu-dg:root .an-stroke { stroke: #5ccf8a; }
+  :root:not([data-theme="light"]) .mu-dg .t-an, .mu-dg:root .t-an { fill: #7ddba3; }
+  :root:not([data-theme="light"]) .mu-dg .bl, .mu-dg:root .bl { fill: #5b88f0; }
+  :root:not([data-theme="light"]) .mu-dg .bl-soft, .mu-dg:root .bl-soft { fill: #1a2a48; }
+  :root:not([data-theme="light"]) .mu-dg .bl-stroke, .mu-dg:root .bl-stroke { stroke: #7ea6ff; }
+  :root:not([data-theme="light"]) .mu-dg .t-bl, .mu-dg:root .t-bl { fill: #9dbbff; }
+  :root:not([data-theme="light"]) .mu-dg .rd-soft, .mu-dg:root .rd-soft { fill: #3a1a1a; }
+  :root:not([data-theme="light"]) .mu-dg .rd-stroke, .mu-dg:root .rd-stroke { stroke: #ff7b72; }
+  :root:not([data-theme="light"]) .mu-dg .t-rd, .mu-dg:root .t-rd { fill: #ff9b94; }
+  :root:not([data-theme="light"]) .mu-dg .body-top, .mu-dg:root .body-top { fill: #2a3a52; }
+  :root:not([data-theme="light"]) .mu-dg .body-side, .mu-dg:root .body-side { fill: #1c2a3d; }
+  :root:not([data-theme="light"]) .mu-dg .body-edge, .mu-dg:root .body-edge { stroke: #44587a; }
+  :root:not([data-theme="light"]) .mu-dg .led-white, .mu-dg:root .led-white { fill: #f4f7fb; stroke: #44587a; }
+}
+:root[data-theme="dark"] .mu-dg text { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .t-muted { fill: #9cabbe; }
+:root[data-theme="dark"] .mu-dg .ink { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .stroke-ink { stroke: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .paper { fill: #142031; }
+:root[data-theme="dark"] .mu-dg .soft { fill: #1a283b; }
+:root[data-theme="dark"] .mu-dg .line { stroke: #34465f; }
+:root[data-theme="dark"] .mu-dg .fill-line { fill: #34465f; }
+:root[data-theme="dark"] .mu-dg .lx-soft { fill: #33290f; }
+:root[data-theme="dark"] .mu-dg .lx-stroke { stroke: #f2b740; }
+:root[data-theme="dark"] .mu-dg .t-lx { fill: #f2c060; }
+:root[data-theme="dark"] .mu-dg .an-soft { fill: #12301f; }
+:root[data-theme="dark"] .mu-dg .an-stroke { stroke: #5ccf8a; }
+:root[data-theme="dark"] .mu-dg .t-an { fill: #7ddba3; }
+:root[data-theme="dark"] .mu-dg .bl { fill: #5b88f0; }
+:root[data-theme="dark"] .mu-dg .bl-soft { fill: #1a2a48; }
+:root[data-theme="dark"] .mu-dg .bl-stroke { stroke: #7ea6ff; }
+:root[data-theme="dark"] .mu-dg .t-bl { fill: #9dbbff; }
+:root[data-theme="dark"] .mu-dg .rd-soft { fill: #3a1a1a; }
+:root[data-theme="dark"] .mu-dg .rd-stroke { stroke: #ff7b72; }
+:root[data-theme="dark"] .mu-dg .t-rd { fill: #ff9b94; }
+:root[data-theme="dark"] .mu-dg .body-top { fill: #2a3a52; }
+:root[data-theme="dark"] .mu-dg .body-side { fill: #1c2a3d; }
+:root[data-theme="dark"] .mu-dg .body-edge { stroke: #44587a; }
+:root[data-theme="dark"] .mu-dg .led-white { fill: #f4f7fb; stroke: #44587a; }
+</style>
+<defs><marker id="net-tr-ah" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="ink"/></marker></defs>
+<rect x="40" y="40" width="54" height="94" rx="10" class="paper stroke-ink" stroke-width="3"/><rect x="57" y="122" width="20" height="4" rx="2" class="ink"/>
+<text x="67" y="160" font-size="16" text-anchor="middle" font-weight="700">Telefon</text>
+<rect x="30" y="236" width="104" height="66" rx="8" class="paper stroke-ink" stroke-width="3"/><path d="M 14 308 h 136 l -10 12 h -116 z" class="ink"/>
+<text x="82" y="346" font-size="16" text-anchor="middle" font-weight="700">Dizüstü</text>
+<path d="M 110 88 C 200 88 230 150 300 170" class="bl-stroke" stroke-width="3" fill="none" stroke-dasharray="2 8" stroke-linecap="round"/>
+<text x="196" y="82" font-size="16" text-anchor="middle" font-weight="700" class="t-bl">Wi-Fi hotspot</text>
+<path d="M 150 270 C 220 270 240 240 300 232" class="stroke-ink" stroke-width="5" fill="none" stroke-linecap="round"/>
+<text x="212" y="300" font-size="16" text-anchor="middle" font-weight="700">USB kablosu</text>
+<g transform="translate(300 76)">
+<g fill="none" stroke-linecap="round" class="bl-stroke" stroke-width="3.5">
+<path d="M 56.8 5.7 A 26 26 0 0 1 93.2 5.7"/>
+<path d="M 44.9 -3.65 A 43 43 0 0 1 105.1 -3.65"/>
+<path d="M 33 -13 A 60 60 0 0 1 117 -13"/>
+</g>
+<rect x="4" y="29" width="142" height="150" rx="23" class="body-side"/>
+<rect x="0" y="23" width="142" height="148" rx="22" class="body-top body-edge" stroke-width="1"/>
+<circle cx="46" cy="46" r="5" class="bl" stroke-width="1"/>
+<circle cx="71" cy="46" r="5" class="led-white" stroke-width="1"/>
+<circle cx="96" cy="46" r="5" class="lx" stroke-width="1"/>
+<rect x="18" y="68" width="50" height="75" rx="9" class="an-soft"/>
+<rect x="74" y="68" width="50" height="75" rx="9" class="lx-soft"/>
+<rect x="32" y="85" width="22" height="39" rx="4.5" fill="none" class="an-stroke" stroke-width="3"/>
+<circle cx="43" cy="117" r="2.25" class="an"/>
+<path d="M 85 93 l 12 11 l -12 11" fill="none" class="lx-stroke" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 102 119 h 13" class="lx-stroke" stroke-width="4" stroke-linecap="round"/>
+<rect x="59" y="167" width="24" height="6" rx="3" class="ink" opacity=".75"/>
+</g>
+<text x="371" y="286" font-size="17" text-anchor="middle" font-weight="700">F50 / U30 Air</text>
+<text x="371" y="312" font-size="14" text-anchor="middle" class="t-muted t-mono">192.168.77.1 (F50)</text>
+<text x="371" y="330.2" font-size="14" text-anchor="middle" class="t-muted t-mono">192.168.78.1 (U30 Air)</text>
+<path d="M 568 210 L 600 70 L 632 210 M 584 120 H 616 M 576 165 H 624" class="stroke-ink" stroke-width="4" fill="none" stroke-linejoin="round"/>
+<circle cx="600" cy="62" r="8" class="bl"/>
+<g fill="none" class="bl-stroke" stroke-width="4" stroke-linecap="round"><path d="M 580 44 a 26 26 0 0 0 0 36"/><path d="M 620 44 a 26 26 0 0 1 0 36"/></g>
+<text x="600" y="238" font-size="16" text-anchor="middle" font-weight="700">5G / LTE</text>
+<text x="600" y="258.8" font-size="16" text-anchor="middle" font-weight="700">SIM kartınızla</text>
+<path d="M 446 150 C 500 140 530 140 560 140" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#net-tr-ah)"/>
+<g transform="translate(600 300)" fill="none" class="stroke-ink" stroke-width="4" stroke-linecap="round"><path d="M -26 0 a 37 37 0 0 1 52 0"/><path d="M -15 11 a 21 21 0 0 1 30 0"/></g><circle cx="600" cy="322" r="5" class="ink"/>
+<text x="600" y="356" font-size="15" text-anchor="middle" class="t-muted">ya da başka</text>
+<text x="600" y="375.5" font-size="15" text-anchor="middle" class="t-muted">bir Wi-Fi ağı</text>
+<path d="M 446 230 C 500 280 530 300 560 304" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#net-tr-ah)" stroke-dasharray="7 6"/>
+<path d="M 786 230 a 40 40 0 0 1 8 -79 a 54 54 0 0 1 102 -6 a 36 36 0 0 1 4 85 z" class="bl-soft bl-stroke" stroke-width="3"/>
+<text x="860" y="204" font-size="19" text-anchor="middle" font-weight="700" class="t-bl">İnternet</text>
+<path d="M 650 140 C 700 140 730 160 772 175" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#net-tr-ah)"/>
+<path d="M 650 312 C 720 312 770 280 800 238" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#net-tr-ah)" stroke-dasharray="7 6"/>
+</svg></div></figure>
+
+<h2 id="quick-start">Hızlı başlangıç</h2>
+<p>Windows, macOS ya da Linux'ta, cihaz root'lu ve USB ile bağlıyken yaklaşık 15 dakika.
+<a href="install/">Kurulum rehberi</a> her soruyu tek tek anlatır.</p>
+</div>
+
+<div class="wrap">
+<ol class="steps">
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><circle cx="24" cy="24" r="13" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M34 34l11 11" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M18 24l4 4 8-8" fill="none" stroke="#3fae6a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><h3>Kontrol</h3><p><code>./install.sh --check</code> cihazı yalnızca okur ve Linux'un sığıp sığmadığını, nereye sığdığını söyler.</p></li>
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><rect x="12" y="20" width="32" height="28" rx="7" fill="none" stroke="currentColor" stroke-width="3"/><path d="M28 4v22m-7-7 7 7 7-7" fill="none" stroke="#f2b23a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="22" cy="40" r="2.5" fill="#2259d6"/><circle cx="34" cy="40" r="2.5" fill="#f2b23a"/></svg><h3>Kurulum</h3><p><code>./install.sh</code> birkaç soru sorar, ne yazacağını gösterir ve <code>INSTALL</code> yazmanızı bekler.</p></li>
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><rect x="6" y="10" width="44" height="36" rx="7" fill="none" stroke="currentColor" stroke-width="3"/><path d="M15 22l7 6-7 6" fill="none" stroke="#f2b23a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 36h13" stroke="#f2b23a" stroke-width="3.5" stroke-linecap="round"/></svg><h3>Giriş</h3><p>Yaklaşık bir dakika sonra: <code>ssh ubuntu@192.168.77.1</code>, OpenWrt için <code>http://192.168.77.1</code>.</p></li>
+</ol>
+</div>
+
+<div class="prose">
+<pre><code>git clone https://github.com/dikeckaan/mu300-linux
+cd mu300-linux
+MU300_LANG=tr ./install.sh --check   <span class="c"># yalnızca okur, hiçbir şey yazmaz</span>
+MU300_LANG=tr ./install.sh           <span class="c"># Windows: .\install.ps1 -Lang tr</span></code></pre>
+<p><code>MU300_LANG=tr</code> (Windows'ta <code>-Lang tr</code>) kurulum programını doğrudan Türkçe başlatır;
+yazmazsanız başta dili sorar.</p>
+
+<h2 id="costs">Ne kaybedersiniz? (Spoiler: hiçbir şey)</h2>
+<p>Bu kutulardaki Android'in de ekranı, hoparlörü ve HDMI'ı yok; yani Linux elinizden olmayan bir şeyi alamaz.
+Aldığı tek şey, cebinizde bir 5G Linux sunucusu taşımamak için öne sürdüğünüz son bahane. Denerseniz
+kaybedeceğiniz bir şey yok; denemezseniz kaybettiğiniz bir sunucu var.</p>
+<ul>
+<li><strong>Android yerinde kalır.</strong> Aynı anda ikisinden yalnızca biri çalışır; yeniden başlatınca
+aralarında geçiş yapılır.</li>
+<li><strong>Donanım, hangi sistem çalışırsa çalışsın aynıdır:</strong> görüntü çıkışı yok (USB-C üzerinden HDMI
+çalışmaz), hoparlör ve mikrofon yok (sesli aramalar üzerinde çalışılıyor), yaklaşık 1.4 GB RAM.</li>
+</ul>
+
+<div class="callout warn" id="risk">
+<strong>Kendi sorumluluğunuzda bir hobi projesi</strong>
+<p>Bu, boş zamanlarda yapılmış deneysel bir projedir. Bir ürün değildir, destek hattı yoktur ve hiçbir garantisi
+yoktur. Telefon sınıfı bir cihaza yazmak onu kullanılamaz hâle getirebilir; root'lama, kilit açma ve kurtarma araçları
+bu projenin dışındadır. Yedek alın ve kaybetmeyi göze alamayacağınız bir cihaza kurmayın. Cihazınızın gönderdiklerini
+değiştirmek (TTL, bant kilidi, VPN) operatörünüzün koşullarına ya da yerel yasalara aykırı olabilir. Tam metin
+<a href="https://github.com/dikeckaan/mu300-linux#a-hobby-project-at-your-own-risk">README</a>'de.</p>
+</div>
+
+<h2 id="faq">Sık sorulan sorular</h2>
+<details class="faq">
+<summary>Linux kurmak Android'i ya da verilerimi siler mi?</summary>
+<div>
+<p>Yaygın 64 GB cihazda hayır. Linux, hiçbir bölüme ait olmayan yaklaşık 32 GiB'lık alana kurulur; Android'in bölümlerine, verilerine ve bölüm tablosuna hiç yazılmaz. Kurulum yalnızca bir açılış bölümüne (Android'in kullanmadığı yuvaya) ve <code>misc</code>'in 32 baytına yazar.</p><p>İstisna <strong>32 GB sürümdür</strong>: onda hiç boş alan yoktur. Orada bir SD kart kullanabilir (F50) ya da kurulum programının <code>userdata</code>'yı küçültmesine izin verebilirsiniz; bu, Android'deki her şeyi siler. Bu yol deneyseldir ve önce <code>ERASE</code> yazmanızı ister.</p>
+</div>
+</details>
+<details class="faq">
+<summary>Önce cihazı root'lamam gerekiyor mu?</summary>
+<div>
+<p>Evet. Cihaz zaten <strong>root'lu ve kilidi açık</strong> olmalı: değiştirilmiş bir Android açılış imajıyla açılabiliyor ve USB hata ayıklama açık olmalı. Bu noktaya gelmek projenin parçası değildir; o araçların kendi talimatlarıyla ve kendi sorumluluğunuzda yaparsınız.</p>
+</div>
+</details>
+<details class="faq">
+<summary>Linux açılmazsa ne olur?</summary>
+<div>
+<p>Cihaz kendiliğinden Android'e döner. Linux'un her açılışı bir denemedir; arka arkaya 5 kez başarısız olursa (kurulumda 1 ile 6 arasında seçersiniz) bir sonraki açılış Android olur. Ayrıntılar <a href="updates/#safety-net">güvenlik ağı</a> bölümünde.</p>
+</div>
+</details>
+<details class="faq">
+<summary>Android'e nasıl dönerim?</summary>
+<div>
+<p>Linux'tan: <code>sudo mu300-next-boot android</code>, ardından <code>sudo reboot</code>. Linux'u tamamen kaldırmak için cihaz Android'deyken <code>./uninstall.sh</code> (Windows: <code>.\uninstall.ps1</code>) çalıştırın. Android'den <code>su -c mu300-linux</code> Linux'u yeniden başlatır.</p>
+</div>
+</details>
+<details class="faq">
+<summary>Ubuntu mu OpenWrt mi, hangisini seçmeliyim?</summary>
+<div>
+<p>Çoğunlukla web arayüzlü bir yönlendirici istiyorsanız OpenWrt; <code>apt</code> ile küçük bir sunucu istiyorsanız Ubuntu. İkisini birden kurup <code>mu300-os</code> ile geçiş de yapabilirsiniz. <a href="choose/">Sistem seçimi</a> sayfası bunu dört çekirdekle birlikte anlatır.</p>
+</div>
+</details>
+<details class="faq">
+<summary>ZTE U30 Pro destekleniyor mu?</summary>
+<div>
+<p>Hayır. U30 Pro'da farklı bir çip (UMS9632) var. Desteklenenler ZTE F50 / MU300 ve ZTE U30 Air'dir; ikisi aynı kartı ve çipi paylaşır, kurulum programı hangisiyle konuştuğunu kendisi tanır.</p>
+</div>
+</details>
+<details class="faq">
+<summary>Bilgisayarsız kurabilir miyim?</summary>
+<div>
+<p>Evet, cihaz zaten Magisk 26 veya daha yenisiyle root'lu bir Android çalıştırıyorsa: her sürümde, her sistem ve çekirdek için bir tane olmak üzere (kontrol panelli OpenWrt dahil toplam 11), Magisk uygulamasından kurulan Magisk zip'leri vardır. Bkz. <a href="install/#magisk">Magisk zip'iyle kurulum</a>.</p>
+</div>
+</details>
+<details class="faq">
+<summary>Linux'u SD karta kurabilir miyim?</summary>
+<div>
+<p>F50'de evet: yuvada en az 700 MiB'lık bir kart varsa kurulum programı Linux'un oraya gidip gitmeyeceğini sorar. U30 Air'de kart yuvası yoktur.</p>
+</div>
+</details>
+<details class="faq">
+<summary>Ekran ya da ses var mı?</summary>
+<div>
+<p>Hayır. USB-C üzerinden HDMI çalışmaz, kartta hoparlör ve mikrofon yoktur. Cihazı SSH, bir web arayüzü ya da seri konsol üzerinden kullanırsınız.</p>
+</div>
+</details>
+<details class="faq">
+<summary>Ücretli mi?</summary>
+<div>
+<p>Hayır. Betikler ve belgeler MIT lisanslıdır, çekirdekler GPL-2.0'dır. Sürüm imajlarında tescilli dosya yoktur: kurulum programı Wi-Fi ve modem dosyalarını sizin cihazınızdan kopyalar.</p>
+</div>
+</details>
+
+<h2 id="more">Buradan nereye</h2>
+<ul>
+<li><a href="install/">Kurulum rehberi</a>: yeni başlayanlar için her adım ve her soru.</li>
+<li><a href="choose/">Sistem seçimi</a>: Ubuntu, OpenWrt ya da kontrol paneli, ve hangi çekirdek.</li>
+<li><a href="features/">Özellikler</a>: mobil veri, hotspot, Wi-Fi istemcisi, SMS, VPN, pil ve LED'ler.</li>
+<li><a href="updates/">Güncelleme ve güvenlik</a>: güncelleme, geri alma, Android'e dönüş, kaldırma.</li>
+<li><a href="troubleshooting/">Sorun giderme</a>: bilinen sorunlar ve çözümleri.</li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki" hreflang="en">Wiki</a> (İngilizce): her teknik kelimenin sözlüğü ve daha ayrıntılı sayfalar.</li>
+</ul>
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>Proje</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">GitHub'daki kaynak kod</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">Projeye destek ol</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">Sürümler (indirmeler)</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN modülü</a></li>
+</ul>
+</div>
+<div>
+<h2>Yardım</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki (İngilizce)</a></li>
+<li><a href="../tr/troubleshooting/">Sorun giderme</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">Sorun bildir</a></li>
+<li><a href="https://t.me/mu300project">Telegram kanalı (haberler ve sürümler)</a></li>
+</ul>
+</div>
+<div>
+<p>Kendi sorumluluğunuzda kullanılan, garantisi olmayan bir hobi projesi. ZTE, Unisoc ya da herhangi bir operatör tarafından desteklenmez. Betikler ve belgeler: MIT; çekirdekler: GPL-2.0.</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

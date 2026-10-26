@@ -1,0 +1,23 @@
+# System > Terminal (luci-app-mu300's mu300/terminal page): ttyd, hardened. The ttyd package's own default is
+# /bin/login on the LAN without an origin check.
+#  - interface '@lan': the LAN bridge's IPv4 address only (no IPv6, no 0.0.0.0): never on sipa_eth0 or a Wi-Fi
+#    uplink, and fw4's wan zone rejects input there anyway (no rule in this image opens 7681)
+#  - command: mu300-terminal-login, a root shell only for a one-time token the panel hands to a logged-in LuCI
+#    session (rpcd mu300term, ACL luci-app-mu300-terminal); url_arg passes that token (?arg=). No password prompt.
+#  - check_origin: a page on another site cannot open the terminal's websocket in the user's browser
+#  - HTTP only, like the panel's default: ttyd over TLS fails in Chrome (libwebsockets offers HTTP/2, and its
+#    websocket over HTTP/2 ends in ERR_HTTP2_PROTOCOL_ERROR), so a panel opened over https opens the terminal in a
+#    tab of its own
+#  - mu300.idle: the shell is closed after that many seconds without activity (0: never)
+config ttyd 'lan'
+	option enable '1'
+	option interface '@lan'
+	option port '7681'
+	option command '/usr/libexec/mu300-terminal-login'
+	option url_arg '1'
+	option check_origin '1'
+	option max_clients '4'
+	option debug '3'
+
+config terminal 'mu300'
+	option idle '900'

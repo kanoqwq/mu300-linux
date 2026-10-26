@@ -1,0 +1,8 @@
+#!/bin/sh /etc/rc.common
+# apply the performance profile and the TTL setting saved by mu300-toolkit (/etc/mu300/toolkit.conf, ttl.conf)
+START=96
+
+start() {
+	[ -r /etc/mu300/toolkit.conf ] || [ -r /etc/mu300/ttl.conf ] || return 0
+	/opt/mu300/bin/mu300-toolkit apply
+}

@@ -1,0 +1,6 @@
+#!/bin/sh
+# A selected host-side USB NIC can enumerate after netifd creates br-lan.
+# Reattach on the kernel netdev event, without polling or reloading the LAN.
+[ "$ACTION" = add ] || exit 0
+[ -x /usr/libexec/unisoc-modem/device-usb ] || exit 0
+/usr/libexec/unisoc-modem/device-usb net-sync >/dev/null 2>&1

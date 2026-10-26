@@ -1,0 +1,35 @@
+Allow bridging the SC2355 interface once it is in AP mode.
+
+sprd_cfg80211_change_iface() marks the interface as AP even when tearing down
+the previous firmware mode fails, but still returns that error. cfg80211 then
+skips clearing IFF_DONT_BRIDGE, so hostapd cannot add wlan0 to a bridge
+("Device does not allow enslaving to a bridge"). Clear the flag whenever the
+interface ends up as AP/P2P-GO, like cfg80211_change_iface() does on success.
+
+--- a/common/cfg80211.c
++++ b/common/cfg80211.c
+@@ -440,6 +440,10 @@
+ 		atomic_set(&hif->change_iface_block_cmd, 0);
+ 	}
+ 
++	if (vif->wdev.iftype == NL80211_IFTYPE_AP ||
++	    vif->wdev.iftype == NL80211_IFTYPE_P2P_GO)
++		ndev->priv_flags &= ~IFF_DONT_BRIDGE;
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL(sprd_cfg80211_change_iface);
+--- a/common/iface.c
++++ b/common/iface.c
+@@ -275,6 +275,11 @@
+ 		return ret;
+ 
+ 	ret = sprd_init_fw(vif);
++	/* hostapd enslaves the AP interface to a bridge right after opening it */
++	if (vif->wdev.iftype == NL80211_IFTYPE_AP ||
++	    vif->wdev.iftype == NL80211_IFTYPE_P2P_GO)
++		ndev->priv_flags &= ~IFF_DONT_BRIDGE;
++
+ 	if (!ret && vif->wdev.iftype == NL80211_IFTYPE_AP) {
+ 		netif_carrier_off(ndev);
+ 		return 0;

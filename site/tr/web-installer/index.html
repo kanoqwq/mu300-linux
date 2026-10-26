@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- This page talks to a device over USB. Its policy: scripts and styles from this site only, and no connection
+     to anything but this site and GitHub's API. (The hash is the theme script below; no web fonts here.) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-OMJkqZr7SKqxdIEl/JawS5rmqBdCOZaNDw1i12YqLwg='; style-src 'self'; img-src 'self' data:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>Web kurucu: ZTE F50 / U30 Air'e Linux'u tarayıcıdan kurun ve yönetin</title>
+<meta name="description" content="Root'lu bir ZTE F50 / MU300 ya da U30 Air'e Ubuntu veya OpenWrt'yi Chrome ya da Edge'den USB üzerinden kurun; bilgisayarda adb, Python ya da betik gerekmez.">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/tr/web-installer/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/web-installer/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/web-installer/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/web-installer/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/web-installer/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="Web kurucu: ZTE F50 / U30 Air'e Linux'u tarayıcıdan kurun ve yönetin">
+<meta property="og:description" content="Root'lu bir ZTE F50 / MU300 ya da U30 Air'e Ubuntu veya OpenWrt'yi Chrome ya da Edge'den USB üzerinden kurun; bilgisayarda adb, Python ya da betik gerekmez.">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/tr/web-installer/">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/style.css">
+<link rel="stylesheet" href="../../assets/web-installer/web-installer.css">
+<script src="../../assets/site.js" defer></script>
+<script type="module" src="../../assets/web-installer/app.js"></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [
+  {"@type": "ListItem", "position": 1, "name": "Ana sayfa", "item": "https://kaandikec.com/mu300-linux/tr/"},
+  {"@type": "ListItem", "position": 2, "name": "Web kurucu", "item": "https://kaandikec.com/mu300-linux/tr/web-installer/"}
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">İçeriğe geç</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../../tr/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../../tr/install/">Kurulum</a>
+<a href="../../tr/web-installer/" aria-current="page">Web kurucu</a>
+<a href="../../tr/choose/">Sistem seçimi</a>
+<a href="../../tr/features/">Özellikler</a>
+<a href="../../tr/updates/">Güncelleme ve güvenlik</a>
+<a href="../../tr/troubleshooting/">Sorun giderme</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="Dil"><a href="../../web-installer/" hreflang="en" lang="en">English</a><a href="../../tr/web-installer/" hreflang="tr" lang="tr" aria-current="true">Türkçe</a><a href="../../zh/web-installer/" hreflang="zh-Hans" lang="zh-Hans">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="Tema|Otomatik|Açık|Koyu|sisteminizi izler|Renk temasını değiştir"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menü</button>
+</div>
+</header>
+<main id="content">
+
+<header class="page-head">
+<div class="prose">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../">Ana sayfa</a> <span aria-hidden="true">/</span> <span aria-current="page">Web kurucu</span></nav>
+<h1>Web kurucu</h1>
+<p class="lede">Linux'u bu sayfadan, USB üzerinden, Chrome ya da Edge ile kurun, güncelleyin ve kaldırın. Bilgisayara kurulacak bir şey yok.</p>
+<p class="sponsor-line">Ücretsiz, Türkiye'de tek bir kişi tarafından yapılıyor. <a class="btn sponsor small" href="https://github.com/sponsors/dikeckaan"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="M8 14.2 6.9 13.2C3 9.7.5 7.4.5 4.6.5 2.4 2.2.7 4.4.7c1.2 0 2.4.6 3.1 1.5C8.2 1.3 9.4.7 10.6.7c2.2 0 3.9 1.7 3.9 3.9 0 2.8-2.5 5.1-6.4 8.6z"/></svg>Projeye sponsor ol</a></p>
+<div class="callout wi-tested">
+<strong>Bir F50 üzerinde, macOS'ta Chrome ile test edildi</strong>
+<p>Bu sayfa 2026-10-13'te bir ZTE F50 (64 GB, Android 13, Magisk 30.6) üzerinde, macOS'ta Chrome 155 ile ve v2026.10.25 sürümüyle baştan sona çalıştırıldı: bir ve iki sistem kurma (cihaz sürümü kendisi indirerek ve elle seçilen bir dosyayla), kurulumun ortasında kapatılan bir sekme, Linux'u başlatma, yönetme, Android'e dönme ve kaldırma.</p>
+<p><strong>Henüz test edilmedi:</strong> Windows (orada adb arayüzü WinUSB sürücüsü ister) ve bilgisayarın sistemi olarak Linux (aşağıdaki udev kuralını ister); U30 Air; hedef olarak SD kart; Magisk dışındaki root yöneticileri; ve cihazın gerçek mobil veri üzerinden kendi indirmesi (test cihazının Android'inde internet yoktu; indirmesi GitHub'a test bilgisayarı üzerinden ulaştı). Bunlar için test edilmiş yollar <a href="../install/">bilgisayar kurucusu</a> ve <a href="../install/#magisk">Magisk zip'leridir</a>. Burada bir şey ters giderse günlüğü saklayın (sayfa kaydedebilir) ve <a href="https://github.com/dikeckaan/mu300-linux/issues">bize bildirin</a>.</p>
+</div>
+</div>
+</header>
+
+<div class="wrap">
+<noscript><p class="wi-noscript">Bu sayfa JavaScript ve WebUSB'li bir tarayıcı (bilgisayarda Chrome ya da Edge) ister. <a href="../install/">Kurulum kılavuzu</a> ikisi olmadan da çalışır.</p></noscript>
+<div class="wi" id="wi-app" hidden><p class="wi-wait">Kurucu yükleniyor…</p></div>
+</div>
+
+<div class="prose">
+
+<nav class="toc" aria-labelledby="toc-h">
+<h2 id="toc-h">Bu sayfada</h2>
+<ol>
+<li><a href="#before">Başlamadan önce</a></li>
+<li><a href="#does">Sayfa ne yapar, cihazda ne çalışır</a></li>
+<li><a href="#cannot-open">Tarayıcı cihazı açamıyorsa</a></li>
+<li><a href="#linux-adb">MU300 Linux'u yönetmek: önce adb'yi açın</a></li>
+<li><a href="#safety">Sekme kapanırsa ya da kablo çıkarsa</a></li>
+<li><a href="#privacy">Sayfa neyi görür ve saklar</a></li>
+<li><a href="#phone">Telefondan olur mu?</a></li>
+</ol>
+</nav>
+
+<h2 id="before">Başlamadan önce</h2>
+<ul>
+<li><strong>Magisk 26 ya da daha yenisiyle zaten root'lanmış</strong> bir ZTE F50 / MU300 ya da U30 Air. Sayfa cihazın root'lu olup olmadığını ve bootloader'ının kilidi hakkında ne dediğini gösterir, hiçbirini değiştirmez: cihaz root'lamaz ve bootloader kilidi açmaz.</li>
+<li><strong>Windows, macOS ya da Linux'ta Chrome, Edge ya da başka bir Chromium tarayıcısı.</strong> Firefox ve Safari'de WebUSB yoktur.</li>
+<li>Android'de USB hata ayıklama açık, cihaz takılı ve onu tutan başka bir program yok. Çalışan bir adb sunucusu cihazı tutar (<code>adb kill-server</code> ile durdurun); bu sayfayı açmış ve cihaza bağlanmış başka bir tarayıcı penceresi de tutar.</li>
+<li>En iyisi cihazda internet bağlantısı olmasıdır (mobil verili bir SIM): o zaman cihaz sürümü kendisi indirir. Yoksa dosyayı siz indirip sayfaya verirsiniz.</li>
+<li><code>v2026.10.23</code>'ten sonraki bir sürüm: daha eski sürümlerin Magisk zip'leri bu sayfayı tanımaz.</li>
+</ul>
+
+<h2 id="does">Sayfa ne yapar, cihazda ne çalışır</h2>
+<p>Sayfa küçük bir adb istemcisidir. Cihazla USB üzerinden konuşur ve orada üç şey yapar: projenin birkaç betiğini ve sürümün Magisk zip'ini cihaza koyar, <strong>zip'in kendi kurucusunu</strong> (Magisk uygulamasının çalıştırdığını) yanıtlarınızla başlatır ve o kurucunun yazdıklarını gösterir. Kurulum, denetimler ve yazma sırası cihazındır; Magisk'te kurulan bir zip ile aynıdır.</p>
+<ul>
+<li>Root'lu Android'den <strong>kurulum</strong>: bir ya da iki sistem, çekirdek, dahili depolama ya da SD kart, VPN modülü.</li>
+<li>MU300 Linux çalıştıran (adb açık) bir cihazı <strong>yönetme</strong>: sürüm, güncellemeler, çekirdek, hangi sistemin başlayacağı, yeniden başlatma, Android'e dönüş, günlükler.</li>
+<li>Kurulumun yazdıklarını <strong>yedekleme</strong> ve <strong>kaldırma</strong>.</li>
+</ul>
+<p>32 GB'lık modelde Android'in veri bölümünü küçültmez (rakamları gösterir ve <a href="../install/#variant-32gb">bilgisayar kurucusuna</a> yönlendirir) ve geri büyütmez.</p>
+<p>Sistemi, çekirdeği ve sürümü siz seçersiniz; sayfa bu seçime ait dosyanın adını ve boyutunu söyler ve siz hiçbir şey indirmeden dosyayı cihaza ulaştırır: <strong>cihazdan dosyayı kendisinin indirmesini</strong> ister (projenin GitHub'daki sürümlerinden, cihazın kendi internet bağlantısıyla) ve ne kadar ilerlediğini gösterir. Kesilen bir indirme kaldığı yerden sürer. Bu, cihazın mobil verisinden dosyanın boyutu kadar (sistem başına 39 ile 124 MB) harcar; operatör bunu kullanıma göre ücretlendirebilir. Cihazın bağlantısı yoksa sayfa bunu söyler ve <strong>dosyayı bu bilgisayar indirir</strong>: projenin GitHub'daki sürüm yansısından alır ve kabloyla gönderir (GitHub bir web sayfasının sürümün kendi dosyalarını okumasına izin vermez; bu yüzden proje, bir sayfanın okuyabildiği yerde bir kopya tutar). Son yol olarak dosyayı kendiniz indirip seçersiniz.</p>
+<p>Dosya hangi yoldan gelirse gelsin, cihaz onu yalnızca GitHub'ın sürüm için yayımladığı sağlama toplamına sahipse kullanır; tarayıcı bu toplamı doğrudan GitHub'dan okur. Dosyanın bütünlüğü geldiği bağlantıdan değil, bu sabit sağlama toplamından gelir: cihazdaki indirici (Magisk'in busybox'ı) GitHub'ın sertifikasını doğrulayamaz; bu yüzden hiçbir şeye, nereden geliyor göründüğü için güvenilmez. Sayfa ayrıca indirmeyi sürümün bildirdiği boyutla sınırlar ve GitHub dışında bir yere yönlendirilen indirmeyi durdurur.</p>
+
+<h2 id="cannot-open">Tarayıcı cihazı açamıyorsa</h2>
+<div class="qa"><p><strong>Her yerde</strong></p>
+<p>Çalışan bir adb sunucusu (Android Studio, terminalde <code>adb</code>, scrcpy, bazı telefon araçları) cihazı sahiplenmiş ya da başka bir tarayıcı penceresi bu sayfayı açmış ve cihaza bağlanmış. Cihazla aynı anda yalnızca bir program konuşabilir.</p>
+<div><code>adb kill-server</code>, o programları ve diğer pencereyi ya da sekmeyi kapatın, yeniden bağlanın. Neden buysa sayfa “cihazı başka bir program kullanıyor” der.</div></div>
+<div class="qa"><p><strong>Windows</strong></p>
+<p>Tarayıcı yalnızca <strong>WinUSB</strong> sürücüsü olan bir arayüzü kullanabilir. Android'in adb arayüzü çoğu cihazda bunu Windows'tan kendisi ister; F50 ve U30 Air'in isteyip istemediği ölçülmedi. Yerinde üreticinin kendi adb sürücüsü varsa tarayıcı engellenir.</p>
+<div>Aygıt Yöneticisi'nde cihazın “ADB Interface” girdisine bakın. Başka bir sürücüsü varsa ya da hiç yoksa Google'ın USB sürücüsünü kurun (WinUSB'dir) ya da Zadig ile o arayüze WinUSB bağlayın. Yalnızca adb arayüzünü değiştirin; ağ ya da modem arayüzlerini değil.</div></div>
+<div class="qa"><p><strong>Linux</strong></p>
+<p>Aygıt düğümü root'a aittir; tarayıcı ona yazamaz.</p>
+<div>adb arayüzleri için bir udev kuralı ekleyin, sonra cihazı yeniden takın:
+<pre><code>echo 'SUBSYSTEM=="usb", ATTR{bInterfaceClass}=="ff", ATTR{bInterfaceSubClass}=="42", MODE="0660", TAG+="uaccess"' | sudo tee /etc/udev/rules.d/51-adb-webusb.rules
+sudo udevadm control --reload &amp;&amp; sudo udevadm trigger</code></pre>
+Snap ya da flatpak olarak kurulmuş bir tarayıcının USB için ayrı izne ihtiyacı olabilir.</div></div>
+<div class="qa"><p><strong>macOS</strong></p>
+<p>Kurulacak bir şey yok. Tarayıcıyı yalnızca cihazı tutan başka bir program durdurur.</p>
+<div>O programdan çıkın.</div></div>
+<p>Sayfa, tarayıcının bildirdiği kadarıyla bunlardan hangisiyle karşılaştığını söyler.</p>
+
+<h2 id="linux-adb">MU300 Linux'u yönetmek: önce adb'yi açın</h2>
+<p>v2026.10.23'ten sonraki sürümden itibaren Linux aynı kablo üzerinden adb'yi her bilgisayara sunar ve sayfa onu hiçbir hazırlık olmadan yönetebilir. Daha eski bir Linux'ta adb kapalıdır (<code>sudo mu300-usb adb on</code>); yalnızca yetkili anahtarlara ayarlanmış olan ise yalnızca adb anahtarını tanıdığı bilgisayarları içeri alır; soracak bir ekran yoktur. Bu tarayıcının kendi anahtarı vardır (sayfa onu “Bu tarayıcının adb anahtarı” altında gösterir). Yetkilendirmek için cihazda, SSH üzerinden şunu çalıştırın:</p>
+<pre><code>echo '&lt;sayfanın gösterdiği anahtar satırı&gt;' | sudo mu300-usb adb key -
+sudo mu300-usb adb on</code></pre>
+<p>Yetkili bir anahtarı elinde tutan herkes cihazda root kabuğu alır; yalnızca kendi tarayıcılarınızı ve bilgisayarlarınızı yetkilendirin.</p>
+
+<h2 id="safety">Sekme kapanırsa ya da kablo çıkarsa</h2>
+<p>Kurulum cihazdaki bir iştir. Bu sayfaya ihtiyacı yoktur: sekmenin kapanması, tarayıcının çökmesi ya da bilgisayarın uyuması sayfanın onu görmesini bitirir, işi değil. Yeniden bağlanın, sayfa nerede olduğunu gösterir. <strong>F50'den çıkan kablo güç kesintisidir</strong> (pili yoktur); U30 Air çalışmayı sürdürür.</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">Şu sırada durursa</th><th scope="col">Cihaz</th></tr></thead><tbody>
+<tr><th scope="row">dosyalar gönderilirken, plan çıkarılırken, boot imajı oluşturulurken</th><td>Depolamasına hiçbir şey yazılmamıştır. Android'i başlatır.</td></tr>
+<tr><th scope="row">sistem kurulurken</th><td>Hiçbir şeyin başlatmadığı yarım bir Linux dosya sistemi. Boot bölümlerine ve misc'e dokunulmamıştır: Android'i başlatır. Kurulumu yeniden çalıştırın.</td></tr>
+<tr><th scope="row">boot imajı yazılırken</th><td>Yalnızca Linux slotunun boot bölümüne yazılır, Android'inkine asla. Yarım yazılmış imaj açılış hedefi değildir: cihazın onu denemesini sağlayan 32 bayt en son, imaj geri okunduktan sonra yazılır. Android'i başlatır.</td></tr>
+<tr><th scope="row">hazırlanırken (misc'in 32 baytı)</th><td>Küçük tek bir yazma; geri okunur ve doğrulanmazsa geri alınır. Ya Android'in bloğu ya da Linux deneme bloğu oradadır.</td></tr>
+<tr><th scope="row">ondan sonra</th><td>Linux denenir; açılışını bitiremeyen Linux kendiliğinden Android'e döner.</td></tr>
+</tbody></table></div>
+<p>Kaldırma ters sırayla gider: önce Android açılış sistemi yapılır, sonra Linux slotuna Android'in boot imajı geri konur, sonra Linux dosya sistemi silinir. Ne durdurursa durdursun cihaz Android'i başlatır.</p>
+
+<h2 id="privacy">Sayfa neyi görür ve saklar</h2>
+<ul>
+<li>Sürüm listesi için <strong>GitHub'ın API'sine</strong>, kendi dosyaları için bu siteye bağlanır. Başka hiçbir yere: analitik yok, başka sitelerden yazı tipi ya da betik yok. Sürümün kendisini, seçiminize göre, cihaz GitHub'dan ya da tarayıcı projenin <code>raw.githubusercontent.com</code> üzerindeki yansısından indirir.</li>
+<li>Cihazdan IMEI, IMSI, ICCID ya da telefon numarasını asla istemez; cihazın kimliğini ve radyo kalibrasyonunu taşıyan bölümleri asla okumaz.</li>
+<li>Seri numaraları maskeli gösterilir. Günlükte, ekranda ve kaydedebildiğiniz dosyada seri numaraları, kimlik numaraları, telefon numaraları, MAC adresleri, parolalar ve anahtarlar maskelenir.</li>
+<li>Tarayıcının bu site için ayırdığı depoda tek bir şey tutar: bu tarayıcının adb anahtarı.</li>
+</ul>
+
+<h2 id="phone">Telefondan olur mu?</h2>
+<p>Android'deki Chrome'da da WebUSB vardır; OTG kablolu bir telefon ilke olarak bu sayfayı çalıştırabilir. Bunun için yapılmadı ve test edilmedi: telefonun kurulum boyunca F50'yi adaptör üzerinden beslemesi ve sürüm dosyalarının telefonda olması gerekir. Bilgisayar kullanın.</p>
+
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>Proje</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">GitHub'daki kaynak kod</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">Projeye destek ol</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">Sürümler (indirmeler)</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN modülü</a></li>
+</ul>
+</div>
+<div>
+<h2>Yardım</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki (İngilizce)</a></li>
+<li><a href="../../tr/troubleshooting/">Sorun giderme</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">Sorun bildir</a></li>
+<li><a href="https://t.me/mu300project">Telegram kanalı (haberler ve sürümler)</a></li>
+</ul>
+</div>
+<div>
+<p>Kendi sorumluluğunuzda kullanılan, garantisi olmayan bir hobi projesi. ZTE, Unisoc ya da herhangi bir operatör tarafından desteklenmez. Betikler ve belgeler: MIT; çekirdekler: GPL-2.0.</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

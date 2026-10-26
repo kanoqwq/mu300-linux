@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>Updates, rollback and going back to Android: MU300 Linux on the ZTE F50 / U30 Air</title>
+<meta name="description" content="How MU300 Linux updates itself, rolls back, falls back to Android after failed boots, and how to switch to Android and back, uninstall, or recover a forgotten password on the ZTE F50 and U30 Air.">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/updates/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/updates/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/updates/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/updates/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/updates/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="Updates, rollback and going back to Android: MU300 Linux on the ZTE F50 / U30 Air">
+<meta property="og:description" content="How MU300 Linux updates itself, rolls back, falls back to Android after failed boots, and how to switch to Android and back, uninstall, or recover a forgotten password on the ZTE F50 and U30 Air.">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/updates/">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A 5G pocket hotspot with two rooms, one for Android and one for Linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Updates, rollback and going back to Android: MU300 Linux on the ZTE F50 / U30 Air">
+<meta name="twitter:description" content="How MU300 Linux updates itself, rolls back, falls back to Android after failed boots, and how to switch to Android and back, uninstall, or recover a forgotten password on the ZTE F50 and U30 Air.">
+<meta name="twitter:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/site.js" defer></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [
+  {
+   "@type": "ListItem",
+   "position": 1,
+   "name": "Home",
+   "item": "https://kaandikec.com/mu300-linux/"
+  },
+  {
+   "@type": "ListItem",
+   "position": 2,
+   "name": "Updates and safety",
+   "item": "https://kaandikec.com/mu300-linux/updates/"
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../install/">Install</a>
+<a href="../web-installer/">Web installer</a>
+<a href="../choose/">Choose a system</a>
+<a href="../features/">Features</a>
+<a href="../updates/" aria-current="page">Updates and safety</a>
+<a href="../troubleshooting/">Troubleshooting</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="Language"><a href="../updates/" hreflang="en" lang="en" aria-current="true">English</a><a href="../tr/updates/" hreflang="tr" lang="tr">Türkçe</a><a href="../zh/updates/" hreflang="zh-Hans" lang="zh-Hans">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="Theme|Auto|Light|Dark|follows your system|Change the colour theme"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+</div>
+</header>
+<main id="content">
+
+<header class="page-head">
+<div class="prose">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a> <span aria-hidden="true">/</span> <span aria-current="page">Updates and safety</span></nav>
+<h1>Updates, safety and going back to Android</h1>
+<p class="lede">How the device stays up to date, why a failed start cannot strand you, and every way between Android
+and Linux.</p>
+</div>
+</header>
+
+<div class="prose">
+<nav class="toc" aria-labelledby="toc-h">
+<h2 id="toc-h">On this page</h2>
+<ol>
+<li><a href="#update">Updating</a></li>
+<li><a href="#rollback">Rolling back</a></li>
+<li><a href="#safety-net">The safety net</a></li>
+<li><a href="#to-android">To Android and back</a></li>
+<li><a href="#uninstall">Uninstalling</a></li>
+<li><a href="#password">A forgotten password</a></li>
+</ol>
+</nav>
+
+<section id="update">
+<h2>Updating</h2>
+<p>The device updates itself from a published release, without a computer. It looks for a new release at start-up and
+every 6 hours and tells you at login and in <code>mu300-toolkit</code>, but it <strong>never installs one by
+itself</strong>.</p>
+<pre><code>sudo mu300-update check           <span class="c"># your version and the newest release</span>
+sudo mu300-update apply           <span class="c"># system, kernel and boot image; then restart</span>
+sudo reboot</code></pre>
+<p>The same is in <code>mu300-toolkit</code> under System &gt; Software update. What happens:</p>
+<ol>
+<li>Every file is downloaded and checked first; nothing changes before all of them are there.</li>
+<li>The new system is unpacked <strong>beside</strong> the old one and swapped in only at the end, so an interrupted
+download cannot leave a half-updated system.</li>
+<li><strong>Everything you added to the system or changed in it is carried over</strong>: files in any directory
+(<code>/etc/wireguard</code>, a service you wrote, crontabs, <code>/var/lib/docker</code>, <code>/opt</code>, home
+directories), the settings you changed, accounts and passwords, services as you turned them on or off, the Wi-Fi and
+modem files from your device and the installed extras. Each release lists its own files, so the update can tell
+them from yours. The VPN module is brought to its latest release, its core and its engines as one set.</li>
+<li>The kernel and boot image are updated too. A new kernel gets its first starts on the usual attempts, so one that
+does not start sends the device back to Android on its own.</li>
+</ol>
+<p>The kernel can be changed the same way: <code>sudo mu300-update kernel 6.18</code> (or <code>5.4</code>,
+<code>7.2</code>, <code>7.3</code>), then restart. See <a href="../choose/#kernels">choosing a kernel</a>.</p>
+<p><strong>Release names</strong> are the day a release was built and its number that day: <code>v2026.10.16.1</code>,
+<code>v2026.10.16.2</code>. They are newer than every older three-part name such as <code>v2026.10.27</code>, whose
+"day" was only a counter. A device on v2026.10.27 or older updates to them with <code>sudo mu300-update apply</code> as
+usual, but its login note stays silent until a release dated 27 October 2026 or later
+(<a href="https://github.com/dikeckaan/mu300-linux/wiki/Updating#release-names">details</a>).</p>
+
+<div class="callout">
+<strong>Updating from v2026.09.27 or older</strong>
+<p>Fetch the new updater first, then update; do both right after a restart (older boot images can lose mobile data
+after a few quiet minutes):</p>
+<pre><code>sudo curl -fL https://github.com/dikeckaan/mu300-linux/releases/latest/download/mu300-update -o /opt/mu300/bin/mu300-update
+sudo mu300-update apply</code></pre>
+<p>On OpenWrt, as root:</p>
+<pre><code>wget -O /opt/mu300/bin/mu300-update https://github.com/dikeckaan/mu300-linux/releases/latest/download/mu300-update
+mu300-update apply</code></pre>
+</div>
+<p>Where your version of a file and the release's meet, your settings win and the release's programs win; whatever
+had to step aside is saved under <code>/etc/mu300/update-kept/</code> and listed in <code>/etc/mu300/update-report</code>
+(<code>sudo mu300-update report</code>; in the control panel under System &gt; Update). An update never opens what you
+closed: a service you turned off stays off. All of this from the first release with a four-field tag (vYYYY.MM.DD.N) on; up to v2026.10.27 an update kept only a
+list of places (settings, users, home directories, <code>/usr/local</code>). The details are on the wiki's
+<a href="https://github.com/dikeckaan/mu300-linux/wiki/Updating#what-an-update-keeps">Updating</a> page.</p>
+<p>A computer works too: run the installer again and answer <code>update</code>. It reinstalls the systems, writes a
+fresh boot image and keeps everything of yours, as <code>apply</code> does. So does a Magisk zip of the new release
+installed over what is there.</p>
+<p><strong>Packages you installed yourself</strong> (<code>apk add</code>, <code>apt install</code>) are not in the
+release's image. The update lists them, keeps their OpenWrt settings aside so they cannot act without their program,
+and the new system installs them again at its first boot once it is online. <code>mu300-user-packages status</code>
+shows what came back (in the control panel: System &rarr; Packages after an update);
+<code>mu300-update apply --no-reinstall</code> skips it. On Ubuntu the apt sources you added (a PPA) are kept too. All of
+this from v2026.10.20 on.</p>
+<p>On Ubuntu with the web panel extra, a new image has no Cockpit in it: the first boot after the update puts it back in the
+background (from the extra's own copy when it has one, else from Ubuntu's archive once online); <code>mu300-panel status</code> says
+where it is.</p>
+</section>
+
+<section id="rollback">
+<h2>Rolling back</h2>
+<p>The previous version is kept as <code>&lt;os&gt;.old</code> until you clean it up, and the previous boot image is
+kept too. Your files are then on the disk twice; when there is no room for that, <code>apply</code> says so and changes
+nothing, and <code>sudo mu300-update apply --no-rollback</code> updates without keeping the previous version.</p>
+<pre><code>sudo mu300-update rollback        <span class="c"># back to the previous system</span>
+sudo mu300-update rollback-boot   <span class="c"># back to the previous kernel and boot image</span>
+sudo mu300-update clean           <span class="c"># delete the kept previous version</span></code></pre>
+</section>
+
+<section id="safety-net">
+<h2>The safety net</h2>
+<p>Think of a parachute that opens by itself. Every time the device starts Linux, it uses up one <strong>try</strong>.
+About 30 seconds after the USB network and SSH are up, Linux confirms the start and all tries are back. A start that
+never gets that far (the power goes, the battery runs out, Linux hangs) keeps its try used. When the tries run out, the
+next start is Android.</p>
+<figure class="wide"><div class="panel diagram" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" class="mu-dg" viewBox="0 0 960 860" width="960" height="860" role="img" aria-label="Flowchart: power on, the bootloader starts Linux and uses up one try. If Linux is up within about a minute, the boot is confirmed and all tries are back. If not, one try fewer; while tries are left the device tries again, and when none are left Android starts by itself." lang="en">
+<title id="boot-en-t">What happens when the device starts</title>
+<desc id="boot-en-d">The device starts Linux as a trial. If Linux comes up, the boot is confirmed and the count of tries is full again. If it does not, one try is used up; when the tries run out, the device starts Android by itself.</desc>
+<style>
+.mu-dg text { font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #142133; }
+.mu-dg .t-muted { fill: #526276; }
+.mu-dg .t-white { fill: #ffffff; }
+.mu-dg .t-mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.mu-dg .ink { fill: #142133; }
+.mu-dg .stroke-ink { stroke: #142133; }
+.mu-dg .paper { fill: #ffffff; }
+.mu-dg .soft { fill: #eef2f8; }
+.mu-dg .line { stroke: #c9d4e2; }
+.mu-dg .fill-line { fill: #c9d4e2; }
+.mu-dg .lx { fill: #f2b23a; }
+.mu-dg .lx-soft { fill: #fbf0d8; }
+.mu-dg .lx-stroke { stroke: #b97700; }
+.mu-dg .t-lx { fill: #8a5900; }
+.mu-dg .an { fill: #3fae6a; }
+.mu-dg .an-soft { fill: #def2e6; }
+.mu-dg .an-stroke { stroke: #217a47; }
+.mu-dg .t-an { fill: #17603a; }
+.mu-dg .bl { fill: #2259d6; }
+.mu-dg .bl-soft { fill: #e3ebfb; }
+.mu-dg .bl-stroke { stroke: #2259d6; }
+.mu-dg .t-bl { fill: #1b47ad; }
+.mu-dg .rd { fill: #c4302f; }
+.mu-dg .rd-soft { fill: #fbe3e2; }
+.mu-dg .rd-stroke { stroke: #c4302f; }
+.mu-dg .t-rd { fill: #a12625; }
+.mu-dg .body-top { fill: #fdfdfe; }
+.mu-dg .body-side { fill: #dde4ee; }
+.mu-dg .body-edge { stroke: #b6c2d2; }
+.mu-dg .led-white { fill: #ffffff; stroke: #b6c2d2; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .mu-dg text, .mu-dg:root text { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .t-muted, .mu-dg:root .t-muted { fill: #9cabbe; }
+  :root:not([data-theme="light"]) .mu-dg .ink, .mu-dg:root .ink { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .stroke-ink, .mu-dg:root .stroke-ink { stroke: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .paper, .mu-dg:root .paper { fill: #142031; }
+  :root:not([data-theme="light"]) .mu-dg .soft, .mu-dg:root .soft { fill: #1a283b; }
+  :root:not([data-theme="light"]) .mu-dg .line, .mu-dg:root .line { stroke: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .fill-line, .mu-dg:root .fill-line { fill: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-soft, .mu-dg:root .lx-soft { fill: #33290f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-stroke, .mu-dg:root .lx-stroke { stroke: #f2b740; }
+  :root:not([data-theme="light"]) .mu-dg .t-lx, .mu-dg:root .t-lx { fill: #f2c060; }
+  :root:not([data-theme="light"]) .mu-dg .an-soft, .mu-dg:root .an-soft { fill: #12301f; }
+  :root:not([data-theme="light"]) .mu-dg .an-stroke, .mu-dg:root .an-stroke { stroke: #5ccf8a; }
+  :root:not([data-theme="light"]) .mu-dg .t-an, .mu-dg:root .t-an { fill: #7ddba3; }
+  :root:not([data-theme="light"]) .mu-dg .bl, .mu-dg:root .bl { fill: #5b88f0; }
+  :root:not([data-theme="light"]) .mu-dg .bl-soft, .mu-dg:root .bl-soft { fill: #1a2a48; }
+  :root:not([data-theme="light"]) .mu-dg .bl-stroke, .mu-dg:root .bl-stroke { stroke: #7ea6ff; }
+  :root:not([data-theme="light"]) .mu-dg .t-bl, .mu-dg:root .t-bl { fill: #9dbbff; }
+  :root:not([data-theme="light"]) .mu-dg .rd-soft, .mu-dg:root .rd-soft { fill: #3a1a1a; }
+  :root:not([data-theme="light"]) .mu-dg .rd-stroke, .mu-dg:root .rd-stroke { stroke: #ff7b72; }
+  :root:not([data-theme="light"]) .mu-dg .t-rd, .mu-dg:root .t-rd { fill: #ff9b94; }
+  :root:not([data-theme="light"]) .mu-dg .body-top, .mu-dg:root .body-top { fill: #2a3a52; }
+  :root:not([data-theme="light"]) .mu-dg .body-side, .mu-dg:root .body-side { fill: #1c2a3d; }
+  :root:not([data-theme="light"]) .mu-dg .body-edge, .mu-dg:root .body-edge { stroke: #44587a; }
+  :root:not([data-theme="light"]) .mu-dg .led-white, .mu-dg:root .led-white { fill: #f4f7fb; stroke: #44587a; }
+}
+:root[data-theme="dark"] .mu-dg text { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .t-muted { fill: #9cabbe; }
+:root[data-theme="dark"] .mu-dg .ink { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .stroke-ink { stroke: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .paper { fill: #142031; }
+:root[data-theme="dark"] .mu-dg .soft { fill: #1a283b; }
+:root[data-theme="dark"] .mu-dg .line { stroke: #34465f; }
+:root[data-theme="dark"] .mu-dg .fill-line { fill: #34465f; }
+:root[data-theme="dark"] .mu-dg .lx-soft { fill: #33290f; }
+:root[data-theme="dark"] .mu-dg .lx-stroke { stroke: #f2b740; }
+:root[data-theme="dark"] .mu-dg .t-lx { fill: #f2c060; }
+:root[data-theme="dark"] .mu-dg .an-soft { fill: #12301f; }
+:root[data-theme="dark"] .mu-dg .an-stroke { stroke: #5ccf8a; }
+:root[data-theme="dark"] .mu-dg .t-an { fill: #7ddba3; }
+:root[data-theme="dark"] .mu-dg .bl { fill: #5b88f0; }
+:root[data-theme="dark"] .mu-dg .bl-soft { fill: #1a2a48; }
+:root[data-theme="dark"] .mu-dg .bl-stroke { stroke: #7ea6ff; }
+:root[data-theme="dark"] .mu-dg .t-bl { fill: #9dbbff; }
+:root[data-theme="dark"] .mu-dg .rd-soft { fill: #3a1a1a; }
+:root[data-theme="dark"] .mu-dg .rd-stroke { stroke: #ff7b72; }
+:root[data-theme="dark"] .mu-dg .t-rd { fill: #ff9b94; }
+:root[data-theme="dark"] .mu-dg .body-top { fill: #2a3a52; }
+:root[data-theme="dark"] .mu-dg .body-side { fill: #1c2a3d; }
+:root[data-theme="dark"] .mu-dg .body-edge { stroke: #44587a; }
+:root[data-theme="dark"] .mu-dg .led-white { fill: #f4f7fb; stroke: #44587a; }
+</style>
+<defs><marker id="boot-en-ah" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="ink"/></marker></defs>
+<rect x="160" y="24" width="240" height="60" rx="30" class="soft line" stroke-width="2.5"/>
+<text x="280" y="61" font-size="20" text-anchor="middle" font-weight="700">Power on</text>
+<path d="M 280 84 L 280 120" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-en-ah)"/>
+<rect x="100" y="122" width="360" height="92" rx="14" class="lx-soft lx-stroke" stroke-width="2.5"/>
+<text x="280" y="162" font-size="20" text-anchor="middle">The bootloader starts Linux</text>
+<text x="280" y="188" font-size="20" text-anchor="middle">and uses up one try</text>
+<path d="M 280 214 L 280 250" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-en-ah)"/>
+<polygon points="280,251 480,356 280,461 80,356" class="bl-soft bl-stroke" stroke-width="2.5"/>
+<text x="280" y="337" font-size="20" text-anchor="middle" font-weight="700">Is Linux up within</text>
+<text x="280" y="363" font-size="20" text-anchor="middle" font-weight="700">about a minute?</text>
+<text x="280" y="389" font-size="17" text-anchor="middle" class="t-muted">USB network and SSH</text>
+<path d="M 480 356 L 600 356" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-en-ah)"/>
+<text x="504" y="342" font-size="18" text-anchor="start" font-weight="700" class="t-muted">yes</text>
+<rect x="602" y="310" width="330" height="92" rx="14" class="lx-soft lx-stroke" stroke-width="2.5"/>
+<text x="767" y="350" font-size="20" text-anchor="middle">Boot confirmed:</text>
+<text x="767" y="376" font-size="20" text-anchor="middle">all tries are back</text>
+<path d="M 767 402 L 767 450" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-en-ah)"/>
+<rect x="637" y="452" width="260" height="60" rx="30" class="lx" stroke-width="2.5"/>
+<text x="767" y="489" font-size="20" text-anchor="middle" font-weight="700">You use Linux</text>
+<path d="M 280 461 L 280 510" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-en-ah)"/>
+<text x="294" y="492" font-size="18" text-anchor="start" font-weight="700" class="t-muted">no</text>
+<rect x="110" y="512" width="340" height="86" rx="14" class="rd-soft rd-stroke" stroke-width="2.5"/>
+<text x="280" y="549" font-size="20" text-anchor="middle">Not confirmed:</text>
+<text x="280" y="575" font-size="20" text-anchor="middle">one try fewer</text>
+<path d="M 280 598 L 280 634" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-en-ah)"/>
+<polygon points="280,635 415,700 280,765 145,700" class="bl-soft bl-stroke" stroke-width="2.5"/>
+<text x="280" y="707" font-size="20" text-anchor="middle" font-weight="700">Tries left?</text>
+<path d="M 145 700 H 40 V 54 H 158" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-en-ah)"/>
+<text x="130" y="688" font-size="18" text-anchor="end" font-weight="700" class="t-muted">yes</text>
+<g transform="translate(28 380) rotate(-90)"><text x="0" y="0" font-size="17" text-anchor="middle" class="t-muted">next start</text></g>
+<path d="M 415 700 L 600 700" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-en-ah)"/>
+<text x="440" y="688" font-size="18" text-anchor="start" font-weight="700" class="t-muted">no</text>
+<rect x="602" y="660" width="330" height="80" rx="14" class="an-soft an-stroke" stroke-width="2.5"/>
+<text x="767" y="694" font-size="20" text-anchor="middle" font-weight="700">Android starts</text>
+<text x="767" y="720" font-size="20" text-anchor="middle" font-weight="700">by itself</text>
+<text x="40" y="806" font-size="17" text-anchor="start" class="t-muted">Tries: 1 to 6 (5 unless you chose otherwise).</text>
+<text x="40" y="828.1" font-size="17" text-anchor="start" class="t-muted">Locked Linux never goes back on its own.</text>
+</svg></div></figure>
+<ul>
+<li>You choose the number at install, <strong>1 to 6, 5 by default</strong>; 6 is the most the bootloader's counter
+holds.</li>
+<li>When Linux does not come up at all, the device also returns to Android by itself.</li>
+<li><strong>Locked Linux</strong> turns the parachute off on purpose: the device never goes to Android by itself, not
+after failed starts and not when the system does not start (it then waits on USB with a telnet shell, where
+<code>sh /run/to-android</code> goes to Android). The one exception is a new kernel from <code>mu300-update</code>,
+which still gets the usual attempts for its first starts. Also "Lock Linux" on the control panel's home page.</li>
+</ul>
+<pre><code>sudo mu300-next-boot attempts 3  <span class="c"># failed starts before Android, 1 to 6</span>
+sudo mu300-next-boot lock        <span class="c"># keep Linux whatever happens</span>
+sudo mu300-next-boot unlock      <span class="c"># back to the attempts</span>
+sudo mu300-next-boot status</code></pre>
+</section>
+
+<section id="to-android">
+<h2>To Android and back</h2>
+<div class="cards">
+<div class="card android">
+<h3>From Linux to Android</h3>
+<pre><code>sudo mu300-next-boot android
+sudo reboot</code></pre>
+<p>Or "Switch to Android" on the control panel. Without a computer or a login: cut the power while it is starting,
+as many times in a row as your attempts (see <a href="#password">below</a>).</p>
+</div>
+<div class="card linux">
+<h3>From Android to Linux</h3>
+<pre><code>su -c mu300-linux                <span class="c"># in Android: restart into Linux</span>
+su -c 'mu300-linux status'       <span class="c"># which system is on which slot</span></code></pre>
+<p>Or the Action button of the "MU300 Linux" module in the Magisk app. The installer adds the module; it writes only
+the same 32 bytes of <code>misc</code> the installer does.</p>
+</div>
+</div>
+<p>The control panel warns when band or cell locks are still set before switching to Android, because the modem keeps
+them in its own memory and Android would use them too. "Reset all to automatic" on the Locks page
+(<code>unisoc-modem lock reset</code>) clears them.</p>
+<p>Switching between the Linux systems themselves: <code>sudo mu300-os ubuntu</code>, <code>openwrt</code> or
+<code>openwrt-luci</code>, then restart.</p>
+</section>
+
+<section id="uninstall">
+<h2>Uninstalling</h2>
+<p>With the device back in Android, from your computer:</p>
+<pre><code>./uninstall.sh                <span class="c"># macOS / Linux</span>
+.\uninstall.ps1               <span class="c"># Windows (PowerShell)</span>
+uninstall.cmd                 <span class="c"># Windows (cmd)</span></code></pre>
+<p>It makes Android the boot system again, restores the second boot partition and erases the Linux filesystem. Your
+Android data is left alone. If the device is running Linux when you start, it offers to restart it into Android
+first. You choose how thoroughly to erase:</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">Choice</th><th scope="col">What it does</th></tr></thead><tbody>
+<tr><th scope="row">secure (default)</th><td>overwrites the whole Linux region and checks that it is empty. Takes a few minutes.</td></tr>
+<tr><th scope="row">quick</th><td>erases only the filesystem headers; the files stay readable on the flash until the space is reused.</td></tr>
+<tr><th scope="row">keep</th><td>leaves the Linux filesystem alone; it simply never starts again.</td></tr>
+</tbody></table></div>
+<p>A Linux filesystem on the SD card gets its own question: <strong>erase</strong> (the default, overwrites its first
+64 MiB) or <strong>keep</strong>. A card with any other filesystem is never touched. If you shrank
+<code>userdata</code> on the 32 GB variant, it offers to grow it back; that is off by default, asks twice, and erases
+Android's data again.</p>
+</section>
+
+<section id="password">
+<h2>A forgotten password</h2>
+<p>You do not need to log in to get out. (While Linux is <a href="#safety-net">locked</a>, unplugging during
+start-up does not bring Android back; the README then points to step 2, the computer route.)</p>
+<ol>
+<li><strong>Back to Android:</strong> unplug the device about ten seconds after it powers on, then plug it in again.
+Do it as many times in a row as your failed-start number (5 by default). The device sees unfinished starts and falls
+back to Android by itself.</li>
+<li><strong>Set a new password</strong> from your computer, without starting Linux. It keeps all your data:
+<pre><code>tools/reset-password.sh            <span class="c"># ubuntu, openwrt or both</span></code></pre>
+</li>
+<li>Start Linux again with <code>su -c mu300-linux</code> in Android, or restart if Linux is the default.</li>
+</ol>
+<p>Running the installer again and choosing <code>update</code> also sets the password you type.</p>
+</section>
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>The project</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">Source code on GitHub</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">Support the project</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">Releases (downloads)</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN module</a></li>
+</ul>
+</div>
+<div>
+<h2>Help</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki</a></li>
+<li><a href="../troubleshooting/">Troubleshooting</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">Report a problem</a></li>
+<li><a href="https://t.me/mu300project">Telegram channel (news and releases)</a></li>
+</ul>
+</div>
+<div>
+<p>A hobby project, at your own risk, with no warranty. Not endorsed by ZTE, Unisoc or any operator. Scripts and documentation: MIT; kernels: GPL-2.0.</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

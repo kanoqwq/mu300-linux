@@ -1,0 +1,22 @@
+{
+  "id": "home-wg",
+  "name": "Home WG",
+  "type": "wireguard",
+  "engine": "wireguard",
+  "extra": null,
+  "active": false,
+  "source": "manual",
+  "subscription": null,
+  "stale": false,
+  "created": 1791730552,
+  "server": {
+    "host": "wg.example.org",
+    "port": 51820
+  },
+  "protocol": null,
+  "transport": null,
+  "security": null,
+  "options": {},
+  "engine_installed": true,
+  "config": "[Interface]\nPrivateKey = cHJpdmF0ZWtleXByaXZhdGVrZXlwcml2YXRla2V5eHg=\nAddress = 10.7.0.2/32\n[Peer]\nPublicKey = cHVibGlja2V5cHVibGlja2V5cHVibGlja2V5cHVieHg=\nEndpoint = wg.example.org:51820\nAllowedIPs = 0.0.0.0/0"
+}

@@ -1,0 +1,4050 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: ro\n"
+
+msgid "Status dashboard"
+msgstr "Panou de stare"
+
+msgid "Cellular"
+msgstr "Celular"
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM"
+msgstr "Dual SIM"
+
+msgid "SIM settings"
+msgstr "Setări SIM"
+
+msgid "Network locks"
+msgstr "Blocări de rețea"
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "SMS forwarding"
+msgstr "Redirecționare SMS"
+
+msgid "AT terminal"
+msgstr "Terminal AT"
+
+msgid "Adapter settings"
+msgstr "Setări adaptor"
+
+msgid "TTL"
+msgstr "TTL"
+
+msgid "Data usage"
+msgstr "Consum de date"
+
+msgid "Device management"
+msgstr "Gestionare dispozitiv"
+
+msgid "Update"
+msgstr "Actualizează"
+
+msgid "Backup of settings"
+msgstr "Copie de rezervă a setărilor"
+
+msgid "Languages"
+msgstr "Limbi"
+
+msgid "Power"
+msgstr "Alimentare"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Terminal"
+msgstr "Terminal"
+
+msgid "Terminal settings"
+msgstr "Setările terminalului"
+
+msgid "Overview"
+msgstr "Prezentare generală"
+
+msgid "Profiles"
+msgstr "Profiluri"
+
+msgid "Subscriptions"
+msgstr "Abonamente"
+
+msgid "Engines"
+msgstr "Motoare"
+
+msgid "Settings"
+msgstr "Setări"
+
+msgid "Logs"
+msgstr "Jurnale"
+
+msgid "Packages after an update"
+msgstr "Pachete după o actualizare"
+
+msgid "MU300 control center: status dashboard, network locks, AT terminal, SMS and VPN"
+msgstr "Centru de control MU300: panou de stare, blocări de rețea, terminal AT, SMS și VPN"
+
+msgid "Terminal: a root shell on the device in the browser"
+msgstr "Terminal: un shell root al dispozitivului în browser"
+
+msgid "China Mobile"
+msgstr "China Mobile"
+
+msgid "China Unicom"
+msgstr "China Unicom"
+
+msgid "China Telecom"
+msgstr "China Telecom"
+
+msgid "China Broadnet"
+msgstr "China Broadnet"
+
+msgid "China Tietong"
+msgstr "China Tietong"
+
+msgid "Excellent"
+msgstr "Excelent"
+
+msgid "Good"
+msgstr "Bun"
+
+msgid "Fair"
+msgstr "Acceptabil"
+
+msgid "Poor"
+msgstr "Slab"
+
+msgid "Unknown"
+msgstr "Necunoscut"
+
+msgid "%d d %d h"
+msgstr "%d z %d h"
+
+msgid "%d h %d min"
+msgstr "%d h %d min"
+
+msgid "%d min"
+msgstr "%d min"
+
+msgid "No neighbor-cell data"
+msgstr "Nu există date despre celulele vecine"
+
+msgid "Locked"
+msgstr "Blocat"
+
+msgid "Lock"
+msgstr "Blocare"
+
+msgid "Unknown error"
+msgstr "Eroare necunoscută"
+
+msgid "Confirm"
+msgstr "Confirmare"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Anulare"
+
+msgid "%d s"
+msgstr "%d s"
+
+msgid "%d h"
+msgstr "%d h"
+
+msgid "New SMS · %s"
+msgstr "SMS nou · %s"
+
+msgid "Unknown number"
+msgstr "Număr necunoscut"
+
+msgid "Select"
+msgstr "Selectare"
+
+msgid "never"
+msgstr "niciodată"
+
+msgid "just now"
+msgstr "chiar acum"
+
+msgid "%s ago"
+msgstr "acum %s"
+
+msgid "Failed: %s"
+msgstr "Eșuat: %s"
+
+msgid "Management connection lost"
+msgstr "Conexiunea de administrare s-a pierdut"
+
+msgid "Installing the VPN module"
+msgstr "Se instalează modulul VPN"
+
+msgid "Installing the engine"
+msgstr "Se instalează motorul"
+
+msgid "Adding the subscription"
+msgstr "Se adaugă abonamentul"
+
+msgid "Refreshing the subscriptions"
+msgstr "Se reîmprospătează abonamentele"
+
+msgid "Testing the latency of every profile"
+msgstr "Se testează latența fiecărui profil"
+
+msgid "Downloading the config"
+msgstr "Se descarcă configurația"
+
+msgid "Working…"
+msgstr "Se lucrează…"
+
+msgid "done"
+msgstr "gata"
+
+msgid "failed"
+msgstr "eșuat"
+
+msgid "Verify the uploaded file"
+msgstr "Verifică fișierul încărcat"
+
+msgid "The uploaded file is checked against the SHA256SUMS of the VPN module's latest release, downloaded over HTTPS. When that is not possible (offline, an older release), it is installed only if you allow an unverified file: it then runs as root with no check."
+msgstr "Fișierul încărcat este verificat cu SHA256SUMS din cea mai recentă versiune a modulului VPN, descărcat prin HTTPS. Dacă nu este posibil (offline, o versiune mai veche), este instalat doar dacă permiteți un fișier neverificat: rulează atunci ca root fără nicio verificare."
+
+msgid "Install it even if it cannot be verified"
+msgstr "Instalează-l chiar dacă nu poate fi verificat"
+
+msgid "Install only a verified file"
+msgstr "Instalează doar un fișier verificat"
+
+msgid "Upload failed: %s"
+msgstr "Încărcarea a eșuat: %s"
+
+msgid "The VPN module is too old for this panel"
+msgstr "Modulul VPN este prea vechi pentru acest panou"
+
+msgid "The VPN module is not installed"
+msgstr "Modulul VPN nu este instalat"
+
+msgid "This page needs the VPN module with the machine-readable mu300-vpn (module v2 or newer). Updating it keeps the profiles and the settings."
+msgstr "Această pagină necesită modulul VPN cu mu300-vpn citibil de mașină (modul v2 sau mai nou). Actualizarea păstrează profilurile și setările."
+
+msgid "The VPN is a module of its own: mu300-vpn with its kill switch and profiles, and one extra per engine (Xray, sing-box, mihomo, dae). It is installed with mu300-extra install vpn."
+msgstr "VPN-ul este un modul separat: mu300-vpn cu kill switch și profiluri, plus un extra pentru fiecare motor (Xray, sing-box, mihomo, dae). Se instalează cu mu300-extra install vpn."
+
+msgid "The download is a few MB for the module and up to tens of MB per engine: on mobile data it counts towards your plan."
+msgstr "Descărcarea are câțiva MB pentru modul și până la zeci de MB pentru fiecare motor: pe date mobile se consumă din pachetul dvs."
+
+msgid "Update the VPN module"
+msgstr "Actualizează modulul VPN"
+
+msgid "Install the VPN module"
+msgstr "Instalează modulul VPN"
+
+msgid "Upload the file…"
+msgstr "Încărcare fișier…"
+
+msgid "Offline: upload mu300-linux-vpn-core.tar.gz (or the bundle mu300-linux-vpn.tar.gz) from the release page of the VPN module."
+msgstr "Offline: încărcați mu300-linux-vpn-core.tar.gz (sau pachetul mu300-linux-vpn.tar.gz) de pe pagina de versiuni a modulului VPN."
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "This is a network or frequency scan: it takes one to three minutes, holds the modem's AT channel all that time, and mobile data may pause meanwhile. It runs in the background; the reply appears here when it is done."
+msgstr "Aceasta este o scanare a rețelelor sau a frecvențelor: durează între unu și trei minute, ține ocupat canalul AT al modemului tot acest timp, iar datele mobile se pot întrerupe între timp. Rulează în fundal; răspunsul apare aici când se termină."
+
+msgid "This changes a network mode, band or cell setting the modem stores: it stays in force after a reboot, and in Android too, where a network that does not match it shows as No Service. The Locks page shows these settings and resets them."
+msgstr "Aceasta schimbă un mod de rețea, o bandă sau o setare de celulă pe care modemul o păstrează: rămâne în vigoare după repornire, și în Android de asemenea, unde o rețea care nu se potrivește apare ca Fără serviciu. Pagina Blocări arată aceste setări și le resetează."
+
+msgid "This switches the radio, the data connection or the modem itself: mobile data drops until it is restored, and this page may lose its connection for a while."
+msgstr "Aceasta comută radioul, conexiunea de date sau modemul însuși: datele mobile se întrerup până la restabilire, iar această pagină poate pierde conexiunea o vreme."
+
+msgid "This changes the data profiles (APNs) stored in the modem, which mobile data and Android use."
+msgstr "Aceasta schimbă profilurile de date (APN) stocate în modem, folosite de datele mobile și de Android."
+
+msgid "This changes the SIM's PIN lock or enters a PIN: wrong PINs block the SIM until its PUK is entered."
+msgstr "Aceasta schimbă blocarea cu PIN a cartelei SIM sau introduce un PIN: PIN-urile greșite blochează cartela SIM până la introducerea codului PUK."
+
+msgid "Basic"
+msgstr "De bază"
+
+msgid "Registration/signal"
+msgstr "Înregistrare/semnal"
+
+msgid "Bearer"
+msgstr "Purtător"
+
+msgid "Engineering mode"
+msgstr "Mod inginerie"
+
+msgid "AT command (↑↓ history, Enter to send)"
+msgstr "Comandă AT (↑↓ istoric, Enter pentru trimitere)"
+
+msgid "Send"
+msgstr "Trimitere"
+
+msgid "Clear screen"
+msgstr "Golire ecran"
+
+msgid "Ready."
+msgstr "Pregătit."
+
+msgid "Session history (click to reuse)"
+msgstr "Istoricul sesiunii (clic pentru reutilizare)"
+
+msgid "Running in the background (at most %d s); the reply appears here when it is done…"
+msgstr "Rulează în fundal (cel mult %d s); răspunsul apare aici când se termină…"
+
+msgid "The modem gave no final answer in time"
+msgstr "Modemul nu a dat la timp un răspuns final"
+
+msgid "%d s in the background"
+msgstr "%d s în fundal"
+
+msgid "(no output)"
+msgstr "(fără ieșire)"
+
+msgid "This command changes the modem's state."
+msgstr "Această comandă schimbă starea modemului."
+
+msgid "Not sent yet: waiting for confirmation"
+msgstr "Încă netrimisă: se așteaptă confirmarea"
+
+msgid "Send this AT command?"
+msgstr "Trimiteți această comandă AT?"
+
+msgid "Send anyway"
+msgstr "Trimite oricum"
+
+msgid "Not sent"
+msgstr "Netrimisă"
+
+msgid "Request failed"
+msgstr "Cererea a eșuat"
+
+msgid "(empty)"
+msgstr "(gol)"
+
+msgid "Passphrase (8 characters or more)"
+msgstr "Frază de acces (cel puțin 8 caractere)"
+
+msgid "The passphrase again"
+msgstr "Fraza de acces din nou"
+
+msgid "Download the backup"
+msgstr "Descarcă copia"
+
+msgid "Back up the settings"
+msgstr "Salvează setările"
+
+msgid "One file with the hotspot, mobile data and the APN, the network locks, the VPN profiles and settings, SMS forwarding, the LAN address, the host name, the time zone and the SSH keys. It holds passwords: with a passphrase it is encrypted, and only that passphrase opens it again."
+msgstr "Un fișier cu hotspotul, datele mobile și APN-ul, blocările de rețea, profilurile și setările VPN, redirecționarea SMS, adresa LAN, numele gazdei, fusul orar și cheile SSH. Conține parole: cu o frază de acces este criptat, și doar acea frază îl deschide din nou."
+
+msgid "Include the login password"
+msgstr "Include parola de autentificare"
+
+msgid "Passphrase, if the file is encrypted"
+msgstr "Fraza de acces, dacă fișierul este criptat"
+
+msgid "Show what would change"
+msgstr "Arată ce s-ar schimba"
+
+msgid "Restore"
+msgstr "Restaurează"
+
+msgid "The file is larger than 4 MiB"
+msgstr "Fișierul depășește 4 MiB"
+
+msgid "The settings of the file replace these. The hotspot, mobile data or the LAN may restart, and this page may lose its connection for a moment."
+msgstr "Setările din fișier le înlocuiesc pe acestea. Hotspotul, datele mobile sau LAN-ul pot reporni, iar această pagină poate pierde conexiunea pentru un moment."
+
+msgid "Restore from a backup"
+msgstr "Restaurează dintr-o copie"
+
+msgid "Every value of the file is checked first; one that is refused and nothing is changed. What is the same is left alone, and no VPN profile, subscription or SSH key of this device is removed."
+msgstr "Fiecare valoare din fișier este verificată întâi; dacă una este refuzată, nu se schimbă nimic. Ce este la fel rămâne neatins și niciun profil VPN, abonament sau cheie SSH a acestui dispozitiv nu este șters."
+
+msgid "Keep this device's login password"
+msgstr "Păstrează parola de autentificare a acestui dispozitiv"
+
+msgid "Take a file of another device model"
+msgstr "Acceptă un fișier de la alt model de dispozitiv"
+
+msgid "The two passphrases differ"
+msgstr "Cele două fraze diferă"
+
+msgid "The passphrase needs 8 characters or more"
+msgstr "Fraza de acces trebuie să aibă cel puțin 8 caractere"
+
+msgid "Saved (encrypted)"
+msgstr "Salvat (criptat)"
+
+msgid "Saved. The file is not encrypted: it holds passwords, keep it safe."
+msgstr "Salvat. Fișierul nu este criptat: conține parole, păstrați-l în siguranță."
+
+msgid "Choose a backup file first"
+msgstr "Alegeți mai întâi un fișier de copie"
+
+msgid "Restoring…"
+msgstr "Se restaurează…"
+
+msgid "Restored"
+msgstr "Restaurat"
+
+msgid "The restore did not finish: see the lines above"
+msgstr "Restaurarea nu s-a terminat: vedeți rândurile de mai sus"
+
+msgid "Loading…"
+msgstr "Se încarcă…"
+
+msgid "Channel Analysis"
+msgstr "Analiza canalelor"
+
+msgid "A scan takes the Wi-Fi hotspot off its channel for a moment: connected devices drop, and some (macOS in particular) may not reconnect by themselves. This page scans as soon as it opens and again every few seconds. Reach the panel over USB or another way first if you depend on the hotspot."
+msgstr "O scanare scoate pentru o clipă punctul de acces Wi-Fi de pe canalul său: dispozitivele conectate se deconectează, iar unele (în special macOS) s-ar putea să nu se reconecteze singure. Această pagină scanează imediat ce se deschide și apoi la fiecare câteva secunde. Dacă depindeți de punctul de acces, accesați întâi panoul prin USB sau pe altă cale."
+
+msgid "Scan anyway"
+msgstr "Scanează oricum"
+
+msgid "Saved"
+msgstr "Salvat"
+
+msgid "CPU profile unavailable"
+msgstr "CPU profile unavailable"
+
+msgid "Power saving"
+msgstr "Power saving"
+
+msgid "Balanced"
+msgstr "Balanced"
+
+msgid "Performance"
+msgstr "Performance"
+
+msgid "Cores capped at about 60 %% of their maximum (cooler, less power)."
+msgstr "Cores capped at about 60 %% of their maximum (cooler, less power)."
+
+msgid "Schedutil across the full hardware range (the stock behaviour)."
+msgstr "Schedutil across the full hardware range (the stock behaviour)."
+
+msgid "Every cluster pinned at its hardware maximum."
+msgstr "Every cluster pinned at its hardware maximum."
+
+msgid "CPU profile"
+msgstr "CPU profile"
+
+msgid "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+msgstr "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+
+msgid "Saved profile: %s"
+msgstr "Saved profile: %s"
+
+msgid "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+msgstr "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+
+msgid "Clusters"
+msgstr "Clusters"
+
+msgid "Cores"
+msgstr "Cores"
+
+msgid "Governor"
+msgstr "Governor"
+
+msgid "Now"
+msgstr "Now"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Hardware max"
+msgstr "Hardware max"
+
+msgid "Frequencies in MHz."
+msgstr "Frequencies in MHz."
+
+msgid "Highlighted cores are online. A core taken offline stays offline, also after a reboot, until it is brought back. CPU0 always stays online."
+msgstr "Nucleele evidențiate sunt online. Un nucleu oprit rămâne offline, și după repornire, până când este pornit din nou. CPU0 rămâne mereu online."
+
+msgid "Low latency: on"
+msgstr "Latență redusă: activată"
+
+msgid "Low latency: off"
+msgstr "Latență redusă: dezactivată"
+
+msgid "Low latency keeps CPU0 out of its idle states, as ZTE's U30 Air firmware does: Wi-Fi delays are much shorter, and the device draws more power. Off by default."
+msgstr "Latența redusă ține CPU0 în afara stărilor de repaus, ca firmware-ul ZTE U30 Air: întârzierile Wi-Fi sunt mult mai mici, iar dispozitivul consumă mai multă energie. Dezactivată implicit."
+
+msgid "Thermal"
+msgstr "Termic"
+
+msgid "The kernel's thermal zones, read only. A zone with trip points throttles the cooling devices bound to it at its passive trip; a cooling state of 0 is no throttling."
+msgstr "Zonele termice ale kernelului, doar citire. O zonă cu puncte de prag limitează dispozitivele de răcire legate de ea la pragul său pasiv; o stare de răcire 0 înseamnă fără limitare."
+
+msgid "Zone"
+msgstr "Zonă"
+
+msgid "Temperature"
+msgstr "Temperatură"
+
+msgid "Trip points"
+msgstr "Puncte de prag"
+
+msgid "Cooling devices"
+msgstr "Dispozitive de răcire"
+
+msgid "Stress test started"
+msgstr "Test de stres pornit"
+
+msgid "Saved: it takes effect at the next reboot"
+msgstr "Salvat: intră în vigoare la următoarea repornire"
+
+msgid "CPU voltage offset (EXPERIMENTAL)"
+msgstr "Decalaj de tensiune CPU (EXPERIMENTAL)"
+
+msgid "Experimental: changing the CPU voltage can make the device unstable, corrupt your data and permanently damage your device. Use it entirely at your own risk."
+msgstr "Experimental: modificarea tensiunii CPU poate face dispozitivul instabil, vă poate corupe datele și vă poate deteriora permanent dispozitivul. Utilizarea este în întregime pe propriul dvs. risc."
+
+msgid "CPU voltage offset unavailable"
+msgstr "Decalajul de tensiune CPU nu este disponibil"
+
+msgid "Not available with this kernel (a mainline kernel of this release or later has it)."
+msgstr "Indisponibil cu acest kernel (un kernel mainline din această versiune sau mai nouă îl are)."
+
+msgid "Off: the stock voltages"
+msgstr "Oprit: tensiunile din fabrică"
+
+msgid "Changes at the next reboot"
+msgstr "Se schimbă la următoarea repornire"
+
+msgid "Trial boot: kept once this boot has been up 10 minutes"
+msgstr "Pornire de probă: păstrat după ce această pornire funcționează 10 minute"
+
+msgid "Kept: this offset passed its trial boot"
+msgstr "Păstrat: acest decalaj a trecut de pornirea de probă"
+
+msgid "a boot with it ended without a clean shutdown"
+msgstr "o pornire cu el s-a încheiat fără o oprire curată"
+
+msgid "its trial boot ended before 10 minutes"
+msgstr "pornirea sa de probă s-a încheiat înainte de 10 minute"
+
+msgid "invalid value"
+msgstr "valoare nevalidă"
+
+msgid "unknown SoC firmware"
+msgstr "firmware SoC necunoscut"
+
+msgid "refused by the kernel"
+msgstr "refuzat de kernel"
+
+msgid "the kernel could not start CPU scaling with it"
+msgstr "kernelul nu a putut porni scalarea frecvenței CPU cu el"
+
+msgid "Offsets in µV for the three CPU domains (cores 0-3, 4-6 and 7), in whole steps. A new offset takes effect at the next reboot, as a trial: it is kept once that boot has been up 10 minutes, and dropped (back to 0) if a boot with it ends in a crash, a watchdog reset or a power cut."
+msgstr "Decalaje în µV pentru cele trei domenii CPU (nucleele 0-3, 4-6 și 7), în pași întregi. Un decalaj nou intră în vigoare la următoarea repornire, de probă: este păstrat după ce acea pornire funcționează 10 minute și abandonat (revine la 0) dacă o pornire cu el se termină printr-o blocare, o resetare de watchdog sau o pană de curent."
+
+msgid "Running now (µV)"
+msgstr "Rulează acum (µV)"
+
+msgid "Saved for the next boot (µV)"
+msgstr "Salvat pentru următoarea pornire (µV)"
+
+msgid "State"
+msgstr "Stare"
+
+msgid "Taken back automatically: %s µV (%s)"
+msgstr "Retras automat: %s µV (%s)"
+
+msgid "The SoC firmware of this device is not one whose voltage encoding is known: only the stock voltages are possible."
+msgstr "Firmware-ul SoC al acestui dispozitiv nu este unul a cărui codificare a tensiunii este cunoscută: sunt posibile doar tensiunile din fabrică."
+
+msgid "Domain"
+msgstr "Domeniu"
+
+msgid "Offset now (µV)"
+msgstr "Decalaj actual (µV)"
+
+msgid "Highest step"
+msgstr "Treapta cea mai înaltă"
+
+msgid "New offset (µV)"
+msgstr "Decalaj nou (µV)"
+
+msgid "Limits: %d to %d µV, in steps of %d µV."
+msgstr "Limite: între %d și %d µV, în pași de %d µV."
+
+msgid "Save for the next boot"
+msgstr "Salvează pentru următoarea pornire"
+
+msgid "Each offset must be a multiple of %d µV between %d and %d."
+msgstr "Fiecare decalaj trebuie să fie un multiplu de %d µV între %d și %d."
+
+msgid "Type %s to confirm."
+msgstr "Tastați %s pentru a confirma."
+
+msgid "Back to the stock voltages"
+msgstr "Înapoi la tensiunile din fabrică"
+
+msgid "Type %s to confirm:"
+msgstr "Tastați %s pentru a confirma:"
+
+msgid "Run a 10-minute CPU stress test"
+msgstr "Rulează un test de stres CPU de 10 minute"
+
+msgid "Test a new offset under load during its trial boot. The device may crash if the voltage is too low; the next boot then runs at the stock voltages."
+msgstr "Testați un decalaj nou sub sarcină în timpul pornirii sale de probă. Dispozitivul se poate bloca dacă tensiunea este prea mică; următoarea pornire rulează atunci cu tensiunile din fabrică."
+
+msgid "A stress test is running."
+msgstr "Rulează un test de stres."
+
+msgid "USB role"
+msgstr "Rol USB"
+
+msgid "Current role"
+msgstr "Rol curent"
+
+msgid "Switch USB role"
+msgstr "Comutare rol USB"
+
+msgid "Device mode"
+msgstr "Mod dispozitiv"
+
+msgid "Host mode"
+msgstr "Mod gazdă"
+
+msgid "Enable host mode at boot"
+msgstr "Activare mod gazdă la pornire"
+
+msgid "Apply role"
+msgstr "Aplicare rol"
+
+msgid "Host mode disconnects USB networking and serial on this port. F50 has no battery; management may be lost and a USB adapter usually needs a powered hub."
+msgstr "Modul gazdă deconectează rețeaua USB și portul serial de pe acest port. F50 nu are baterie; accesul de administrare se poate pierde, iar un adaptor USB are de obicei nevoie de un hub alimentat."
+
+msgid "USB network mode"
+msgstr "Mod rețea USB"
+
+msgid "Network protocol"
+msgstr "Protocol de rețea"
+
+msgid "Apply duration"
+msgstr "Durata aplicării"
+
+msgid "Next reboot only"
+msgstr "Doar la următoarea repornire"
+
+msgid "Permanent"
+msgstr "Permanent"
+
+msgid "Enable selected protocol"
+msgstr "Activare protocol selectat"
+
+msgid "Save; apply after reboot"
+msgstr "Salvare; aplicare după repornire"
+
+msgid "NCM is the default. Windows does not natively support ECM; RNDIS changes enumeration. With Enable selected protocol off, only your choice is saved. Next reboot only applies once, then returns to NCM."
+msgstr "NCM este implicit. Windows nu suportă nativ ECM; RNDIS schimbă enumerarea. Cu Activare protocol selectat dezactivat, se salvează doar alegerea. Doar la următoarea repornire se aplică o singură dată, apoi revine la NCM."
+
+msgid "USB adapters"
+msgstr "Adaptoare USB"
+
+msgid "Refresh"
+msgstr "Reîmprospătare"
+
+msgid "Available only in host mode. Refresh brings discovered USB adapters up; adding to LAN saves the bridge and reloads networking."
+msgstr "Disponibil doar în modul gazdă. Reîmprospătarea activează adaptoarele USB găsite; adăugarea la LAN salvează puntea și reîncarcă rețeaua."
+
+msgid "Recent modem operations"
+msgstr "Operații recente ale modemului"
+
+msgid "Show"
+msgstr "Afișează"
+
+msgid "The control panel's recent calls, of this boot and the one before: when, which page call or AT command, how long it took and how it ended (ok, error, busy, killed). No values, replies or messages are kept. Useful when the panel was stuck."
+msgstr "Apelurile recente ale panoului de control, din această pornire și din cea dinainte: când, ce apel de pagină sau comandă AT, cât a durat și cum s-a încheiat (ok, eroare, ocupat, întrerupt). Nu se păstrează valori, răspunsuri sau mesaje. Util când panoul s-a blocat."
+
+msgid "Unavailable"
+msgstr "Indisponibil"
+
+msgid "USB network mode is unavailable in host mode; host auto-start also disables USB network auto-start."
+msgstr "Modul rețea USB nu este disponibil în modul gazdă; pornirea automată a modului gazdă dezactivează și pornirea automată a rețelei USB."
+
+msgid "Host mode immediately disconnects USB management. F50 has no battery and peripherals may need external power; make sure another management path exists."
+msgstr "Modul gazdă deconectează imediat administrarea prin USB. F50 nu are baterie, iar perifericele pot necesita alimentare externă; asigurați-vă că există o altă cale de administrare."
+
+msgid "USB networking and serial will re-enumerate in device mode."
+msgstr "Rețeaua USB și portul serial vor fi reenumerate în modul dispozitiv."
+
+msgid "Switch USB role?"
+msgstr "Comutați rolul USB?"
+
+msgid "Apply"
+msgstr "Aplicare"
+
+msgid "Switching USB role…"
+msgstr "Se comută rolul USB…"
+
+msgid "Switch failed: %s"
+msgstr "Comutarea a eșuat: %s"
+
+msgid "Management connection lost; reconnect to confirm the USB role."
+msgstr "Conexiunea de administrare s-a pierdut; reconectați-vă pentru a confirma rolul USB."
+
+msgid "Switch request accepted; the USB connection may briefly disconnect."
+msgstr "Cererea de comutare a fost acceptată; conexiunea USB se poate întrerupe scurt."
+
+msgid "USB role applied"
+msgstr "Rol USB aplicat"
+
+msgid "Save USB network mode?"
+msgstr "Salvați modul rețea USB?"
+
+msgid "The network mode applies on the next reboot; USB management may need to reconnect."
+msgstr "Modul de rețea se aplică la următoarea repornire; administrarea prin USB poate necesita reconectare."
+
+msgid "Save the selection only; with the selected protocol disabled, the next boot still uses default NCM."
+msgstr "Se salvează doar selecția; cu protocolul selectat dezactivat, următoarea pornire folosește tot NCM implicit."
+
+msgid "Save"
+msgstr "Salvare"
+
+msgid "Saving USB network settings…"
+msgstr "Se salvează setările rețelei USB…"
+
+msgid "Settings saved"
+msgstr "Setări salvate"
+
+msgid "Save failed: %s"
+msgstr "Salvarea a eșuat: %s"
+
+msgid "This boot"
+msgstr "Această pornire"
+
+msgid "Previous boot"
+msgstr "Pornirea anterioară"
+
+msgid "Unable to confirm the role yet; reconnect and refresh the page."
+msgstr "Rolul nu poate fi confirmat încă; reconectați-vă și reîmprospătați pagina."
+
+msgid "Switch to host mode to see USB adapters."
+msgstr "Comutați la modul gazdă pentru a vedea adaptoarele USB."
+
+msgid "Scanning USB adapters…"
+msgstr "Se caută adaptoare USB…"
+
+msgid "No USB adapters found."
+msgstr "Nu s-au găsit adaptoare USB."
+
+msgid "Link connected"
+msgstr "Legătură conectată"
+
+msgid "No link; enable attempted"
+msgstr "Fără legătură; s-a încercat activarea"
+
+msgid "Added to LAN"
+msgstr "Adăugat la LAN"
+
+msgid "Add to LAN"
+msgstr "Adăugare la LAN"
+
+msgid "Add USB adapter to LAN?"
+msgstr "Adăugați adaptorul USB la LAN?"
+
+msgid "This saves the bridge configuration and reloads networking; existing connections may briefly drop."
+msgstr "Aceasta salvează configurația punții și reîncarcă rețeaua; conexiunile existente se pot întrerupe scurt."
+
+msgid "Add"
+msgstr "Adăugare"
+
+msgid "Adding USB adapter…"
+msgstr "Se adaugă adaptorul USB…"
+
+msgid "Add failed: %s"
+msgstr "Adăugarea a eșuat: %s"
+
+msgid "Leave empty to keep the saved value"
+msgstr "Lăsați gol pentru a păstra valoarea salvată"
+
+msgid "Saved: %s"
+msgstr "Salvat: %s"
+
+msgid "Remove the saved value"
+msgstr "Eliminați valoarea salvată"
+
+msgid "Presets"
+msgstr "Presetări"
+
+msgid "Form (URL-encoded)"
+msgstr "Formular (codificat URL)"
+
+msgid "Plain text"
+msgstr "Text simplu"
+
+msgid "Received messages are sent on as they reach the SMS pool. A failed delivery is retried after 30 s, then after twice as long each time (an hour at most), ten times in all."
+msgstr "Mesajele primite sunt redirecționate imediat ce ajung în fondul de SMS. O livrare eșuată este reîncercată după 30 s, apoi de fiecare dată după un timp de două ori mai lung (cel mult o oră), de zece ori în total."
+
+msgid "Forward received messages"
+msgstr "Redirecționează mesajele primite"
+
+msgid "Message template"
+msgstr "Șablonul mesajului"
+
+msgid "Placeholders: {sender}, {time}, {text}, {device}"
+msgstr "Substituenți: {sender}, {time}, {text}, {device}"
+
+msgid "Only these senders"
+msgstr "Doar acești expeditori"
+
+msgid "One per line; empty: every sender. A * at the end matches the start of a sender."
+msgstr "Unul pe linie; gol: toți expeditorii. Un * la final se potrivește cu începutul unui expeditor."
+
+msgid "Never these senders"
+msgstr "Niciodată acești expeditori"
+
+msgid "Only messages containing one of these words"
+msgstr "Doar mesajele care conțin unul dintre aceste cuvinte"
+
+msgid "One per line; empty: every message."
+msgstr "Unul pe linie; gol: toate mesajele."
+
+msgid "Webhook"
+msgstr "Webhook"
+
+msgid "Enabled"
+msgstr "Activat"
+
+msgid "Address (http:// or https://)"
+msgstr "Adresă (http:// sau https://)"
+
+msgid "Body"
+msgstr "Corp"
+
+msgid "Fields: sender, time, text, device, message (the template filled in)"
+msgstr "Câmpuri: sender, time, text, device, message (șablonul completat)"
+
+msgid "Custom body"
+msgstr "Corp personalizat"
+
+msgid "Empty: the standard fields (plain text: the message). Placeholders: {sender}, {time}, {text}, {device}, {message}. Each value is escaped for the chosen type. This body is shown again here: keep secrets in the address or a header."
+msgstr "Gol: câmpurile standard (text simplu: mesajul). Substituenți: {sender}, {time}, {text}, {device}, {message}. Fiecare valoare este escapată potrivit tipului ales. Acest corp este afișat din nou aici: păstrați secretele în adresă sau într-un antet."
+
+msgid "Extra headers (one \"Name: value\" per line)"
+msgstr "Antete suplimentare (un \"Nume: valoare\" pe linie)"
+
+msgid "The answer must contain"
+msgstr "Răspunsul trebuie să conțină"
+
+msgid "Empty: every HTTP 2xx answer counts as delivered. With key=value (for example errcode=0), the answer must also be a JSON object that has this value under this key at its top level; otherwise the delivery fails. Only the result of the check is logged, never the answer."
+msgstr "Gol: orice răspuns HTTP 2xx contează ca livrat. Cu cheie=valoare (de exemplu errcode=0), răspunsul trebuie să fie în plus un obiect JSON care are această valoare sub această cheie la nivelul său superior; altfel livrarea eșuează. În jurnal ajunge doar rezultatul verificării, niciodată răspunsul."
+
+msgid "Bot token"
+msgstr "Tokenul botului"
+
+msgid "Chat ID (a number, or @channel)"
+msgstr "ID-ul chatului (un număr sau @canal)"
+
+msgid "E-mail"
+msgstr "E-mail"
+
+msgid "E-mail needs msmtp, which this image does not have"
+msgstr "E-mailul are nevoie de msmtp, pe care această imagine nu îl are"
+
+msgid "Mail server"
+msgstr "Server de e-mail"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Security"
+msgstr "Securitate"
+
+msgid "None"
+msgstr "Niciuna"
+
+msgid "User name"
+msgstr "Nume de utilizator"
+
+msgid "Password"
+msgstr "Parolă"
+
+msgid "From"
+msgstr "De la"
+
+msgid "To"
+msgstr "Către"
+
+msgid "SMS to another phone"
+msgstr "SMS către alt telefon"
+
+msgid "Phone number"
+msgstr "Număr de telefon"
+
+msgid "Sent as one SMS: a longer message is cut short."
+msgstr "Se trimite ca un singur SMS: un mesaj mai lung este scurtat."
+
+msgid "Send test"
+msgstr "Trimite test"
+
+msgid "Tokens, passwords and the webhook address and headers stay on the device and are never shown again."
+msgstr "Tokenurile, parolele și adresa și antetele webhookului rămân pe dispozitiv și nu mai sunt afișate niciodată."
+
+msgid "Delivered"
+msgstr "Livrat"
+
+msgid "Will retry"
+msgstr "Se va reîncerca"
+
+msgid "Failed"
+msgstr "Eșuat"
+
+msgid "Filtered out"
+msgstr "Filtrat"
+
+msgid "Dropped"
+msgstr "Abandonat"
+
+msgid "Clear"
+msgstr "Golire"
+
+msgid "Test"
+msgstr "Test"
+
+msgid "Delivery log"
+msgstr "Jurnal de livrare"
+
+msgid "Waiting to be delivered"
+msgstr "În așteptarea livrării"
+
+msgid "Time"
+msgstr "Oră"
+
+msgid "Message"
+msgstr "Mesaj"
+
+msgid "Target"
+msgstr "Țintă"
+
+msgid "Result"
+msgstr "Rezultat"
+
+msgid "Detail"
+msgstr "Detaliu"
+
+msgid "No deliveries yet"
+msgstr "Încă nicio livrare"
+
+msgid "Test started with the saved settings; the result appears in the delivery log."
+msgstr "Testul a pornit cu setările salvate; rezultatul apare în jurnalul de livrare."
+
+msgid "Automatic without 2G (152)"
+msgstr "Automat fără 2G (152)"
+
+msgid "4G only"
+msgstr "Doar 4G"
+
+msgid "Network mode: %s"
+msgstr "Mod rețea: %s"
+
+msgid "EN-DC off"
+msgstr "EN-DC oprit"
+
+msgid "NR band lock: %s"
+msgstr "Blocare benzi NR: %s"
+
+msgid "LTE band lock: %s"
+msgstr "Blocare benzi LTE: %s"
+
+msgid "Cell lock: %s"
+msgstr "Blocare celulă: %s"
+
+msgid "Modulation DL/UL"
+msgstr "Modulație DL/UL"
+
+msgid "Estimated from current MCS"
+msgstr "Estimată din MCS curent"
+
+msgid "MCS DL/UL"
+msgstr "MCS DL/UL"
+
+msgid "BLER DL/UL"
+msgstr "BLER DL/UL"
+
+msgid "%s of %s"
+msgstr "%s din %s"
+
+msgid "The monthly cap is reached"
+msgstr "Limita lunară a fost atinsă"
+
+msgid "%d%% of the monthly cap is used"
+msgstr "%d%% din limita lunară folosit"
+
+msgid "This billing cycle"
+msgstr "Acest ciclu de facturare"
+
+msgid "Link & traffic"
+msgstr "Legătură și trafic"
+
+msgid "Download rate"
+msgstr "Viteză descărcare"
+
+msgid "Upload rate"
+msgstr "Viteză încărcare"
+
+msgid "Total received"
+msgstr "Total primit"
+
+msgid "Total sent"
+msgstr "Total trimis"
+
+msgid "Used today"
+msgstr "Folosit azi"
+
+msgid "SIM source"
+msgstr "Sursă SIM"
+
+msgid "Session duration"
+msgstr "Durata sesiunii"
+
+msgid "Registration"
+msgstr "Înregistrare"
+
+msgid "Data roaming"
+msgstr "Roaming de date"
+
+msgid "Bandwidth"
+msgstr "Lățime de bandă"
+
+msgid "AMBR DL/UL"
+msgstr "AMBR DL/UL"
+
+msgid "Wi-Fi · LAN · Device · SIM"
+msgstr "Wi-Fi · LAN · Dispozitiv · SIM"
+
+msgid "CPU usage"
+msgstr "Utilizare CPU"
+
+msgid "Memory"
+msgstr "Memorie"
+
+msgid "Storage"
+msgstr "Stocare"
+
+msgid "Battery"
+msgstr "Baterie"
+
+msgid "Channel"
+msgstr "Canal"
+
+msgid "Encryption"
+msgstr "Criptare"
+
+msgid "Hidden SSID"
+msgstr "SSID ascuns"
+
+msgid "Country"
+msgstr "Țară"
+
+msgid "AP status"
+msgstr "Stare AP"
+
+msgid "USB network"
+msgstr "Rețea USB"
+
+msgid "Connection tracking"
+msgstr "Urmărire conexiuni"
+
+msgid "LAN address"
+msgstr "Adresă LAN"
+
+msgid "Wi-Fi clients"
+msgstr "Clienți Wi-Fi"
+
+msgid "DHCP leases"
+msgstr "Alocări DHCP"
+
+msgid "Device model"
+msgstr "Model dispozitiv"
+
+msgid "System"
+msgstr "Sistem"
+
+msgid "Modem"
+msgstr "Modem"
+
+msgid "Carrier"
+msgstr "Operator"
+
+msgid "Own number"
+msgstr "Număr propriu"
+
+msgid "Module"
+msgstr "Modul"
+
+msgid "Firmware"
+msgstr "Firmware"
+
+msgid "Show SIM identifiers"
+msgstr "Afișare identificatori SIM"
+
+msgid "Quick controls"
+msgstr "Comenzi rapide"
+
+msgid "Data connection"
+msgstr "Conexiune de date"
+
+msgid "Cellular radio"
+msgstr "Radio celular"
+
+msgid "Wi-Fi hotspot"
+msgstr "Hotspot Wi-Fi"
+
+msgid "Restart modem"
+msgstr "Repornire modem"
+
+msgid "Power off or restart"
+msgstr "Oprire sau repornire"
+
+msgid "Switch to Android"
+msgstr "Comutare la Android"
+
+msgid "Lock Linux"
+msgstr "Blochează Linux"
+
+msgid "Neighbor cells"
+msgstr "Celule vecine"
+
+msgid "RAT/Band"
+msgstr "RAT/Bandă"
+
+msgid "Frequency"
+msgstr "Frecvență"
+
+msgid "Running %s…"
+msgstr "Se rulează %s…"
+
+msgid "Started in background: %s"
+msgstr "Pornit în fundal: %s"
+
+msgid "Done: %s"
+msgstr "Finalizat: %s"
+
+msgid "Disconnecting data…"
+msgstr "Se deconectează datele…"
+
+msgid "Connecting data…"
+msgstr "Se conectează datele…"
+
+msgid "Turn off cellular radio"
+msgstr "Oprire radio celular"
+
+msgid "This SIM will have no calls, SMS or data, and its radio stays off after a reboot until you turn it on again."
+msgstr "Acest SIM nu va avea apeluri, SMS sau date, iar radioul său rămâne oprit și după repornire până îl porniți din nou."
+
+msgid "Turn on cellular radio"
+msgstr "Pornire radio celular"
+
+msgid "The radio of the SIM in use comes on and stays on after a reboot (up to about 1 minute)."
+msgstr "Radioul SIM-ului în uz pornește și rămâne pornit după repornire (până la aproximativ 1 minut)."
+
+msgid "Turn data roaming off"
+msgstr "Dezactivează roamingul de date"
+
+msgid "While the SIM is registered on a roaming network, mobile data stays off; SMS, calls and the registration are not affected. Some SIMs report roaming at home (an MVNO, national roaming): there, data would stop as well."
+msgstr "Cât timp SIM-ul este înregistrat într-o rețea de roaming, datele mobile rămân oprite; SMS-urile, apelurile și înregistrarea nu sunt afectate. Unele SIM-uri raportează roaming și acasă (un MVNO, roaming național): acolo datele s-ar opri de asemenea."
+
+msgid "Allow data roaming"
+msgstr "Permite roamingul de date"
+
+msgid "Mobile data is used on roaming networks too, which can cost extra. Some SIMs report roaming at home (an MVNO, national roaming) and need this to have data at all."
+msgstr "Datele mobile sunt folosite și în rețelele de roaming, ceea ce poate costa în plus. Unele SIM-uri raportează roaming și acasă (un MVNO, roaming național) și au nevoie de asta pentru a avea date."
+
+msgid "Cellular connectivity may stop for 1–2 minutes."
+msgstr "Conectivitatea celulară se poate opri timp de 1–2 minute."
+
+msgid "All connections will be interrupted."
+msgstr "Toate conexiunile vor fi întrerupte."
+
+msgid "Power off"
+msgstr "Oprire"
+
+msgid "Restart"
+msgstr "Repornește"
+
+msgid "The next boot will enter Android and reboot now. This management page and cellular sharing will disconnect."
+msgstr "Următoarea pornire va intra în Android, iar dispozitivul repornește acum. Această pagină de administrare și partajarea celulară se vor deconecta."
+
+msgid "To return to OpenWrt, run mu300-next-boot linux in Android and reboot."
+msgstr "Pentru a reveni la OpenWrt, rulați mu300-next-boot linux în Android și reporniți."
+
+msgid "Or do nothing: after five boots that do not finish, it falls back automatically."
+msgstr "Sau nu faceți nimic: după cinci porniri care nu se finalizează, revine automat."
+
+msgid "Preparing Android boot and rebooting…"
+msgstr "Se pregătește pornirea Android și se repornește…"
+
+msgid "Switch and reboot"
+msgstr "Comutare și repornire"
+
+msgid "Not automatic: %s. The network mode and band locks are stored in the modem and stay in force in Android too; if the network does not match them, Android shows No Service."
+msgstr "Nu este automat: %s. Modul de rețea și blocările de bandă sunt salvate în modem și rămân active și în Android; dacă rețeaua nu se potrivește, Android afișează „Fără serviciu”."
+
+msgid "Reset locks and switch"
+msgstr "Resetează blocările și comută"
+
+msgid "Unlock Linux"
+msgstr "Deblochează Linux"
+
+msgid "After five boots in a row that do not finish, the device falls back to Android again."
+msgstr "După cinci porniri consecutive neterminate, dispozitivul revine din nou la Android."
+
+msgid "Unlock"
+msgstr "Deblochează"
+
+msgid "The device will never switch to Android by itself, not even after failed boots: Android only from this page (Switch to Android) or with mu300-next-boot android."
+msgstr "Dispozitivul nu va trece niciodată singur la Android, nici după porniri eșuate: la Android doar din această pagină (Comută la Android) sau cu mu300-next-boot android."
+
+msgid "A new kernel from an update still gets its first boots on trial, and locks again once one of them succeeds."
+msgstr "Un kernel nou dintr-o actualizare pornește totuși mai întâi de probă și se blochează din nou când una dintre porniri reușește."
+
+msgid "If the system itself no longer starts, the device waits on USB (telnet) instead of going to Android."
+msgstr "Dacă sistemul însuși nu mai pornește, dispozitivul așteaptă prin USB (telnet) în loc să treacă la Android."
+
+msgid "Hide SIM identifiers"
+msgstr "Ascundere identificatori SIM"
+
+msgid "Lock cell %s?"
+msgstr "Blocați celula %s?"
+
+msgid "The radio stack will restart (SFUN); cellular service will stop for about 30 seconds."
+msgstr "Stiva radio va reporni (SFUN); serviciul celular se va opri aproximativ 30 de secunde."
+
+msgid "Locking %s in the background, about 30 seconds"
+msgstr "Se blochează %s în fundal, aproximativ 30 de secunde"
+
+msgid "Locked %s in the background; the status will refresh shortly"
+msgstr "%s blocat în fundal; starea se va reîmprospăta în curând"
+
+msgid "Lock failed: %s"
+msgstr "Blocarea a eșuat: %s"
+
+msgid "Resetting the network locks to automatic (SFUN restart, about 30 seconds)…"
+msgstr "Se resetează blocările de rețea la automat (repornire SFUN, circa 30 de secunde)…"
+
+msgid "Reset failed: %s. The saved lock settings were kept."
+msgstr "Resetarea a eșuat: %s. Setările de blocare salvate au fost păstrate."
+
+msgid "The lock reset was not confirmed in time; switching anyway."
+msgstr "Resetarea blocărilor nu a fost confirmată la timp; se comută oricum."
+
+msgid "Internal SIM selected: in use after a reboot"
+msgstr "SIM intern selectat: folosit după o repornire"
+
+msgid "Internal SIM selected, but not supported on this device: the external SIM is in use"
+msgstr "SIM intern selectat, dar neacceptat pe acest dispozitiv: se folosește SIM-ul extern"
+
+msgid "Uptime %s"
+msgstr "Timp de funcționare %s"
+
+msgid "Radio off"
+msgstr "Radio oprit"
+
+msgid "No response"
+msgstr "Niciun răspuns"
+
+msgid "Modem busy: cellular readings from %s ago"
+msgstr "Modem ocupat: valori celulare de acum %s"
+
+msgid "%s · Signal %s %s/10"
+msgstr "%s · Semnal %s %s/10"
+
+msgid "%s · Signal %s"
+msgstr "%s · Semnal %s"
+
+msgid "Anchor B%s"
+msgstr "Ancoră B%s"
+
+msgid "No serving cell"
+msgstr "Nicio celulă de servire"
+
+msgid "Version %s is out: update"
+msgstr "A apărut versiunea %s: actualizați"
+
+msgid "Not registered"
+msgstr "Neînregistrat"
+
+msgid "Registered"
+msgstr "Înregistrat"
+
+msgid "Searching"
+msgstr "Se caută"
+
+msgid "Registration denied"
+msgstr "Înregistrare refuzată"
+
+msgid "Registered (roaming)"
+msgstr "Înregistrat (roaming)"
+
+msgid "Emergency only"
+msgstr "Doar urgențe"
+
+msgid "Status %s"
+msgstr "Stare %s"
+
+msgid "Off: data held back while roaming"
+msgstr "Oprit: date reținute în roaming"
+
+msgid "Allowed"
+msgstr "Permis"
+
+msgid "Off"
+msgstr "Oprit"
+
+msgid "LTE anchor"
+msgstr "Ancoră LTE"
+
+msgid "LTE link"
+msgstr "Legătură LTE"
+
+msgid "Hidden"
+msgstr "Ascuns"
+
+msgid "No"
+msgstr "Nu"
+
+msgid "Running"
+msgstr "Rulează"
+
+msgid "Not running"
+msgstr "Nu rulează"
+
+msgid "Connected"
+msgstr "Conectat"
+
+msgid "Disconnected"
+msgstr "Deconectat"
+
+msgid "%s entries"
+msgstr "%s intrări"
+
+msgid "%s clients"
+msgstr "%s clienți"
+
+msgid "Recent DHCP leases"
+msgstr "Alocări DHCP recente"
+
+msgid "Board"
+msgstr "Placă"
+
+msgid "No temperature readings"
+msgstr "Nu există citiri de temperatură"
+
+msgid "Cluster %d"
+msgstr "Cluster %d"
+
+msgid "Total %s · free %s"
+msgstr "Total %s · liber %s"
+
+msgid "charging %s W"
+msgstr "se încarcă cu %s W"
+
+msgid "charging"
+msgstr "se încarcă"
+
+msgid "drawing %s W"
+msgstr "consumă %s W"
+
+msgid "not charging"
+msgstr "nu se încarcă"
+
+msgid "on battery"
+msgstr "pe baterie"
+
+msgid "full"
+msgstr "plină"
+
+msgid "USB in %s W"
+msgstr "intrare USB %s W"
+
+msgid "Online"
+msgstr "Online"
+
+msgid "AT adapter unavailable"
+msgstr "Adaptor AT indisponibil"
+
+msgid "Linux locked"
+msgstr "Linux blocat"
+
+msgid "Installing the language pack…"
+msgstr "Se instalează pachetul de limbi…"
+
+msgid "The language pack is installed"
+msgstr "Pachetul de limbi este instalat"
+
+msgid "The language pack could not be installed"
+msgstr "Pachetul de limbi nu a putut fi instalat"
+
+msgid "Language of the browser"
+msgstr "Limba browserului"
+
+msgid "Language of the web interface"
+msgstr "Limba interfeței web"
+
+msgid "English, Turkish and Chinese come with the system; the language pack adds the others."
+msgstr "Engleza, turca și chineza vin cu sistemul; pachetul de limbi le adaugă pe celelalte."
+
+msgid "The same setting is in System > System > Language and Style."
+msgstr "Aceeași setare se află în Sistem > Sistem > Limba și stilul interfeței."
+
+msgid "Language pack"
+msgstr "Pachet de limbi"
+
+msgid "The language pack (mu300-extra-lang.tar.gz, about 2 MB) adds LuCI in about 40 more languages and this panel in 29 of them. Download it from the release of this system, or upload the file from the release page when the device has no internet."
+msgstr "Pachetul de limbi (mu300-extra-lang.tar.gz, aproximativ 2 MB) adaugă LuCI în încă aproximativ 40 de limbi și acest panou în 29 dintre ele. Descărcați-l din versiunea acestui sistem sau încărcați fișierul de pe pagina versiunii când dispozitivul nu are internet."
+
+msgid "Download from the release"
+msgstr "Descărcare din versiune"
+
+msgid "Release"
+msgstr "Versiune"
+
+msgid "Enable all"
+msgstr "Activare toate"
+
+msgid "Disable all"
+msgstr "Dezactivare toate"
+
+msgid "Remove the language pack"
+msgstr "Eliminare pachet de limbi"
+
+msgid "Remove the language pack?"
+msgstr "Eliminați pachetul de limbi?"
+
+msgid "Its languages disappear from the list; a page in one of them switches to English."
+msgstr "Limbile sale dispar din listă; o pagină într-una dintre ele trece la engleză."
+
+msgid "Remove"
+msgstr "Eliminare"
+
+msgid "Disable"
+msgstr "Dezactivare"
+
+msgid "Enable"
+msgstr "Activare"
+
+msgid "LuCI and this panel"
+msgstr "LuCI și acest panou"
+
+msgid "LuCI only"
+msgstr "Doar LuCI"
+
+msgid "Disabled"
+msgstr "Dezactivat"
+
+msgid "Language"
+msgstr "Limbă"
+
+msgid "Code"
+msgstr "Cod"
+
+msgid "Translated"
+msgstr "Tradus"
+
+msgid "LuCI's own translations come from OpenWrt. This panel's translations other than Turkish and Chinese are machine (AI) translations; corrections are welcome."
+msgstr "Traducerile proprii ale LuCI provin din OpenWrt. Traducerile acestui panou, cu excepția turcei și chinezei, sunt traduceri automate (AI); corecturile sunt binevenite."
+
+msgid "Automatic"
+msgstr "Automat"
+
+msgid "Serving network"
+msgstr "Rețea de servire"
+
+msgid "Network mode · EN-DC"
+msgstr "Mod rețea · EN-DC"
+
+msgid "Refresh lock status"
+msgstr "Reîmprospătare stare blocări"
+
+msgid "Apply at startup"
+msgstr "Aplicare la pornire"
+
+msgid "Turning this off only stops replay at the next boot; saved network mode, EN-DC, band and cell settings remain."
+msgstr "Dezactivarea opțiunii oprește doar reaplicarea la următoarea pornire; setările salvate pentru modul de rețea, EN-DC, bandă și celulă rămân."
+
+msgid "Band locking"
+msgstr "Blocare benzi"
+
+msgid "NR bands"
+msgstr "Benzi NR"
+
+msgid "LTE bands"
+msgstr "Benzi LTE"
+
+msgid "Apply NR bands"
+msgstr "Aplicare benzi NR"
+
+msgid "Apply LTE bands"
+msgstr "Aplicare benzi LTE"
+
+msgid "Neighbor cells and cell locking"
+msgstr "Celule vecine și blocare celulă"
+
+msgid "Lock current serving cell"
+msgstr "Blocare celulă de servire curentă"
+
+msgid "Unlock cell"
+msgstr "Deblocare celulă"
+
+msgid "Enter a cell"
+msgstr "Introduceți o celulă"
+
+msgid "Type"
+msgstr "Tip"
+
+msgid "Channel number (EARFCN / NR-ARFCN)"
+msgstr "Număr de canal (EARFCN / NR-ARFCN)"
+
+msgid "Lock this cell"
+msgstr "Blochează această celulă"
+
+msgid "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. A channel number, not a frequency in MHz; the cell need not be in the neighbor list."
+msgstr "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. Un număr de canal, nu o frecvență în MHz; celula nu trebuie să fie în lista celulelor vecine."
+
+msgid "Applying restarts the radio stack (SFUN) and briefly interrupts cellular service. Settings are saved and replayed by the plugin after AT is ready when Apply at startup is enabled. A platform pre-radio hook can replay without a restart. Apply with no bands selected to restore automatic mode."
+msgstr "Aplicarea repornește stiva radio (SFUN) și întrerupe scurt serviciul celular. Setările sunt salvate și reaplicate de plugin după ce AT este pregătit, dacă Aplicare la pornire este activat. Un hook pre-radio al platformei poate reaplica fără repornire. Aplicați fără benzi selectate pentru a reveni la modul automat."
+
+msgid "Back to automatic"
+msgstr "Înapoi la automat"
+
+msgid "The network mode and band locks are stored in the modem and stay in force in Android too. If you are not sure, reset them before switching to Android."
+msgstr "Modul de rețea și blocările de bandă sunt salvate în modem și rămân active și în Android. Dacă nu ești sigur, resetează-le înainte de a comuta la Android."
+
+msgid "Reset all to automatic"
+msgstr "Resetează totul la automat"
+
+msgid "Apply “%s”?"
+msgstr "Aplicați „%s”?"
+
+msgid "Applying %s in the background…"
+msgstr "Se aplică %s în fundal…"
+
+msgid "Applying %s in the background… (SFUN restart and re-registration, about 30 seconds)"
+msgstr "Se aplică %s în fundal… (repornire SFUN și reînregistrare, aproximativ 30 de secunde)"
+
+msgid "Queued: another lock is being applied during SFUN restart; this will take effect afterward"
+msgstr "În coadă: altă blocare se aplică în timpul repornirii SFUN; aceasta va intra în vigoare după"
+
+msgid "Confirming the EN-DC status…"
+msgstr "Se confirmă starea EN-DC…"
+
+msgid "Confirming apply at startup…"
+msgstr "Se confirmă aplicarea la pornire…"
+
+msgid "Started in background: %s (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Pornit în fundal: %s (repornire SFUN, aproximativ 30 de secunde); se citește starea…"
+
+msgid "Disable EN-DC (NSA anchor)"
+msgstr "Dezactivare EN-DC (ancoră NSA)"
+
+msgid "Enable EN-DC (NSA anchor)"
+msgstr "Activare EN-DC (ancoră NSA)"
+
+msgid "Disable apply at startup"
+msgstr "Dezactivare aplicare la pornire"
+
+msgid "Enable apply at startup"
+msgstr "Activare aplicare la pornire"
+
+msgid "Reading the modem directly (a few seconds at most)…"
+msgstr "Se citește direct modemul (cel mult câteva secunde)…"
+
+msgid "Refresh failed"
+msgstr "Reîmprospătarea a eșuat"
+
+msgid "Refreshed"
+msgstr "Reîmprospătat"
+
+msgid "NR bands: back to automatic"
+msgstr "Benzi NR: înapoi la automat"
+
+msgid "LTE bands: back to automatic"
+msgstr "Benzi LTE: înapoi la automat"
+
+msgid "Network mode automatic, EN-DC on, all LTE and NR bands, no cell lock. The saved lock settings are cleared, so nothing is replayed at startup."
+msgstr "Mod de rețea automat, EN-DC pornit, toate benzile LTE și NR, fără blocare de celulă. Setările salvate se șterg, așa că nimic nu se reaplică la pornire."
+
+msgid "Reset"
+msgstr "Resetează"
+
+msgid "Remove the %s cell lock"
+msgstr "Eliminare blocare celulă %s"
+
+msgid "The radio stack will restart (SFUN), taking about 30 seconds."
+msgstr "Stiva radio va reporni (SFUN), durând aproximativ 30 de secunde."
+
+msgid "Removing the %s cell lock…"
+msgstr "Se elimină blocarea celulei %s…"
+
+msgid "Unlock failed: %s"
+msgstr "Deblocarea a eșuat: %s"
+
+msgid "Unlock started in background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Deblocare pornită în fundal (repornire SFUN, aproximativ 30 de secunde); se citește starea…"
+
+msgid "Locking %s in the background…"
+msgstr "Se blochează %s în fundal…"
+
+msgid "Locked %s in the background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "%s blocat în fundal (repornire SFUN, aproximativ 30 de secunde); se citește starea…"
+
+msgid "Enter a channel number and a PCI in the ranges below"
+msgstr "Introduceți un număr de canal și un PCI în intervalele de mai jos"
+
+msgid "No serving-network data"
+msgstr "Nu există date despre rețeaua de servire"
+
+msgid "NR serving cell"
+msgstr "Celulă de servire NR"
+
+msgid "Status confirmed"
+msgstr "Stare confirmată"
+
+msgid "Readback timed out; select “Refresh lock status”"
+msgstr "Citirea de verificare a expirat; selectați „Reîmprospătare stare blocări”"
+
+msgid "Reset verified: network mode automatic, EN-DC on, all bands, no cell lock; the saved lock settings are cleared"
+msgstr "Resetare verificată: mod de rețea automatic, EN-DC pornit, toate benzile, fără blocare de celulă; setările de blocare salvate au fost șterse"
+
+msgid "Applied (EN-DC does not require a radio-stack restart)"
+msgstr "Aplicat (EN-DC nu necesită repornirea stivei radio)"
+
+msgid "Apply at startup is on"
+msgstr "Aplicare la pornire este activat"
+
+msgid "Apply at startup is off"
+msgstr "Aplicare la pornire este dezactivat"
+
+msgid "EN-DC status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Citirea stării EN-DC a expirat; folosiți „Reîmprospătare stare blocări” pentru confirmare"
+
+msgid "Apply-at-startup status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Citirea stării aplicării la pornire a expirat; folosiți „Reîmprospătare stare blocări” pentru confirmare"
+
+msgid "Locked cells"
+msgstr "Celule blocate"
+
+msgid "Unlock %s"
+msgstr "Deblocare %s"
+
+msgid "Automatic (%d supported)"
+msgstr "Automat (%d suportate)"
+
+msgid "%d locked: %s"
+msgstr "%d blocate: %s"
+
+msgid "Repair DNS?"
+msgstr "Repari DNS-ul?"
+
+msgid "This removes the DNS forwarder of a package that is no longer installed. If no other DNS server is left, the device then uses the DNS servers of the mobile connection: the carrier sees the names you look up, outside any proxy or VPN."
+msgstr "Aceasta elimină redirecționarea DNS a unui pachet care nu mai este instalat. Dacă nu rămâne alt server DNS, dispozitivul folosește serverele DNS ale conexiunii mobile: operatorul vede numele pe care le cauți, în afara oricărui proxy sau VPN."
+
+msgid "Repair DNS"
+msgstr "Repară DNS-ul"
+
+msgid "Packages installed on the device are not part of a release image. An update writes them down, and the new system installs them again at its first boot, once it is online. Until a package is back its settings are set aside."
+msgstr "Pachetele instalate pe dispozitiv nu fac parte din imaginea versiunii. O actualizare le notează, iar noul sistem le reinstalează la prima pornire, imediat ce este online. Până când un pachet revine, setările lui sunt puse deoparte."
+
+msgid "No packages to install again."
+msgstr "Niciun pachet de reinstalat."
+
+msgid "All back"
+msgstr "Toate au revenit"
+
+msgid "Not installed yet"
+msgstr "Încă neinstalat"
+
+msgid "Could not be installed again"
+msgstr "Nu a putut fi reinstalat"
+
+msgid "Waiting for the internet"
+msgstr "Se așteaptă internetul"
+
+msgid "Given up: no internet at five boots"
+msgstr "Abandonat: fără internet la cinci porniri"
+
+msgid "Skipped"
+msgstr "Omis"
+
+msgid "Written down by the update from %s"
+msgstr "Notat de actualizarea de la %s"
+
+msgid "Installed again"
+msgstr "Reinstalate"
+
+msgid "Install them yourself from where you got them (a package file: apk add --allow-untrusted FILE.apk)."
+msgstr "Instalează-le singur de unde le-ai luat (un fișier de pachet: apk add --allow-untrusted FILE.apk)."
+
+msgid "Settings set aside in /etc/mu300/orphaned-config"
+msgstr "Setări puse deoparte în /etc/mu300/orphaned-config"
+
+msgid "DNS still goes to a package that is not installed: the device has no DNS through it."
+msgstr "DNS-ul încă merge către un pachet neinstalat: dispozitivul nu are DNS prin el."
+
+msgid "Try again"
+msgstr "Încearcă din nou"
+
+msgid "Dismiss the note"
+msgstr "Închide nota"
+
+msgid "started"
+msgstr "pornit"
+
+msgid "asleep now (asked)"
+msgstr "adormit acum (cerut)"
+
+msgid "woken: power daemon stopping"
+msgstr "trezit: serviciul de alimentare se oprește"
+
+msgid "woken by a key"
+msgstr "trezit de o tastă"
+
+msgid "woken by the Wi-Fi key"
+msgstr "trezit de tasta Wi-Fi"
+
+msgid "woken (mu300-power wake)"
+msgstr "trezit (mu300-power wake)"
+
+msgid "woken by a computer on USB"
+msgstr "trezit de un computer pe USB"
+
+msgid "woken: plugged in"
+msgstr "trezit: conectat la priză"
+
+msgid "woken by a Wi-Fi client"
+msgstr "trezit de un client Wi-Fi"
+
+msgid "charging boot (powered on by the charger)"
+msgstr "pornire la încărcare (pornit de încărcător)"
+
+msgid "the hotspot is down"
+msgstr "hotspotul este oprit"
+
+msgid "the VPN is still stopped"
+msgstr "VPN-ul este încă oprit"
+
+msgid "5G (EN-DC) is still off after a failed resume"
+msgstr "5G (EN-DC) este încă oprit după o reluare eșuată"
+
+msgid "self-check: %s"
+msgstr "autoverificare: %s"
+
+msgid "asleep: no client for %d min (%s)"
+msgstr "adormit: niciun client de %d min (%s)"
+
+msgid "asleep: profile now %s"
+msgstr "adormit: profilul acum %s"
+
+msgid "woken by the %s key"
+msgstr "trezit de tasta %s"
+
+msgid "the modem is suspended (%s)"
+msgstr "modemul este suspendat (%s)"
+
+msgid "Enter a whole number from 0 to %d"
+msgstr "Introduceți un număr întreg de la 0 la %d"
+
+msgid "Power status unavailable"
+msgstr "Starea alimentării nu este disponibilă"
+
+msgid "Plugged in"
+msgstr "Conectat la priză"
+
+msgid "On battery"
+msgstr "Pe baterie"
+
+msgid "Saver"
+msgstr "Economie"
+
+msgid "Asleep: hotspot off"
+msgstr "Repaus: hotspot oprit"
+
+msgid "Charging boot: press the Wi-Fi key to start"
+msgstr "Pornire în încărcare: apăsați tasta Wi-Fi pentru a porni"
+
+msgid "Awake"
+msgstr "Treaz"
+
+msgid "forced"
+msgstr "forțat"
+
+msgid "automatic, battery under %d %%"
+msgstr "automat, baterie sub %d %%"
+
+msgid "automatic"
+msgstr "automat"
+
+msgid "Nobody connected for %d s"
+msgstr "Nimeni nu este conectat de %d s"
+
+msgid "Power source"
+msgstr "Sursă de alimentare"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Profile in use: %s (%s)"
+msgstr "Profil utilizat: %s (%s)"
+
+msgid "%d %%, %s, %d mV, %d mA, %.1f °C"
+msgstr "%d %%, %s, %d mV, %d mA, %.1f °C"
+
+msgid "Charger"
+msgstr "Încărcător"
+
+msgid "Charger: %s, %s port"
+msgstr "Încărcător: %s, port %s"
+
+msgid "Charging paused: battery temperature"
+msgstr "Încărcare întreruptă: temperatura bateriei"
+
+msgid "Charging paused: charge limit"
+msgstr "Încărcare întreruptă: limita de încărcare"
+
+msgid "Sleep now"
+msgstr "Repaus acum"
+
+msgid "Wake"
+msgstr "Trezește"
+
+msgid "Nobody connected means no Wi-Fi client and no computer on USB. The Wi-Fi key, a computer on USB or the charger wake the device."
+msgstr "Nimeni conectat înseamnă niciun client Wi-Fi și niciun computer pe USB. Tasta Wi-Fi, un computer pe USB sau încărcătorul trezesc dispozitivul."
+
+msgid "Automatic: plugged in / on battery"
+msgstr "Automat: la priză / pe baterie"
+
+msgid "Switch to Saver under %"
+msgstr "Treci la Economie sub %"
+
+msgid "Stop charging at"
+msgstr "Oprește încărcarea la"
+
+msgid "0 % never charges the battery (the device runs on the charger), 100 % charges it full; in between, charging stops at that level and starts again 5 points lower. Under 5 % the battery always charges."
+msgstr "0 % nu încarcă niciodată bateria (dispozitivul funcționează de la încărcător), 100 % o încarcă complet; între ele, încărcarea se oprește la acel nivel și reîncepe cu 5 puncte mai jos. Sub 5 % bateria se încarcă întotdeauna."
+
+msgid "80 % keeps the battery healthier on a device that stays plugged in."
+msgstr "80 % protejează mai bine bateria unui dispozitiv care rămâne la priză."
+
+msgid "When the charger switches the device on"
+msgstr "Când încărcătorul pornește dispozitivul"
+
+msgid "Charge only, until a key starts it"
+msgstr "Doar încărcare, până când o tastă îl pornește"
+
+msgid "Start normally"
+msgstr "Pornire normală"
+
+msgid "Keep as is"
+msgstr "Lasă neschimbat"
+
+msgid "LTE only (5G off)"
+msgstr "Doar LTE (5G oprit)"
+
+msgid "On"
+msgstr "Pornit"
+
+msgid "Full"
+msgstr "Complet"
+
+msgid "Eco: big core off"
+msgstr "Eco: nucleul mare oprit"
+
+msgid "Hotspot off after (min, 0 = never)"
+msgstr "Oprește hotspotul după (min, 0 = niciodată)"
+
+msgid "Modem when idle"
+msgstr "Modem în repaus"
+
+msgid "LEDs when idle"
+msgstr "LED-uri în repaus"
+
+msgid "Ignored lines in power.conf: %s"
+msgstr "Linii ignorate în power.conf: %s"
+
+msgid "Configure how this plugin connects to the current Unisoc OpenWrt platform. Changes do not require editing the dashboard, AT, locks or SMS pages."
+msgstr "Configurați modul în care acest plugin se conectează la platforma OpenWrt Unisoc curentă. Modificările nu necesită editarea paginilor de panou, AT, blocări sau SMS."
+
+msgid "Platform adapter"
+msgstr "Adaptor de platformă"
+
+msgid "AT backend"
+msgstr "Backend AT"
+
+msgid "Auto-detect"
+msgstr "Detectare automată"
+
+msgid "atinout + serial port"
+msgstr "atinout + port serial"
+
+msgid "Custom adapter"
+msgstr "Adaptor personalizat"
+
+msgid "AT serial port"
+msgstr "Port serial AT"
+
+msgid "Custom AT adapter"
+msgstr "Adaptor AT personalizat"
+
+msgid "The executable receives a timeout in seconds and the complete AT command, in that order. It must share the serial lock with the platform dialer."
+msgstr "Executabilul primește un timp limită în secunde și comanda AT completă, în această ordine. Trebuie să partajeze blocarea portului serial cu dialer-ul platformei."
+
+msgid "SMS adapter"
+msgstr "Adaptor SMS"
+
+msgid "Implement the list, show, send, delete and sync subcommands; leave blank to find mu300-sms automatically."
+msgstr "Implementați subcomenzile list, show, send, delete și sync; lăsați gol pentru a găsi automat mu300-sms."
+
+msgid "SMS pool directory"
+msgstr "Director pool SMS"
+
+msgid "Cellular logical interface"
+msgstr "Interfață logică celulară"
+
+msgid "Cellular IPv6 interface"
+msgstr "Interfață IPv6 celulară"
+
+msgid "Cellular network device"
+msgstr "Dispozitiv de rețea celular"
+
+msgid "Leave blank to detect from netifd"
+msgstr "Lăsați gol pentru detectare din netifd"
+
+msgid "LAN bridge"
+msgstr "Punte LAN"
+
+msgid "Wi-Fi device"
+msgstr "Dispozitiv Wi-Fi"
+
+msgid "USB device"
+msgstr "Dispozitiv USB"
+
+msgid "Maximum wait for AT readiness (seconds)"
+msgstr "Așteptare maximă pentru disponibilitatea AT (secunde)"
+
+msgid "Home dashboard refresh interval (seconds)"
+msgstr "Interval de reîmprospătare a panoului principal (secunde)"
+
+msgid "Controls only the home dashboard refresh rate; 0.5–60 seconds. Reopen Home after saving to apply."
+msgstr "Controlează doar rata de reîmprospătare a panoului principal; 0,5–60 de secunde. Redeschideți pagina principală după salvare pentru aplicare."
+
+msgid "Persistent state directory"
+msgstr "Director de stare persistentă"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM. Mobile data will disconnect briefly."
+msgstr "Switching SIM. Mobile data will disconnect briefly."
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switch failed; check SIM readiness and hot switching."
+msgstr "SIM switch failed; check SIM readiness and hot switching."
+
+# Source-language fallback for untranslated new controls.
+msgid "Ready"
+msgstr "Ready"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM"
+msgstr "Switching SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switched; saved as boot default"
+msgstr "SIM switched; saved as boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch failed; previous SIM restored"
+msgstr "Switch failed; previous SIM restored"
+
+msgid "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+msgstr "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+
+msgid "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+msgstr "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+
+# Source-language fallback for untranslated new controls.
+msgid "Radio state unknown; reboot required"
+msgstr "Radio state unknown; reboot required"
+
+msgid "Radio state unknown; the device is restarting."
+msgstr "Radio state unknown; the device is restarting."
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM control is only for the U30 Air on OpenWrt."
+msgstr "Dual SIM control is only for the U30 Air on OpenWrt."
+
+# Source-language fallback for untranslated new controls.
+msgid "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+msgstr "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+
+msgid "No card answered in the chosen SIM position at the last boot."
+msgstr "No card answered in the chosen SIM position at the last boot."
+
+msgid "The chosen SIM is locked by its PIN."
+msgstr "The chosen SIM is locked by its PIN."
+
+msgid "The chosen SIM got no mobile data within the time at its first boot."
+msgstr "The chosen SIM got no mobile data within the time at its first boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The second SIM's modem channels did not come up at the last boot."
+msgstr "The second SIM's modem channels did not come up at the last boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The last dual-SIM boot never confirmed itself."
+msgstr "The last dual-SIM boot never confirmed itself."
+
+msgid "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+msgstr "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+
+# Source-language fallback for untranslated new controls.
+msgid "Active SIM"
+msgstr "Active SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "Cold-boot default"
+msgstr "Cold-boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control unavailable"
+msgstr "SIM control unavailable"
+
+# Source-language fallback for untranslated new controls.
+msgid "The device is back on SIM1 without live switching; choose again below to try once more."
+msgstr "The device is back on SIM1 without live switching; choose again below to try once more."
+
+msgid "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+msgstr "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching"
+msgstr "Enable hot switching"
+
+msgid "This device supports next-boot SIM selection only; live switching is unavailable."
+msgstr "This device supports next-boot SIM selection only; live switching is unavailable."
+
+# Source-language fallback for untranslated new controls.
+msgid "Reboot after enabling hot switching to prepare both SIM channels."
+msgstr "Reboot after enabling hot switching to prepare both SIM channels."
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch to SIM%d"
+msgstr "Switch to SIM%d"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM%d at next boot"
+msgstr "Use SIM%d at next boot"
+
+msgid "Built-in SIM 1"
+msgstr "SIM încorporat 1"
+
+msgid "Built-in SIM 2"
+msgstr "SIM încorporat 2"
+
+msgid "Built-in SIM 3"
+msgstr "SIM încorporat 3"
+
+msgid "External SIM"
+msgstr "SIM extern"
+
+msgid "SIM card"
+msgstr "Card SIM"
+
+msgid "Built-in SIM 3 shares SIM2, the external SIM shares SIM1. The card chosen here is switched in before the modem starts, at the next boot; without a choice the cards stay as the bootloader sets them."
+msgstr "SIM-ul încorporat 3 împarte SIM2, SIM-ul extern împarte SIM1. Cardul ales aici este comutat înainte de pornirea modemului, la următoarea pornire; fără alegere, cardurile rămân cum le setează bootloaderul."
+
+msgid "As the bootloader sets them"
+msgstr "Cum le setează bootloaderul"
+
+msgid "Applying the radio setting…"
+msgstr "Se aplică setarea radio…"
+
+msgid "SIM settings are not available"
+msgstr "Setările SIM nu sunt disponibile"
+
+msgid "Modem default"
+msgstr "Implicit modem"
+
+msgid "SIM%d"
+msgstr "SIM%d"
+
+msgid "in use"
+msgstr "în uz"
+
+msgid "Turn off the radio of SIM%d"
+msgstr "Oprește radioul SIM%d"
+
+msgid "Radio"
+msgstr "Radio"
+
+msgid "VoLTE"
+msgstr "VoLTE"
+
+msgid "VoNR"
+msgstr "VoNR"
+
+msgid "Modem: %s"
+msgstr "Modem: %s"
+
+msgid "Sent to this SIM when its radio next starts."
+msgstr "Se trimite acestui SIM la următoarea pornire a radioului său."
+
+msgid "VoLTE and VoNR for each SIM, kept across reboots and sent again whenever that SIM starts. VoLTE is on unless switched off; VoNR stays as the modem has it until set."
+msgstr "VoLTE și VoNR pentru fiecare SIM, păstrate după repornire și trimise din nou ori de câte ori pornește acel SIM. VoLTE este pornit dacă nu îl opriți; VoNR rămâne cum îl are modemul până îl setați."
+
+msgid "All radios off (airplane mode)"
+msgstr "Toate radiourile oprite (mod avion)"
+
+msgid "All radios on"
+msgstr "Toate radiourile pornite"
+
+msgid "No SIM will have calls, SMS or data, also after a reboot, until a radio is turned on again here or with the dashboard's radio button."
+msgstr "Niciun SIM nu va avea apeluri, SMS sau date, nici după repornire, până când un radio este pornit din nou aici sau cu butonul radio din panou."
+
+msgid "Each SIM's radio stays as set here after a reboot. A SIM whose radio is off has no calls, SMS or data, and the device does not switch to it."
+msgstr "Radioul fiecărui SIM rămâne cum este setat aici după repornire. Un SIM cu radioul oprit nu are apeluri, SMS sau date, iar dispozitivul nu trece pe el."
+
+msgid "The setting is saved, but the radio did not follow it yet."
+msgstr "Setarea este salvată, dar radioul nu a urmat-o încă."
+
+msgid "Recipient: number, e.g. 10086 or +86..."
+msgstr "Destinatar: număr, de ex. 10086 sau +86..."
+
+msgid "Sync from SIM"
+msgstr "Sincronizare din SIM"
+
+msgid "Clear local pool"
+msgstr "Golire pool local"
+
+msgid "Select a conversation on the left, or enter a number below to send."
+msgstr "Selectați o conversație din stânga sau introduceți un număr mai jos pentru a trimite."
+
+msgid "Message (Enter to send, Shift+Enter for newline)"
+msgstr "Mesaj (Enter pentru trimitere, Shift+Enter pentru rând nou)"
+
+msgid "Sending uses AT+CMGS (PDU mode); retry if the channel is busy. To delete one message, use the bin icon on its bubble."
+msgstr "Trimiterea folosește AT+CMGS (mod PDU); reîncercați dacă canalul este ocupat. Pentru a șterge un mesaj, folosiți pictograma coș de pe bula acestuia."
+
+msgid "Sending…"
+msgstr "Se trimite…"
+
+msgid "Sent; the list refreshes shortly."
+msgstr "Trimis; lista se reîmprospătează în curând."
+
+msgid "Sending failed"
+msgstr "Trimiterea a eșuat"
+
+msgid "Syncing from the SIM in the background (AT+CMGL)…"
+msgstr "Se sincronizează din SIM în fundal (AT+CMGL)…"
+
+msgid "SIM sync started; the list refreshes in a few seconds."
+msgstr "Sincronizarea SIM a pornit; lista se reîmprospătează în câteva secunde."
+
+msgid "Clear local SMS pool"
+msgstr "Golire pool SMS local"
+
+msgid "Only local files will be deleted; messages on the SIM remain."
+msgstr "Vor fi șterse doar fișierele locale; mesajele de pe SIM rămân."
+
+msgid "Delete this SMS"
+msgstr "Ștergeți acest SMS"
+
+msgid "Deletion cannot be undone."
+msgstr "Ștergerea nu poate fi anulată."
+
+msgid "Local only"
+msgstr "Doar local"
+
+msgid "Local + SIM"
+msgstr "Local + SIM"
+
+msgid "Delete failed"
+msgstr "Ștergerea a eșuat"
+
+msgid "Deleted (local + SIM)"
+msgstr "Șters (local + SIM)"
+
+msgid "Deleted (local only)"
+msgstr "Șters (doar local)"
+
+msgid "Enter both a number and a message."
+msgstr "Introduceți atât un număr, cât și un mesaj."
+
+msgid "· %d messages, %d unread · %d conversations"
+msgstr "· %d mesaje, %d necitite · %d conversații"
+
+msgid "· %d messages · %d conversations"
+msgstr "· %d mesaje · %d conversații"
+
+msgid "The pool is empty. Incoming and sent messages appear here, or select “Sync from SIM”."
+msgstr "Pool-ul este gol. Mesajele primite și trimise apar aici, sau selectați „Sincronizare din SIM”."
+
+msgid "Me: %s"
+msgstr "Eu: %s"
+
+msgid "Incomplete: %d of %d parts arrived"
+msgstr "Incomplet: au sosit %d din %d părți"
+
+msgid "Delete"
+msgstr "Ștergere"
+
+msgid "ttyd is not installed."
+msgstr "ttyd nu este instalat."
+
+msgid "The terminal is turned off (/etc/config/ttyd)."
+msgstr "Terminalul este oprit (/etc/config/ttyd)."
+
+msgid "Too many terminals are opening at once. Try again in a minute."
+msgstr "Se deschid prea multe terminale deodată. Încercați din nou peste un minut."
+
+msgid "The terminal is not available."
+msgstr "Terminalul nu este disponibil."
+
+msgid "This is a root shell on the device: every command runs with full rights, and a mistake can make the device unbootable."
+msgstr "Acesta este un shell root al dispozitivului: fiecare comandă rulează cu drepturi depline, iar o greșeală poate face dispozitivul să nu mai pornească."
+
+msgid "It is reachable from the LAN only (USB and the hotspot), never from mobile data, and only from this logged-in page."
+msgstr "Este accesibil doar din LAN (USB și hotspot), niciodată din datele mobile, și doar din această pagină autentificată."
+
+msgid "It closes after a minute without activity."
+msgstr "Se închide după un minut fără activitate."
+
+msgid "It closes after %d minutes without activity."
+msgstr "Se închide după %d minute fără activitate."
+
+msgid "Reconnect"
+msgstr "Reconectare"
+
+msgid "Open in a new tab"
+msgstr "Deschide într-o filă nouă"
+
+msgid "This page was opened over HTTPS, and the terminal is served over HTTP on the LAN: it opens in a tab of its own."
+msgstr "Această pagină a fost deschisă prin HTTPS, iar terminalul este servit prin HTTP în LAN: se deschide într-o filă separată."
+
+msgid "The data usage could not be read"
+msgstr "Consumul de date nu a putut fi citit"
+
+msgid "Today"
+msgstr "Azi"
+
+msgid "Days left in this cycle"
+msgstr "Zile rămase în ciclu"
+
+msgid "Received"
+msgstr "Primit"
+
+msgid "Sent"
+msgstr "Trimis"
+
+msgid "Corrected by"
+msgstr "Corectat cu"
+
+msgid "Monthly cap"
+msgstr "Limită lunară"
+
+msgid "%s, warning at %d%%"
+msgstr "%s, avertizare la %d%%"
+
+msgid "The monthly cap is reached: mobile data was turned off. It comes back on when the next cycle starts."
+msgstr "Limita lunară a fost atinsă: datele mobile au fost oprite. Revin când începe ciclul următor."
+
+msgid "%s waits for the clock: it has not been set over the network yet. It already counts towards this cycle and goes to its day once the clock is set."
+msgstr "%s așteaptă ceasul: nu a fost încă setat din rețea. Se socotește deja în acest ciclu și va merge la ziua lui după ce ceasul e setat."
+
+msgid "The interface %s is not there right now: nothing is counted until it comes back."
+msgstr "Interfața %s nu există acum: nu se numără nimic până revine."
+
+msgid "Counted on %s, both ways, as the operator counts it (a VPN's overhead included)."
+msgstr "Numărat pe %s, în ambele sensuri, cum numără operatorul (inclusiv suprasarcina unui VPN)."
+
+msgid "The count is kept in memory and written to the disk every 30 minutes and at shutdown: a power cut loses at most the last half hour."
+msgstr "Contorul e ținut în memorie și scris pe disc la fiecare 30 de minute și la oprire: o pană de curent pierde cel mult ultima jumătate de oră."
+
+msgid "Counting since %s."
+msgstr "Numărat din %s."
+
+msgid "Per day"
+msgstr "Pe zi"
+
+msgid "Date"
+msgstr "Data"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "Per billing cycle"
+msgstr "Pe ciclu de facturare"
+
+msgid "Billing cycle"
+msgstr "Ciclu de facturare"
+
+msgid "Enter a size in GB, for example 50 or 2.5"
+msgstr "Introduceți o dimensiune în GB, de exemplu 50 sau 2.5"
+
+msgid "Enter a percentage from 1 to 100"
+msgstr "Introduceți un procent de la 1 la 100"
+
+msgid "Turn mobile data off at the cap"
+msgstr "Oprește datele mobile la limită"
+
+msgid "When this cycle reaches the cap, mobile data is turned off: no internet through the operator until the next cycle starts, the cap is raised or this is turned off again. Turning mobile data back on by hand keeps it on until the next reboot."
+msgstr "Când acest ciclu atinge limita, datele mobile se opresc: fără internet prin operator până începe ciclul următor, se mărește limita sau se dezactivează din nou această opțiune. Datele mobile repornite manual rămân pornite până la următoarea repornire."
+
+msgid "Set"
+msgstr "Setează"
+
+msgid "Clear the count"
+msgstr "Șterge contorul"
+
+msgid "Every day and billing cycle counted so far is forgotten. Counting goes on from now."
+msgstr "Toate zilele și ciclurile numărate până acum sunt uitate. Numărarea continuă de acum."
+
+msgid "Billing cycle and cap"
+msgstr "Ciclu de facturare și limită"
+
+msgid "A billing cycle starts on day"
+msgstr "Un ciclu de facturare începe în ziua"
+
+msgid "31: on the last day of each month"
+msgstr "31: în ultima zi a fiecărei luni"
+
+msgid "Monthly cap (GB, 0: none)"
+msgstr "Limită lunară (GB, 0: niciuna)"
+
+msgid "Warning at this percentage of the cap"
+msgstr "Avertizează la acest procent din limită"
+
+msgid "Used so far in this cycle (GB)"
+msgstr "Folosit până acum în acest ciclu (GB)"
+
+msgid "What the operator shows for this cycle (for example when counting started in the middle of it); the count is corrected to it."
+msgstr "Ce arată operatorul pentru acest ciclu (de exemplu dacă numărarea a început la mijlocul lui); contorul se corectează la această valoare."
+
+msgid "Current setting"
+msgstr "Setarea curentă"
+
+msgid "Fixed at %d"
+msgstr "Fixat la %d"
+
+msgid "Not changed (default)"
+msgstr "Neschimbat (implicit)"
+
+msgid "Rule in force"
+msgstr "Regula în vigoare"
+
+msgid "Flow offloading"
+msgstr "Descărcarea fluxurilor (flow offloading)"
+
+msgid "TTL of mobile data"
+msgstr "TTL pentru datele mobile"
+
+msgid "Every packet that leaves through mobile data gets this TTL (IPv6: hop limit). A phone or laptop behind the hotspot sends 64 (Windows: 128) and the device forwards it with one less, which is how an operator can tell tethered traffic apart."
+msgstr "Fiecare pachet care pleacă prin datele mobile primește acest TTL (IPv6: hop limit). Un telefon sau laptop din spatele hotspotului trimite 64 (Windows: 128), iar dispozitivul îl redirecționează cu unu mai puțin, după care un operator poate recunoaște traficul partajat."
+
+msgid "On this kernel the firewall fast-path is off while a TTL is set"
+msgstr "Pe acest kernel calea rapidă a firewallului este oprită cât timp este setat un TTL"
+
+msgid "Set %d"
+msgstr "Setează %d"
+
+msgid "Enter a number from 1 to 255"
+msgstr "Introduceți un număr de la 1 la 255"
+
+msgid "Turn off"
+msgstr "Dezactivează"
+
+msgid "64 makes every packet leave like the device's own traffic"
+msgstr "Cu 64 fiecare pachet pleacă la fel ca traficul propriu al dispozitivului"
+
+msgid "Check for updates"
+msgstr "Caută actualizări"
+
+msgid "Checking the file"
+msgstr "Se verifică fișierul"
+
+msgid "Update from a file"
+msgstr "Actualizare dintr-un fișier"
+
+msgid "Back to the previous version"
+msgstr "Înapoi la versiunea anterioară"
+
+msgid "Back to the previous boot image"
+msgstr "Înapoi la imaginea de pornire anterioară"
+
+msgid "Remove the previous version"
+msgstr "Elimină versiunea anterioară"
+
+msgid "Kernel change"
+msgstr "Schimbarea kernelului"
+
+msgid "Starting…"
+msgstr "Se pornește…"
+
+msgid "Downloading"
+msgstr "Se descarcă"
+
+msgid "All files are here and verified"
+msgstr "Toate fișierele sunt aici și verificate"
+
+msgid "Unpacking the new system"
+msgstr "Se despachetează noul sistem"
+
+msgid "Carrying over your settings"
+msgstr "Se transferă setările dvs."
+
+msgid "Writing down the packages you installed"
+msgstr "Se notează pachetele instalate de dvs."
+
+msgid "Switching to the new system"
+msgstr "Se trece la noul sistem"
+
+msgid "Kernel and boot image"
+msgstr "Kernel și imagine de pornire"
+
+msgid "Restart the device?"
+msgstr "Reporniți dispozitivul?"
+
+msgid "The device restarts now. The default boot is Android, so it starts Android: switch to Linux from there to start the updated system."
+msgstr "Dispozitivul repornește acum. Pornirea implicită este Android, deci pornește Android: treceți de acolo la Linux pentru a porni sistemul actualizat."
+
+msgid "The device restarts now and is away for about a minute. If the new system does not start, the device goes back to Android by itself after the failed attempts."
+msgstr "Dispozitivul repornește acum și lipsește aproximativ un minut. Dacă noul sistem nu pornește, dispozitivul revine singur la Android după încercările eșuate."
+
+msgid "Restarting… open this page again in about a minute."
+msgstr "Se repornește… deschideți din nou această pagină peste aproximativ un minut."
+
+msgid "Running for %s. It goes on when this page is closed; do not switch the device off."
+msgstr "Rulează de %s. Continuă și când această pagină este închisă; nu opriți dispozitivul."
+
+msgid "Done. Restart the device to start it."
+msgstr "Gata. Reporniți dispozitivul ca să intre în funcțiune."
+
+msgid "Done. Nothing needs a restart."
+msgstr "Gata. Nu este nevoie de repornire."
+
+msgid "It did not finish, and part of it was done: read the log before you restart."
+msgstr "Nu s-a terminat, iar o parte a fost făcută: citiți jurnalul înainte de a reporni."
+
+msgid "It did not finish. Nothing was changed; the log says why."
+msgstr "Nu s-a terminat. Nu s-a schimbat nimic; jurnalul spune de ce."
+
+msgid "Log"
+msgstr "Jurnal"
+
+msgid "Restart now"
+msgstr "Repornește acum"
+
+msgid "Later"
+msgstr "Mai târziu"
+
+msgid "Close"
+msgstr "Închide"
+
+msgid "Updating is not available on this system"
+msgstr "Actualizarea nu este disponibilă pe acest sistem"
+
+msgid "Another update is running on the device"
+msgstr "O altă actualizare rulează pe dispozitiv"
+
+msgid "It was started outside this page (a terminal, the toolkit). Nothing can be started here until it has finished."
+msgstr "A fost pornită în afara acestei pagini (un terminal, toolkit-ul). Nimic nu poate fi pornit aici până nu se termină."
+
+msgid "Restart needed"
+msgstr "Este necesară repornirea"
+
+msgid "This system was updated and still runs the old version. The new one starts at the next restart."
+msgstr "Acest sistem a fost actualizat și rulează încă versiunea veche. Cea nouă pornește la următoarea repornire."
+
+msgid "Installed"
+msgstr "Instalat"
+
+msgid "This system"
+msgstr "Acest sistem"
+
+msgid "Also on this device"
+msgstr "Tot pe acest dispozitiv"
+
+msgid "Kernel"
+msgstr "Kernel"
+
+msgid "choice %s"
+msgstr "alegere %s"
+
+msgid "Boot image"
+msgstr "Imagine de pornire"
+
+msgid "from the installer"
+msgstr "din programul de instalare"
+
+msgid "Default boot"
+msgstr "Pornire implicită"
+
+msgid "Free space"
+msgstr "Spațiu liber"
+
+msgid "Release signatures"
+msgstr "Semnăturile versiunilor"
+
+msgid "checked with the project's key"
+msgstr "verificate cu cheia proiectului"
+
+msgid "this system has no release key"
+msgstr "acest sistem nu are cheia de versiuni"
+
+msgid "The default boot is Android: a restart goes to Android, and Linux is started from there."
+msgstr "Pornirea implicită este Android: o repornire duce la Android, iar Linux se pornește de acolo."
+
+msgid "Linux is locked as the default boot: a failed start does not send the device to Android by itself, except the first starts of a new boot image."
+msgstr "Linux este blocat ca pornire implicită: o pornire eșuată nu trimite singură dispozitivul la Android, cu excepția primelor porniri ale unei noi imagini de pornire."
+
+msgid "If Linux fails to start %d times in a row, the device starts Android by itself."
+msgstr "Dacă Linux nu reușește să pornească de %d ori la rând, dispozitivul pornește singur Android."
+
+msgid "Report of the last update"
+msgstr "Raportul ultimei actualizări"
+
+msgid "Online update"
+msgstr "Actualizare online"
+
+msgid "Asking GitHub…"
+msgstr "Se întreabă GitHub…"
+
+msgid "Checked %s ago"
+msgstr "Verificat acum %s"
+
+msgid "Not checked yet"
+msgstr "Încă neverificat"
+
+msgid "Mirror (release files)"
+msgstr "Oglindă (fișierele versiunii)"
+
+msgid "Leave empty for GitHub."
+msgstr "Lasă gol pentru GitHub."
+
+msgid "Install the packages I added again after the update (needs the device online at the first start)"
+msgstr "Instalează din nou după actualizare pachetele adăugate de mine (dispozitivul trebuie să fie online la prima pornire)"
+
+msgid "Pre-release"
+msgstr "Versiune preliminară"
+
+msgid "Newest release"
+msgstr "Cea mai nouă versiune"
+
+msgid "Release notes"
+msgstr "Note de versiune"
+
+msgid "Download"
+msgstr "Descărcare"
+
+msgid "Free space needed"
+msgstr "Spațiu liber necesar"
+
+msgid "not enough: remove the previous version first"
+msgstr "insuficient: eliminați mai întâi versiunea anterioară"
+
+msgid "A pre-release is a release still being tried: it can have faults a release does not. The previous version is kept all the same."
+msgstr "O versiune preliminară este o versiune încă în probă: poate avea defecte pe care o versiune finală nu le are. Versiunea anterioară se păstrează oricum."
+
+msgid "This system is newer than the newest release (a test release)."
+msgstr "Acest sistem este mai nou decât cea mai nouă versiune (o versiune de test)."
+
+msgid "Up to date."
+msgstr "La zi."
+
+msgid "This release is not signed, and this system checks signatures: it is not installed from here. Update from its file below, which asks you to confirm."
+msgstr "Această versiune nu este semnată, iar acest sistem verifică semnăturile: nu se instalează de aici. Actualizați din fișierul ei de mai jos, care vă cere confirmarea."
+
+msgid "Update to %s"
+msgstr "Actualizează la %s"
+
+msgid "Choose at least one system"
+msgstr "Alegeți cel puțin un sistem"
+
+msgid "Update to %s?"
+msgstr "Actualizați la %s?"
+
+msgid "The device downloads %s, puts the new system beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Dispozitivul descarcă %s, pune noul sistem lângă cel care rulează și trece la el la următoarea repornire. Setările dvs. sunt transferate, iar versiunea anterioară se păstrează. Durează câteva minute; nu opriți dispozitivul."
+
+msgid "Also offer the pre-release %s"
+msgstr "Oferă și versiunea preliminară %s"
+
+msgid "Systems to update:"
+msgstr "Sisteme de actualizat:"
+
+msgid "GitHub could not be reached: the device has no internet connection, or GitHub did not answer. Without internet, update from a file below."
+msgstr "GitHub nu a putut fi contactat: dispozitivul nu are conexiune la internet sau GitHub nu a răspuns. Fără internet, actualizați dintr-un fișier, mai jos."
+
+msgid "release"
+msgstr "versiune"
+
+msgid "For a device without internet: download the Magisk zip of a release for this system and this kernel on another computer, from the release page on GitHub, and upload it here. For this device that is:"
+msgstr "Pentru un dispozitiv fără internet: descărcați pe alt calculator zip-ul Magisk al unei versiuni pentru acest sistem și acest kernel, de pe pagina versiunii de pe GitHub, și încărcați-l aici. Pentru acest dispozitiv, acesta este:"
+
+msgid "Uploaded file"
+msgstr "Fișier încărcat"
+
+msgid "Checking the file…"
+msgstr "Se verifică fișierul…"
+
+msgid "It says it is"
+msgstr "Spune că este"
+
+msgid "kernel %s"
+msgstr "kernel %s"
+
+msgid "Signature"
+msgstr "Semnătură"
+
+msgid "signed with the project's release key"
+msgstr "semnat cu cheia de versiuni a proiectului"
+
+msgid "WRONG: it does not match the project's release key"
+msgstr "GREȘITĂ: nu corespunde cheii de versiuni a proiectului"
+
+msgid "not signed"
+msgstr "nesemnat"
+
+msgid "cannot be checked on this system"
+msgstr "nu poate fi verificată pe acest sistem"
+
+msgid "Its system is not installed on this device."
+msgstr "Sistemul său nu este instalat pe acest dispozitiv."
+
+msgid "It is the other Ubuntu release, not the one installed."
+msgstr "Este cealaltă versiune de Ubuntu, nu cea instalată."
+
+msgid "It carries another kernel than this device uses. Take the zip for kernel %s, or change the kernel first."
+msgstr "Conține alt kernel decât cel folosit de acest dispozitiv. Luați zip-ul pentru kernelul %s sau schimbați mai întâi kernelul."
+
+msgid "Its kernel does not run on this model."
+msgstr "Kernelul său nu funcționează pe acest model."
+
+msgid "The file is damaged: its contents do not match their checksums."
+msgstr "Fișierul este deteriorat: conținutul nu corespunde sumelor de control."
+
+msgid "Its signature is wrong. This file does not come from the project as it is; it is never installed."
+msgstr "Semnătura sa este greșită. Acest fișier nu provine de la proiect în forma aceasta; nu se instalează niciodată."
+
+msgid "This file cannot be used here."
+msgstr "Acest fișier nu poate fi folosit aici."
+
+msgid "Compare the SHA-256 with the one in SHA256SUMS-magisk on the release page: it is the only proof of where an unsigned file comes from."
+msgstr "Comparați SHA-256 cu cel din SHA256SUMS-magisk de pe pagina versiunii: este singura dovadă a provenienței unui fișier nesemnat."
+
+msgid "This release is installed already; the update would only refresh the boot image."
+msgstr "Această versiune este deja instalată; actualizarea ar reîmprospăta doar imaginea de pornire."
+
+msgid "I know this file is not signed: nothing proves that it comes from the project. I compared its SHA-256 myself and want it installed."
+msgstr "Știu că acest fișier nu este semnat: nimic nu dovedește că provine de la proiect. Am comparat chiar eu SHA-256 și vreau să fie instalat."
+
+msgid "I know this is %s, older than the installed %s, and want to go back to it."
+msgstr "Știu că aceasta este %s, mai veche decât %s instalată, și vreau să revin la ea."
+
+msgid "This is not a release file of this project: a Magisk zip of a release is expected."
+msgstr "Acesta nu este un fișier de versiune al acestui proiect: se așteaptă zip-ul Magisk al unei versiuni."
+
+msgid "Update from this file"
+msgstr "Actualizează din acest fișier"
+
+msgid "Tick the confirmations above first"
+msgstr "Bifați mai întâi confirmările de mai sus"
+
+msgid "The device puts the system of this file beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Dispozitivul pune sistemul din acest fișier lângă cel care rulează și trece la el la următoarea repornire. Setările dvs. sunt transferate, iar versiunea anterioară se păstrează. Durează câteva minute; nu opriți dispozitivul."
+
+msgid "Check the file"
+msgstr "Verifică fișierul"
+
+msgid "Remove the file"
+msgstr "Elimină fișierul"
+
+msgid "Previous version"
+msgstr "Versiunea anterioară"
+
+msgid "No previous version is kept on this device."
+msgstr "Pe acest dispozitiv nu este păstrată nicio versiune anterioară."
+
+msgid "replaced %s"
+msgstr "înlocuită la %s"
+
+msgid "I want the previous system back; what I changed since the update stays in the version I leave."
+msgstr "Vreau înapoi sistemul anterior; ce am schimbat de la actualizare rămâne în versiunea pe care o părăsesc."
+
+msgid "Back to the previous version?"
+msgstr "Înapoi la versiunea anterioară?"
+
+msgid "The previous system (%s) becomes the one that starts at the next restart. The version you leave is not kept; settings you changed since the update are not carried back."
+msgstr "Sistemul anterior (%s) devine cel care pornește la următoarea repornire. Versiunea pe care o părăsiți nu se păstrează; setările schimbate de la actualizare nu sunt duse înapoi."
+
+msgid "Go back"
+msgstr "Revino"
+
+msgid "The previous version is the one running now: restart first."
+msgstr "Versiunea anterioară este cea care rulează acum: reporniți mai întâi."
+
+msgid "I want the previous kernel and boot image back."
+msgstr "Vreau înapoi kernelul și imaginea de pornire anterioare."
+
+msgid "Back to the previous boot image?"
+msgstr "Înapoi la imaginea de pornire anterioară?"
+
+msgid "The previous boot image (%s) is written to the Linux slot and starts at the next restart. If it does not start, the device goes back to Android by itself."
+msgstr "Imaginea de pornire anterioară (%s) este scrisă în slotul Linux și pornește la următoarea repornire. Dacă nu pornește, dispozitivul revine singur la Android."
+
+msgid "I do not need to go back: delete the previous system to free its space."
+msgstr "Nu am nevoie să revin: șterge sistemul anterior pentru a-i elibera spațiul."
+
+msgid "Remove the previous version?"
+msgstr "Eliminați versiunea anterioară?"
+
+msgid "The kept copy of the previous system is deleted for good. After that there is no going back to it from this page."
+msgstr "Copia păstrată a sistemului anterior este ștearsă definitiv. După aceea nu se mai poate reveni la ea din această pagină."
+
+msgid "the vendor kernel"
+msgstr "kernelul producătorului"
+
+msgid "mainline"
+msgstr "mainline"
+
+msgid "not with Ubuntu 26.04"
+msgstr "nu cu Ubuntu 26.04"
+
+msgid "Change the kernel"
+msgstr "Schimbă kernelul"
+
+msgid "This kernel is the one in use"
+msgstr "Acest kernel este cel folosit"
+
+msgid "Change the kernel to %s?"
+msgstr "Schimbați kernelul la %s?"
+
+msgid "The device downloads that kernel from the newest release and writes a new boot image; it starts at the next restart. The previous boot image is kept, and if the new one does not start the device goes back to Android by itself. The device must be online."
+msgstr "Dispozitivul descarcă acel kernel din cea mai nouă versiune și scrie o nouă imagine de pornire; aceasta pornește la următoarea repornire. Imaginea de pornire anterioară se păstrează, iar dacă cea nouă nu pornește, dispozitivul revine singur la Android. Dispozitivul trebuie să fie online."
+
+msgid "Start Android at the next restart"
+msgstr "Pornește Android la următoarea repornire"
+
+msgid "Start Android at the next restart?"
+msgstr "Porniți Android la următoarea repornire?"
+
+msgid "The next restart, and the ones after it, start Android instead of Linux. Linux is started again from Android (the Magisk module's Action button, or mu300-linux)."
+msgstr "Următoarea repornire și cele de după ea pornesc Android în loc de Linux. Linux se pornește din nou din Android (butonul Acțiune al modulului Magisk sau mu300-linux)."
+
+msgid "Start Android next"
+msgstr "Pornește Android data viitoare"
+
+msgid "What an update keeps"
+msgstr "Ce păstrează o actualizare"
+
+msgid "An update puts the system of the new release in place and carries over what is yours: the settings, the accounts and their passwords, the device's keys and the home directories. Packages you installed yourself are written down and installed again at the first start, once the device is online. The previous version stays on the device until you remove it, so you can go back."
+msgstr "O actualizare pune în loc sistemul noii versiuni și transferă ce este al dvs.: setările, conturile și parolele lor, cheile dispozitivului și directoarele personale. Pachetele pe care le-ați instalat chiar dvs. sunt notate și instalate din nou la prima pornire, de îndată ce dispozitivul este online. Versiunea anterioară rămâne pe dispozitiv până o eliminați, ca să puteți reveni."
+
+msgid "The wiki's Updating page lists exactly what is kept."
+msgstr "Pagina despre actualizare din wiki arată exact ce se păstrează."
+
+msgid "Choose a file first"
+msgstr "Alegeți mai întâi un fișier"
+
+msgid "Uploading: %s of %s"
+msgstr "Se încarcă: %s din %s"
+
+msgid "running"
+msgstr "rulează"
+
+msgid "(about %s)"
+msgstr "(aproximativ %s)"
+
+msgid "Install %s?"
+msgstr "Instalezi %s?"
+
+msgid "It is installed from this system's package feed."
+msgstr "Se instalează din sursa de pachete a acestui sistem."
+
+msgid "It is downloaded from the release of the VPN module and checked against its SHA256SUMS."
+msgstr "Se descarcă din versiunea modulului VPN și se verifică cu SHA256SUMS."
+
+msgid "An engine is tens of MB: on mobile data the download counts towards your plan."
+msgstr "Un motor are zeci de MB: pe date mobile descărcarea se consumă din pachetul dvs."
+
+msgid "Install"
+msgstr "Instalează"
+
+msgid "Remove %s?"
+msgstr "Elimini %s?"
+
+msgid "Profiles run on it: %s. They cannot start until it is installed again (the module refuses while the running profile needs it)."
+msgstr "Profiluri care rulează pe el: %s. Nu pot porni până nu este instalat din nou (modulul refuză cât timp profilul care rulează are nevoie de el)."
+
+msgid "No profile runs on it."
+msgstr "Niciun profil nu rulează pe el."
+
+msgid "Removed"
+msgstr "Eliminat"
+
+msgid "Each engine is an extra of its own: install only the ones your profiles need. Xray runs vless, vmess, trojan and ss links (with hev-socks5-tunnel), sing-box the same links and its own JSON, mihomo Clash subscriptions, dae hysteria2, tuic and the rest on newer kernels. WireGuard and OpenVPN are packages of the system."
+msgstr "Fiecare motor este un extra separat: instalați doar pe cele de care au nevoie profilurile dvs. Xray rulează linkuri vless, vmess, trojan și ss (cu hev-socks5-tunnel), sing-box aceleași linkuri și propriul JSON, mihomo abonamente Clash, dae hysteria2, tuic și restul pe nuclee mai noi. WireGuard și OpenVPN sunt pachete ale sistemului."
+
+msgid "Downloads are tens of MB per engine: on mobile data they count towards your plan. Offline, upload the engine's tarball from the release page of the VPN module."
+msgstr "Descărcările au zeci de MB pentru fiecare motor: pe date mobile se consumă din pachetul dvs. Offline, încărcați arhiva tar a motorului de pe pagina de versiuni a modulului VPN."
+
+msgid "The available versions come from the latest release of the VPN module."
+msgstr "Versiunile disponibile provin din cea mai recentă versiune a modulului VPN."
+
+msgid "system package"
+msgstr "pachet de sistem"
+
+msgid "in the vpn bundle"
+msgstr "în pachetul vpn"
+
+msgid "extra %s"
+msgstr "extra %s"
+
+msgid "not installed"
+msgstr "neinstalat"
+
+msgid "cannot run here"
+msgstr "nu poate rula aici"
+
+msgid "update available"
+msgstr "actualizare disponibilă"
+
+msgid "installed"
+msgstr "instalat"
+
+msgid "Kind"
+msgstr "Tip"
+
+msgid "Version"
+msgstr "Versiune"
+
+msgid "Available"
+msgstr "Disponibil"
+
+msgid "not checked"
+msgstr "necontrolat"
+
+msgid "Size"
+msgstr "Dimensiune"
+
+msgid "Needed by"
+msgstr "Necesar pentru"
+
+msgid "no profile"
+msgstr "niciun profil"
+
+msgid "dae needs a kernel with BTF, 5.17 or newer: not the 5.4 vendor kernel (mu300-update kernel 6.18). It can be installed anyway."
+msgstr "dae necesită un nucleu cu BTF, 5.17 sau mai nou: nu nucleul 5.4 al producătorului (mu300-update kernel 6.18). Poate fi instalat oricum."
+
+msgid "All engines"
+msgstr "Toate motoarele"
+
+msgid "Last %s lines"
+msgstr "Ultimele %s linii"
+
+msgid "VPN service log"
+msgstr "Jurnalul serviciului VPN"
+
+msgid "Every 5 s"
+msgstr "La fiecare 5 s"
+
+msgid "The log is empty."
+msgstr "Jurnalul este gol."
+
+msgid "The VPN is starting"
+msgstr "VPN-ul pornește"
+
+msgid "The VPN is stopped"
+msgstr "VPN-ul este oprit"
+
+msgid "The VPN is restarting"
+msgstr "VPN-ul repornește"
+
+msgid "With the kill switch on, nothing leaves the device or the LAN outside the tunnel: while the VPN is down, starting or broken, every connection fails instead of going out directly. It stays up until you stop the VPN here (Stop removes it)."
+msgstr "Cu kill switch pornit, nimic nu iese din dispozitiv sau din LAN în afara tunelului: cât timp VPN-ul este oprit, pornește sau este defect, orice conexiune eșuează în loc să iasă direct. Rămâne activ până când opriți VPN-ul aici (Oprește îl elimină)."
+
+msgid "Without the kill switch, traffic goes out directly, unprotected, whenever the tunnel is down (while it starts, after a crash, when the engine is missing)."
+msgstr "Fără kill switch, traficul iese direct, neprotejat, ori de câte ori tunelul este căzut (în timpul pornirii, după o cădere, când lipsește motorul)."
+
+msgid "Turn the kill switch on?"
+msgstr "Pornești kill switch?"
+
+msgid "Turn the kill switch off?"
+msgstr "Oprești kill switch?"
+
+msgid "Turn on"
+msgstr "Pornește"
+
+msgid "unknown"
+msgstr "necunoscut"
+
+msgid "The exit address could not be found (is the tunnel up?)"
+msgstr "Adresa de ieșire nu a putut fi găsită (este tunelul activ?)"
+
+msgid "Connecting…"
+msgstr "Se conectează…"
+
+msgid "On, but not running"
+msgstr "Pornit, dar nu rulează"
+
+msgid "Stopped"
+msgstr "Oprit"
+
+msgid "Install it"
+msgstr "Instalează"
+
+msgid "The engine of the active profile is not installed: %s"
+msgstr "Motorul profilului activ nu este instalat: %s"
+
+msgid "The kill switch keeps everything closed until it is there; the service downloads it by itself when it can."
+msgstr "Kill switch ține totul blocat până când motorul este instalat; serviciul îl descarcă singur când poate."
+
+msgid "The VPN cannot start until it is installed."
+msgstr "VPN-ul nu poate porni până nu este instalat."
+
+msgid "%s cannot run on this system"
+msgstr "%s nu poate rula pe acest sistem"
+
+msgid "The VPN is on, but no profile is active: choose one below."
+msgstr "VPN-ul este pornit, dar niciun profil nu este activ: alegeți unul mai jos."
+
+msgid "Profile: %s"
+msgstr "Profil: %s"
+
+msgid "No active profile"
+msgstr "Niciun profil activ"
+
+msgid "engine %s"
+msgstr "motor %s"
+
+msgid "interface %s"
+msgstr "interfață %s"
+
+msgid "Kill switch active"
+msgstr "Kill switch activ"
+
+msgid "Kill switch on"
+msgstr "Kill switch pornit"
+
+msgid "Kill switch off"
+msgstr "Kill switch oprit"
+
+msgid "IPv6 in the tunnel"
+msgstr "IPv6 în tunel"
+
+msgid "IPv6 blocked"
+msgstr "IPv6 blocat"
+
+msgid "IPv6 untouched"
+msgstr "IPv6 neatins"
+
+msgid "Module %s"
+msgstr "Modul %s"
+
+msgid "Check"
+msgstr "Verifică"
+
+msgid "Uptime"
+msgstr "Timp de funcționare"
+
+msgid "Rate"
+msgstr "Viteză"
+
+msgid "Exit address"
+msgstr "Adresa de ieșire"
+
+msgid "Start"
+msgstr "Pornește"
+
+msgid "Stop"
+msgstr "Oprește"
+
+msgid "Stop the VPN?"
+msgstr "Oprești VPN-ul?"
+
+msgid "Traffic then goes out directly, without the tunnel; the kill switch is taken down with it."
+msgstr "Traficul iese apoi direct, fără tunel; kill switch este eliminat odată cu el."
+
+msgid "The VPN is on: it starts again by itself after a reboot."
+msgstr "VPN-ul este pornit: repornește singur după o repornire a dispozitivului."
+
+msgid "The VPN is off."
+msgstr "VPN-ul este oprit."
+
+msgid "Kill switch"
+msgstr "Kill switch"
+
+msgid "Setting"
+msgstr "Setare"
+
+msgid "Active: only the tunnel can reach the internet"
+msgstr "Activ: doar tunelul poate ajunge la internet"
+
+msgid "Not active"
+msgstr "Inactiv"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down, so nothing ever leaves without the tunnel. If the tunnel cannot come up (a dead server, an expired account), the device stays offline until you fix the profile or stop the VPN. The panel itself stays reachable from the LAN."
+msgstr "Kill switch blochează tot traficul dispozitivului și al LAN-ului cât timp VPN-ul este căzut, astfel încât nimic nu iese vreodată fără tunel. Dacă tunelul nu poate porni (un server mort, un cont expirat), dispozitivul rămâne offline până corectați profilul sau opriți VPN-ul. Panoul în sine rămâne accesibil din LAN."
+
+msgid "Choose a profile"
+msgstr "Alegeți un profil"
+
+msgid "No profiles yet"
+msgstr "Încă nu există profiluri"
+
+msgid "engine not installed"
+msgstr "motor neinstalat"
+
+msgid "Use"
+msgstr "Folosește"
+
+msgid "Switched: the VPN restarts on the new profile"
+msgstr "Comutat: VPN-ul repornește cu noul profil"
+
+msgid "Active profile"
+msgstr "Profil activ"
+
+msgid "A running VPN restarts on the profile you choose; the kill switch stays up in between."
+msgstr "Un VPN care rulează repornește cu profilul ales; kill switch rămâne activ între timp."
+
+msgid "Manage the profiles"
+msgstr "Gestionează profilurile"
+
+msgid "Automatic: through the tunnel where the engine can carry it"
+msgstr "Automat: prin tunel acolo unde motorul îl poate transporta"
+
+msgid "Ask the engine for IPv6 in the tunnel"
+msgstr "Cere motorului IPv6 în tunel"
+
+msgid "Never through the tunnel (blocked while the VPN is up)"
+msgstr "Niciodată prin tunel (blocat cât timp VPN-ul este pornit)"
+
+msgid "Saved: it applies from the next start (Restart)"
+msgstr "Salvat: se aplică de la următoarea pornire (Repornește)"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "The tunnel carries IPv6"
+msgstr "Tunelul transportă IPv6"
+
+msgid "Yes"
+msgstr "Da"
+
+msgid "IPv6 guard"
+msgstr "Gardă IPv6"
+
+msgid "Active: IPv6 outside the tunnel is refused"
+msgstr "Activ: IPv6 în afara tunelului este refuzat"
+
+msgid "While the VPN is up, IPv6 never leaves beside a tunnel that does not carry it: it is refused at once, so programs and LAN clients fall back to IPv4 instead of leaking or waiting. Automatic: WireGuard and OpenVPN use the IPv6 addresses of their config; Xray, sing-box and mihomo are asked at every start whether IPv6 works through the tunnel, and carry it only then; dae stays IPv4."
+msgstr "Cât timp VPN-ul este pornit, IPv6 nu iese niciodată pe lângă un tunel care nu îl transportă: este refuzat imediat, astfel că programele și clienții din LAN revin la IPv4 în loc să scape sau să aștepte. Automat: WireGuard și OpenVPN folosesc adresele IPv6 din configurația lor; pentru Xray, sing-box și mihomo, la fiecare pornire se verifică dacă IPv6 funcționează prin tunel, și numai atunci îl transportă; dae rămâne pe IPv4."
+
+msgid "%d ms"
+msgstr "%d ms"
+
+msgid "UDP: not testable"
+msgstr "UDP: nu poate fi testat"
+
+msgid "blocked by the kill switch"
+msgstr "blocat de kill switch"
+
+msgid "A WireGuard or OpenVPN config, a Clash/mihomo YAML, an Xray or sing-box JSON, a dae config"
+msgstr "O configurație WireGuard sau OpenVPN, un YAML Clash/mihomo, un JSON Xray sau sing-box, o configurație dae"
+
+msgid "After OK, choose the file: a WireGuard .conf, an OpenVPN .ovpn, a Clash/mihomo .yaml, an Xray or sing-box .json or a dae config (at most 1 MiB)."
+msgstr "După OK, alegeți fișierul: un .conf WireGuard, un .ovpn OpenVPN, un .yaml Clash/mihomo, un .json Xray sau sing-box ori o configurație dae (cel mult 1 MiB)."
+
+msgid "From the source"
+msgstr "Din sursă"
+
+msgid "Detect"
+msgstr "Detectează"
+
+msgid "The URL may hold a token: it goes to the device on its own, never into a command line or a log."
+msgstr "URL-ul poate conține un token: ajunge separat la dispozitiv, niciodată într-o linie de comandă sau într-un jurnal."
+
+msgid "Share link"
+msgstr "Link de partajare"
+
+msgid "Paste"
+msgstr "Lipește"
+
+msgid "File"
+msgstr "Fișier"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Not a share link this panel takes"
+msgstr "Nu este un link de partajare acceptat de acest panou"
+
+msgid "The config is empty"
+msgstr "Configurația este goală"
+
+msgid "Not an https URL"
+msgstr "Nu este un URL https"
+
+msgid "Invalid name: 1-64 characters, no control characters"
+msgstr "Nume nevalid: 1-64 de caractere, fără caractere de control"
+
+msgid "Add a profile"
+msgstr "Adaugă un profil"
+
+msgid "Name"
+msgstr "Nume"
+
+msgid "Detect: the module tells the kind from the link or the file. Choose the type for a JSON that could be either Xray or sing-box, or for a link that should run on another engine."
+msgstr "Detectează: modulul recunoaște tipul din link sau din fișier. Alegeți tipul pentru un JSON care poate fi fie Xray, fie sing-box, sau pentru un link care ar trebui să ruleze pe alt motor."
+
+msgid "The profile is added"
+msgstr "Profilul a fost adăugat"
+
+msgid "Rename the profile"
+msgstr "Redenumește profilul"
+
+msgid "Delete the profile %s?"
+msgstr "Ștergi profilul %s?"
+
+msgid "It is the active profile: with the VPN on, the module refuses; stop the VPN or choose another profile first."
+msgstr "Este profilul activ: cu VPN-ul pornit, modulul refuză; opriți întâi VPN-ul sau alegeți alt profil."
+
+msgid "Its config and credentials are deleted from the device."
+msgstr "Configurația și datele de autentificare ale acestuia sunt șterse de pe dispozitiv."
+
+msgid "Deleted"
+msgstr "Șters"
+
+msgid "The profile passes the check"
+msgstr "Profilul trece de verificare"
+
+msgid "Show the config?"
+msgstr "Afișezi configurația?"
+
+msgid "The config holds the credentials of the profile (keys, passwords, UUIDs). It is shown on this screen only; anyone who can see the screen can read it."
+msgstr "Configurația conține datele de autentificare ale profilului (chei, parole, UUID-uri). Este afișată doar pe acest ecran; oricine vede ecranul o poate citi."
+
+msgid "Saving checks the config with the engine first (profile edit); a config that does not pass is not saved and the old one stays."
+msgstr "Salvarea verifică mai întâi configurația cu motorul (profile edit); o configurație care nu trece verificarea nu este salvată, iar cea veche rămâne."
+
+msgid "This profile comes from a subscription: its next refresh replaces your changes."
+msgstr "Acest profil provine dintr-un abonament: următoarea reîmprospătare a acestuia vă înlocuiește modificările."
+
+msgid "Config of %s"
+msgstr "Configurația %s"
+
+msgid "Rename"
+msgstr "Redenumește"
+
+msgid "Show / edit the config"
+msgstr "Afișează / editează configurația"
+
+msgid "Test the latency of all"
+msgstr "Testează latența tuturor"
+
+msgid "No profiles yet: add one from a share link, a config file or a subscription."
+msgstr "Încă nu există profiluri: adăugați unul dintr-un link de partajare, un fișier de configurare sau un abonament."
+
+msgid "Active"
+msgstr "Activ"
+
+msgid "This profile is the active one now"
+msgstr "Acest profil este acum cel activ"
+
+msgid "More"
+msgstr "Mai multe"
+
+msgid "active"
+msgstr "activ"
+
+msgid "subscription"
+msgstr "abonament"
+
+msgid "migrated"
+msgstr "migrat"
+
+msgid "gone from its subscription"
+msgstr "dispărut din abonament"
+
+msgid "Server"
+msgstr "Server"
+
+msgid "Engine"
+msgstr "Motor"
+
+msgid "Latency"
+msgstr "Latență"
+
+msgid "The latency is a TCP connection to the server, through the tunnel when the VPN is up. WireGuard and OpenVPN servers usually speak UDP and cannot be tested this way."
+msgstr "Latența este o conexiune TCP către server, prin tunel când VPN-ul este pornit. Serverele WireGuard și OpenVPN folosesc de obicei UDP și nu pot fi testate astfel."
+
+msgid "Enter an IPv4 or IPv6 address"
+msgstr "Introduceți o adresă IPv4 sau IPv6"
+
+msgid "On: nothing leaves outside the tunnel"
+msgstr "Pornit: nimic nu iese în afara tunelului"
+
+msgid "Off: traffic goes out directly while the tunnel is down"
+msgstr "Oprit: traficul iese direct cât timp tunelul este căzut"
+
+msgid "Yes: Tailscale's own connections go through the tunnel"
+msgstr "Da: conexiunile proprii ale Tailscale trec prin tunel"
+
+msgid "No: Tailscale connects directly"
+msgstr "Nu: Tailscale se conectează direct"
+
+msgid "Routing"
+msgstr "Rutare"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down."
+msgstr "Kill switch blochează tot traficul dispozitivului și al LAN-ului cât timp VPN-ul este căzut."
+
+msgid "Bypass the tunnel"
+msgstr "Ocolește tunelul"
+
+msgid "Enter address ranges like 192.168.0.0/16, separated by commas"
+msgstr "Introduceți intervale de adrese precum 192.168.0.0/16, separate prin virgule"
+
+msgid "Address ranges that never go into the tunnel, besides the LAN itself (which never does). Empty: the LAN only."
+msgstr "Intervale de adrese care nu intră niciodată în tunel, pe lângă LAN-ul însuși (care nu intră niciodată). Gol: doar LAN-ul."
+
+msgid "Tailscale through the VPN"
+msgstr "Tailscale prin VPN"
+
+msgid "When Tailscale runs on the device, its WireGuard, DERP and control connections go through whichever tunnel runs (dae catches them like any other)."
+msgstr "Când Tailscale rulează pe dispozitiv, conexiunile sale WireGuard, DERP și de control trec prin tunelul care rulează (dae le prinde ca pe oricare altele)."
+
+msgid "DNS"
+msgstr "DNS"
+
+msgid "DNS through the tunnel"
+msgstr "DNS prin tunel"
+
+msgid "The resolver the device's and the LAN's lookups go to, through the tunnel. Nothing goes to the carrier's resolver."
+msgstr "Resolverul către care merg, prin tunel, interogările dispozitivului și ale LAN-ului. Nimic nu merge către resolverul operatorului."
+
+msgid "Bootstrap DNS"
+msgstr "DNS de pornire"
+
+msgid "Finds the VPN server's own address before the tunnel is up (directly, on the engine's own connection)."
+msgstr "Găsește adresa serverului VPN înainte ca tunelul să fie activ (direct, pe conexiunea proprie a motorului)."
+
+msgid "Empty puts a setting back to its default."
+msgstr "Gol readuce o setare la valoarea implicită."
+
+msgid "TUN stack"
+msgstr "Stivă TUN"
+
+msgid "Default (gvisor)"
+msgstr "Implicit (gvisor)"
+
+msgid "system (not on the 5.4 kernel)"
+msgstr "system (nu pe nucleul 5.4)"
+
+msgid "set (unchanged unless you type a new one)"
+msgstr "setat (neschimbat dacă nu tastați unul nou)"
+
+msgid "not set"
+msgstr "nesetat"
+
+msgid "Upstream HTTP proxy"
+msgstr "Proxy HTTP upstream"
+
+msgid "TLS certificate pin (SHA-256)"
+msgstr "Fixare certificat TLS (SHA-256)"
+
+msgid "Enter host:port"
+msgstr "Introduceți host:port"
+
+msgid "Enter the SHA-256 in hex"
+msgstr "Introduceți SHA-256 în hexazecimal"
+
+msgid "Profile options"
+msgstr "Opțiuni de profil"
+
+msgid "None of the profiles has options of its type."
+msgstr "Niciun profil nu are opțiuni de tipul său."
+
+msgid "mihomo's mode (rule, global, direct), the engines' log levels, dae's groups and routing are part of each profile's own config: VPN > Profiles, Show / edit the config."
+msgstr "Modul mihomo (rule, global, direct), nivelurile de jurnal ale motoarelor, grupurile și rutarea dae fac parte din configurația proprie a fiecărui profil: VPN > Profiluri, Afișează / editează configurația."
+
+msgid "Delete the subscription %s?"
+msgstr "Ștergi abonamentul %s?"
+
+msgid "Its profiles can go with it or stay as profiles of their own. The active profile is never removed while the VPN is on."
+msgstr "Profilurile sale pot fi șterse odată cu el sau pot rămâne ca profiluri de sine stătătoare. Profilul activ nu este eliminat niciodată cât timp VPN-ul este pornit."
+
+msgid "Keep the profiles"
+msgstr "Păstrează profilurile"
+
+msgid "Delete with its profiles"
+msgstr "Șterge împreună cu profilurile"
+
+msgid "Only by hand"
+msgstr "Doar manual"
+
+msgid "Every %d h"
+msgstr "La fiecare %d h"
+
+msgid "Share links: one profile per link"
+msgstr "Linkuri de partajare: un profil pentru fiecare link"
+
+msgid "Clash/mihomo YAML: one mihomo profile"
+msgstr "YAML Clash/mihomo: un profil mihomo"
+
+msgid "dae: one profile with every node in one group"
+msgstr "dae: un profil cu toate nodurile într-un singur grup"
+
+msgid "Add a subscription"
+msgstr "Adaugă un abonament"
+
+msgid "Format"
+msgstr "Format"
+
+msgid "The URL usually holds your account token: it is stored on the device readable by root only, and never shown again. The subscription is fetched over the device's own connection: through the tunnel when the VPN is up; with the kill switch up and the tunnel down it cannot be fetched."
+msgstr "URL-ul conține de obicei tokenul contului dvs.: este stocat pe dispozitiv, lizibil doar de root, și nu mai este afișat niciodată. Abonamentul este descărcat prin conexiunea proprie a dispozitivului: prin tunel când VPN-ul este pornit; cu kill switch activ și tunelul căzut nu poate fi descărcat."
+
+msgid "Refresh all"
+msgstr "Reîmprospătează tot"
+
+msgid "No subscriptions yet."
+msgstr "Încă nu există abonamente."
+
+msgid "Host"
+msgstr "Gazdă"
+
+msgid "Updated"
+msgstr "Actualizat"
+
+msgid "Share links"
+msgstr "Linkuri de partajare"
+
+msgid "A refresh keeps the profiles whose name is unchanged, adds the new ones and removes the ones that are gone (the active one stays while the VPN is on, marked as gone). A refresh of the active profile restarts the running VPN."
+msgstr "O reîmprospătare păstrează profilurile al căror nume nu s-a schimbat, adaugă pe cele noi și elimină pe cele dispărute (cel activ rămâne cât timp VPN-ul este pornit, marcat ca dispărut). Reîmprospătarea profilului activ repornește VPN-ul care rulează."
+
+msgid "Dashboard info failed"
+msgstr "Informațiile panoului au eșuat"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch): no live signal right now"
+msgstr "The modem is restarting (network locks or a SIM switch): no live signal right now"
+
+msgid "Live signal read failed"
+msgstr "Citirea semnalului live a eșuat"
+
+msgid "Unknown op"
+msgstr "Operație necunoscută"
+
+msgid "Invalid argument for this op"
+msgstr "Argument invalid pentru această operație"
+
+msgid "The radio is busy: the dial or the watchdog is switching it, try again shortly"
+msgstr "Radioul este ocupat: apelarea sau watchdog-ul îl comută, reîncercați în curând"
+
+msgid "The action gave no valid reply"
+msgstr "Acțiunea nu a dat un răspuns valid"
+
+msgid "The confirm parameter must be 0 or 1"
+msgstr "Parametrul confirm trebuie să fie 0 sau 1"
+
+msgid "An AT command is one line of printable ASCII, at most 512 characters"
+msgstr "O comandă AT este un singur rând de ASCII imprimabil, cel mult 512 caractere"
+
+msgid "Must be an AT command"
+msgstr "Trebuie să fie o comandă AT"
+
+msgid "No \";\" command chaining"
+msgstr "Fără înlănțuirea comenzilor cu \";\""
+
+msgid "Denied: this command wedges the AT port until a reboot"
+msgstr "Refuzat: această comandă blochează portul AT până la o repornire"
+
+msgid "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+msgstr "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+msgstr "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+
+msgid "A long AT command is still running in the background; try again when it has finished"
+msgstr "O comandă AT lungă încă rulează în fundal; încercați din nou când se termină"
+
+msgid "This command needs confirmation"
+msgstr "Această comandă necesită confirmare"
+
+msgid "The AT channel is busy; the command was not sent, try again"
+msgstr "Canalul AT este ocupat; comanda nu a fost trimisă, reîncercați"
+
+msgid "The modem did not answer in time; the command may still run, check before sending it again"
+msgstr "Modemul nu a răspuns la timp; comanda poate încă rula, verificați înainte de a o trimite din nou"
+
+msgid "The fresh parameter must be 0 or 1"
+msgstr "Parametrul fresh trebuie să fie 0 sau 1"
+
+msgid "Reading the locks from the modem; try again in a few seconds"
+msgstr "Se citesc blocările din modem; încercați din nou peste câteva secunde"
+
+msgid "Lock read failed"
+msgstr "Citirea blocărilor a eșuat"
+
+msgid "Unknown lock kind"
+msgstr "Tip de blocare necunoscut"
+
+msgid "Invalid value for this lock kind"
+msgstr "Valoare invalidă pentru acest tip de blocare"
+
+msgid "None of these bands is supported by this modem"
+msgstr "Acest modem nu acceptă niciuna dintre aceste benzi"
+
+msgid "Band, mode and cell locks are not supported for SIM2 yet"
+msgstr "Blocările de bandă, mod și celulă nu sunt încă acceptate pentru SIM2"
+
+msgid "Band, mode and cell locks are not supported while dual-SIM switching manages the radio"
+msgstr "Blocările de bandă, mod și celulă nu sunt acceptate cât timp comutarea dual-SIM gestionează radioul"
+
+msgid "Invalid page"
+msgstr "Pagină invalidă"
+
+msgid "mu300-sms is not available (the SMS service is not installed or not running)"
+msgstr "mu300-sms nu este disponibil (serviciul SMS nu este instalat sau nu rulează)"
+
+msgid "No output"
+msgstr "Fără ieșire"
+
+msgid "Bad ID"
+msgstr "ID invalid"
+
+msgid "Read failed"
+msgstr "Citirea a eșuat"
+
+msgid "The number may only contain digits (and a leading +)"
+msgstr "Numărul poate conține doar cifre (și un + la început)"
+
+msgid "The message is empty"
+msgstr "Mesajul este gol"
+
+msgid "The message is too long (over 480 characters)"
+msgstr "Mesajul este prea lung (peste 480 de caractere)"
+
+msgid "The message contains a control character"
+msgstr "Mesajul conține un caracter de control"
+
+msgid "The sim parameter must be 0 or 1"
+msgstr "Parametrul sim trebuie să fie 0 sau 1"
+
+msgid "The USB adapter (device-usb) gave no valid reply"
+msgstr "Adaptorul USB (device-usb) nu a dat un răspuns valid"
+
+msgid "The auto parameter must be 0 or 1"
+msgstr "Parametrul auto trebuie să fie 0 sau 1"
+
+msgid "Invalid USB role"
+msgstr "Rol USB invalid"
+
+msgid "A USB role takes no scope"
+msgstr "Un rol USB nu acceptă domeniu"
+
+msgid "Invalid USB network mode"
+msgstr "Mod rețea USB invalid"
+
+msgid "Invalid USB network scope"
+msgstr "Domeniu rețea USB invalid"
+
+msgid "Unknown USB setting"
+msgstr "Setare USB necunoscută"
+
+msgid "Invalid interface name"
+msgstr "Nume de interfață invalid"
+
+msgid "The power adapter gave no valid reply"
+msgstr "Adaptorul de alimentare nu a dat un răspuns valid"
+
+msgid "Unknown power operation"
+msgstr "Operație de alimentare necunoscută"
+
+msgid "Unknown power setting"
+msgstr "Setare de alimentare necunoscută"
+
+msgid "Invalid power value"
+msgstr "Valoare de alimentare nevalidă"
+
+msgid "Invalid power request"
+msgstr "Cerere de alimentare nevalidă"
+
+msgid "The languages adapter gave no valid reply"
+msgstr "Adaptorul de limbi nu a dat un răspuns valid"
+
+msgid "Unknown language operation"
+msgstr "Operație de limbă necunoscută"
+
+msgid "Invalid language code"
+msgstr "Cod de limbă invalid"
+
+msgid "Invalid language request"
+msgstr "Cerere de limbă invalidă"
+
+msgid "Unknown source"
+msgstr "Sursă necunoscută"
+
+msgid "The TTL adapter gave no valid reply"
+msgstr "Adaptorul TTL nu a dat un răspuns valid"
+
+msgid "Invalid TTL"
+msgstr "TTL nevalid"
+
+msgid "The data usage adapter gave no valid reply"
+msgstr "Adaptorul de consum de date nu a dat un răspuns valid"
+
+msgid "Unknown data usage setting"
+msgstr "Setare de consum de date necunoscută"
+
+msgid "Invalid value for this setting"
+msgstr "Valoare invalidă pentru această setare"
+
+msgid "The forwarding adapter gave no valid reply"
+msgstr "Adaptorul de redirecționare nu a dat un răspuns valid"
+
+msgid "The CPU adapter gave no valid reply"
+msgstr "The CPU adapter gave no valid reply"
+
+msgid "Invalid CPU profile"
+msgstr "Invalid CPU profile"
+
+msgid "Invalid CPU core"
+msgstr "Nucleu CPU invalid"
+
+msgid "Unknown CPU operation"
+msgstr "Unknown CPU operation"
+
+msgid "Unknown CPU voltage operation"
+msgstr "Operație de tensiune CPU necunoscută"
+
+msgid "Invalid CPU voltage request"
+msgstr "Cerere de tensiune CPU nevalidă"
+
+msgid "Invalid CPU voltage offset"
+msgstr "Decalaj de tensiune CPU nevalid"
+
+msgid "Type the confirmation word to apply a voltage offset"
+msgstr "Tastați cuvântul de confirmare pentru a aplica un decalaj de tensiune"
+
+msgid "Invalid stress test length"
+msgstr "Durată nevalidă a testului de stres"
+
+msgid "The packages adapter gave no valid reply"
+msgstr "Adaptorul de pachete nu a dat un răspuns valid"
+
+msgid "Invalid packages operation"
+msgstr "Operație pe pachete nevalidă"
+
+msgid "The sizes parameter must be 0 or 1"
+msgstr "Parametrul sizes trebuie să fie 0 sau 1"
+
+msgid "The update adapter gave no valid reply"
+msgstr "Adaptorul de actualizare nu a dat un răspuns valid"
+
+msgid "Unknown update operation"
+msgstr "Operațiune de actualizare necunoscută"
+
+msgid "Invalid update request"
+msgstr "Cerere de actualizare nevalidă"
+
+msgid "The backup tool gave no valid reply"
+msgstr "Instrumentul de copiere nu a dat un răspuns valid"
+
+msgid "Mobile data integration is not provided by this platform"
+msgstr "Integrarea datelor mobile nu este oferită de această platformă"
+
+msgid "The SIM settings could not be read"
+msgstr "Setările SIM nu au putut fi citite"
+
+msgid "Radio control is not provided by this platform"
+msgstr "Această platformă nu oferă control radio"
+
+msgid "A SIM radio change is already running"
+msgstr "O schimbare a radioului SIM este deja în curs"
+
+# Source-language fallback for untranslated new controls.
+msgid "Invalid SIM setting"
+msgstr "Invalid SIM setting"
+
+msgid "The modem did not take the setting; nothing was saved"
+msgstr "Modemul nu a acceptat setarea; nu s-a salvat nimic"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control failed"
+msgstr "SIM control failed"
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching; reboot if channels are unavailable or wait until idle"
+msgstr "Enable hot switching; reboot if channels are unavailable or wait until idle"
+
+msgid "Request too large"
+msgstr "Cerere prea mare"
+
+msgid "The runtime directory is not safe; nothing was run"
+msgstr "Directorul de execuție nu este sigur; nu s-a rulat nimic"
+
+msgid "No such method"
+msgstr "Metodă inexistentă"
+
+msgid "The VPN module refused the request"
+msgstr "Modulul VPN a refuzat cererea"
+
+msgid "The VPN panel is busy, try again"
+msgstr "Panoul VPN este ocupat, încercați din nou"
+
+msgid "Another VPN task is still running"
+msgstr "O altă sarcină VPN rulează încă"
+
+msgid "The exit_ip parameter must be 0 or 1"
+msgstr "Parametrul exit_ip trebuie să fie 0 sau 1"
+
+msgid "The VPN status could not be read"
+msgstr "Starea VPN nu a putut fi citită"
+
+msgid "The profiles could not be read"
+msgstr "Profilurile nu au putut fi citite"
+
+msgid "The check parameter must be 0 or 1"
+msgstr "Parametrul check trebuie să fie 0 sau 1"
+
+msgid "The engines could not be read"
+msgstr "Motoarele nu au putut fi citite"
+
+msgid "The subscriptions could not be read"
+msgstr "Abonamentele nu au putut fi citite"
+
+msgid "The VPN settings could not be read"
+msgstr "Setările VPN nu au putut fi citite"
+
+msgid "Unknown VPN operation"
+msgstr "Operație VPN necunoscută"
+
+msgid "The VPN could not be switched"
+msgstr "VPN-ul nu a putut fi comutat"
+
+msgid "The kill switch is on or off"
+msgstr "Kill switch este pornit sau oprit"
+
+msgid "The kill switch could not be changed"
+msgstr "Kill switch nu a putut fi schimbat"
+
+msgid "Invalid profile id"
+msgstr "ID de profil nevalid"
+
+msgid "The profile could not be made the active one"
+msgstr "Profilul nu a putut fi făcut activ"
+
+msgid "Unknown profile source"
+msgstr "Sursă de profil necunoscută"
+
+msgid "Unknown profile type"
+msgstr "Tip de profil necunoscut"
+
+msgid "The config is empty, too large or holds control characters"
+msgstr "Configurația este goală, prea mare sau conține caractere de control"
+
+msgid "Invalid profile request"
+msgstr "Cerere de profil nevalidă"
+
+msgid "A config from a URL takes the type it says"
+msgstr "O configurație dintr-un URL preia tipul pe care îl indică ea însăși"
+
+msgid "No uploaded file"
+msgstr "Niciun fișier încărcat"
+
+msgid "The file is larger than 1 MiB"
+msgstr "Fișierul este mai mare de 1 MiB"
+
+msgid "The profile could not be added"
+msgstr "Profilul nu a putut fi adăugat"
+
+msgid "The profile could not be renamed"
+msgstr "Profilul nu a putut fi redenumit"
+
+msgid "The profile could not be removed"
+msgstr "Profilul nu a putut fi eliminat"
+
+msgid "The profile does not pass the check"
+msgstr "Profilul nu trece de verificare"
+
+msgid "Unknown profile option"
+msgstr "Opțiune de profil necunoscută"
+
+msgid "Invalid value for this option"
+msgstr "Valoare nevalidă pentru această opțiune"
+
+msgid "The option could not be set"
+msgstr "Opțiunea nu a putut fi setată"
+
+msgid "The config could not be read"
+msgstr "Configurația nu a putut fi citită"
+
+msgid "The config was not saved"
+msgstr "Configurația nu a fost salvată"
+
+msgid "The latency test failed"
+msgstr "Testul de latență a eșuat"
+
+msgid "The refresh interval is 1 to 999 hours"
+msgstr "Intervalul de reîmprospătare este între 1 și 999 de ore"
+
+msgid "Unknown subscription type"
+msgstr "Tip de abonament necunoscut"
+
+msgid "Invalid subscription id"
+msgstr "ID de abonament nevalid"
+
+msgid "The keep parameter must be 0 or 1"
+msgstr "Parametrul keep trebuie să fie 0 sau 1"
+
+msgid "The subscription could not be removed"
+msgstr "Abonamentul nu a putut fi eliminat"
+
+msgid "The file is too large"
+msgstr "Fișierul este prea mare"
+
+msgid "Unknown engine"
+msgstr "Motor necunoscut"
+
+msgid "The unverified parameter must be 0 or 1"
+msgstr "Parametrul unverified trebuie să fie 0 sau 1"
+
+msgid "This engine is a system package: it has no file to upload"
+msgstr "Acest motor este un pachet de sistem: nu are niciun fișier de încărcat"
+
+msgid "The engine could not be removed"
+msgstr "Motorul nu a putut fi eliminat"
+
+msgid "mu300-extra is not on this system"
+msgstr "mu300-extra nu este pe acest sistem"
+
+msgid "Unknown VPN setting"
+msgstr "Setare VPN necunoscută"
+
+msgid "The setting could not be saved"
+msgstr "Setarea nu a putut fi salvată"
+
+msgid "The number of lines is 1 to 1000"
+msgstr "Numărul de linii este între 1 și 1000"
+
+msgid "The log could not be read"
+msgstr "Jurnalul nu a putut fi citit"
+
+msgid "The radio of this SIM is switched off in its settings"
+msgstr "Radioul acestui SIM este oprit în setările sale"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM control or reboot for managed dual-SIM radio"
+msgstr "Use SIM control or reboot for managed dual-SIM radio"
+
+msgid "The radio did not follow its setting"
+msgstr "Radioul nu și-a urmat setarea"
+
+msgid "The data roaming setting could not be saved"
+msgstr "Setarea roamingului de date nu a putut fi salvată"
+
+msgid "Expected on or off"
+msgstr "Se așteaptă on sau off"
+
+msgid "VPN integration is not provided by this platform"
+msgstr "Integrarea VPN nu este oferită de această platformă"
+
+msgid "Dual-boot integration is not provided by this platform"
+msgstr "Integrarea dual-boot nu este oferită de această platformă"
+
+msgid "mu300-next-boot failed"
+msgstr "mu300-next-boot a eșuat"
+
+msgid "AT backend did not answer (radio off, modem restarting, or adapter unavailable)"
+msgstr "Backend-ul AT nu a răspuns (radio oprit, modem în repornire sau adaptor indisponibil)"
+
+msgid "The CPU profile could not be read"
+msgstr "The CPU profile could not be read"
+
+msgid "The CPU profile could not be set"
+msgstr "The CPU profile could not be set"
+
+msgid "The CPU core could not be switched"
+msgstr "Nucleul CPU nu a putut fi comutat"
+
+msgid "Invalid low latency setting"
+msgstr "Setare de latență redusă invalidă"
+
+msgid "The low latency setting could not be applied"
+msgstr "Setarea de latență redusă nu a putut fi aplicată"
+
+msgid "The CPU voltage offset could not be read"
+msgstr "Decalajul de tensiune CPU nu a putut fi citit"
+
+msgid "The CPU voltage offset was refused"
+msgstr "Decalajul de tensiune CPU a fost refuzat"
+
+msgid "The CPU voltage offset could not be turned off"
+msgstr "Decalajul de tensiune CPU nu a putut fi dezactivat"
+
+msgid "The stress test could not be started"
+msgstr "Testul de stres nu a putut fi pornit"
+
+msgid "USB role adapter is not executable"
+msgstr "Adaptorul de rol USB nu este executabil"
+
+msgid "USB role adapter failed"
+msgstr "Adaptorul de rol USB a eșuat"
+
+msgid "USB role switch is unavailable"
+msgstr "Comutarea rolului USB nu este disponibilă"
+
+msgid "USB role switch failed"
+msgstr "Comutarea rolului USB a eșuat"
+
+msgid "USB role switch was refused by platform safety checks"
+msgstr "Comutarea rolului USB a fost refuzată de verificările de siguranță ale platformei"
+
+msgid "Cannot create USB boot settings directory"
+msgstr "Nu se poate crea directorul setărilor de pornire USB"
+
+msgid "Cannot write USB boot settings"
+msgstr "Nu se pot scrie setările de pornire USB"
+
+msgid "Cannot save USB boot settings"
+msgstr "Nu se pot salva setările de pornire USB"
+
+msgid "Invalid boot-auto value"
+msgstr "Valoare boot-auto invalidă"
+
+msgid "Device is the boot default; host auto-apply is the only persistent role"
+msgstr "Dispozitiv este implicit la pornire; aplicarea automată a modului gazdă este singurul rol persistent"
+
+msgid "Cannot save USB role policy"
+msgstr "Nu se poate salva politica rolului USB"
+
+msgid "Cannot disable USB network boot policy"
+msgstr "Nu se poate dezactiva politica de pornire a rețelei USB"
+
+msgid "Cannot commit USB role policy"
+msgstr "Nu se poate confirma politica rolului USB"
+
+msgid "USB network mode is unavailable in host role"
+msgstr "Modul rețea USB nu este disponibil în rolul gazdă"
+
+msgid "Disable host boot-auto before configuring USB network"
+msgstr "Dezactivați boot-auto pentru gazdă înainte de a configura rețeaua USB"
+
+msgid "Cannot save USB network policy"
+msgstr "Nu se poate salva politica rețelei USB"
+
+msgid "Cannot commit USB network policy"
+msgstr "Nu se poate confirma politica rețelei USB"
+
+msgid "USB host mode is required"
+msgstr "Este necesar modul gazdă USB"
+
+msgid "Not a USB network interface"
+msgstr "Nu este o interfață de rețea USB"
+
+msgid "LAN bridge device section was not found"
+msgstr "Secțiunea de dispozitiv a punții LAN nu a fost găsită"
+
+msgid "Cannot bring USB network interface up"
+msgstr "Nu se poate activa interfața de rețea USB"
+
+msgid "Cannot add interface to LAN bridge"
+msgstr "Nu se poate adăuga interfața la puntea LAN"
+
+msgid "Cannot save LAN bridge"
+msgstr "Nu se poate salva puntea LAN"
+
+msgid "Network reload failed"
+msgstr "Reîncărcarea rețelei a eșuat"
+
+msgid "Cannot attach USB interface to LAN bridge"
+msgstr "Nu se poate atașa interfața USB la puntea LAN"
+
+msgid "Invalid forwarding setting"
+msgstr "Setare de redirecționare nevalidă"
+
+msgid "The message template is too long or contains a control character"
+msgstr "Șablonul mesajului este prea lung sau conține un caracter de control"
+
+msgid "Invalid filter list (at most 50 lines)"
+msgstr "Listă de filtre nevalidă (cel mult 50 de linii)"
+
+msgid "The webhook address must be an http:// or https:// URL"
+msgstr "Adresa webhookului trebuie să fie un URL http:// sau https://"
+
+msgid "The webhook body is too long or contains a control character"
+msgstr "Corpul webhook-ului este prea lung sau conține un caracter de control"
+
+msgid "The answer check must be key=value, like errcode=0 or ok=true (the value a whole number or lowercase letters, 16 at most)"
+msgstr "Verificarea răspunsului trebuie să fie cheie=valoare, ca errcode=0 sau ok=true (valoarea un număr întreg sau litere mici, cel mult 16)"
+
+msgid "Invalid header (one \"Name: value\" per line; Host, Content-Type, Content-Length, Transfer-Encoding and Connection are set by the device)"
+msgstr "Antet nevalid (un \"Nume: valoare\" pe linie; Host, Content-Type, Content-Length, Transfer-Encoding și Connection sunt setate de dispozitiv)"
+
+msgid "Invalid Telegram bot token"
+msgstr "Token de bot Telegram nevalid"
+
+msgid "Invalid Telegram chat (a number, or @channel)"
+msgstr "Chat Telegram nevalid (un număr sau @canal)"
+
+msgid "Invalid e-mail setting"
+msgstr "Setare de e-mail nevalidă"
+
+msgid "The webhook needs an address"
+msgstr "Webhookul are nevoie de o adresă"
+
+msgid "Telegram needs a bot token and a chat"
+msgstr "Telegram are nevoie de un token de bot și de un chat"
+
+msgid "E-mail needs a server, a sender and a recipient"
+msgstr "E-mailul are nevoie de un server, un expeditor și un destinatar"
+
+msgid "SMS forwarding needs a phone number"
+msgstr "Redirecționarea prin SMS are nevoie de un număr de telefon"
+
+msgid "The forwarding settings could not be saved"
+msgstr "Setările de redirecționare nu au putut fi salvate"
+
+msgid "SMS forwarding is not installed"
+msgstr "Redirecționarea SMS nu este instalată"
+
+msgid "A test was started a moment ago; wait a few seconds"
+msgstr "Un test tocmai a fost pornit; așteptați câteva secunde"
+
+msgid "The delivery log could not be cleared"
+msgstr "Jurnalul de livrare nu a putut fi golit"
+
+msgid "Unknown forwarding operation"
+msgstr "Operațiune de redirecționare necunoscută"
+
+msgid "The language pack is not installed"
+msgstr "Pachetul de limbi nu este instalat"
+
+msgid "No language given"
+msgstr "Nu s-a specificat nicio limbă"
+
+msgid "The language could not be changed"
+msgstr "Limba nu a putut fi schimbată"
+
+msgid "LuCI does not offer this language"
+msgstr "LuCI nu oferă această limbă"
+
+msgid "No uploaded language pack"
+msgstr "Niciun pachet de limbi încărcat"
+
+msgid "An installation is already running"
+msgstr "O instalare rulează deja"
+
+msgid "The language pack could not be removed"
+msgstr "Pachetul de limbi nu a putut fi eliminat"
+
+msgid "Lock cache unavailable"
+msgstr "Cache-ul blocărilor nu este disponibil"
+
+msgid "The modem refused a write"
+msgstr "Modemul a refuzat o scriere"
+
+msgid "The saved locks could not be cleared"
+msgstr "Blocările salvate nu au putut fi șterse"
+
+msgid "No serving cell to lock to"
+msgstr "Nicio celulă de servire pe care să se blocheze"
+
+msgid "The modem did not answer the mode query; nothing was sent"
+msgstr "Modemul nu a răspuns la interogarea modului; nu s-a trimis nimic"
+
+msgid "The read-back does not match the automatic values"
+msgstr "Recitirea nu corespunde valorilor automate"
+
+msgid "The read-back after the stack restart does not match the automatic values"
+msgstr "Recitirea după repornirea stivei nu corespunde valorilor automate"
+
+msgid "The reset was interrupted"
+msgstr "Resetarea a fost întreruptă"
+
+msgid "Reinstalling packages is not available on this system"
+msgstr "Reinstalarea pachetelor nu este disponibilă pe acest sistem"
+
+msgid "No packages were written down by an update"
+msgstr "Nicio actualizare nu a notat pachete"
+
+msgid "Reinstalling is running already"
+msgstr "Reinstalarea rulează deja"
+
+msgid "The note could not be dropped"
+msgstr "Nota nu a putut fi eliminată"
+
+msgid "Unknown packages operation"
+msgstr "Operație pe pachete necunoscută"
+
+msgid "usage: power get|set KEY VALUE|wake|idle"
+msgstr "usage: power get|set KEY VALUE|wake|idle"
+
+msgid "Data usage is not available on this system"
+msgstr "Consumul de date nu este disponibil pe acest sistem"
+
+msgid "Unknown data usage operation"
+msgstr "Operație de consum de date necunoscută"
+
+msgid "The TTL setting could not be read"
+msgstr "Setarea TTL nu a putut fi citită"
+
+msgid "The TTL could not be set"
+msgstr "TTL-ul nu a putut fi setat"
+
+msgid "Unknown TTL operation"
+msgstr "Operație TTL necunoscută"
+
+msgid "An update task is already running"
+msgstr "O sarcină de actualizare rulează deja"
+
+msgid "The task could not be started"
+msgstr "Sarcina nu a putut fi pornită"
+
+msgid "The updater gave no valid reply"
+msgstr "Programul de actualizare nu a dat un răspuns valid"
+
+msgid "This needs confirmation"
+msgstr "Este nevoie de confirmare"
+
+msgid "Check for updates first"
+msgstr "Căutați mai întâi actualizări"
+
+msgid "The upload directory is not safe; nothing was changed"
+msgstr "Directorul de încărcare nu este sigur; nu s-a modificat nimic"
+
+msgid "Not enough memory for this upload"
+msgstr "Memorie insuficientă pentru această încărcare"
+
+msgid "Not enough free space on the Linux partition"
+msgstr "Spațiu liber insuficient pe partiția Linux"
+
+msgid "The file was not checked; upload it again"
+msgstr "Fișierul nu a fost verificat; încărcați-l din nou"
+
+msgid "This file is not for this device"
+msgstr "Acest fișier nu este pentru acest dispozitiv"
+
+msgid "The signature of this file is wrong"
+msgstr "Semnătura acestui fișier este greșită"
+
+msgid "This file is not signed: that needs confirmation"
+msgstr "Acest fișier este nesemnat: este nevoie de confirmare"
+
+msgid "This file is older than what is installed: that needs confirmation"
+msgstr "Acest fișier este mai vechi decât ce este instalat: este nevoie de confirmare"
+
+msgid "The release source was not changed"
+msgstr "Sursa versiunii nu a fost schimbată"

@@ -1,0 +1,89 @@
+#!/bin/sh
+# Packages adapter: mu300-user-packages for the panel's card on the Settings page (mu300dash packages_get,
+# packages_act). The packages installed on the device before an update, installed again at the first boot. Every
+# reply is one JSON object.
+#   packages get        {"ok":1,"recorded":0|1,"state":...,"summary":...,"from":...,"wanted":[...],"done":[...],
+#                       "pending":[...],"failed":[{"name":...,"why":...}],"orphaned":[...],"dns":TEXT|null,
+#                       "running":0|1}
+#   packages act retry       start mu300-user-packages retry in the background: {"ok":1,"started":1}
+#   packages act repair_dns  start mu300-user-packages repair-dns in the background (it looks at the port for a
+#                            while): {"ok":1,"started":1}; it may make dnsmasq use the connection's resolvers
+#   packages act dismiss     drop the note: {"ok":1}
+# The operation is checked here again. Names read from the record are kept only when they look like package names
+# and paths only when they are plain paths in etc/; text (the reasons, the DNS note) goes through json_str.
+set -u
+export PATH="$PATH:/opt/mu300/bin:/usr/sbin:/sbin"
+LIB=${0%/*}/../../share/unisoc-modem/lib.sh
+[ -f "$LIB" ] || LIB=/usr/share/unisoc-modem/lib.sh
+. "$LIB"
+
+CMD=${MU300_UPK_CMD:-/opt/mu300/bin/mu300-user-packages}
+D=${MU300_UPK_DIR:-/etc/mu300/user-packages}
+ORPH=${MU300_UPK_ORPH:-/etc/mu300/orphaned-config}
+LOCK=${MU300_UPK_LOCK:-/var/run/mu300-user-packages.lock}
+
+error() { printf '{"ok":0,"error":%s}\n' "$(json_str "$1")"; exit 0; }
+# names [FILE]: a JSON array of the first word of each line (of FILE, else stdin) that is a package name
+names() {
+    [ $# = 0 ] || [ -f "$1" ] || { printf '[]'; return; }
+    awk 'BEGIN { printf "[" }
+         $1 ~ /^[A-Za-z0-9][A-Za-z0-9._+-]*$/ && length($1) <= 100 && !s[$1]++ { printf "%s\"%s\"", (n++ ? "," : ""), $1 }
+         END { printf "]" }' "$@"
+}
+
+do_get() {
+    [ -x "$CMD" ] || error 'Reinstalling packages is not available on this system'
+    if [ ! -s "$D/wanted" ]; then rec=0; else rec=1; fi
+    state=$(cat "$D/state" 2>/dev/null | head -n1)
+    case $state in pending|running|done|failed|offline|gave-up|skipped) ;; *) state=none ;; esac
+    from=$(head -n1 "$D/from" 2>/dev/null)
+    case $from in v[0-9]*|dev*) ;; *) from= ;; esac
+    summary=$("$CMD" brief 2>/dev/null | head -n1)
+    # pending: wanted, not back and not failed
+    pend=$( { sed 's/^/x /' "$D/done" "$D/failed" 2>/dev/null; sed 's/^/w /' "$D/wanted" 2>/dev/null; } |
+        awk '$1 == "x" { d[$2] = 1; next } NF > 1 && !($2 in d) { print $2 }')
+    failed='[' sep=
+    if [ -f "$D/failed" ]; then
+        while read -r n why; do
+            case $n in ''|*[!A-Za-z0-9._+-]*|[!A-Za-z0-9]*) continue ;; esac
+            failed="$failed$sep{\"name\":\"$n\",\"why\":$(json_str "$why")}"; sep=,
+        done < "$D/failed"
+    fi
+    failed="$failed]"
+    orph='[' sep=
+    if [ -d "$ORPH" ]; then
+        for f in $(cd "$ORPH" && find etc -type f 2>/dev/null | sort); do
+            case $f in etc/*) ;; *) continue ;; esac
+            case $f in *[!A-Za-z0-9._/+-]*|*..*) continue ;; esac
+            orph="$orph$sep\"$f\""; sep=,
+        done
+    fi
+    orph="$orph]"
+    if [ -s "$D/dns-note" ]; then dns=$(json_str "$(head -n 3 "$D/dns-note")"); else dns=null; fi
+    if [ -d "$LOCK" ]; then running=1; else running=0; fi
+    printf '{"ok":1,"recorded":%s,"state":"%s","summary":%s,"from":%s,"wanted":%s,"done":%s,"pending":%s,"failed":%s,"orphaned":%s,"dns":%s,"running":%s}\n' \
+        "$rec" "$state" "$(json_str "$summary")" "$(json_str_or_null "$from")" "$(names "$D/wanted")" "$(names "$D/done")" \
+        "$(printf '%s\n' "$pend" | names)" "$failed" "$orph" "$dns" "$running"
+}
+
+do_act() {
+    [ -x "$CMD" ] || error 'Reinstalling packages is not available on this system'
+    case ${1:-} in
+        retry|repair_dns)
+            [ -s "$D/wanted" ] || error 'No packages were written down by an update'
+            [ ! -d "$LOCK" ] || error 'Reinstalling is running already'
+            if [ "$1" = retry ]; then sub=retry; else sub=repair-dns; fi
+            setsid "$CMD" "$sub" </dev/null >/dev/null 2>&1 &
+            printf '{"ok":1,"started":1}\n' ;;
+        dismiss)
+            "$CMD" dismiss </dev/null >/dev/null 2>&1 || error 'The note could not be dropped'
+            printf '{"ok":1}\n' ;;
+        *) error 'Unknown packages operation' ;;
+    esac
+}
+
+case ${1:-} in
+    get) do_get ;;
+    act) do_act "${2:-}" ;;
+    *) error 'Unknown packages operation' ;;
+esac

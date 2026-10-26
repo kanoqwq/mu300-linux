@@ -1,0 +1,17 @@
+power: supply: sc27xx_fuel_gauge: the status from the U30 Air's charger
+
+With the U30 Air's charger driven by bq256xx (patch 0009), the fuel gauge takes Charging, Not charging, Full and
+Discharging from it, as it does from the SC27xx chargers, instead of guessing from the battery current (0006's
+fallback, which said Full at 3.88 V on a charger that Android had left switched off). The charger names the fuel
+gauge in its supplied_to, so a plug or unplug is passed on.
+
+--- a/drivers/power/supply/sc27xx_fuel_gauge.c
++++ b/drivers/power/supply/sc27xx_fuel_gauge.c
+@@ -166,6 +166,7 @@
+ 	"sc2720_charger",
+ 	"sc2721_charger",
+ 	"sc2723_charger",
++	"bq256xx-charger",	/* MU300: the U30 Air's SGM41511 (patch 0009) */
+ };
+ 
+ static int sc27xx_fgu_adc_to_current(struct sc27xx_fgu_data *data, s64 adc)

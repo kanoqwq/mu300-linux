@@ -1,0 +1,8 @@
+{
+    "data-root": "/mnt/mu300-disk/docker/ubuntu",
+    "storage-driver": "overlay2",
+    "features": { "containerd-snapshotter": false },
+    "firewall-backend": "nftables",
+    "ip-forward": false,
+    "log-driver": "local"
+}

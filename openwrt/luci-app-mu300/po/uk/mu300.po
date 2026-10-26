@@ -1,0 +1,4050 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: uk\n"
+
+msgid "Status dashboard"
+msgstr "Панель стану"
+
+msgid "Cellular"
+msgstr "Мобільний зв'язок"
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM"
+msgstr "Dual SIM"
+
+msgid "SIM settings"
+msgstr "Налаштування SIM"
+
+msgid "Network locks"
+msgstr "Фіксація мережі"
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "SMS forwarding"
+msgstr "Пересилання SMS"
+
+msgid "AT terminal"
+msgstr "AT-термінал"
+
+msgid "Adapter settings"
+msgstr "Налаштування адаптера"
+
+msgid "TTL"
+msgstr "TTL"
+
+msgid "Data usage"
+msgstr "Використання даних"
+
+msgid "Device management"
+msgstr "Керування пристроєм"
+
+msgid "Update"
+msgstr "Оновити"
+
+msgid "Backup of settings"
+msgstr "Резервна копія налаштувань"
+
+msgid "Languages"
+msgstr "Мови"
+
+msgid "Power"
+msgstr "Живлення"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Terminal"
+msgstr "Термінал"
+
+msgid "Terminal settings"
+msgstr "Налаштування термінала"
+
+msgid "Overview"
+msgstr "Огляд"
+
+msgid "Profiles"
+msgstr "Профілі"
+
+msgid "Subscriptions"
+msgstr "Підписки"
+
+msgid "Engines"
+msgstr "Рушії"
+
+msgid "Settings"
+msgstr "Налаштування"
+
+msgid "Logs"
+msgstr "Журнали"
+
+msgid "Packages after an update"
+msgstr "Пакети після оновлення"
+
+msgid "MU300 control center: status dashboard, network locks, AT terminal, SMS and VPN"
+msgstr "Центр керування MU300: панель стану, мережеві блокування, AT-термінал, SMS і VPN"
+
+msgid "Terminal: a root shell on the device in the browser"
+msgstr "Термінал: оболонка root на пристрої в браузері"
+
+msgid "China Mobile"
+msgstr "China Mobile"
+
+msgid "China Unicom"
+msgstr "China Unicom"
+
+msgid "China Telecom"
+msgstr "China Telecom"
+
+msgid "China Broadnet"
+msgstr "China Broadnet"
+
+msgid "China Tietong"
+msgstr "China Tietong"
+
+msgid "Excellent"
+msgstr "Відмінний"
+
+msgid "Good"
+msgstr "Добрий"
+
+msgid "Fair"
+msgstr "Середній"
+
+msgid "Poor"
+msgstr "Слабкий"
+
+msgid "Unknown"
+msgstr "Невідомо"
+
+msgid "%d d %d h"
+msgstr "%d д %d год"
+
+msgid "%d h %d min"
+msgstr "%d год %d хв"
+
+msgid "%d min"
+msgstr "%d хв"
+
+msgid "No neighbor-cell data"
+msgstr "Немає даних про сусідні соти"
+
+msgid "Locked"
+msgstr "Зафіксовано"
+
+msgid "Lock"
+msgstr "Зафіксувати"
+
+msgid "Unknown error"
+msgstr "Невідома помилка"
+
+msgid "Confirm"
+msgstr "Підтвердити"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Скасувати"
+
+msgid "%d s"
+msgstr "%d с"
+
+msgid "%d h"
+msgstr "%d год"
+
+msgid "New SMS · %s"
+msgstr "Нове SMS · %s"
+
+msgid "Unknown number"
+msgstr "Невідомий номер"
+
+msgid "Select"
+msgstr "Вибрати"
+
+msgid "never"
+msgstr "ніколи"
+
+msgid "just now"
+msgstr "щойно"
+
+msgid "%s ago"
+msgstr "%s тому"
+
+msgid "Failed: %s"
+msgstr "Помилка: %s"
+
+msgid "Management connection lost"
+msgstr "З'єднання керування втрачено"
+
+msgid "Installing the VPN module"
+msgstr "Встановлення модуля VPN"
+
+msgid "Installing the engine"
+msgstr "Встановлення рушія"
+
+msgid "Adding the subscription"
+msgstr "Додавання підписки"
+
+msgid "Refreshing the subscriptions"
+msgstr "Оновлення підписок"
+
+msgid "Testing the latency of every profile"
+msgstr "Вимірювання затримки кожного профілю"
+
+msgid "Downloading the config"
+msgstr "Завантаження конфігурації"
+
+msgid "Working…"
+msgstr "Виконується…"
+
+msgid "done"
+msgstr "готово"
+
+msgid "failed"
+msgstr "помилка"
+
+msgid "Verify the uploaded file"
+msgstr "Перевірити завантажений файл"
+
+msgid "The uploaded file is checked against the SHA256SUMS of the VPN module's latest release, downloaded over HTTPS. When that is not possible (offline, an older release), it is installed only if you allow an unverified file: it then runs as root with no check."
+msgstr "Завантажений файл звіряється з SHA256SUMS останнього випуску модуля VPN, завантаженим через HTTPS. Якщо це неможливо (немає мережі, старіший випуск), його буде встановлено, лише якщо ви дозволите неперевірений файл: тоді він працює від root без жодної перевірки."
+
+msgid "Install it even if it cannot be verified"
+msgstr "Встановити, навіть якщо його не можна перевірити"
+
+msgid "Install only a verified file"
+msgstr "Встановлювати лише перевірений файл"
+
+msgid "Upload failed: %s"
+msgstr "Помилка вивантаження: %s"
+
+msgid "The VPN module is too old for this panel"
+msgstr "Модуль VPN занадто старий для цієї панелі"
+
+msgid "The VPN module is not installed"
+msgstr "Модуль VPN не встановлено"
+
+msgid "This page needs the VPN module with the machine-readable mu300-vpn (module v2 or newer). Updating it keeps the profiles and the settings."
+msgstr "Для цієї сторінки потрібен модуль VPN з машинозчитуваним mu300-vpn (модуль v2 або новіший). Оновлення зберігає профілі та налаштування."
+
+msgid "The VPN is a module of its own: mu300-vpn with its kill switch and profiles, and one extra per engine (Xray, sing-box, mihomo, dae). It is installed with mu300-extra install vpn."
+msgstr "VPN - це окремий модуль: mu300-vpn з kill switch і профілями та по одному додатку на кожен рушій (Xray, sing-box, mihomo, dae). Встановлюється командою mu300-extra install vpn."
+
+msgid "The download is a few MB for the module and up to tens of MB per engine: on mobile data it counts towards your plan."
+msgstr "Завантаження - кілька MB для модуля і до десятків MB на кожен рушій: у мобільній мережі воно враховується у вашому тарифі."
+
+msgid "Update the VPN module"
+msgstr "Оновити модуль VPN"
+
+msgid "Install the VPN module"
+msgstr "Встановити модуль VPN"
+
+msgid "Upload the file…"
+msgstr "Вивантажити файл…"
+
+msgid "Offline: upload mu300-linux-vpn-core.tar.gz (or the bundle mu300-linux-vpn.tar.gz) from the release page of the VPN module."
+msgstr "Офлайн: завантажте mu300-linux-vpn-core.tar.gz (або збірку mu300-linux-vpn.tar.gz) зі сторінки випуску модуля VPN."
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "This is a network or frequency scan: it takes one to three minutes, holds the modem's AT channel all that time, and mobile data may pause meanwhile. It runs in the background; the reply appears here when it is done."
+msgstr "Це сканування мереж або частот: воно триває від однієї до трьох хвилин, увесь цей час тримає AT-канал модема, і мобільні дані можуть призупинитися. Воно виконується у фоні; відповідь з'явиться тут після завершення."
+
+msgid "This changes a network mode, band or cell setting the modem stores: it stays in force after a reboot, and in Android too, where a network that does not match it shows as No Service. The Locks page shows these settings and resets them."
+msgstr "Це змінює режим мережі, діапазон або налаштування соти, які модем зберігає: вони діють і після перезавантаження, і в Android теж, де мережа, що їм не відповідає, показується як «Немає мережі». Сторінка «Блокування» показує ці налаштування і скидає їх."
+
+msgid "This switches the radio, the data connection or the modem itself: mobile data drops until it is restored, and this page may lose its connection for a while."
+msgstr "Це перемикає радіо, з'єднання для передавання даних або сам модем: мобільні дані зникнуть до відновлення, і ця сторінка може на якийсь час втратити з'єднання."
+
+msgid "This changes the data profiles (APNs) stored in the modem, which mobile data and Android use."
+msgstr "Це змінює збережені в модемі профілі даних (APN), якими користуються мобільні дані та Android."
+
+msgid "This changes the SIM's PIN lock or enters a PIN: wrong PINs block the SIM until its PUK is entered."
+msgstr "Це змінює блокування SIM-картки PIN-кодом або вводить PIN: неправильні PIN-коди блокують SIM-картку до введення PUK."
+
+msgid "Basic"
+msgstr "Основне"
+
+msgid "Registration/signal"
+msgstr "Реєстрація/сигнал"
+
+msgid "Bearer"
+msgstr "Несучий канал"
+
+msgid "Engineering mode"
+msgstr "Інженерний режим"
+
+msgid "AT command (↑↓ history, Enter to send)"
+msgstr "AT-команда (↑↓ історія, Enter — надіслати)"
+
+msgid "Send"
+msgstr "Надіслати"
+
+msgid "Clear screen"
+msgstr "Очистити екран"
+
+msgid "Ready."
+msgstr "Готово."
+
+msgid "Session history (click to reuse)"
+msgstr "Історія сеансу (натисніть, щоб повторити)"
+
+msgid "Running in the background (at most %d s); the reply appears here when it is done…"
+msgstr "Виконується у фоні (щонайбільше %d с); відповідь з'явиться тут після завершення…"
+
+msgid "The modem gave no final answer in time"
+msgstr "Модем не дав остаточної відповіді вчасно"
+
+msgid "%d s in the background"
+msgstr "%d с у фоні"
+
+msgid "(no output)"
+msgstr "(немає виводу)"
+
+msgid "This command changes the modem's state."
+msgstr "Ця команда змінює стан модема."
+
+msgid "Not sent yet: waiting for confirmation"
+msgstr "Ще не надіслано: очікування підтвердження"
+
+msgid "Send this AT command?"
+msgstr "Надіслати цю AT-команду?"
+
+msgid "Send anyway"
+msgstr "Усе одно надіслати"
+
+msgid "Not sent"
+msgstr "Не надіслано"
+
+msgid "Request failed"
+msgstr "Помилка запиту"
+
+msgid "(empty)"
+msgstr "(порожньо)"
+
+msgid "Passphrase (8 characters or more)"
+msgstr "Парольна фраза (не менше 8 символів)"
+
+msgid "The passphrase again"
+msgstr "Парольна фраза ще раз"
+
+msgid "Download the backup"
+msgstr "Завантажити копію"
+
+msgid "Back up the settings"
+msgstr "Зберегти налаштування"
+
+msgid "One file with the hotspot, mobile data and the APN, the network locks, the VPN profiles and settings, SMS forwarding, the LAN address, the host name, the time zone and the SSH keys. It holds passwords: with a passphrase it is encrypted, and only that passphrase opens it again."
+msgstr "Один файл із точкою доступу, мобільними даними та APN, блокуваннями мережі, профілями та налаштуваннями VPN, пересиланням SMS, адресою LAN, назвою хоста, часовим поясом і ключами SSH. У ньому є паролі: з парольною фразою він шифрується, і відкрити його знову можна лише нею."
+
+msgid "Include the login password"
+msgstr "Включити пароль входу"
+
+msgid "Passphrase, if the file is encrypted"
+msgstr "Парольна фраза, якщо файл зашифровано"
+
+msgid "Show what would change"
+msgstr "Показати, що зміниться"
+
+msgid "Restore"
+msgstr "Відновити"
+
+msgid "The file is larger than 4 MiB"
+msgstr "Файл більший за 4 МіБ"
+
+msgid "The settings of the file replace these. The hotspot, mobile data or the LAN may restart, and this page may lose its connection for a moment."
+msgstr "Налаштування з файлу замінять поточні. Точка доступу, мобільні дані або LAN можуть перезапуститися, і сторінка може ненадовго втратити зв'язок."
+
+msgid "Restore from a backup"
+msgstr "Відновити з копії"
+
+msgid "Every value of the file is checked first; one that is refused and nothing is changed. What is the same is left alone, and no VPN profile, subscription or SSH key of this device is removed."
+msgstr "Кожне значення файлу спершу перевіряється; якщо хоч одне відхилено, нічого не змінюється. Однакове не чіпається, і жоден профіль VPN, підписка чи ключ SSH цього пристрою не видаляється."
+
+msgid "Keep this device's login password"
+msgstr "Зберегти пароль входу цього пристрою"
+
+msgid "Take a file of another device model"
+msgstr "Прийняти файл іншої моделі пристрою"
+
+msgid "The two passphrases differ"
+msgstr "Парольні фрази не збігаються"
+
+msgid "The passphrase needs 8 characters or more"
+msgstr "Парольна фраза має бути не коротша за 8 символів"
+
+msgid "Saved (encrypted)"
+msgstr "Збережено (зашифровано)"
+
+msgid "Saved. The file is not encrypted: it holds passwords, keep it safe."
+msgstr "Збережено. Файл не зашифровано: у ньому є паролі, зберігайте його надійно."
+
+msgid "Choose a backup file first"
+msgstr "Спершу виберіть файл копії"
+
+msgid "Restoring…"
+msgstr "Відновлення…"
+
+msgid "Restored"
+msgstr "Відновлено"
+
+msgid "The restore did not finish: see the lines above"
+msgstr "Відновлення не завершилося: див. рядки вище"
+
+msgid "Loading…"
+msgstr "Завантаження…"
+
+msgid "Channel Analysis"
+msgstr "Аналіз каналів"
+
+msgid "A scan takes the Wi-Fi hotspot off its channel for a moment: connected devices drop, and some (macOS in particular) may not reconnect by themselves. This page scans as soon as it opens and again every few seconds. Reach the panel over USB or another way first if you depend on the hotspot."
+msgstr "Сканування ненадовго виводить точку доступу Wi-Fi з її каналу: підключені пристрої від'єднуються, а деякі (особливо macOS) можуть не під'єднатися знову самі. Ця сторінка сканує одразу після відкриття і потім кожні кілька секунд. Якщо ви залежите від точки доступу, спершу відкрийте панель через USB або іншим шляхом."
+
+msgid "Scan anyway"
+msgstr "Усе одно сканувати"
+
+msgid "Saved"
+msgstr "Збережено"
+
+msgid "CPU profile unavailable"
+msgstr "CPU profile unavailable"
+
+msgid "Power saving"
+msgstr "Power saving"
+
+msgid "Balanced"
+msgstr "Balanced"
+
+msgid "Performance"
+msgstr "Performance"
+
+msgid "Cores capped at about 60 %% of their maximum (cooler, less power)."
+msgstr "Cores capped at about 60 %% of their maximum (cooler, less power)."
+
+msgid "Schedutil across the full hardware range (the stock behaviour)."
+msgstr "Schedutil across the full hardware range (the stock behaviour)."
+
+msgid "Every cluster pinned at its hardware maximum."
+msgstr "Every cluster pinned at its hardware maximum."
+
+msgid "CPU profile"
+msgstr "CPU profile"
+
+msgid "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+msgstr "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+
+msgid "Saved profile: %s"
+msgstr "Saved profile: %s"
+
+msgid "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+msgstr "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+
+msgid "Clusters"
+msgstr "Clusters"
+
+msgid "Cores"
+msgstr "Cores"
+
+msgid "Governor"
+msgstr "Governor"
+
+msgid "Now"
+msgstr "Now"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Hardware max"
+msgstr "Hardware max"
+
+msgid "Frequencies in MHz."
+msgstr "Frequencies in MHz."
+
+msgid "Highlighted cores are online. A core taken offline stays offline, also after a reboot, until it is brought back. CPU0 always stays online."
+msgstr "Виділені ядра увімкнені. Вимкнене ядро залишається вимкненим, також після перезавантаження, доки його знову не увімкнуть. CPU0 завжди залишається увімкненим."
+
+msgid "Low latency: on"
+msgstr "Низька затримка: увімк."
+
+msgid "Low latency: off"
+msgstr "Низька затримка: вимк."
+
+msgid "Low latency keeps CPU0 out of its idle states, as ZTE's U30 Air firmware does: Wi-Fi delays are much shorter, and the device draws more power. Off by default."
+msgstr "Режим низької затримки не пускає CPU0 у стани простою, як прошивка ZTE U30 Air: затримки Wi-Fi набагато менші, а пристрій споживає більше енергії. Типово вимкнено."
+
+msgid "Thermal"
+msgstr "Температура"
+
+msgid "The kernel's thermal zones, read only. A zone with trip points throttles the cooling devices bound to it at its passive trip; a cooling state of 0 is no throttling."
+msgstr "Теплові зони ядра, лише читання. Зона з пороговими точками обмежує прив'язані до неї пристрої охолодження на своєму пасивному порозі; стан охолодження 0 означає відсутність обмеження."
+
+msgid "Zone"
+msgstr "Зона"
+
+msgid "Temperature"
+msgstr "Температура"
+
+msgid "Trip points"
+msgstr "Порогові точки"
+
+msgid "Cooling devices"
+msgstr "Пристрої охолодження"
+
+msgid "Stress test started"
+msgstr "Стрес-тест запущено"
+
+msgid "Saved: it takes effect at the next reboot"
+msgstr "Збережено: набуде чинності після наступного перезавантаження"
+
+msgid "CPU voltage offset (EXPERIMENTAL)"
+msgstr "Зсув напруги CPU (ЕКСПЕРИМЕНТАЛЬНО)"
+
+msgid "Experimental: changing the CPU voltage can make the device unstable, corrupt your data and permanently damage your device. Use it entirely at your own risk."
+msgstr "Експериментальна функція: зміна напруги CPU може зробити пристрій нестабільним, пошкодити ваші дані й назавжди пошкодити ваш пристрій. Ви використовуєте її повністю на власний ризик."
+
+msgid "CPU voltage offset unavailable"
+msgstr "Зсув напруги CPU недоступний"
+
+msgid "Not available with this kernel (a mainline kernel of this release or later has it)."
+msgstr "Недоступно з цим ядром (є в mainline-ядрі цього випуску або новішого)."
+
+msgid "Off: the stock voltages"
+msgstr "Вимкнено: заводські напруги"
+
+msgid "Changes at the next reboot"
+msgstr "Зміниться після наступного перезавантаження"
+
+msgid "Trial boot: kept once this boot has been up 10 minutes"
+msgstr "Пробне завантаження: збережеться, коли це завантаження пропрацює 10 хвилин"
+
+msgid "Kept: this offset passed its trial boot"
+msgstr "Збережено: цей зсув пройшов пробне завантаження"
+
+msgid "a boot with it ended without a clean shutdown"
+msgstr "завантаження з ним завершилося без коректного вимкнення"
+
+msgid "its trial boot ended before 10 minutes"
+msgstr "його пробне завантаження завершилося раніше ніж за 10 хвилин"
+
+msgid "invalid value"
+msgstr "неприпустиме значення"
+
+msgid "unknown SoC firmware"
+msgstr "невідома прошивка SoC"
+
+msgid "refused by the kernel"
+msgstr "відхилено ядром"
+
+msgid "the kernel could not start CPU scaling with it"
+msgstr "ядро не змогло запустити масштабування частоти CPU з ним"
+
+msgid "Offsets in µV for the three CPU domains (cores 0-3, 4-6 and 7), in whole steps. A new offset takes effect at the next reboot, as a trial: it is kept once that boot has been up 10 minutes, and dropped (back to 0) if a boot with it ends in a crash, a watchdog reset or a power cut."
+msgstr "Зсуви в µV для трьох доменів CPU (ядра CPU 0-3, 4-6 і 7), цілими кроками. Новий зсув набуває чинності після наступного перезавантаження, у пробному режимі: він зберігається, коли це завантаження пропрацює 10 хвилин, і скидається (назад до 0), якщо завантаження з ним завершиться збоєм, скиданням через watchdog або вимкненням живлення."
+
+msgid "Running now (µV)"
+msgstr "Працює зараз (µV)"
+
+msgid "Saved for the next boot (µV)"
+msgstr "Збережено для наступного завантаження (µV)"
+
+msgid "State"
+msgstr "Стан"
+
+msgid "Taken back automatically: %s µV (%s)"
+msgstr "Автоматично скасовано: %s µV (%s)"
+
+msgid "The SoC firmware of this device is not one whose voltage encoding is known: only the stock voltages are possible."
+msgstr "Прошивка SoC цього пристрою не належить до тих, чиє кодування напруги відоме: можливі лише заводські напруги."
+
+msgid "Domain"
+msgstr "Домен"
+
+msgid "Offset now (µV)"
+msgstr "Зсув зараз (µV)"
+
+msgid "Highest step"
+msgstr "Найвищий крок"
+
+msgid "New offset (µV)"
+msgstr "Новий зсув (µV)"
+
+msgid "Limits: %d to %d µV, in steps of %d µV."
+msgstr "Межі: від %d до %d µV, з кроком %d µV."
+
+msgid "Save for the next boot"
+msgstr "Зберегти для наступного завантаження"
+
+msgid "Each offset must be a multiple of %d µV between %d and %d."
+msgstr "Кожен зсув має бути кратним %d µV і перебувати між %d і %d."
+
+msgid "Type %s to confirm."
+msgstr "Введіть %s для підтвердження."
+
+msgid "Back to the stock voltages"
+msgstr "Повернути заводські напруги"
+
+msgid "Type %s to confirm:"
+msgstr "Введіть %s для підтвердження:"
+
+msgid "Run a 10-minute CPU stress test"
+msgstr "Запустити 10-хвилинний стрес-тест CPU"
+
+msgid "Test a new offset under load during its trial boot. The device may crash if the voltage is too low; the next boot then runs at the stock voltages."
+msgstr "Перевірте новий зсув під навантаженням під час його пробного завантаження. За надто низької напруги пристрій може дати збій; тоді наступне завантаження пройде на заводських напругах."
+
+msgid "A stress test is running."
+msgstr "Триває стрес-тест."
+
+msgid "USB role"
+msgstr "Роль USB"
+
+msgid "Current role"
+msgstr "Поточна роль"
+
+msgid "Switch USB role"
+msgstr "Змінити роль USB"
+
+msgid "Device mode"
+msgstr "Режим пристрою"
+
+msgid "Host mode"
+msgstr "Режим хоста"
+
+msgid "Enable host mode at boot"
+msgstr "Вмикати режим хоста під час завантаження"
+
+msgid "Apply role"
+msgstr "Застосувати роль"
+
+msgid "Host mode disconnects USB networking and serial on this port. F50 has no battery; management may be lost and a USB adapter usually needs a powered hub."
+msgstr "Режим хоста вимикає USB-мережу та послідовний порт на цьому роз'ємі. F50 не має батареї; доступ до керування може бути втрачено, а USB-адаптеру зазвичай потрібен хаб із живленням."
+
+msgid "USB network mode"
+msgstr "Режим USB-мережі"
+
+msgid "Network protocol"
+msgstr "Мережевий протокол"
+
+msgid "Apply duration"
+msgstr "Тривалість дії"
+
+msgid "Next reboot only"
+msgstr "Лише до наступного перезавантаження"
+
+msgid "Permanent"
+msgstr "Постійно"
+
+msgid "Enable selected protocol"
+msgstr "Увімкнути вибраний протокол"
+
+msgid "Save; apply after reboot"
+msgstr "Зберегти; застосувати після перезавантаження"
+
+msgid "NCM is the default. Windows does not natively support ECM; RNDIS changes enumeration. With Enable selected protocol off, only your choice is saved. Next reboot only applies once, then returns to NCM."
+msgstr "Типово використовується NCM. Windows не підтримує ECM штатно; RNDIS змінює перелічення пристрою. Якщо «Увімкнути вибраний протокол» вимкнено, зберігається лише ваш вибір. «Лише до наступного перезавантаження» застосовується один раз, потім знову використовується NCM."
+
+msgid "USB adapters"
+msgstr "USB-адаптери"
+
+msgid "Refresh"
+msgstr "Оновити"
+
+msgid "Available only in host mode. Refresh brings discovered USB adapters up; adding to LAN saves the bridge and reloads networking."
+msgstr "Доступно лише в режимі хоста. «Оновити» піднімає знайдені USB-адаптери; додавання до LAN зберігає міст і перезавантажує мережу."
+
+msgid "Recent modem operations"
+msgstr "Останні операції модема"
+
+msgid "Show"
+msgstr "Показати"
+
+msgid "The control panel's recent calls, of this boot and the one before: when, which page call or AT command, how long it took and how it ended (ok, error, busy, killed). No values, replies or messages are kept. Useful when the panel was stuck."
+msgstr "Останні виклики панелі керування в цьому та попередньому завантаженні: коли, який виклик сторінки чи AT-команда, скільки це тривало і чим закінчилося (ok, помилка, зайнято, перервано). Значення, відповіді та повідомлення не зберігаються. Корисно, коли панель зависла."
+
+msgid "Unavailable"
+msgstr "Недоступно"
+
+msgid "USB network mode is unavailable in host mode; host auto-start also disables USB network auto-start."
+msgstr "Режим USB-мережі недоступний у режимі хоста; автозапуск режиму хоста також вимикає автозапуск USB-мережі."
+
+msgid "Host mode immediately disconnects USB management. F50 has no battery and peripherals may need external power; make sure another management path exists."
+msgstr "Режим хоста одразу вимикає керування через USB. F50 не має батареї, а периферії може знадобитися зовнішнє живлення; переконайтеся, що є інший шлях керування."
+
+msgid "USB networking and serial will re-enumerate in device mode."
+msgstr "USB-мережа та послідовний порт будуть повторно перелічені в режимі пристрою."
+
+msgid "Switch USB role?"
+msgstr "Змінити роль USB?"
+
+msgid "Apply"
+msgstr "Застосувати"
+
+msgid "Switching USB role…"
+msgstr "Зміна ролі USB…"
+
+msgid "Switch failed: %s"
+msgstr "Помилка зміни: %s"
+
+msgid "Management connection lost; reconnect to confirm the USB role."
+msgstr "З'єднання керування втрачено; перепідключіться, щоб підтвердити роль USB."
+
+msgid "Switch request accepted; the USB connection may briefly disconnect."
+msgstr "Запит на зміну прийнято; USB-з'єднання може ненадовго перерватися."
+
+msgid "USB role applied"
+msgstr "Роль USB застосовано"
+
+msgid "Save USB network mode?"
+msgstr "Зберегти режим USB-мережі?"
+
+msgid "The network mode applies on the next reboot; USB management may need to reconnect."
+msgstr "Мережевий режим застосується після наступного перезавантаження; може знадобитися перепідключення керування через USB."
+
+msgid "Save the selection only; with the selected protocol disabled, the next boot still uses default NCM."
+msgstr "Зберігається лише вибір; якщо вибраний протокол вимкнено, наступне завантаження все одно використає типовий NCM."
+
+msgid "Save"
+msgstr "Зберегти"
+
+msgid "Saving USB network settings…"
+msgstr "Збереження налаштувань USB-мережі…"
+
+msgid "Settings saved"
+msgstr "Налаштування збережено"
+
+msgid "Save failed: %s"
+msgstr "Помилка збереження: %s"
+
+msgid "This boot"
+msgstr "Це завантаження"
+
+msgid "Previous boot"
+msgstr "Попереднє завантаження"
+
+msgid "Unable to confirm the role yet; reconnect and refresh the page."
+msgstr "Поки не вдається підтвердити роль; перепідключіться та оновіть сторінку."
+
+msgid "Switch to host mode to see USB adapters."
+msgstr "Перейдіть у режим хоста, щоб побачити USB-адаптери."
+
+msgid "Scanning USB adapters…"
+msgstr "Пошук USB-адаптерів…"
+
+msgid "No USB adapters found."
+msgstr "USB-адаптерів не знайдено."
+
+msgid "Link connected"
+msgstr "Канал підключено"
+
+msgid "No link; enable attempted"
+msgstr "Немає каналу; спробу ввімкнення виконано"
+
+msgid "Added to LAN"
+msgstr "Додано до LAN"
+
+msgid "Add to LAN"
+msgstr "Додати до LAN"
+
+msgid "Add USB adapter to LAN?"
+msgstr "Додати USB-адаптер до LAN?"
+
+msgid "This saves the bridge configuration and reloads networking; existing connections may briefly drop."
+msgstr "Конфігурацію мосту буде збережено, а мережу перезавантажено; наявні з'єднання можуть ненадовго перерватися."
+
+msgid "Add"
+msgstr "Додати"
+
+msgid "Adding USB adapter…"
+msgstr "Додавання USB-адаптера…"
+
+msgid "Add failed: %s"
+msgstr "Помилка додавання: %s"
+
+msgid "Leave empty to keep the saved value"
+msgstr "Залиште порожнім, щоб зберегти попереднє значення"
+
+msgid "Saved: %s"
+msgstr "Збережено: %s"
+
+msgid "Remove the saved value"
+msgstr "Видалити збережене значення"
+
+msgid "Presets"
+msgstr "Готові варіанти"
+
+msgid "Form (URL-encoded)"
+msgstr "Форма (URL-кодування)"
+
+msgid "Plain text"
+msgstr "Простий текст"
+
+msgid "Received messages are sent on as they reach the SMS pool. A failed delivery is retried after 30 s, then after twice as long each time (an hour at most), ten times in all."
+msgstr "Отримані повідомлення пересилаються, щойно потрапляють до пулу SMS. Невдале надсилання повторюється через 30 с, далі щоразу через удвічі довший інтервал (не більше години), усього десять разів."
+
+msgid "Forward received messages"
+msgstr "Пересилати отримані повідомлення"
+
+msgid "Message template"
+msgstr "Шаблон повідомлення"
+
+msgid "Placeholders: {sender}, {time}, {text}, {device}"
+msgstr "Підстановки: {sender}, {time}, {text}, {device}"
+
+msgid "Only these senders"
+msgstr "Лише ці відправники"
+
+msgid "One per line; empty: every sender. A * at the end matches the start of a sender."
+msgstr "По одному в рядку; порожньо: усі відправники. * в кінці збігається з початком відправника."
+
+msgid "Never these senders"
+msgstr "Ніколи ці відправники"
+
+msgid "Only messages containing one of these words"
+msgstr "Лише повідомлення, що містять одне з цих слів"
+
+msgid "One per line; empty: every message."
+msgstr "По одному в рядку; порожньо: усі повідомлення."
+
+msgid "Webhook"
+msgstr "Вебхук"
+
+msgid "Enabled"
+msgstr "Увімкнено"
+
+msgid "Address (http:// or https://)"
+msgstr "Адреса (http:// або https://)"
+
+msgid "Body"
+msgstr "Тіло"
+
+msgid "Fields: sender, time, text, device, message (the template filled in)"
+msgstr "Поля: sender, time, text, device, message (заповнений шаблон)"
+
+msgid "Custom body"
+msgstr "Власне тіло запиту"
+
+msgid "Empty: the standard fields (plain text: the message). Placeholders: {sender}, {time}, {text}, {device}, {message}. Each value is escaped for the chosen type. This body is shown again here: keep secrets in the address or a header."
+msgstr "Порожньо: стандартні поля (простий текст: повідомлення). Підстановки: {sender}, {time}, {text}, {device}, {message}. Кожне значення екранується відповідно до вибраного типу. Це тіло знову показується тут: секрети тримайте в адресі або в заголовку."
+
+msgid "Extra headers (one \"Name: value\" per line)"
+msgstr "Додаткові заголовки (по одному \"Ім'я: значення\" в рядку)"
+
+msgid "The answer must contain"
+msgstr "Відповідь має містити"
+
+msgid "Empty: every HTTP 2xx answer counts as delivered. With key=value (for example errcode=0), the answer must also be a JSON object that has this value under this key at its top level; otherwise the delivery fails. Only the result of the check is logged, never the answer."
+msgstr "Порожньо: будь-яка відповідь HTTP 2xx вважається доставкою. Якщо задано ключ=значення (наприклад, errcode=0), відповідь має також бути об’єктом JSON, у якого на верхньому рівні під цим ключем стоїть це значення; інакше доставка вважається невдалою. До журналу потрапляє лише результат перевірки, сама відповідь — ніколи."
+
+msgid "Bot token"
+msgstr "Токен бота"
+
+msgid "Chat ID (a number, or @channel)"
+msgstr "ID чату (число або @канал)"
+
+msgid "E-mail"
+msgstr "Ел. пошта"
+
+msgid "E-mail needs msmtp, which this image does not have"
+msgstr "Для пошти потрібен msmtp, якого немає в цьому образі"
+
+msgid "Mail server"
+msgstr "Поштовий сервер"
+
+msgid "Port"
+msgstr "Порт"
+
+msgid "Security"
+msgstr "Захист"
+
+msgid "None"
+msgstr "Немає"
+
+msgid "User name"
+msgstr "Ім'я користувача"
+
+msgid "Password"
+msgstr "Пароль"
+
+msgid "From"
+msgstr "Від"
+
+msgid "To"
+msgstr "Кому"
+
+msgid "SMS to another phone"
+msgstr "SMS на інший телефон"
+
+msgid "Phone number"
+msgstr "Номер телефону"
+
+msgid "Sent as one SMS: a longer message is cut short."
+msgstr "Надсилається одним SMS: довше повідомлення обрізається."
+
+msgid "Send test"
+msgstr "Надіслати тест"
+
+msgid "Tokens, passwords and the webhook address and headers stay on the device and are never shown again."
+msgstr "Токени, паролі, адреса й заголовки вебхука залишаються на пристрої й більше ніколи не показуються."
+
+msgid "Delivered"
+msgstr "Доставлено"
+
+msgid "Will retry"
+msgstr "Буде повторено"
+
+msgid "Failed"
+msgstr "Помилка"
+
+msgid "Filtered out"
+msgstr "Відфільтровано"
+
+msgid "Dropped"
+msgstr "Відкинуто"
+
+msgid "Clear"
+msgstr "Очистити"
+
+msgid "Test"
+msgstr "Тест"
+
+msgid "Delivery log"
+msgstr "Журнал доставки"
+
+msgid "Waiting to be delivered"
+msgstr "Очікують доставки"
+
+msgid "Time"
+msgstr "Час"
+
+msgid "Message"
+msgstr "Повідомлення"
+
+msgid "Target"
+msgstr "Ціль"
+
+msgid "Result"
+msgstr "Результат"
+
+msgid "Detail"
+msgstr "Подробиці"
+
+msgid "No deliveries yet"
+msgstr "Доставок поки немає"
+
+msgid "Test started with the saved settings; the result appears in the delivery log."
+msgstr "Тест запущено зі збереженими налаштуваннями; результат з'явиться в журналі доставки."
+
+msgid "Automatic without 2G (152)"
+msgstr "Автоматично без 2G (152)"
+
+msgid "4G only"
+msgstr "Лише 4G"
+
+msgid "Network mode: %s"
+msgstr "Мережевий режим: %s"
+
+msgid "EN-DC off"
+msgstr "EN-DC вимкнено"
+
+msgid "NR band lock: %s"
+msgstr "Фіксація діапазонів NR: %s"
+
+msgid "LTE band lock: %s"
+msgstr "Фіксація діапазонів LTE: %s"
+
+msgid "Cell lock: %s"
+msgstr "Блокування соти: %s"
+
+msgid "Modulation DL/UL"
+msgstr "Модуляція DL/UL"
+
+msgid "Estimated from current MCS"
+msgstr "Оцінка за поточним MCS"
+
+msgid "MCS DL/UL"
+msgstr "MCS DL/UL"
+
+msgid "BLER DL/UL"
+msgstr "BLER DL/UL"
+
+msgid "%s of %s"
+msgstr "%s з %s"
+
+msgid "The monthly cap is reached"
+msgstr "Місячний ліміт вичерпано"
+
+msgid "%d%% of the monthly cap is used"
+msgstr "Використано %d%% місячного ліміту"
+
+msgid "This billing cycle"
+msgstr "Поточний розрахунковий період"
+
+msgid "Link & traffic"
+msgstr "Канал і трафік"
+
+msgid "Download rate"
+msgstr "Швидкість завантаження"
+
+msgid "Upload rate"
+msgstr "Швидкість вивантаження"
+
+msgid "Total received"
+msgstr "Усього отримано"
+
+msgid "Total sent"
+msgstr "Усього надіслано"
+
+msgid "Used today"
+msgstr "Використано сьогодні"
+
+msgid "SIM source"
+msgstr "Джерело SIM"
+
+msgid "Session duration"
+msgstr "Тривалість сеансу"
+
+msgid "Registration"
+msgstr "Реєстрація"
+
+msgid "Data roaming"
+msgstr "Роумінг даних"
+
+msgid "Bandwidth"
+msgstr "Ширина смуги"
+
+msgid "AMBR DL/UL"
+msgstr "AMBR DL/UL"
+
+msgid "Wi-Fi · LAN · Device · SIM"
+msgstr "Wi-Fi · LAN · Пристрій · SIM"
+
+msgid "CPU usage"
+msgstr "Завантаження ЦП"
+
+msgid "Memory"
+msgstr "Пам'ять"
+
+msgid "Storage"
+msgstr "Сховище"
+
+msgid "Battery"
+msgstr "Батарея"
+
+msgid "Channel"
+msgstr "Канал"
+
+msgid "Encryption"
+msgstr "Шифрування"
+
+msgid "Hidden SSID"
+msgstr "Прихований SSID"
+
+msgid "Country"
+msgstr "Країна"
+
+msgid "AP status"
+msgstr "Стан точки доступу"
+
+msgid "USB network"
+msgstr "USB-мережа"
+
+msgid "Connection tracking"
+msgstr "Відстеження з'єднань"
+
+msgid "LAN address"
+msgstr "Адреса LAN"
+
+msgid "Wi-Fi clients"
+msgstr "Клієнти Wi-Fi"
+
+msgid "DHCP leases"
+msgstr "Оренди DHCP"
+
+msgid "Device model"
+msgstr "Модель пристрою"
+
+msgid "System"
+msgstr "Система"
+
+msgid "Modem"
+msgstr "Модем"
+
+msgid "Carrier"
+msgstr "Оператор"
+
+msgid "Own number"
+msgstr "Власний номер"
+
+msgid "Module"
+msgstr "Модуль"
+
+msgid "Firmware"
+msgstr "Мікропрограма"
+
+msgid "Show SIM identifiers"
+msgstr "Показати ідентифікатори SIM"
+
+msgid "Quick controls"
+msgstr "Швидкі дії"
+
+msgid "Data connection"
+msgstr "Передавання даних"
+
+msgid "Cellular radio"
+msgstr "Мобільний радіомодуль"
+
+msgid "Wi-Fi hotspot"
+msgstr "Точка доступу Wi-Fi"
+
+msgid "Restart modem"
+msgstr "Перезапустити модем"
+
+msgid "Power off or restart"
+msgstr "Вимкнути або перезапустити"
+
+msgid "Switch to Android"
+msgstr "Перейти до Android"
+
+msgid "Lock Linux"
+msgstr "Закріпити Linux"
+
+msgid "Neighbor cells"
+msgstr "Сусідні соти"
+
+msgid "RAT/Band"
+msgstr "RAT/діапазон"
+
+msgid "Frequency"
+msgstr "Частота"
+
+msgid "Running %s…"
+msgstr "Виконується %s…"
+
+msgid "Started in background: %s"
+msgstr "Запущено у фоні: %s"
+
+msgid "Done: %s"
+msgstr "Готово: %s"
+
+msgid "Disconnecting data…"
+msgstr "Вимкнення передавання даних…"
+
+msgid "Connecting data…"
+msgstr "Підключення передавання даних…"
+
+msgid "Turn off cellular radio"
+msgstr "Вимкнути мобільний радіомодуль"
+
+msgid "This SIM will have no calls, SMS or data, and its radio stays off after a reboot until you turn it on again."
+msgstr "Ця SIM не матиме дзвінків, SMS і даних, а її радіо лишатиметься вимкненим і після перезавантаження, доки ви знову його не ввімкнете."
+
+msgid "Turn on cellular radio"
+msgstr "Увімкнути мобільний радіомодуль"
+
+msgid "The radio of the SIM in use comes on and stays on after a reboot (up to about 1 minute)."
+msgstr "Радіо SIM, що використовується, увімкнеться й лишиться ввімкненим після перезавантаження (до 1 хвилини)."
+
+msgid "Turn data roaming off"
+msgstr "Вимкнути роумінг даних"
+
+msgid "While the SIM is registered on a roaming network, mobile data stays off; SMS, calls and the registration are not affected. Some SIMs report roaming at home (an MVNO, national roaming): there, data would stop as well."
+msgstr "Поки SIM-картка зареєстрована в роумінговій мережі, мобільні дані залишаються вимкненими; SMS, дзвінки та реєстрація не зачіпаються. Деякі SIM-картки повідомляють про роумінг і вдома (MVNO, національний роумінг): там дані теж зупиняться."
+
+msgid "Allow data roaming"
+msgstr "Дозволити роумінг даних"
+
+msgid "Mobile data is used on roaming networks too, which can cost extra. Some SIMs report roaming at home (an MVNO, national roaming) and need this to have data at all."
+msgstr "Мобільні дані використовуються і в роумінгових мережах, що може коштувати додатково. Деякі SIM-картки повідомляють про роумінг і вдома (MVNO, національний роумінг) і без цього взагалі не отримують даних."
+
+msgid "Cellular connectivity may stop for 1–2 minutes."
+msgstr "Мобільний зв'язок може перерватися на 1–2 хвилини."
+
+msgid "All connections will be interrupted."
+msgstr "Усі з'єднання буде перервано."
+
+msgid "Power off"
+msgstr "Вимкнути"
+
+msgid "Restart"
+msgstr "Перезапустити"
+
+msgid "The next boot will enter Android and reboot now. This management page and cellular sharing will disconnect."
+msgstr "Наступне завантаження буде в Android, перезавантаження відбудеться зараз. Ця сторінка керування та роздача мобільного зв'язку від'єднаються."
+
+msgid "To return to OpenWrt, run mu300-next-boot linux in Android and reboot."
+msgstr "Щоб повернутися до OpenWrt, виконайте mu300-next-boot linux в Android і перезавантажте пристрій."
+
+msgid "Or do nothing: after five boots that do not finish, it falls back automatically."
+msgstr "Або нічого не робіть: після п'яти незавершених завантажень відбудеться автоматичне повернення."
+
+msgid "Preparing Android boot and rebooting…"
+msgstr "Підготовка завантаження Android і перезавантаження…"
+
+msgid "Switch and reboot"
+msgstr "Перейти й перезавантажити"
+
+msgid "Not automatic: %s. The network mode and band locks are stored in the modem and stay in force in Android too; if the network does not match them, Android shows No Service."
+msgstr "Не автоматично: %s. Режим мережі та блокування діапазонів зберігаються в модемі й діють і в Android; якщо мережа їм не відповідає, Android показує «Немає мережі»."
+
+msgid "Reset locks and switch"
+msgstr "Скинути блокування й перемкнути"
+
+msgid "Unlock Linux"
+msgstr "Зняти закріплення Linux"
+
+msgid "After five boots in a row that do not finish, the device falls back to Android again."
+msgstr "Після п'яти незавершених завантажень поспіль пристрій знову повернеться до Android."
+
+msgid "Unlock"
+msgstr "Зняти закріплення"
+
+msgid "The device will never switch to Android by itself, not even after failed boots: Android only from this page (Switch to Android) or with mu300-next-boot android."
+msgstr "Пристрій ніколи не перемкнеться на Android сам, навіть після невдалих завантажень: на Android лише з цієї сторінки (Перемкнутися на Android) або командою mu300-next-boot android."
+
+msgid "A new kernel from an update still gets its first boots on trial, and locks again once one of them succeeds."
+msgstr "Нове ядро з оновлення все одно спершу завантажується в пробному режимі й знову закріплюється після першого вдалого завантаження."
+
+msgid "If the system itself no longer starts, the device waits on USB (telnet) instead of going to Android."
+msgstr "Якщо сама система більше не запускається, пристрій чекає через USB (telnet), а не переходить на Android."
+
+msgid "Hide SIM identifiers"
+msgstr "Приховати ідентифікатори SIM"
+
+msgid "Lock cell %s?"
+msgstr "Зафіксувати соту %s?"
+
+msgid "The radio stack will restart (SFUN); cellular service will stop for about 30 seconds."
+msgstr "Радіостек буде перезапущено (SFUN); мобільний зв'язок перерветься приблизно на 30 секунд."
+
+msgid "Locking %s in the background, about 30 seconds"
+msgstr "Фіксація %s у фоні, близько 30 секунд"
+
+msgid "Locked %s in the background; the status will refresh shortly"
+msgstr "%s зафіксовано у фоні; стан незабаром оновиться"
+
+msgid "Lock failed: %s"
+msgstr "Помилка фіксації: %s"
+
+msgid "Resetting the network locks to automatic (SFUN restart, about 30 seconds)…"
+msgstr "Скидання мережевих блокувань на автоматичний режим (перезапуск SFUN, близько 30 секунд)…"
+
+msgid "Reset failed: %s. The saved lock settings were kept."
+msgstr "Скидання не вдалося: %s. Збережені налаштування блокувань залишено."
+
+msgid "The lock reset was not confirmed in time; switching anyway."
+msgstr "Скидання блокувань не підтвердилося вчасно; перемикання все одно виконується."
+
+msgid "Internal SIM selected: in use after a reboot"
+msgstr "Вибрано вбудовану SIM: використовуватиметься після перезавантаження"
+
+msgid "Internal SIM selected, but not supported on this device: the external SIM is in use"
+msgstr "Вибрано вбудовану SIM, але на цьому пристрої вона не підтримується: використовується зовнішня SIM"
+
+msgid "Uptime %s"
+msgstr "Час роботи %s"
+
+msgid "Radio off"
+msgstr "Радіо вимкнено"
+
+msgid "No response"
+msgstr "Немає відповіді"
+
+msgid "Modem busy: cellular readings from %s ago"
+msgstr "Модем зайнятий: дані стільникової мережі %s тому"
+
+msgid "%s · Signal %s %s/10"
+msgstr "%s · Сигнал %s %s/10"
+
+msgid "%s · Signal %s"
+msgstr "%s · Сигнал %s"
+
+msgid "Anchor B%s"
+msgstr "Опорна сота B%s"
+
+msgid "No serving cell"
+msgstr "Немає обслуговуючої соти"
+
+msgid "Version %s is out: update"
+msgstr "Вийшла версія %s: оновіть"
+
+msgid "Not registered"
+msgstr "Не зареєстровано"
+
+msgid "Registered"
+msgstr "Зареєстровано"
+
+msgid "Searching"
+msgstr "Пошук"
+
+msgid "Registration denied"
+msgstr "У реєстрації відмовлено"
+
+msgid "Registered (roaming)"
+msgstr "Зареєстровано (роумінг)"
+
+msgid "Emergency only"
+msgstr "Лише екстрені виклики"
+
+msgid "Status %s"
+msgstr "Стан %s"
+
+msgid "Off: data held back while roaming"
+msgstr "Вимк.: дані призупинено в роумінгу"
+
+msgid "Allowed"
+msgstr "Дозволено"
+
+msgid "Off"
+msgstr "Вимк."
+
+msgid "LTE anchor"
+msgstr "Опорна сота LTE"
+
+msgid "LTE link"
+msgstr "Канал LTE"
+
+msgid "Hidden"
+msgstr "Прихований"
+
+msgid "No"
+msgstr "Ні"
+
+msgid "Running"
+msgstr "Працює"
+
+msgid "Not running"
+msgstr "Не працює"
+
+msgid "Connected"
+msgstr "Підключено"
+
+msgid "Disconnected"
+msgstr "Від'єднано"
+
+msgid "%s entries"
+msgstr "Записів: %s"
+
+msgid "%s clients"
+msgstr "Клієнтів: %s"
+
+msgid "Recent DHCP leases"
+msgstr "Останні оренди DHCP"
+
+msgid "Board"
+msgstr "Плата"
+
+msgid "No temperature readings"
+msgstr "Немає даних про температуру"
+
+msgid "Cluster %d"
+msgstr "Кластер %d"
+
+msgid "Total %s · free %s"
+msgstr "Усього %s · вільно %s"
+
+msgid "charging %s W"
+msgstr "заряджається, %s Вт"
+
+msgid "charging"
+msgstr "заряджається"
+
+msgid "drawing %s W"
+msgstr "споживає %s Вт"
+
+msgid "not charging"
+msgstr "не заряджається"
+
+msgid "on battery"
+msgstr "від батареї"
+
+msgid "full"
+msgstr "заряджена"
+
+msgid "USB in %s W"
+msgstr "вхід USB %s Вт"
+
+msgid "Online"
+msgstr "У мережі"
+
+msgid "AT adapter unavailable"
+msgstr "AT-адаптер недоступний"
+
+msgid "Linux locked"
+msgstr "Linux закріплено"
+
+msgid "Installing the language pack…"
+msgstr "Встановлення мовного пакета…"
+
+msgid "The language pack is installed"
+msgstr "Мовний пакет встановлено"
+
+msgid "The language pack could not be installed"
+msgstr "Не вдалося встановити мовний пакет"
+
+msgid "Language of the browser"
+msgstr "Мова браузера"
+
+msgid "Language of the web interface"
+msgstr "Мова вебінтерфейсу"
+
+msgid "English, Turkish and Chinese come with the system; the language pack adds the others."
+msgstr "Англійська, турецька та китайська входять до системи; мовний пакет додає решту."
+
+msgid "The same setting is in System > System > Language and Style."
+msgstr "Те саме налаштування є в Система > Система > Мова та стиль."
+
+msgid "Language pack"
+msgstr "Мовний пакет"
+
+msgid "The language pack (mu300-extra-lang.tar.gz, about 2 MB) adds LuCI in about 40 more languages and this panel in 29 of them. Download it from the release of this system, or upload the file from the release page when the device has no internet."
+msgstr "Мовний пакет (mu300-extra-lang.tar.gz, близько 2 МБ) додає LuCI приблизно 40 мовами, а цю панель — 29 з них. Завантажте його з релізу цієї системи або вивантажте файл зі сторінки релізу, якщо пристрій не має інтернету."
+
+msgid "Download from the release"
+msgstr "Завантажити з релізу"
+
+msgid "Release"
+msgstr "Реліз"
+
+msgid "Enable all"
+msgstr "Увімкнути всі"
+
+msgid "Disable all"
+msgstr "Вимкнути всі"
+
+msgid "Remove the language pack"
+msgstr "Видалити мовний пакет"
+
+msgid "Remove the language pack?"
+msgstr "Видалити мовний пакет?"
+
+msgid "Its languages disappear from the list; a page in one of them switches to English."
+msgstr "Його мови зникнуть зі списку; сторінка однією з них перемкнеться на англійську."
+
+msgid "Remove"
+msgstr "Видалити"
+
+msgid "Disable"
+msgstr "Вимкнути"
+
+msgid "Enable"
+msgstr "Увімкнути"
+
+msgid "LuCI and this panel"
+msgstr "LuCI і ця панель"
+
+msgid "LuCI only"
+msgstr "Лише LuCI"
+
+msgid "Disabled"
+msgstr "Вимкнено"
+
+msgid "Language"
+msgstr "Мова"
+
+msgid "Code"
+msgstr "Код"
+
+msgid "Translated"
+msgstr "Перекладено"
+
+msgid "LuCI's own translations come from OpenWrt. This panel's translations other than Turkish and Chinese are machine (AI) translations; corrections are welcome."
+msgstr "Власні переклади LuCI взято з OpenWrt. Переклади цієї панелі, окрім турецького та китайського, машинні (ШІ); виправлення вітаються."
+
+msgid "Automatic"
+msgstr "Автоматично"
+
+msgid "Serving network"
+msgstr "Обслуговуюча мережа"
+
+msgid "Network mode · EN-DC"
+msgstr "Мережевий режим · EN-DC"
+
+msgid "Refresh lock status"
+msgstr "Оновити стан фіксації"
+
+msgid "Apply at startup"
+msgstr "Застосовувати під час запуску"
+
+msgid "Turning this off only stops replay at the next boot; saved network mode, EN-DC, band and cell settings remain."
+msgstr "Вимкнення лише скасовує повторне застосування під час наступного завантаження; збережені мережевий режим, EN-DC, діапазони та соти залишаються."
+
+msgid "Band locking"
+msgstr "Фіксація діапазонів"
+
+msgid "NR bands"
+msgstr "Діапазони NR"
+
+msgid "LTE bands"
+msgstr "Діапазони LTE"
+
+msgid "Apply NR bands"
+msgstr "Застосувати діапазони NR"
+
+msgid "Apply LTE bands"
+msgstr "Застосувати діапазони LTE"
+
+msgid "Neighbor cells and cell locking"
+msgstr "Сусідні соти та фіксація соти"
+
+msgid "Lock current serving cell"
+msgstr "Зафіксувати поточну обслуговуючу соту"
+
+msgid "Unlock cell"
+msgstr "Зняти фіксацію соти"
+
+msgid "Enter a cell"
+msgstr "Ввести соту"
+
+msgid "Type"
+msgstr "Тип"
+
+msgid "Channel number (EARFCN / NR-ARFCN)"
+msgstr "Номер каналу (EARFCN / NR-ARFCN)"
+
+msgid "Lock this cell"
+msgstr "Заблокувати цю соту"
+
+msgid "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. A channel number, not a frequency in MHz; the cell need not be in the neighbor list."
+msgstr "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. Номер каналу, а не частота в МГц; сота не мусить бути в списку сусідніх."
+
+msgid "Applying restarts the radio stack (SFUN) and briefly interrupts cellular service. Settings are saved and replayed by the plugin after AT is ready when Apply at startup is enabled. A platform pre-radio hook can replay without a restart. Apply with no bands selected to restore automatic mode."
+msgstr "Застосування перезапускає радіостек (SFUN) і ненадовго перериває мобільний зв'язок. Налаштування зберігаються і, якщо ввімкнено «Застосовувати під час запуску», повторно застосовуються плагіном після готовності AT. Хук платформи перед запуском радіо може застосувати їх без перезапуску. Щоб повернути автоматичний режим, застосуйте без вибраних діапазонів."
+
+msgid "Back to automatic"
+msgstr "Повернути автоматичний режим"
+
+msgid "The network mode and band locks are stored in the modem and stay in force in Android too. If you are not sure, reset them before switching to Android."
+msgstr "Режим мережі та блокування діапазонів зберігаються в модемі й діють і в Android. Якщо не впевнені, скиньте їх перед перемиканням на Android."
+
+msgid "Reset all to automatic"
+msgstr "Скинути все на автоматичний режим"
+
+msgid "Apply “%s”?"
+msgstr "Застосувати «%s»?"
+
+msgid "Applying %s in the background…"
+msgstr "Застосування %s у фоні…"
+
+msgid "Applying %s in the background… (SFUN restart and re-registration, about 30 seconds)"
+msgstr "Застосування %s у фоні… (перезапуск SFUN і повторна реєстрація, близько 30 секунд)"
+
+msgid "Queued: another lock is being applied during SFUN restart; this will take effect afterward"
+msgstr "У черзі: під час перезапуску SFUN застосовується інша фіксація; ця набуде чинності після неї"
+
+msgid "Confirming the EN-DC status…"
+msgstr "Підтвердження стану EN-DC…"
+
+msgid "Confirming apply at startup…"
+msgstr "Підтвердження застосування під час запуску…"
+
+msgid "Started in background: %s (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Запущено у фоні: %s (перезапуск SFUN, близько 30 секунд); зчитування стану…"
+
+msgid "Disable EN-DC (NSA anchor)"
+msgstr "Вимкнути EN-DC (опорна сота NSA)"
+
+msgid "Enable EN-DC (NSA anchor)"
+msgstr "Увімкнути EN-DC (опорна сота NSA)"
+
+msgid "Disable apply at startup"
+msgstr "Вимкнути застосування під час запуску"
+
+msgid "Enable apply at startup"
+msgstr "Увімкнути застосування під час запуску"
+
+msgid "Reading the modem directly (a few seconds at most)…"
+msgstr "Пряме зчитування модема (щонайбільше кілька секунд)…"
+
+msgid "Refresh failed"
+msgstr "Помилка оновлення"
+
+msgid "Refreshed"
+msgstr "Оновлено"
+
+msgid "NR bands: back to automatic"
+msgstr "Діапазони NR: знову автоматично"
+
+msgid "LTE bands: back to automatic"
+msgstr "Діапазони LTE: знову автоматично"
+
+msgid "Network mode automatic, EN-DC on, all LTE and NR bands, no cell lock. The saved lock settings are cleared, so nothing is replayed at startup."
+msgstr "Режим мережі автоматичний, EN-DC увімкнено, усі діапазони LTE і NR, без блокування соти. Збережені налаштування видаляються, під час запуску нічого не застосовується повторно."
+
+msgid "Reset"
+msgstr "Скинути"
+
+msgid "Remove the %s cell lock"
+msgstr "Зняти фіксацію соти %s"
+
+msgid "The radio stack will restart (SFUN), taking about 30 seconds."
+msgstr "Радіостек буде перезапущено (SFUN), це займе близько 30 секунд."
+
+msgid "Removing the %s cell lock…"
+msgstr "Зняття фіксації соти %s…"
+
+msgid "Unlock failed: %s"
+msgstr "Помилка зняття фіксації: %s"
+
+msgid "Unlock started in background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Зняття фіксації запущено у фоні (перезапуск SFUN, близько 30 секунд); зчитування стану…"
+
+msgid "Locking %s in the background…"
+msgstr "Фіксація %s у фоні…"
+
+msgid "Locked %s in the background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "%s зафіксовано у фоні (перезапуск SFUN, близько 30 секунд); зчитування стану…"
+
+msgid "Enter a channel number and a PCI in the ranges below"
+msgstr "Введіть номер каналу та PCI в діапазонах нижче"
+
+msgid "No serving-network data"
+msgstr "Немає даних про обслуговуючу мережу"
+
+msgid "NR serving cell"
+msgstr "Обслуговуюча сота NR"
+
+msgid "Status confirmed"
+msgstr "Стан підтверджено"
+
+msgid "Readback timed out; select “Refresh lock status”"
+msgstr "Час зчитування минув; натисніть «Оновити стан фіксації»"
+
+msgid "Reset verified: network mode automatic, EN-DC on, all bands, no cell lock; the saved lock settings are cleared"
+msgstr "Скидання підтверджено: режим мережі автоматичний, EN-DC увімкнено, усі діапазони, без блокування соти; збережені налаштування блокувань видалено"
+
+msgid "Applied (EN-DC does not require a radio-stack restart)"
+msgstr "Застосовано (EN-DC не потребує перезапуску радіостека)"
+
+msgid "Apply at startup is on"
+msgstr "Застосування під час запуску ввімкнено"
+
+msgid "Apply at startup is off"
+msgstr "Застосування під час запуску вимкнено"
+
+msgid "EN-DC status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Час зчитування стану EN-DC минув; для перевірки натисніть «Оновити стан фіксації»"
+
+msgid "Apply-at-startup status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Час зчитування застосування під час запуску минув; для перевірки натисніть «Оновити стан фіксації»"
+
+msgid "Locked cells"
+msgstr "Зафіксовані соти"
+
+msgid "Unlock %s"
+msgstr "Зняти фіксацію %s"
+
+msgid "Automatic (%d supported)"
+msgstr "Автоматично (підтримується: %d)"
+
+msgid "%d locked: %s"
+msgstr "Зафіксовано %d: %s"
+
+msgid "Repair DNS?"
+msgstr "Відновити DNS?"
+
+msgid "This removes the DNS forwarder of a package that is no longer installed. If no other DNS server is left, the device then uses the DNS servers of the mobile connection: the carrier sees the names you look up, outside any proxy or VPN."
+msgstr "Буде видалено DNS-переадресацію пакета, який більше не встановлено. Якщо інших DNS-серверів не залишиться, пристрій використовуватиме DNS-сервери мобільного з'єднання: оператор бачитиме імена, які ви запитуєте, поза будь-яким проксі чи VPN."
+
+msgid "Repair DNS"
+msgstr "Відновити DNS"
+
+msgid "Packages installed on the device are not part of a release image. An update writes them down, and the new system installs them again at its first boot, once it is online. Until a package is back its settings are set aside."
+msgstr "Пакети, встановлені на пристрої, не входять до образу випуску. Оновлення записує їх, і нова система встановлює їх знову під час першого запуску, щойно з'явиться інтернет. Поки пакет не повернеться, його налаштування відкладено."
+
+msgid "No packages to install again."
+msgstr "Немає пакетів для повторного встановлення."
+
+msgid "All back"
+msgstr "Усі повернуто"
+
+msgid "Not installed yet"
+msgstr "Ще не встановлено"
+
+msgid "Could not be installed again"
+msgstr "Не вдалося встановити знову"
+
+msgid "Waiting for the internet"
+msgstr "Очікування інтернету"
+
+msgid "Given up: no internet at five boots"
+msgstr "Припинено: немає інтернету за п'ять запусків"
+
+msgid "Skipped"
+msgstr "Пропущено"
+
+msgid "Written down by the update from %s"
+msgstr "Записано оновленням з %s"
+
+msgid "Installed again"
+msgstr "Встановлено знову"
+
+msgid "Install them yourself from where you got them (a package file: apk add --allow-untrusted FILE.apk)."
+msgstr "Встановіть їх самі з того джерела, звідки ви їх узяли (файл пакета: apk add --allow-untrusted FILE.apk)."
+
+msgid "Settings set aside in /etc/mu300/orphaned-config"
+msgstr "Відкладені налаштування в /etc/mu300/orphaned-config"
+
+msgid "DNS still goes to a package that is not installed: the device has no DNS through it."
+msgstr "DNS досі спрямовано на невстановлений пакет: через нього пристрій не має DNS."
+
+msgid "Try again"
+msgstr "Спробувати знову"
+
+msgid "Dismiss the note"
+msgstr "Приховати сповіщення"
+
+msgid "started"
+msgstr "запущено"
+
+msgid "asleep now (asked)"
+msgstr "сон зараз (на запит)"
+
+msgid "woken: power daemon stopping"
+msgstr "пробудження: служба живлення зупиняється"
+
+msgid "woken by a key"
+msgstr "пробудження кнопкою"
+
+msgid "woken by the Wi-Fi key"
+msgstr "пробудження кнопкою Wi-Fi"
+
+msgid "woken (mu300-power wake)"
+msgstr "пробудження (mu300-power wake)"
+
+msgid "woken by a computer on USB"
+msgstr "пробудження комп'ютером через USB"
+
+msgid "woken: plugged in"
+msgstr "пробудження: підключено живлення"
+
+msgid "woken by a Wi-Fi client"
+msgstr "пробудження клієнтом Wi-Fi"
+
+msgid "charging boot (powered on by the charger)"
+msgstr "зарядне завантаження (увімкнено зарядним пристроєм)"
+
+msgid "the hotspot is down"
+msgstr "точку доступу вимкнено"
+
+msgid "the VPN is still stopped"
+msgstr "VPN досі зупинено"
+
+msgid "5G (EN-DC) is still off after a failed resume"
+msgstr "5G (EN-DC) досі вимкнено після невдалого відновлення"
+
+msgid "self-check: %s"
+msgstr "самоперевірка: %s"
+
+msgid "asleep: no client for %d min (%s)"
+msgstr "сон: немає клієнтів %d хв (%s)"
+
+msgid "asleep: profile now %s"
+msgstr "сон: профіль тепер %s"
+
+msgid "woken by the %s key"
+msgstr "пробудження кнопкою %s"
+
+msgid "the modem is suspended (%s)"
+msgstr "модем призупинено (%s)"
+
+msgid "Enter a whole number from 0 to %d"
+msgstr "Введіть ціле число від 0 до %d"
+
+msgid "Power status unavailable"
+msgstr "Стан живлення недоступний"
+
+msgid "Plugged in"
+msgstr "Від мережі"
+
+msgid "On battery"
+msgstr "Від батареї"
+
+msgid "Saver"
+msgstr "Економія"
+
+msgid "Asleep: hotspot off"
+msgstr "Сон: точку доступу вимкнено"
+
+msgid "Charging boot: press the Wi-Fi key to start"
+msgstr "Запуск у режимі заряджання: натисніть клавішу Wi-Fi для запуску"
+
+msgid "Awake"
+msgstr "Активно"
+
+msgid "forced"
+msgstr "примусово"
+
+msgid "automatic, battery under %d %%"
+msgstr "автоматично, заряд нижче %d %%"
+
+msgid "automatic"
+msgstr "автоматично"
+
+msgid "Nobody connected for %d s"
+msgstr "Ніхто не підключений уже %d с"
+
+msgid "Power source"
+msgstr "Джерело живлення"
+
+msgid "Profile"
+msgstr "Профіль"
+
+msgid "Profile in use: %s (%s)"
+msgstr "Використовуваний профіль: %s (%s)"
+
+msgid "%d %%, %s, %d mV, %d mA, %.1f °C"
+msgstr "%d %%, %s, %d mV, %d mA, %.1f °C"
+
+msgid "Charger"
+msgstr "Зарядний пристрій"
+
+msgid "Charger: %s, %s port"
+msgstr "Зарядний пристрій: %s, порт %s"
+
+msgid "Charging paused: battery temperature"
+msgstr "Заряджання призупинено: температура батареї"
+
+msgid "Charging paused: charge limit"
+msgstr "Заряджання призупинено: межа заряду"
+
+msgid "Sleep now"
+msgstr "Приспати зараз"
+
+msgid "Wake"
+msgstr "Розбудити"
+
+msgid "Nobody connected means no Wi-Fi client and no computer on USB. The Wi-Fi key, a computer on USB or the charger wake the device."
+msgstr "Ніхто не підключений означає: немає клієнтів Wi-Fi і немає комп'ютера на USB. Клавіша Wi-Fi, комп'ютер на USB або зарядний пристрій будять пристрій."
+
+msgid "Automatic: plugged in / on battery"
+msgstr "Автоматично: від мережі / від батареї"
+
+msgid "Switch to Saver under %"
+msgstr "Переходити в Економію при заряді нижче %"
+
+msgid "Stop charging at"
+msgstr "Припиняти заряджання на"
+
+msgid "0 % never charges the battery (the device runs on the charger), 100 % charges it full; in between, charging stops at that level and starts again 5 points lower. Under 5 % the battery always charges."
+msgstr "0 % ніколи не заряджає батарею (пристрій працює від зарядного пристрою), 100 % заряджає її повністю; у проміжку заряджання зупиняється на цьому рівні й відновлюється на 5 пунктів нижче. Нижче 5 % батарея заряджається завжди."
+
+msgid "80 % keeps the battery healthier on a device that stays plugged in."
+msgstr "80 % бережуть батарею пристрою, який постійно підключений до мережі."
+
+msgid "When the charger switches the device on"
+msgstr "Коли зарядний пристрій вмикає пристрій"
+
+msgid "Charge only, until a key starts it"
+msgstr "Лише заряджання, доки кнопка не запустить його"
+
+msgid "Start normally"
+msgstr "Звичайний запуск"
+
+msgid "Keep as is"
+msgstr "Не змінювати"
+
+msgid "LTE only (5G off)"
+msgstr "Лише LTE (5G вимкнено)"
+
+msgid "On"
+msgstr "Увімк."
+
+msgid "Full"
+msgstr "Повна"
+
+msgid "Eco: big core off"
+msgstr "Еко: велике ядро вимкнено"
+
+msgid "Hotspot off after (min, 0 = never)"
+msgstr "Вимикати точку доступу через (хв, 0 = ніколи)"
+
+msgid "Modem when idle"
+msgstr "Модем у простої"
+
+msgid "LEDs when idle"
+msgstr "Індикатори в простої"
+
+msgid "Ignored lines in power.conf: %s"
+msgstr "Ігноровані рядки в power.conf: %s"
+
+msgid "Configure how this plugin connects to the current Unisoc OpenWrt platform. Changes do not require editing the dashboard, AT, locks or SMS pages."
+msgstr "Налаштування підключення цього плагіна до поточної платформи Unisoc OpenWrt. Зміни не потребують редагування сторінок панелі, AT, фіксації чи SMS."
+
+msgid "Platform adapter"
+msgstr "Адаптер платформи"
+
+msgid "AT backend"
+msgstr "Бекенд AT"
+
+msgid "Auto-detect"
+msgstr "Автовизначення"
+
+msgid "atinout + serial port"
+msgstr "atinout + послідовний порт"
+
+msgid "Custom adapter"
+msgstr "Власний адаптер"
+
+msgid "AT serial port"
+msgstr "Послідовний порт AT"
+
+msgid "Custom AT adapter"
+msgstr "Власний AT-адаптер"
+
+msgid "The executable receives a timeout in seconds and the complete AT command, in that order. It must share the serial lock with the platform dialer."
+msgstr "Виконуваний файл отримує тайм-аут у секундах і повну AT-команду саме в такому порядку. Він має використовувати спільне блокування послідовного порту з дозвонювачем платформи."
+
+msgid "SMS adapter"
+msgstr "SMS-адаптер"
+
+msgid "Implement the list, show, send, delete and sync subcommands; leave blank to find mu300-sms automatically."
+msgstr "Реалізує підкоманди list, show, send, delete і sync; залиште порожнім, щоб mu300-sms було знайдено автоматично."
+
+msgid "SMS pool directory"
+msgstr "Каталог сховища SMS"
+
+msgid "Cellular logical interface"
+msgstr "Логічний інтерфейс мобільного зв'язку"
+
+msgid "Cellular IPv6 interface"
+msgstr "Інтерфейс IPv6 мобільного зв'язку"
+
+msgid "Cellular network device"
+msgstr "Мережевий пристрій мобільного зв'язку"
+
+msgid "Leave blank to detect from netifd"
+msgstr "Залиште порожнім для визначення через netifd"
+
+msgid "LAN bridge"
+msgstr "Міст LAN"
+
+msgid "Wi-Fi device"
+msgstr "Пристрій Wi-Fi"
+
+msgid "USB device"
+msgstr "Пристрій USB"
+
+msgid "Maximum wait for AT readiness (seconds)"
+msgstr "Максимальне очікування готовності AT (секунди)"
+
+msgid "Home dashboard refresh interval (seconds)"
+msgstr "Інтервал оновлення головної панелі (секунди)"
+
+msgid "Controls only the home dashboard refresh rate; 0.5–60 seconds. Reopen Home after saving to apply."
+msgstr "Впливає лише на частоту оновлення головної панелі; 0,5–60 секунд. Щоб застосувати, після збереження знову відкрийте головну сторінку."
+
+msgid "Persistent state directory"
+msgstr "Каталог постійного стану"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM. Mobile data will disconnect briefly."
+msgstr "Switching SIM. Mobile data will disconnect briefly."
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switch failed; check SIM readiness and hot switching."
+msgstr "SIM switch failed; check SIM readiness and hot switching."
+
+# Source-language fallback for untranslated new controls.
+msgid "Ready"
+msgstr "Ready"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM"
+msgstr "Switching SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switched; saved as boot default"
+msgstr "SIM switched; saved as boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch failed; previous SIM restored"
+msgstr "Switch failed; previous SIM restored"
+
+msgid "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+msgstr "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+
+msgid "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+msgstr "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+
+# Source-language fallback for untranslated new controls.
+msgid "Radio state unknown; reboot required"
+msgstr "Radio state unknown; reboot required"
+
+msgid "Radio state unknown; the device is restarting."
+msgstr "Radio state unknown; the device is restarting."
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM control is only for the U30 Air on OpenWrt."
+msgstr "Dual SIM control is only for the U30 Air on OpenWrt."
+
+# Source-language fallback for untranslated new controls.
+msgid "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+msgstr "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+
+msgid "No card answered in the chosen SIM position at the last boot."
+msgstr "No card answered in the chosen SIM position at the last boot."
+
+msgid "The chosen SIM is locked by its PIN."
+msgstr "The chosen SIM is locked by its PIN."
+
+msgid "The chosen SIM got no mobile data within the time at its first boot."
+msgstr "The chosen SIM got no mobile data within the time at its first boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The second SIM's modem channels did not come up at the last boot."
+msgstr "The second SIM's modem channels did not come up at the last boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The last dual-SIM boot never confirmed itself."
+msgstr "The last dual-SIM boot never confirmed itself."
+
+msgid "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+msgstr "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+
+# Source-language fallback for untranslated new controls.
+msgid "Active SIM"
+msgstr "Active SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "Cold-boot default"
+msgstr "Cold-boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control unavailable"
+msgstr "SIM control unavailable"
+
+# Source-language fallback for untranslated new controls.
+msgid "The device is back on SIM1 without live switching; choose again below to try once more."
+msgstr "The device is back on SIM1 without live switching; choose again below to try once more."
+
+msgid "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+msgstr "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching"
+msgstr "Enable hot switching"
+
+msgid "This device supports next-boot SIM selection only; live switching is unavailable."
+msgstr "This device supports next-boot SIM selection only; live switching is unavailable."
+
+# Source-language fallback for untranslated new controls.
+msgid "Reboot after enabling hot switching to prepare both SIM channels."
+msgstr "Reboot after enabling hot switching to prepare both SIM channels."
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch to SIM%d"
+msgstr "Switch to SIM%d"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM%d at next boot"
+msgstr "Use SIM%d at next boot"
+
+msgid "Built-in SIM 1"
+msgstr "Вбудована SIM 1"
+
+msgid "Built-in SIM 2"
+msgstr "Вбудована SIM 2"
+
+msgid "Built-in SIM 3"
+msgstr "Вбудована SIM 3"
+
+msgid "External SIM"
+msgstr "Зовнішня SIM"
+
+msgid "SIM card"
+msgstr "SIM-картка"
+
+msgid "Built-in SIM 3 shares SIM2, the external SIM shares SIM1. The card chosen here is switched in before the modem starts, at the next boot; without a choice the cards stay as the bootloader sets them."
+msgstr "Вбудована SIM 3 ділить SIM2, зовнішня SIM ділить SIM1. Вибрана тут картка вмикається до запуску модема, під час наступного завантаження; без вибору картки лишаються такими, як їх встановлює завантажувач."
+
+msgid "As the bootloader sets them"
+msgstr "Як встановлює завантажувач"
+
+msgid "Applying the radio setting…"
+msgstr "Застосування налаштування радіо…"
+
+msgid "SIM settings are not available"
+msgstr "Налаштування SIM недоступні"
+
+msgid "Modem default"
+msgstr "Типове значення модема"
+
+msgid "SIM%d"
+msgstr "SIM%d"
+
+msgid "in use"
+msgstr "використовується"
+
+msgid "Turn off the radio of SIM%d"
+msgstr "Вимкнути радіо SIM%d"
+
+msgid "Radio"
+msgstr "Радіо"
+
+msgid "VoLTE"
+msgstr "VoLTE"
+
+msgid "VoNR"
+msgstr "VoNR"
+
+msgid "Modem: %s"
+msgstr "Модем: %s"
+
+msgid "Sent to this SIM when its radio next starts."
+msgstr "Буде надіслано цій SIM під час наступного запуску її радіо."
+
+msgid "VoLTE and VoNR for each SIM, kept across reboots and sent again whenever that SIM starts. VoLTE is on unless switched off; VoNR stays as the modem has it until set."
+msgstr "VoLTE і VoNR для кожної SIM: зберігаються після перезавантаження й надсилаються знову щоразу, коли ця SIM запускається. VoLTE увімкнено, доки його не вимкнути; VoNR лишається як у модемі, доки його не задати."
+
+msgid "All radios off (airplane mode)"
+msgstr "Усі радіо вимкнено (режим польоту)"
+
+msgid "All radios on"
+msgstr "Усі радіо ввімкнено"
+
+msgid "No SIM will have calls, SMS or data, also after a reboot, until a radio is turned on again here or with the dashboard's radio button."
+msgstr "Жодна SIM не матиме дзвінків, SMS і даних, також після перезавантаження, доки радіо не ввімкнуть знову тут або кнопкою радіо на панелі."
+
+msgid "Each SIM's radio stays as set here after a reboot. A SIM whose radio is off has no calls, SMS or data, and the device does not switch to it."
+msgstr "Радіо кожної SIM після перезавантаження лишається таким, як задано тут. SIM із вимкненим радіо не має дзвінків, SMS і даних, і пристрій на неї не перемикається."
+
+msgid "The setting is saved, but the radio did not follow it yet."
+msgstr "Налаштування збережено, але радіо ще не виконало його."
+
+msgid "Recipient: number, e.g. 10086 or +86..."
+msgstr "Одержувач: номер, наприклад 10086 або +86..."
+
+msgid "Sync from SIM"
+msgstr "Синхронізувати із SIM"
+
+msgid "Clear local pool"
+msgstr "Очистити локальне сховище"
+
+msgid "Select a conversation on the left, or enter a number below to send."
+msgstr "Виберіть розмову ліворуч або введіть номер нижче, щоб надіслати."
+
+msgid "Message (Enter to send, Shift+Enter for newline)"
+msgstr "Повідомлення (Enter — надіслати, Shift+Enter — новий рядок)"
+
+msgid "Sending uses AT+CMGS (PDU mode); retry if the channel is busy. To delete one message, use the bin icon on its bubble."
+msgstr "Надсилання використовує AT+CMGS (режим PDU); якщо канал зайнятий, повторіть. Щоб видалити одне повідомлення, натисніть значок кошика на його бульбашці."
+
+msgid "Sending…"
+msgstr "Надсилання…"
+
+msgid "Sent; the list refreshes shortly."
+msgstr "Надіслано; список незабаром оновиться."
+
+msgid "Sending failed"
+msgstr "Помилка надсилання"
+
+msgid "Syncing from the SIM in the background (AT+CMGL)…"
+msgstr "Синхронізація із SIM у фоні (AT+CMGL)…"
+
+msgid "SIM sync started; the list refreshes in a few seconds."
+msgstr "Синхронізацію із SIM запущено; список оновиться за кілька секунд."
+
+msgid "Clear local SMS pool"
+msgstr "Очистити локальне сховище SMS"
+
+msgid "Only local files will be deleted; messages on the SIM remain."
+msgstr "Буде видалено лише локальні файли; повідомлення на SIM залишаться."
+
+msgid "Delete this SMS"
+msgstr "Видалити це SMS"
+
+msgid "Deletion cannot be undone."
+msgstr "Видалення не можна скасувати."
+
+msgid "Local only"
+msgstr "Лише локально"
+
+msgid "Local + SIM"
+msgstr "Локально + SIM"
+
+msgid "Delete failed"
+msgstr "Помилка видалення"
+
+msgid "Deleted (local + SIM)"
+msgstr "Видалено (локально + SIM)"
+
+msgid "Deleted (local only)"
+msgstr "Видалено (лише локально)"
+
+msgid "Enter both a number and a message."
+msgstr "Введіть номер і повідомлення."
+
+msgid "· %d messages, %d unread · %d conversations"
+msgstr "· повідомлень: %d, непрочитаних: %d · розмов: %d"
+
+msgid "· %d messages · %d conversations"
+msgstr "· повідомлень: %d · розмов: %d"
+
+msgid "The pool is empty. Incoming and sent messages appear here, or select “Sync from SIM”."
+msgstr "Сховище порожнє. Тут з'являться вхідні та надіслані повідомлення, або натисніть «Синхронізувати із SIM»."
+
+msgid "Me: %s"
+msgstr "Я: %s"
+
+msgid "Incomplete: %d of %d parts arrived"
+msgstr "Неповне: отримано частин %d з %d"
+
+msgid "Delete"
+msgstr "Видалити"
+
+msgid "ttyd is not installed."
+msgstr "ttyd не встановлено."
+
+msgid "The terminal is turned off (/etc/config/ttyd)."
+msgstr "Термінал вимкнено (/etc/config/ttyd)."
+
+msgid "Too many terminals are opening at once. Try again in a minute."
+msgstr "Забагато терміналів відкривається одночасно. Спробуйте ще раз за хвилину."
+
+msgid "The terminal is not available."
+msgstr "Термінал недоступний."
+
+msgid "This is a root shell on the device: every command runs with full rights, and a mistake can make the device unbootable."
+msgstr "Це оболонка root на пристрої: кожна команда виконується з повними правами, і помилка може зробити пристрій незавантажуваним."
+
+msgid "It is reachable from the LAN only (USB and the hotspot), never from mobile data, and only from this logged-in page."
+msgstr "Він доступний лише з LAN (USB і точка доступу), ніколи з мобільних даних, і лише з цієї сторінки після входу."
+
+msgid "It closes after a minute without activity."
+msgstr "Він закривається після хвилини бездіяльності."
+
+msgid "It closes after %d minutes without activity."
+msgstr "Він закривається після %d хвилин бездіяльності."
+
+msgid "Reconnect"
+msgstr "Перепідключитися"
+
+msgid "Open in a new tab"
+msgstr "Відкрити в новій вкладці"
+
+msgid "This page was opened over HTTPS, and the terminal is served over HTTP on the LAN: it opens in a tab of its own."
+msgstr "Цю сторінку відкрито через HTTPS, а термінал працює в LAN через HTTP: він відкривається в окремій вкладці."
+
+msgid "The data usage could not be read"
+msgstr "Не вдалося прочитати використання даних"
+
+msgid "Today"
+msgstr "Сьогодні"
+
+msgid "Days left in this cycle"
+msgstr "Залишилося днів у періоді"
+
+msgid "Received"
+msgstr "Отримано"
+
+msgid "Sent"
+msgstr "Надіслано"
+
+msgid "Corrected by"
+msgstr "Поправка"
+
+msgid "Monthly cap"
+msgstr "Місячний ліміт"
+
+msgid "%s, warning at %d%%"
+msgstr "%s, попередження при %d%%"
+
+msgid "The monthly cap is reached: mobile data was turned off. It comes back on when the next cycle starts."
+msgstr "Місячний ліміт вичерпано: мобільні дані вимкнено. Вони ввімкнуться знову на початку наступного періоду."
+
+msgid "%s waits for the clock: it has not been set over the network yet. It already counts towards this cycle and goes to its day once the clock is set."
+msgstr "%s чекає на годинник: час ще не встановлено з мережі. Цей трафік уже враховано в поточному періоді, і він потрапить у свій день, коли годинник буде встановлено."
+
+msgid "The interface %s is not there right now: nothing is counted until it comes back."
+msgstr "Інтерфейсу %s зараз немає: поки він не з'явиться, нічого не враховується."
+
+msgid "Counted on %s, both ways, as the operator counts it (a VPN's overhead included)."
+msgstr "Рахується на %s в обох напрямках, як рахує оператор (включно з накладними витратами VPN)."
+
+msgid "The count is kept in memory and written to the disk every 30 minutes and at shutdown: a power cut loses at most the last half hour."
+msgstr "Лічильник зберігається в пам'яті й записується на диск кожні 30 хвилин і під час вимкнення: при зникненні живлення втрачається не більше останніх пів години."
+
+msgid "Counting since %s."
+msgstr "Облік ведеться з %s."
+
+msgid "Per day"
+msgstr "По днях"
+
+msgid "Date"
+msgstr "Дата"
+
+msgid "Total"
+msgstr "Усього"
+
+msgid "Per billing cycle"
+msgstr "По розрахункових періодах"
+
+msgid "Billing cycle"
+msgstr "Розрахунковий період"
+
+msgid "Enter a size in GB, for example 50 or 2.5"
+msgstr "Введіть розмір у ГБ, наприклад 50 або 2.5"
+
+msgid "Enter a percentage from 1 to 100"
+msgstr "Введіть відсоток від 1 до 100"
+
+msgid "Turn mobile data off at the cap"
+msgstr "Вимикати мобільні дані при досягненні ліміту"
+
+msgid "When this cycle reaches the cap, mobile data is turned off: no internet through the operator until the next cycle starts, the cap is raised or this is turned off again. Turning mobile data back on by hand keeps it on until the next reboot."
+msgstr "Коли в цьому періоді буде досягнуто ліміт, мобільні дані вимкнуться: інтернету через оператора не буде, доки не почнеться наступний період, не буде збільшено ліміт або не буде вимкнено цей параметр. Якщо ввімкнути мобільні дані вручну, вони залишаться ввімкненими до наступного перезавантаження."
+
+msgid "Set"
+msgstr "Задати"
+
+msgid "Clear the count"
+msgstr "Скинути лічильник"
+
+msgid "Every day and billing cycle counted so far is forgotten. Counting goes on from now."
+msgstr "Усі враховані дні й розрахункові періоди буде забуто. Облік продовжиться з цього моменту."
+
+msgid "Billing cycle and cap"
+msgstr "Розрахунковий період і ліміт"
+
+msgid "A billing cycle starts on day"
+msgstr "Розрахунковий період починається в день"
+
+msgid "31: on the last day of each month"
+msgstr "31: в останній день кожного місяця"
+
+msgid "Monthly cap (GB, 0: none)"
+msgstr "Місячний ліміт (ГБ, 0: немає)"
+
+msgid "Warning at this percentage of the cap"
+msgstr "Попереджати при цьому відсотку ліміту"
+
+msgid "Used so far in this cycle (GB)"
+msgstr "Уже використано в цьому періоді (ГБ)"
+
+msgid "What the operator shows for this cycle (for example when counting started in the middle of it); the count is corrected to it."
+msgstr "Скільки показує оператор за цей період (наприклад, якщо облік почався посередині); лічильник буде виправлено до цього значення."
+
+msgid "Current setting"
+msgstr "Поточне налаштування"
+
+msgid "Fixed at %d"
+msgstr "Зафіксовано на %d"
+
+msgid "Not changed (default)"
+msgstr "Не змінено (типово)"
+
+msgid "Rule in force"
+msgstr "Чинне правило"
+
+msgid "Flow offloading"
+msgstr "Розвантаження потоків (flow offloading)"
+
+msgid "TTL of mobile data"
+msgstr "TTL мобільних даних"
+
+msgid "Every packet that leaves through mobile data gets this TTL (IPv6: hop limit). A phone or laptop behind the hotspot sends 64 (Windows: 128) and the device forwards it with one less, which is how an operator can tell tethered traffic apart."
+msgstr "Кожен пакет, що виходить через мобільні дані, отримує цей TTL (IPv6: hop limit). Телефон чи ноутбук за точкою доступу надсилає 64 (Windows: 128), а пристрій пересилає його зі зменшенням на одиницю — за цим оператор може розпізнати роздаваний трафік."
+
+msgid "On this kernel the firewall fast-path is off while a TTL is set"
+msgstr "На цьому ядрі швидкий шлях брандмауера вимкнено, доки задано TTL"
+
+msgid "Set %d"
+msgstr "Задати %d"
+
+msgid "Enter a number from 1 to 255"
+msgstr "Введіть число від 1 до 255"
+
+msgid "Turn off"
+msgstr "Вимкнути"
+
+msgid "64 makes every packet leave like the device's own traffic"
+msgstr "З 64 кожен пакет виходить як власний трафік пристрою"
+
+msgid "Check for updates"
+msgstr "Перевірити оновлення"
+
+msgid "Checking the file"
+msgstr "Перевірка файлу"
+
+msgid "Update from a file"
+msgstr "Оновлення з файлу"
+
+msgid "Back to the previous version"
+msgstr "Повернення до попередньої версії"
+
+msgid "Back to the previous boot image"
+msgstr "Повернення до попереднього завантажувального образу"
+
+msgid "Remove the previous version"
+msgstr "Видалення попередньої версії"
+
+msgid "Kernel change"
+msgstr "Зміна ядра"
+
+msgid "Starting…"
+msgstr "Запуск…"
+
+msgid "Downloading"
+msgstr "Завантаження"
+
+msgid "All files are here and verified"
+msgstr "Усі файли на місці й перевірені"
+
+msgid "Unpacking the new system"
+msgstr "Розпакування нової системи"
+
+msgid "Carrying over your settings"
+msgstr "Перенесення ваших налаштувань"
+
+msgid "Writing down the packages you installed"
+msgstr "Запис списку встановлених вами пакетів"
+
+msgid "Switching to the new system"
+msgstr "Перемикання на нову систему"
+
+msgid "Kernel and boot image"
+msgstr "Ядро й завантажувальний образ"
+
+msgid "Restart the device?"
+msgstr "Перезавантажити пристрій?"
+
+msgid "The device restarts now. The default boot is Android, so it starts Android: switch to Linux from there to start the updated system."
+msgstr "Пристрій зараз перезавантажиться. Типово запускається Android, тому запуститься Android: перейдіть з нього на Linux, щоб запустити оновлену систему."
+
+msgid "The device restarts now and is away for about a minute. If the new system does not start, the device goes back to Android by itself after the failed attempts."
+msgstr "Пристрій зараз перезавантажиться й буде недоступний близько хвилини. Якщо нова система не запуститься, після невдалих спроб пристрій сам повернеться до Android."
+
+msgid "Restarting… open this page again in about a minute."
+msgstr "Перезавантаження… відкрийте цю сторінку знову приблизно за хвилину."
+
+msgid "Running for %s. It goes on when this page is closed; do not switch the device off."
+msgstr "Виконується вже %s. Робота триватиме й після закриття сторінки; не вимикайте пристрій."
+
+msgid "Done. Restart the device to start it."
+msgstr "Готово. Перезавантажте пристрій, щоб зміни набули чинності."
+
+msgid "Done. Nothing needs a restart."
+msgstr "Готово. Перезавантаження не потрібне."
+
+msgid "It did not finish, and part of it was done: read the log before you restart."
+msgstr "Не завершено, і частину роботи вже зроблено: прочитайте журнал перед перезавантаженням."
+
+msgid "It did not finish. Nothing was changed; the log says why."
+msgstr "Не завершено. Нічого не змінено; причину вказано в журналі."
+
+msgid "Log"
+msgstr "Журнал"
+
+msgid "Restart now"
+msgstr "Перезавантажити зараз"
+
+msgid "Later"
+msgstr "Пізніше"
+
+msgid "Close"
+msgstr "Закрити"
+
+msgid "Updating is not available on this system"
+msgstr "Оновлення недоступне в цій системі"
+
+msgid "Another update is running on the device"
+msgstr "На пристрої виконується інше оновлення"
+
+msgid "It was started outside this page (a terminal, the toolkit). Nothing can be started here until it has finished."
+msgstr "Запущено не з цієї сторінки (з термінала чи набору інструментів). Доки воно не завершиться, тут нічого запустити не можна."
+
+msgid "Restart needed"
+msgstr "Потрібне перезавантаження"
+
+msgid "This system was updated and still runs the old version. The new one starts at the next restart."
+msgstr "Цю систему оновлено, але поки працює стара версія. Нова запуститься після наступного перезавантаження."
+
+msgid "Installed"
+msgstr "Встановлено"
+
+msgid "This system"
+msgstr "Ця система"
+
+msgid "Also on this device"
+msgstr "Також на цьому пристрої"
+
+msgid "Kernel"
+msgstr "Ядро"
+
+msgid "choice %s"
+msgstr "вибір %s"
+
+msgid "Boot image"
+msgstr "Завантажувальний образ"
+
+msgid "from the installer"
+msgstr "від інсталятора"
+
+msgid "Default boot"
+msgstr "Типовий запуск"
+
+msgid "Free space"
+msgstr "Вільне місце"
+
+msgid "Release signatures"
+msgstr "Підписи релізів"
+
+msgid "checked with the project's key"
+msgstr "перевіряються ключем проєкту"
+
+msgid "this system has no release key"
+msgstr "у цій системі немає ключа релізів"
+
+msgid "The default boot is Android: a restart goes to Android, and Linux is started from there."
+msgstr "Типово запускається Android: після перезавантаження запуститься Android, а Linux запускається з нього."
+
+msgid "Linux is locked as the default boot: a failed start does not send the device to Android by itself, except the first starts of a new boot image."
+msgstr "Linux закріплено як типовий запуск: після невдалого запуску пристрій сам не переходить до Android, крім перших запусків нового завантажувального образу."
+
+msgid "If Linux fails to start %d times in a row, the device starts Android by itself."
+msgstr "Якщо Linux не запуститься %d разів поспіль, пристрій сам запустить Android."
+
+msgid "Report of the last update"
+msgstr "Звіт про останнє оновлення"
+
+msgid "Online update"
+msgstr "Оновлення через інтернет"
+
+msgid "Asking GitHub…"
+msgstr "Запит до GitHub…"
+
+msgid "Checked %s ago"
+msgstr "Перевірено %s тому"
+
+msgid "Not checked yet"
+msgstr "Ще не перевірялося"
+
+msgid "Mirror (release files)"
+msgstr "Дзеркало (файли випуску)"
+
+msgid "Leave empty for GitHub."
+msgstr "Залиште порожнім для GitHub."
+
+msgid "Install the packages I added again after the update (needs the device online at the first start)"
+msgstr "Після оновлення знову встановити додані мною пакети (під час першого запуску пристрою потрібен інтернет)"
+
+msgid "Pre-release"
+msgstr "Передреліз"
+
+msgid "Newest release"
+msgstr "Найновіший реліз"
+
+msgid "Release notes"
+msgstr "Примітки до релізу"
+
+msgid "Download"
+msgstr "Завантаження"
+
+msgid "Free space needed"
+msgstr "Потрібно вільного місця"
+
+msgid "not enough: remove the previous version first"
+msgstr "бракує: спершу видаліть попередню версію"
+
+msgid "A pre-release is a release still being tried: it can have faults a release does not. The previous version is kept all the same."
+msgstr "Передреліз - це реліз, який ще випробовується: у ньому можуть бути помилки, яких немає в релізі. Попередня версія однаково зберігається."
+
+msgid "This system is newer than the newest release (a test release)."
+msgstr "Ця система новіша за найновіший реліз (тестовий реліз)."
+
+msgid "Up to date."
+msgstr "Встановлено найновішу версію."
+
+msgid "This release is not signed, and this system checks signatures: it is not installed from here. Update from its file below, which asks you to confirm."
+msgstr "Цей випуск не підписаний, а ця система перевіряє підписи: його не встановлюють звідси. Оновіться з його файлу нижче — там потрібно буде підтвердити."
+
+msgid "Update to %s"
+msgstr "Оновити до %s"
+
+msgid "Choose at least one system"
+msgstr "Виберіть принаймні одну систему"
+
+msgid "Update to %s?"
+msgstr "Оновити до %s?"
+
+msgid "The device downloads %s, puts the new system beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Пристрій завантажить %s, розмістить нову систему поруч із тією, що працює, і перейде на неї після наступного перезавантаження. Ваші налаштування переносяться, попередня версія зберігається. Це триватиме кілька хвилин; не вимикайте пристрій."
+
+msgid "Also offer the pre-release %s"
+msgstr "Пропонувати також передреліз %s"
+
+msgid "Systems to update:"
+msgstr "Системи для оновлення:"
+
+msgid "GitHub could not be reached: the device has no internet connection, or GitHub did not answer. Without internet, update from a file below."
+msgstr "Не вдалося зв'язатися з GitHub: пристрій не має підключення до інтернету або GitHub не відповів. Без інтернету оновіть із файлу нижче."
+
+msgid "release"
+msgstr "реліз"
+
+msgid "For a device without internet: download the Magisk zip of a release for this system and this kernel on another computer, from the release page on GitHub, and upload it here. For this device that is:"
+msgstr "Для пристрою без інтернету: на іншому комп'ютері завантажте зі сторінки релізу на GitHub zip-файл Magisk потрібного релізу для цієї системи й цього ядра та вивантажте його сюди. Для цього пристрою це:"
+
+msgid "Uploaded file"
+msgstr "Вивантажений файл"
+
+msgid "Checking the file…"
+msgstr "Перевірка файлу…"
+
+msgid "It says it is"
+msgstr "За його даними, це"
+
+msgid "kernel %s"
+msgstr "ядро %s"
+
+msgid "Signature"
+msgstr "Підпис"
+
+msgid "signed with the project's release key"
+msgstr "підписано ключем релізів проєкту"
+
+msgid "WRONG: it does not match the project's release key"
+msgstr "ХИБНИЙ: не відповідає ключу релізів проєкту"
+
+msgid "not signed"
+msgstr "не підписано"
+
+msgid "cannot be checked on this system"
+msgstr "у цій системі перевірити неможливо"
+
+msgid "Its system is not installed on this device."
+msgstr "Його систему не встановлено на цьому пристрої."
+
+msgid "It is the other Ubuntu release, not the one installed."
+msgstr "Це інший реліз Ubuntu, а не встановлений."
+
+msgid "It carries another kernel than this device uses. Take the zip for kernel %s, or change the kernel first."
+msgstr "У ньому інше ядро, не те, яке використовує цей пристрій. Візьміть zip для ядра %s або спершу змініть ядро."
+
+msgid "Its kernel does not run on this model."
+msgstr "Його ядро не працює на цій моделі."
+
+msgid "The file is damaged: its contents do not match their checksums."
+msgstr "Файл пошкоджено: його вміст не збігається з контрольними сумами."
+
+msgid "Its signature is wrong. This file does not come from the project as it is; it is never installed."
+msgstr "Його підпис хибний. У такому вигляді цей файл не походить від проєкту; він ніколи не встановлюється."
+
+msgid "This file cannot be used here."
+msgstr "Цей файл тут використати не можна."
+
+msgid "Compare the SHA-256 with the one in SHA256SUMS-magisk on the release page: it is the only proof of where an unsigned file comes from."
+msgstr "Порівняйте SHA-256 із зазначеним у SHA256SUMS-magisk на сторінці релізу: це єдиний доказ походження непідписаного файлу."
+
+msgid "This release is installed already; the update would only refresh the boot image."
+msgstr "Цей реліз уже встановлено; оновлення лише перезапише завантажувальний образ."
+
+msgid "I know this file is not signed: nothing proves that it comes from the project. I compared its SHA-256 myself and want it installed."
+msgstr "Я знаю, що цей файл не підписано: ніщо не доводить, що він від проєкту. Його SHA-256 мною звірено, і я хочу його встановити."
+
+msgid "I know this is %s, older than the installed %s, and want to go back to it."
+msgstr "Я знаю, що це %s, старіша за встановлену %s, і хочу повернутися до неї."
+
+msgid "This is not a release file of this project: a Magisk zip of a release is expected."
+msgstr "Це не файл релізу цього проєкту: очікується zip-файл Magisk із релізу."
+
+msgid "Update from this file"
+msgstr "Оновити з цього файлу"
+
+msgid "Tick the confirmations above first"
+msgstr "Спершу позначте підтвердження вище"
+
+msgid "The device puts the system of this file beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Пристрій розмістить систему з цього файлу поруч із тією, що працює, і перейде на неї після наступного перезавантаження. Ваші налаштування переносяться, попередня версія зберігається. Це триватиме кілька хвилин; не вимикайте пристрій."
+
+msgid "Check the file"
+msgstr "Перевірити файл"
+
+msgid "Remove the file"
+msgstr "Видалити файл"
+
+msgid "Previous version"
+msgstr "Попередня версія"
+
+msgid "No previous version is kept on this device."
+msgstr "На цьому пристрої немає збереженої попередньої версії."
+
+msgid "replaced %s"
+msgstr "замінено %s"
+
+msgid "I want the previous system back; what I changed since the update stays in the version I leave."
+msgstr "Я хочу повернути попередню систему; те, що змінено після оновлення, залишиться у версії, яку я покидаю."
+
+msgid "Back to the previous version?"
+msgstr "Повернутися до попередньої версії?"
+
+msgid "The previous system (%s) becomes the one that starts at the next restart. The version you leave is not kept; settings you changed since the update are not carried back."
+msgstr "Попередня система (%s) запускатиметься з наступного перезавантаження. Версія, яку ви покидаєте, не зберігається; налаштування, змінені після оновлення, назад не переносяться."
+
+msgid "Go back"
+msgstr "Повернутися"
+
+msgid "The previous version is the one running now: restart first."
+msgstr "Попередня версія зараз і працює: спершу перезавантажте пристрій."
+
+msgid "I want the previous kernel and boot image back."
+msgstr "Я хочу повернути попередні ядро й завантажувальний образ."
+
+msgid "Back to the previous boot image?"
+msgstr "Повернутися до попереднього завантажувального образу?"
+
+msgid "The previous boot image (%s) is written to the Linux slot and starts at the next restart. If it does not start, the device goes back to Android by itself."
+msgstr "Попередній завантажувальний образ (%s) буде записано у слот Linux, і він запуститься після наступного перезавантаження. Якщо він не запуститься, пристрій сам повернеться до Android."
+
+msgid "I do not need to go back: delete the previous system to free its space."
+msgstr "Мені не потрібно повертатися: видалити попередню систему, щоб звільнити місце."
+
+msgid "Remove the previous version?"
+msgstr "Видалити попередню версію?"
+
+msgid "The kept copy of the previous system is deleted for good. After that there is no going back to it from this page."
+msgstr "Збережену копію попередньої системи буде видалено назавжди. Після цього повернутися до неї з цієї сторінки буде неможливо."
+
+msgid "the vendor kernel"
+msgstr "ядро виробника"
+
+msgid "mainline"
+msgstr "mainline"
+
+msgid "not with Ubuntu 26.04"
+msgstr "не з Ubuntu 26.04"
+
+msgid "Change the kernel"
+msgstr "Змінити ядро"
+
+msgid "This kernel is the one in use"
+msgstr "Це ядро зараз використовується"
+
+msgid "Change the kernel to %s?"
+msgstr "Змінити ядро на %s?"
+
+msgid "The device downloads that kernel from the newest release and writes a new boot image; it starts at the next restart. The previous boot image is kept, and if the new one does not start the device goes back to Android by itself. The device must be online."
+msgstr "Пристрій завантажить це ядро з найновішого релізу й запише новий завантажувальний образ; він запуститься після наступного перезавантаження. Попередній завантажувальний образ зберігається, і якщо новий не запуститься, пристрій сам повернеться до Android. Пристрою потрібен інтернет."
+
+msgid "Start Android at the next restart"
+msgstr "Запустити Android після наступного перезавантаження"
+
+msgid "Start Android at the next restart?"
+msgstr "Запустити Android після наступного перезавантаження?"
+
+msgid "The next restart, and the ones after it, start Android instead of Linux. Linux is started again from Android (the Magisk module's Action button, or mu300-linux)."
+msgstr "Наступне перезавантаження й усі подальші запускатимуть Android замість Linux. Linux знову запускається з Android (кнопка «Дія» модуля Magisk або mu300-linux)."
+
+msgid "Start Android next"
+msgstr "Наступним запустити Android"
+
+msgid "What an update keeps"
+msgstr "Що зберігається під час оновлення"
+
+msgid "An update puts the system of the new release in place and carries over what is yours: the settings, the accounts and their passwords, the device's keys and the home directories. Packages you installed yourself are written down and installed again at the first start, once the device is online. The previous version stays on the device until you remove it, so you can go back."
+msgstr "Оновлення ставить на місце систему нового релізу й переносить усе ваше: налаштування, облікові записи та їхні паролі, ключі пристрою й домашні каталоги. Пакети, які ви встановили самі, записуються і встановлюються знову під час першого запуску, щойно пристрій вийде в інтернет. Попередня версія залишається на пристрої, доки ви її не видалите, тож можна повернутися."
+
+msgid "The wiki's Updating page lists exactly what is kept."
+msgstr "На сторінці вікі «Оновлення» перелічено, що саме зберігається."
+
+msgid "Choose a file first"
+msgstr "Спершу виберіть файл"
+
+msgid "Uploading: %s of %s"
+msgstr "Вивантаження: %s із %s"
+
+msgid "running"
+msgstr "працює"
+
+msgid "(about %s)"
+msgstr "(приблизно %s)"
+
+msgid "Install %s?"
+msgstr "Встановити %s?"
+
+msgid "It is installed from this system's package feed."
+msgstr "Встановлюється з джерела пакетів цієї системи."
+
+msgid "It is downloaded from the release of the VPN module and checked against its SHA256SUMS."
+msgstr "Завантажується з випуску модуля VPN і перевіряється за його SHA256SUMS."
+
+msgid "An engine is tens of MB: on mobile data the download counts towards your plan."
+msgstr "Рушій - це десятки MB: у мобільній мережі завантаження враховується у вашому тарифі."
+
+msgid "Install"
+msgstr "Встановити"
+
+msgid "Remove %s?"
+msgstr "Видалити %s?"
+
+msgid "Profiles run on it: %s. They cannot start until it is installed again (the module refuses while the running profile needs it)."
+msgstr "На ньому працюють профілі: %s. Вони не запустяться, доки його не буде встановлено знову (модуль відмовляє, поки працюючий профіль його потребує)."
+
+msgid "No profile runs on it."
+msgstr "Жоден профіль на ньому не працює."
+
+msgid "Removed"
+msgstr "Видалено"
+
+msgid "Each engine is an extra of its own: install only the ones your profiles need. Xray runs vless, vmess, trojan and ss links (with hev-socks5-tunnel), sing-box the same links and its own JSON, mihomo Clash subscriptions, dae hysteria2, tuic and the rest on newer kernels. WireGuard and OpenVPN are packages of the system."
+msgstr "Кожен рушій - окремий додаток: встановлюйте лише ті, що потрібні вашим профілям. Xray запускає посилання vless, vmess, trojan і ss (з hev-socks5-tunnel), sing-box - ті самі посилання та власний JSON, mihomo - підписки Clash, dae - hysteria2, tuic та решту на новіших ядрах. WireGuard і OpenVPN - пакети системи."
+
+msgid "Downloads are tens of MB per engine: on mobile data they count towards your plan. Offline, upload the engine's tarball from the release page of the VPN module."
+msgstr "Завантаження - десятки MB на рушій: у мобільній мережі вони враховуються у вашому тарифі. Офлайн завантажте архів рушія зі сторінки випуску модуля VPN."
+
+msgid "The available versions come from the latest release of the VPN module."
+msgstr "Доступні версії беруться з останнього випуску модуля VPN."
+
+msgid "system package"
+msgstr "системний пакет"
+
+msgid "in the vpn bundle"
+msgstr "у збірці vpn"
+
+msgid "extra %s"
+msgstr "додаток %s"
+
+msgid "not installed"
+msgstr "не встановлено"
+
+msgid "cannot run here"
+msgstr "тут не може працювати"
+
+msgid "update available"
+msgstr "є оновлення"
+
+msgid "installed"
+msgstr "встановлено"
+
+msgid "Kind"
+msgstr "Вид"
+
+msgid "Version"
+msgstr "Версія"
+
+msgid "Available"
+msgstr "Доступна"
+
+msgid "not checked"
+msgstr "не перевірено"
+
+msgid "Size"
+msgstr "Розмір"
+
+msgid "Needed by"
+msgstr "Потрібен для"
+
+msgid "no profile"
+msgstr "немає профілю"
+
+msgid "dae needs a kernel with BTF, 5.17 or newer: not the 5.4 vendor kernel (mu300-update kernel 6.18). It can be installed anyway."
+msgstr "dae потребує ядра з BTF, 5.17 або новішого: не 5.4 від виробника (mu300-update kernel 6.18). Встановити його все одно можна."
+
+msgid "All engines"
+msgstr "Усі рушії"
+
+msgid "Last %s lines"
+msgstr "Останні %s рядків"
+
+msgid "VPN service log"
+msgstr "Журнал служби VPN"
+
+msgid "Every 5 s"
+msgstr "Кожні 5 с"
+
+msgid "The log is empty."
+msgstr "Журнал порожній."
+
+msgid "The VPN is starting"
+msgstr "VPN запускається"
+
+msgid "The VPN is stopped"
+msgstr "VPN зупинено"
+
+msgid "The VPN is restarting"
+msgstr "VPN перезапускається"
+
+msgid "With the kill switch on, nothing leaves the device or the LAN outside the tunnel: while the VPN is down, starting or broken, every connection fails instead of going out directly. It stays up until you stop the VPN here (Stop removes it)."
+msgstr "Коли kill switch увімкнено, ніщо не залишає пристрій чи LAN поза тунелем: поки VPN вимкнено, запускається або несправний, кожне з'єднання переривається замість того, щоб іти напряму. Він діє, доки ви не зупините VPN тут (Зупинити його знімає)."
+
+msgid "Without the kill switch, traffic goes out directly, unprotected, whenever the tunnel is down (while it starts, after a crash, when the engine is missing)."
+msgstr "Без kill switch трафік іде напряму, без захисту, щойно тунель не працює (під час запуску, після збою, коли рушія немає)."
+
+msgid "Turn the kill switch on?"
+msgstr "Увімкнути kill switch?"
+
+msgid "Turn the kill switch off?"
+msgstr "Вимкнути kill switch?"
+
+msgid "Turn on"
+msgstr "Увімкнути"
+
+msgid "unknown"
+msgstr "невідомо"
+
+msgid "The exit address could not be found (is the tunnel up?)"
+msgstr "Не вдалося знайти вихідну адресу (тунель піднято?)"
+
+msgid "Connecting…"
+msgstr "З'єднання…"
+
+msgid "On, but not running"
+msgstr "Увімкнено, але не працює"
+
+msgid "Stopped"
+msgstr "Зупинено"
+
+msgid "Install it"
+msgstr "Встановити"
+
+msgid "The engine of the active profile is not installed: %s"
+msgstr "Рушій активного профілю не встановлено: %s"
+
+msgid "The kill switch keeps everything closed until it is there; the service downloads it by itself when it can."
+msgstr "Kill switch тримає все закритим, доки його немає; служба сама завантажує його, коли може."
+
+msgid "The VPN cannot start until it is installed."
+msgstr "VPN не може запуститися, доки його не встановлено."
+
+msgid "%s cannot run on this system"
+msgstr "%s не може працювати в цій системі"
+
+msgid "The VPN is on, but no profile is active: choose one below."
+msgstr "VPN увімкнено, але немає активного профілю: виберіть один нижче."
+
+msgid "Profile: %s"
+msgstr "Профіль: %s"
+
+msgid "No active profile"
+msgstr "Немає активного профілю"
+
+msgid "engine %s"
+msgstr "рушій %s"
+
+msgid "interface %s"
+msgstr "інтерфейс %s"
+
+msgid "Kill switch active"
+msgstr "Kill switch діє"
+
+msgid "Kill switch on"
+msgstr "Kill switch увімкнено"
+
+msgid "Kill switch off"
+msgstr "Kill switch вимкнено"
+
+msgid "IPv6 in the tunnel"
+msgstr "IPv6 у тунелі"
+
+msgid "IPv6 blocked"
+msgstr "IPv6 заблоковано"
+
+msgid "IPv6 untouched"
+msgstr "IPv6 не чіпається"
+
+msgid "Module %s"
+msgstr "Модуль %s"
+
+msgid "Check"
+msgstr "Перевірити"
+
+msgid "Uptime"
+msgstr "Час роботи"
+
+msgid "Rate"
+msgstr "Швидкість"
+
+msgid "Exit address"
+msgstr "Вихідна адреса"
+
+msgid "Start"
+msgstr "Запустити"
+
+msgid "Stop"
+msgstr "Зупинити"
+
+msgid "Stop the VPN?"
+msgstr "Зупинити VPN?"
+
+msgid "Traffic then goes out directly, without the tunnel; the kill switch is taken down with it."
+msgstr "Тоді трафік піде напряму, без тунелю; kill switch знімається разом з ним."
+
+msgid "The VPN is on: it starts again by itself after a reboot."
+msgstr "VPN увімкнено: після перезавантаження він запуститься знову сам."
+
+msgid "The VPN is off."
+msgstr "VPN вимкнено."
+
+msgid "Kill switch"
+msgstr "Kill switch"
+
+msgid "Setting"
+msgstr "Параметр"
+
+msgid "Active: only the tunnel can reach the internet"
+msgstr "Діє: до інтернету має доступ лише тунель"
+
+msgid "Not active"
+msgstr "Не діє"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down, so nothing ever leaves without the tunnel. If the tunnel cannot come up (a dead server, an expired account), the device stays offline until you fix the profile or stop the VPN. The panel itself stays reachable from the LAN."
+msgstr "Kill switch блокує весь трафік пристрою та LAN, поки VPN вимкнено, тож ніщо ніколи не виходить без тунелю. Якщо тунель не вдається підняти (мертвий сервер, прострочений обліковий запис), пристрій залишається офлайн, доки ви не виправите профіль або не зупините VPN. Сама панель залишається доступною з LAN."
+
+msgid "Choose a profile"
+msgstr "Виберіть профіль"
+
+msgid "No profiles yet"
+msgstr "Профілів ще немає"
+
+msgid "engine not installed"
+msgstr "рушій не встановлено"
+
+msgid "Use"
+msgstr "Використати"
+
+msgid "Switched: the VPN restarts on the new profile"
+msgstr "Перемкнено: VPN перезапускається з новим профілем"
+
+msgid "Active profile"
+msgstr "Активний профіль"
+
+msgid "A running VPN restarts on the profile you choose; the kill switch stays up in between."
+msgstr "Працюючий VPN перезапускається з вибраним профілем; kill switch залишається активним між тим."
+
+msgid "Manage the profiles"
+msgstr "Керувати профілями"
+
+msgid "Automatic: through the tunnel where the engine can carry it"
+msgstr "Автоматично: через тунель, де рушій може його передати"
+
+msgid "Ask the engine for IPv6 in the tunnel"
+msgstr "Запитувати в рушія IPv6 у тунелі"
+
+msgid "Never through the tunnel (blocked while the VPN is up)"
+msgstr "Ніколи через тунель (блокується, поки VPN працює)"
+
+msgid "Saved: it applies from the next start (Restart)"
+msgstr "Збережено: застосується з наступного запуску (Перезапустити)"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "The tunnel carries IPv6"
+msgstr "Тунель передає IPv6"
+
+msgid "Yes"
+msgstr "Так"
+
+msgid "IPv6 guard"
+msgstr "Захист IPv6"
+
+msgid "Active: IPv6 outside the tunnel is refused"
+msgstr "Діє: IPv6 поза тунелем відхиляється"
+
+msgid "While the VPN is up, IPv6 never leaves beside a tunnel that does not carry it: it is refused at once, so programs and LAN clients fall back to IPv4 instead of leaking or waiting. Automatic: WireGuard and OpenVPN use the IPv6 addresses of their config; Xray, sing-box and mihomo are asked at every start whether IPv6 works through the tunnel, and carry it only then; dae stays IPv4."
+msgstr "Поки VPN працює, IPv6 ніколи не виходить повз тунель, який його не передає: його відхиляють одразу, тож програми та клієнти LAN переходять на IPv4 замість витоку чи очікування. Автоматично: WireGuard і OpenVPN використовують адреси IPv6 зі своєї конфігурації; для Xray, sing-box і mihomo під час кожного запуску перевіряється, чи працює IPv6 через тунель, і лише тоді вони його передають; dae залишається на IPv4."
+
+msgid "%d ms"
+msgstr "%d ms"
+
+msgid "UDP: not testable"
+msgstr "UDP: перевірити неможливо"
+
+msgid "blocked by the kill switch"
+msgstr "заблоковано kill switch"
+
+msgid "A WireGuard or OpenVPN config, a Clash/mihomo YAML, an Xray or sing-box JSON, a dae config"
+msgstr "Конфігурація WireGuard або OpenVPN, YAML Clash/mihomo, JSON Xray або sing-box, конфігурація dae"
+
+msgid "After OK, choose the file: a WireGuard .conf, an OpenVPN .ovpn, a Clash/mihomo .yaml, an Xray or sing-box .json or a dae config (at most 1 MiB)."
+msgstr "Після OK виберіть файл: WireGuard .conf, OpenVPN .ovpn, Clash/mihomo .yaml, Xray або sing-box .json чи конфігурацію dae (не більше 1 MiB)."
+
+msgid "From the source"
+msgstr "З джерела"
+
+msgid "Detect"
+msgstr "Визначити"
+
+msgid "The URL may hold a token: it goes to the device on its own, never into a command line or a log."
+msgstr "URL може містити токен: він надсилається на пристрій окремо і ніколи не потрапляє в командний рядок чи журнал."
+
+msgid "Share link"
+msgstr "Посилання для обміну"
+
+msgid "Paste"
+msgstr "Вставити"
+
+msgid "File"
+msgstr "Файл"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Not a share link this panel takes"
+msgstr "Це не посилання для обміну, яке приймає ця панель"
+
+msgid "The config is empty"
+msgstr "Конфігурація порожня"
+
+msgid "Not an https URL"
+msgstr "Це не URL https"
+
+msgid "Invalid name: 1-64 characters, no control characters"
+msgstr "Недійсна назва: 1-64 символи, без керувальних символів"
+
+msgid "Add a profile"
+msgstr "Додати профіль"
+
+msgid "Name"
+msgstr "Назва"
+
+msgid "Detect: the module tells the kind from the link or the file. Choose the type for a JSON that could be either Xray or sing-box, or for a link that should run on another engine."
+msgstr "Визначити: модуль визначає вид за посиланням або файлом. Виберіть тип для JSON, який може бути і Xray, і sing-box, або для посилання, яке має працювати на іншому рушії."
+
+msgid "The profile is added"
+msgstr "Профіль додано"
+
+msgid "Rename the profile"
+msgstr "Перейменувати профіль"
+
+msgid "Delete the profile %s?"
+msgstr "Видалити профіль %s?"
+
+msgid "It is the active profile: with the VPN on, the module refuses; stop the VPN or choose another profile first."
+msgstr "Це активний профіль: коли VPN увімкнено, модуль відмовляє; спершу зупиніть VPN або виберіть інший профіль."
+
+msgid "Its config and credentials are deleted from the device."
+msgstr "Його конфігурацію та облікові дані буде видалено з пристрою."
+
+msgid "Deleted"
+msgstr "Видалено"
+
+msgid "The profile passes the check"
+msgstr "Профіль проходить перевірку"
+
+msgid "Show the config?"
+msgstr "Показати конфігурацію?"
+
+msgid "The config holds the credentials of the profile (keys, passwords, UUIDs). It is shown on this screen only; anyone who can see the screen can read it."
+msgstr "Конфігурація містить облікові дані профілю (ключі, паролі, UUID). Вона показується лише на цьому екрані; кожен, хто бачить екран, може її прочитати."
+
+msgid "Saving checks the config with the engine first (profile edit); a config that does not pass is not saved and the old one stays."
+msgstr "Під час збереження конфігурація спершу перевіряється рушієм (profile edit); конфігурація, що не проходить перевірку, не зберігається, а стара залишається."
+
+msgid "This profile comes from a subscription: its next refresh replaces your changes."
+msgstr "Цей профіль походить із підписки: її наступне оновлення замінить ваші зміни."
+
+msgid "Config of %s"
+msgstr "Конфігурація %s"
+
+msgid "Rename"
+msgstr "Перейменувати"
+
+msgid "Show / edit the config"
+msgstr "Показати / редагувати конфігурацію"
+
+msgid "Test the latency of all"
+msgstr "Виміряти затримку всіх"
+
+msgid "No profiles yet: add one from a share link, a config file or a subscription."
+msgstr "Профілів ще немає: додайте один із посилання для обміну, файлу конфігурації або підписки."
+
+msgid "Active"
+msgstr "Активний"
+
+msgid "This profile is the active one now"
+msgstr "Цей профіль зараз активний"
+
+msgid "More"
+msgstr "Ще"
+
+msgid "active"
+msgstr "активний"
+
+msgid "subscription"
+msgstr "підписка"
+
+msgid "migrated"
+msgstr "перенесено"
+
+msgid "gone from its subscription"
+msgstr "зник з підписки"
+
+msgid "Server"
+msgstr "Сервер"
+
+msgid "Engine"
+msgstr "Рушій"
+
+msgid "Latency"
+msgstr "Затримка"
+
+msgid "The latency is a TCP connection to the server, through the tunnel when the VPN is up. WireGuard and OpenVPN servers usually speak UDP and cannot be tested this way."
+msgstr "Затримка - це TCP-з'єднання із сервером, через тунель, коли VPN працює. Сервери WireGuard і OpenVPN зазвичай використовують UDP, і так їх перевірити не можна."
+
+msgid "Enter an IPv4 or IPv6 address"
+msgstr "Введіть адресу IPv4 або IPv6"
+
+msgid "On: nothing leaves outside the tunnel"
+msgstr "Увімкнено: ніщо не виходить поза тунелем"
+
+msgid "Off: traffic goes out directly while the tunnel is down"
+msgstr "Вимкнено: трафік іде напряму, поки тунель не працює"
+
+msgid "Yes: Tailscale's own connections go through the tunnel"
+msgstr "Так: власні з'єднання Tailscale йдуть через тунель"
+
+msgid "No: Tailscale connects directly"
+msgstr "Ні: Tailscale підключається напряму"
+
+msgid "Routing"
+msgstr "Маршрутизація"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down."
+msgstr "Kill switch блокує весь трафік пристрою та LAN, поки VPN вимкнено."
+
+msgid "Bypass the tunnel"
+msgstr "Обхід тунелю"
+
+msgid "Enter address ranges like 192.168.0.0/16, separated by commas"
+msgstr "Введіть діапазони адрес, наприклад 192.168.0.0/16, через кому"
+
+msgid "Address ranges that never go into the tunnel, besides the LAN itself (which never does). Empty: the LAN only."
+msgstr "Діапазони адрес, що ніколи не йдуть у тунель, окрім самої LAN (вона не йде ніколи). Порожньо: лише LAN."
+
+msgid "Tailscale through the VPN"
+msgstr "Tailscale через VPN"
+
+msgid "When Tailscale runs on the device, its WireGuard, DERP and control connections go through whichever tunnel runs (dae catches them like any other)."
+msgstr "Коли на пристрої працює Tailscale, його з'єднання WireGuard, DERP і керування йдуть через той тунель, що працює (dae перехоплює їх, як і решту)."
+
+msgid "DNS"
+msgstr "DNS"
+
+msgid "DNS through the tunnel"
+msgstr "DNS через тунель"
+
+msgid "The resolver the device's and the LAN's lookups go to, through the tunnel. Nothing goes to the carrier's resolver."
+msgstr "Резолвер, до якого через тунель надходять запити пристрою та LAN. Нічого не йде до резолвера оператора."
+
+msgid "Bootstrap DNS"
+msgstr "Початковий DNS"
+
+msgid "Finds the VPN server's own address before the tunnel is up (directly, on the engine's own connection)."
+msgstr "Знаходить адресу самого сервера VPN, поки тунель не піднято (напряму, власним з'єднанням рушія)."
+
+msgid "Empty puts a setting back to its default."
+msgstr "Порожнє значення повертає параметр до типового."
+
+msgid "TUN stack"
+msgstr "Стек TUN"
+
+msgid "Default (gvisor)"
+msgstr "Типово (gvisor)"
+
+msgid "system (not on the 5.4 kernel)"
+msgstr "system (не на ядрі 5.4)"
+
+msgid "set (unchanged unless you type a new one)"
+msgstr "задано (не змінюється, доки ви не введете нове)"
+
+msgid "not set"
+msgstr "не задано"
+
+msgid "Upstream HTTP proxy"
+msgstr "Вищий HTTP-проксі"
+
+msgid "TLS certificate pin (SHA-256)"
+msgstr "Закріплення сертифіката TLS (SHA-256)"
+
+msgid "Enter host:port"
+msgstr "Введіть host:port"
+
+msgid "Enter the SHA-256 in hex"
+msgstr "Введіть SHA-256 у шістнадцятковому вигляді"
+
+msgid "Profile options"
+msgstr "Параметри профілю"
+
+msgid "None of the profiles has options of its type."
+msgstr "Жоден із профілів не має параметрів свого типу."
+
+msgid "mihomo's mode (rule, global, direct), the engines' log levels, dae's groups and routing are part of each profile's own config: VPN > Profiles, Show / edit the config."
+msgstr "Режим mihomo (rule, global, direct), рівні журналу рушіїв, групи та маршрутизація dae є частиною власної конфігурації кожного профілю: VPN > Профілі, Показати / редагувати конфігурацію."
+
+msgid "Delete the subscription %s?"
+msgstr "Видалити підписку %s?"
+
+msgid "Its profiles can go with it or stay as profiles of their own. The active profile is never removed while the VPN is on."
+msgstr "Її профілі можуть піти разом з нею або залишитися як окремі профілі. Активний профіль ніколи не видаляється, поки VPN увімкнено."
+
+msgid "Keep the profiles"
+msgstr "Залишити профілі"
+
+msgid "Delete with its profiles"
+msgstr "Видалити разом із профілями"
+
+msgid "Only by hand"
+msgstr "Лише вручну"
+
+msgid "Every %d h"
+msgstr "Кожні %d год"
+
+msgid "Share links: one profile per link"
+msgstr "Посилання для обміну: один профіль на посилання"
+
+msgid "Clash/mihomo YAML: one mihomo profile"
+msgstr "Clash/mihomo YAML: один профіль mihomo"
+
+msgid "dae: one profile with every node in one group"
+msgstr "dae: один профіль з усіма вузлами в одній групі"
+
+msgid "Add a subscription"
+msgstr "Додати підписку"
+
+msgid "Format"
+msgstr "Формат"
+
+msgid "The URL usually holds your account token: it is stored on the device readable by root only, and never shown again. The subscription is fetched over the device's own connection: through the tunnel when the VPN is up; with the kill switch up and the tunnel down it cannot be fetched."
+msgstr "URL зазвичай містить токен вашого облікового запису: він зберігається на пристрої з доступом для читання лише для root і більше ніколи не показується. Підписка завантажується власним з'єднанням пристрою: через тунель, коли VPN працює; коли kill switch діє, а тунель не працює, її завантажити не можна."
+
+msgid "Refresh all"
+msgstr "Оновити всі"
+
+msgid "No subscriptions yet."
+msgstr "Підписок ще немає."
+
+msgid "Host"
+msgstr "Хост"
+
+msgid "Updated"
+msgstr "Оновлено"
+
+msgid "Share links"
+msgstr "Посилання для обміну"
+
+msgid "A refresh keeps the profiles whose name is unchanged, adds the new ones and removes the ones that are gone (the active one stays while the VPN is on, marked as gone). A refresh of the active profile restarts the running VPN."
+msgstr "Оновлення зберігає профілі з незмінною назвою, додає нові та видаляє ті, що зникли (активний залишається, поки VPN увімкнено, позначений як зниклий). Оновлення активного профілю перезапускає працюючий VPN."
+
+msgid "Dashboard info failed"
+msgstr "Помилка отримання даних панелі"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch): no live signal right now"
+msgstr "The modem is restarting (network locks or a SIM switch): no live signal right now"
+
+msgid "Live signal read failed"
+msgstr "Помилка зчитування поточного сигналу"
+
+msgid "Unknown op"
+msgstr "Невідома операція"
+
+msgid "Invalid argument for this op"
+msgstr "Неприпустимий аргумент для цієї операції"
+
+msgid "The radio is busy: the dial or the watchdog is switching it, try again shortly"
+msgstr "Радіомодуль зайнятий: його перемикає дозвон або сторожовий процес, повторіть трохи згодом"
+
+msgid "The action gave no valid reply"
+msgstr "Дія не повернула коректної відповіді"
+
+msgid "The confirm parameter must be 0 or 1"
+msgstr "Параметр confirm має бути 0 або 1"
+
+msgid "An AT command is one line of printable ASCII, at most 512 characters"
+msgstr "AT-команда — це один рядок друкованих символів ASCII довжиною не більше 512 символів"
+
+msgid "Must be an AT command"
+msgstr "Має бути AT-командою"
+
+msgid "No \";\" command chaining"
+msgstr "Об'єднання команд через \";\" заборонено"
+
+msgid "Denied: this command wedges the AT port until a reboot"
+msgstr "Заборонено: ця команда блокує AT-порт до перезавантаження"
+
+msgid "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+msgstr "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+msgstr "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+
+msgid "A long AT command is still running in the background; try again when it has finished"
+msgstr "Довга AT-команда ще виконується у фоні; повторіть, коли вона завершиться"
+
+msgid "This command needs confirmation"
+msgstr "Ця команда потребує підтвердження"
+
+msgid "The AT channel is busy; the command was not sent, try again"
+msgstr "AT-канал зайнятий; команду не надіслано, повторіть"
+
+msgid "The modem did not answer in time; the command may still run, check before sending it again"
+msgstr "Модем не відповів вчасно; команда може ще виконуватися, перевірте перед повторним надсиланням"
+
+msgid "The fresh parameter must be 0 or 1"
+msgstr "Параметр fresh має бути 0 або 1"
+
+msgid "Reading the locks from the modem; try again in a few seconds"
+msgstr "Блокування зчитуються з модема; повторіть за кілька секунд"
+
+msgid "Lock read failed"
+msgstr "Помилка зчитування фіксації"
+
+msgid "Unknown lock kind"
+msgstr "Невідомий тип фіксації"
+
+msgid "Invalid value for this lock kind"
+msgstr "Неприпустиме значення для цього типу фіксації"
+
+msgid "None of these bands is supported by this modem"
+msgstr "Цей модем не підтримує жодного з цих діапазонів"
+
+msgid "Band, mode and cell locks are not supported for SIM2 yet"
+msgstr "Блокування діапазонів, режиму й соти ще не підтримується для SIM2"
+
+msgid "Band, mode and cell locks are not supported while dual-SIM switching manages the radio"
+msgstr "Блокування діапазонів, режиму й соти не підтримується, поки перемикання двох SIM керує радіомодулем"
+
+msgid "Invalid page"
+msgstr "Неприпустима сторінка"
+
+msgid "mu300-sms is not available (the SMS service is not installed or not running)"
+msgstr "mu300-sms недоступний (службу SMS не встановлено або не запущено)"
+
+msgid "No output"
+msgstr "Немає виводу"
+
+msgid "Bad ID"
+msgstr "Неправильний ID"
+
+msgid "Read failed"
+msgstr "Помилка зчитування"
+
+msgid "The number may only contain digits (and a leading +)"
+msgstr "Номер може містити лише цифри (і + на початку)"
+
+msgid "The message is empty"
+msgstr "Повідомлення порожнє"
+
+msgid "The message is too long (over 480 characters)"
+msgstr "Повідомлення задовге (понад 480 символів)"
+
+msgid "The message contains a control character"
+msgstr "Повідомлення містить керівний символ"
+
+msgid "The sim parameter must be 0 or 1"
+msgstr "Параметр sim має бути 0 або 1"
+
+msgid "The USB adapter (device-usb) gave no valid reply"
+msgstr "USB-адаптер (device-usb) не повернув коректної відповіді"
+
+msgid "The auto parameter must be 0 or 1"
+msgstr "Параметр auto має бути 0 або 1"
+
+msgid "Invalid USB role"
+msgstr "Неприпустима роль USB"
+
+msgid "A USB role takes no scope"
+msgstr "Роль USB не приймає область дії"
+
+msgid "Invalid USB network mode"
+msgstr "Неприпустимий режим USB-мережі"
+
+msgid "Invalid USB network scope"
+msgstr "Неприпустима область дії USB-мережі"
+
+msgid "Unknown USB setting"
+msgstr "Невідоме налаштування USB"
+
+msgid "Invalid interface name"
+msgstr "Неприпустиме ім'я інтерфейсу"
+
+msgid "The power adapter gave no valid reply"
+msgstr "Адаптер живлення не дав дійсної відповіді"
+
+msgid "Unknown power operation"
+msgstr "Невідома операція живлення"
+
+msgid "Unknown power setting"
+msgstr "Невідоме налаштування живлення"
+
+msgid "Invalid power value"
+msgstr "Недійсне значення живлення"
+
+msgid "Invalid power request"
+msgstr "Недійсний запит живлення"
+
+msgid "The languages adapter gave no valid reply"
+msgstr "Мовний адаптер не повернув коректної відповіді"
+
+msgid "Unknown language operation"
+msgstr "Невідома мовна операція"
+
+msgid "Invalid language code"
+msgstr "Неприпустимий код мови"
+
+msgid "Invalid language request"
+msgstr "Неприпустимий мовний запит"
+
+msgid "Unknown source"
+msgstr "Невідоме джерело"
+
+msgid "The TTL adapter gave no valid reply"
+msgstr "Адаптер TTL не дав коректної відповіді"
+
+msgid "Invalid TTL"
+msgstr "Неприпустимий TTL"
+
+msgid "The data usage adapter gave no valid reply"
+msgstr "Адаптер використання даних не дав коректної відповіді"
+
+msgid "Unknown data usage setting"
+msgstr "Невідомий параметр використання даних"
+
+msgid "Invalid value for this setting"
+msgstr "Неприпустиме значення для цього параметра"
+
+msgid "The forwarding adapter gave no valid reply"
+msgstr "Адаптер пересилання не дав коректної відповіді"
+
+msgid "The CPU adapter gave no valid reply"
+msgstr "The CPU adapter gave no valid reply"
+
+msgid "Invalid CPU profile"
+msgstr "Invalid CPU profile"
+
+msgid "Invalid CPU core"
+msgstr "Неприпустиме ядро ЦП"
+
+msgid "Unknown CPU operation"
+msgstr "Unknown CPU operation"
+
+msgid "Unknown CPU voltage operation"
+msgstr "Невідома операція з напругою CPU"
+
+msgid "Invalid CPU voltage request"
+msgstr "Неприпустимий запит напруги CPU"
+
+msgid "Invalid CPU voltage offset"
+msgstr "Неприпустимий зсув напруги CPU"
+
+msgid "Type the confirmation word to apply a voltage offset"
+msgstr "Введіть слово підтвердження, щоб застосувати зсув напруги"
+
+msgid "Invalid stress test length"
+msgstr "Неприпустима тривалість стрес-тесту"
+
+msgid "The packages adapter gave no valid reply"
+msgstr "Адаптер пакетів не дав коректної відповіді"
+
+msgid "Invalid packages operation"
+msgstr "Недійсна операція з пакетами"
+
+msgid "The sizes parameter must be 0 or 1"
+msgstr "Параметр sizes має дорівнювати 0 або 1"
+
+msgid "The update adapter gave no valid reply"
+msgstr "Адаптер оновлення не дав коректної відповіді"
+
+msgid "Unknown update operation"
+msgstr "Невідома операція оновлення"
+
+msgid "Invalid update request"
+msgstr "Неприпустимий запит оновлення"
+
+msgid "The backup tool gave no valid reply"
+msgstr "Інструмент резервного копіювання не дав коректної відповіді"
+
+msgid "Mobile data integration is not provided by this platform"
+msgstr "Інтеграція мобільних даних на цій платформі не передбачена"
+
+msgid "The SIM settings could not be read"
+msgstr "Не вдалося прочитати налаштування SIM"
+
+msgid "Radio control is not provided by this platform"
+msgstr "Ця платформа не надає керування радіо"
+
+msgid "A SIM radio change is already running"
+msgstr "Зміна радіо SIM уже виконується"
+
+# Source-language fallback for untranslated new controls.
+msgid "Invalid SIM setting"
+msgstr "Invalid SIM setting"
+
+msgid "The modem did not take the setting; nothing was saved"
+msgstr "Модем не прийняв налаштування; нічого не збережено"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control failed"
+msgstr "SIM control failed"
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching; reboot if channels are unavailable or wait until idle"
+msgstr "Enable hot switching; reboot if channels are unavailable or wait until idle"
+
+msgid "Request too large"
+msgstr "Запит завеликий"
+
+msgid "The runtime directory is not safe; nothing was run"
+msgstr "Каталог середовища виконання небезпечний; нічого не виконано"
+
+msgid "No such method"
+msgstr "Немає такого методу"
+
+msgid "The VPN module refused the request"
+msgstr "Модуль VPN відхилив запит"
+
+msgid "The VPN panel is busy, try again"
+msgstr "Панель VPN зайнята, спробуйте ще раз"
+
+msgid "Another VPN task is still running"
+msgstr "Інше завдання VPN досі виконується"
+
+msgid "The exit_ip parameter must be 0 or 1"
+msgstr "Параметр exit_ip має бути 0 або 1"
+
+msgid "The VPN status could not be read"
+msgstr "Не вдалося прочитати стан VPN"
+
+msgid "The profiles could not be read"
+msgstr "Не вдалося прочитати профілі"
+
+msgid "The check parameter must be 0 or 1"
+msgstr "Параметр check має бути 0 або 1"
+
+msgid "The engines could not be read"
+msgstr "Не вдалося прочитати рушії"
+
+msgid "The subscriptions could not be read"
+msgstr "Не вдалося прочитати підписки"
+
+msgid "The VPN settings could not be read"
+msgstr "Не вдалося прочитати налаштування VPN"
+
+msgid "Unknown VPN operation"
+msgstr "Невідома операція VPN"
+
+msgid "The VPN could not be switched"
+msgstr "Не вдалося перемкнути VPN"
+
+msgid "The kill switch is on or off"
+msgstr "Kill switch може бути лише увімкнений або вимкнений"
+
+msgid "The kill switch could not be changed"
+msgstr "Не вдалося змінити kill switch"
+
+msgid "Invalid profile id"
+msgstr "Недійсний ідентифікатор профілю"
+
+msgid "The profile could not be made the active one"
+msgstr "Не вдалося зробити профіль активним"
+
+msgid "Unknown profile source"
+msgstr "Невідоме джерело профілю"
+
+msgid "Unknown profile type"
+msgstr "Невідомий тип профілю"
+
+msgid "The config is empty, too large or holds control characters"
+msgstr "Конфігурація порожня, завелика або містить керувальні символи"
+
+msgid "Invalid profile request"
+msgstr "Недійсний запит профілю"
+
+msgid "A config from a URL takes the type it says"
+msgstr "Конфігурація з URL набуває типу, який вона сама вказує"
+
+msgid "No uploaded file"
+msgstr "Немає завантаженого файлу"
+
+msgid "The file is larger than 1 MiB"
+msgstr "Файл більший за 1 MiB"
+
+msgid "The profile could not be added"
+msgstr "Не вдалося додати профіль"
+
+msgid "The profile could not be renamed"
+msgstr "Не вдалося перейменувати профіль"
+
+msgid "The profile could not be removed"
+msgstr "Не вдалося видалити профіль"
+
+msgid "The profile does not pass the check"
+msgstr "Профіль не проходить перевірку"
+
+msgid "Unknown profile option"
+msgstr "Невідомий параметр профілю"
+
+msgid "Invalid value for this option"
+msgstr "Недійсне значення для цього параметра"
+
+msgid "The option could not be set"
+msgstr "Не вдалося встановити параметр"
+
+msgid "The config could not be read"
+msgstr "Не вдалося прочитати конфігурацію"
+
+msgid "The config was not saved"
+msgstr "Конфігурацію не збережено"
+
+msgid "The latency test failed"
+msgstr "Вимірювання затримки не вдалося"
+
+msgid "The refresh interval is 1 to 999 hours"
+msgstr "Інтервал оновлення — від 1 до 999 годин"
+
+msgid "Unknown subscription type"
+msgstr "Невідомий тип підписки"
+
+msgid "Invalid subscription id"
+msgstr "Недійсний ідентифікатор підписки"
+
+msgid "The keep parameter must be 0 or 1"
+msgstr "Параметр keep має бути 0 або 1"
+
+msgid "The subscription could not be removed"
+msgstr "Не вдалося видалити підписку"
+
+msgid "The file is too large"
+msgstr "Файл завеликий"
+
+msgid "Unknown engine"
+msgstr "Невідомий рушій"
+
+msgid "The unverified parameter must be 0 or 1"
+msgstr "Параметр unverified має бути 0 або 1"
+
+msgid "This engine is a system package: it has no file to upload"
+msgstr "Цей рушій - системний пакет: у нього немає файлу для завантаження"
+
+msgid "The engine could not be removed"
+msgstr "Не вдалося видалити рушій"
+
+msgid "mu300-extra is not on this system"
+msgstr "mu300-extra відсутній у цій системі"
+
+msgid "Unknown VPN setting"
+msgstr "Невідоме налаштування VPN"
+
+msgid "The setting could not be saved"
+msgstr "Не вдалося зберегти параметр"
+
+msgid "The number of lines is 1 to 1000"
+msgstr "Кількість рядків - від 1 до 1000"
+
+msgid "The log could not be read"
+msgstr "Не вдалося прочитати журнал"
+
+msgid "The radio of this SIM is switched off in its settings"
+msgstr "Радіо цієї SIM вимкнено в її налаштуваннях"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM control or reboot for managed dual-SIM radio"
+msgstr "Use SIM control or reboot for managed dual-SIM radio"
+
+msgid "The radio did not follow its setting"
+msgstr "Радіо не виконало своє налаштування"
+
+msgid "The data roaming setting could not be saved"
+msgstr "Не вдалося зберегти налаштування роумінгу даних"
+
+msgid "Expected on or off"
+msgstr "Очікується on або off"
+
+msgid "VPN integration is not provided by this platform"
+msgstr "Інтеграція VPN не надається цією платформою"
+
+msgid "Dual-boot integration is not provided by this platform"
+msgstr "Інтеграція подвійного завантаження не надається цією платформою"
+
+msgid "mu300-next-boot failed"
+msgstr "Помилка mu300-next-boot"
+
+msgid "AT backend did not answer (radio off, modem restarting, or adapter unavailable)"
+msgstr "AT-бекенд не відповів (радіо вимкнено, модем перезапускається або адаптер недоступний)"
+
+msgid "The CPU profile could not be read"
+msgstr "The CPU profile could not be read"
+
+msgid "The CPU profile could not be set"
+msgstr "The CPU profile could not be set"
+
+msgid "The CPU core could not be switched"
+msgstr "Не вдалося перемкнути ядро ЦП"
+
+msgid "Invalid low latency setting"
+msgstr "Неприпустиме налаштування низької затримки"
+
+msgid "The low latency setting could not be applied"
+msgstr "Не вдалося застосувати налаштування низької затримки"
+
+msgid "The CPU voltage offset could not be read"
+msgstr "Не вдалося прочитати зсув напруги CPU"
+
+msgid "The CPU voltage offset was refused"
+msgstr "Зсув напруги CPU відхилено"
+
+msgid "The CPU voltage offset could not be turned off"
+msgstr "Не вдалося вимкнути зсув напруги CPU"
+
+msgid "The stress test could not be started"
+msgstr "Не вдалося запустити стрес-тест"
+
+msgid "USB role adapter is not executable"
+msgstr "Адаптер ролі USB не є виконуваним"
+
+msgid "USB role adapter failed"
+msgstr "Помилка адаптера ролі USB"
+
+msgid "USB role switch is unavailable"
+msgstr "Зміна ролі USB недоступна"
+
+msgid "USB role switch failed"
+msgstr "Помилка зміни ролі USB"
+
+msgid "USB role switch was refused by platform safety checks"
+msgstr "Зміну ролі USB відхилено перевірками безпеки платформи"
+
+msgid "Cannot create USB boot settings directory"
+msgstr "Не вдається створити каталог налаштувань завантаження USB"
+
+msgid "Cannot write USB boot settings"
+msgstr "Не вдається записати налаштування завантаження USB"
+
+msgid "Cannot save USB boot settings"
+msgstr "Не вдається зберегти налаштування завантаження USB"
+
+msgid "Invalid boot-auto value"
+msgstr "Неприпустиме значення boot-auto"
+
+msgid "Device is the boot default; host auto-apply is the only persistent role"
+msgstr "Режим пристрою використовується типово під час завантаження; постійною може бути лише автоматична роль хоста"
+
+msgid "Cannot save USB role policy"
+msgstr "Не вдається зберегти політику ролі USB"
+
+msgid "Cannot disable USB network boot policy"
+msgstr "Не вдається вимкнути політику завантаження USB-мережі"
+
+msgid "Cannot commit USB role policy"
+msgstr "Не вдається застосувати політику ролі USB"
+
+msgid "USB network mode is unavailable in host role"
+msgstr "Режим USB-мережі недоступний у ролі хоста"
+
+msgid "Disable host boot-auto before configuring USB network"
+msgstr "Вимкніть boot-auto хоста перед налаштуванням USB-мережі"
+
+msgid "Cannot save USB network policy"
+msgstr "Не вдається зберегти політику USB-мережі"
+
+msgid "Cannot commit USB network policy"
+msgstr "Не вдається застосувати політику USB-мережі"
+
+msgid "USB host mode is required"
+msgstr "Потрібен режим хоста USB"
+
+msgid "Not a USB network interface"
+msgstr "Не є мережевим інтерфейсом USB"
+
+msgid "LAN bridge device section was not found"
+msgstr "Секцію пристрою мосту LAN не знайдено"
+
+msgid "Cannot bring USB network interface up"
+msgstr "Не вдається підняти мережевий інтерфейс USB"
+
+msgid "Cannot add interface to LAN bridge"
+msgstr "Не вдається додати інтерфейс до мосту LAN"
+
+msgid "Cannot save LAN bridge"
+msgstr "Не вдається зберегти міст LAN"
+
+msgid "Network reload failed"
+msgstr "Помилка перезавантаження мережі"
+
+msgid "Cannot attach USB interface to LAN bridge"
+msgstr "Не вдається приєднати інтерфейс USB до мосту LAN"
+
+msgid "Invalid forwarding setting"
+msgstr "Неправильне налаштування пересилання"
+
+msgid "The message template is too long or contains a control character"
+msgstr "Шаблон повідомлення задовгий або містить керівний символ"
+
+msgid "Invalid filter list (at most 50 lines)"
+msgstr "Неправильний список фільтрів (не більше 50 рядків)"
+
+msgid "The webhook address must be an http:// or https:// URL"
+msgstr "Адреса вебхука має бути URL http:// або https://"
+
+msgid "The webhook body is too long or contains a control character"
+msgstr "Тіло webhook надто довге або містить керівний символ"
+
+msgid "The answer check must be key=value, like errcode=0 or ok=true (the value a whole number or lowercase letters, 16 at most)"
+msgstr "Перевірка відповіді має бути у вигляді ключ=значення, наприклад errcode=0 або ok=true (значення — ціле число або малі літери, не більше 16)"
+
+msgid "Invalid header (one \"Name: value\" per line; Host, Content-Type, Content-Length, Transfer-Encoding and Connection are set by the device)"
+msgstr "Неправильний заголовок (по одному \"Ім'я: значення\" в рядку; Host, Content-Type, Content-Length, Transfer-Encoding і Connection задає пристрій)"
+
+msgid "Invalid Telegram bot token"
+msgstr "Неправильний токен бота Telegram"
+
+msgid "Invalid Telegram chat (a number, or @channel)"
+msgstr "Неправильний чат Telegram (число або @канал)"
+
+msgid "Invalid e-mail setting"
+msgstr "Неправильне налаштування пошти"
+
+msgid "The webhook needs an address"
+msgstr "Вебхуку потрібна адреса"
+
+msgid "Telegram needs a bot token and a chat"
+msgstr "Telegram потрібні токен бота й чат"
+
+msgid "E-mail needs a server, a sender and a recipient"
+msgstr "Пошті потрібні сервер, відправник і одержувач"
+
+msgid "SMS forwarding needs a phone number"
+msgstr "Для пересилання через SMS потрібен номер телефону"
+
+msgid "The forwarding settings could not be saved"
+msgstr "Не вдалося зберегти налаштування пересилання"
+
+msgid "SMS forwarding is not installed"
+msgstr "Пересилання SMS не встановлено"
+
+msgid "A test was started a moment ago; wait a few seconds"
+msgstr "Тест щойно було запущено; зачекайте кілька секунд"
+
+msgid "The delivery log could not be cleared"
+msgstr "Не вдалося очистити журнал доставки"
+
+msgid "Unknown forwarding operation"
+msgstr "Невідома операція пересилання"
+
+msgid "The language pack is not installed"
+msgstr "Мовний пакет не встановлено"
+
+msgid "No language given"
+msgstr "Мову не вказано"
+
+msgid "The language could not be changed"
+msgstr "Не вдалося змінити мову"
+
+msgid "LuCI does not offer this language"
+msgstr "LuCI не пропонує цю мову"
+
+msgid "No uploaded language pack"
+msgstr "Немає вивантаженого мовного пакета"
+
+msgid "An installation is already running"
+msgstr "Встановлення вже виконується"
+
+msgid "The language pack could not be removed"
+msgstr "Не вдалося видалити мовний пакет"
+
+msgid "Lock cache unavailable"
+msgstr "Кеш фіксації недоступний"
+
+msgid "The modem refused a write"
+msgstr "Модем відхилив запис"
+
+msgid "The saved locks could not be cleared"
+msgstr "Не вдалося видалити збережені блокування"
+
+msgid "No serving cell to lock to"
+msgstr "Немає обслуговуючої соти для фіксації"
+
+msgid "The modem did not answer the mode query; nothing was sent"
+msgstr "Модем не відповів на запит режиму; нічого не надіслано"
+
+msgid "The read-back does not match the automatic values"
+msgstr "Зворотне читання не збігається з автоматичними значеннями"
+
+msgid "The read-back after the stack restart does not match the automatic values"
+msgstr "Зворотне читання після перезапуску стеку не збігається з автоматичними значеннями"
+
+msgid "The reset was interrupted"
+msgstr "Скидання було перервано"
+
+msgid "Reinstalling packages is not available on this system"
+msgstr "Повторне встановлення пакетів недоступне в цій системі"
+
+msgid "No packages were written down by an update"
+msgstr "Жодне оновлення не записало пакетів"
+
+msgid "Reinstalling is running already"
+msgstr "Повторне встановлення вже виконується"
+
+msgid "The note could not be dropped"
+msgstr "Не вдалося прибрати сповіщення"
+
+msgid "Unknown packages operation"
+msgstr "Невідома операція з пакетами"
+
+msgid "usage: power get|set KEY VALUE|wake|idle"
+msgstr "usage: power get|set KEY VALUE|wake|idle"
+
+msgid "Data usage is not available on this system"
+msgstr "Облік даних недоступний у цій системі"
+
+msgid "Unknown data usage operation"
+msgstr "Невідома операція обліку даних"
+
+msgid "The TTL setting could not be read"
+msgstr "Не вдалося прочитати налаштування TTL"
+
+msgid "The TTL could not be set"
+msgstr "Не вдалося задати TTL"
+
+msgid "Unknown TTL operation"
+msgstr "Невідома операція TTL"
+
+msgid "An update task is already running"
+msgstr "Завдання оновлення вже виконується"
+
+msgid "The task could not be started"
+msgstr "Не вдалося запустити завдання"
+
+msgid "The updater gave no valid reply"
+msgstr "Програма оновлення не дала коректної відповіді"
+
+msgid "This needs confirmation"
+msgstr "Потрібне підтвердження"
+
+msgid "Check for updates first"
+msgstr "Спершу перевірте наявність оновлень"
+
+msgid "The upload directory is not safe; nothing was changed"
+msgstr "Каталог вивантаження небезпечний; нічого не змінено"
+
+msgid "Not enough memory for this upload"
+msgstr "Недостатньо пам'яті для цього вивантаження"
+
+msgid "Not enough free space on the Linux partition"
+msgstr "Недостатньо вільного місця на розділі Linux"
+
+msgid "The file was not checked; upload it again"
+msgstr "Файл не було перевірено; вивантажте його знову"
+
+msgid "This file is not for this device"
+msgstr "Цей файл не для цього пристрою"
+
+msgid "The signature of this file is wrong"
+msgstr "Підпис цього файлу хибний"
+
+msgid "This file is not signed: that needs confirmation"
+msgstr "Цей файл не підписано: потрібне підтвердження"
+
+msgid "This file is older than what is installed: that needs confirmation"
+msgstr "Цей файл старіший за встановлене: потрібне підтвердження"
+
+msgid "The release source was not changed"
+msgstr "Джерело випуску не змінено"

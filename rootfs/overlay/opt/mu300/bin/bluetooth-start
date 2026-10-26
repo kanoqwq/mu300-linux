@@ -1,0 +1,36 @@
+#!/bin/sh
+# Bring up the SC2355 (Marlin3) Bluetooth controller for BlueZ.
+# sprdbt_tty exposes the controller as an H4 tty (/dev/ttyBT0) over the shared WCN PCIe link;
+# mu300-bt-init uploads the vendor PSKey/RF blocks (bt_configure_*.ini from Android's /vendor/etc)
+# and exec'd btattach keeps the hci_uart line discipline attached for as long as the service runs.
+set -e
+CONF=/etc/mu300/bluetooth.conf
+STATE=/var/lib/mu300/bdaddr
+FW=/usr/lib/firmware
+
+# the WCN platform driver is loaded by mu300-wifi; modprobe is a no-op if it is already there
+grep -q "^wcn_bsp " /proc/modules || modprobe wcn_bsp
+grep -q "^sprdbt_tty " /proc/modules || modprobe sprdbt_tty
+for n in $(seq 1 10); do [ -c /dev/ttyBT0 ] && break; sleep 1; done
+[ -c /dev/ttyBT0 ] || { echo "no /dev/ttyBT0" >&2; exit 1; }
+
+# BDADDR= in bluetooth.conf wins; otherwise a stable locally administered address derived from machine-id
+BDADDR=$(sed -n 's/^BDADDR=\([0-9A-Fa-f:]\{17\}\)$/\1/p' "$CONF" 2>/dev/null | tail -n1)
+if [ -z "$BDADDR" ]; then
+    if [ ! -s "$STATE" ]; then
+        mkdir -p "${STATE%/*}"
+        h=$(printf 'mu300-bt-%s' "$(cat /etc/machine-id)" | sha256sum | cut -c1-12)
+        first=$(( (0x$(echo "$h" | cut -c1-2) | 0x02) & 0xfe ))
+        printf '%02x:%s:%s:%s:%s:%s\n' "$first" "$(echo "$h" | cut -c3-4)" "$(echo "$h" | cut -c5-6)" \
+            "$(echo "$h" | cut -c7-8)" "$(echo "$h" | cut -c9-10)" "$(echo "$h" | cut -c11-12)" > "$STATE"
+    fi
+    BDADDR=$(cat "$STATE")
+fi
+
+# power-cycle the BT function of the combo chip so the controller starts from its ROM defaults
+rfkill block bluetooth || true
+sleep 1
+rfkill unblock bluetooth
+sleep 2
+/opt/mu300/bin/mu300-bt-init -d /dev/ttyBT0 -p "$FW/bt_configure_pskey.ini" -r "$FW/bt_configure_rf.ini" -a "$BDADDR"
+exec btattach -B /dev/ttyBT0 -P h4

@@ -1,0 +1,94 @@
+#!/bin/sh
+# OpenWrt only: the hotspot is WPA2-PSK, never WPA3/SAE, on every device of this project (ZTE F50, U30 Air, V50: the
+# SC2355 Wi-Fi). The U30 Air's firmware SAE offload is disabled (docs/U30AIR-SAE.md, FINDINGS 80): the PMK record the
+# firmware hands back came in the same element list as the client's own association request, with no boundary, so a
+# client could forge it and join without the password. Plain hostapd SAE never worked on this chip either.
+#   openwrt-wifi-wpa2-only migrate   at boot (mu300-hw, before its "wifi down; wifi up"): every access point that asks
+#                                    for SAE (encryption sae, sae-mixed, sae-compat, psk3, psk3-mixed, or the offload's
+#                                    hostapd option u30_sae_offload) becomes WPA2-PSK (CCMP) with the same password.
+# The settings as they were are kept in /etc/mu300/wireless.before-wpa2 (root only, the first time), one line goes to
+# the log, and /etc/mu300/wpa3-disabled tells LuCI and the control panel to show why (until dismissed there).
+# Without a usable WPA2 password (8-63 printable ASCII or 64 hex digits) that access point is switched off instead -
+# never left open - and the line and the notice say so. The wifi-scripts refuse to start an SAE access point all the
+# same (openwrt/patches/wifi-scripts-wpa2-only.patch), so a migration that did not happen leaves it down, not open.
+# Nothing is done, asked or written when no access point asks for SAE. The password is never printed.
+# (MU300_SYSROOT: for tests/)
+R=${MU300_SYSROOT:-}
+[ -f "$R/etc/openwrt_release" ] || exit 0
+NOTICE=$R/etc/mu300/wpa3-disabled
+SAVED=$R/etc/mu300/wireless.before-wpa2
+
+# the access points (mode ap, or none given) that ask for SAE, one section name per line
+sae_aps() {
+	uci -q show wireless | sed -n "s/^wireless\.\([^.=]*\)=wifi-iface$/\1/p" | while read -r s; do
+		case $(uci -q get "wireless.$s.mode") in ap|'') ;; *) continue ;; esac
+		enc=$(uci -q get "wireless.$s.encryption")
+		case ${enc%%+*} in
+			sae|sae-mixed|sae-compat|psk3|psk3-mixed) echo "$s"; continue ;;
+		esac
+		uci -q show "wireless.$s.hostapd_bss_options" | grep -q "'u30_sae_offload" && echo "$s"
+	done
+}
+# a WPA2 passphrase hostapd takes: 8-63 printable ASCII, or a raw key of 64 hex digits
+wpa2_key_ok() {
+	case $1 in *[!\ -~]*) return 1 ;; esac
+	[ ${#1} -ge 8 ] && [ ${#1} -le 63 ] && return 0
+	[ ${#1} -eq 64 ] && case $1 in *[!0-9A-Fa-f]*) return 1 ;; esac
+}
+# take the offload's hostapd option(s) out of the list, whatever their value
+drop_offload_option() {
+	uci -q show "wireless.$1.hostapd_bss_options" | grep -o "'u30_sae_offload[^']*'" | tr -d "'" | while read -r o; do
+		uci -q del_list "wireless.$1.hostapd_bss_options=$o"
+	done
+}
+
+case ${1:-} in
+	migrate) ;;
+	*) echo "usage: $0 migrate" >&2; exit 2 ;;
+esac
+aps=$(sae_aps)
+[ -n "$aps" ] || exit 0
+
+mkdir -p "$R/etc/mu300"
+[ -e "$SAVED" ] || ( umask 077; cat "$R/etc/config/wireless" > "$SAVED" ) 2>/dev/null
+migrated= down=
+for s in $aps; do
+	if wpa2_key_ok "$(uci -q get "wireless.$s.key")"; then
+		uci -q set "wireless.$s.encryption=psk2+ccmp"
+		migrated="$migrated $s"
+	else
+		# no password WPA2 can use: off, never open
+		uci -q set "wireless.$s.encryption=psk2+ccmp"
+		uci -q set "wireless.$s.disabled=1"
+		down="$down $s"
+	fi
+	uci -q delete "wireless.$s.ieee80211w"
+	uci -q delete "wireless.$s.sae_pwe"
+	drop_offload_option "$s"
+done
+uci -q commit wireless
+# what uci has now, not what was asked: an access point still on SAE is refused by the wifi-scripts (down, not open)
+for s in $migrated; do
+	[ "$(uci -q get "wireless.$s.encryption")" = psk2+ccmp ] && continue
+	migrated=$(echo " $migrated " | sed "s/ $s / /"); down="$down $s"
+done
+migrated=$(echo $migrated) down=$(echo $down)
+
+if [ -n "$down" ]; then
+	state=down
+	msg="WPA3 (SAE) on the hotspot is disabled for security (FINDINGS 80) and the switch to WPA2 failed for $down (no usable WPA2 password, or the change was not saved): that access point is off, not open. Set a WPA2 password (8-63 characters) in Network > Wireless and switch it on."
+	[ -z "$migrated" ] || msg="$msg $migrated is back on WPA2-PSK with the same password."
+	prio=daemon.err
+else
+	state=migrated
+	msg="WPA3 (SAE) on the hotspot is disabled for security (FINDINGS 80): $migrated is now WPA2-PSK (CCMP) with the same password. The settings it had are in /etc/mu300/wireless.before-wpa2."
+	prio=daemon.warn
+fi
+echo "$msg" >&2
+logger -t mu300-wifi -p "$prio" "$msg" 2>/dev/null || true
+# the log does not keep it for long (one Wi-Fi restart writes hundreds of driver lines): the notice stays until it is
+# dismissed in LuCI or the control panel
+{ echo "state=$state"; echo "time=$(date '+%Y-%m-%d %H:%M:%S')"; echo "migrated=$migrated"; echo "down=$down"; } \
+	> "$NOTICE" 2>/dev/null || true
+chmod 644 "$NOTICE" 2>/dev/null || true
+exit 0

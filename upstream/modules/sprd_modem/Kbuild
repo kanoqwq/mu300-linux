@@ -1,0 +1,19 @@
+# MU300: the Unisoc modem stack (Trusty, PM co-processor manager, mailbox, SIPC, modem loader, SIPA) from the
+# ZTE U30 Air 5.4.254 GPL tree, built as out-of-tree modules against the mainline kernel.
+# Vendor Kconfig symbols keep their 5.4 values (make variables for the Makefiles, defines for the sources).
+VENDOR_M := SPRD_SYSTIMER SPRD_TIME_SYNC SPRD_TIME_SYNC_CP TRUSTY TRUSTY_LOG TRUSTY_VIRTIO TRUSTY_VIRTIO_IPC SPRD_TSHM \
+	SPRD_MODEM_POWER_MANAGER UNISOC_MAILBOX UNISOC_SIPC_VIRT_BUS \
+	SPRD_SIPC SPRD_SIPC_SPIPE SPRD_SIPC_SPOOL SPRD_SIPC_SLOG_BRIDGE SPRD_SIPC_SBUF_BRIDGE \
+	SPRD_SIPC_SBLOCK_BRIDGE SPRD_SIPC_ZERO_COPY_SIPX SPRD_SIPC_SETH UNISOC_MODEM_LOADER \
+	SPRD_IPA_SYS SPRD_IPA_V3 SPRD_IPA_ETH SPRD_IPA_DELEGATE
+VENDOR_Y := UNISOC_MAILBOX_R2 UNISOC_SIPC_SLOG_BRIDGE_5G
+
+$(foreach c,$(VENDOR_M),$(eval export CONFIG_$(c) := m))
+$(foreach c,$(VENDOR_Y),$(eval export CONFIG_$(c) := y))
+
+MU300_FLAGS := $(foreach c,$(VENDOR_M),-DCONFIG_$(c)_MODULE=1) $(foreach c,$(VENDOR_Y),-DCONFIG_$(c)=1) \
+	-include $(src)/../wcn_bsp/kinclude/mu300_compat.h -I$(src)/kinclude -I$(src)/../wcn_bsp/kinclude -I$(src)/trusty
+subdir-ccflags-y += $(MU300_FLAGS)
+ccflags-y += $(MU300_FLAGS)
+
+obj-m += misc/ trusty/ mailbox/ sipc_virt_bus/ power_manager/ sipc/ modem_loader/ seth/ sipa_sys/ sipa_v3/ sipa_delegate/

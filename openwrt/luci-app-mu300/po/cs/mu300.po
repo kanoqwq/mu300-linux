@@ -1,0 +1,4050 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: cs\n"
+
+msgid "Status dashboard"
+msgstr "Přehled stavu"
+
+msgid "Cellular"
+msgstr "Mobilní síť"
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM"
+msgstr "Dual SIM"
+
+msgid "SIM settings"
+msgstr "Nastavení SIM"
+
+msgid "Network locks"
+msgstr "Zámky sítě"
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "SMS forwarding"
+msgstr "Přeposílání SMS"
+
+msgid "AT terminal"
+msgstr "Terminál AT"
+
+msgid "Adapter settings"
+msgstr "Nastavení adaptéru"
+
+msgid "TTL"
+msgstr "TTL"
+
+msgid "Data usage"
+msgstr "Spotřeba dat"
+
+msgid "Device management"
+msgstr "Správa zařízení"
+
+msgid "Update"
+msgstr "Aktualizovat"
+
+msgid "Backup of settings"
+msgstr "Záloha nastavení"
+
+msgid "Languages"
+msgstr "Jazyky"
+
+msgid "Power"
+msgstr "Napájení"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Terminal"
+msgstr "Terminál"
+
+msgid "Terminal settings"
+msgstr "Nastavení terminálu"
+
+msgid "Overview"
+msgstr "Přehled"
+
+msgid "Profiles"
+msgstr "Profily"
+
+msgid "Subscriptions"
+msgstr "Odběry"
+
+msgid "Engines"
+msgstr "Enginy"
+
+msgid "Settings"
+msgstr "Nastavení"
+
+msgid "Logs"
+msgstr "Protokoly"
+
+msgid "Packages after an update"
+msgstr "Balíčky po aktualizaci"
+
+msgid "MU300 control center: status dashboard, network locks, AT terminal, SMS and VPN"
+msgstr "Řídicí centrum MU300: stavový přehled, zámky sítě, terminál AT, SMS a VPN"
+
+msgid "Terminal: a root shell on the device in the browser"
+msgstr "Terminál: root shell zařízení v prohlížeči"
+
+msgid "China Mobile"
+msgstr "China Mobile"
+
+msgid "China Unicom"
+msgstr "China Unicom"
+
+msgid "China Telecom"
+msgstr "China Telecom"
+
+msgid "China Broadnet"
+msgstr "China Broadnet"
+
+msgid "China Tietong"
+msgstr "China Tietong"
+
+msgid "Excellent"
+msgstr "Výborný"
+
+msgid "Good"
+msgstr "Dobrý"
+
+msgid "Fair"
+msgstr "Průměrný"
+
+msgid "Poor"
+msgstr "Slabý"
+
+msgid "Unknown"
+msgstr "Neznámý"
+
+msgid "%d d %d h"
+msgstr "%d d %d h"
+
+msgid "%d h %d min"
+msgstr "%d h %d min"
+
+msgid "%d min"
+msgstr "%d min"
+
+msgid "No neighbor-cell data"
+msgstr "Žádná data o sousedních buňkách"
+
+msgid "Locked"
+msgstr "Uzamčeno"
+
+msgid "Lock"
+msgstr "Uzamknout"
+
+msgid "Unknown error"
+msgstr "Neznámá chyba"
+
+msgid "Confirm"
+msgstr "Potvrdit"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Zrušit"
+
+msgid "%d s"
+msgstr "%d s"
+
+msgid "%d h"
+msgstr "%d h"
+
+msgid "New SMS · %s"
+msgstr "Nová SMS · %s"
+
+msgid "Unknown number"
+msgstr "Neznámé číslo"
+
+msgid "Select"
+msgstr "Vybrat"
+
+msgid "never"
+msgstr "nikdy"
+
+msgid "just now"
+msgstr "právě teď"
+
+msgid "%s ago"
+msgstr "před %s"
+
+msgid "Failed: %s"
+msgstr "Selhalo: %s"
+
+msgid "Management connection lost"
+msgstr "Spojení pro správu bylo ztraceno"
+
+msgid "Installing the VPN module"
+msgstr "Instaluje se modul VPN"
+
+msgid "Installing the engine"
+msgstr "Instaluje se engine"
+
+msgid "Adding the subscription"
+msgstr "Přidává se odběr"
+
+msgid "Refreshing the subscriptions"
+msgstr "Aktualizují se odběry"
+
+msgid "Testing the latency of every profile"
+msgstr "Měří se latence všech profilů"
+
+msgid "Downloading the config"
+msgstr "Stahuje se konfigurace"
+
+msgid "Working…"
+msgstr "Pracuje se…"
+
+msgid "done"
+msgstr "hotovo"
+
+msgid "failed"
+msgstr "selhalo"
+
+msgid "Verify the uploaded file"
+msgstr "Ověřit nahraný soubor"
+
+msgid "The uploaded file is checked against the SHA256SUMS of the VPN module's latest release, downloaded over HTTPS. When that is not possible (offline, an older release), it is installed only if you allow an unverified file: it then runs as root with no check."
+msgstr "Nahraný soubor se porovná se SHA256SUMS nejnovějšího vydání modulu VPN staženým přes HTTPS. Pokud to není možné (offline, starší vydání), nainstaluje se jen tehdy, když povolíte neověřený soubor: poběží pak jako root bez jakékoli kontroly."
+
+msgid "Install it even if it cannot be verified"
+msgstr "Nainstalovat, i když jej nelze ověřit"
+
+msgid "Install only a verified file"
+msgstr "Instalovat jen ověřený soubor"
+
+msgid "Upload failed: %s"
+msgstr "Nahrání selhalo: %s"
+
+msgid "The VPN module is too old for this panel"
+msgstr "Modul VPN je pro tento panel příliš starý"
+
+msgid "The VPN module is not installed"
+msgstr "Modul VPN není nainstalován"
+
+msgid "This page needs the VPN module with the machine-readable mu300-vpn (module v2 or newer). Updating it keeps the profiles and the settings."
+msgstr "Tato stránka potřebuje modul VPN se strojově čitelným mu300-vpn (modul v2 nebo novější). Aktualizace zachová profily i nastavení."
+
+msgid "The VPN is a module of its own: mu300-vpn with its kill switch and profiles, and one extra per engine (Xray, sing-box, mihomo, dae). It is installed with mu300-extra install vpn."
+msgstr "VPN je samostatný modul: mu300-vpn s kill switchem a profily a jeden doplněk pro každý engine (Xray, sing-box, mihomo, dae). Instaluje se pomocí mu300-extra install vpn."
+
+msgid "The download is a few MB for the module and up to tens of MB per engine: on mobile data it counts towards your plan."
+msgstr "Stažení má pro modul několik MB a pro každý engine až desítky MB: na mobilních datech se počítá do vašeho tarifu."
+
+msgid "Update the VPN module"
+msgstr "Aktualizovat modul VPN"
+
+msgid "Install the VPN module"
+msgstr "Nainstalovat modul VPN"
+
+msgid "Upload the file…"
+msgstr "Nahrát soubor…"
+
+msgid "Offline: upload mu300-linux-vpn-core.tar.gz (or the bundle mu300-linux-vpn.tar.gz) from the release page of the VPN module."
+msgstr "Offline: nahrajte mu300-linux-vpn-core.tar.gz (nebo balík mu300-linux-vpn.tar.gz) ze stránky vydání modulu VPN."
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "This is a network or frequency scan: it takes one to three minutes, holds the modem's AT channel all that time, and mobile data may pause meanwhile. It runs in the background; the reply appears here when it is done."
+msgstr "Jde o vyhledávání sítí nebo frekvencí: trvá jednu až tři minuty, celou dobu drží AT kanál modemu a mobilní data se mezitím mohou pozastavit. Běží na pozadí; odpověď se zobrazí zde, až skončí."
+
+msgid "This changes a network mode, band or cell setting the modem stores: it stays in force after a reboot, and in Android too, where a network that does not match it shows as No Service. The Locks page shows these settings and resets them."
+msgstr "Tímto se mění režim sítě, pásmo nebo nastavení buňky, které si modem ukládá: platí i po restartu, a to i v Androidu, kde se síť, která mu neodpovídá, zobrazí jako Žádná služba. Stránka Zámky tato nastavení zobrazuje a obnovuje."
+
+msgid "This switches the radio, the data connection or the modem itself: mobile data drops until it is restored, and this page may lose its connection for a while."
+msgstr "Tímto se přepíná rádio, datové připojení nebo samotný modem: mobilní data vypadnou, dokud se neobnoví, a tato stránka může na chvíli ztratit spojení."
+
+msgid "This changes the data profiles (APNs) stored in the modem, which mobile data and Android use."
+msgstr "Tímto se mění datové profily (APN) uložené v modemu, které používají mobilní data a Android."
+
+msgid "This changes the SIM's PIN lock or enters a PIN: wrong PINs block the SIM until its PUK is entered."
+msgstr "Tímto se mění zámek PIN karty SIM nebo zadává PIN: chybné kódy PIN zablokují SIM, dokud se nezadá její PUK."
+
+msgid "Basic"
+msgstr "Základní"
+
+msgid "Registration/signal"
+msgstr "Registrace/signál"
+
+msgid "Bearer"
+msgstr "Nosič"
+
+msgid "Engineering mode"
+msgstr "Servisní režim"
+
+msgid "AT command (↑↓ history, Enter to send)"
+msgstr "Příkaz AT (↑↓ historie, Enter odešle)"
+
+msgid "Send"
+msgstr "Odeslat"
+
+msgid "Clear screen"
+msgstr "Vymazat obrazovku"
+
+msgid "Ready."
+msgstr "Připraveno."
+
+msgid "Session history (click to reuse)"
+msgstr "Historie relace (kliknutím znovu použít)"
+
+msgid "Running in the background (at most %d s); the reply appears here when it is done…"
+msgstr "Běží na pozadí (nejvýše %d s); odpověď se zobrazí zde, až skončí…"
+
+msgid "The modem gave no final answer in time"
+msgstr "Modem neodpověděl včas konečnou odpovědí"
+
+msgid "%d s in the background"
+msgstr "%d s na pozadí"
+
+msgid "(no output)"
+msgstr "(žádný výstup)"
+
+msgid "This command changes the modem's state."
+msgstr "Tento příkaz mění stav modemu."
+
+msgid "Not sent yet: waiting for confirmation"
+msgstr "Zatím neodesláno: čeká se na potvrzení"
+
+msgid "Send this AT command?"
+msgstr "Odeslat tento příkaz AT?"
+
+msgid "Send anyway"
+msgstr "Přesto odeslat"
+
+msgid "Not sent"
+msgstr "Neodesláno"
+
+msgid "Request failed"
+msgstr "Požadavek selhal"
+
+msgid "(empty)"
+msgstr "(prázdné)"
+
+msgid "Passphrase (8 characters or more)"
+msgstr "Heslová fráze (aspoň 8 znaků)"
+
+msgid "The passphrase again"
+msgstr "Heslová fráze znovu"
+
+msgid "Download the backup"
+msgstr "Stáhnout zálohu"
+
+msgid "Back up the settings"
+msgstr "Zálohovat nastavení"
+
+msgid "One file with the hotspot, mobile data and the APN, the network locks, the VPN profiles and settings, SMS forwarding, the LAN address, the host name, the time zone and the SSH keys. It holds passwords: with a passphrase it is encrypted, and only that passphrase opens it again."
+msgstr "Jeden soubor s hotspotem, mobilními daty a APN, zámky sítě, profily a nastavením VPN, přeposíláním SMS, adresou LAN, názvem hostitele, časovým pásmem a klíči SSH. Obsahuje hesla: s heslovou frází se zašifruje a otevře ho jen ta fráze."
+
+msgid "Include the login password"
+msgstr "Zahrnout přihlašovací heslo"
+
+msgid "Passphrase, if the file is encrypted"
+msgstr "Heslová fráze, pokud je soubor zašifrovaný"
+
+msgid "Show what would change"
+msgstr "Ukázat, co by se změnilo"
+
+msgid "Restore"
+msgstr "Obnovit"
+
+msgid "The file is larger than 4 MiB"
+msgstr "Soubor je větší než 4 MiB"
+
+msgid "The settings of the file replace these. The hotspot, mobile data or the LAN may restart, and this page may lose its connection for a moment."
+msgstr "Nastavení ze souboru nahradí tato. Hotspot, mobilní data nebo LAN se mohou restartovat a tato stránka může na chvíli ztratit spojení."
+
+msgid "Restore from a backup"
+msgstr "Obnovit ze zálohy"
+
+msgid "Every value of the file is checked first; one that is refused and nothing is changed. What is the same is left alone, and no VPN profile, subscription or SSH key of this device is removed."
+msgstr "Každá hodnota souboru se nejprve zkontroluje; když je jedna odmítnuta, nic se nezmění. Co je stejné, zůstane, a žádný profil VPN, odběr ani klíč SSH tohoto zařízení se neodstraní."
+
+msgid "Keep this device's login password"
+msgstr "Ponechat přihlašovací heslo tohoto zařízení"
+
+msgid "Take a file of another device model"
+msgstr "Přijmout soubor z jiného modelu zařízení"
+
+msgid "The two passphrases differ"
+msgstr "Heslové fráze se liší"
+
+msgid "The passphrase needs 8 characters or more"
+msgstr "Heslová fráze musí mít aspoň 8 znaků"
+
+msgid "Saved (encrypted)"
+msgstr "Uloženo (zašifrováno)"
+
+msgid "Saved. The file is not encrypted: it holds passwords, keep it safe."
+msgstr "Uloženo. Soubor není zašifrovaný: obsahuje hesla, uložte ho bezpečně."
+
+msgid "Choose a backup file first"
+msgstr "Nejprve vyberte soubor zálohy"
+
+msgid "Restoring…"
+msgstr "Obnovuje se…"
+
+msgid "Restored"
+msgstr "Obnoveno"
+
+msgid "The restore did not finish: see the lines above"
+msgstr "Obnovení nedoběhlo: viz řádky výše"
+
+msgid "Loading…"
+msgstr "Načítání…"
+
+msgid "Channel Analysis"
+msgstr "Analýza kanálů"
+
+msgid "A scan takes the Wi-Fi hotspot off its channel for a moment: connected devices drop, and some (macOS in particular) may not reconnect by themselves. This page scans as soon as it opens and again every few seconds. Reach the panel over USB or another way first if you depend on the hotspot."
+msgstr "Vyhledávání na chvíli odvede přístupový bod Wi-Fi z jeho kanálu: připojená zařízení se odpojí a některá (zejména macOS) se nemusí sama znovu připojit. Tato stránka vyhledává hned po otevření a pak každých několik sekund. Pokud jste na přístupovém bodu závislí, připojte se nejprve k panelu přes USB nebo jinou cestou."
+
+msgid "Scan anyway"
+msgstr "Přesto vyhledat"
+
+msgid "Saved"
+msgstr "Uloženo"
+
+msgid "CPU profile unavailable"
+msgstr "CPU profile unavailable"
+
+msgid "Power saving"
+msgstr "Power saving"
+
+msgid "Balanced"
+msgstr "Balanced"
+
+msgid "Performance"
+msgstr "Performance"
+
+msgid "Cores capped at about 60 %% of their maximum (cooler, less power)."
+msgstr "Cores capped at about 60 %% of their maximum (cooler, less power)."
+
+msgid "Schedutil across the full hardware range (the stock behaviour)."
+msgstr "Schedutil across the full hardware range (the stock behaviour)."
+
+msgid "Every cluster pinned at its hardware maximum."
+msgstr "Every cluster pinned at its hardware maximum."
+
+msgid "CPU profile"
+msgstr "CPU profile"
+
+msgid "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+msgstr "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+
+msgid "Saved profile: %s"
+msgstr "Saved profile: %s"
+
+msgid "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+msgstr "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+
+msgid "Clusters"
+msgstr "Clusters"
+
+msgid "Cores"
+msgstr "Cores"
+
+msgid "Governor"
+msgstr "Governor"
+
+msgid "Now"
+msgstr "Now"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Hardware max"
+msgstr "Hardware max"
+
+msgid "Frequencies in MHz."
+msgstr "Frequencies in MHz."
+
+msgid "Highlighted cores are online. A core taken offline stays offline, also after a reboot, until it is brought back. CPU0 always stays online."
+msgstr "Zvýrazněná jádra jsou online. Vypnuté jádro zůstane offline, i po restartu, dokud nebude znovu zapnuto. CPU0 zůstává vždy online."
+
+msgid "Low latency: on"
+msgstr "Nízká latence: zapnuto"
+
+msgid "Low latency: off"
+msgstr "Nízká latence: vypnuto"
+
+msgid "Low latency keeps CPU0 out of its idle states, as ZTE's U30 Air firmware does: Wi-Fi delays are much shorter, and the device draws more power. Off by default."
+msgstr "Nízká latence drží CPU0 mimo stavy nečinnosti, stejně jako firmware ZTE U30 Air: zpoždění Wi-Fi jsou mnohem kratší a zařízení odebírá více energie. Ve výchozím stavu vypnuto."
+
+msgid "Thermal"
+msgstr "Teplota"
+
+msgid "The kernel's thermal zones, read only. A zone with trip points throttles the cooling devices bound to it at its passive trip; a cooling state of 0 is no throttling."
+msgstr "Teplotní zóny jádra, pouze pro čtení. Zóna s prahovými body omezuje chladicí zařízení, která jsou k ní připojena, na svém pasivním prahu; stav chlazení 0 znamená žádné omezení."
+
+msgid "Zone"
+msgstr "Zóna"
+
+msgid "Temperature"
+msgstr "Teplota"
+
+msgid "Trip points"
+msgstr "Prahové body"
+
+msgid "Cooling devices"
+msgstr "Chladicí zařízení"
+
+msgid "Stress test started"
+msgstr "Zátěžový test spuštěn"
+
+msgid "Saved: it takes effect at the next reboot"
+msgstr "Uloženo: projeví se při příštím restartu"
+
+msgid "CPU voltage offset (EXPERIMENTAL)"
+msgstr "Posun napětí CPU (EXPERIMENTÁLNÍ)"
+
+msgid "Experimental: changing the CPU voltage can make the device unstable, corrupt your data and permanently damage your device. Use it entirely at your own risk."
+msgstr "Experimentální: změna napětí CPU může způsobit nestabilitu zařízení, poškodit vaše data a trvale poškodit vaše zařízení. Používáte ji výhradně na vlastní riziko."
+
+msgid "CPU voltage offset unavailable"
+msgstr "Posun napětí CPU není k dispozici"
+
+msgid "Not available with this kernel (a mainline kernel of this release or later has it)."
+msgstr "S tímto jádrem není k dispozici (má ho jádro mainline z tohoto vydání nebo novější)."
+
+msgid "Off: the stock voltages"
+msgstr "Vypnuto: tovární napětí"
+
+msgid "Changes at the next reboot"
+msgstr "Změní se při příštím restartu"
+
+msgid "Trial boot: kept once this boot has been up 10 minutes"
+msgstr "Zkušební spuštění: zachová se, jakmile toto spuštění poběží 10 minut"
+
+msgid "Kept: this offset passed its trial boot"
+msgstr "Zachováno: tento posun prošel zkušebním spuštěním"
+
+msgid "a boot with it ended without a clean shutdown"
+msgstr "spuštění s ním skončilo bez čistého vypnutí"
+
+msgid "its trial boot ended before 10 minutes"
+msgstr "jeho zkušební spuštění skončilo dříve než za 10 minut"
+
+msgid "invalid value"
+msgstr "neplatná hodnota"
+
+msgid "unknown SoC firmware"
+msgstr "neznámý firmware SoC"
+
+msgid "refused by the kernel"
+msgstr "odmítnuto jádrem"
+
+msgid "the kernel could not start CPU scaling with it"
+msgstr "jádro s ním nedokázalo spustit škálování frekvence CPU"
+
+msgid "Offsets in µV for the three CPU domains (cores 0-3, 4-6 and 7), in whole steps. A new offset takes effect at the next reboot, as a trial: it is kept once that boot has been up 10 minutes, and dropped (back to 0) if a boot with it ends in a crash, a watchdog reset or a power cut."
+msgstr "Posuny v µV pro tři domény CPU (jádra CPU 0-3, 4-6 a 7), v celých krocích. Nový posun se projeví při příštím restartu jako zkušební: zachová se, jakmile toto spuštění poběží 10 minut, a zahodí se (zpět na 0), pokud spuštění s ním skončí pádem, resetem watchdogu nebo výpadkem napájení."
+
+msgid "Running now (µV)"
+msgstr "Nyní běží (µV)"
+
+msgid "Saved for the next boot (µV)"
+msgstr "Uloženo pro příští spuštění (µV)"
+
+msgid "State"
+msgstr "Stav"
+
+msgid "Taken back automatically: %s µV (%s)"
+msgstr "Automaticky vráceno: %s µV (%s)"
+
+msgid "The SoC firmware of this device is not one whose voltage encoding is known: only the stock voltages are possible."
+msgstr "Firmware SoC tohoto zařízení nepatří mezi ty, jejichž kódování napětí je známé: možná jsou jen tovární napětí."
+
+msgid "Domain"
+msgstr "Doména"
+
+msgid "Offset now (µV)"
+msgstr "Aktuální posun (µV)"
+
+msgid "Highest step"
+msgstr "Nejvyšší stupeň"
+
+msgid "New offset (µV)"
+msgstr "Nový posun (µV)"
+
+msgid "Limits: %d to %d µV, in steps of %d µV."
+msgstr "Limity: %d až %d µV, v krocích po %d µV."
+
+msgid "Save for the next boot"
+msgstr "Uložit pro příští spuštění"
+
+msgid "Each offset must be a multiple of %d µV between %d and %d."
+msgstr "Každý posun musí být násobkem %d µV v rozsahu %d až %d."
+
+msgid "Type %s to confirm."
+msgstr "Pro potvrzení napište %s."
+
+msgid "Back to the stock voltages"
+msgstr "Zpět na tovární napětí"
+
+msgid "Type %s to confirm:"
+msgstr "Pro potvrzení napište %s:"
+
+msgid "Run a 10-minute CPU stress test"
+msgstr "Spustit 10minutový zátěžový test CPU"
+
+msgid "Test a new offset under load during its trial boot. The device may crash if the voltage is too low; the next boot then runs at the stock voltages."
+msgstr "Otestujte nový posun pod zátěží během jeho zkušebního spuštění. Pokud je napětí příliš nízké, zařízení může spadnout; další spuštění pak poběží s továrními napětími."
+
+msgid "A stress test is running."
+msgstr "Probíhá zátěžový test."
+
+msgid "USB role"
+msgstr "Role USB"
+
+msgid "Current role"
+msgstr "Aktuální role"
+
+msgid "Switch USB role"
+msgstr "Přepnout roli USB"
+
+msgid "Device mode"
+msgstr "Režim zařízení"
+
+msgid "Host mode"
+msgstr "Režim hostitele"
+
+msgid "Enable host mode at boot"
+msgstr "Povolit režim hostitele při spuštění"
+
+msgid "Apply role"
+msgstr "Použít roli"
+
+msgid "Host mode disconnects USB networking and serial on this port. F50 has no battery; management may be lost and a USB adapter usually needs a powered hub."
+msgstr "Režim hostitele odpojí síť a sériovou linku přes USB na tomto portu. F50 nemá baterii; správa může být ztracena a adaptér USB obvykle vyžaduje napájený rozbočovač."
+
+msgid "USB network mode"
+msgstr "Režim sítě USB"
+
+msgid "Network protocol"
+msgstr "Síťový protokol"
+
+msgid "Apply duration"
+msgstr "Platnost"
+
+msgid "Next reboot only"
+msgstr "Pouze příští spuštění"
+
+msgid "Permanent"
+msgstr "Trvale"
+
+msgid "Enable selected protocol"
+msgstr "Povolit vybraný protokol"
+
+msgid "Save; apply after reboot"
+msgstr "Uložit; použít po restartu"
+
+msgid "NCM is the default. Windows does not natively support ECM; RNDIS changes enumeration. With Enable selected protocol off, only your choice is saved. Next reboot only applies once, then returns to NCM."
+msgstr "Výchozí je NCM. Windows nativně nepodporuje ECM; RNDIS mění enumeraci. Je-li volba Povolit vybraný protokol vypnutá, uloží se pouze vaše volba. Pouze příští spuštění se použije jednou, pak se vrátí k NCM."
+
+msgid "USB adapters"
+msgstr "Adaptéry USB"
+
+msgid "Refresh"
+msgstr "Obnovit"
+
+msgid "Available only in host mode. Refresh brings discovered USB adapters up; adding to LAN saves the bridge and reloads networking."
+msgstr "Dostupné pouze v režimu hostitele. Obnovit aktivuje nalezené adaptéry USB; přidání do LAN uloží most a znovu načte síť."
+
+msgid "Recent modem operations"
+msgstr "Nedávné operace modemu"
+
+msgid "Show"
+msgstr "Zobrazit"
+
+msgid "The control panel's recent calls, of this boot and the one before: when, which page call or AT command, how long it took and how it ended (ok, error, busy, killed). No values, replies or messages are kept. Useful when the panel was stuck."
+msgstr "Nedávná volání ovládacího panelu z tohoto a předchozího spuštění: kdy, které volání stránky nebo příkaz AT, jak dlouho trvalo a jak skončilo (ok, chyba, obsazeno, ukončeno). Neukládají se žádné hodnoty, odpovědi ani zprávy. Užitečné, když panel zamrzl."
+
+msgid "Unavailable"
+msgstr "Nedostupné"
+
+msgid "USB network mode is unavailable in host mode; host auto-start also disables USB network auto-start."
+msgstr "Režim sítě USB není v režimu hostitele dostupný; automatické spuštění hostitele vypne i automatické spuštění sítě USB."
+
+msgid "Host mode immediately disconnects USB management. F50 has no battery and peripherals may need external power; make sure another management path exists."
+msgstr "Režim hostitele okamžitě odpojí správu přes USB. F50 nemá baterii a periferie mohou potřebovat externí napájení; zajistěte jinou cestu pro správu."
+
+msgid "USB networking and serial will re-enumerate in device mode."
+msgstr "Síť a sériová linka přes USB se v režimu zařízení znovu enumerují."
+
+msgid "Switch USB role?"
+msgstr "Přepnout roli USB?"
+
+msgid "Apply"
+msgstr "Použít"
+
+msgid "Switching USB role…"
+msgstr "Přepínání role USB…"
+
+msgid "Switch failed: %s"
+msgstr "Přepnutí selhalo: %s"
+
+msgid "Management connection lost; reconnect to confirm the USB role."
+msgstr "Spojení pro správu bylo ztraceno; připojte se znovu a potvrďte roli USB."
+
+msgid "Switch request accepted; the USB connection may briefly disconnect."
+msgstr "Požadavek na přepnutí přijat; spojení USB se může krátce přerušit."
+
+msgid "USB role applied"
+msgstr "Role USB použita"
+
+msgid "Save USB network mode?"
+msgstr "Uložit režim sítě USB?"
+
+msgid "The network mode applies on the next reboot; USB management may need to reconnect."
+msgstr "Režim sítě se použije při příštím spuštění; správa přes USB se možná bude muset znovu připojit."
+
+msgid "Save the selection only; with the selected protocol disabled, the next boot still uses default NCM."
+msgstr "Uložit pouze volbu; s vypnutým vybraným protokolem použije příští spuštění stále výchozí NCM."
+
+msgid "Save"
+msgstr "Uložit"
+
+msgid "Saving USB network settings…"
+msgstr "Ukládání nastavení sítě USB…"
+
+msgid "Settings saved"
+msgstr "Nastavení uloženo"
+
+msgid "Save failed: %s"
+msgstr "Uložení selhalo: %s"
+
+msgid "This boot"
+msgstr "Toto spuštění"
+
+msgid "Previous boot"
+msgstr "Předchozí spuštění"
+
+msgid "Unable to confirm the role yet; reconnect and refresh the page."
+msgstr "Roli zatím nelze potvrdit; připojte se znovu a obnovte stránku."
+
+msgid "Switch to host mode to see USB adapters."
+msgstr "Pro zobrazení adaptérů USB přepněte do režimu hostitele."
+
+msgid "Scanning USB adapters…"
+msgstr "Vyhledávání adaptérů USB…"
+
+msgid "No USB adapters found."
+msgstr "Nebyly nalezeny žádné adaptéry USB."
+
+msgid "Link connected"
+msgstr "Linka připojena"
+
+msgid "No link; enable attempted"
+msgstr "Žádná linka; pokus o aktivaci proveden"
+
+msgid "Added to LAN"
+msgstr "Přidáno do LAN"
+
+msgid "Add to LAN"
+msgstr "Přidat do LAN"
+
+msgid "Add USB adapter to LAN?"
+msgstr "Přidat adaptér USB do LAN?"
+
+msgid "This saves the bridge configuration and reloads networking; existing connections may briefly drop."
+msgstr "Uloží se konfigurace mostu a znovu se načte síť; stávající spojení se mohou krátce přerušit."
+
+msgid "Add"
+msgstr "Přidat"
+
+msgid "Adding USB adapter…"
+msgstr "Přidávání adaptéru USB…"
+
+msgid "Add failed: %s"
+msgstr "Přidání selhalo: %s"
+
+msgid "Leave empty to keep the saved value"
+msgstr "Ponechte prázdné, aby zůstala uložená hodnota"
+
+msgid "Saved: %s"
+msgstr "Uloženo: %s"
+
+msgid "Remove the saved value"
+msgstr "Odebrat uloženou hodnotu"
+
+msgid "Presets"
+msgstr "Předvolby"
+
+msgid "Form (URL-encoded)"
+msgstr "Formulář (kódování URL)"
+
+msgid "Plain text"
+msgstr "Prostý text"
+
+msgid "Received messages are sent on as they reach the SMS pool. A failed delivery is retried after 30 s, then after twice as long each time (an hour at most), ten times in all."
+msgstr "Přijaté zprávy se přeposílají, jakmile dorazí do fondu SMS. Neúspěšné doručení se zopakuje po 30 s a pak pokaždé po dvojnásobné době (nejvýše hodina), celkem desetkrát."
+
+msgid "Forward received messages"
+msgstr "Přeposílat přijaté zprávy"
+
+msgid "Message template"
+msgstr "Šablona zprávy"
+
+msgid "Placeholders: {sender}, {time}, {text}, {device}"
+msgstr "Zástupné symboly: {sender}, {time}, {text}, {device}"
+
+msgid "Only these senders"
+msgstr "Jen tito odesílatelé"
+
+msgid "One per line; empty: every sender. A * at the end matches the start of a sender."
+msgstr "Jeden na řádek; prázdné: všichni odesílatelé. * na konci odpovídá začátku odesílatele."
+
+msgid "Never these senders"
+msgstr "Nikdy tito odesílatelé"
+
+msgid "Only messages containing one of these words"
+msgstr "Jen zprávy obsahující některé z těchto slov"
+
+msgid "One per line; empty: every message."
+msgstr "Jedno na řádek; prázdné: všechny zprávy."
+
+msgid "Webhook"
+msgstr "Webhook"
+
+msgid "Enabled"
+msgstr "Povoleno"
+
+msgid "Address (http:// or https://)"
+msgstr "Adresa (http:// nebo https://)"
+
+msgid "Body"
+msgstr "Tělo"
+
+msgid "Fields: sender, time, text, device, message (the template filled in)"
+msgstr "Pole: sender, time, text, device, message (vyplněná šablona)"
+
+msgid "Custom body"
+msgstr "Vlastní tělo"
+
+msgid "Empty: the standard fields (plain text: the message). Placeholders: {sender}, {time}, {text}, {device}, {message}. Each value is escaped for the chosen type. This body is shown again here: keep secrets in the address or a header."
+msgstr "Prázdné: standardní pole (prostý text: zpráva). Zástupné symboly: {sender}, {time}, {text}, {device}, {message}. Každá hodnota se escapuje podle zvoleného typu. Toto tělo se zde znovu zobrazí: tajné údaje dejte do adresy nebo do hlavičky."
+
+msgid "Extra headers (one \"Name: value\" per line)"
+msgstr "Další hlavičky (jedna \"Název: hodnota\" na řádek)"
+
+msgid "The answer must contain"
+msgstr "Odpověď musí obsahovat"
+
+msgid "Empty: every HTTP 2xx answer counts as delivered. With key=value (for example errcode=0), the answer must also be a JSON object that has this value under this key at its top level; otherwise the delivery fails. Only the result of the check is logged, never the answer."
+msgstr "Prázdné: každá odpověď HTTP 2xx se počítá jako doručení. S klíč=hodnota (například errcode=0) musí být odpověď navíc objekt JSON, který má na nejvyšší úrovni pod tímto klíčem tuto hodnotu; jinak doručení selže. Do protokolu se zapisuje jen výsledek kontroly, nikdy odpověď."
+
+msgid "Bot token"
+msgstr "Token bota"
+
+msgid "Chat ID (a number, or @channel)"
+msgstr "ID chatu (číslo nebo @kanál)"
+
+msgid "E-mail"
+msgstr "E-mail"
+
+msgid "E-mail needs msmtp, which this image does not have"
+msgstr "E-mail vyžaduje msmtp, který tento obraz nemá"
+
+msgid "Mail server"
+msgstr "Poštovní server"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Security"
+msgstr "Zabezpečení"
+
+msgid "None"
+msgstr "Žádné"
+
+msgid "User name"
+msgstr "Uživatelské jméno"
+
+msgid "Password"
+msgstr "Heslo"
+
+msgid "From"
+msgstr "Od"
+
+msgid "To"
+msgstr "Komu"
+
+msgid "SMS to another phone"
+msgstr "SMS na jiný telefon"
+
+msgid "Phone number"
+msgstr "Telefonní číslo"
+
+msgid "Sent as one SMS: a longer message is cut short."
+msgstr "Odesílá se jako jedna SMS: delší zpráva se zkrátí."
+
+msgid "Send test"
+msgstr "Odeslat test"
+
+msgid "Tokens, passwords and the webhook address and headers stay on the device and are never shown again."
+msgstr "Tokeny, hesla a adresa a hlavičky webhooku zůstávají v zařízení a už se nikdy nezobrazí."
+
+msgid "Delivered"
+msgstr "Doručeno"
+
+msgid "Will retry"
+msgstr "Bude opakováno"
+
+msgid "Failed"
+msgstr "Selhalo"
+
+msgid "Filtered out"
+msgstr "Odfiltrováno"
+
+msgid "Dropped"
+msgstr "Zahozeno"
+
+msgid "Clear"
+msgstr "Vymazat"
+
+msgid "Test"
+msgstr "Test"
+
+msgid "Delivery log"
+msgstr "Protokol doručení"
+
+msgid "Waiting to be delivered"
+msgstr "Čeká na doručení"
+
+msgid "Time"
+msgstr "Čas"
+
+msgid "Message"
+msgstr "Zpráva"
+
+msgid "Target"
+msgstr "Cíl"
+
+msgid "Result"
+msgstr "Výsledek"
+
+msgid "Detail"
+msgstr "Podrobnosti"
+
+msgid "No deliveries yet"
+msgstr "Zatím žádná doručení"
+
+msgid "Test started with the saved settings; the result appears in the delivery log."
+msgstr "Test spuštěn s uloženým nastavením; výsledek se zobrazí v protokolu doručení."
+
+msgid "Automatic without 2G (152)"
+msgstr "Automaticky bez 2G (152)"
+
+msgid "4G only"
+msgstr "Pouze 4G"
+
+msgid "Network mode: %s"
+msgstr "Režim sítě: %s"
+
+msgid "EN-DC off"
+msgstr "EN-DC vypnuto"
+
+msgid "NR band lock: %s"
+msgstr "Zámek pásem NR: %s"
+
+msgid "LTE band lock: %s"
+msgstr "Zámek pásem LTE: %s"
+
+msgid "Cell lock: %s"
+msgstr "Zámek buňky: %s"
+
+msgid "Modulation DL/UL"
+msgstr "Modulace DL/UL"
+
+msgid "Estimated from current MCS"
+msgstr "Odhadnuto z aktuálního MCS"
+
+msgid "MCS DL/UL"
+msgstr "MCS DL/UL"
+
+msgid "BLER DL/UL"
+msgstr "BLER DL/UL"
+
+msgid "%s of %s"
+msgstr "%s z %s"
+
+msgid "The monthly cap is reached"
+msgstr "Měsíční limit je vyčerpán"
+
+msgid "%d%% of the monthly cap is used"
+msgstr "Využito %d%% měsíčního limitu"
+
+msgid "This billing cycle"
+msgstr "Toto zúčtovací období"
+
+msgid "Link & traffic"
+msgstr "Linka a provoz"
+
+msgid "Download rate"
+msgstr "Rychlost stahování"
+
+msgid "Upload rate"
+msgstr "Rychlost odesílání"
+
+msgid "Total received"
+msgstr "Celkem přijato"
+
+msgid "Total sent"
+msgstr "Celkem odesláno"
+
+msgid "Used today"
+msgstr "Dnes spotřebováno"
+
+msgid "SIM source"
+msgstr "Zdroj SIM"
+
+msgid "Session duration"
+msgstr "Doba relace"
+
+msgid "Registration"
+msgstr "Registrace"
+
+msgid "Data roaming"
+msgstr "Datový roaming"
+
+msgid "Bandwidth"
+msgstr "Šířka pásma"
+
+msgid "AMBR DL/UL"
+msgstr "AMBR DL/UL"
+
+msgid "Wi-Fi · LAN · Device · SIM"
+msgstr "Wi-Fi · LAN · Zařízení · SIM"
+
+msgid "CPU usage"
+msgstr "Využití CPU"
+
+msgid "Memory"
+msgstr "Paměť"
+
+msgid "Storage"
+msgstr "Úložiště"
+
+msgid "Battery"
+msgstr "Baterie"
+
+msgid "Channel"
+msgstr "Kanál"
+
+msgid "Encryption"
+msgstr "Šifrování"
+
+msgid "Hidden SSID"
+msgstr "Skryté SSID"
+
+msgid "Country"
+msgstr "Země"
+
+msgid "AP status"
+msgstr "Stav AP"
+
+msgid "USB network"
+msgstr "Síť USB"
+
+msgid "Connection tracking"
+msgstr "Sledování spojení"
+
+msgid "LAN address"
+msgstr "Adresa LAN"
+
+msgid "Wi-Fi clients"
+msgstr "Klienti Wi-Fi"
+
+msgid "DHCP leases"
+msgstr "Přidělené adresy DHCP"
+
+msgid "Device model"
+msgstr "Model zařízení"
+
+msgid "System"
+msgstr "Systém"
+
+msgid "Modem"
+msgstr "Modem"
+
+msgid "Carrier"
+msgstr "Operátor"
+
+msgid "Own number"
+msgstr "Vlastní číslo"
+
+msgid "Module"
+msgstr "Modul"
+
+msgid "Firmware"
+msgstr "Firmware"
+
+msgid "Show SIM identifiers"
+msgstr "Zobrazit identifikátory SIM"
+
+msgid "Quick controls"
+msgstr "Rychlé ovládání"
+
+msgid "Data connection"
+msgstr "Datové připojení"
+
+msgid "Cellular radio"
+msgstr "Mobilní rádio"
+
+msgid "Wi-Fi hotspot"
+msgstr "Hotspot Wi-Fi"
+
+msgid "Restart modem"
+msgstr "Restartovat modem"
+
+msgid "Power off or restart"
+msgstr "Vypnout nebo restartovat"
+
+msgid "Switch to Android"
+msgstr "Přepnout na Android"
+
+msgid "Lock Linux"
+msgstr "Zamknout Linux"
+
+msgid "Neighbor cells"
+msgstr "Sousední buňky"
+
+msgid "RAT/Band"
+msgstr "RAT/pásmo"
+
+msgid "Frequency"
+msgstr "Frekvence"
+
+msgid "Running %s…"
+msgstr "Spouštění %s…"
+
+msgid "Started in background: %s"
+msgstr "Spuštěno na pozadí: %s"
+
+msgid "Done: %s"
+msgstr "Hotovo: %s"
+
+msgid "Disconnecting data…"
+msgstr "Odpojování dat…"
+
+msgid "Connecting data…"
+msgstr "Připojování dat…"
+
+msgid "Turn off cellular radio"
+msgstr "Vypnout mobilní rádio"
+
+msgid "This SIM will have no calls, SMS or data, and its radio stays off after a reboot until you turn it on again."
+msgstr "Tato SIM nebude mít hovory, SMS ani data a její rádio zůstane vypnuté i po restartu, dokud ho znovu nezapnete."
+
+msgid "Turn on cellular radio"
+msgstr "Zapnout mobilní rádio"
+
+msgid "The radio of the SIM in use comes on and stays on after a reboot (up to about 1 minute)."
+msgstr "Rádio používané SIM se zapne a zůstane zapnuté i po restartu (až asi 1 minuta)."
+
+msgid "Turn data roaming off"
+msgstr "Vypnout datový roaming"
+
+msgid "While the SIM is registered on a roaming network, mobile data stays off; SMS, calls and the registration are not affected. Some SIMs report roaming at home (an MVNO, national roaming): there, data would stop as well."
+msgstr "Dokud je SIM registrována v roamingové síti, mobilní data zůstávají vypnutá; SMS, hovory a registrace nejsou dotčeny. Některé SIM hlásí roaming i doma (MVNO, národní roaming): tam by se data také zastavila."
+
+msgid "Allow data roaming"
+msgstr "Povolit datový roaming"
+
+msgid "Mobile data is used on roaming networks too, which can cost extra. Some SIMs report roaming at home (an MVNO, national roaming) and need this to have data at all."
+msgstr "Mobilní data se používají i v roamingových sítích, což může stát navíc. Některé SIM hlásí roaming i doma (MVNO, národní roaming) a bez toho by neměly data vůbec."
+
+msgid "Cellular connectivity may stop for 1–2 minutes."
+msgstr "Mobilní připojení se může na 1–2 minuty zastavit."
+
+msgid "All connections will be interrupted."
+msgstr "Všechna spojení budou přerušena."
+
+msgid "Power off"
+msgstr "Vypnout"
+
+msgid "Restart"
+msgstr "Restartovat"
+
+msgid "The next boot will enter Android and reboot now. This management page and cellular sharing will disconnect."
+msgstr "Příští spuštění přejde do Android a zařízení se nyní restartuje. Tato stránka správy a sdílení mobilního připojení se odpojí."
+
+msgid "To return to OpenWrt, run mu300-next-boot linux in Android and reboot."
+msgstr "Pro návrat do OpenWrt spusťte v Android mu300-next-boot linux a restartujte."
+
+msgid "Or do nothing: after five boots that do not finish, it falls back automatically."
+msgstr "Nebo nedělejte nic: po pěti nedokončených spuštěních dojde k automatickému návratu."
+
+msgid "Preparing Android boot and rebooting…"
+msgstr "Příprava spuštění Android a restart…"
+
+msgid "Switch and reboot"
+msgstr "Přepnout a restartovat"
+
+msgid "Not automatic: %s. The network mode and band locks are stored in the modem and stay in force in Android too; if the network does not match them, Android shows No Service."
+msgstr "Není automatické: %s. Režim sítě a zámky pásem jsou uloženy v modemu a platí i v Androidu; pokud jim síť neodpovídá, Android ukáže „Žádný signál“."
+
+msgid "Reset locks and switch"
+msgstr "Obnovit zámky a přepnout"
+
+msgid "Unlock Linux"
+msgstr "Odemknout Linux"
+
+msgid "After five boots in a row that do not finish, the device falls back to Android again."
+msgstr "Po pěti nedokončených spuštěních po sobě se zařízení znovu vrátí do Androidu."
+
+msgid "Unlock"
+msgstr "Odemknout"
+
+msgid "The device will never switch to Android by itself, not even after failed boots: Android only from this page (Switch to Android) or with mu300-next-boot android."
+msgstr "Zařízení nikdy samo nepřepne do Androidu, ani po neúspěšných spuštěních: do Androidu jen z této stránky (Přepnout do Androidu) nebo příkazem mu300-next-boot android."
+
+msgid "A new kernel from an update still gets its first boots on trial, and locks again once one of them succeeds."
+msgstr "Nové jádro z aktualizace se i tak nejprve spouští zkušebně a znovu se zamkne, jakmile jedno spuštění uspěje."
+
+msgid "If the system itself no longer starts, the device waits on USB (telnet) instead of going to Android."
+msgstr "Pokud se samotný systém přestane spouštět, zařízení čeká přes USB (telnet), místo aby přešlo do Androidu."
+
+msgid "Hide SIM identifiers"
+msgstr "Skrýt identifikátory SIM"
+
+msgid "Lock cell %s?"
+msgstr "Uzamknout buňku %s?"
+
+msgid "The radio stack will restart (SFUN); cellular service will stop for about 30 seconds."
+msgstr "Rádiový stack se restartuje (SFUN); mobilní služba se zastaví asi na 30 sekund."
+
+msgid "Locking %s in the background, about 30 seconds"
+msgstr "Zamykání %s na pozadí, asi 30 sekund"
+
+msgid "Locked %s in the background; the status will refresh shortly"
+msgstr "%s uzamčeno na pozadí; stav se brzy obnoví"
+
+msgid "Lock failed: %s"
+msgstr "Uzamčení selhalo: %s"
+
+msgid "Resetting the network locks to automatic (SFUN restart, about 30 seconds)…"
+msgstr "Obnovují se automatická nastavení sítě (restart SFUN, asi 30 sekund)…"
+
+msgid "Reset failed: %s. The saved lock settings were kept."
+msgstr "Reset se nezdařil: %s. Uložená nastavení zámků byla zachována."
+
+msgid "The lock reset was not confirmed in time; switching anyway."
+msgstr "Obnovení zámků nebylo včas potvrzeno; přepíná se i tak."
+
+msgid "Internal SIM selected: in use after a reboot"
+msgstr "Vybrána interní SIM: použije se po restartu"
+
+msgid "Internal SIM selected, but not supported on this device: the external SIM is in use"
+msgstr "Vybrána interní SIM, ale toto zařízení ji nepodporuje: používá se externí SIM"
+
+msgid "Uptime %s"
+msgstr "Doba provozu %s"
+
+msgid "Radio off"
+msgstr "Rádio vypnuto"
+
+msgid "No response"
+msgstr "Žádná odpověď"
+
+msgid "Modem busy: cellular readings from %s ago"
+msgstr "Modem je zaneprázdněn: mobilní údaje staré %s"
+
+msgid "%s · Signal %s %s/10"
+msgstr "%s · Signál %s %s/10"
+
+msgid "%s · Signal %s"
+msgstr "%s · Signál %s"
+
+msgid "Anchor B%s"
+msgstr "Kotva B%s"
+
+msgid "No serving cell"
+msgstr "Žádná obsluhující buňka"
+
+msgid "Version %s is out: update"
+msgstr "Vyšla verze %s: aktualizujte"
+
+msgid "Not registered"
+msgstr "Neregistrováno"
+
+msgid "Registered"
+msgstr "Registrováno"
+
+msgid "Searching"
+msgstr "Vyhledávání"
+
+msgid "Registration denied"
+msgstr "Registrace odmítnuta"
+
+msgid "Registered (roaming)"
+msgstr "Registrováno (roaming)"
+
+msgid "Emergency only"
+msgstr "Pouze tísňová volání"
+
+msgid "Status %s"
+msgstr "Stav %s"
+
+msgid "Off: data held back while roaming"
+msgstr "Vypnuto: data pozastavena při roamingu"
+
+msgid "Allowed"
+msgstr "Povoleno"
+
+msgid "Off"
+msgstr "Vypnuto"
+
+msgid "LTE anchor"
+msgstr "Kotva LTE"
+
+msgid "LTE link"
+msgstr "Linka LTE"
+
+msgid "Hidden"
+msgstr "Skryté"
+
+msgid "No"
+msgstr "Ne"
+
+msgid "Running"
+msgstr "Běží"
+
+msgid "Not running"
+msgstr "Neběží"
+
+msgid "Connected"
+msgstr "Připojeno"
+
+msgid "Disconnected"
+msgstr "Odpojeno"
+
+msgid "%s entries"
+msgstr "Záznamů: %s"
+
+msgid "%s clients"
+msgstr "Klientů: %s"
+
+msgid "Recent DHCP leases"
+msgstr "Nedávno přidělené adresy DHCP"
+
+msgid "Board"
+msgstr "Deska"
+
+msgid "No temperature readings"
+msgstr "Žádné údaje o teplotě"
+
+msgid "Cluster %d"
+msgstr "Cluster %d"
+
+msgid "Total %s · free %s"
+msgstr "Celkem %s · volno %s"
+
+msgid "charging %s W"
+msgstr "nabíjí se %s W"
+
+msgid "charging"
+msgstr "nabíjí se"
+
+msgid "drawing %s W"
+msgstr "odebírá %s W"
+
+msgid "not charging"
+msgstr "nenabíjí se"
+
+msgid "on battery"
+msgstr "na baterii"
+
+msgid "full"
+msgstr "nabitá"
+
+msgid "USB in %s W"
+msgstr "vstup USB %s W"
+
+msgid "Online"
+msgstr "Online"
+
+msgid "AT adapter unavailable"
+msgstr "Adaptér AT nedostupný"
+
+msgid "Linux locked"
+msgstr "Linux zamčen"
+
+msgid "Installing the language pack…"
+msgstr "Instalace jazykového balíčku…"
+
+msgid "The language pack is installed"
+msgstr "Jazykový balíček je nainstalován"
+
+msgid "The language pack could not be installed"
+msgstr "Jazykový balíček se nepodařilo nainstalovat"
+
+msgid "Language of the browser"
+msgstr "Jazyk prohlížeče"
+
+msgid "Language of the web interface"
+msgstr "Jazyk webového rozhraní"
+
+msgid "English, Turkish and Chinese come with the system; the language pack adds the others."
+msgstr "Angličtina, turečtina a čínština jsou součástí systému; jazykový balíček přidává ostatní."
+
+msgid "The same setting is in System > System > Language and Style."
+msgstr "Stejné nastavení je v Systém > Systém > Jazyk a vzhled."
+
+msgid "Language pack"
+msgstr "Jazykový balíček"
+
+msgid "The language pack (mu300-extra-lang.tar.gz, about 2 MB) adds LuCI in about 40 more languages and this panel in 29 of them. Download it from the release of this system, or upload the file from the release page when the device has no internet."
+msgstr "Jazykový balíček (mu300-extra-lang.tar.gz, asi 2 MB) přidává LuCI v asi 40 dalších jazycích a tento panel ve 29 z nich. Stáhněte jej z vydání tohoto systému, nebo nahrajte soubor ze stránky vydání, pokud zařízení nemá internet."
+
+msgid "Download from the release"
+msgstr "Stáhnout z vydání"
+
+msgid "Release"
+msgstr "Vydání"
+
+msgid "Enable all"
+msgstr "Povolit vše"
+
+msgid "Disable all"
+msgstr "Zakázat vše"
+
+msgid "Remove the language pack"
+msgstr "Odebrat jazykový balíček"
+
+msgid "Remove the language pack?"
+msgstr "Odebrat jazykový balíček?"
+
+msgid "Its languages disappear from the list; a page in one of them switches to English."
+msgstr "Jeho jazyky zmizí ze seznamu; stránka v některém z nich se přepne do angličtiny."
+
+msgid "Remove"
+msgstr "Odebrat"
+
+msgid "Disable"
+msgstr "Zakázat"
+
+msgid "Enable"
+msgstr "Povolit"
+
+msgid "LuCI and this panel"
+msgstr "LuCI a tento panel"
+
+msgid "LuCI only"
+msgstr "Pouze LuCI"
+
+msgid "Disabled"
+msgstr "Zakázáno"
+
+msgid "Language"
+msgstr "Jazyk"
+
+msgid "Code"
+msgstr "Kód"
+
+msgid "Translated"
+msgstr "Přeloženo"
+
+msgid "LuCI's own translations come from OpenWrt. This panel's translations other than Turkish and Chinese are machine (AI) translations; corrections are welcome."
+msgstr "Vlastní překlady LuCI pocházejí z OpenWrt. Překlady tohoto panelu kromě turečtiny a čínštiny jsou strojové (AI); opravy jsou vítány."
+
+msgid "Automatic"
+msgstr "Automaticky"
+
+msgid "Serving network"
+msgstr "Obsluhující síť"
+
+msgid "Network mode · EN-DC"
+msgstr "Režim sítě · EN-DC"
+
+msgid "Refresh lock status"
+msgstr "Obnovit stav zámků"
+
+msgid "Apply at startup"
+msgstr "Použít při spuštění"
+
+msgid "Turning this off only stops replay at the next boot; saved network mode, EN-DC, band and cell settings remain."
+msgstr "Vypnutím se pouze zastaví opětovné použití při příštím spuštění; uložená nastavení režimu sítě, EN-DC, pásem a buněk zůstanou."
+
+msgid "Band locking"
+msgstr "Zámek pásem"
+
+msgid "NR bands"
+msgstr "Pásma NR"
+
+msgid "LTE bands"
+msgstr "Pásma LTE"
+
+msgid "Apply NR bands"
+msgstr "Použít pásma NR"
+
+msgid "Apply LTE bands"
+msgstr "Použít pásma LTE"
+
+msgid "Neighbor cells and cell locking"
+msgstr "Sousední buňky a zámek buňky"
+
+msgid "Lock current serving cell"
+msgstr "Uzamknout aktuální obsluhující buňku"
+
+msgid "Unlock cell"
+msgstr "Odemknout buňku"
+
+msgid "Enter a cell"
+msgstr "Zadat buňku"
+
+msgid "Type"
+msgstr "Typ"
+
+msgid "Channel number (EARFCN / NR-ARFCN)"
+msgstr "Číslo kanálu (EARFCN / NR-ARFCN)"
+
+msgid "Lock this cell"
+msgstr "Uzamknout tuto buňku"
+
+msgid "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. A channel number, not a frequency in MHz; the cell need not be in the neighbor list."
+msgstr "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. Číslo kanálu, ne frekvence v MHz; buňka nemusí být v seznamu sousedních."
+
+msgid "Applying restarts the radio stack (SFUN) and briefly interrupts cellular service. Settings are saved and replayed by the plugin after AT is ready when Apply at startup is enabled. A platform pre-radio hook can replay without a restart. Apply with no bands selected to restore automatic mode."
+msgstr "Použití restartuje rádiový stack (SFUN) a krátce přeruší mobilní službu. Nastavení se uloží a plugin je znovu použije, jakmile je AT připraveno, pokud je povoleno Použít při spuštění. Háček platformy spouštěný před rádiem je může použít bez restartu. Použijte bez vybraných pásem pro obnovení automatického režimu."
+
+msgid "Back to automatic"
+msgstr "Zpět na automatické"
+
+msgid "The network mode and band locks are stored in the modem and stay in force in Android too. If you are not sure, reset them before switching to Android."
+msgstr "Režim sítě a zámky pásem jsou uloženy v modemu a platí i v Androidu. Pokud si nejste jisti, obnovte je před přepnutím do Androidu."
+
+msgid "Reset all to automatic"
+msgstr "Vše obnovit na automatické"
+
+msgid "Apply “%s”?"
+msgstr "Použít „%s“?"
+
+msgid "Applying %s in the background…"
+msgstr "Použití %s na pozadí…"
+
+msgid "Applying %s in the background… (SFUN restart and re-registration, about 30 seconds)"
+msgstr "Použití %s na pozadí… (restart SFUN a nová registrace, asi 30 sekund)"
+
+msgid "Queued: another lock is being applied during SFUN restart; this will take effect afterward"
+msgstr "Ve frontě: během restartu SFUN se používá jiný zámek; tento se projeví poté"
+
+msgid "Confirming the EN-DC status…"
+msgstr "Ověřování stavu EN-DC…"
+
+msgid "Confirming apply at startup…"
+msgstr "Ověřování použití při spuštění…"
+
+msgid "Started in background: %s (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Spuštěno na pozadí: %s (restart SFUN, asi 30 sekund); zpětné čtení stavu…"
+
+msgid "Disable EN-DC (NSA anchor)"
+msgstr "Vypnout EN-DC (kotva NSA)"
+
+msgid "Enable EN-DC (NSA anchor)"
+msgstr "Zapnout EN-DC (kotva NSA)"
+
+msgid "Disable apply at startup"
+msgstr "Vypnout použití při spuštění"
+
+msgid "Enable apply at startup"
+msgstr "Zapnout použití při spuštění"
+
+msgid "Reading the modem directly (a few seconds at most)…"
+msgstr "Přímé čtení z modemu (nejvýše několik sekund)…"
+
+msgid "Refresh failed"
+msgstr "Obnovení selhalo"
+
+msgid "Refreshed"
+msgstr "Obnoveno"
+
+msgid "NR bands: back to automatic"
+msgstr "Pásma NR: zpět na automatický režim"
+
+msgid "LTE bands: back to automatic"
+msgstr "Pásma LTE: zpět na automatický režim"
+
+msgid "Network mode automatic, EN-DC on, all LTE and NR bands, no cell lock. The saved lock settings are cleared, so nothing is replayed at startup."
+msgstr "Režim sítě automaticky, EN-DC zapnuto, všechna pásma LTE a NR, bez zámku buňky. Uložená nastavení zámků se smažou, při startu se nic znovu nepoužije."
+
+msgid "Reset"
+msgstr "Obnovit"
+
+msgid "Remove the %s cell lock"
+msgstr "Odebrat zámek buňky %s"
+
+msgid "The radio stack will restart (SFUN), taking about 30 seconds."
+msgstr "Rádiový stack se restartuje (SFUN), což trvá asi 30 sekund."
+
+msgid "Removing the %s cell lock…"
+msgstr "Odebírání zámku buňky %s…"
+
+msgid "Unlock failed: %s"
+msgstr "Odemknutí selhalo: %s"
+
+msgid "Unlock started in background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Odemknutí spuštěno na pozadí (restart SFUN, asi 30 sekund); zpětné čtení stavu…"
+
+msgid "Locking %s in the background…"
+msgstr "Zamykání %s na pozadí…"
+
+msgid "Locked %s in the background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "%s uzamčeno na pozadí (restart SFUN, asi 30 sekund); zpětné čtení stavu…"
+
+msgid "Enter a channel number and a PCI in the ranges below"
+msgstr "Zadejte číslo kanálu a PCI v rozsazích níže"
+
+msgid "No serving-network data"
+msgstr "Žádná data o obsluhující síti"
+
+msgid "NR serving cell"
+msgstr "Obsluhující buňka NR"
+
+msgid "Status confirmed"
+msgstr "Stav ověřen"
+
+msgid "Readback timed out; select “Refresh lock status”"
+msgstr "Časový limit zpětného čtení vypršel; zvolte „Obnovit stav zámků“"
+
+msgid "Reset verified: network mode automatic, EN-DC on, all bands, no cell lock; the saved lock settings are cleared"
+msgstr "Reset ověřen: síťový režim automatický, EN-DC zapnuto, všechna pásma, bez zámku buňky; uložená nastavení zámků byla vymazána"
+
+msgid "Applied (EN-DC does not require a radio-stack restart)"
+msgstr "Použito (EN-DC nevyžaduje restart rádiového stacku)"
+
+msgid "Apply at startup is on"
+msgstr "Použití při spuštění je zapnuto"
+
+msgid "Apply at startup is off"
+msgstr "Použití při spuštění je vypnuto"
+
+msgid "EN-DC status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Časový limit čtení stavu EN-DC vypršel; pro ověření použijte „Obnovit stav zámků“"
+
+msgid "Apply-at-startup status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Časový limit čtení stavu použití při spuštění vypršel; pro ověření použijte „Obnovit stav zámků“"
+
+msgid "Locked cells"
+msgstr "Uzamčené buňky"
+
+msgid "Unlock %s"
+msgstr "Odemknout %s"
+
+msgid "Automatic (%d supported)"
+msgstr "Automaticky (podporováno: %d)"
+
+msgid "%d locked: %s"
+msgstr "Uzamčeno %d: %s"
+
+msgid "Repair DNS?"
+msgstr "Opravit DNS?"
+
+msgid "This removes the DNS forwarder of a package that is no longer installed. If no other DNS server is left, the device then uses the DNS servers of the mobile connection: the carrier sees the names you look up, outside any proxy or VPN."
+msgstr "Tím se odstraní přesměrování DNS balíčku, který už není nainstalovaný. Pokud nezůstane jiný server DNS, zařízení použije servery DNS mobilního připojení: operátor uvidí jména, která vyhledáváte, mimo jakoukoli proxy nebo VPN."
+
+msgid "Repair DNS"
+msgstr "Opravit DNS"
+
+msgid "Packages installed on the device are not part of a release image. An update writes them down, and the new system installs them again at its first boot, once it is online. Until a package is back its settings are set aside."
+msgstr "Balíčky nainstalované v zařízení nejsou součástí obrazu vydání. Aktualizace si je zapíše a nový systém je při prvním spuštění znovu nainstaluje, jakmile bude online. Dokud se balíček nevrátí, jeho nastavení je odloženo."
+
+msgid "No packages to install again."
+msgstr "Žádné balíčky k opětovné instalaci."
+
+msgid "All back"
+msgstr "Vše zpět"
+
+msgid "Not installed yet"
+msgstr "Zatím nenainstalováno"
+
+msgid "Could not be installed again"
+msgstr "Nelze znovu nainstalovat"
+
+msgid "Waiting for the internet"
+msgstr "Čeká se na internet"
+
+msgid "Given up: no internet at five boots"
+msgstr "Vzdáno: bez internetu při pěti spuštěních"
+
+msgid "Skipped"
+msgstr "Přeskočeno"
+
+msgid "Written down by the update from %s"
+msgstr "Zapsáno aktualizací z %s"
+
+msgid "Installed again"
+msgstr "Znovu nainstalováno"
+
+msgid "Install them yourself from where you got them (a package file: apk add --allow-untrusted FILE.apk)."
+msgstr "Nainstalujte je sami odtud, odkud je máte (soubor balíčku: apk add --allow-untrusted FILE.apk)."
+
+msgid "Settings set aside in /etc/mu300/orphaned-config"
+msgstr "Odložená nastavení v /etc/mu300/orphaned-config"
+
+msgid "DNS still goes to a package that is not installed: the device has no DNS through it."
+msgstr "DNS stále směřuje na nenainstalovaný balíček: zařízení přes něj nemá DNS."
+
+msgid "Try again"
+msgstr "Zkusit znovu"
+
+msgid "Dismiss the note"
+msgstr "Zavřít upozornění"
+
+msgid "started"
+msgstr "spuštěno"
+
+msgid "asleep now (asked)"
+msgstr "nyní spát (vyžádáno)"
+
+msgid "woken: power daemon stopping"
+msgstr "probuzeno: služba napájení končí"
+
+msgid "woken by a key"
+msgstr "probuzeno tlačítkem"
+
+msgid "woken by the Wi-Fi key"
+msgstr "probuzeno tlačítkem Wi-Fi"
+
+msgid "woken (mu300-power wake)"
+msgstr "probuzeno (mu300-power wake)"
+
+msgid "woken by a computer on USB"
+msgstr "probuzeno počítačem přes USB"
+
+msgid "woken: plugged in"
+msgstr "probuzeno: připojeno napájení"
+
+msgid "woken by a Wi-Fi client"
+msgstr "probuzeno klientem Wi-Fi"
+
+msgid "charging boot (powered on by the charger)"
+msgstr "nabíjecí start (zapnuto nabíječkou)"
+
+msgid "the hotspot is down"
+msgstr "hotspot je vypnutý"
+
+msgid "the VPN is still stopped"
+msgstr "VPN je stále zastavená"
+
+msgid "5G (EN-DC) is still off after a failed resume"
+msgstr "5G (EN-DC) je po neúspěšném obnovení stále vypnuté"
+
+msgid "self-check: %s"
+msgstr "autotest: %s"
+
+msgid "asleep: no client for %d min (%s)"
+msgstr "spí: %d min žádný klient (%s)"
+
+msgid "asleep: profile now %s"
+msgstr "spí: profil nyní %s"
+
+msgid "woken by the %s key"
+msgstr "probuzeno tlačítkem %s"
+
+msgid "the modem is suspended (%s)"
+msgstr "modem je pozastaven (%s)"
+
+msgid "Enter a whole number from 0 to %d"
+msgstr "Zadejte celé číslo od 0 do %d"
+
+msgid "Power status unavailable"
+msgstr "Stav napájení není dostupný"
+
+msgid "Plugged in"
+msgstr "Připojeno k síti"
+
+msgid "On battery"
+msgstr "Na baterii"
+
+msgid "Saver"
+msgstr "Úsporný"
+
+msgid "Asleep: hotspot off"
+msgstr "Spánek: hotspot vypnut"
+
+msgid "Charging boot: press the Wi-Fi key to start"
+msgstr "Spuštění při nabíjení: spustíte klávesou Wi-Fi"
+
+msgid "Awake"
+msgstr "Vzhůru"
+
+msgid "forced"
+msgstr "vynuceno"
+
+msgid "automatic, battery under %d %%"
+msgstr "automaticky, baterie pod %d %%"
+
+msgid "automatic"
+msgstr "automaticky"
+
+msgid "Nobody connected for %d s"
+msgstr "Nikdo není připojen %d s"
+
+msgid "Power source"
+msgstr "Zdroj napájení"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Profile in use: %s (%s)"
+msgstr "Používaný profil: %s (%s)"
+
+msgid "%d %%, %s, %d mV, %d mA, %.1f °C"
+msgstr "%d %%, %s, %d mV, %d mA, %.1f °C"
+
+msgid "Charger"
+msgstr "Nabíječka"
+
+msgid "Charger: %s, %s port"
+msgstr "Nabíječka: %s, port %s"
+
+msgid "Charging paused: battery temperature"
+msgstr "Nabíjení pozastaveno: teplota baterie"
+
+msgid "Charging paused: charge limit"
+msgstr "Nabíjení pozastaveno: limit nabití"
+
+msgid "Sleep now"
+msgstr "Uspat nyní"
+
+msgid "Wake"
+msgstr "Probudit"
+
+msgid "Nobody connected means no Wi-Fi client and no computer on USB. The Wi-Fi key, a computer on USB or the charger wake the device."
+msgstr "Nikdo připojen znamená žádný klient Wi-Fi a žádný počítač na USB. Zařízení probudí klávesa Wi-Fi, počítač na USB nebo nabíječka."
+
+msgid "Automatic: plugged in / on battery"
+msgstr "Automaticky: v síti / na baterii"
+
+msgid "Switch to Saver under %"
+msgstr "Přepnout na Úsporný pod %"
+
+msgid "Stop charging at"
+msgstr "Přestat nabíjet na"
+
+msgid "0 % never charges the battery (the device runs on the charger), 100 % charges it full; in between, charging stops at that level and starts again 5 points lower. Under 5 % the battery always charges."
+msgstr "0 % baterii nikdy nenabíjí (zařízení běží z nabíječky), 100 % ji nabije úplně; mezi tím se nabíjení zastaví na dané úrovni a znovu začne o 5 bodů níže. Pod 5 % se baterie nabíjí vždy."
+
+msgid "80 % keeps the battery healthier on a device that stays plugged in."
+msgstr "80 % šetří baterii zařízení, které zůstává připojené k síti."
+
+msgid "When the charger switches the device on"
+msgstr "Když nabíječka zapne zařízení"
+
+msgid "Charge only, until a key starts it"
+msgstr "Jen nabíjet, dokud jej nespustí tlačítko"
+
+msgid "Start normally"
+msgstr "Spustit normálně"
+
+msgid "Keep as is"
+msgstr "Ponechat beze změny"
+
+msgid "LTE only (5G off)"
+msgstr "Pouze LTE (5G vypnuto)"
+
+msgid "On"
+msgstr "Zapnuto"
+
+msgid "Full"
+msgstr "Plný"
+
+msgid "Eco: big core off"
+msgstr "Eko: velké jádro vypnuto"
+
+msgid "Hotspot off after (min, 0 = never)"
+msgstr "Vypnout hotspot po (min, 0 = nikdy)"
+
+msgid "Modem when idle"
+msgstr "Modem při nečinnosti"
+
+msgid "LEDs when idle"
+msgstr "LED při nečinnosti"
+
+msgid "Ignored lines in power.conf: %s"
+msgstr "Ignorované řádky v power.conf: %s"
+
+msgid "Configure how this plugin connects to the current Unisoc OpenWrt platform. Changes do not require editing the dashboard, AT, locks or SMS pages."
+msgstr "Nastavte, jak se tento plugin připojuje k aktuální platformě Unisoc OpenWrt. Změny nevyžadují úpravu stránek přehledu, AT, zámků ani SMS."
+
+msgid "Platform adapter"
+msgstr "Adaptér platformy"
+
+msgid "AT backend"
+msgstr "Backend AT"
+
+msgid "Auto-detect"
+msgstr "Automaticky rozpoznat"
+
+msgid "atinout + serial port"
+msgstr "atinout + sériový port"
+
+msgid "Custom adapter"
+msgstr "Vlastní adaptér"
+
+msgid "AT serial port"
+msgstr "Sériový port AT"
+
+msgid "Custom AT adapter"
+msgstr "Vlastní adaptér AT"
+
+msgid "The executable receives a timeout in seconds and the complete AT command, in that order. It must share the serial lock with the platform dialer."
+msgstr "Spustitelný soubor dostane časový limit v sekundách a úplný příkaz AT, v tomto pořadí. Musí sdílet zámek sériového portu s vytáčecím programem platformy."
+
+msgid "SMS adapter"
+msgstr "Adaptér SMS"
+
+msgid "Implement the list, show, send, delete and sync subcommands; leave blank to find mu300-sms automatically."
+msgstr "Implementujte podpříkazy list, show, send, delete a sync; ponechte prázdné pro automatické nalezení mu300-sms."
+
+msgid "SMS pool directory"
+msgstr "Adresář fondu SMS"
+
+msgid "Cellular logical interface"
+msgstr "Logické mobilní rozhraní"
+
+msgid "Cellular IPv6 interface"
+msgstr "Mobilní rozhraní IPv6"
+
+msgid "Cellular network device"
+msgstr "Mobilní síťové zařízení"
+
+msgid "Leave blank to detect from netifd"
+msgstr "Ponechte prázdné pro zjištění z netifd"
+
+msgid "LAN bridge"
+msgstr "Most LAN"
+
+msgid "Wi-Fi device"
+msgstr "Zařízení Wi-Fi"
+
+msgid "USB device"
+msgstr "Zařízení USB"
+
+msgid "Maximum wait for AT readiness (seconds)"
+msgstr "Maximální čekání na připravenost AT (sekundy)"
+
+msgid "Home dashboard refresh interval (seconds)"
+msgstr "Interval obnovení domovského přehledu (sekundy)"
+
+msgid "Controls only the home dashboard refresh rate; 0.5–60 seconds. Reopen Home after saving to apply."
+msgstr "Řídí pouze rychlost obnovení domovského přehledu; 0,5–60 sekund. Pro použití po uložení znovu otevřete domovskou stránku."
+
+msgid "Persistent state directory"
+msgstr "Adresář trvalého stavu"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM. Mobile data will disconnect briefly."
+msgstr "Switching SIM. Mobile data will disconnect briefly."
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switch failed; check SIM readiness and hot switching."
+msgstr "SIM switch failed; check SIM readiness and hot switching."
+
+# Source-language fallback for untranslated new controls.
+msgid "Ready"
+msgstr "Ready"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM"
+msgstr "Switching SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switched; saved as boot default"
+msgstr "SIM switched; saved as boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch failed; previous SIM restored"
+msgstr "Switch failed; previous SIM restored"
+
+msgid "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+msgstr "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+
+msgid "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+msgstr "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+
+# Source-language fallback for untranslated new controls.
+msgid "Radio state unknown; reboot required"
+msgstr "Radio state unknown; reboot required"
+
+msgid "Radio state unknown; the device is restarting."
+msgstr "Radio state unknown; the device is restarting."
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM control is only for the U30 Air on OpenWrt."
+msgstr "Dual SIM control is only for the U30 Air on OpenWrt."
+
+# Source-language fallback for untranslated new controls.
+msgid "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+msgstr "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+
+msgid "No card answered in the chosen SIM position at the last boot."
+msgstr "No card answered in the chosen SIM position at the last boot."
+
+msgid "The chosen SIM is locked by its PIN."
+msgstr "The chosen SIM is locked by its PIN."
+
+msgid "The chosen SIM got no mobile data within the time at its first boot."
+msgstr "The chosen SIM got no mobile data within the time at its first boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The second SIM's modem channels did not come up at the last boot."
+msgstr "The second SIM's modem channels did not come up at the last boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The last dual-SIM boot never confirmed itself."
+msgstr "The last dual-SIM boot never confirmed itself."
+
+msgid "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+msgstr "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+
+# Source-language fallback for untranslated new controls.
+msgid "Active SIM"
+msgstr "Active SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "Cold-boot default"
+msgstr "Cold-boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control unavailable"
+msgstr "SIM control unavailable"
+
+# Source-language fallback for untranslated new controls.
+msgid "The device is back on SIM1 without live switching; choose again below to try once more."
+msgstr "The device is back on SIM1 without live switching; choose again below to try once more."
+
+msgid "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+msgstr "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching"
+msgstr "Enable hot switching"
+
+msgid "This device supports next-boot SIM selection only; live switching is unavailable."
+msgstr "This device supports next-boot SIM selection only; live switching is unavailable."
+
+# Source-language fallback for untranslated new controls.
+msgid "Reboot after enabling hot switching to prepare both SIM channels."
+msgstr "Reboot after enabling hot switching to prepare both SIM channels."
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch to SIM%d"
+msgstr "Switch to SIM%d"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM%d at next boot"
+msgstr "Use SIM%d at next boot"
+
+msgid "Built-in SIM 1"
+msgstr "Vestavěná SIM 1"
+
+msgid "Built-in SIM 2"
+msgstr "Vestavěná SIM 2"
+
+msgid "Built-in SIM 3"
+msgstr "Vestavěná SIM 3"
+
+msgid "External SIM"
+msgstr "Externí SIM"
+
+msgid "SIM card"
+msgstr "SIM karta"
+
+msgid "Built-in SIM 3 shares SIM2, the external SIM shares SIM1. The card chosen here is switched in before the modem starts, at the next boot; without a choice the cards stay as the bootloader sets them."
+msgstr "Vestavěná SIM 3 sdílí SIM2, externí SIM sdílí SIM1. Zde zvolená karta se přepne před spuštěním modemu, při příštím startu; bez volby zůstanou karty tak, jak je nastaví zavaděč."
+
+msgid "As the bootloader sets them"
+msgstr "Jak je nastaví zavaděč"
+
+msgid "Applying the radio setting…"
+msgstr "Použití nastavení rádia…"
+
+msgid "SIM settings are not available"
+msgstr "Nastavení SIM není k dispozici"
+
+msgid "Modem default"
+msgstr "Výchozí nastavení modemu"
+
+msgid "SIM%d"
+msgstr "SIM%d"
+
+msgid "in use"
+msgstr "používá se"
+
+msgid "Turn off the radio of SIM%d"
+msgstr "Vypnout rádio SIM%d"
+
+msgid "Radio"
+msgstr "Rádio"
+
+msgid "VoLTE"
+msgstr "VoLTE"
+
+msgid "VoNR"
+msgstr "VoNR"
+
+msgid "Modem: %s"
+msgstr "Modem: %s"
+
+msgid "Sent to this SIM when its radio next starts."
+msgstr "Odešle se této SIM při příštím spuštění jejího rádia."
+
+msgid "VoLTE and VoNR for each SIM, kept across reboots and sent again whenever that SIM starts. VoLTE is on unless switched off; VoNR stays as the modem has it until set."
+msgstr "VoLTE a VoNR pro každou SIM, zachovají se po restartu a odešlou se znovu při každém spuštění dané SIM. VoLTE je zapnuté, pokud ho nevypnete; VoNR zůstává podle modemu, dokud ho nenastavíte."
+
+msgid "All radios off (airplane mode)"
+msgstr "Všechna rádia vypnout (režim letadlo)"
+
+msgid "All radios on"
+msgstr "Všechna rádia zapnout"
+
+msgid "No SIM will have calls, SMS or data, also after a reboot, until a radio is turned on again here or with the dashboard's radio button."
+msgstr "Žádná SIM nebude mít hovory, SMS ani data, ani po restartu, dokud se rádio znovu nezapne zde nebo tlačítkem rádia na přehledu."
+
+msgid "Each SIM's radio stays as set here after a reboot. A SIM whose radio is off has no calls, SMS or data, and the device does not switch to it."
+msgstr "Rádio každé SIM zůstane po restartu tak, jak je zde nastaveno. SIM s vypnutým rádiem nemá hovory, SMS ani data a zařízení na ni nepřepne."
+
+msgid "The setting is saved, but the radio did not follow it yet."
+msgstr "Nastavení je uloženo, ale rádio se jím zatím neřídí."
+
+msgid "Recipient: number, e.g. 10086 or +86..."
+msgstr "Příjemce: číslo, např. 10086 nebo +86..."
+
+msgid "Sync from SIM"
+msgstr "Synchronizovat ze SIM"
+
+msgid "Clear local pool"
+msgstr "Vymazat místní fond"
+
+msgid "Select a conversation on the left, or enter a number below to send."
+msgstr "Vyberte konverzaci vlevo, nebo zadejte číslo níže a odešlete."
+
+msgid "Message (Enter to send, Shift+Enter for newline)"
+msgstr "Zpráva (Enter odešle, Shift+Enter nový řádek)"
+
+msgid "Sending uses AT+CMGS (PDU mode); retry if the channel is busy. To delete one message, use the bin icon on its bubble."
+msgstr "Odesílání používá AT+CMGS (režim PDU); pokud je kanál obsazen, zkuste to znovu. Jednotlivou zprávu smažete ikonou koše na její bublině."
+
+msgid "Sending…"
+msgstr "Odesílání…"
+
+msgid "Sent; the list refreshes shortly."
+msgstr "Odesláno; seznam se brzy obnoví."
+
+msgid "Sending failed"
+msgstr "Odeslání selhalo"
+
+msgid "Syncing from the SIM in the background (AT+CMGL)…"
+msgstr "Synchronizace ze SIM na pozadí (AT+CMGL)…"
+
+msgid "SIM sync started; the list refreshes in a few seconds."
+msgstr "Synchronizace SIM spuštěna; seznam se obnoví za několik sekund."
+
+msgid "Clear local SMS pool"
+msgstr "Vymazat místní fond SMS"
+
+msgid "Only local files will be deleted; messages on the SIM remain."
+msgstr "Smazány budou pouze místní soubory; zprávy na SIM zůstanou."
+
+msgid "Delete this SMS"
+msgstr "Smazat tuto SMS"
+
+msgid "Deletion cannot be undone."
+msgstr "Smazání nelze vrátit zpět."
+
+msgid "Local only"
+msgstr "Pouze místně"
+
+msgid "Local + SIM"
+msgstr "Místně + SIM"
+
+msgid "Delete failed"
+msgstr "Smazání selhalo"
+
+msgid "Deleted (local + SIM)"
+msgstr "Smazáno (místně + SIM)"
+
+msgid "Deleted (local only)"
+msgstr "Smazáno (pouze místně)"
+
+msgid "Enter both a number and a message."
+msgstr "Zadejte číslo i zprávu."
+
+msgid "· %d messages, %d unread · %d conversations"
+msgstr "· zpráv: %d, nepřečtených: %d · konverzací: %d"
+
+msgid "· %d messages · %d conversations"
+msgstr "· zpráv: %d · konverzací: %d"
+
+msgid "The pool is empty. Incoming and sent messages appear here, or select “Sync from SIM”."
+msgstr "Fond je prázdný. Zobrazí se zde příchozí a odeslané zprávy, nebo zvolte „Synchronizovat ze SIM“."
+
+msgid "Me: %s"
+msgstr "Já: %s"
+
+msgid "Incomplete: %d of %d parts arrived"
+msgstr "Neúplná: dorazilo %d z %d částí"
+
+msgid "Delete"
+msgstr "Smazat"
+
+msgid "ttyd is not installed."
+msgstr "ttyd není nainstalován."
+
+msgid "The terminal is turned off (/etc/config/ttyd)."
+msgstr "Terminál je vypnutý (/etc/config/ttyd)."
+
+msgid "Too many terminals are opening at once. Try again in a minute."
+msgstr "Otevírá se příliš mnoho terminálů najednou. Zkuste to znovu za minutu."
+
+msgid "The terminal is not available."
+msgstr "Terminál není k dispozici."
+
+msgid "This is a root shell on the device: every command runs with full rights, and a mistake can make the device unbootable."
+msgstr "Toto je root shell zařízení: každý příkaz běží s plnými právy a chyba může zařízení znemožnit start."
+
+msgid "It is reachable from the LAN only (USB and the hotspot), never from mobile data, and only from this logged-in page."
+msgstr "Je dostupný pouze z LAN (USB a hotspot), nikdy z mobilních dat, a jen z této přihlášené stránky."
+
+msgid "It closes after a minute without activity."
+msgstr "Zavře se po minutě bez aktivity."
+
+msgid "It closes after %d minutes without activity."
+msgstr "Zavře se po %d minutách bez aktivity."
+
+msgid "Reconnect"
+msgstr "Znovu připojit"
+
+msgid "Open in a new tab"
+msgstr "Otevřít na nové kartě"
+
+msgid "This page was opened over HTTPS, and the terminal is served over HTTP on the LAN: it opens in a tab of its own."
+msgstr "Tato stránka byla otevřena přes HTTPS a terminál běží v LAN přes HTTP: otevře se proto na vlastní kartě."
+
+msgid "The data usage could not be read"
+msgstr "Spotřebu dat nelze načíst"
+
+msgid "Today"
+msgstr "Dnes"
+
+msgid "Days left in this cycle"
+msgstr "Zbývající dny v období"
+
+msgid "Received"
+msgstr "Přijato"
+
+msgid "Sent"
+msgstr "Odesláno"
+
+msgid "Corrected by"
+msgstr "Opraveno o"
+
+msgid "Monthly cap"
+msgstr "Měsíční limit"
+
+msgid "%s, warning at %d%%"
+msgstr "%s, varování při %d%%"
+
+msgid "The monthly cap is reached: mobile data was turned off. It comes back on when the next cycle starts."
+msgstr "Měsíční limit je vyčerpán: mobilní data byla vypnuta. Znovu se zapnou na začátku dalšího období."
+
+msgid "%s waits for the clock: it has not been set over the network yet. It already counts towards this cycle and goes to its day once the clock is set."
+msgstr "%s čeká na hodiny: ještě nebyly nastaveny ze sítě. Už se započítává do tohoto období a přejde ke svému dni, jakmile budou hodiny nastaveny."
+
+msgid "The interface %s is not there right now: nothing is counted until it comes back."
+msgstr "Rozhraní %s teď neexistuje: dokud se nevrátí, nic se nepočítá."
+
+msgid "Counted on %s, both ways, as the operator counts it (a VPN's overhead included)."
+msgstr "Počítáno na %s, v obou směrech, jak počítá operátor (včetně režie VPN)."
+
+msgid "The count is kept in memory and written to the disk every 30 minutes and at shutdown: a power cut loses at most the last half hour."
+msgstr "Počet je držen v paměti a zapisován na disk každých 30 minut a při vypnutí: výpadek proudu ztratí nejvýše poslední půlhodinu."
+
+msgid "Counting since %s."
+msgstr "Počítáno od %s."
+
+msgid "Per day"
+msgstr "Po dnech"
+
+msgid "Date"
+msgstr "Datum"
+
+msgid "Total"
+msgstr "Celkem"
+
+msgid "Per billing cycle"
+msgstr "Po zúčtovacích obdobích"
+
+msgid "Billing cycle"
+msgstr "Zúčtovací období"
+
+msgid "Enter a size in GB, for example 50 or 2.5"
+msgstr "Zadejte velikost v GB, například 50 nebo 2.5"
+
+msgid "Enter a percentage from 1 to 100"
+msgstr "Zadejte procento od 1 do 100"
+
+msgid "Turn mobile data off at the cap"
+msgstr "Vypnout mobilní data při dosažení limitu"
+
+msgid "When this cycle reaches the cap, mobile data is turned off: no internet through the operator until the next cycle starts, the cap is raised or this is turned off again. Turning mobile data back on by hand keeps it on until the next reboot."
+msgstr "Když toto období dosáhne limitu, mobilní data se vypnou: žádný internet přes operátora, dokud nezačne další období, nezvýší se limit nebo se tato volba znovu nevypne. Ručně znovu zapnutá mobilní data zůstanou zapnutá do dalšího restartu."
+
+msgid "Set"
+msgstr "Nastavit"
+
+msgid "Clear the count"
+msgstr "Vymazat počet"
+
+msgid "Every day and billing cycle counted so far is forgotten. Counting goes on from now."
+msgstr "Všechny dosud započtené dny a zúčtovací období budou zapomenuty. Počítání pokračuje od teď."
+
+msgid "Billing cycle and cap"
+msgstr "Zúčtovací období a limit"
+
+msgid "A billing cycle starts on day"
+msgstr "Zúčtovací období začíná dne"
+
+msgid "31: on the last day of each month"
+msgstr "31: poslední den každého měsíce"
+
+msgid "Monthly cap (GB, 0: none)"
+msgstr "Měsíční limit (GB, 0: žádný)"
+
+msgid "Warning at this percentage of the cap"
+msgstr "Varovat při tomto procentu limitu"
+
+msgid "Used so far in this cycle (GB)"
+msgstr "Dosud spotřebováno v tomto období (GB)"
+
+msgid "What the operator shows for this cycle (for example when counting started in the middle of it); the count is corrected to it."
+msgstr "Co operátor ukazuje pro toto období (například když počítání začalo uprostřed); počet se na to opraví."
+
+msgid "Current setting"
+msgstr "Aktuální nastavení"
+
+msgid "Fixed at %d"
+msgstr "Pevně %d"
+
+msgid "Not changed (default)"
+msgstr "Nezměněno (výchozí)"
+
+msgid "Rule in force"
+msgstr "Platné pravidlo"
+
+msgid "Flow offloading"
+msgstr "Odlehčení toků (flow offloading)"
+
+msgid "TTL of mobile data"
+msgstr "TTL mobilních dat"
+
+msgid "Every packet that leaves through mobile data gets this TTL (IPv6: hop limit). A phone or laptop behind the hotspot sends 64 (Windows: 128) and the device forwards it with one less, which is how an operator can tell tethered traffic apart."
+msgstr "Každý paket, který odchází přes mobilní data, dostane toto TTL (IPv6: hop limit). Telefon nebo notebook za hotspotem posílá 64 (Windows: 128) a zařízení jej přepošle o jedna menší, podle čehož operátor pozná sdílený provoz."
+
+msgid "On this kernel the firewall fast-path is off while a TTL is set"
+msgstr "Na tomto jádře je rychlá cesta firewallu vypnutá, dokud je nastaveno TTL"
+
+msgid "Set %d"
+msgstr "Nastavit %d"
+
+msgid "Enter a number from 1 to 255"
+msgstr "Zadejte číslo od 1 do 255"
+
+msgid "Turn off"
+msgstr "Vypnout"
+
+msgid "64 makes every packet leave like the device's own traffic"
+msgstr "S 64 odchází každý paket jako vlastní provoz zařízení"
+
+msgid "Check for updates"
+msgstr "Zkontrolovat aktualizace"
+
+msgid "Checking the file"
+msgstr "Kontrola souboru"
+
+msgid "Update from a file"
+msgstr "Aktualizace ze souboru"
+
+msgid "Back to the previous version"
+msgstr "Zpět k předchozí verzi"
+
+msgid "Back to the previous boot image"
+msgstr "Zpět k předchozímu spouštěcímu obrazu"
+
+msgid "Remove the previous version"
+msgstr "Odebrat předchozí verzi"
+
+msgid "Kernel change"
+msgstr "Změna jádra"
+
+msgid "Starting…"
+msgstr "Spouští se…"
+
+msgid "Downloading"
+msgstr "Stahování"
+
+msgid "All files are here and verified"
+msgstr "Všechny soubory jsou zde a ověřené"
+
+msgid "Unpacking the new system"
+msgstr "Rozbaluje se nový systém"
+
+msgid "Carrying over your settings"
+msgstr "Přenáší se vaše nastavení"
+
+msgid "Writing down the packages you installed"
+msgstr "Zapisují se balíčky, které jste nainstalovali"
+
+msgid "Switching to the new system"
+msgstr "Přepíná se na nový systém"
+
+msgid "Kernel and boot image"
+msgstr "Jádro a spouštěcí obraz"
+
+msgid "Restart the device?"
+msgstr "Restartovat zařízení?"
+
+msgid "The device restarts now. The default boot is Android, so it starts Android: switch to Linux from there to start the updated system."
+msgstr "Zařízení se nyní restartuje. Výchozí spouštění je Android, takže se spustí Android: odtud přepněte na Linux, aby se spustil aktualizovaný systém."
+
+msgid "The device restarts now and is away for about a minute. If the new system does not start, the device goes back to Android by itself after the failed attempts."
+msgstr "Zařízení se nyní restartuje a asi minutu bude nedostupné. Pokud se nový systém nespustí, zařízení se po neúspěšných pokusech samo vrátí do Androidu."
+
+msgid "Restarting… open this page again in about a minute."
+msgstr "Restartuje se… otevřete tuto stránku znovu asi za minutu."
+
+msgid "Running for %s. It goes on when this page is closed; do not switch the device off."
+msgstr "Běží %s. Pokračuje i po zavření této stránky; zařízení nevypínejte."
+
+msgid "Done. Restart the device to start it."
+msgstr "Hotovo. Restartujte zařízení, aby se změna projevila."
+
+msgid "Done. Nothing needs a restart."
+msgstr "Hotovo. Restart není potřeba."
+
+msgid "It did not finish, and part of it was done: read the log before you restart."
+msgstr "Nedokončilo se to a část byla provedena: před restartem si přečtěte protokol."
+
+msgid "It did not finish. Nothing was changed; the log says why."
+msgstr "Nedokončilo se to. Nic se nezměnilo; důvod je v protokolu."
+
+msgid "Log"
+msgstr "Protokol"
+
+msgid "Restart now"
+msgstr "Restartovat nyní"
+
+msgid "Later"
+msgstr "Později"
+
+msgid "Close"
+msgstr "Zavřít"
+
+msgid "Updating is not available on this system"
+msgstr "Aktualizace není v tomto systému dostupná"
+
+msgid "Another update is running on the device"
+msgstr "Na zařízení běží jiná aktualizace"
+
+msgid "It was started outside this page (a terminal, the toolkit). Nothing can be started here until it has finished."
+msgstr "Bylo to spuštěno mimo tuto stránku (terminál, toolkit). Dokud to neskončí, nelze zde nic spustit."
+
+msgid "Restart needed"
+msgstr "Je potřeba restart"
+
+msgid "This system was updated and still runs the old version. The new one starts at the next restart."
+msgstr "Tento systém byl aktualizován a stále běží stará verze. Nová se spustí při příštím restartu."
+
+msgid "Installed"
+msgstr "Nainstalováno"
+
+msgid "This system"
+msgstr "Tento systém"
+
+msgid "Also on this device"
+msgstr "Také na tomto zařízení"
+
+msgid "Kernel"
+msgstr "Jádro"
+
+msgid "choice %s"
+msgstr "volba %s"
+
+msgid "Boot image"
+msgstr "Spouštěcí obraz"
+
+msgid "from the installer"
+msgstr "z instalátoru"
+
+msgid "Default boot"
+msgstr "Výchozí spouštění"
+
+msgid "Free space"
+msgstr "Volné místo"
+
+msgid "Release signatures"
+msgstr "Podpisy vydání"
+
+msgid "checked with the project's key"
+msgstr "kontrolují se klíčem projektu"
+
+msgid "this system has no release key"
+msgstr "tento systém nemá klíč vydání"
+
+msgid "The default boot is Android: a restart goes to Android, and Linux is started from there."
+msgstr "Výchozí spouštění je Android: restart vede do Androidu a Linux se spouští odtud."
+
+msgid "Linux is locked as the default boot: a failed start does not send the device to Android by itself, except the first starts of a new boot image."
+msgstr "Linux je zamčen jako výchozí spouštění: neúspěšné spuštění zařízení samo do Androidu nepřepne, kromě prvních spuštění nového spouštěcího obrazu."
+
+msgid "If Linux fails to start %d times in a row, the device starts Android by itself."
+msgstr "Pokud se Linux nespustí %dkrát po sobě, zařízení samo spustí Android."
+
+msgid "Report of the last update"
+msgstr "Zpráva o poslední aktualizaci"
+
+msgid "Online update"
+msgstr "Aktualizace online"
+
+msgid "Asking GitHub…"
+msgstr "Dotaz na GitHub…"
+
+msgid "Checked %s ago"
+msgstr "Zkontrolováno před %s"
+
+msgid "Not checked yet"
+msgstr "Zatím nezkontrolováno"
+
+msgid "Mirror (release files)"
+msgstr "Zrcadlo (soubory vydání)"
+
+msgid "Leave empty for GitHub."
+msgstr "Prázdné pro GitHub."
+
+msgid "Install the packages I added again after the update (needs the device online at the first start)"
+msgstr "Po aktualizaci znovu nainstalovat balíčky, které jsem přidal (při prvním spuštění musí být zařízení online)"
+
+msgid "Pre-release"
+msgstr "Předběžné vydání"
+
+msgid "Newest release"
+msgstr "Nejnovější vydání"
+
+msgid "Release notes"
+msgstr "Poznámky k vydání"
+
+msgid "Download"
+msgstr "Stažení"
+
+msgid "Free space needed"
+msgstr "Potřebné volné místo"
+
+msgid "not enough: remove the previous version first"
+msgstr "nestačí: nejprve odeberte předchozí verzi"
+
+msgid "A pre-release is a release still being tried: it can have faults a release does not. The previous version is kept all the same."
+msgstr "Předběžné vydání je vydání, které se ještě zkouší: může mít chyby, které běžné vydání nemá. Předchozí verze se i tak uchová."
+
+msgid "This system is newer than the newest release (a test release)."
+msgstr "Tento systém je novější než nejnovější vydání (testovací vydání)."
+
+msgid "Up to date."
+msgstr "Aktuální."
+
+msgid "This release is not signed, and this system checks signatures: it is not installed from here. Update from its file below, which asks you to confirm."
+msgstr "Toto vydání není podepsané a tento systém kontroluje podpisy: odsud se neinstaluje. Aktualizujte z jeho souboru níže, který si vyžádá potvrzení."
+
+msgid "Update to %s"
+msgstr "Aktualizovat na %s"
+
+msgid "Choose at least one system"
+msgstr "Vyberte alespoň jeden systém"
+
+msgid "Update to %s?"
+msgstr "Aktualizovat na %s?"
+
+msgid "The device downloads %s, puts the new system beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Zařízení stáhne %s, uloží nový systém vedle běžícího a při příštím restartu na něj přepne. Vaše nastavení se přenese a předchozí verze se uchová. Trvá to několik minut; zařízení nevypínejte."
+
+msgid "Also offer the pre-release %s"
+msgstr "Nabízet také předběžné vydání %s"
+
+msgid "Systems to update:"
+msgstr "Systémy k aktualizaci:"
+
+msgid "GitHub could not be reached: the device has no internet connection, or GitHub did not answer. Without internet, update from a file below."
+msgstr "GitHub se nepodařilo kontaktovat: zařízení nemá připojení k internetu, nebo GitHub neodpověděl. Bez internetu aktualizujte ze souboru níže."
+
+msgid "release"
+msgstr "vydání"
+
+msgid "For a device without internet: download the Magisk zip of a release for this system and this kernel on another computer, from the release page on GitHub, and upload it here. For this device that is:"
+msgstr "Pro zařízení bez internetu: na jiném počítači stáhněte ze stránky vydání na GitHubu Magisk zip vydání pro tento systém a toto jádro a nahrajte jej sem. Pro toto zařízení je to:"
+
+msgid "Uploaded file"
+msgstr "Nahraný soubor"
+
+msgid "Checking the file…"
+msgstr "Kontrola souboru…"
+
+msgid "It says it is"
+msgstr "Podle souboru jde o"
+
+msgid "kernel %s"
+msgstr "jádro %s"
+
+msgid "Signature"
+msgstr "Podpis"
+
+msgid "signed with the project's release key"
+msgstr "podepsáno klíčem vydání projektu"
+
+msgid "WRONG: it does not match the project's release key"
+msgstr "ŠPATNÝ: neodpovídá klíči vydání projektu"
+
+msgid "not signed"
+msgstr "nepodepsáno"
+
+msgid "cannot be checked on this system"
+msgstr "na tomto systému jej nelze zkontrolovat"
+
+msgid "Its system is not installed on this device."
+msgstr "Jeho systém není na tomto zařízení nainstalován."
+
+msgid "It is the other Ubuntu release, not the one installed."
+msgstr "Je to to druhé vydání Ubuntu, ne to nainstalované."
+
+msgid "It carries another kernel than this device uses. Take the zip for kernel %s, or change the kernel first."
+msgstr "Obsahuje jiné jádro, než jaké toto zařízení používá. Vezměte zip pro jádro %s, nebo nejprve změňte jádro."
+
+msgid "Its kernel does not run on this model."
+msgstr "Jeho jádro na tomto modelu neběží."
+
+msgid "The file is damaged: its contents do not match their checksums."
+msgstr "Soubor je poškozený: jeho obsah neodpovídá kontrolním součtům."
+
+msgid "Its signature is wrong. This file does not come from the project as it is; it is never installed."
+msgstr "Jeho podpis je špatný. Tento soubor v této podobě nepochází od projektu; nikdy se nenainstaluje."
+
+msgid "This file cannot be used here."
+msgstr "Tento soubor zde nelze použít."
+
+msgid "Compare the SHA-256 with the one in SHA256SUMS-magisk on the release page: it is the only proof of where an unsigned file comes from."
+msgstr "Porovnejte SHA-256 s hodnotou v SHA256SUMS-magisk na stránce vydání: je to jediný důkaz původu nepodepsaného souboru."
+
+msgid "This release is installed already; the update would only refresh the boot image."
+msgstr "Toto vydání je již nainstalováno; aktualizace by jen obnovila spouštěcí obraz."
+
+msgid "I know this file is not signed: nothing proves that it comes from the project. I compared its SHA-256 myself and want it installed."
+msgstr "Vím, že tento soubor není podepsán: nic nedokazuje, že pochází od projektu. Jeho SHA-256 jsem sám porovnal a chci jej nainstalovat."
+
+msgid "I know this is %s, older than the installed %s, and want to go back to it."
+msgstr "Vím, že toto je %s, starší než nainstalované %s, a chci se k němu vrátit."
+
+msgid "This is not a release file of this project: a Magisk zip of a release is expected."
+msgstr "Toto není soubor vydání tohoto projektu: očekává se Magisk zip vydání."
+
+msgid "Update from this file"
+msgstr "Aktualizovat z tohoto souboru"
+
+msgid "Tick the confirmations above first"
+msgstr "Nejprve zaškrtněte potvrzení výše"
+
+msgid "The device puts the system of this file beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Zařízení uloží systém z tohoto souboru vedle běžícího a při příštím restartu na něj přepne. Vaše nastavení se přenese a předchozí verze se uchová. Trvá to několik minut; zařízení nevypínejte."
+
+msgid "Check the file"
+msgstr "Zkontrolovat soubor"
+
+msgid "Remove the file"
+msgstr "Odebrat soubor"
+
+msgid "Previous version"
+msgstr "Předchozí verze"
+
+msgid "No previous version is kept on this device."
+msgstr "Na tomto zařízení není uchována žádná předchozí verze."
+
+msgid "replaced %s"
+msgstr "nahrazeno %s"
+
+msgid "I want the previous system back; what I changed since the update stays in the version I leave."
+msgstr "Chci zpět předchozí systém; co jsem od aktualizace změnil, zůstane ve verzi, kterou opouštím."
+
+msgid "Back to the previous version?"
+msgstr "Zpět k předchozí verzi?"
+
+msgid "The previous system (%s) becomes the one that starts at the next restart. The version you leave is not kept; settings you changed since the update are not carried back."
+msgstr "Předchozí systém (%s) se stane tím, který se spustí při příštím restartu. Verze, kterou opouštíte, se neuchová; nastavení změněná od aktualizace se zpět nepřenesou."
+
+msgid "Go back"
+msgstr "Vrátit se"
+
+msgid "The previous version is the one running now: restart first."
+msgstr "Předchozí verze je ta, která právě běží: nejprve restartujte."
+
+msgid "I want the previous kernel and boot image back."
+msgstr "Chci zpět předchozí jádro a spouštěcí obraz."
+
+msgid "Back to the previous boot image?"
+msgstr "Zpět k předchozímu spouštěcímu obrazu?"
+
+msgid "The previous boot image (%s) is written to the Linux slot and starts at the next restart. If it does not start, the device goes back to Android by itself."
+msgstr "Předchozí spouštěcí obraz (%s) se zapíše do slotu Linuxu a spustí se při příštím restartu. Pokud se nespustí, zařízení se samo vrátí do Androidu."
+
+msgid "I do not need to go back: delete the previous system to free its space."
+msgstr "Vracet se nepotřebuji: smazat předchozí systém a uvolnit jeho místo."
+
+msgid "Remove the previous version?"
+msgstr "Odebrat předchozí verzi?"
+
+msgid "The kept copy of the previous system is deleted for good. After that there is no going back to it from this page."
+msgstr "Uchovaná kopie předchozího systému se nenávratně smaže. Poté se k ní z této stránky už nelze vrátit."
+
+msgid "the vendor kernel"
+msgstr "jádro výrobce"
+
+msgid "mainline"
+msgstr "mainline"
+
+msgid "not with Ubuntu 26.04"
+msgstr "ne s Ubuntu 26.04"
+
+msgid "Change the kernel"
+msgstr "Změnit jádro"
+
+msgid "This kernel is the one in use"
+msgstr "Toto jádro se právě používá"
+
+msgid "Change the kernel to %s?"
+msgstr "Změnit jádro na %s?"
+
+msgid "The device downloads that kernel from the newest release and writes a new boot image; it starts at the next restart. The previous boot image is kept, and if the new one does not start the device goes back to Android by itself. The device must be online."
+msgstr "Zařízení stáhne toto jádro z nejnovějšího vydání a zapíše nový spouštěcí obraz; spustí se při příštím restartu. Předchozí spouštěcí obraz se uchová, a pokud se nový nespustí, zařízení se samo vrátí do Androidu. Zařízení musí být online."
+
+msgid "Start Android at the next restart"
+msgstr "Při příštím restartu spustit Android"
+
+msgid "Start Android at the next restart?"
+msgstr "Při příštím restartu spustit Android?"
+
+msgid "The next restart, and the ones after it, start Android instead of Linux. Linux is started again from Android (the Magisk module's Action button, or mu300-linux)."
+msgstr "Příští restart i ty další spustí Android místo Linuxu. Linux se znovu spouští z Androidu (tlačítko Akce modulu Magisk, nebo mu300-linux)."
+
+msgid "Start Android next"
+msgstr "Příště spustit Android"
+
+msgid "What an update keeps"
+msgstr "Co aktualizace zachová"
+
+msgid "An update puts the system of the new release in place and carries over what is yours: the settings, the accounts and their passwords, the device's keys and the home directories. Packages you installed yourself are written down and installed again at the first start, once the device is online. The previous version stays on the device until you remove it, so you can go back."
+msgstr "Aktualizace nasadí systém nového vydání a přenese to, co je vaše: nastavení, účty a jejich hesla, klíče zařízení a domovské adresáře. Balíčky, které jste nainstalovali sami, se zapíší a znovu nainstalují při prvním spuštění, jakmile je zařízení online. Předchozí verze zůstává na zařízení, dokud ji neodeberete, takže se můžete vrátit."
+
+msgid "The wiki's Updating page lists exactly what is kept."
+msgstr "Stránka wiki o aktualizaci uvádí přesně, co se zachová."
+
+msgid "Choose a file first"
+msgstr "Nejprve vyberte soubor"
+
+msgid "Uploading: %s of %s"
+msgstr "Nahrávání: %s z %s"
+
+msgid "running"
+msgstr "běží"
+
+msgid "(about %s)"
+msgstr "(asi %s)"
+
+msgid "Install %s?"
+msgstr "Nainstalovat %s?"
+
+msgid "It is installed from this system's package feed."
+msgstr "Instaluje se ze zdroje balíčků tohoto systému."
+
+msgid "It is downloaded from the release of the VPN module and checked against its SHA256SUMS."
+msgstr "Stahuje se z vydání modulu VPN a kontroluje se podle jeho SHA256SUMS."
+
+msgid "An engine is tens of MB: on mobile data the download counts towards your plan."
+msgstr "Engine má desítky MB: na mobilních datech se stažení počítá do vašeho tarifu."
+
+msgid "Install"
+msgstr "Nainstalovat"
+
+msgid "Remove %s?"
+msgstr "Odebrat %s?"
+
+msgid "Profiles run on it: %s. They cannot start until it is installed again (the module refuses while the running profile needs it)."
+msgstr "Profily, které na něm běží: %s. Nemohou se spustit, dokud nebude znovu nainstalován (modul odmítne odebrání, dokud ho běžící profil potřebuje)."
+
+msgid "No profile runs on it."
+msgstr "Žádný profil na něm neběží."
+
+msgid "Removed"
+msgstr "Odebráno"
+
+msgid "Each engine is an extra of its own: install only the ones your profiles need. Xray runs vless, vmess, trojan and ss links (with hev-socks5-tunnel), sing-box the same links and its own JSON, mihomo Clash subscriptions, dae hysteria2, tuic and the rest on newer kernels. WireGuard and OpenVPN are packages of the system."
+msgstr "Každý engine je samostatný doplněk: instalujte jen ty, které vaše profily potřebují. Xray spouští odkazy vless, vmess, trojan a ss (s hev-socks5-tunnel), sing-box stejné odkazy a vlastní JSON, mihomo odběry Clash, dae hysteria2, tuic a další na novějších jádrech. WireGuard a OpenVPN jsou balíčky systému."
+
+msgid "Downloads are tens of MB per engine: on mobile data they count towards your plan. Offline, upload the engine's tarball from the release page of the VPN module."
+msgstr "Stažení mají desítky MB na engine: na mobilních datech se počítají do vašeho tarifu. Offline nahrajte tarball enginu ze stránky vydání modulu VPN."
+
+msgid "The available versions come from the latest release of the VPN module."
+msgstr "Dostupné verze pocházejí z nejnovějšího vydání modulu VPN."
+
+msgid "system package"
+msgstr "systémový balíček"
+
+msgid "in the vpn bundle"
+msgstr "v balíku vpn"
+
+msgid "extra %s"
+msgstr "doplněk %s"
+
+msgid "not installed"
+msgstr "nenainstalováno"
+
+msgid "cannot run here"
+msgstr "zde nemůže běžet"
+
+msgid "update available"
+msgstr "aktualizace k dispozici"
+
+msgid "installed"
+msgstr "nainstalováno"
+
+msgid "Kind"
+msgstr "Druh"
+
+msgid "Version"
+msgstr "Verze"
+
+msgid "Available"
+msgstr "Dostupné"
+
+msgid "not checked"
+msgstr "nezkontrolováno"
+
+msgid "Size"
+msgstr "Velikost"
+
+msgid "Needed by"
+msgstr "Potřebuje"
+
+msgid "no profile"
+msgstr "žádný profil"
+
+msgid "dae needs a kernel with BTF, 5.17 or newer: not the 5.4 vendor kernel (mu300-update kernel 6.18). It can be installed anyway."
+msgstr "dae potřebuje jádro s BTF, 5.17 nebo novější: ne výrobcovo jádro 5.4 (mu300-update kernel 6.18). Nainstalovat ho lze i tak."
+
+msgid "All engines"
+msgstr "Všechny enginy"
+
+msgid "Last %s lines"
+msgstr "Posledních %s řádků"
+
+msgid "VPN service log"
+msgstr "Protokol služby VPN"
+
+msgid "Every 5 s"
+msgstr "Každých 5 s"
+
+msgid "The log is empty."
+msgstr "Protokol je prázdný."
+
+msgid "The VPN is starting"
+msgstr "VPN se spouští"
+
+msgid "The VPN is stopped"
+msgstr "VPN je zastavena"
+
+msgid "The VPN is restarting"
+msgstr "VPN se restartuje"
+
+msgid "With the kill switch on, nothing leaves the device or the LAN outside the tunnel: while the VPN is down, starting or broken, every connection fails instead of going out directly. It stays up until you stop the VPN here (Stop removes it)."
+msgstr "Když je kill switch zapnutý, nic neopustí zařízení ani LAN mimo tunel: dokud je VPN vypnutá, startuje nebo je rozbitá, každé spojení selže, místo aby šlo přímo ven. Zůstává aktivní, dokud VPN zde nezastavíte (Zastavit ho odstraní)."
+
+msgid "Without the kill switch, traffic goes out directly, unprotected, whenever the tunnel is down (while it starts, after a crash, when the engine is missing)."
+msgstr "Bez kill switche jde provoz přímo ven, nechráněný, kdykoli je tunel vypnutý (při startu, po pádu, když engine chybí)."
+
+msgid "Turn the kill switch on?"
+msgstr "Zapnout kill switch?"
+
+msgid "Turn the kill switch off?"
+msgstr "Vypnout kill switch?"
+
+msgid "Turn on"
+msgstr "Zapnout"
+
+msgid "unknown"
+msgstr "neznámé"
+
+msgid "The exit address could not be found (is the tunnel up?)"
+msgstr "Výstupní adresu se nepodařilo zjistit (je tunel nahoře?)"
+
+msgid "Connecting…"
+msgstr "Připojuje se…"
+
+msgid "On, but not running"
+msgstr "Zapnuto, ale neběží"
+
+msgid "Stopped"
+msgstr "Zastaveno"
+
+msgid "Install it"
+msgstr "Nainstalovat"
+
+msgid "The engine of the active profile is not installed: %s"
+msgstr "Engine aktivního profilu není nainstalován: %s"
+
+msgid "The kill switch keeps everything closed until it is there; the service downloads it by itself when it can."
+msgstr "Kill switch drží vše zavřené, dokud tam není; služba si ho sama stáhne, když to jde."
+
+msgid "The VPN cannot start until it is installed."
+msgstr "VPN se nemůže spustit, dokud není nainstalován."
+
+msgid "%s cannot run on this system"
+msgstr "%s nemůže na tomto systému běžet"
+
+msgid "The VPN is on, but no profile is active: choose one below."
+msgstr "VPN je zapnutá, ale žádný profil není aktivní: vyberte některý níže."
+
+msgid "Profile: %s"
+msgstr "Profil: %s"
+
+msgid "No active profile"
+msgstr "Žádný aktivní profil"
+
+msgid "engine %s"
+msgstr "engine %s"
+
+msgid "interface %s"
+msgstr "rozhraní %s"
+
+msgid "Kill switch active"
+msgstr "Kill switch aktivní"
+
+msgid "Kill switch on"
+msgstr "Kill switch zapnutý"
+
+msgid "Kill switch off"
+msgstr "Kill switch vypnutý"
+
+msgid "IPv6 in the tunnel"
+msgstr "IPv6 v tunelu"
+
+msgid "IPv6 blocked"
+msgstr "IPv6 blokováno"
+
+msgid "IPv6 untouched"
+msgstr "IPv6 nedotčeno"
+
+msgid "Module %s"
+msgstr "Modul %s"
+
+msgid "Check"
+msgstr "Zkontrolovat"
+
+msgid "Uptime"
+msgstr "Doba běhu"
+
+msgid "Rate"
+msgstr "Rychlost"
+
+msgid "Exit address"
+msgstr "Výstupní adresa"
+
+msgid "Start"
+msgstr "Spustit"
+
+msgid "Stop"
+msgstr "Zastavit"
+
+msgid "Stop the VPN?"
+msgstr "Zastavit VPN?"
+
+msgid "Traffic then goes out directly, without the tunnel; the kill switch is taken down with it."
+msgstr "Provoz pak půjde přímo ven bez tunelu; kill switch se s ním odstraní."
+
+msgid "The VPN is on: it starts again by itself after a reboot."
+msgstr "VPN je zapnutá: po restartu se spustí sama znovu."
+
+msgid "The VPN is off."
+msgstr "VPN je vypnutá."
+
+msgid "Kill switch"
+msgstr "Kill switch"
+
+msgid "Setting"
+msgstr "Nastavení"
+
+msgid "Active: only the tunnel can reach the internet"
+msgstr "Aktivní: k internetu se dostane jen tunel"
+
+msgid "Not active"
+msgstr "Neaktivní"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down, so nothing ever leaves without the tunnel. If the tunnel cannot come up (a dead server, an expired account), the device stays offline until you fix the profile or stop the VPN. The panel itself stays reachable from the LAN."
+msgstr "Kill switch blokuje veškerý provoz zařízení i LAN, dokud je VPN vypnutá, takže nic nikdy neodejde bez tunelu. Pokud tunel nejde navázat (mrtvý server, vypršelý účet), zařízení zůstane offline, dokud profil neopravíte nebo VPN nezastavíte. Samotný panel zůstává z LAN dostupný."
+
+msgid "Choose a profile"
+msgstr "Vyberte profil"
+
+msgid "No profiles yet"
+msgstr "Zatím žádné profily"
+
+msgid "engine not installed"
+msgstr "engine není nainstalován"
+
+msgid "Use"
+msgstr "Použít"
+
+msgid "Switched: the VPN restarts on the new profile"
+msgstr "Přepnuto: VPN se restartuje s novým profilem"
+
+msgid "Active profile"
+msgstr "Aktivní profil"
+
+msgid "A running VPN restarts on the profile you choose; the kill switch stays up in between."
+msgstr "Běžící VPN se restartuje s profilem, který vyberete; kill switch mezitím zůstává nahoře."
+
+msgid "Manage the profiles"
+msgstr "Spravovat profily"
+
+msgid "Automatic: through the tunnel where the engine can carry it"
+msgstr "Automaticky: tunelem, kde ho engine unese"
+
+msgid "Ask the engine for IPv6 in the tunnel"
+msgstr "Požádat engine o IPv6 v tunelu"
+
+msgid "Never through the tunnel (blocked while the VPN is up)"
+msgstr "Nikdy tunelem (blokováno, dokud VPN běží)"
+
+msgid "Saved: it applies from the next start (Restart)"
+msgstr "Uloženo: platí od příštího spuštění (Restartovat)"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "The tunnel carries IPv6"
+msgstr "Tunel přenáší IPv6"
+
+msgid "Yes"
+msgstr "Ano"
+
+msgid "IPv6 guard"
+msgstr "Ochrana IPv6"
+
+msgid "Active: IPv6 outside the tunnel is refused"
+msgstr "Aktivní: IPv6 mimo tunel je odmítáno"
+
+msgid "While the VPN is up, IPv6 never leaves beside a tunnel that does not carry it: it is refused at once, so programs and LAN clients fall back to IPv4 instead of leaking or waiting. Automatic: WireGuard and OpenVPN use the IPv6 addresses of their config; Xray, sing-box and mihomo are asked at every start whether IPv6 works through the tunnel, and carry it only then; dae stays IPv4."
+msgstr "Dokud VPN běží, IPv6 nikdy neodchází vedle tunelu, který ho nepřenáší: je okamžitě odmítnuto, takže programy a klienti LAN přejdou na IPv4, místo aby unikali nebo čekali. Automaticky: WireGuard a OpenVPN používají adresy IPv6 ze své konfigurace; u Xray, sing-box a mihomo se při každém spuštění ověří, zda IPv6 tunelem funguje, a přenášejí ho jen tehdy; dae zůstává u IPv4."
+
+msgid "%d ms"
+msgstr "%d ms"
+
+msgid "UDP: not testable"
+msgstr "UDP: nelze otestovat"
+
+msgid "blocked by the kill switch"
+msgstr "zablokováno kill switchem"
+
+msgid "A WireGuard or OpenVPN config, a Clash/mihomo YAML, an Xray or sing-box JSON, a dae config"
+msgstr "Konfigurace WireGuard nebo OpenVPN, YAML Clash/mihomo, JSON Xray nebo sing-box, konfigurace dae"
+
+msgid "After OK, choose the file: a WireGuard .conf, an OpenVPN .ovpn, a Clash/mihomo .yaml, an Xray or sing-box .json or a dae config (at most 1 MiB)."
+msgstr "Po OK vyberte soubor: WireGuard .conf, OpenVPN .ovpn, Clash/mihomo .yaml, Xray nebo sing-box .json nebo konfiguraci dae (nejvýše 1 MiB)."
+
+msgid "From the source"
+msgstr "Ze zdroje"
+
+msgid "Detect"
+msgstr "Zjistit"
+
+msgid "The URL may hold a token: it goes to the device on its own, never into a command line or a log."
+msgstr "URL může obsahovat token: na zařízení jde samostatně, nikdy do příkazového řádku ani do protokolu."
+
+msgid "Share link"
+msgstr "Sdílený odkaz"
+
+msgid "Paste"
+msgstr "Vložit"
+
+msgid "File"
+msgstr "Soubor"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Not a share link this panel takes"
+msgstr "Není to sdílený odkaz, který tento panel přijímá"
+
+msgid "The config is empty"
+msgstr "Konfigurace je prázdná"
+
+msgid "Not an https URL"
+msgstr "Nejde o adresu URL https"
+
+msgid "Invalid name: 1-64 characters, no control characters"
+msgstr "Neplatný název: 1-64 znaků, bez řídicích znaků"
+
+msgid "Add a profile"
+msgstr "Přidat profil"
+
+msgid "Name"
+msgstr "Název"
+
+msgid "Detect: the module tells the kind from the link or the file. Choose the type for a JSON that could be either Xray or sing-box, or for a link that should run on another engine."
+msgstr "Zjistit: modul pozná druh podle odkazu nebo souboru. Typ vyberte u JSONu, který může být Xray i sing-box, nebo u odkazu, který má běžet na jiném enginu."
+
+msgid "The profile is added"
+msgstr "Profil byl přidán"
+
+msgid "Rename the profile"
+msgstr "Přejmenovat profil"
+
+msgid "Delete the profile %s?"
+msgstr "Smazat profil %s?"
+
+msgid "It is the active profile: with the VPN on, the module refuses; stop the VPN or choose another profile first."
+msgstr "Je to aktivní profil: při zapnuté VPN to modul odmítne; nejdřív zastavte VPN nebo vyberte jiný profil."
+
+msgid "Its config and credentials are deleted from the device."
+msgstr "Jeho konfigurace a přihlašovací údaje se ze zařízení smažou."
+
+msgid "Deleted"
+msgstr "Smazáno"
+
+msgid "The profile passes the check"
+msgstr "Profil prošel kontrolou"
+
+msgid "Show the config?"
+msgstr "Zobrazit konfiguraci?"
+
+msgid "The config holds the credentials of the profile (keys, passwords, UUIDs). It is shown on this screen only; anyone who can see the screen can read it."
+msgstr "Konfigurace obsahuje přihlašovací údaje profilu (klíče, hesla, UUID). Zobrazí se jen na této obrazovce; kdokoli, kdo obrazovku vidí, ji může přečíst."
+
+msgid "Saving checks the config with the engine first (profile edit); a config that does not pass is not saved and the old one stays."
+msgstr "Uložení nejdřív zkontroluje konfiguraci enginem (profile edit); konfigurace, která neprojde, se neuloží a zůstane ta stará."
+
+msgid "This profile comes from a subscription: its next refresh replaces your changes."
+msgstr "Tento profil pochází z odběru: jeho příští obnovení nahradí vaše změny."
+
+msgid "Config of %s"
+msgstr "Konfigurace %s"
+
+msgid "Rename"
+msgstr "Přejmenovat"
+
+msgid "Show / edit the config"
+msgstr "Zobrazit / upravit konfiguraci"
+
+msgid "Test the latency of all"
+msgstr "Změřit latenci všech"
+
+msgid "No profiles yet: add one from a share link, a config file or a subscription."
+msgstr "Zatím žádné profily: přidejte některý ze sdíleného odkazu, konfiguračního souboru nebo odběru."
+
+msgid "Active"
+msgstr "Aktivní"
+
+msgid "This profile is the active one now"
+msgstr "Tento profil je nyní aktivní"
+
+msgid "More"
+msgstr "Více"
+
+msgid "active"
+msgstr "aktivní"
+
+msgid "subscription"
+msgstr "odběr"
+
+msgid "migrated"
+msgstr "převedeno"
+
+msgid "gone from its subscription"
+msgstr "zmizel ze svého odběru"
+
+msgid "Server"
+msgstr "Server"
+
+msgid "Engine"
+msgstr "Engine"
+
+msgid "Latency"
+msgstr "Latence"
+
+msgid "The latency is a TCP connection to the server, through the tunnel when the VPN is up. WireGuard and OpenVPN servers usually speak UDP and cannot be tested this way."
+msgstr "Latence je spojení TCP k serveru, tunelem, když VPN běží. Servery WireGuard a OpenVPN obvykle mluví UDP a takto je otestovat nejde."
+
+msgid "Enter an IPv4 or IPv6 address"
+msgstr "Zadejte adresu IPv4 nebo IPv6"
+
+msgid "On: nothing leaves outside the tunnel"
+msgstr "Zapnuto: nic neodchází mimo tunel"
+
+msgid "Off: traffic goes out directly while the tunnel is down"
+msgstr "Vypnuto: provoz jde přímo ven, dokud je tunel vypnutý"
+
+msgid "Yes: Tailscale's own connections go through the tunnel"
+msgstr "Ano: vlastní spojení Tailscale jdou tunelem"
+
+msgid "No: Tailscale connects directly"
+msgstr "Ne: Tailscale se připojuje přímo"
+
+msgid "Routing"
+msgstr "Směrování"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down."
+msgstr "Kill switch blokuje veškerý provoz zařízení i LAN, dokud je VPN vypnutá."
+
+msgid "Bypass the tunnel"
+msgstr "Obejít tunel"
+
+msgid "Enter address ranges like 192.168.0.0/16, separated by commas"
+msgstr "Zadejte rozsahy adres jako 192.168.0.0/16, oddělené čárkami"
+
+msgid "Address ranges that never go into the tunnel, besides the LAN itself (which never does). Empty: the LAN only."
+msgstr "Rozsahy adres, které nikdy nejdou do tunelu, kromě samotné LAN (ta nikdy nejde). Prázdné: jen LAN."
+
+msgid "Tailscale through the VPN"
+msgstr "Tailscale přes VPN"
+
+msgid "When Tailscale runs on the device, its WireGuard, DERP and control connections go through whichever tunnel runs (dae catches them like any other)."
+msgstr "Když na zařízení běží Tailscale, jeho spojení WireGuard, DERP a řídicí jdou tunelem, který zrovna běží (dae je zachytí jako všechna ostatní)."
+
+msgid "DNS"
+msgstr "DNS"
+
+msgid "DNS through the tunnel"
+msgstr "DNS tunelem"
+
+msgid "The resolver the device's and the LAN's lookups go to, through the tunnel. Nothing goes to the carrier's resolver."
+msgstr "Překladač, na který tunelem míří dotazy zařízení a LAN. Nic nejde na překladač operátora."
+
+msgid "Bootstrap DNS"
+msgstr "Zaváděcí DNS"
+
+msgid "Finds the VPN server's own address before the tunnel is up (directly, on the engine's own connection)."
+msgstr "Zjistí vlastní adresu serveru VPN dřív, než je tunel nahoře (přímo, vlastním spojením enginu)."
+
+msgid "Empty puts a setting back to its default."
+msgstr "Prázdné vrátí nastavení na výchozí hodnotu."
+
+msgid "TUN stack"
+msgstr "Zásobník TUN"
+
+msgid "Default (gvisor)"
+msgstr "Výchozí (gvisor)"
+
+msgid "system (not on the 5.4 kernel)"
+msgstr "system (ne na jádru 5.4)"
+
+msgid "set (unchanged unless you type a new one)"
+msgstr "nastaveno (beze změny, pokud nezadáte nové)"
+
+msgid "not set"
+msgstr "nenastaveno"
+
+msgid "Upstream HTTP proxy"
+msgstr "Nadřazená proxy HTTP"
+
+msgid "TLS certificate pin (SHA-256)"
+msgstr "Připnutí certifikátu TLS (SHA-256)"
+
+msgid "Enter host:port"
+msgstr "Zadejte host:port"
+
+msgid "Enter the SHA-256 in hex"
+msgstr "Zadejte SHA-256 v hexadecimálním tvaru"
+
+msgid "Profile options"
+msgstr "Volby profilu"
+
+msgid "None of the profiles has options of its type."
+msgstr "Žádný z profilů nemá volby svého typu."
+
+msgid "mihomo's mode (rule, global, direct), the engines' log levels, dae's groups and routing are part of each profile's own config: VPN > Profiles, Show / edit the config."
+msgstr "Režim mihomo (rule, global, direct), úrovně protokolu enginů a skupiny a směrování dae jsou součástí vlastní konfigurace každého profilu: VPN > Profily, Zobrazit / upravit konfiguraci."
+
+msgid "Delete the subscription %s?"
+msgstr "Smazat odběr %s?"
+
+msgid "Its profiles can go with it or stay as profiles of their own. The active profile is never removed while the VPN is on."
+msgstr "Jeho profily mohou odejít s ním, nebo zůstat jako samostatné profily. Aktivní profil se nikdy neodebere, dokud je VPN zapnutá."
+
+msgid "Keep the profiles"
+msgstr "Ponechat profily"
+
+msgid "Delete with its profiles"
+msgstr "Smazat i s profily"
+
+msgid "Only by hand"
+msgstr "Jen ručně"
+
+msgid "Every %d h"
+msgstr "Každých %d h"
+
+msgid "Share links: one profile per link"
+msgstr "Sdílené odkazy: jeden profil na odkaz"
+
+msgid "Clash/mihomo YAML: one mihomo profile"
+msgstr "Clash/mihomo YAML: jeden profil mihomo"
+
+msgid "dae: one profile with every node in one group"
+msgstr "dae: jeden profil se všemi uzly v jedné skupině"
+
+msgid "Add a subscription"
+msgstr "Přidat odběr"
+
+msgid "Format"
+msgstr "Formát"
+
+msgid "The URL usually holds your account token: it is stored on the device readable by root only, and never shown again. The subscription is fetched over the device's own connection: through the tunnel when the VPN is up; with the kill switch up and the tunnel down it cannot be fetched."
+msgstr "URL obvykle obsahuje token vašeho účtu: na zařízení se uloží čitelné jen pro roota a už se nikdy nezobrazí. Odběr se stahuje vlastním spojením zařízení: tunelem, když VPN běží; s kill switchem nahoře a tunelem dole ho stáhnout nelze."
+
+msgid "Refresh all"
+msgstr "Obnovit vše"
+
+msgid "No subscriptions yet."
+msgstr "Zatím žádné odběry."
+
+msgid "Host"
+msgstr "Hostitel"
+
+msgid "Updated"
+msgstr "Aktualizováno"
+
+msgid "Share links"
+msgstr "Sdílené odkazy"
+
+msgid "A refresh keeps the profiles whose name is unchanged, adds the new ones and removes the ones that are gone (the active one stays while the VPN is on, marked as gone). A refresh of the active profile restarts the running VPN."
+msgstr "Obnovení ponechá profily s nezměněným názvem, přidá nové a odebere zmizelé (aktivní zůstane, dokud je VPN zapnutá, označený jako zmizelý). Obnovení aktivního profilu restartuje běžící VPN."
+
+msgid "Dashboard info failed"
+msgstr "Informace přehledu selhaly"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch): no live signal right now"
+msgstr "The modem is restarting (network locks or a SIM switch): no live signal right now"
+
+msgid "Live signal read failed"
+msgstr "Čtení živého signálu selhalo"
+
+msgid "Unknown op"
+msgstr "Neznámá operace"
+
+msgid "Invalid argument for this op"
+msgstr "Neplatný argument pro tuto operaci"
+
+msgid "The radio is busy: the dial or the watchdog is switching it, try again shortly"
+msgstr "Rádio je zaneprázdněné: přepíná ho vytáčení nebo watchdog, zkuste to za chvíli znovu"
+
+msgid "The action gave no valid reply"
+msgstr "Akce nevrátila platnou odpověď"
+
+msgid "The confirm parameter must be 0 or 1"
+msgstr "Parametr confirm musí být 0 nebo 1"
+
+msgid "An AT command is one line of printable ASCII, at most 512 characters"
+msgstr "Příkaz AT je jeden řádek tisknutelných znaků ASCII, nejvýše 512 znaků"
+
+msgid "Must be an AT command"
+msgstr "Musí jít o příkaz AT"
+
+msgid "No \";\" command chaining"
+msgstr "Žádné řetězení příkazů pomocí \";\""
+
+msgid "Denied: this command wedges the AT port until a reboot"
+msgstr "Zamítnuto: tento příkaz zablokuje port AT až do restartu"
+
+msgid "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+msgstr "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+msgstr "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+
+msgid "A long AT command is still running in the background; try again when it has finished"
+msgstr "Na pozadí stále běží dlouhý příkaz AT; zkuste to znovu, až skončí"
+
+msgid "This command needs confirmation"
+msgstr "Tento příkaz vyžaduje potvrzení"
+
+msgid "The AT channel is busy; the command was not sent, try again"
+msgstr "Kanál AT je obsazen; příkaz nebyl odeslán, zkuste to znovu"
+
+msgid "The modem did not answer in time; the command may still run, check before sending it again"
+msgstr "Modem neodpověděl včas; příkaz může stále běžet, před opětovným odesláním to ověřte"
+
+msgid "The fresh parameter must be 0 or 1"
+msgstr "Parametr fresh musí být 0 nebo 1"
+
+msgid "Reading the locks from the modem; try again in a few seconds"
+msgstr "Zámky se čtou z modemu; zkuste to znovu za několik sekund"
+
+msgid "Lock read failed"
+msgstr "Čtení zámků selhalo"
+
+msgid "Unknown lock kind"
+msgstr "Neznámý druh zámku"
+
+msgid "Invalid value for this lock kind"
+msgstr "Neplatná hodnota pro tento druh zámku"
+
+msgid "None of these bands is supported by this modem"
+msgstr "Tento modem nepodporuje žádné z těchto pásem"
+
+msgid "Band, mode and cell locks are not supported for SIM2 yet"
+msgstr "Zámky pásem, režimu a buňky zatím nejsou pro SIM2 podporovány"
+
+msgid "Band, mode and cell locks are not supported while dual-SIM switching manages the radio"
+msgstr "Zámky pásem, režimu a buňky nejsou podporovány, dokud rádio řídí přepínání dvou SIM"
+
+msgid "Invalid page"
+msgstr "Neplatná stránka"
+
+msgid "mu300-sms is not available (the SMS service is not installed or not running)"
+msgstr "mu300-sms není k dispozici (služba SMS není nainstalována nebo neběží)"
+
+msgid "No output"
+msgstr "Žádný výstup"
+
+msgid "Bad ID"
+msgstr "Chybné ID"
+
+msgid "Read failed"
+msgstr "Čtení selhalo"
+
+msgid "The number may only contain digits (and a leading +)"
+msgstr "Číslo smí obsahovat pouze číslice (a úvodní +)"
+
+msgid "The message is empty"
+msgstr "Zpráva je prázdná"
+
+msgid "The message is too long (over 480 characters)"
+msgstr "Zpráva je příliš dlouhá (více než 480 znaků)"
+
+msgid "The message contains a control character"
+msgstr "Zpráva obsahuje řídicí znak"
+
+msgid "The sim parameter must be 0 or 1"
+msgstr "Parametr sim musí být 0 nebo 1"
+
+msgid "The USB adapter (device-usb) gave no valid reply"
+msgstr "Adaptér USB (device-usb) nevrátil platnou odpověď"
+
+msgid "The auto parameter must be 0 or 1"
+msgstr "Parametr auto musí být 0 nebo 1"
+
+msgid "Invalid USB role"
+msgstr "Neplatná role USB"
+
+msgid "A USB role takes no scope"
+msgstr "Role USB nepřijímá rozsah"
+
+msgid "Invalid USB network mode"
+msgstr "Neplatný režim sítě USB"
+
+msgid "Invalid USB network scope"
+msgstr "Neplatný rozsah sítě USB"
+
+msgid "Unknown USB setting"
+msgstr "Neznámé nastavení USB"
+
+msgid "Invalid interface name"
+msgstr "Neplatný název rozhraní"
+
+msgid "The power adapter gave no valid reply"
+msgstr "Napájecí adaptér nedal platnou odpověď"
+
+msgid "Unknown power operation"
+msgstr "Neznámá operace napájení"
+
+msgid "Unknown power setting"
+msgstr "Neznámé nastavení napájení"
+
+msgid "Invalid power value"
+msgstr "Neplatná hodnota napájení"
+
+msgid "Invalid power request"
+msgstr "Neplatný požadavek napájení"
+
+msgid "The languages adapter gave no valid reply"
+msgstr "Adaptér jazyků nevrátil platnou odpověď"
+
+msgid "Unknown language operation"
+msgstr "Neznámá jazyková operace"
+
+msgid "Invalid language code"
+msgstr "Neplatný kód jazyka"
+
+msgid "Invalid language request"
+msgstr "Neplatný jazykový požadavek"
+
+msgid "Unknown source"
+msgstr "Neznámý zdroj"
+
+msgid "The TTL adapter gave no valid reply"
+msgstr "Adaptér TTL nevrátil platnou odpověď"
+
+msgid "Invalid TTL"
+msgstr "Neplatné TTL"
+
+msgid "The data usage adapter gave no valid reply"
+msgstr "Adaptér spotřeby dat nedal platnou odpověď"
+
+msgid "Unknown data usage setting"
+msgstr "Neznámé nastavení spotřeby dat"
+
+msgid "Invalid value for this setting"
+msgstr "Neplatná hodnota pro toto nastavení"
+
+msgid "The forwarding adapter gave no valid reply"
+msgstr "Adaptér přeposílání nedal platnou odpověď"
+
+msgid "The CPU adapter gave no valid reply"
+msgstr "The CPU adapter gave no valid reply"
+
+msgid "Invalid CPU profile"
+msgstr "Invalid CPU profile"
+
+msgid "Invalid CPU core"
+msgstr "Neplatné jádro CPU"
+
+msgid "Unknown CPU operation"
+msgstr "Unknown CPU operation"
+
+msgid "Unknown CPU voltage operation"
+msgstr "Neznámá operace s napětím CPU"
+
+msgid "Invalid CPU voltage request"
+msgstr "Neplatný požadavek na napětí CPU"
+
+msgid "Invalid CPU voltage offset"
+msgstr "Neplatný posun napětí CPU"
+
+msgid "Type the confirmation word to apply a voltage offset"
+msgstr "Pro použití posunu napětí napište potvrzovací slovo"
+
+msgid "Invalid stress test length"
+msgstr "Neplatná délka zátěžového testu"
+
+msgid "The packages adapter gave no valid reply"
+msgstr "Adaptér balíčků nevrátil platnou odpověď"
+
+msgid "Invalid packages operation"
+msgstr "Neplatná operace s balíčky"
+
+msgid "The sizes parameter must be 0 or 1"
+msgstr "Parametr sizes musí být 0 nebo 1"
+
+msgid "The update adapter gave no valid reply"
+msgstr "Adaptér aktualizací nevrátil platnou odpověď"
+
+msgid "Unknown update operation"
+msgstr "Neznámá operace aktualizace"
+
+msgid "Invalid update request"
+msgstr "Neplatný požadavek na aktualizaci"
+
+msgid "The backup tool gave no valid reply"
+msgstr "Nástroj zálohy nedal platnou odpověď"
+
+msgid "Mobile data integration is not provided by this platform"
+msgstr "Integrace mobilních dat není na této platformě k dispozici"
+
+msgid "The SIM settings could not be read"
+msgstr "Nastavení SIM nelze přečíst"
+
+msgid "Radio control is not provided by this platform"
+msgstr "Tato platforma neposkytuje ovládání rádia"
+
+msgid "A SIM radio change is already running"
+msgstr "Změna rádia SIM již probíhá"
+
+# Source-language fallback for untranslated new controls.
+msgid "Invalid SIM setting"
+msgstr "Invalid SIM setting"
+
+msgid "The modem did not take the setting; nothing was saved"
+msgstr "Modem nastavení nepřijal; nic nebylo uloženo"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control failed"
+msgstr "SIM control failed"
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching; reboot if channels are unavailable or wait until idle"
+msgstr "Enable hot switching; reboot if channels are unavailable or wait until idle"
+
+msgid "Request too large"
+msgstr "Požadavek je příliš velký"
+
+msgid "The runtime directory is not safe; nothing was run"
+msgstr "Běhový adresář není bezpečný; nic nebylo spuštěno"
+
+msgid "No such method"
+msgstr "Žádná taková metoda"
+
+msgid "The VPN module refused the request"
+msgstr "Modul VPN požadavek odmítl"
+
+msgid "The VPN panel is busy, try again"
+msgstr "Panel VPN je zaneprázdněn, zkuste to znovu"
+
+msgid "Another VPN task is still running"
+msgstr "Jiná úloha VPN stále běží"
+
+msgid "The exit_ip parameter must be 0 or 1"
+msgstr "Parametr exit_ip musí být 0 nebo 1"
+
+msgid "The VPN status could not be read"
+msgstr "Stav VPN se nepodařilo přečíst"
+
+msgid "The profiles could not be read"
+msgstr "Profily se nepodařilo přečíst"
+
+msgid "The check parameter must be 0 or 1"
+msgstr "Parametr check musí být 0 nebo 1"
+
+msgid "The engines could not be read"
+msgstr "Enginy se nepodařilo přečíst"
+
+msgid "The subscriptions could not be read"
+msgstr "Odběry se nepodařilo přečíst"
+
+msgid "The VPN settings could not be read"
+msgstr "Nastavení VPN se nepodařilo přečíst"
+
+msgid "Unknown VPN operation"
+msgstr "Neznámá operace VPN"
+
+msgid "The VPN could not be switched"
+msgstr "VPN se nepodařilo přepnout"
+
+msgid "The kill switch is on or off"
+msgstr "Kill switch je zapnutý nebo vypnutý"
+
+msgid "The kill switch could not be changed"
+msgstr "Kill switch se nepodařilo změnit"
+
+msgid "Invalid profile id"
+msgstr "Neplatné ID profilu"
+
+msgid "The profile could not be made the active one"
+msgstr "Profil se nepodařilo nastavit jako aktivní"
+
+msgid "Unknown profile source"
+msgstr "Neznámý zdroj profilu"
+
+msgid "Unknown profile type"
+msgstr "Neznámý typ profilu"
+
+msgid "The config is empty, too large or holds control characters"
+msgstr "Konfigurace je prázdná, příliš velká nebo obsahuje řídicí znaky"
+
+msgid "Invalid profile request"
+msgstr "Neplatný požadavek na profil"
+
+msgid "A config from a URL takes the type it says"
+msgstr "Konfigurace z URL přebírá typ, který sama uvádí"
+
+msgid "No uploaded file"
+msgstr "Žádný nahraný soubor"
+
+msgid "The file is larger than 1 MiB"
+msgstr "Soubor je větší než 1 MiB"
+
+msgid "The profile could not be added"
+msgstr "Profil se nepodařilo přidat"
+
+msgid "The profile could not be renamed"
+msgstr "Profil se nepodařilo přejmenovat"
+
+msgid "The profile could not be removed"
+msgstr "Profil se nepodařilo odebrat"
+
+msgid "The profile does not pass the check"
+msgstr "Profil neprošel kontrolou"
+
+msgid "Unknown profile option"
+msgstr "Neznámá volba profilu"
+
+msgid "Invalid value for this option"
+msgstr "Neplatná hodnota pro tuto volbu"
+
+msgid "The option could not be set"
+msgstr "Volbu se nepodařilo nastavit"
+
+msgid "The config could not be read"
+msgstr "Konfiguraci se nepodařilo přečíst"
+
+msgid "The config was not saved"
+msgstr "Konfigurace nebyla uložena"
+
+msgid "The latency test failed"
+msgstr "Test latence selhal"
+
+msgid "The refresh interval is 1 to 999 hours"
+msgstr "Interval obnovení je 1 až 999 hodin"
+
+msgid "Unknown subscription type"
+msgstr "Neznámý typ odběru"
+
+msgid "Invalid subscription id"
+msgstr "Neplatné ID odběru"
+
+msgid "The keep parameter must be 0 or 1"
+msgstr "Parametr keep musí být 0 nebo 1"
+
+msgid "The subscription could not be removed"
+msgstr "Odběr se nepodařilo odebrat"
+
+msgid "The file is too large"
+msgstr "Soubor je příliš velký"
+
+msgid "Unknown engine"
+msgstr "Neznámý engine"
+
+msgid "The unverified parameter must be 0 or 1"
+msgstr "Parametr unverified musí být 0 nebo 1"
+
+msgid "This engine is a system package: it has no file to upload"
+msgstr "Tento engine je systémový balíček: nemá soubor k nahrání"
+
+msgid "The engine could not be removed"
+msgstr "Engine se nepodařilo odebrat"
+
+msgid "mu300-extra is not on this system"
+msgstr "mu300-extra v tomto systému není"
+
+msgid "Unknown VPN setting"
+msgstr "Neznámé nastavení VPN"
+
+msgid "The setting could not be saved"
+msgstr "Nastavení nelze uložit"
+
+msgid "The number of lines is 1 to 1000"
+msgstr "Počet řádků je 1 až 1000"
+
+msgid "The log could not be read"
+msgstr "Protokol se nepodařilo přečíst"
+
+msgid "The radio of this SIM is switched off in its settings"
+msgstr "Rádio této SIM je v jejím nastavení vypnuté"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM control or reboot for managed dual-SIM radio"
+msgstr "Use SIM control or reboot for managed dual-SIM radio"
+
+msgid "The radio did not follow its setting"
+msgstr "Rádio se neřídilo svým nastavením"
+
+msgid "The data roaming setting could not be saved"
+msgstr "Nastavení datového roamingu se nepodařilo uložit"
+
+msgid "Expected on or off"
+msgstr "Očekáváno on nebo off"
+
+msgid "VPN integration is not provided by this platform"
+msgstr "Tato platforma neposkytuje integraci VPN"
+
+msgid "Dual-boot integration is not provided by this platform"
+msgstr "Tato platforma neposkytuje integraci duálního spouštění"
+
+msgid "mu300-next-boot failed"
+msgstr "mu300-next-boot selhal"
+
+msgid "AT backend did not answer (radio off, modem restarting, or adapter unavailable)"
+msgstr "Backend AT neodpověděl (rádio vypnuto, modem se restartuje nebo adaptér není dostupný)"
+
+msgid "The CPU profile could not be read"
+msgstr "The CPU profile could not be read"
+
+msgid "The CPU profile could not be set"
+msgstr "The CPU profile could not be set"
+
+msgid "The CPU core could not be switched"
+msgstr "Jádro CPU nelze přepnout"
+
+msgid "Invalid low latency setting"
+msgstr "Neplatné nastavení nízké latence"
+
+msgid "The low latency setting could not be applied"
+msgstr "Nastavení nízké latence nelze použít"
+
+msgid "The CPU voltage offset could not be read"
+msgstr "Posun napětí CPU nelze přečíst"
+
+msgid "The CPU voltage offset was refused"
+msgstr "Posun napětí CPU byl odmítnut"
+
+msgid "The CPU voltage offset could not be turned off"
+msgstr "Posun napětí CPU nelze vypnout"
+
+msgid "The stress test could not be started"
+msgstr "Zátěžový test nelze spustit"
+
+msgid "USB role adapter is not executable"
+msgstr "Adaptér role USB není spustitelný"
+
+msgid "USB role adapter failed"
+msgstr "Adaptér role USB selhal"
+
+msgid "USB role switch is unavailable"
+msgstr "Přepnutí role USB není dostupné"
+
+msgid "USB role switch failed"
+msgstr "Přepnutí role USB selhalo"
+
+msgid "USB role switch was refused by platform safety checks"
+msgstr "Přepnutí role USB bylo odmítnuto bezpečnostními kontrolami platformy"
+
+msgid "Cannot create USB boot settings directory"
+msgstr "Nelze vytvořit adresář nastavení spouštění USB"
+
+msgid "Cannot write USB boot settings"
+msgstr "Nelze zapsat nastavení spouštění USB"
+
+msgid "Cannot save USB boot settings"
+msgstr "Nelze uložit nastavení spouštění USB"
+
+msgid "Invalid boot-auto value"
+msgstr "Neplatná hodnota boot-auto"
+
+msgid "Device is the boot default; host auto-apply is the only persistent role"
+msgstr "Zařízení je výchozí role při spuštění; jedinou trvalou rolí je automatické použití hostitele"
+
+msgid "Cannot save USB role policy"
+msgstr "Nelze uložit zásady role USB"
+
+msgid "Cannot disable USB network boot policy"
+msgstr "Nelze vypnout zásady spouštění sítě USB"
+
+msgid "Cannot commit USB role policy"
+msgstr "Nelze potvrdit zásady role USB"
+
+msgid "USB network mode is unavailable in host role"
+msgstr "Režim sítě USB není v roli hostitele dostupný"
+
+msgid "Disable host boot-auto before configuring USB network"
+msgstr "Před nastavením sítě USB vypněte boot-auto hostitele"
+
+msgid "Cannot save USB network policy"
+msgstr "Nelze uložit zásady sítě USB"
+
+msgid "Cannot commit USB network policy"
+msgstr "Nelze potvrdit zásady sítě USB"
+
+msgid "USB host mode is required"
+msgstr "Je vyžadován režim hostitele USB"
+
+msgid "Not a USB network interface"
+msgstr "Nejde o síťové rozhraní USB"
+
+msgid "LAN bridge device section was not found"
+msgstr "Sekce zařízení mostu LAN nebyla nalezena"
+
+msgid "Cannot bring USB network interface up"
+msgstr "Nelze aktivovat síťové rozhraní USB"
+
+msgid "Cannot add interface to LAN bridge"
+msgstr "Nelze přidat rozhraní do mostu LAN"
+
+msgid "Cannot save LAN bridge"
+msgstr "Nelze uložit most LAN"
+
+msgid "Network reload failed"
+msgstr "Opětovné načtení sítě selhalo"
+
+msgid "Cannot attach USB interface to LAN bridge"
+msgstr "Nelze připojit rozhraní USB k mostu LAN"
+
+msgid "Invalid forwarding setting"
+msgstr "Neplatné nastavení přeposílání"
+
+msgid "The message template is too long or contains a control character"
+msgstr "Šablona zprávy je příliš dlouhá nebo obsahuje řídicí znak"
+
+msgid "Invalid filter list (at most 50 lines)"
+msgstr "Neplatný seznam filtrů (nejvýše 50 řádků)"
+
+msgid "The webhook address must be an http:// or https:// URL"
+msgstr "Adresa webhooku musí být URL http:// nebo https://"
+
+msgid "The webhook body is too long or contains a control character"
+msgstr "Tělo webhooku je příliš dlouhé nebo obsahuje řídicí znak"
+
+msgid "The answer check must be key=value, like errcode=0 or ok=true (the value a whole number or lowercase letters, 16 at most)"
+msgstr "Kontrola odpovědi musí mít tvar klíč=hodnota, například errcode=0 nebo ok=true (hodnota celé číslo nebo malá písmena, nejvýše 16)"
+
+msgid "Invalid header (one \"Name: value\" per line; Host, Content-Type, Content-Length, Transfer-Encoding and Connection are set by the device)"
+msgstr "Neplatná hlavička (jedna \"Název: hodnota\" na řádek; Host, Content-Type, Content-Length, Transfer-Encoding a Connection nastavuje zařízení)"
+
+msgid "Invalid Telegram bot token"
+msgstr "Neplatný token bota Telegram"
+
+msgid "Invalid Telegram chat (a number, or @channel)"
+msgstr "Neplatný chat Telegram (číslo nebo @kanál)"
+
+msgid "Invalid e-mail setting"
+msgstr "Neplatné nastavení e-mailu"
+
+msgid "The webhook needs an address"
+msgstr "Webhook potřebuje adresu"
+
+msgid "Telegram needs a bot token and a chat"
+msgstr "Telegram potřebuje token bota a chat"
+
+msgid "E-mail needs a server, a sender and a recipient"
+msgstr "E-mail potřebuje server, odesílatele a příjemce"
+
+msgid "SMS forwarding needs a phone number"
+msgstr "Přeposílání přes SMS potřebuje telefonní číslo"
+
+msgid "The forwarding settings could not be saved"
+msgstr "Nastavení přeposílání se nepodařilo uložit"
+
+msgid "SMS forwarding is not installed"
+msgstr "Přeposílání SMS není nainstalováno"
+
+msgid "A test was started a moment ago; wait a few seconds"
+msgstr "Test byl spuštěn před okamžikem; počkejte několik sekund"
+
+msgid "The delivery log could not be cleared"
+msgstr "Protokol doručení se nepodařilo vymazat"
+
+msgid "Unknown forwarding operation"
+msgstr "Neznámá operace přeposílání"
+
+msgid "The language pack is not installed"
+msgstr "Jazykový balíček není nainstalován"
+
+msgid "No language given"
+msgstr "Nebyl zadán jazyk"
+
+msgid "The language could not be changed"
+msgstr "Jazyk se nepodařilo změnit"
+
+msgid "LuCI does not offer this language"
+msgstr "LuCI tento jazyk nenabízí"
+
+msgid "No uploaded language pack"
+msgstr "Žádný nahraný jazykový balíček"
+
+msgid "An installation is already running"
+msgstr "Instalace již probíhá"
+
+msgid "The language pack could not be removed"
+msgstr "Jazykový balíček se nepodařilo odebrat"
+
+msgid "Lock cache unavailable"
+msgstr "Mezipaměť zámků není dostupná"
+
+msgid "The modem refused a write"
+msgstr "Modem odmítl zápis"
+
+msgid "The saved locks could not be cleared"
+msgstr "Uložené zámky se nepodařilo vymazat"
+
+msgid "No serving cell to lock to"
+msgstr "Žádná obsluhující buňka k uzamčení"
+
+msgid "The modem did not answer the mode query; nothing was sent"
+msgstr "Modem neodpověděl na dotaz na režim; nic nebylo odesláno"
+
+msgid "The read-back does not match the automatic values"
+msgstr "Zpětné čtení neodpovídá automatickým hodnotám"
+
+msgid "The read-back after the stack restart does not match the automatic values"
+msgstr "Zpětné čtení po restartu zásobníku neodpovídá automatickým hodnotám"
+
+msgid "The reset was interrupted"
+msgstr "Reset byl přerušen"
+
+msgid "Reinstalling packages is not available on this system"
+msgstr "Opětovná instalace balíčků není v tomto systému k dispozici"
+
+msgid "No packages were written down by an update"
+msgstr "Žádná aktualizace nezapsala balíčky"
+
+msgid "Reinstalling is running already"
+msgstr "Opětovná instalace už běží"
+
+msgid "The note could not be dropped"
+msgstr "Upozornění nelze odstranit"
+
+msgid "Unknown packages operation"
+msgstr "Neznámá operace s balíčky"
+
+msgid "usage: power get|set KEY VALUE|wake|idle"
+msgstr "usage: power get|set KEY VALUE|wake|idle"
+
+msgid "Data usage is not available on this system"
+msgstr "Spotřeba dat není v tomto systému k dispozici"
+
+msgid "Unknown data usage operation"
+msgstr "Neznámá operace spotřeby dat"
+
+msgid "The TTL setting could not be read"
+msgstr "Nastavení TTL nelze přečíst"
+
+msgid "The TTL could not be set"
+msgstr "TTL nelze nastavit"
+
+msgid "Unknown TTL operation"
+msgstr "Neznámá operace TTL"
+
+msgid "An update task is already running"
+msgstr "Úloha aktualizace již běží"
+
+msgid "The task could not be started"
+msgstr "Úlohu se nepodařilo spustit"
+
+msgid "The updater gave no valid reply"
+msgstr "Aktualizační program nevrátil platnou odpověď"
+
+msgid "This needs confirmation"
+msgstr "Toto vyžaduje potvrzení"
+
+msgid "Check for updates first"
+msgstr "Nejprve zkontrolujte aktualizace"
+
+msgid "The upload directory is not safe; nothing was changed"
+msgstr "Adresář pro nahrávání není bezpečný; nic se nezměnilo"
+
+msgid "Not enough memory for this upload"
+msgstr "Nedostatek paměti pro toto nahrání"
+
+msgid "Not enough free space on the Linux partition"
+msgstr "Nedostatek volného místa na oddílu Linux"
+
+msgid "The file was not checked; upload it again"
+msgstr "Soubor nebyl zkontrolován; nahrajte jej znovu"
+
+msgid "This file is not for this device"
+msgstr "Tento soubor není pro toto zařízení"
+
+msgid "The signature of this file is wrong"
+msgstr "Podpis tohoto souboru je špatný"
+
+msgid "This file is not signed: that needs confirmation"
+msgstr "Tento soubor není podepsán: to vyžaduje potvrzení"
+
+msgid "This file is older than what is installed: that needs confirmation"
+msgstr "Tento soubor je starší než to, co je nainstalováno: to vyžaduje potvrzení"
+
+msgid "The release source was not changed"
+msgstr "Zdroj vydání se nezměnil"

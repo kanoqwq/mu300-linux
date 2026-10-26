@@ -1,0 +1,203 @@
+#!/bin/sh
+# Thermal safety. Reads the hottest thermal zone every 5 s.
+#   * Every kernel is asked the same question, the vendor 5.4 one too: does an enabled zone with a passive trip have
+#     every cpufreq cooling device bound? Where it does (5.4's sprd_cpu_cooling on its soc-thmzone, 70/85/110 C, when it
+#     binds; mainline with mu300_thermal) this guard only watches; where it does not, it caps. 5.4 was exempt by its
+#     release until issue #229 showed one whose sprd_cpu_cooling found no zone ("get thermal zone ... failed") and
+#     nothing throttled: the unit overheated and reset.
+#   * Without such a zone (mainline's stock device tree has no trip point; a 5.4 whose binding failed) this guard is
+#     the thermal policy: above HOT it caps every cpufreq policy one step lower, below COOL it lifts the cap one step
+#     (never above the ceiling a CPU profile set). At CRIT it powers off, on every kernel. The mu300_thermal module (upstream/modules, loaded by extra-modules) brings
+#     the stock virtual zone back with its trips and cpufreq cooling maps; while an enabled zone with a passive trip
+#     has every cpufreq cooling device bound, the kernel throttles and this guard hands frequency control over: it
+#     lifts the caps it set itself and touches scaling_max_freq no more. The kernel's cap is a frequency QoS request
+#     under scaling_max_freq, so a profile's ceiling still holds under it (the lower of the two wins), and the kernel's
+#     own critical trip (110 C) comes after this guard's CRIT power-off, which stays. With the zone gone (rmmod) it
+#     caps again. docs/FINDINGS.md 48.
+#   * Watching is not trusting: where the kernel throttles but the SoC still climbs past BACKSTOP (mainline's
+#     step_wise did, to 102 C under the toolkit's CPU stress, FINDINGS 166), this guard caps on top of the kernel's
+#     cap, one step per round: the A76 clusters from BACKSTOP, the A55 cluster (policy0) too from BACKSTOP_ALL; at or
+#     below HOT it lifts its caps a step per round again. Logged once per hot spell.
+# On every kernel: the SoC at HOT or (U30 Air) the battery at BATT_HOT (tenths of a degree, as power_supply reports it) sets
+# off the LED alarm (mu300-led alarm: red, white and blue in turn), until the SoC is down to COOL and the battery to
+# BATT_COOL.
+HOT=${MU300_THERMAL_HOT:-85000}
+COOL=${MU300_THERMAL_COOL:-75000}
+CRIT=${MU300_THERMAL_CRIT:-105000}
+BACKSTOP=${MU300_THERMAL_BACKSTOP:-92000}
+BACKSTOP_ALL=${MU300_THERMAL_BACKSTOP_ALL:-95000}
+BATT_HOT=${MU300_BATTERY_HOT:-500}
+BATT_COOL=${MU300_BATTERY_COOL:-450}
+R=${MU300_SYSROOT:-}   # (for tests/: a fake /, one round)
+LED=${MU300_BIN:-/opt/mu300/bin}/mu300-led
+
+# the kernel, for the log only: what this guard does is decided by the zones it finds, on every kernel (#229)
+release=$(cat "$R/proc/sys/kernel/osrelease" 2>/dev/null || uname -r)
+
+hottest() {
+    local max=0 t
+    for z in "$R"/sys/class/thermal/thermal_zone*/temp; do
+        read -r t < "$z" 2>/dev/null || continue
+        [ "$t" -gt "$max" ] 2>/dev/null && max=$t
+    done
+    echo "$max"
+}
+DEVICE=$(${MU300_BIN:-/opt/mu300/bin}/mu300-device)
+battery() {  # the battery's temperature in tenths of a degree; the U30 Air only
+    local b t
+    # The F50 has no battery, but under mainline the PMIC's fuel gauge probes on it too and reports one, at a
+    # temperature read from an unconnected NTC input (750: 75 C): the alarm went on at every boot and never off.
+    [ "$DEVICE" = u30air ] || return 0
+    for b in "$R"/sys/class/power_supply/*; do
+        [ "$(cat "$b/type" 2>/dev/null)" = Battery ] || continue
+        read -r t < "$b/temp" 2>/dev/null && [ -n "$t" ] && { echo "$t"; return; }
+    done
+}
+
+# native_cpu_cooling HOTTEST: does the kernel throttle the CPUs itself? Yes when an enabled zone with a passive trip at
+# or below HOT has every cpufreq cooling device bound to it (the cooling maps of the stock soc-thmzone, through
+# mu300_thermal) and reads a temperature that is a number and within 15 C of HOTTEST, the hottest reading this guard
+# saw this round (a zone whose sensor fails reads nothing, a stale or zero reading is far below the die: the kernel
+# would not throttle, so this guard does). Prints that zone's type. No zone, a zone that is off, a cluster left out or
+# a reading that is not to be trusted: no, and this guard caps. Decided again every round.
+native_cpu_cooling() {
+    local z d l kind mode n found zt tp i
+    n=0
+    for d in "$R"/sys/class/thermal/cooling_device*; do
+        read -r kind < "$d/type" 2>/dev/null || continue
+        case $kind in cpufreq-*|thermal-cpufreq-*) n=$((n + 1)) ;; esac
+    done
+    [ "$n" -gt 0 ] || return 1
+    for z in "$R"/sys/class/thermal/thermal_zone*; do
+        read -r mode < "$z/mode" 2>/dev/null && [ "$mode" = enabled ] || continue
+        tp=
+        for i in "$z"/trip_point_*_type; do
+            [ "$(cat "$i" 2>/dev/null)" = passive ] || continue
+            read -r tp < "${i%_type}_temp" 2>/dev/null || tp=
+            case $tp in ''|*[!0-9]*) tp= ;; *) [ "$tp" -le "$HOT" ] && break; tp= ;; esac
+        done
+        [ -n "$tp" ] || continue
+        read -r zt < "$z/temp" 2>/dev/null || continue
+        case $zt in ''|*[!0-9]*) continue ;; esac
+        [ "$zt" -ge $(( ${1:-0} - 15000 )) ] || continue
+        found=0
+        for d in "$R"/sys/class/thermal/cooling_device*; do
+            read -r kind < "$d/type" 2>/dev/null || continue
+            case $kind in cpufreq-*|thermal-cpufreq-*) ;; *) continue ;; esac
+            for l in "$z"/cdev[0-9]*; do
+                [ -d "$l" ] || continue   # cdevK is the link; cdevK_trip_point and cdevK_weight are files
+                [ "$l" -ef "$d" ] && { found=$((found + 1)); break; }
+            done
+        done
+        [ "$found" = "$n" ] && { cat "$z/type"; return 0; }
+    done
+    return 1
+}
+
+# A cap a CPU profile asked for (mu300-cpu writes one "policyN=HZ" line per cluster): on cool-down this guard lifts
+# scaling_max_freq a step at a time, but never above that ceiling, so a user's "saving" profile is not undone by the
+# cooling path. No line, or no file, means the hardware maximum (cpuinfo_max_freq), the old behaviour.
+CEILING=$R/run/mu300/cpu-ceiling
+ceiling() {  # ceiling POLICYDIR: the user ceiling in Hz for this policy, or its cpuinfo_max_freq
+    local name=${1##*/} v=
+    [ -r "$CEILING" ] && v=$(sed -n "s/^$name=//p" "$CEILING" | tail -n1)
+    case $v in ''|*[!0-9]*) cat "$1/cpuinfo_max_freq" 2>/dev/null ;; *) echo "$v" ;; esac
+}
+
+# step POLICY DIR (-1 lower, +1 higher): move scaling_max_freq to the neighbouring available frequency, never above
+# the user ceiling when raising
+step() {
+    local p=$1 dir=$2 cur prev= f next= ceil
+    read -r cur < "$p/scaling_max_freq"
+    ceil=$(ceiling "$p")
+    for f in $(tr ' ' '\n' < "$p/scaling_available_frequencies" | sort -n); do
+        if [ "$dir" -lt 0 ]; then
+            [ "$f" -lt "$cur" ] && next=$f
+        elif [ -z "$next" ] && [ "$f" -gt "$cur" ] && [ -z "$ceil" -o "$f" -le "${ceil:-$f}" ]; then
+            next=$f
+        fi
+    done
+    [ -n "$next" ] && echo "$next" > "$p/scaling_max_freq"
+}
+
+# this guard holds a cap (set at HOT, not yet lifted): the marker outlives a restart, so a cap from before the kernel
+# took over is lifted on the handoff and does not stick for ever. Another cap (a profile's, eco's) is not ours. The
+# backstop's caps (the marker says "backstop") were set while the kernel throttled already: they stay on a handoff
+# (a restart of this guard is one) and go a step a round at HOT.
+CAPPED=$R/run/mu300/thermal-capped
+lift_caps() {  # every policy back to its ceiling, when this guard holds a cap from before the kernel throttled
+    local p c
+    [ -e "$CAPPED" ] || return 0
+    [ "$(cat "$CAPPED")" = backstop ] && return 0
+    for p in "$R"/sys/devices/system/cpu/cpufreq/policy*; do
+        c=$(ceiling "$p")
+        [ -n "$c" ] && echo "$c" > "$p/scaling_max_freq"
+    done
+    rm -f "$CAPPED"
+}
+raise_caps() {  # every policy one step up towards its ceiling; the marker goes when none is below it
+    local p below=0
+    for p in "$R"/sys/devices/system/cpu/cpufreq/policy*; do
+        [ "$(cat $p/scaling_max_freq)" -lt "$(cat $p/cpuinfo_max_freq)" ] && step "$p" 1
+        [ "$(cat $p/scaling_max_freq)" -lt "$(ceiling "$p")" ] && below=1
+    done
+    [ "$below" = 1 ] || rm -f "$CAPPED"
+}
+
+# the alarm's state outlives a restart of this service, so a cooled device is never left flashing
+ALARM=$R/run/mu300/thermal-alarm
+native_was=
+first=1
+while :; do
+    t=$(hottest)
+    b=$(battery)
+    throttle=0
+    native=$(native_cpu_cooling "$t") || native=
+    if [ -n "$native" ]; then
+        if [ "$native" != "$native_was" ]; then
+            logger -t thermal-guard "kernel thermal zone $native throttles the CPUs: watching only, power-off at ${CRIT} mC stays"
+            lift_caps
+        fi
+    else
+        throttle=1
+        if [ -n "$native_was" ]; then
+            logger -t thermal-guard "kernel thermal zone $native_was gone: capping cpufreq again"
+        elif [ "$first" = 1 ]; then
+            logger -t thermal-guard "no kernel thermal zone throttles the CPUs (kernel $release): capping cpufreq here above ${HOT} mC, power-off at ${CRIT} mC"
+        fi
+    fi
+    native_was=$native
+    first=0
+    if [ "$t" -ge "$CRIT" ]; then
+        logger -t thermal-guard "critical temperature ${t} mC, powering off"
+        poweroff
+    elif [ "$t" -ge "$HOT" ] && [ "$throttle" = 1 ]; then
+        for p in "$R"/sys/devices/system/cpu/cpufreq/policy*; do step "$p" -1; done
+        mkdir -p "${CAPPED%/*}" && : > "$CAPPED"
+        logger -t thermal-guard "hot (${t} mC): lowered cpufreq limits"
+    elif [ "$t" -le "$COOL" ] && [ "$throttle" = 1 ]; then
+        raise_caps
+    elif [ "$t" -ge "$BACKSTOP" ] && [ "$throttle" = 0 ]; then
+        # the kernel throttles but does not hold the SoC: one step more per round on top of its cap, the A76
+        # clusters from BACKSTOP, the A55 one (policy0) too from BACKSTOP_ALL; logged once per hot spell
+        [ -e "$CAPPED" ] || logger -t thermal-guard "kernel thermal zone $native does not hold the SoC (${t} mC): capping cpufreq on top of it from ${BACKSTOP} mC (the A55 cluster too from ${BACKSTOP_ALL} mC) until ${HOT} mC"
+        for p in "$R"/sys/devices/system/cpu/cpufreq/policy*; do
+            [ "${p##*/}" = policy0 ] && [ "$t" -lt "$BACKSTOP_ALL" ] && continue
+            step "$p" -1
+        done
+        mkdir -p "${CAPPED%/*}" && echo backstop > "$CAPPED"
+    elif [ "$t" -le "$HOT" ] && [ "$throttle" = 0 ] && [ -e "$CAPPED" ]; then
+        raise_caps   # the backstop's caps, a step a round once the kernel holds the SoC at its trip again
+    fi
+    if [ ! -e "$ALARM" ] && { [ "$t" -ge "$HOT" ] || [ "${b:-0}" -ge "$BATT_HOT" ]; }; then
+        mkdir -p "${ALARM%/*}" && : > "$ALARM"
+        logger -t thermal-guard "too hot (SoC ${t} mC, battery ${b:--} dC): LED alarm on"
+        "$LED" alarm on
+    elif [ -e "$ALARM" ] && [ "$t" -le "$COOL" ] && [ "${b:-0}" -le "$BATT_COOL" ]; then
+        rm -f "$ALARM"
+        logger -t thermal-guard "cooled down (SoC ${t} mC, battery ${b:--} dC): LED alarm off"
+        "$LED" alarm off
+    fi
+    [ -n "$R" ] && exit 0
+    sleep 5
+done

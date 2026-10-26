@@ -1,0 +1,49 @@
+# device dumps, proprietary blobs and build outputs never belong in this repository
+dumps/
+firmware/
+# ...but not the kernel source directory of that name in the mainline port
+!upstream/port/drivers/firmware/
+android-subset/
+out/
+*.img
+*.tar
+*.tar.gz
+*.tgz
+*.bin
+*.ko
+busybox
+tools/logdw/logdw
+logs-*/
+rootfs/base.tar
+__pycache__/
+.DS_Store
+tools/bt-init/mu300-bt-init
+tools/carry/mu300-carry
+tools/gpu/cltest
+work/
+work-*/
+openwrt/*.tar.gz
+upstream/stub/*.elf
+upstream/stub/*.bin
+sing-box
+/xray
+/hev-socks5-tunnel
+release/
+backup/
+!stock/*.img
+arch/*.tar.gz
+arch/ArchLinuxARM-*
+android/magisk/*.zip
+
+# built by tools/adbd/build.sh
+tools/adbd/adbd
+
+# written by the installer self-update in copies without git
+.mu300-source
+upstream/out-*/
+# the user's own list of files the self-update leaves alone (tools/self-update.sh, install.ps1)
+.mu300-keep
+# a test run with TMPDIR inside the tree
+tests/mu300-test-*/
+# the release smoke test's boards (tools/smoke.py; tools/smoke.example.json is the example)
+/tools/smoke.json

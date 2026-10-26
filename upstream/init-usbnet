@@ -1,0 +1,45 @@
+#!/bin/sh
+# Mainline MU300 initramfs: USB gadget (ECM network + ACM serial) with telnet on 192.168.77.1, logs to pstore.
+/bin/busybox mkdir -p /proc /sys /dev /tmp /run /config
+/bin/busybox mount -t proc proc /proc
+/bin/busybox mount -t sysfs sysfs /sys
+/bin/busybox mount -t devtmpfs devtmpfs /dev 2>/dev/null
+/bin/busybox --install -s /bin
+mkdir -p /dev/pts && mount -t devpts devpts /dev/pts
+mount -t debugfs debugfs /sys/kernel/debug 2>/dev/null
+log() { echo "MU300-MAINLINE: $*" > /dev/kmsg; }
+log "userspace up: $(uname -a)"
+for n in $(seq 1 20); do [ -n "$(ls /sys/class/udc 2>/dev/null)" ] && break; sleep 1; done
+log "udc: $(ls /sys/class/udc 2>&1 | tr '\n' ' ')"
+log "usb phy/dwc3 drivers: $(ls /sys/bus/platform/drivers/dwc3 /sys/bus/platform/drivers/sprd-ssphy /sys/bus/platform/drivers/dwc3-of-simple 2>&1 | tr '\n' ' ')"
+log "deferred: $(tr '\n' ';' < /sys/kernel/debug/devices_deferred 2>/dev/null | cut -c1-700)"
+log "regulators: $(for r in /sys/class/regulator/regulator.*; do printf "%s=%s " "$(cat $r/name)" "$(cat $r/state 2>/dev/null)"; done | cut -c1-500)"
+udc=$(ls /sys/class/udc 2>/dev/null | head -1)
+if [ -n "$udc" ]; then
+    mount -t configfs configfs /config
+    g=/config/usb_gadget/mu300
+    mkdir -p $g/strings/0x409 $g/configs/c.1/strings/0x409 $g/functions/ecm.usb0 $g/functions/acm.GS0
+    echo 0x1d6b > $g/idVendor; echo 0x0104 > $g/idProduct
+    echo "MU300 mainline" > $g/strings/0x409/product; echo "mu300" > $g/strings/0x409/manufacturer
+    echo 02:50:00:00:77:01 > $g/functions/ecm.usb0/dev_addr; echo 02:50:00:00:77:02 > $g/functions/ecm.usb0/host_addr
+    echo "ECM+ACM" > $g/configs/c.1/strings/0x409/configuration
+    ln -s $g/functions/ecm.usb0 $g/configs/c.1/; ln -s $g/functions/acm.GS0 $g/configs/c.1/
+    echo "$udc" > $g/UDC && log "gadget bound to $udc"
+    ifconfig usb0 192.168.77.1 netmask 255.255.255.0 up
+    printf 'start 192.168.77.2\nend 192.168.77.9\ninterface usb0\noption subnet 255.255.255.0\nlease_file /tmp/leases\n' > /tmp/udhcpd.conf
+    touch /tmp/leases; udhcpd /tmp/udhcpd.conf
+    telnetd -p 23 -l /bin/sh
+    (while :; do getty -L 115200 ttyGS0 vt100 2>/dev/null || sleep 5; done) &
+    log "usb0: $(ifconfig usb0 | head -2 | tr -s ' ' | tr '\n' ' ')"
+fi
+# eMMC: attach the Linux region read-only and look at it (no writes during bring-up)
+for n in $(seq 1 15); do [ -b /dev/mmcblk0 ] && break; sleep 1; done
+log "mmc: $(cat /sys/block/mmcblk0/device/name 2>/dev/null) size $(cat /sys/block/mmcblk0/size 2>/dev/null) parts $(ls /sys/block/mmcblk0 | grep -c mmcblk0p)"
+log "mmc timing: $(cat /sys/kernel/debug/mmc0/ios 2>/dev/null | tr -s ' ' | tr '\n' ';')"
+mkdir -p /disk
+if [ -b /dev/mmcblk0 ]; then
+    loop=$(losetup -f) && losetup -r -o 27762098176 "$loop" /dev/mmcblk0 && mount -t ext4 -o ro "$loop" /disk \
+        && log "linux disk mounted read-only: $(ls /disk | tr '\n' ' ')"
+fi
+log "up; PMIC watchdog disabled by the kernel"
+while :; do sleep 60; done

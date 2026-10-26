@@ -1,0 +1,2105 @@
+#!/bin/bash
+# Mobile data without Android RIL: SIM1 nr1/nr2 -> sipa_eth0; SIM2 nr4/nr5 -> sipa_eth8.
+# usage: mobile-data up [APN] | radio-on | down | status | signal | at "CMD" | sim-reset | watch
+#        mobile-data radio-locked CMD [ARG...] | radio-busy
+#        mobile-data roaming [--json] | roaming on|off [--slot 0|1]   (data roaming: allowed by default; with it off,
+#        no data while the SIM is registered as roaming - see roaming_cmd and docs/FINDINGS.md 120)
+#        mobile-data voice [--json [--read]] | voice volte|vonr on|off [--slot 0|1]   (VoLTE/VoNR per card, replayed
+#        at every bring-up: voice_cmd and docs/FINDINGS.md 184)
+#        mobile-data rf-apply   (the radio of the card in use as mu300-sim-radio says now: FINDINGS 185)
+#        mobile-data suspend off|lte | resume [nodial]   (mu300-power: modem down or LTE only while nobody uses the
+#        device; nodial: the radio only, the watcher redials). Both end within MU300_SUSPEND_DEADLINE (60 s) whatever
+#        the modem does; on a failure or a timeout the modem is handed back to the watcher (no mode file) and they
+#        exit non-zero.
+# radio-on: only switch the radio on (the OpenWrt boot does it early, beside the other init scripts)
+# MU300_NETIFD=1 mobile-data up [APN]: only attach and print IFACE/IP/PREFIX/DNS1/DNS2 (OpenWrt netifd protocol)
+# MU300_IPV6=relay with it: mu300cell's relay mode (openwrt-luci), see v6_relay_ra
+# MU300_APN_USER, MU300_APN_PASSWORD, MU300_APN_AUTH (none|pap|chap|both): the credentials of an APN that asks for
+# them, see define_context
+# OpenWrt: od/timeout come from the static busybox in /opt/mu300/busybox-bin
+export PATH="$PATH:/opt/mu300/busybox-bin"
+# nap SECONDS: a fraction of a second where a sleep takes one. OpenWrt's /bin/sleep (and bash has no sleep of its
+# own) refuses "0.2", so "sleep 0.2 || sleep 1" waited a whole second there; the static busybox next to us takes it.
+nap() { "${MU300_BUSYBOX:-/opt/mu300/bin/busybox}" sleep "$1" 2>/dev/null || sleep "$1" 2>/dev/null || sleep 1; }
+set -euo pipefail
+# The APN credentials (define_context) come in the environment, from systemd's EnvironmentFile or from mu300cell.sh.
+# They are taken out of it before anything is started, so that no child of this script (mu300-at, mu300-sim, the LED,
+# the VPN guard, a hook) has them in its own; and without a trace, should somebody run this with bash -x.
+case $- in *x*) set +x; APN_XTRACE=1 ;; *) APN_XTRACE= ;; esac
+# Ubuntu's settings file. systemd hands it to the two services as their environment, but not every dial starts
+# there: mu300-power's "mobile-data resume" and a command run by hand have no such environment, and used to dial
+# without the APN - with credentials that would be a dial without them. So whatever the environment does not say is
+# read from the file here, by every run, the same way: KEY=VALUE lines as systemd reads them (the last one of a key,
+# quotes around the value taken off), never executed. Not under netifd, whose settings come from mu300cell.sh.
+MD_CONF=${MU300_CONF:-/etc/mu300/mobile-data.conf}
+if [ "${MU300_NETIFD:-}" != 1 ] && [ -f "$MD_CONF" ] && [ -r "$MD_CONF" ]; then
+    for _k in MU300_APN MU300_PDP_TYPE MU300_APN_USER MU300_APN_PASSWORD MU300_APN_AUTH; do
+        [ -z "${!_k+x}" ] || continue                                # the environment says it
+        grep -q "^[[:space:]]*$_k=" "$MD_CONF" 2>/dev/null || continue
+        _v=$(sed -n "s/^[[:space:]]*$_k=//p" "$MD_CONF" | tail -n 1)
+        _v=${_v%$'\r'}
+        case $_v in
+            \"*\") _v=${_v#\"}; _v=${_v%\"} ;;
+            \'*\') _v=${_v#\'}; _v=${_v%\'} ;;
+        esac
+        printf -v "$_k" '%s' "$_v"
+    done
+    unset _k _v
+fi
+APN_SET_USER=${MU300_APN_USER:-}; APN_SET_PASS=${MU300_APN_PASSWORD:-}; APN_SET_AUTH=${MU300_APN_AUTH:-}
+unset MU300_APN_USER MU300_APN_PASSWORD
+[ -z "$APN_XTRACE" ] || set -x
+
+# Physical SIM/RIL group selection
+# 0 = slot0: nr0/nr1/nr2
+# 1 = slot1: nr3/nr4/nr5
+# /run/mu300/sim-slot is this boot's pin, written by init.d/mu300-atd on the U30 Air (OpenWrt) alone: the saved
+# choice (/etc/mu300-sim-slot) is never read here, so a stray file on another device or system changes nothing.
+SIM_SLOT=${MU300_SIM_SLOT:-0}
+[ ! -x /opt/mu300/bin/mu300-sim ] || SIM_SLOT=$(/opt/mu300/bin/mu300-sim active) || exit 1
+SIM_NATIVE=0
+[ ! -e /run/mu300-radio-freeze ] || SIM_NATIVE=1
+
+case "$SIM_SLOT:$SIM_NATIVE" in
+    0:*|1:0)
+        MAIN_DIR=/run/mu300-at
+        DATA_DIR=/run/mu300-at2
+        MAIN_DEV=/dev/stty_nr$((SIM_SLOT * 3 + 1))
+        URCLOG_DEFAULT=/run/mu300-at/urc/stty_nr$((SIM_SLOT * 3)).log
+        ;;
+    1:1)
+        MAIN_DIR=/run/mu300-at4
+        DATA_DIR=/run/mu300-at5
+        MAIN_DEV=/dev/stty_nr4
+        URCLOG_DEFAULT=/run/mu300-at4/urc/stty_nr3.log
+        ;;
+    *)
+        echo "invalid SIM slot: $SIM_SLOT" >&2
+        exit 2
+        ;;
+esac
+DEV=${MU300_AT_DEV:-$MAIN_DEV}
+CID=1
+IFACE=sipa_eth$((CID - 1 + SIM_SLOT * 8))
+export MU300_SIM_SLOT="$SIM_SLOT"
+
+# The blue LED only reports whether data is up. The PMIC rejects a brightness write now and then (seen as
+# "write error: Invalid argument"), and under `set -e` that killed up() one line before it could report the
+# connection it had just established - so the call was live while the caller saw a failure. Cosmetic writes
+# must never decide that.
+# led on|5g|off|error: see mu300-led (which LED that is depends on the device)
+led() { bnd "${MU300_LED_DEADLINE:-10}" /opt/mu300/bin/mu300-led data "$1" </dev/null >/dev/null 2>&1 || true; }
+# data is up: the LED tells 4G from 5G as ZTE's firmware does on the F50 (the U30 Air's shows the SIM in use instead,
+# FINDINGS 154: mu300-led takes either word for the same colour there). The access
+# technology changes under a live connection, so the watchdog asks again on every round. AT+CEREG? is a short
+# local status read; AT+COPS? took about two seconds on weak service and held the AT channel on every round.
+# +CEREG: <n>,<stat>[,<tac>,<ci>,<AcT>[,...]]: the AcT is the fifth field (with <n> 4 or 5 more fields follow it).
+# A 5G SA registration is in the NR domain alone: LTE's CEREG then says not registered, so with data up and CEREG
+# not registered, AT+C5GREG? decides (registered, home or roaming: 5G). From kanoqwq's network-led.sh (FINDINGS 199);
+# a read that fails leaves the 4G colour, as before. An LTE registration asks nothing more than before.
+led_up() {
+    local reg
+    [ ! -e /run/mu300/sim-switching ] && [ ! -e /run/mu300/sim-active-unknown ] || { echo "SIM control is busy or requires a reboot" >&2; return 1; }
+    reg=$(at 'AT+CEREG?' 4 2>/dev/null | awk -F, '/^\+CEREG:/ { gsub(/[" \r]/, ""); print $2 " " $5; exit }' || true)
+    case ${reg#* } in
+        11|12|13|15) led 5g; return 0 ;;
+    esac
+    case ${reg%% *} in 1|5) led on; return 0 ;; esac
+    case $(at 'AT+C5GREG?' 4 2>/dev/null | awk -F, '/^\+C5GREG:/ { gsub(/[" \r]/, "", $2); print $2; exit }' || true) in
+        1|5) led 5g ;;
+        *) led on ;;
+    esac
+}
+
+# Boot timeline mark (/run/mu300/boot-timeline); harmless when bootmark is missing.
+mark() { [ -x /opt/mu300/bin/bootmark ] && /opt/mu300/bin/bootmark "$@" || true; }
+
+# size of a file in bytes, 0 when it is not there
+fsize() { if [ -f "$1" ]; then echo $(( $(wc -c < "$1") )); else echo 0; fi; }
+
+# The bring-up's decisions, one line each with the uptime, so a slow or failed boot can be read back afterwards.
+# /run is RAM: start over at 64 KiB rather than grow without end (the watchdog reconnects for months).
+RADIOLOG=/run/mu300/radio.log
+radio_say() {
+    mkdir -p "${RADIOLOG%/*}" 2>/dev/null || true
+    if [ "$(fsize "$RADIOLOG")" -gt 65536 ]; then : 2>/dev/null > "$RADIOLOG" || true; fi
+    printf 't=%-9s %s\n' "$(cut -d' ' -f1 /proc/uptime 2>/dev/null || true)" "$*" 2>/dev/null >> "$RADIOLOG" || true
+}
+
+ATLOCK=$MAIN_DIR/owner
+
+# --- deadlines. suspend/resume run for mu300-power and must never hang (2026-10-07: a `suspend off` that never
+# returned left a device dark for hours); busybox on OpenWrt has no timeout(1) in /bin, so: a background job and a
+# watchdog. proc_table: "PID PPID" for every process.
+proc_table() {
+    local pt ptl
+    if [ -r /proc/self/stat ]; then
+        for pt in /proc/[0-9]*; do
+            { read -r ptl < "$pt/stat"; } 2>/dev/null || continue
+            ptl=${ptl##*) }; ptl=${ptl#* }   # after "pid (comm) state": the parent's pid
+            echo "${pt#/proc/} ${ptl%% *}"
+        done
+    else
+        ps -A -o pid= -o ppid= 2>/dev/null || true
+    fi
+}
+# tree_kill PID: the process and everything it started; all stopped first, so nothing new starts meanwhile
+tree_kill() {
+    local all prev= seen= k n=0
+    # stop the tree until a look finds nothing new (a child forked during the last look is caught by the next), then
+    # kill it all
+    while :; do
+        all=$(proc_table | awk -v r="$1" '{ pp[$1] = $2 } END { s[r] = 1
+            do { n = 0; for (p in pp) if (!(p in s) && (pp[p] in s)) { s[p] = 1; n++ } } while (n)
+            for (p in s) print p }' | sort -n | tr '\n' ' ')
+        for k in $all; do kill -STOP "$k" 2>/dev/null || true; done
+        seen="$seen $all"   # every process seen: one that left the tree between looks (reparented) is killed too
+        n=$((n + 1)); [ "$all" != "$prev" ] && [ "$n" -lt 10 ] || break
+        prev=$all
+    done
+    for k in $seen; do kill -KILL "$k" 2>/dev/null || true; done
+}
+# bnd SECONDS CMD [ARG...]: CMD (a function too) in the background; past SECONDS it and all it started are killed and
+# bnd returns 124. The waiting shell is poked (USR1) a second later, so a child stuck in the kernel (D state, deaf to
+# KILL) cannot hold it either.
+bnd() {
+    local s=$1 p w rc=0 me f
+    shift
+    me=${BASHPID:-$(exec sh -c 'echo $PPID')}
+    trap : USR1
+    "$@" &
+    p=$!
+    f=/run/mu300-mobile-data.deadline.$me.$p   # this call's own
+    # (no TERM trap in the watchdog: it dies at once when bnd is done, and its sleep runs out alone)
+    ( sleep "$s"; : > "$f"; tree_kill "$p"; sleep 1; kill -USR1 "$me" 2>/dev/null || true ) </dev/null >/dev/null 2>&1 &
+    w=$!
+    wait "$p" || rc=$?
+    kill "$w" 2>/dev/null || true; wait "$w" 2>/dev/null || true
+    if [ -e "$f" ]; then
+        rm -f "$f"; rc=124
+        echo "mobile-data: $* did not finish in $s s, killed" >&2
+        radio_say "$* did not finish in $s s, killed"
+    fi
+    return $rc
+}
+STEPDL=${MU300_MD_STEP_DEADLINE:-15}   # one external step of suspend/resume (ifdown, ifup, down, stty)
+
+# Is that pid a live process that holds the AT channel? mu300-atd and the direct path below both write their
+# pid into $ATLOCK/pid, and a bare pid says nothing once the number has been reused.
+at_owner_alive() {
+    [ -n "${1:-}" ] && [ -d "/proc/$1" ] &&
+        { tr '\0' ' ' < "/proc/$1/cmdline"; } 2>/dev/null | grep -qE 'mu300-atd|mobile-data'
+}
+
+at() {  # at CMD [timeout] -> response lines up to the final result code
+    local cmd=$1 t=${2:-5} line owner me
+    # mobile-data has its own AT channel (nr2, the same slot 0 group as nr1): AT+CGDATA blocks its channel for
+    # 10-20 s, and on the shared nr1 every other AT user (toolkit signal checks, SMS) waited behind it. The nr2
+    # daemon serves only this script.
+    # AT_SECRET=1 at CMD: CMD carries a secret (an APN password). It reaches mu300-at on its stdin, never as an
+    # argument, which every user of the system could read in ps for as long as the command runs.
+    if [ -p "$DATA_DIR/cmd" ]; then
+        if [ -n "${AT_SECRET:-}" ]; then
+            printf '%s\n' "$cmd" | MU300_AT_DIR="$DATA_DIR" /opt/mu300/bin/mu300-at -t "$t" -
+        else
+            MU300_AT_DIR="$DATA_DIR" /opt/mu300/bin/mu300-at -t "$t" "$cmd"
+        fi
+        return
+    fi
+    # the nr2 daemon is not running (yet): fall through to the shared nr1 daemon
+    # mu300-atd owns the AT channel when it runs: closing the SIPC tty wedges it until the modem restarts, so
+    # ask the daemon instead of opening the device here
+    if [ -p "$MAIN_DIR/cmd" ]; then
+        if [ -n "${AT_SECRET:-}" ]; then
+            printf '%s\n' "$cmd" | MU300_AT_DIR="$MAIN_DIR" /opt/mu300/bin/mu300-at -t "$t" -
+        else
+            MU300_AT_DIR="$MAIN_DIR" /opt/mu300/bin/mu300-at -t "$t" "$cmd"
+        fi
+        return
+    fi
+    [ "$SIM_NATIVE" = 1 ] && return 1   # SIM2 requires its persistent owners; never open directly
+    [ -c "$DEV" ] || return 1   # never let the redirection create a regular file in /dev
+    # No command fifo, but the daemon can still be there with the channel open - that is what /run/mu300-at
+    # being removed under a running mu300-atd leaves behind. Opening the device here would make a second reader
+    # on a channel that hands each line to exactly one of them, so every command from then on reads somebody
+    # else's answer or nothing at all. Hold the daemon's own lock for the length of this command instead.
+    # This process's own pid, not $$: a caller in a background subshell (operator_log) is a process of its own,
+    # and $$ would name the parent, which may have exited while this command still reads the channel.
+    # ($BASHPID needs bash 4; the fallback is the parent pid of a child exec'd in place of the substitution.)
+    me=${BASHPID:-$(exec sh -c 'echo $PPID')}
+    owner=$(cat "$ATLOCK/pid" 2>/dev/null || true)
+    if at_owner_alive "$owner" && [ "$owner" != "$me" ]; then
+        echo "pid $owner holds $DEV and its command fifo is gone; restart mu300-atd" >&2
+        return 1
+    fi
+    mkdir -p "${ATLOCK%/*}" 2>/dev/null || true
+    mkdir "$ATLOCK" 2>/dev/null || { rm -rf "$ATLOCK"; mkdir "$ATLOCK" 2>/dev/null || return 1; }
+    echo "$me" > "$ATLOCK/pid"
+    exec 3<>"$DEV"
+    # drop late responses/URCs left over from earlier commands
+    while IFS= read -r -t 0.2 line <&3; do :; done
+    printf '%s\r' "$cmd" >&3
+    local end=$((SECONDS + t))
+    while [ $SECONDS -lt $end ]; do
+        IFS= read -r -t 1 line <&3 || continue
+        line=${line%$'\r'}
+        [ -z "$line" ] && continue
+        case "$line" in
+            +CSQ:*|+CESQ:*|+SPPCI:*|+ECIND:*|+SIND:*|+CREG:*|+CGREG:*|+SPNRINDICATE:*|+CTZV:*|^CONN:*|+SPERRLOG:*)
+                [ "${cmd#AT+CSQ}" != "$cmd" ] && [ "${line#+CSQ:}" != "$line" ] && echo "$line"
+                continue ;;
+        esac
+        echo "$line"
+        case "$line" in OK|ERROR|+CME\ ERROR*|+CMS\ ERROR*|CONNECT*|NO\ CARRIER) break ;; esac
+    done
+    exec 3>&-
+    rm -rf "$ATLOCK"
+}
+
+# dotted netmask -> prefix length, in shell: the image has no python3 and a wrong prefix leaves the interface
+# with /32 and no on-link subnet
+mask2prefix() {
+    local m=$1 o bits=0
+    case "$m" in
+        [0-9]*.[0-9]*.[0-9]*.[0-9]*) ;;
+        *) echo 32; return ;;
+    esac
+    local IFS=.
+    for o in $m; do
+        case $o in
+            255) bits=$((bits + 8)) ;;
+            254) bits=$((bits + 7)) ;;
+            252) bits=$((bits + 6)) ;;
+            248) bits=$((bits + 5)) ;;
+            240) bits=$((bits + 4)) ;;
+            224) bits=$((bits + 3)) ;;
+            192) bits=$((bits + 2)) ;;
+            128) bits=$((bits + 1)) ;;
+            0) ;;
+            *) echo 32; return ;;
+        esac
+    done
+    echo "$bits"
+}
+
+# Interface identifier (the low 64 bits, as a:b:c:d) of the IPv6 address the network assigned to the context, or
+# nothing when it gave IPv4 only. This, not MU300_PDP_TYPE, decides whether there is IPv6: a context that was
+# never redefined is whatever the modem kept (IPV4V6 on this one), and a carrier may answer IPV4V6 with IPv4 alone.
+# +CGPADDR: <cid>,<addr>[,<addr>]; with +CGPIAF 0 an IPv6 address is 16 dotted bytes, otherwise it is hex.
+v6_iid() {
+    at "AT+CGPADDR=$CID" 4 | awk -F'[ ,"]+' '/^\+CGPADDR:/ {
+        for (i = 3; i <= NF; i++) {
+            if (split($i, b, ".") == 16) {
+                printf "%x:%x:%x:%x\n", b[9] * 256 + b[10], b[11] * 256 + b[12], b[13] * 256 + b[14], b[15] * 256 + b[16]
+                exit
+            }
+            if ($i ~ /:/) {
+                s = $i
+                if (s ~ /::/) {   # expand "::" to the zero groups it stands for
+                    h = s; sub(/::.*/, "", h); t = s; sub(/.*::/, "", t)
+                    nh = (h == "") ? 0 : split(h, x, ":"); nt = (t == "") ? 0 : split(t, y, ":")
+                    s = h; for (j = 0; j < 8 - nh - nt; j++) s = s (s == "" ? "" : ":") "0"
+                    if (t != "") s = s ":" t
+                }
+                if (split(s, g, ":") == 8) { print g[5] ":" g[6] ":" g[7] ":" g[8]; exit }
+            }
+        }
+    }' | grep -v '^[0:]*$' || true
+}
+
+LAN6=/run/mu300-mobile-data-lan6   # the prefix address we put on br-lan, so down() removes only that one
+
+# IPv6 on the systemd path. The bearer is point-to-point: the network routes the whole /64 of its router
+# advertisement to us and never asks neighbour discovery for it. So the /64 is learnt from the RA on sipa_eth0 and
+# then moved to br-lan, where dnsmasq (lan-start, constructor:br-lan) advertises it to USB and Wi-Fi clients.
+# Keeping it on sipa_eth0 as well would give the kernel two routes to the same /64.
+v6_up() {  # v6_up IID
+    local c=/proc/sys/net/ipv6/conf/$IFACE prefix= n
+    [ -w "$c/disable_ipv6" ] || return 0
+    echo 1 > "$c/disable_ipv6"          # start clean: no address or route left from an earlier session
+    echo 2 > "$c/accept_ra"             # forwarding is on, and a router ignores RAs with the usual 1
+    echo 0 > "$c/accept_ra_defrtr"      # the default route is set below, as for IPv4
+    echo 1 > "$c/accept_ra_pinfo"
+    # 3GPP has the UE build its link-local address from the identifier the network assigned (Android does the
+    # same); the kernel's own EUI-64 one would come from sipa_eth0's made-up MAC
+    echo 1 > "$c/addr_gen_mode" 2>/dev/null || true
+    echo 0 > "$c/disable_ipv6"
+    ip -6 addr add "fe80::$1/64" dev "$IFACE" 2>/dev/null || true
+    for n in $(seq 1 20); do
+        prefix=$(ip -6 -o addr show dev "$IFACE" scope global | awk '{ print $4; exit }')
+        [ -n "$prefix" ] && break
+        sleep 1
+    done
+    ip -6 route replace default dev "$IFACE" metric 100
+    if [ -z "$prefix" ]; then
+        echo "the network assigned IPv6 but sent no router advertisement; IPv6 is not shared with the LAN" >&2
+        return 0
+    fi
+    prefix=$(prefix64 "${prefix%/*}")
+    sysctl -qw net.ipv6.conf.all.forwarding=1
+    if ip link show br-lan >/dev/null 2>&1; then
+        echo 0 > "$c/accept_ra_pinfo"   # or the next RA puts the address back
+        ip -6 addr flush dev "$IFACE" scope global
+        ip -6 route del "${prefix}/64" dev "$IFACE" 2>/dev/null || true
+        # br-lan hears dnsmasq's own advertisements; seen on the device, it took two more SLAAC addresses of
+        # the prefix from them while forwarding was still off
+        echo 0 > /proc/sys/net/ipv6/conf/br-lan/accept_ra
+        v6_lan_down
+        ip -6 addr add "${prefix}1/64" dev br-lan
+        echo "${prefix}1/64" > "$LAN6"
+    fi
+    nft -f - <<NFT
+table ip6 mu300_v6
+delete table ip6 mu300_v6
+table ip6 mu300_v6 {
+    chain forward {
+        type filter hook forward priority filter; policy accept;
+        tcp flags syn tcp option maxseg size set rt mtu
+    }
+}
+NFT
+    echo "IPv6 up on $IFACE, ${prefix}/64 shared on br-lan"
+}
+
+# "2001:db8:1:2:a:b:c:d" -> "2001:db8:1:2::" (the first four groups, for a /64 advertised by the network)
+prefix64() {
+    echo "$1" | awk -F: '{
+        s = $0
+        if (s ~ /::/) { h = s; sub(/::.*/, "", h); t = s; sub(/.*::/, "", t)
+            nh = (h == "") ? 0 : split(h, x, ":"); nt = (t == "") ? 0 : split(t, y, ":")
+            s = h; for (j = 0; j < 8 - nh - nt; j++) s = s (s == "" ? "" : ":") "0"
+            if (t != "") s = s ":" t }
+        split(s, g, ":"); print g[1] ":" g[2] ":" g[3] ":" g[4] "::"
+    }'
+}
+
+v6_lan_down() {
+    [ -f "$LAN6" ] && ip -6 addr del "$(cat "$LAN6")" dev br-lan 2>/dev/null || true
+    rm -f "$LAN6"
+}
+
+v6_off() {
+    v6_lan_down
+    nft delete table ip6 mu300_v6 2>/dev/null || true
+    ip -6 route del default dev "$IFACE" 2>/dev/null || true
+    [ -w "/proc/sys/net/ipv6/conf/$IFACE/disable_ipv6" ] && echo 1 > "/proc/sys/net/ipv6/conf/$IFACE/disable_ipv6"
+    return 0
+}
+
+# K64, openwrt-luci's relay mode only (spec D9; kanoqwq/clean-tf-7.2 cd4fb28): mu300cell's ipv6 'relay' passes
+# MU300_IPV6=relay. On that netifd path a dual-stack context keeps IPv6 on and takes the carrier's RA (accept_ra 2:
+# forwarding is on) whether or not +CGPADDR carries an interface identifier: carriers that never fill in the context's
+# v6 address (China Telecom IoT, measured in the fork) give the public address by SLAAC only. Returns 1, touching
+# nothing, everywhere else (plain OpenWrt, Ubuntu's systemd path, an IPv4 context).
+v6_relay_ra() {
+    local c=/proc/sys/net/ipv6/conf/$IFACE
+    [ "${MU300_NETIFD:-0}" = 1 ] && [ "${MU300_IPV6:-}" = relay ] || return 1
+    case ${MU300_PDP_TYPE:-IP} in IP) return 1 ;; esac
+    if [ -w "$c/disable_ipv6" ]; then echo 0 > "$c/disable_ipv6"; fi
+    if [ -w "$c/accept_ra" ]; then echo 2 > "$c/accept_ra"; fi
+    return 0
+}
+
+# Make sure the radio is on (CFUN=1), the way the vendor RIL starts it (K57, ported from kanoqwq/clean-tf-7.2
+# cd4fb28 and 6404c10). Measured in the fork (V50 boot study):
+#   1) After modem_control lets the CP go, the SIPC AT channels take a dozen seconds to answer, and the first answer
+#      is "+CFUN: 0". A command sent before that is answered by nobody; it only holds the AT client lock and every
+#      command queued behind it. nr0's first unsolicited line (mu300-atd logs it) is the sign that the CP is up.
+#   2) The old sequence asked CFUN? once right after AT+SFUN=4 and went on to the SFUN=2 + SFUN=4 power cycle when the
+#      radio was not on yet. That cycle reset the CP that was just coming up and cost a whole CP start (12 s and
+#      more). After SFUN=4 the radio needs time: wait for "+CFUN: 1", and keep the power cycle as the last resort.
+# Every decision goes to radio.log. Returns 1 when this round cannot switch the radio on; the caller retries later
+# (netifd's next attempt, systemd's restart, the watchdog).
+PLUGIN_LOCK=${MU300_PLUGIN_LOCK:-/usr/libexec/unisoc-modem/lock}
+# --- each SIM's radio on or off, kept across reboots (mu300-sim-radio, docs/FINDINGS.md 185) --------------------------
+# rf_allowed: the card in use may have its radio on (no mu300-sim-radio, or an unreadable setting: yes). Asked by every
+# radio-on path here: the dial, the early warm-up, the watchdog, mu300-power's resume (radio_on), the modem reset.
+# While it says no, $RF_HELD exists: the dial ends at once (netifd: exit 7, SIM_RADIO_DISABLED, no retry; Ubuntu: exit
+# 0, the service stays up) and the watchdog leaves the radio alone; rf-apply or the watchdog ends it when it says yes.
+SIM_RADIO_BIN=${MU300_SIM_RADIO_BIN:-/opt/mu300/bin/mu300-sim-radio}
+RF_HELD=/run/mu300/sim-radio-held
+rf_allowed() { [ ! -x "$SIM_RADIO_BIN" ] || "$SIM_RADIO_BIN" allowed "$SIM_SLOT" 2>/dev/null; }
+# wan_available: netifd's WAN made available again where mu300cell made it unavailable (a SIM radio switched off, an
+# empty slot: exit 7 or 6). netifd then starts it by itself - unless somebody took it down (ifdown: autostart off),
+# which is how the user's own choice stays as it was.
+wan_available() {
+    local wan=${MU300_WAN:-wan}
+    case $(ubus call "network.interface.$wan" status 2>/dev/null | tr -d ' \n\t' || true) in
+        *'"available":false'*)
+            ubus call "network.interface.$wan" notify_proto '{"action":5,"available":true}' >/dev/null 2>&1 || true ;;
+    esac
+}
+# --- a slot with no card (mu300-sim-state, docs/FINDINGS.md 186) ---------------------------------------------------
+# The dial asks the card once its radio is on (AT+CPIN?). No card: the dial stops there and leaves $SIM_HELD (netifd:
+# exit 6, SIM_MISSING, no retry - it used to fail after its 60 s registration wait and start over every 20 s for
+# ever; Ubuntu: exit 0). The card's +ECIND (mu300-atd -> mu300-sim-state event) or the watchdog's look every five
+# minutes dials again once a card answers. Without the tool: as before.
+SIM_STATE_BIN=${MU300_SIM_STATE_BIN:-/opt/mu300/bin/mu300-sim-state}
+SIM_HELD=/run/mu300/sim-missing-held
+sim_state() { [ ! -x "$SIM_STATE_BIN" ] || MU300_SIM_SLOT=$SIM_SLOT "$SIM_STATE_BIN" "$@" 2>/dev/null || true; }
+sim_hold() {
+    [ ! -e "$SIM_HELD" ] || return 0
+    mkdir -p "${SIM_HELD%/*}" 2>/dev/null || true
+    echo "$SIM_SLOT" 2>/dev/null > "$SIM_HELD" || true
+    radio_say "no card in the SIM slot in use (slot $SIM_SLOT): no dial until one answers"
+    logger -t mobile-data "SIM$((SIM_SLOT + 1)): no card; mobile data waits for one" 2>/dev/null || true
+}
+rf_hold() {
+    [ ! -e "$RF_HELD" ] || return 0
+    mkdir -p "${RF_HELD%/*}" 2>/dev/null || true
+    echo "$SIM_SLOT" 2>/dev/null > "$RF_HELD" || true
+    radio_say "the radio of the SIM in use (slot $SIM_SLOT) is switched off in its settings: no radio, no dial"
+    logger -t mobile-data "SIM$((SIM_SLOT + 1)) radio is off (mu300-sim-radio): mobile data stays down" 2>/dev/null || true
+}
+# rf_cfun: the card in use's CFUN (0, 1, 2 or 4), nothing when it does not answer
+rf_cfun() { at 'AT+CFUN?' 4 2>/dev/null | tr -d '\r' | sed -n 's/^+CFUN: *\([0124]\)$/\1/p' | head -n 1 || true; }
+# rf_off_locked: the card's protocol stack off on its own channel, AT+SFUN=5, as the vendor RIL switches a card's radio
+# (kanoqwq cf4dcd61: the stock RIL's isRadioOn reads CFUN 0 and 2 as off; on his V50 SFUN=5 read back 0 with the SIM
+# still powered, and SFUN=4 brought it back; FINDINGS 202). Read back as 0 or 2. A radio at its cold 0, or in the
+# flight mode (4) an earlier release left, is off already. Under the radio lock.
+rf_off_locked() {
+    case $(rf_cfun) in 0|2|4) return 0 ;; esac
+    at 'AT+SFUN=5' 30 >/dev/null 2>&1 || true
+    case $(rf_cfun) in 0|2) radio_say "radio off (AT+SFUN=5): switched off in the SIM's settings"; return 0 ;; esac
+    radio_say "AT+SFUN=5 was not read back"
+    return 1
+}
+# rf_on_locked: the radio back: from an earlier release's flight mode AT+CFUN=1, from 0 or 2 (SFUN=5, or the cold 0)
+# the ordinary bring-up, whose AT+SFUN=4 is the vendor's way back. Under the radio lock.
+rf_on_locked() {
+    local t
+    case $(rf_cfun) in
+        1) return 0 ;;
+        4) at 'AT+CFUN=1' 30 >/dev/null 2>&1 || true
+           for t in 1 2 3 4 5 6 7 8 9 10; do [ "$(rf_cfun)" = 1 ] && { radio_say "radio on (AT+CFUN=1)"; return 0; }; sleep 2; done
+           return 1 ;;
+        *) radio_on_locked ;;
+    esac
+}
+[ "$SIM_NATIVE" = 1 ] && PLUGIN_LOCK=/nonexistent
+radio_on_locked() {
+    if ! rf_allowed && { [ -e /run/mu300/sim-managed ] || [ "$SIM_NATIVE" = 1 ]; }; then
+        rf_hold; rf_off_locked || true; return 7
+    fi
+    if [ -e /run/mu300/sim-managed ]; then
+        [ -e /run/mu300/sim-radio-ready ] && [ ! -e /run/mu300/sim-active-unknown ] || return 1
+        at 'AT+CFUN?' 4 | tr -d '\r' | grep -E '^\+CFUN: *1$' >/dev/null
+        return $?
+    fi
+    if [ "$SIM_NATIVE" = 1 ]; then
+        # The native boot controller owns SIM2 bring-up. Never let netifd/watchdog run a second SFUN sequence.
+        [ -e /run/mu300/sim-radio-ready ] || return 1
+        at 'AT+CFUN?' 4 | tr -d '\r' | grep -E '^\+CFUN: *1$' >/dev/null
+        return $?
+    fi
+    [ -e /run/mu300-radio-freeze ] && return 1
+    local out silent=0 answered=0 t0 end
+    local ready_deadline=$((SECONDS + ${MU300_CFUN_WAIT:-30}))
+    mark radio-on-enter
+    # The CP announces itself on nr0. Wait for that before taking any AT lock (bounded; then try anyway). The log
+    # is created by nr0's first line and only ever emptied after that, so its existence is the event.
+    while [ "$SECONDS" -lt "$ready_deadline" ] && [ ! -f "$URCLOG" ]; do
+        nap 0.2
+    done
+    # Android's slot 0 RIL opens nr0/nr1/nr2 and sends AT+SMMSWAP=0 as nr1's first command. Do the same, once per
+    # boot (/run is emptied by a reboot), before CFUN and before any dial-up command. So it goes to the nr1 daemon,
+    # not through at() (nr2). A dashboard or watchdog probe can hold the client lock for a moment as nr1 becomes
+    # ready: one second for that collision. No answer ends this round at once: recovery commands sent into a
+    # channel that has not finished its RIL handshake do not help. An ERROR is an answer, from a live channel (a
+    # firmware that does not take the command): it is logged, and the round goes on to CFUN as after OK.
+    if [ ! -e /run/mu300-ril-handshake ]; then
+        out=$(MU300_AT_LOCK_WAIT=1 MU300_AT_DIR="$MAIN_DIR" /opt/mu300/bin/mu300-at -t 4 'AT+SMMSWAP=0' 2>&1 || true)
+        case $(printf '%s\n' "$out" | tr -d '\r' | grep -E '^(OK|ERROR|\+CME ERROR|\+CMS ERROR)' | tail -n 1) in
+            OK)
+                : > /run/mu300-ril-handshake
+                radio_say "RIL handshake done (AT+SMMSWAP=0)"
+                mark ril-handshake-done
+                ;;
+            ERROR*|+CME\ ERROR*|+CMS\ ERROR*)
+                : > /run/mu300-ril-handshake
+                radio_say "the modem refused the RIL handshake (AT+SMMSWAP=0): $(echo "$out" | tr -s '\r\n' '  '), going on"
+                mark ril-handshake-refused
+                ;;
+            *)
+                radio_say "no valid answer to the RIL handshake (AT+SMMSWAP=0), ending this round: $(echo "${out:-nothing}" | tr -s '\n' ' ')"
+                return 1
+                ;;
+        esac
+    fi
+    out=$(at 'AT+CFUN?' 4 2>&1 || true)
+    # switched off in the SIM's settings: off it stays (the cold 0 as it is, a radio that is on: AT+SFUN=5)
+    if ! rf_allowed; then
+        rf_hold
+        case $out in *"+CFUN: 1"*) rf_off_locked || true ;; esac
+        return 7
+    fi
+    case $out in
+        *"+CFUN: 1"*) return 0 ;;
+        *"+CFUN: 0"*|*"+CFUN: 2"*) ;;
+        *"+CFUN: 4"*)
+            # flight mode with the setting on (left by an earlier boot's panel, or set by hand): back on
+            radio_say "the radio is in flight mode (CFUN 4) and its setting is on: AT+CFUN=1"
+            rf_on_locked; return $? ;;
+        *)
+            radio_say "no answer to AT+CFUN?, ending this round without AT+SFUN: $(echo "${out:-nothing}" | tr -s '\n' ' ')"
+            return 1 ;;
+    esac
+    # K65: the optional unisoc-modem LuCI plugin may have saved mode, band or cell locks. This is the one safe early
+    # window for them: nr1 has done its handshake, the CP answers, and the radio is still off. The plugin keeps a
+    # late replay armed when this one fails; the radio never depends on the plugin.
+    if [ -x "$PLUGIN_LOCK" ] && [ ! -e /run/unisoc-modem-lock-replay-done ]; then
+        "$PLUGIN_LOCK" replay early ||
+            radio_say "early lock replay unverified; late fallback remains armed"
+    fi
+    radio_say "the AT channel answers and the radio is off; sending AT+SFUN=4"
+    t0=$SECONDS
+    at 'AT+SFUN=4' "${MU300_SFUN_TIMEOUT:-20}" >/dev/null || true
+    end=$((SECONDS + ${MU300_CFUN_UP_WAIT:-30}))
+    while [ "$SECONDS" -lt "$end" ]; do
+        out=$(at 'AT+CFUN?' 4 2>&1 || true)
+        case $out in
+            *"+CFUN: 1"*)
+                radio_say "radio on $((SECONDS - t0)) s after AT+SFUN=4"
+                mark radio-cfun1
+                return 0 ;;
+            *"+CFUN:"*) answered=1; silent=0 ;;
+            *) silent=$((silent + 1)) ;;
+        esac
+        # a channel that has gone silent cannot carry the recovery commands either: stop, a later round retries
+        if [ "$silent" -ge 2 ]; then
+            radio_say "the AT channel went silent after AT+SFUN=4, ending this round"
+            return 1
+        fi
+        sleep 2
+    done
+    [ "$answered" = 1 ] || return 1
+    radio_say "radio still off $((SECONDS - t0)) s after AT+SFUN=4; last resort: power cycle (AT+SFUN=2, AT+SFUN=4)"
+    at 'AT+SFUN=2' 5 >/dev/null || true
+    at 'AT+SFUN=4' 20 >/dev/null || true
+    at 'AT+CFUN?' 4 2>/dev/null | grep '+CFUN: 1' >/dev/null
+}
+
+# One radio state machine at a time: the early warm-up (mu300-atd's radio-warmup instance on OpenWrt) and the dial
+# meet at boot, and the watchdog can step in later. A second caller waits for the first to finish (it then finds
+# the radio on with one question) rather than give up: the fork capped the wait at 8 s, but a dial that gives up
+# costs netifd's 20 s pause before the next attempt, longer than the warm-up it was waiting for.
+# MU300_RADIO_LOCK_WAIT (120 real seconds) covers a normal round several times over (one that overruns every AT
+# budget can take longer: then this caller gives up and the next attempt retries); a dead holder is taken over.
+#
+# The lock (lock_take below; up() takes its own the same way) is a symbolic link whose target is the owner's pid.
+# ln -s makes it in one step, so it never exists without its owner (a directory with a pid file inside had a moment
+# with none, and a waiter that read an empty pid then could remove a lock that had just been taken). The name is not
+# the old directory's, so a directory left by an older mobile-data in the same boot cannot swallow the link (ln
+# would put it inside and report success).
+RADIOLOCK=/run/mu300-radio-on.owner
+lock_owner_alive() {
+    [ -n "${1:-}" ] && kill -0 "$1" 2>/dev/null || return 1
+    # the number may have been reused by something else
+    [ -r "/proc/$1/cmdline" ] || return 0
+    { tr '\0' ' ' < "/proc/$1/cmdline"; } 2>/dev/null | grep mobile-data >/dev/null
+}
+# lock_reap LINK DEADPID ME: remove LINK if it still names the dead process DEADPID. Only one process at a time may
+# do that for one (LINK, DEADPID): the one that makes the marker LINK.dead.DEADPID (made in one step, naming ME), and
+# it looks again under the marker. Nothing else removes a link that names a dead process, so the link cannot change
+# between that look and the rm: two waiters that both saw the same dead owner can no longer remove, the second one,
+# the lock the first had just taken. A marker whose maker died is reaped the same way, one level down.
+lock_reap() {
+    local m="$1.dead.$2" t
+    until ln -sn "$3" "$m" 2>/dev/null; do
+        t=$(readlink "$m" 2>/dev/null || true)
+        [ -n "$t" ] || return 1                     # its maker has just finished: the caller looks again
+        lock_owner_alive "$t" && return 1           # another waiter is taking over; leave it to that one
+        lock_reap "$m" "$t" "$3" || return 1
+    done
+    if [ "$(readlink "$1" 2>/dev/null || true)" = "$2" ] && ! lock_owner_alive "$2"; then rm -f "$1"; fi
+    rm -f "$m"
+}
+# lock_take LINK SECONDS: take LINK for this process, waiting up to SECONDS (real seconds, not polls) for its holder;
+# a dead holder is taken over. Returns 1 when the wait is over, with the holder's pid in LOCK_HOLDER.
+# lock_drop LINK: release it, if it is still this process's.
+# The owner is this process's own pid (see at()): two callers in subshells of one script are two owners.
+lock_take() {
+    local owner me end=$((SECONDS + $2))
+    me=${BASHPID:-$(exec sh -c 'echo $PPID')}
+    until ln -sn "$me" "$1" 2>/dev/null; do
+        owner=$(readlink "$1" 2>/dev/null || true)
+        # empty: released in between, and the next try comes after the pause below
+        if [ -n "$owner" ] && ! lock_owner_alive "$owner"; then
+            lock_reap "$1" "$owner" "$me" && continue
+        fi
+        if [ "$SECONDS" -ge "$end" ]; then
+            LOCK_HOLDER=$owner
+            return 1
+        fi
+        nap 0.2
+    done
+}
+lock_drop() {
+    if [ "$(readlink "$1" 2>/dev/null || true)" = "${BASHPID:-$(exec sh -c 'echo $PPID')}" ]; then rm -f "$1"; fi
+}
+radio_on() {
+    local rc=0
+    if ! lock_take "$RADIOLOCK" "${MU300_RADIO_LOCK_WAIT:-120}"; then
+        radio_say "another radio_on (pid ${LOCK_HOLDER:-?}) is still running; giving up"
+        return 1
+    fi
+    radio_on_locked || rc=$?
+    lock_drop "$RADIOLOCK"
+    # The plugin's generic worker keeps off nr1 until the handshake and the radio sequence have completed. A failed
+    # round leaves the marker: netifd or the watchdog retries.
+    [ "$rc" = 0 ] && rm -f /run/unisoc-modem-early-hook-pending
+    return $rc
+}
+
+# Registered (home or roaming)? is_registered reads AT+CEREG? answers (+CEREG: <n>,<stat>,...); is_registered urc
+# reads nr0's announcements (+CEREG: <stat>,...). The two forms cannot share one pattern: "+CEREG: 1,2" is a
+# registration as an announcement and "searching" as an answer. An announcement counts only as the last one.
+is_registered() {
+    if [ "${1:-}" = urc ]; then
+        grep '^+CEREG:' | tail -n 1 | grep -E '^\+CEREG: (1|5)(,|$)' >/dev/null
+    else
+        grep -E '^\+CEREG: [0-9]+,(1|5)(,|$)' >/dev/null   # not -q: an early exit would fail the pipe (pipefail)
+    fi
+}
+
+# Wait for the registration (MU300_REGISTER_WAIT seconds, 60 by default). nr0 announces every change at once, and
+# mu300-atd (the nr1 daemon) appends those announcements to its URC log. Only what is appended after the start
+# counts: an old registration says nothing about now. AT+CEREG? every 5 s is the fallback for a modem that
+# announces nothing; it replaces the old query every 2 s. When the modem's last word before the start was "not
+# registered", the change will be announced, so the first query waits 5 s too; otherwise (no log, nothing heard,
+# or registered) it is sent at once - a reconnect after a lost context is registered all along.
+URCLOG=${MU300_URC_LOG:-$URCLOG_DEFAULT}
+wait_registered() {
+    local deadline=$((SECONDS + ${MU300_REGISTER_WAIT:-60})) next=$SECONDS seen size last
+    seen=$(fsize "$URCLOG")   # bytes of the log that were there before the start
+    last=$(grep '^+CEREG:' "$URCLOG" 2>/dev/null | tail -n 1 || true)
+    if [ -n "$last" ] && ! echo "$last" | is_registered urc; then
+        next=$((SECONDS + 5))
+    fi
+    while [ "$SECONDS" -lt "$deadline" ]; do
+        # A live SIM switch (the U30 Air's mu300-sim-u30) has begun: this wait is for a card the radio is leaving.
+        # Measured: a dial left waiting its 60 s for a card without service held the bring-up lock, and the card
+        # the radio went back to stayed without data for half a minute more.
+        if [ -e /run/mu300/sim-switching ]; then
+            radio_say "a SIM switch began: this dial ends"
+            return 1
+        fi
+        # the card went away meanwhile (its +ECIND, checked by mu300-sim-state): no point waiting
+        [ "$(sim_state get)" != absent ] || return 1
+        size=$(fsize "$URCLOG")
+        [ "$size" -lt "$seen" ] && seen=0   # mu300-atd started the log over at its size cap
+        if [ "$size" -gt "$seen" ] && tail -c +"$((seen + 1))" "$URCLOG" 2>/dev/null | is_registered urc; then
+            return 0
+        fi
+        if [ "$SECONDS" -ge "$next" ]; then
+            at 'AT+CEREG?' 3 2>/dev/null | is_registered && return 0
+            next=$((SECONDS + 5))
+        fi
+        nap 0.2
+    done
+    return 1
+}
+
+# --- data roaming (docs/FINDINGS.md 120) ---------------------------------------------------------------------------
+# "Allow data roaming", as Android has it: with it off, no data while the card in use is registered on a roaming
+# network. No switch of the modem's own for it is known (no AT command for it in anything this project has; on
+# Android the decision is the framework's too), so it is a policy of this dial and its watchdog. Allowed by default:
+# that is what every earlier release did, and an update must not take anybody's data away.
+# The setting is read again at every decision, from where `mobile-data roaming on|off` (and every front end) puts it:
+#   OpenWrt: network.wan.roaming for the external card (slot 0), network.wan.roaming_internal for the other one
+#            (slot 1: the F50's internal SIM, the U30 Air's SIM2), as apn and apn_internal
+#   Ubuntu:  MU300_DATA_ROAMING in /etc/mu300/mobile-data.conf (one setting, as Ubuntu has one APN)
+# 1/on/yes/true or 0/off/no/false; anything else counts as unset (allowed), and `mobile-data roaming` says so.
+# Whether the network is a roaming one is the card's own registration, asked on the dial's AT channel, which answers
+# for its card alone (FINDINGS 74): <stat> of AT+CEREG?, and of AT+C5GREG? when LTE's says neither (5G SA). 5 and 10
+# are roaming, 1 and 9 home (3GPP TS 27.007). Some SIMs are "roaming" at home (an MVNO on a host network, national
+# roaming): that is the network's word, and the setting is the user's answer to it.
+# Held back: $ROAM_HELD exists (its line: the slot) while data is down because of this. No context is activated, so
+# no data leaves; the registration, IMS, SMS, USSD and emergency calls are not touched.
+ROAM_HELD=/run/mu300/data-roaming-held
+# Device tests only: a regular file owned by root (this script's user) whose line is "home-as-roaming" makes stat 1
+# and 9 count as roaming, so the held state can be seen with a SIM at home. /run is RAM: it ends with the boot. No
+# front end writes it, and nothing a front end sends reaches its name.
+ROAM_TEST=/run/mu300/roaming-test
+
+# roaming_word VALUE: 1 or 0; nothing for a value that is neither
+roaming_word() {
+    case $1 in 1|on|yes|true) echo 1 ;; 0|off|no|false) echo 0 ;; esac
+}
+# roaming_option SLOT: the card's uci option
+roaming_option() { if [ "$1" = 1 ]; then echo roaming_internal; else echo roaming; fi; }
+# conf_value KEY: the last KEY=VALUE line of Ubuntu's settings file, quotes taken off (read, never executed)
+conf_value() {
+    local v
+    [ -r "$MD_CONF" ] || return 0
+    v=$(sed -n "s/^[[:space:]]*$1=//p" "$MD_CONF" 2>/dev/null | tail -n 1)
+    v=${v%$'\r'}
+    case $v in \"*\") v=${v#\"}; v=${v%\"} ;; \'*\') v=${v#\'}; v=${v%\'} ;; esac
+    printf '%s\n' "$v"
+}
+# roaming_raw [SLOT]: the stored value as it is
+roaming_raw() {
+    if via_netifd; then
+        uci -q get "network.${MU300_WAN:-wan}.$(roaming_option "${1:-$SIM_SLOT}")" 2>/dev/null || true
+    else
+        conf_value MU300_DATA_ROAMING
+    fi
+}
+# roaming_setting [SLOT]: 1 when data may be used while roaming, 0 when not
+roaming_setting() {
+    local v w
+    v=$(roaming_raw "${1:-$SIM_SLOT}")
+    [ -n "$v" ] || { echo 1; return; }
+    w=$(roaming_word "$v")
+    echo "${w:-1}"   # (`mobile-data roaming` says when the value is not one of them)
+}
+roam_test_on() {
+    [ -f "$ROAM_TEST" ] && [ ! -L "$ROAM_TEST" ] && [ -O "$ROAM_TEST" ] &&
+        [ "$(head -c 64 "$ROAM_TEST" 2>/dev/null | tr -d '\r\n')" = home-as-roaming ]
+}
+# roam_classify STAT...: roaming, home or unknown from <stat> values (an empty one says nothing)
+roam_classify() {
+    local s r=unknown t=0
+    if roam_test_on; then t=1; fi
+    for s in "$@"; do
+        case $s in 1|9) [ "$t" = 0 ] || s=5 ;; esac
+        case $s in 5|10) echo roaming; return ;; 1|9) r=home ;; esac
+    done
+    echo "$r"
+}
+# reg_stat CMD: <stat> of the answer's query form, "+C...REG: <n>,<stat>[,...]"
+reg_stat() {
+    { at "$1" 4 2>/dev/null || true; } |
+        awk -F'[:,]' '/^\+C[0-9A-Z]*REG:/ && NF >= 3 { gsub(/[^0-9]/, "", $3); print $3; exit }'
+}
+# roam_state: home, roaming or unknown for the card in use. One question in the usual case (LTE, NSA); the 5G
+# registration only when LTE's says neither.
+roam_state() {
+    local s4 s5=
+    s4=$(reg_stat 'AT+CEREG?')
+    case $s4 in 1|5|9|10) ;; *) s5=$(reg_stat 'AT+C5GREG?') ;; esac
+    roam_classify "$s4" "$s5"
+}
+# roam_hold: data is held back from now on; said once, when it starts (the dial and the watchdog keep coming back)
+roam_hold() {
+    [ ! -e "$ROAM_HELD" ] || return 0
+    local msg="the SIM in use (slot $SIM_SLOT) is registered on a roaming network and data roaming is off: mobile data stays down"
+    mkdir -p "${ROAM_HELD%/*}" 2>/dev/null || true
+    echo "$SIM_SLOT" 2>/dev/null > "$ROAM_HELD" || true
+    radio_say "$msg"
+    logger -t mobile-data "$msg" 2>/dev/null || true
+    # stderr for a dial run by hand; under systemd stderr is the journal, which logger has just written to (seen on
+    # an F50: the same line twice in the journal)
+    [ -n "${JOURNAL_STREAM:-}" ] || echo "mobile-data: $msg" >&2
+}
+# roam_release WHY: the hold is over
+roam_release() {
+    [ -e "$ROAM_HELD" ] || return 0
+    rm -f "$ROAM_HELD"
+    radio_say "data roaming: $1, mobile data comes back"
+    logger -t mobile-data "data roaming: $1, mobile data comes back" 2>/dev/null || true
+}
+# roam_gate: may the card have data now? 0 yes; 1 no (roaming with data roaming off: held); 2 cannot tell (the
+# registration could not be read: with data roaming off that is no dial either, but no hold)
+roam_gate() {
+    if [ "$(roaming_setting)" = 1 ]; then roam_release "allowed"; return 0; fi
+    case $(roam_state) in
+        home) roam_release "on the home network"; return 0 ;;
+        roaming) roam_hold; return 1 ;;
+        *) return 2 ;;
+    esac
+}
+
+# The context's address, within SECONDS real seconds (8 by default): an active context is not an address yet -
+# the fork measured "CGACT up, no address for 40 s" on NR. Leaves the +CGCONTRDP line in rdp. No query starts after
+# the budget and no pause runs past it; only the query in flight can overrun it (by its AT round, at most T + 2 s).
+fetch_addr() {
+    local end=$((SECONDS + ${1:-8})) line am
+    rdp=
+    while [ "$SECONDS" -lt "$end" ]; do
+        line=$(at "AT+CGCONTRDP=$CID" 4 2>/dev/null | grep '^+CGCONTRDP:' | head -n 1 || true)
+        am=$(echo "$line" | cut -d, -f4 | tr -d '"')
+        case $am in
+            ''|0.0.0.0*) ;;
+            *.*.*.*) rdp=$line; return 0 ;;
+        esac
+        [ $((SECONDS + 2)) -lt "$end" ] || break   # the next query would start after the budget
+        sleep 2
+    done
+    return 1
+}
+
+# The modem needs the vendor modem loader/SIPC drivers (5.4 kernel); a kernel without them (mainline) has no modem.
+modem_stack() { [ -e /dev/modem ] || [ -e /dev/pmsys ] || [ -c "$DEV" ]; }
+
+# "stty -F" opens and closes the tty, which desynchronises the SIPC channel (docs/FINDINGS.md 13b). When
+# mu300-atd owns the device it has already set the flags on its own descriptor, so leave the tty alone.
+tty_setup() {
+    [ -p "$MAIN_DIR/cmd" ] && return 0
+    [ "$SIM_NATIVE" = 1 ] && return 1
+    # same for a daemon whose fifo has gone missing: its descriptor is still the one the modem talks to
+    at_owner_alive "$(cat "$ATLOCK/pid" 2>/dev/null || true)" && return 0
+    bnd "$STEPDL" stty -F "$DEV" raw -echo 2>/dev/null || true   # (an open of the SIPC tty can block)
+}
+
+# --- the data context and its credentials -------------------------------------------------------------------------
+# An APN that asks for a user name and a password (a private APN, some MVNOs): MU300_APN_USER, MU300_APN_PASSWORD
+# and MU300_APN_AUTH (none, pap, chap, or both: the network picks; unset with a user name or a password means both,
+# as Android does). On OpenWrt they are the wan interface's username, password and auth (mu300cell.sh), on Ubuntu
+# lines of /etc/mu300/mobile-data.conf. They go to the modem as
+#     AT+CGPCO=0,"<user>","<password>",<cid>,<0 none | 1 PAP | 2 CHAP | 3 PAP or CHAP>
+# after AT+CGDCONT and before the context is activated, which is where ZTE's RIL sends it (kanoqwq read that out of
+# the B09 RIL, clean-tf-7.2 3826be8b; the internal SIM's dial here has sent the empty form all along). NOT measured
+# on a device against an APN that checks credentials (FINDINGS 65).
+#
+# What holds for the credentials, on every path (both systems, both cards):
+# - They are never printed, logged, traced (set -x is off while define_context runs) or put on a command line
+#   (AT_SECRET, mu300-at -), and they leave this script's environment at its start (the top of the file), so nothing
+#   it starts inherits them.
+# - Both strings are refused unless they are printable ASCII without a quote or a backslash: they are pasted into a
+#   quoted AT argument.
+# - The settings file they came from is root's alone before they are used (settings_private), or there is no dial.
+# - Nothing falls back to a dial without them: credentials that cannot be used, a file that cannot be made private,
+#   a modem that does not answer OK, all end the bring-up with a line saying which.
+# - The mark says that the modem was given credentials. It is written before they are sent, and removed only
+#   when the modem has taken the empty form: so credentials taken out of the settings, or an APN changed to one
+#   without any, are taken out of the modem before the next dial, and a modem that will not let go of them gets no
+#   dial rather than a dial that presents them to another network. The mark holds nothing.
+#   One mark per card ($APN_MARK, "<mark>.sim<slot>"): each card has its own protocol stack and its own context.
+APN_AUTH_MARK=${MU300_APN_AUTH_MARK:-/etc/mu300/apn-auth-set}
+# where the credentials of this run were read from: netifd's settings, or Ubuntu's file
+if [ "${MU300_NETIFD:-}" = 1 ]; then APN_CONF=${MU300_NETWORK_CONF:-/etc/config/network}
+else APN_CONF=$MD_CONF; fi
+
+# settings_private FILE: FILE, which holds the APN password, can be read by its owner alone - made so when it is a
+# regular file of ours; a link is not followed for that, and what it leads to must already be so. 1 when it is not
+# and cannot be made so. No file at all: the credentials did not come from one (a hand-run command), nothing to do.
+settings_private() {
+    local f=$1 ls
+    [ -e "$f" ] || [ -L "$f" ] || return 0
+    if [ ! -L "$f" ]; then
+        [ -f "$f" ] || return 1
+        chmod 600 "$f" 2>/dev/null || true   # judged by the result below, not by chmod's word
+    fi
+    ls=$(ls -ldLn "$f" 2>/dev/null) || return 1
+    case $ls in -r[w-]-------*) ;; *) return 1 ;; esac
+    [ "$(printf '%s\n' "$ls" | awk '{ print $3 }')" = "$(id -u)" ]
+}
+
+# apn_mark_set: the mark, before credentials go to the modem. A new file of ours renamed over whatever has the name
+# (a link somebody put there is replaced, never written through). 1 when it cannot be written: then no credentials
+# are sent, since nothing would remember to take them back.
+apn_mark_set() {
+    local d=${APN_MARK%/*} t
+    [ -f "$APN_MARK" ] && [ ! -L "$APN_MARK" ] && return 0
+    mkdir -p "$d" 2>/dev/null || return 1
+    t=$(umask 077; mktemp "$d/.apn-auth.XXXXXX" 2>/dev/null) || return 1
+    mv -f "$t" "$APN_MARK" 2>/dev/null || { rm -f "$t"; return 1; }
+}
+
+# apn_credentials: checks the three settings; sets APN_AUTH (0-3), APN_USER and APN_PASS. 1 with a message when
+# they cannot be used.
+apn_credentials() {
+    local LC_ALL=C
+    APN_USER=${APN_SET_USER:-}; APN_PASS=${APN_SET_PASS:-}
+    case ${APN_SET_AUTH:-} in
+        '') if [ -n "$APN_USER$APN_PASS" ]; then APN_AUTH=3; else APN_AUTH=0; fi ;;
+        none) APN_AUTH=0 ;;
+        pap)  APN_AUTH=1 ;;
+        chap) APN_AUTH=2 ;;
+        both) APN_AUTH=3 ;;
+        *) echo "the APN authentication is none, pap, chap or both" >&2; return 1 ;;
+    esac
+    if [ "$APN_AUTH" = 0 ]; then APN_USER=; APN_PASS=; return 0; fi
+    if [ ${#APN_USER} -gt 64 ] || [ ${#APN_PASS} -gt 64 ]; then
+        echo "the APN user name or password is longer than 64 characters" >&2; return 1
+    fi
+    case $APN_USER$APN_PASS in
+        *[!\ -~]*|*[\"\\]*)
+            echo "the APN user name and password may hold printable ASCII only, and no quote or backslash" >&2
+            return 1 ;;
+    esac
+}
+
+# apn_auth_clear: the empty form, which takes credentials back. A modem that does not answer ends the bring-up. One
+# that answers something else than OK: the same when it holds credentials of ours (the mark), since the dial would
+# present them; without a mark it is the internal card's dial as it always was, and goes on.
+apn_auth_clear() {
+    local r
+    r=$(at "AT+CGPCO=0,\"\",\"\",$CID,0") || return 1
+    if printf '%s\n' "$r" | tr -d '\r' | grep -qx OK; then
+        rm -f "$APN_MARK" 2>/dev/null || true   # left behind, it only asks for the empty form once more
+        return 0
+    fi
+    if [ -e "$APN_MARK" ] || [ -L "$APN_MARK" ]; then
+        echo "the modem did not take back the earlier APN credentials (AT+CGPCO): not dialling with them" >&2
+        return 1
+    fi
+}
+
+# apn_auth_send: the credentials (or the empty form) for the context, after its AT+CGDCONT. With credentials the
+# modem's answer must be OK: a dial without them would only be refused by the network later, with nothing to say why.
+apn_auth_send() {
+    local r
+    if [ "$APN_AUTH" = 0 ]; then apn_auth_clear; return; fi
+    apn_mark_set || {
+        echo "cannot write $APN_MARK: the APN credentials are not given to the modem" >&2; return 1; }
+    r=$(AT_SECRET=1 at "AT+CGPCO=0,\"$APN_USER\",\"$APN_PASS\",$CID,$APN_AUTH" 5 2>/dev/null) || {
+        echo "the modem did not answer the APN credentials (AT+CGPCO)" >&2; return 1; }
+    printf '%s\n' "$r" | tr -d '\r' | grep -qx OK || {
+        echo "the modem refused the APN credentials (AT+CGPCO)" >&2; return 1; }
+}
+
+# define_context APN: the data context as the settings ask for it. With no APN nothing is defined: the modem keeps
+# the context the SIM already defines. Runs with set -x off: the trace would hold the password.
+define_context() {
+    local xt= rc=0
+    case $- in *x*) xt=1; set +x ;; esac
+    define_context_quiet "$@" || rc=$?
+    [ -z "$xt" ] || set -x
+    return $rc
+}
+define_context_quiet() {
+    local apn=${1:-}
+    APN_MARK=$APN_AUTH_MARK.sim$SIM_SLOT
+    # The APN is pasted into a quoted AT argument: a quote, a CR or a LF in it (a free-text field in LuCI, a
+    # hand-edited mobile-data.conf) would end the argument or the command early and define something else.
+    case $apn in
+        *[\"\\]*|*"$(printf '\r')"*|*'
+'*) echo "the APN contains a quote, a backslash or a line break; not defining the context with it" >&2; return 1 ;;
+    esac
+    apn_credentials || return 1
+    if [ "$APN_AUTH" != 0 ]; then
+        # credentials belong to a context this script defines; a dial without them is not what was asked for
+        [ -n "$apn" ] || { echo "an APN user name or password is set without an APN: set the APN, or take them out" >&2
+                           return 1; }
+        settings_private "$APN_CONF" || {
+            echo "$APN_CONF holds the APN password and others can read it (chmod 600 it): not dialling" >&2
+            return 1; }
+    fi
+    if [ -z "$apn" ]; then
+        # nothing to define; credentials given to the modem earlier are taken back all the same
+        if [ -e "$APN_MARK" ] || [ -L "$APN_MARK" ]; then apn_auth_clear || return 1; fi
+        return 0
+    fi
+    # (every "|| return 1": a channel that does not answer ends the bring-up, as it did when this was part of up)
+    # Keep the external card's established definition; internal F50 stock RIL uses
+    # dual stack with the extended context, PCO and QoS fields below. The U30 Air's own second card (its native
+    # owners, SIM_NATIVE) was measured with the plain definition, and keeps it.
+    if [ "$SIM_SLOT:${SIM_NATIVE:-0}" = 1:0 ]; then
+        at 'AT+CDEFMP=1,"0"' >/dev/null || return 1
+        at "AT+CGDCONT=$CID,\"${MU300_PDP_TYPE:-IPV4V6}\",\"$apn\",\"\",0,0,0,0,1,,,,,,,,,,,,,0" >/dev/null || return 1
+        apn_auth_send || return 1
+        at 'AT+CGEQREQ=1,2,0,0,0,0,2,0,"1e4","0e0",3,0,0' >/dev/null || return 1
+    else
+        at "AT+CGDCONT=$CID,\"${MU300_PDP_TYPE:-IP}\",\"$apn\"" >/dev/null || return 1
+        # nothing more for an APN without credentials, as before; the empty form only to take earlier ones back
+        if [ "$APN_AUTH" != 0 ] || [ -e "$APN_MARK" ] || [ -L "$APN_MARK" ]; then apn_auth_send || return 1; fi
+    fi
+}
+
+# data_route_back: which card has the packet-data route (AT+SPSWDATA?), and the route back to this one when the
+# modem still names the second card: the same command, on this card's data channel, that the dual-SIM cold start
+# sends for it. Whether the modem keeps the route over a restart was never measured (no unit here has two working
+# cards); with the route elsewhere a dial answers CONNECT and every packet is lost (the F50's internal card,
+# docs/SIM-SELECTION.md). The mark goes once the modem says the route is here; a modem that does not answer the
+# question keeps the mark, and is asked again at the next dial.
+ROUTE_MARK=${MU300_SIM_ROUTE_MARK:-/etc/mu300/sim-data-route-2}
+data_route_card() { at 'AT+SPSWDATA?' 4 2>/dev/null | tr -d '\r' | sed -n 's/^+SPSWDATA: *\([01]\) *$/\1/p' | head -n 1; }
+data_route_back() {
+    local card
+    card=$(data_route_card) || card=
+    if [ "$card" = 1 ]; then
+        radio_say "the data route was still the second card's; taking it back (AT+SPSWDATA)"
+        at 'AT+SPSWDATA' 8 | tr -d '\r' | grep -x OK >/dev/null || {
+            radio_say "the modem did not give the data route back"; return 1; }
+        card=$(data_route_card) || card=
+    fi
+    [ "$card" != 0 ] || rm -f "$ROUTE_MARK"
+}
+
+# Only one bring-up at a time: the watchdog and the service can both decide to reconnect, and two of them race for
+# every AT command (each losing the channel lock in turn, so neither finishes). The radio lock's scheme (lock_take,
+# R35): the old directory with a pid file had the same empty-pid moment, in which a waiter removed a lock that had
+# just been taken. A new name for the same reason as RADIOLOCK's.
+UPLOCK=/run/mu300-mobile-data-up.owner
+up() {
+    # mu300-power holds the modem down (suspend off): no dial, not even netifd's, until resume (which sets _resuming)
+    if [ "$(cat "$SUSPEND" 2>/dev/null || true)" = off ] && [ -z "${_resuming:-}" ]; then
+        echo "the modem is suspended by mu300-power (mobile-data resume brings it back)" >&2
+        return 1
+    fi
+    # Wait for a bring-up that is already running instead of returning: the netifd protocol handler reads the
+    # address out of our output, so an early return reads as "attach failed" and netifd tears the interface
+    # down and tries again every 20 s, which piles up half-finished bring-ups and teardowns.
+    if ! lock_take "$UPLOCK" "${MU300_UP_LOCK_WAIT:-150}"; then
+        echo "another bring-up has been running for over two minutes (pid ${LOCK_HOLDER:-?})" >&2
+        return 1
+    fi
+    up_locked "$@"
+    local rc=$?
+    lock_drop "$UPLOCK"
+    return $rc
+}
+
+# the VPN's kill switch without the VPN module (lib/vpn-orphan.sh): mobile data then stays down - fail closed
+VPN_ORPHAN_LIB=${MU300_VPN_ORPHAN_LIB:-/opt/mu300/lib/vpn-orphan.sh}
+[ ! -r "$VPN_ORPHAN_LIB" ] || . "$VPN_ORPHAN_LIB"
+up_locked() {
+    modem_stack || { echo "no modem stack in this kernel ($(uname -r))" >&2; exit 3; }
+    # The VPN is a module of its own: with its kill switch on and the module gone, nothing would put the kill switch
+    # up, and the bearer would carry everything in the clear. Refused for every attempt, each saying so.
+    if command -v vpn_killswitch_orphaned >/dev/null 2>&1 &&
+        vpn_killswitch_orphaned "${MU300_VPN_CMD:-/opt/mu300/bin/mu300-vpn}" "${MU300_SYSROOT:-}"; then
+        echo "$VPN_ORPHANED_MSG: mobile data stays down (mu300-extra install vpn, or turn the kill switch off)" >&2
+        return 1
+    fi
+    # a VPN with the kill switch has it up before there is a bearer to leak through (mu300-vpn run, which puts it
+    # up too, only starts after this)
+    "${MU300_VPN_CMD:-/opt/mu300/bin/mu300-vpn}" guard >/dev/null 2>&1 || true
+    # the SIM's radio is switched off in its settings (FINDINGS 185): no radio, no dial. Under netifd exit 7: mu300cell
+    # reports SIM_RADIO_DISABLED and does not retry; rf-apply brings the WAN back when it is switched on.
+    if ! rf_allowed; then
+        rf_hold
+        led off
+        [ "${MU300_NETIFD:-0}" != 1 ] || exit 7
+        echo "mobile data stays down: the radio of SIM$((SIM_SLOT + 1)) is off in its settings (mu300-sim-radio set $SIM_SLOT on)"
+        return 0
+    fi
+    rm -f /run/mu300-mobile-data-down
+    # The U30 Air's dual-SIM boot: its cold start (mu300-sim2-warmup) brings the radio up, about 20 s into the boot,
+    # and netifd's first dial comes before that - before the owners even have their command fifos (tty_setup below
+    # ends the dial without them). Wait for the cold start here - outside the radio lock, which it needs - instead
+    # of failing at once and coming back after netifd's 20 s pause (measured: data at 39 s into the boot without
+    # the wait). Ended by the marker, by the cold start giving up for SIM1 (the freeze goes), or by the time.
+    if [ "$SIM_NATIVE" = 1 ] && [ ! -e /run/mu300/sim-radio-ready ]; then
+        local native_end=$((SECONDS + ${MU300_NATIVE_RADIO_WAIT:-40}))
+        until [ -e /run/mu300/sim-radio-ready ] || [ ! -e /run/mu300-radio-freeze ] || [ "$SECONDS" -ge "$native_end" ]; do
+            nap 0.2   # the dial starts as soon as the radio is (a whole second here was up to a second of each boot)
+        done
+    fi
+    tty_setup
+    mark dial-start
+    if ! radio_on; then
+        led error
+        echo "the radio did not come on (see $RADIOLOG)" >&2
+        exit 1
+    fi
+    mark dial-radio-on-done
+    # an empty slot: no dial over and over (FINDINGS 186)
+    # (asked twice, 3 s apart: a card still starting must not count as none)
+    if [ "$(sim_state check)" = absent ] && { nap 3; [ "$(sim_state check)" = absent ]; }; then
+        sim_hold
+        led error
+        [ "${MU300_NETIFD:-0}" != 1 ] || exit 6
+        echo "mobile data waits: no card in SIM$((SIM_SLOT + 1))"
+        return 0
+    fi
+    rm -f "$SIM_HELD"
+    # K58: the IMS bearer SMS uses, which Android's RIL switches on, and VoNR when the user chose it (voice_replay,
+    # FINDINGS 184). Idempotent, and nothing here waits for IMS.
+    voice_replay
+    # A modem reset during this wait is not repaired inside this attempt (the old loop re-ran radio_on every 10 s;
+    # the fork dropped that). The attempt fails after MU300_REGISTER_WAIT, and the next one - netifd after 20 s,
+    # systemd after 30 s, or the watchdog - starts with radio_on, which brings the radio back. Switching the radio
+    # on from inside this wait could also cut across the LuCI plugin's lock replay, which takes the radio down on
+    # purpose.
+    if ! wait_registered; then
+        radio_say "not registered after ${MU300_REGISTER_WAIT:-60} s"
+        led error
+        echo "not registered on the network" >&2
+        exit 1
+    fi
+    mark dial-registered
+    radio_say "registered"
+    # Data roaming off and the card roaming: no context (FINDINGS 120). Under netifd exit 4: mu300cell reports
+    # DATA_ROAMING and netifd tries again a minute later, which is how data comes back at home. On Ubuntu the dial
+    # has done what it should (exit 0, the service stays up) and the watchdog brings data back. Not knowing is a failed
+    # dial, retried as any other.
+    local roam=0
+    roam_gate || roam=$?
+    if [ "$roam" = 1 ]; then
+        led off
+        touch /run/mu300-mobile-data-down   # data is down on purpose (mu300-traffic reads it so); the watchdog knows
+        [ "${MU300_NETIFD:-0}" != 1 ] || exit 4
+        echo "mobile data held back: roaming, and data roaming is off (mobile-data roaming on allows it)"
+        return 0
+    elif [ "$roam" = 2 ]; then
+        radio_say "the registration could not be read, and data roaming is off: not dialling"
+        led error
+        echo "could not tell whether the network is a roaming one; data roaming is off, so no dial" >&2
+        exit 1
+    fi
+    # K47: the IPA delegate (sipa_dele), here and nowhere else. It has to probe once the CP's packet domain exists
+    # (sipa-dele-start waits for +CGATT: 1) and before the PDP context makes the SIPA resources active: loaded in the
+    # background beside this dial it raced AT+CGACT, and the fork recorded a reproducible CFI panic in the delegate
+    # (cd4fb28). Without it the modem never sends downlink (FINDINGS 13f), so a dial that cannot load it stops here;
+    # the next attempt tries again. It is [permanent]: once in /proc/modules, a reconnect goes straight on.
+    # R35: only a kernel that has the module (as the fork checks): without it there is nothing to load, and the
+    # dial-sipa-dele mark would claim a delegate that is not there.
+    local ko=/lib/modules/$(uname -r)
+    if [ ! -f "$ko/sipa-dele.ko" ] && [ ! -f "$ko/extra/sipa-dele.ko" ]; then
+        radio_say "no sipa-dele.ko in this kernel ($(uname -r)); dialling without the IPA delegate"
+    elif ! grep -q '^sipa_dele ' /proc/modules 2>/dev/null; then
+        if ! MU300_DELE_WAIT=${MU300_DELE_WAIT:-20} /opt/mu300/bin/sipa-dele-start >/tmp/mu300-sipa-dele.log 2>&1; then
+            radio_say "the IPA delegate did not load (see /tmp/mu300-sipa-dele.log); no PDP context without it"
+            led error
+            echo "the IPA delegate (sipa-dele) did not load; not activating the PDP context" >&2
+            exit 1
+        fi
+        mark dial-sipa-dele
+    fi
+    # systemd has no way to pass an argument from a config file, so the APN can come from the environment too:
+    # /etc/mu300/mobile-data.conf is an EnvironmentFile for the service. The argument still wins, which is what
+    # the OpenWrt protocol handler uses.
+    set -- "${1:-${MU300_APN:-}}"
+    define_context "$1" || exit 1
+    # No AT+CGACT? first: at boot the context is always off, the question costs a whole AT round trip, and
+    # CGACT=1 on an active context (a reconnect) changes nothing. mu300-at exits 0 on any final result code,
+    # ERROR included, so only a channel that does not answer (a timeout) ends the bring-up here; an ERROR shows up
+    # as the missing address below.
+    at "AT+CGACT=1,$CID" 20 >/dev/null
+    mark dial-pdp-active
+    # An active context is not an address yet. Reassert CGACT=1 once - idempotent, it nudges the context without
+    # tearing it down. Never CGACT=0/1 here: the fork measured that taking down the context it had just created
+    # silenced the AT channel and left the WAN pending for minutes. Both waits are bounded: 16 s of budget by
+    # default; with each phase's last query overrunning (fetch_addr) and the reassert's own 8 s, about 36 s at worst.
+    if ! fetch_addr "${MU300_ADDR_WAIT_FIRST:-8}"; then
+        radio_say "context active but no address after ${MU300_ADDR_WAIT_FIRST:-8} s; reasserting AT+CGACT=1 once"
+        at "AT+CGACT=1,$CID" 8 >/dev/null || true
+        if ! fetch_addr "${MU300_ADDR_WAIT_RETRY:-8}"; then
+            radio_say "still no address after the reassert"
+            echo "no IPv4 address from AT+CGCONTRDP" >&2
+            exit 1
+        fi
+    fi
+    # +CGCONTRDP: cid,bearer,apn,"a.b.c.d.m.m.m.m",gw,dns1,dns2,...
+    addrmask=$(echo "$rdp" | cut -d, -f4 | tr -d '"')
+    ip4=$(echo "$addrmask" | cut -d. -f1-4)
+    mask=$(echo "$addrmask" | cut -d. -f5-8)
+    dns1=$(echo "$rdp" | cut -d, -f6 | tr -d '"')
+    dns2=$(echo "$rdp" | cut -d, -f7 | tr -d '"')
+    [ -n "$ip4" ] || { echo "no IPv4 address from AT+CGCONTRDP" >&2; exit 1; }
+    mark dial-addr-ok
+    # AT+CGDATA takes its time on this modem: measured, it answers "^ORIG: <cid>,<n>" and then CONNECT about
+    # ten to twenty seconds later. With the old eight-second budget the reply arrived after we had given up, so
+    # the next command read it instead of its own and the whole channel looked dead for a while.
+    if ! at "AT+CGDATA=\"M-ETHER\",$CID" 45 | grep -q CONNECT; then
+        echo "AT+CGDATA did not answer CONNECT" >&2
+        [ "$SIM_SLOT" != 1 ] || return 1
+    fi
+    # On the F50's internal SIM, CONNECT can succeed while all packets are lost.
+    # Stock RIL selects the packet-data route with SPSWDATA. Keep slot 0 unchanged.
+    if [ "$SIM_SLOT:$SIM_NATIVE" = 1:0 ]; then
+        at 'AT+SPSWDATA' 8 | grep -x OK >/dev/null || {
+            echo 'Could not select the internal SIM packet-data route' >&2
+            return 1
+        }
+    fi
+    # The U30 Air's first card again, after its dual-SIM path gave the data route to the second one in an earlier
+    # boot (the mark: lib/sim-config.sh). Without the mark nothing is asked and nothing is sent.
+    if [ "$SIM_SLOT" = 0 ] && [ -e "$ROUTE_MARK" ]; then data_route_back || true; fi
+    prefix=$(mask2prefix "$mask")
+    iid=$(v6_iid)
+    # Without an IPv6 address from the network, switch IPv6 off on this interface, as Android does: otherwise it
+    # carries a link-local address and sends router solicitations and multicast into a bearer that is IPv4 only
+    # (FINDINGS 13f). With one, v6_up below (systemd) or the proto handler (OpenWrt) sets it up.
+    # On OpenWrt this is undone a moment later - netifd turns IPv6 back on while it configures the interface -
+    # so the proto handler repeats it after proto_send_update. Relay mode (v6_relay_ra) keeps it on instead.
+    v6_relay_ra || { [ -n "$iid" ] || v6_off; }
+    "${MU300_TTL_CMD:-/opt/mu300/bin/mu300-ttl}" apply >/dev/null 2>&1 || true
+    if [ "${MU300_NETIFD:-0}" = 1 ]; then
+        # OpenWrt: netifd (proto mu300cell) configures the address, routes, DNS and firewall itself
+        printf 'IFACE=%s\nIP=%s\nPREFIX=%s\nDNS1=%s\nDNS2=%s\nIID6=%s\n' "$IFACE" "$ip4" "$prefix" "$dns1" "$dns2" "$iid"
+        operator_log
+        return 0
+    fi
+    ip link set "$IFACE" up
+    # the sipa driver hands up wrong hardware checksums ("hw csum failure" warnings): verify them in software
+    ethtool -K "$IFACE" rx off 2>/dev/null || true
+    ip addr flush dev "$IFACE"
+    ip addr add "$ip4/$prefix" dev "$IFACE"
+    ip route replace default dev "$IFACE" metric 100
+    if command -v resolvectl >/dev/null; then
+        resolvectl dns "$IFACE" $dns1 $dns2 || true
+        resolvectl domain "$IFACE" '~.' || true
+    fi
+    # share the connection with USB/Wi-Fi clients (dnsmasq on usb0 already hands out this device as router/DNS)
+    sysctl -qw net.ipv4.ip_forward=1
+    nft -f - <<NFT
+table ip mu300_nat
+delete table ip mu300_nat
+table ip mu300_nat {
+    chain postrouting {
+        type nat hook postrouting priority srcnat; policy accept;
+        oifname "$IFACE" masquerade
+    }
+    chain forward {
+        type filter hook forward priority filter; policy accept;
+        tcp flags syn tcp option maxseg size set rt mtu
+    }
+}
+NFT
+    [ -n "$iid" ] && v6_up "$iid"
+    led_up
+    echo "mobile data up on $IFACE ($ip4/$prefix)"
+    operator_log
+    # a VPN that started before this bearer was up is started again (FINDINGS 176; OpenWrt: its ifup hotplug)
+    ( "${MU300_VPN_UPLINK:-/opt/mu300/bin/mu300-vpn-uplink}" "$IFACE" ) </dev/null >/dev/null 2>&1 &
+}
+
+# The operator's name is one more AT round trip (about 2 s measured) and decides nothing: it goes to radio.log in
+# the background. Its output must not hold the caller's pipe - netifd reads up's output to its end.
+operator_log() {
+    ( radio_say "up on $IFACE ($ip4/$prefix), operator $(at 'AT+COPS?' 4 2>/dev/null |
+        sed -n 's/^+COPS: [0-9],[0-9],"\([^"]*\)".*/\1/p' || true)" ) </dev/null >/dev/null 2>&1 &
+}
+
+down() {
+    touch /run/mu300-mobile-data-down   # tells watch not to reconnect
+    led off
+    nft delete table ip mu300_nat 2>/dev/null || true
+    v6_off
+    ip route del default dev "$IFACE" 2>/dev/null || true
+    ip addr flush dev "$IFACE" 2>/dev/null || true
+    ip link set "$IFACE" down 2>/dev/null || true
+    # Deactivating the context is a courtesy to the network, not a requirement: the modem is restarted on the
+    # next boot anyway. During a shutdown mu300-atd is going away at the same time, so asking it anything only
+    # delays the reboot - skip it there, and keep the wait short everywhere else.
+    if [ "$(systemctl is-system-running 2>/dev/null)" = stopping ]; then
+        return 0
+    fi
+    # A bring-up in progress owns the AT channel; asking it to deactivate the context now only makes both wait
+    if lock_owner_alive "$(readlink "$UPLOCK" 2>/dev/null || true)"; then
+        return 0
+    fi
+    tty_setup
+    export MU300_AT_LOCK_WAIT=5
+    at "AT+CGACT=0,$CID" 5 >/dev/null || true
+}
+
+sim_reset() {
+    rf_allowed || { echo "The radio of this SIM is switched off in its settings (mu300-sim-radio)" >&2; return 1; }
+    [ ! -e /run/mu300/sim-managed ] || { echo "Use SIM control or reboot for a managed dual-SIM radio" >&2; return 1; }
+    [ "$SIM_NATIVE" != 1 ] || { echo "Native dual SIM requires a Linux reboot, not a live modem reset" >&2; return 1; }
+    tty_setup
+    at 'AT+SFUN=5' 20; at 'AT+SFUN=3' 10; sleep 2; at 'AT+SFUN=2' 10; at 'AT+SFUN=4' 30
+    for _ in $(seq 1 30); do at 'AT+CPIN?' | grep -q READY && break; sleep 2; done
+    at 'AT+CPIN?'
+}
+
+# mu300-power takes the modem down while nobody uses the device; watch must not fight it. The mode file says how:
+#   off  radio off (AT+SFUN=5), data down (under netifd, MU300_NETIFD=1: ifdown of the WAN, so netifd stays the
+#        owner of its address, routes, DNS and firewall); up refuses to dial while it is there, except for resume
+#   lte  EN-DC (5G NSA) off: AT+SPENDC=2, which needs no stack restart, so the data connection is untouched
+# resume undoes it (off: radio_on and the dial the way watch does it; lte: AT+SPENDC=1, only if EN-DC was on
+# before). Both are idempotent: a second call finds the file and does nothing. The mode file is removed last on
+# resume, so the watcher cannot race the restart - except under netifd, where netifd's own dial runs `up` in a process
+# of its own, so the file goes just before the ifup. resume nodial (mu300-power stopping) switches the radio on and
+# clears the files without dialling; the watcher redials.
+# The raw AT sequences run under the radio lock (radio_on takes it itself, so it is released before radio_on).
+SUSPEND=/run/mu300-mobile-data.suspend
+SUSPEND_ENDC=/run/mu300-mobile-data.suspend-endc   # exists when EN-DC was already off before suspend lte
+# EN-DC still to be switched back on: an lte suspend or resume that failed or timed out (bounded below). Every resume
+# tries again until AT+SPENDC=1 answers OK; mu300-power's wake and self-check call resume while it exists. The
+# watcher does not stand aside for it.
+ENDC_RESTORE=/run/mu300-mobile-data.endc-restore
+under_radio_lock() {
+    lock_take "$RADIOLOCK" "${MU300_RADIO_LOCK_WAIT:-120}" || { echo "the radio is busy (pid ${LOCK_HOLDER:-?})" >&2; return 1; }
+    local rc=0
+    tty_setup
+    "$@" || rc=$?
+    lock_drop "$RADIOLOCK"
+    return $rc
+}
+# netifd owns the WAN: mu300-power's OpenWrt instance says so (MU300_NETIFD=1), and so does OpenWrt itself when
+# suspend/resume are run by hand (2026-10-07: without it, suspend off flushed sipa_eth0 behind netifd's back)
+via_netifd() { [ "${MU300_NETIFD:-}" = 1 ] || { [ -z "${MU300_NETIFD:-}" ] && [ -e /etc/openwrt_release ]; }; }
+# the dial the way watch does it: on OpenWrt netifd runs the mu300cell protocol
+redial() {
+    if via_netifd; then bnd "$STEPDL" ifup "${MU300_WAN:-wan}"; else ( _resuming=1; up ); fi
+}
+
+# Data roaming (FINDINGS 120), the watchdog's two moves. roam_take_down: the card went roaming under a live
+# connection with data roaming off. Under netifd the wan is restarted, and its dial holds (exit 4) and is tried again
+# every minute by netifd; on Ubuntu the connection goes down the way `mobile-data down` takes it.
+roam_take_down() {
+    led off
+    if via_netifd; then bnd "$STEPDL" ifup "${MU300_WAN:-wan}" || true
+    else down || true; fi
+}
+# roam_watch_held: a round while data is held back. Under netifd its own dial tries again and brings data back, so
+# nothing is dialled here; a wan somebody took down (netifd's autostart off: ifdown, the panel's button, the data
+# cap) ends the hold. On Ubuntu one question a round, and the dial once the card is home or roaming is allowed. A
+# `mobile-data down` (the service stopped: by hand, the panel, the data cap) has ended the hold already.
+roam_watch_held() {
+    local rc=0
+    if via_netifd; then
+        if ubus call "network.interface.${MU300_WAN:-wan}" status 2>/dev/null | tr -d ' \n\t' |
+            grep -q '"autostart":false'; then
+            rm -f "$ROAM_HELD"
+        fi
+        return 0
+    fi
+    [ -c "$DEV" ] || return 0
+    tty_setup || return 0
+    roam_gate || rc=$?
+    [ "$rc" = 0 ] || return 0
+    ( up ) || echo "reconnect failed, retrying" >&2
+}
+suspend_off_raw() { at 'AT+SFUN=5' 10 >/dev/null || true; }
+suspend_lte_raw() {
+    # the user may have EN-DC off already (the read-back is +ENDC: 1 when on): note it, resume must not turn it on
+    if at 'AT+SPENDC?' 5 | grep -q '+ENDC: *1'; then
+        rm -f "$SUSPEND_ENDC"
+        at 'AT+SPENDC=2' 5 >/dev/null || true
+    else
+        : > "$SUSPEND_ENDC"
+    fi
+}
+# EN-DC back on, if it was on before. mu300-at exits 0 on ERROR too: only an OK counts, and an ERROR or a silence leaves
+# the restore marker (the files still go: the watcher must not stand aside for EN-DC; every later resume retries it)
+resume_lte_raw() {
+    [ ! -e "$SUSPEND_ENDC" ] || return 0
+    if at 'AT+SPENDC=1' 5 2>/dev/null | grep '^OK' >/dev/null; then return 0; fi
+    : > "$ENDC_RESTORE"
+    echo "AT+SPENDC=1 was not answered OK: EN-DC is still off, the next resume tries again" >&2
+}
+endc_on_raw() { at 'AT+SPENDC=1' 5 | grep '^OK' >/dev/null; }   # (mu300-at exits 0 on ERROR too)
+endc_restore() {
+    [ -e "$ENDC_RESTORE" ] || return 0
+    if under_radio_lock endc_on_raw; then rm -f "$ENDC_RESTORE"; echo "EN-DC switched back on" >&2; return 0; fi
+    echo "EN-DC is still off; the next resume tries again" >&2
+    return 1
+}
+# not "suspend": that is a bash builtin
+do_suspend() {
+    # A SIM2 cold-start can only run once. Do not power it down until its resume sequence is validated.
+    [ ! -e /run/mu300/sim-managed ] || { echo "Managed dual-SIM suspend/resume is not supported" >&2; return 1; }
+    [ "$SIM_NATIVE" != 1 ] || { echo "Native dual SIM radio suspend/resume is not supported yet" >&2; return 1; }
+    local mode=${1:-off}
+    case $mode in off|lte) ;; *) echo "usage: mobile-data suspend off|lte" >&2; return 2 ;; esac
+    [ "$(cat "$SUSPEND" 2>/dev/null)" = "$mode" ] && return 0
+    if [ -s "$SUSPEND" ]; then resume || return 1; fi
+    echo "$mode" > "$SUSPEND"
+    case $mode in
+        off) if via_netifd; then bnd "$STEPDL" ifdown "${MU300_WAN:-wan}" || true; else bnd "$STEPDL" down || true; fi
+             under_radio_lock suspend_off_raw || { rm -f "$SUSPEND"; return 1; } ;;
+        lte) under_radio_lock suspend_lte_raw || { rm -f "$SUSPEND"; return 1; } ;;
+    esac
+    echo "modem suspended ($mode)" >&2
+}
+resume() {  # resume [nodial]
+    local mode nodial=${1:-}
+    mode=$(cat "$SUSPEND" 2>/dev/null) || { endc_restore; return; }
+    case $mode in
+        off) radio_on || true
+             if [ "$nodial" = nodial ]; then
+                 rm -f /run/mu300-mobile-data-down
+             elif via_netifd; then
+                 rm -f /run/mu300-mobile-data-down "$SUSPEND"   # netifd's up runs in its own process: no flag there
+                 redial || echo "resume: data did not come back, the watcher retries" >&2
+             else
+                 redial || echo "resume: data did not come back, the watcher retries" >&2
+                 rm -f /run/mu300-mobile-data-down
+             fi ;;
+        lte) under_radio_lock resume_lte_raw || return 1
+             rm -f "$SUSPEND_ENDC" ;;
+    esac
+    rm -f "$SUSPEND"   # last: until now the watcher stood aside
+    echo "modem resumed (was $mode)" >&2
+    endc_restore
+}
+# bounded suspend MODE | resume [nodial]: the command as mu300-power (and anyone) runs it. The whole of it within
+# MU300_SUSPEND_DEADLINE seconds (60); the AT commands with a short client-lock wait and budget, the radio lock with a
+# short wait. A dead terminal cannot stop or hold it: HUP is ignored, and what it says goes through a file and a
+# bounded write. On a failure or a timeout the files are left consistent - no mode file, no "down" flag of ours, so
+# the watcher restores whatever is off - and it exits non-zero.
+bounded() {
+    local verb=$1 arg=${2:-} rc=0 out had_down=0 mode prior
+    trap '' HUP
+    # the budget covers the longest AT here (-t 20) plus mu300-at's own 2 s
+    export MU300_AT_LOCK_WAIT=${MU300_AT_LOCK_WAIT:-10} MU300_AT_BUDGET=${MU300_AT_BUDGET:-22}
+    export MU300_RADIO_LOCK_WAIT=${MU300_RADIO_LOCK_WAIT:-20}
+    [ ! -e /run/mu300-mobile-data-down ] || had_down=1
+    prior=$(cat "$SUSPEND" 2>/dev/null || true)
+    out=/run/mu300-mobile-data.out.$$
+    if [ "$verb" = suspend ]; then
+        mode=${arg:-off}
+        case $mode in off|lte) ;; *) echo "usage: mobile-data suspend off|lte" >&2; return 2 ;; esac
+        bnd "${MU300_SUSPEND_DEADLINE:-60}" do_suspend "$mode" > "$out" 2>&1 || rc=$?
+    else
+        bnd "${MU300_SUSPEND_DEADLINE:-60}" resume "$arg" > "$out" 2>&1 || rc=$?
+    fi
+    if [ "$rc" != 0 ]; then
+        # EN-DC may be off by our hand now (an lte suspend, or an lte resume - also the one on the way to off): note it
+        # unless the user had it off before
+        if { [ "$verb" = suspend ] && [ "$mode" = lte ]; } || [ "$prior" = lte ]; then
+            [ -e "$SUSPEND_ENDC" ] || : > "$ENDC_RESTORE"
+        fi
+        rm -f "$SUSPEND" "$SUSPEND_ENDC"
+        if [ "$verb" = resume ] || [ "$had_down" = 0 ]; then rm -f /run/mu300-mobile-data-down; fi
+        echo "mobile-data: $verb ${arg:-} failed (rc $rc): the modem is left to the watcher" >> "$out"
+    fi
+    radio_say "$verb ${arg:-}: rc $rc"
+    { bnd 5 cat "$out" >&3; } 3>&2 2>/dev/null || true
+    rm -f "$out"
+    return "$rc"
+}
+
+# The modem firmware occasionally resets itself (modem_control reloads it); it comes back with the radio off and
+# no PDP context, which Android's RIL repairs silently. Check the context every 30 s and reconnect when it is gone.
+#
+# watch_context: what AT+CGACT? says about our context. active; inactive (the modem answered with a final OK and the
+# context is not up: <cid>,0, or no line for it at all, which is what a firmware reset leaves); unknown (no final
+# result code in time, the client lock busy, ERROR). Unknown is not evidence of a lost bearer: a channel can be slow
+# while the modem moves between cells, and taking that for a detach redialled a working connection (the point of
+# kanoqwq's clean-tf-7.2 3cbf37fc; FINDINGS 90).
+watch_context() {
+    local reply
+    reply=$(at "AT+CGACT?" 4 2>/dev/null) || { echo unknown; return 0; }
+    reply=$(printf '%s\n' "$reply" | tr -d '\r')
+    if printf '%s\n' "$reply" | grep -Eq "^\+CGACT: ?$CID,1([^0-9]|$)"; then
+        echo active
+    elif printf '%s\n' "$reply" | grep -Eq '^OK$'; then
+        echo inactive
+    else
+        echo unknown
+    fi
+}
+
+# A context that is up, with the right address, and still no downlink (FINDINGS 176). Measured on the U30 Air: the
+# PDP context active, sipa_eth0 on the context's address, packets leaving and TX errors growing, and rx_packets
+# standing still for minutes - every check above passed, so this watchdog never acted, and only a reboot brought data
+# back. The interface's own counters tell it: packets leave and nothing at all comes back. Nothing is sent to find
+# out (the VPN's kill switch stays whole): only what the device sends anyway counts, and an idle link (nothing
+# leaving) is never taken for a dead one.
+#
+# downlink_stalled: rx_packets grew by at most MU300_DL_RX_ALLOW (2: a stray router advertisement) since the
+# reference while tx_packets grew by MU300_DL_STALL_TX (20) or more, for MU300_DL_STALL_SECS (90) or longer. Any more
+# received is a working downlink and a new reference; counters that went backwards (a new interface) are one too.
+SYS_NET=${MU300_SYS_NET:-/sys/class/net}
+DL_LOG=/run/mu300/downlink.log
+dl_rx= dl_tx= dl_t=0 dl_level=0 dl_next=0 dl_backoff=0 dl_last=0
+dl_count() {
+    local v
+    v=$(cat "$SYS_NET/$IFACE/statistics/$1" 2>/dev/null) || return 1
+    case $v in ''|*[!0-9]*) return 1 ;; esac
+    echo "$v"
+}
+downlink_stalled() {
+    local rx tx
+    { rx=$(dl_count rx_packets) && tx=$(dl_count tx_packets); } || { dl_rx=; return 1; }
+    if [ -z "$dl_rx" ] || [ "$rx" -lt "$dl_rx" ] || [ "$tx" -lt "$dl_tx" ] ||
+        [ $((rx - dl_rx)) -gt "${MU300_DL_RX_ALLOW:-2}" ]; then
+        if [ "$dl_last" -gt 0 ] && [ -n "$dl_rx" ] && [ "$rx" -gt "$dl_rx" ]; then
+            echo "the downlink is back: $IFACE received $((rx - dl_rx)) packets (after step $dl_last)" >&2
+            radio_say "downlink back after step $dl_last"
+            dl_level=0 dl_backoff=0 dl_last=0 dl_next=0
+        fi
+        dl_rx=$rx dl_tx=$tx dl_t=$SECONDS
+        dl_reboots_clear
+        return 1
+    fi
+    [ $((SECONDS - dl_t)) -ge "${MU300_DL_STALL_SECS:-90}" ] && [ $((tx - dl_tx)) -ge "${MU300_DL_STALL_TX:-20}" ]
+}
+# what the modem and the IPA said at the moment of the stall, for the next look (kept small, /run is RAM; no
+# identities: the context's state and address, the registration, the counters and the delegate's last lines)
+downlink_evidence() {
+    mkdir -p "${DL_LOG%/*}" 2>/dev/null || true
+    if [ "$(fsize "$DL_LOG")" -gt 32768 ]; then : 2>/dev/null > "$DL_LOG" || true; fi
+    {
+        echo "== t=$(cut -d' ' -f1 /proc/uptime 2>/dev/null || true) step $dl_level: $IFACE rx_packets $(dl_count rx_packets || true)" \
+            "tx_packets $(dl_count tx_packets || true) tx_errors $(dl_count tx_errors || true)," \
+            "$(( $(dl_count rx_packets || echo 0) - ${dl_rx:-0} )) in / $(( $(dl_count tx_packets || echo 0) - ${dl_tx:-0} )) out in $((SECONDS - dl_t)) s"
+        at "AT+CGACT?" 4 2>/dev/null | tr -d '\r' | grep '^+CGACT' || true
+        at "AT+CGPADDR=$CID" 4 2>/dev/null | tr -d '\r' | grep '^+CGPADDR' || true
+        at 'AT+CEREG?' 4 2>/dev/null | tr -d '\r' | grep '^+CEREG' || true
+        dmesg 2>/dev/null | grep -E 'sipa_dele|sipa_rm: SIPA_RM_RES_(PROD|CONS_WWAN)' | tail -n 8 || true
+    } >> "$DL_LOG" 2>/dev/null || true
+}
+# The way back, one step per stall; each step gets a new reference, so the next one comes MU300_DL_STALL_SECS after
+# it at the earliest. A step that does not apply here is passed over in the same round:
+#   1  the VPN started again, when one is on (`mu300-vpn restart`; the kill switch stays up). This is what the dead
+#      boots measured in FINDINGS 176 needed: the engine had started a moment before the bearer was up, and nothing
+#      came back until it was restarted (mu300-vpn-uplink now does it at every bearer ifup; this is the safety net).
+#   2  the data context again: netifd's restart of the wan (its teardown is `mobile-data down`: AT+CGACT=0 and the
+#      interface down; then the dial), on Ubuntu the same by hand. This is what a lost or stale context needs (13g).
+#   3  the radio off and on, then the dial (`suspend off` and `resume`, mu300-power's own path): the modem builds its
+#      packet domain again. Not on a managed or native dual-SIM radio, which refuse it.
+#   4  a reboot, only when nothing came back on this interface in the whole boot (rx_packets below
+#      MU300_DL_REBOOT_RX, 200) and at most MU300_DL_REBOOT_MAX times (3) in a row until a boot has a downlink again
+#      (counted in DL_REBOOTS, which survives the reboot). Off with `option dl_reboot '0'` on the wan (OpenWrt) or
+#      MU300_DL_REBOOT=0 in mobile-data.conf (Ubuntu).
+# Then MU300_DL_BACKOFF seconds (600) until the next round of steps, doubled each time up to an hour: a link whose far
+# end is gone (a VPN server down, after a boot that had a downlink) reads the same, and redialling it every few
+# minutes would only churn.
+DL_REBOOTS=${MU300_DL_REBOOTS:-/etc/mu300/downlink-reboots}
+dl_reboot_setting() {
+    local v=${MU300_DL_REBOOT:-}
+    if [ -z "$v" ]; then
+        if via_netifd; then v=$(uci -q get "network.${MU300_WAN:-wan}.dl_reboot" 2>/dev/null || true)
+        else v=$(conf_value MU300_DL_REBOOT); fi
+    fi
+    case $v in 0|off|no|false) echo 0 ;; *) echo 1 ;; esac
+}
+# a boot with a real downlink ends the count of reboots in a row
+dl_reboots_clear() {
+    [ -e "$DL_REBOOTS" ] || return 0
+    [ "$(dl_count rx_packets || echo 0)" -ge "${MU300_DL_GOOD_RX:-1000}" ] || return 0
+    rm -f "$DL_REBOOTS" 2>/dev/null || true
+}
+# dl_reboot_allowed: may step 4 reboot now? Says why not on stderr.
+dl_reboot_allowed() {
+    local n rx
+    [ "$(dl_reboot_setting)" = 1 ] || { echo "step 4 (a reboot) is switched off" >&2; return 1; }
+    rx=$(dl_count rx_packets || echo 0)
+    [ "$rx" -lt "${MU300_DL_REBOOT_RX:-200}" ] ||
+        { echo "no reboot: $IFACE has had a downlink in this boot ($rx packets received)" >&2; return 1; }
+    n=$(cat "$DL_REBOOTS" 2>/dev/null || echo 0)
+    case $n in ''|*[!0-9]*) n=0 ;; esac
+    [ "$n" -lt "${MU300_DL_REBOOT_MAX:-3}" ] ||
+        { echo "no reboot: $n reboots in a row did not bring the downlink back; waiting for one that has it" >&2; return 1; }
+}
+dl_reboot() {
+    local n
+    dl_reboot_allowed || return 1
+    n=$(cat "$DL_REBOOTS" 2>/dev/null || echo 0)
+    case $n in ''|*[!0-9]*) n=0 ;; esac
+    mkdir -p "${DL_REBOOTS%/*}" 2>/dev/null || true
+    echo $((n + 1)) > "$DL_REBOOTS" 2>/dev/null || { echo "no reboot: cannot count it in $DL_REBOOTS" >&2; return 1; }
+    cp "$DL_LOG" "${DL_REBOOTS}.log" 2>/dev/null || true   # the evidence, past the reboot
+    echo "step 4: rebooting (reboot $((n + 1)) of at most ${MU300_DL_REBOOT_MAX:-3} in a row; evidence in ${DL_REBOOTS}.log)" >&2
+    radio_say "downlink stalled, step 4: reboot $((n + 1))"
+    sync
+    ${MU300_REBOOT_CMD:-reboot}
+}
+dl_vpn_on() { [ "$("${MU300_VPN_CMD:-/opt/mu300/bin/mu300-vpn}" enabled 2>/dev/null)" = 1 ]; }
+downlink_recover() {
+    [ "$SECONDS" -ge "$dl_next" ] || return 0
+    local msg="downlink stalled: $IFACE sent $(( $(dl_count tx_packets || echo 0) - ${dl_tx:-0} )) packets in $((SECONDS - dl_t)) s and received $(( $(dl_count rx_packets || echo 0) - ${dl_rx:-0} ))"
+    local acted=
+    dl_level=$((dl_level + 1))
+    downlink_evidence
+    while [ -z "$acted" ]; do
+        dl_last=$dl_level
+        case $dl_level in
+            1)
+                if dl_vpn_on; then
+                    echo "$msg; step 1: the VPN again" >&2
+                    radio_say "downlink stalled, step 1: the VPN again"
+                    bnd 60 "${MU300_VPN_CMD:-/opt/mu300/bin/mu300-vpn}" restart >/dev/null 2>&1 ||
+                        echo "mu300-vpn restart failed" >&2
+                    acted=1
+                fi
+                ;;
+            2)
+                echo "$msg; step 2: the data context again" >&2
+                radio_say "downlink stalled, step 2: the data context again"
+                led off
+                if via_netifd; then
+                    bnd "$STEPDL" ifup "${MU300_WAN:-wan}" || true
+                else
+                    at "AT+CGACT=0,$CID" 10 >/dev/null || true
+                    ip link set "$IFACE" down 2>/dev/null || true
+                    ( up ) || echo "reconnect failed, retrying" >&2
+                fi
+                acted=1
+                ;;
+            3)
+                if [ -e /run/mu300/sim-managed ] || [ "$SIM_NATIVE" = 1 ]; then
+                    echo "$msg; step 3 (the radio off and on) is not possible on this dual-SIM radio" >&2
+                else
+                    echo "$msg; step 3: the radio off and on, then the dial" >&2
+                    radio_say "downlink stalled, step 3: the radio off and on"
+                    ( bounded suspend off ) || true
+                    ( bounded resume ) || echo "the radio did not come back, the watcher retries" >&2
+                    acted=1
+                fi
+                ;;
+            *)
+                echo "$msg after every step" >&2
+                dl_reboot || true
+                dl_backoff=$(( dl_backoff ? dl_backoff * 2 : ${MU300_DL_BACKOFF:-600} ))
+                [ "$dl_backoff" -le 3600 ] || dl_backoff=3600
+                echo "the downlink is still stalled; the next round of steps in $dl_backoff s" >&2
+                radio_say "downlink still stalled after every step; next round in $dl_backoff s"
+                dl_level=0
+                dl_next=$((SECONDS + dl_backoff))
+                acted=1
+                ;;
+        esac
+        [ -n "$acted" ] || dl_level=$((dl_level + 1))
+    done
+    dl_rx=   # a new reference once the step is through
+}
+
+watch() {
+    local fails=0 rounds=0 unknown=0 state
+    # one watchdog is enough: procd and systemd have both been seen starting a second one
+    local wlock=/run/mu300-mobile-data-watch.lock wp=
+    while ! mkdir "$wlock" 2>/dev/null; do
+        wp=$(cat "$wlock/pid" 2>/dev/null || true)
+        # a live pid is not enough: the number gets reused, and taking the lock from a watchdog that is still
+        # running puts two of them on the AT channel
+        if at_owner_alive "$wp"; then
+            echo "another watchdog is already running (pid $wp)" >&2
+            exit 0
+        fi
+        rm -rf "$wlock"
+    done
+    echo $$ > "$wlock/pid"
+    trap 'rm -rf "$wlock"' EXIT INT TERM
+    modem_stack || { echo "no modem stack in this kernel ($(uname -r)), not watching" >&2; exit 0; }
+    while :; do
+        sleep "${MU300_WATCH_INTERVAL:-30}"
+        if [ -n "${MU300_WATCH_ROUNDS:-}" ]; then   # tests only: stop after that many rounds
+            rounds=$((rounds + 1))
+            if [ "$rounds" -gt "$MU300_WATCH_ROUNDS" ]; then rm -rf "$wlock"; trap - EXIT INT TERM; break; fi
+        fi
+        [ -e /run/mu300/sim-switching ] && continue
+        [ -e /run/mu300/sim-active-unknown ] && continue
+        # A live switch publishes the slot only after its RF and routing gates pass. The same when the dual-SIM
+        # boot gave up for SIM1 in this boot (mu300-sim2-warmup: the freeze goes, the card may stay the same):
+        # this process chose its channels and its radio rules at its start, so it starts over.
+        local current_slot current_native=0
+        current_slot=$(cat /run/mu300/sim-slot 2>/dev/null || echo "$SIM_SLOT")
+        [ ! -e /run/mu300-radio-freeze ] || current_native=1
+        if [ "$current_slot" != "$SIM_SLOT" ] || [ "$current_native" != "$SIM_NATIVE" ]; then
+            rm -rf "$wlock"
+            trap - EXIT INT TERM
+            unset MU300_SIM_SLOT
+            exec "$0" watch
+        fi
+        # data held back for roaming (FINDINGS 120): no reconnect, no "mobile data lost"; only the way back
+        if [ -e "$ROAM_HELD" ]; then
+            [ -s "$SUSPEND" ] || roam_watch_held
+            continue
+        fi
+        # the SIM's radio switched off in its settings (FINDINGS 185): nothing to restore; switched on again (the
+        # setting edited by hand, or rf-apply that did not get through): the radio and the dial come back here
+        if ! rf_allowed; then continue; fi
+        # no card in the slot (FINDINGS 186): nothing to restore; every tenth round (five minutes) the card is asked
+        # again, for an insertion whose event was missed - mu300-sim-state dials when one answers
+        if [ -e "$SIM_HELD" ] || [ "$(sim_state get)" = absent ]; then
+            sim_rounds=$(( ${sim_rounds:-0} + 1 ))
+            [ $((sim_rounds % 10)) != 0 ] || sim_state check >/dev/null
+            continue
+        fi
+        if [ -e "$RF_HELD" ] && [ ! -s "$SUSPEND" ]; then
+            rm -f "$RF_HELD"
+            echo "the radio of the SIM in use is switched on in its settings again" >&2
+            radio_on || true
+            redial || echo "reconnect failed, retrying" >&2
+            continue
+        fi
+        [ -e /run/mu300-mobile-data-down ] && continue
+        [ -s "$SUSPEND" ] && continue   # mu300-power holds the modem down; nothing to restore
+        [ -c "$DEV" ] || continue
+        tty_setup
+        state=$(watch_context)
+        if [ "$state" = unknown ]; then
+            # A few rounds without an answer are a busy or moving modem: the bearer and the count of failed rounds
+            # are left as they are. A modem that stays silent (MU300_WATCH_UNKNOWN_ROUNDS rounds, 4 = two minutes, or
+            # about 4.5 when the daemon hangs: an unanswered command then takes 35 s) is treated as before: the radio
+            # check, then a reconnect.
+            unknown=$((unknown + 1))
+            [ "$unknown" -ge "${MU300_WATCH_UNKNOWN_ROUNDS:-4}" ] || continue
+            echo "no answer about the data context for $unknown rounds" >&2
+        else
+            unknown=0
+        fi
+        if [ "$state" = active ] && ip -4 addr show "$IFACE" 2>/dev/null | grep -q inet; then
+            # An active context is not enough: after the radio or the network dropped the bearer, an LTE modem
+            # attaches again by itself and the context comes back with a new address, while the interface keeps
+            # the old one - it sends with it and nothing ever comes back (measured: rx 0, the modem on
+            # 10.160.167.97, sipa_eth0 on 10.200.191.225). Reconnect as soon as the two differ.
+            # the context's IPv4 address: the first field after the cid when it has four parts (an IPv6 one has 16)
+            want=$(at "AT+CGPADDR=$CID" 4 | awk -F'[ ,"]+' '/^\+CGPADDR:/ { if (split($3, o, ".") == 4 && $3 != "0.0.0.0") print $3; exit }' || true)
+            have=$(ip -4 -o addr show "$IFACE" 2>/dev/null | awk '{ split($4, a, "/"); print a[1]; exit }' || true)
+            if [ -z "$want" ] || [ "$want" = "$have" ]; then
+                fails=0
+                # moved onto a roaming network with data roaming off: data goes down (one more question per round,
+                # only with the setting off)
+                if [ "$(roaming_setting)" = 0 ] && [ "$(roam_state)" = roaming ]; then
+                    roam_hold
+                    roam_take_down
+                    continue
+                fi
+                if downlink_stalled; then
+                    downlink_recover
+                    continue
+                fi
+                led_up
+                continue
+            fi
+            echo "the network gave the context a new address ($want; $IFACE still has $have), reconnecting" >&2
+            fails=1   # no second look needed: the next step reconnects
+        fi
+        # a switched-off radio never comes back on its own
+        at 'AT+CFUN?' 4 | grep -q '+CFUN: 1' || { echo "radio was off, switching it on" >&2; radio_on || true; }
+        fails=$((fails + 1))
+        [ "$fails" -lt 2 ] && continue
+        echo "mobile data lost (modem reset or detached), reconnecting" >&2
+        # no service (no SIM, not registered) stays red through the two minutes up() waits, as ZTE shows it
+        if at 'AT+CEREG?' | grep -qE '\+CEREG: [0-9],(1|5)'; then led off; else led error; fi
+        if [ "${MU300_NETIFD:-0}" = 1 ]; then
+            ifup "${MU300_WAN:-wan}"   # OpenWrt: let netifd run the mu300cell protocol again
+        else
+            ( up ) || echo "reconnect failed, retrying" >&2
+        fi
+        fails=0
+        dl_rx=   # a new reference once the dial is through
+    done
+}
+
+# Radio quality in human terms. The AT channel belongs to whoever asks first, so the watchdog is paused by the
+# caller (mu300-toolkit does this); reading these values never disturbs an established data connection.
+signal() {
+    tty_setup
+    local cops cereg cesq csq rsrp rsrq act mcc oper tac cell rat q
+    cops=$(at 'AT+COPS?' 4 | grep '^+COPS:' || true)
+    cereg=$(at 'AT+CEREG?' 4 | grep '^+CEREG:' || true)
+    cesq=$(at 'AT+CESQ' 4 | grep '^+CESQ:' || true)
+    csq=$(at 'AT+CSQ' 4 | grep '^+CSQ:' || true)
+    oper=$(echo "$cops" | sed -n 's/.*"\([^"]*\)".*/\1/p')
+    act=$(echo "$cops" | awk -F, '{gsub(/ /, "", $4); print $4}')
+    tac=$(echo "$cereg" | awk -F'"' '{print $2}')
+    cell=$(echo "$cereg" | awk -F'"' '{print $4}')
+    # +CESQ: rxlev,ber,rscp,ecno,rsrq,rsrp[,ssrsrq,ssrsrp,sssinr]
+    rsrq=$(echo "$cesq" | awk -F'[,:]' '{gsub(/ /, "", $6); print $6}')
+    rsrp=$(echo "$cesq" | awk -F'[,:]' '{gsub(/ /, "", $7); print $7}')
+    case $act in
+        7) rat="LTE" ;;
+        13) rat="5G NSA (LTE + NR)" ;;
+        11|12) rat="5G" ;;
+        2|4|5|6) rat="3G" ;;
+        0|1|3) rat="2G" ;;
+        *) rat="unknown (AcT $act)" ;;
+    esac
+    printf 'operator     %s (%s)\n' "${oper:-unknown}" "$rat"
+    if [ -n "$rsrp" ] && [ "$rsrp" != 255 ] 2>/dev/null; then
+        # 3GPP mapping: RSRP index 0..97 = -140..-44 dBm, RSRQ index 0..34 = -19.5..-3 dB
+        local rsrp_dbm rsrq_db
+        rsrp_dbm=$((rsrp - 140))
+        rsrq_db=$(awk -v i="$rsrq" 'BEGIN { printf "%.1f", -19.5 + i * 0.5 }')
+        if [ "$rsrp_dbm" -ge -85 ]; then q="excellent"
+        elif [ "$rsrp_dbm" -ge -95 ]; then q="good"
+        elif [ "$rsrp_dbm" -ge -105 ]; then q="fair"
+        elif [ "$rsrp_dbm" -ge -115 ]; then q="weak"
+        else q="very weak"; fi
+        printf 'signal       RSRP %s dBm (%s), RSRQ %s dB\n' "$rsrp_dbm" "$q" "$rsrq_db"
+    else
+        printf 'signal       %s\n' "${csq:-no reading}"
+    fi
+    [ -n "$cell" ] && printf 'cell         %s  (tracking area %s)\n' "$cell" "$tac"
+    ip -4 -br addr show "$IFACE" 2>/dev/null | awk '{printf "interface    %s %s\n", $1, $3}'
+}
+
+status() {
+    tty_setup
+    at 'AT+COPS?'; at 'AT+CSQ'; at 'AT+CEREG?'; at 'AT+CGACT?'
+    ip -br addr show "$IFACE"
+    if [ -e "$ROAM_HELD" ]; then echo "roaming: yes, data not allowed while roaming (mobile-data roaming on allows it)"
+    elif [ "$(roaming_setting)" = 0 ]; then echo "data roaming: off"; fi
+}
+
+# mobile-data roaming [--json] | roaming on|off [--slot 0|1]: the data roaming setting (FINDINGS 120).
+#   roaming           the setting of the card in use, whether data is held back, and the network (asks the modem)
+#   roaming --json    {"allowed","held","slot","per_sim","slots":[slot 0, slot 1]}: files only, no modem question
+#   roaming on|off    allow or refuse data while roaming: the card in use, or --slot N (OpenWrt: one setting per
+#                     card; Ubuntu: one for both). Taken up by the dial and the watchdog within half a minute.
+roaming_json() {
+    local held=false per=false s0 s1
+    [ ! -e "$ROAM_HELD" ] || held=true
+    via_netifd && per=true
+    s0=$(roaming_setting 0); s1=$(roaming_setting 1)
+    tf() { if [ "$1" = 1 ]; then echo true; else echo false; fi; }
+    printf '{"allowed":%s,"held":%s,"slot":%d,"per_sim":%s,"slots":[%s,%s]}\n' "$(tf "$(roaming_setting)")" "$held" \
+        "$SIM_SLOT" "$per" "$(tf "$s0")" "$(tf "$s1")"
+}
+# roaming_write 0|1 SLOT: store the setting (uci on OpenWrt; Ubuntu's settings file, root's alone as it may hold the
+# APN password, its other lines kept, a new file renamed over the old one)
+roaming_write() {
+    if via_netifd; then
+        uci -q set "network.${MU300_WAN:-wan}.$(roaming_option "$2")=$1" && uci -q commit network
+        return
+    fi
+    local d=${MD_CONF%/*} t
+    mkdir -p "$d" 2>/dev/null || return 1
+    t=$(umask 077; mktemp "$d/.mobile-data.conf.XXXXXX" 2>/dev/null) || return 1
+    if { if [ -f "$MD_CONF" ]; then grep -v '^[[:space:]]*MU300_DATA_ROAMING=' "$MD_CONF" || true; fi
+         echo "MU300_DATA_ROAMING=$1"; } > "$t" && chmod 600 "$t" && mv -f "$t" "$MD_CONF"; then
+        return 0
+    fi
+    rm -f "$t"
+    return 1
+}
+roaming_cmd() {
+    local v slot=$SIM_SLOT net
+    case ${1:-} in
+        '')
+            if [ "$(roaming_setting)" = 1 ]; then echo "data roaming   allowed"; else echo "data roaming   off"; fi
+            v=$(roaming_raw)
+            if [ -n "$v" ] && [ -z "$(roaming_word "$v")" ]; then
+                echo "               (the stored value is neither 1 nor 0, so it counts as allowed)"
+            fi
+            if modem_stack && [ -c "$DEV" ] && tty_setup; then net=$(roam_state); else net=unknown; fi
+            case $net in
+                roaming) echo "network        roaming (some SIMs report roaming at home: an MVNO, national roaming)" ;;
+                *) echo "network        $net" ;;
+            esac
+            if [ -e "$ROAM_HELD" ]; then echo "mobile data    held back: roaming, and data roaming is off"; fi
+            ;;
+        --json) roaming_json ;;
+        on|off)
+            v=$(roaming_word "$1")
+            if [ "${2:-}" = --slot ]; then
+                case ${3:-} in 0|1) slot=$3 ;; *) echo "usage: $0 roaming on|off [--slot 0|1]" >&2; return 2 ;; esac
+                via_netifd || { echo "Ubuntu has one data roaming setting for both cards: no --slot" >&2; return 2; }
+            elif [ -n "${2:-}" ]; then
+                echo "usage: $0 roaming on|off [--slot 0|1]" >&2; return 2
+            fi
+            roaming_write "$v" "$slot" || { echo "the data roaming setting could not be saved" >&2; return 1; }
+            if via_netifd; then echo "data roaming $1 for the SIM in slot $slot"; else echo "data roaming $1"; fi
+            ;;
+        *) echo "usage: $0 roaming [--json] | roaming on|off [--slot 0|1]" >&2; return 2 ;;
+    esac
+}
+
+# --- VoLTE and VoNR, per card (FINDINGS 184; after kanoqwq's per-SIM voice switches, 5f4732e and 53ef7b1) ----------
+# The user's choice per card in $VOICE_CONF, one KEY=VALUE line each: volte0, vonr0 (slot 0), volte1, vonr1 (slot 1),
+# value 1 or 0; the file is read, never executed, on both systems. Replayed at every bring-up of the card, after the
+# radio is on (voice_replay), where the dial has always sent AT+CAVIMS=1:
+#   VoLTE  AT+CAVIMS=<0|1>, read back with AT+CAVIMS?. No line: on, as every release before this one did (the IMS
+#          bearer is also what SMS over IMS uses).
+#   VoNR   AT+SP5GCMDS="set nr param",45,<0|1>, read back with AT+SP5GCMDS="get nr synch_param",42 (its third field).
+#          No line: nothing is sent, the modem keeps its own setting.
+# Neither restarts the radio or redials. `mobile-data voice volte|vonr on|off [--slot N]` saves the choice; for the
+# card in use, with the modem answering, it is sent at once and read back, and a modem that does not read back what
+# was asked for leaves the saved choice as it was (exit 1). For the other card it waits for that card's next start.
+VOICE_CONF=${MU300_VOICE_CONF:-/etc/mu300/sim-voice}
+# voice_saved KIND SLOT: 1 or 0 as saved, nothing when there is no valid line
+voice_saved() {
+    local v
+    [ -r "$VOICE_CONF" ] || return 0
+    v=$(sed -n "s/^[[:space:]]*$1$2=//p" "$VOICE_CONF" 2>/dev/null | tail -n 1 | tr -d ' \r\t') || return 0
+    case $v in 0|1) echo "$v" ;; esac
+}
+# voice_read KIND: what the card in use says now, 1 or 0; status 1 when it does not answer that clearly
+voice_read() {
+    local out v
+    case $1 in
+        volte) out=$(at 'AT+CAVIMS?' 4 2>/dev/null | tr -d '\r') || return 1
+               v=$(printf '%s\n' "$out" | sed -n 's/^+CAVIMS: *\([01]\) *$/\1/p' | head -n 1) ;;
+        vonr)  out=$(at 'AT+SP5GCMDS="get nr synch_param",42' 4 2>/dev/null | tr -d '\r') || return 1
+               v=$(printf '%s\n' "$out" | sed -n 's/^+SP5GCMDS: *//p' | head -n 1 | tr -d ' "' |
+                   awk -F, '$1 == "getnrsynch_param" && $2 == 42 && ($3 == "0" || $3 == "1") { print $3; exit }') ;;
+        *) return 1 ;;
+    esac
+    printf '%s\n' "$out" | grep -x OK >/dev/null || return 1
+    case $v in 0|1) echo "$v" ;; *) return 1 ;; esac
+}
+# voice_send KIND 0|1: the command, and the read-back; status 1 unless the modem now says what was asked for
+voice_send() {
+    case $1 in
+        volte) at "AT+CAVIMS=$2" 5 >/dev/null 2>&1 || true ;;
+        vonr) at "AT+SP5GCMDS=\"set nr param\",45,$2" 5 >/dev/null 2>&1 || true ;;
+        *) return 1 ;;
+    esac
+    [ "$(voice_read "$1" || true)" = "$2" ]
+}
+# voice_replay: the card in use's choice, at its bring-up. Never fails the bring-up: a refusal is logged.
+voice_replay() {
+    local v
+    v=$(voice_saved volte "$SIM_SLOT")
+    at "AT+CAVIMS=${v:-1}" 5 >/dev/null 2>&1 || true
+    v=$(voice_saved vonr "$SIM_SLOT")
+    [ -n "$v" ] || return 0
+    at "AT+SP5GCMDS=\"set nr param\",45,$v" 5 >/dev/null 2>&1 || true
+    [ "$(voice_read vonr || true)" = "$v" ] || radio_say "VoNR: the modem did not read back $v for slot $SIM_SLOT"
+}
+# voice_write KIND SLOT 0|1|-: the line replaced (- removes it); the other lines kept, a new file renamed over the old
+voice_write() {
+    local d=${VOICE_CONF%/*} t
+    mkdir -p "$d" 2>/dev/null || return 1
+    t=$(umask 022; mktemp "$d/.sim-voice.XXXXXX" 2>/dev/null) || return 1
+    if { if [ -f "$VOICE_CONF" ]; then grep -v "^[[:space:]]*$1$2=" "$VOICE_CONF" || true; fi
+         [ "$3" = - ] || echo "$1$2=$3"; } > "$t" && chmod 644 "$t" && mv -f "$t" "$VOICE_CONF"; then
+        return 0
+    fi
+    rm -f "$t"
+    return 1
+}
+# voice_live: the modem can be asked (the card in use, its channel up, the radio not held by a SIM switch)
+voice_live() {
+    modem_stack && [ ! -e /run/mu300/sim-switching ] && [ ! -e /run/mu300/sim-active-unknown ] && tty_setup 2>/dev/null
+}
+# mobile-data voice [--json [--read]] | voice volte|vonr on|off [--slot 0|1]
+#   --json   {"slot":<in use>,"slots":[{"volte":true|false,"vonr":true|false|null}, ...]}: the saved choices (VoLTE
+#            unset is on, VoNR unset is null: the modem's own), files only; --read adds "live":{"volte","vonr"} with
+#            what the card in use says now (null where it does not answer)
+voice_json() {
+    local tf s v l=
+    tf() { case $1 in 1) echo true ;; 0) echo false ;; *) echo null ;; esac; }
+    printf '{"slot":%d,"slots":[' "$SIM_SLOT"
+    for s in 0 1; do
+        v=$(voice_saved volte "$s")
+        printf '%s{"volte":%s,"vonr":%s}' "$([ "$s" = 0 ] || echo ,)" "$(tf "${v:-1}")" "$(tf "$(voice_saved vonr "$s")")"
+    done
+    printf ']'
+    if [ "${1:-}" = --read ]; then
+        if voice_live; then
+            printf ',"live":{"volte":%s,"vonr":%s}' "$(tf "$(voice_read volte || true)")" "$(tf "$(voice_read vonr || true)")"
+        else
+            printf ',"live":null'
+        fi
+    fi
+    printf '}\n'
+}
+voice_cmd() {
+    local kind slot=$SIM_SLOT bit old before
+    case ${1:-} in
+        '')
+            for kind in volte vonr; do
+                old=$(voice_saved "$kind" "$slot")
+                case $old in
+                    1) old=on ;; 0) old=off ;;
+                    *) if [ "$kind" = volte ]; then old='on (default)'; else old='not set (the modem keeps its own)'; fi ;;
+                esac
+                printf '%-6s saved %s' "$kind" "$old"
+                if voice_live && bit=$(voice_read "$kind"); then
+                    printf ', the modem says %s' "$([ "$bit" = 1 ] && echo on || echo off)"
+                fi
+                echo
+            done ;;
+        --json) voice_json "${2:-}" ;;
+        volte|vonr)
+            kind=$1
+            case ${2:-} in on) bit=1 ;; off) bit=0 ;; *) echo "usage: $0 voice volte|vonr on|off [--slot 0|1]" >&2; return 2 ;; esac
+            if [ "${3:-}" = --slot ]; then
+                case ${4:-} in 0|1) slot=$4 ;; *) echo "usage: $0 voice volte|vonr on|off [--slot 0|1]" >&2; return 2 ;; esac
+            elif [ -n "${3:-}" ]; then
+                echo "usage: $0 voice volte|vonr on|off [--slot 0|1]" >&2; return 2
+            fi
+            old=$(voice_saved "$kind" "$slot")
+            if [ "$slot" = "$SIM_SLOT" ] && voice_live && [ "$(at 'AT' 3 2>/dev/null | tail -n 1)" = OK ]; then
+                # what the modem has now: put back when it does not read back the new value (it may answer OK and
+                # still read back the old one: FINDINGS 184, VoNR on an F50); the file is unchanged then
+                before=$(voice_read "$kind" || true)
+                if ! voice_send "$kind" "$bit"; then
+                    [ -z "$before" ] || voice_send "$kind" "$before" || true
+                    echo "the modem did not take $kind $2; nothing was saved" >&2
+                    return 1
+                fi
+                voice_write "$kind" "$slot" "$bit" || { echo "the $kind setting could not be saved" >&2; return 1; }
+                echo "$kind $2 for the SIM in slot $slot (sent and read back)"
+            else
+                voice_write "$kind" "$slot" "$bit" || { echo "the $kind setting could not be saved" >&2; return 1; }
+                echo "$kind $2 for the SIM in slot $slot (saved; sent when that card's radio next starts)"
+            fi ;;
+        *) echo "usage: $0 voice [--json [--read]] | voice volte|vonr on|off [--slot 0|1]" >&2; return 2 ;;
+    esac
+}
+
+# rf_apply: make the card in use's radio and its mobile data what mu300-sim-radio says, now (mu300-sim-radio set runs
+# it). Off: data down first (netifd restarts the WAN, whose dial then ends with SIM_RADIO_DISABLED; on Ubuntu the
+# connection goes down the way `down` takes it), then flight mode. On: the radio back - on the U30 Air's dual-SIM
+# boot whose cold start was put off because the card was off at boot, that cold start now (mu300-sim2-warmup
+# --deferred) - then the dial, but only where the WAN was held for this (a WAN somebody took down stays down).
+rf_apply() {
+    modem_stack || { echo "no modem stack in this kernel" >&2; return 3; }
+    local wan=${MU300_WAN:-wan} st
+    if ! rf_allowed; then
+        led off
+        # the hold marker only for data that was meant to be up: switched on again, that data comes back
+        if via_netifd; then
+            st=$(ubus call "network.interface.$wan" status 2>/dev/null | tr -d ' \n\t' || true)
+            case $st in *'"autostart":true'*|*'"up":true'*) rf_hold; bnd "$STEPDL" ifup "$wan" || true ;; esac
+        elif [ ! -e /run/mu300-mobile-data-down ]; then
+            rf_hold
+            bnd "$STEPDL" down || true
+            rm -f /run/mu300-mobile-data-down   # down on account of the radio, not the user's: on again, data again
+        fi
+        under_radio_lock rf_off_locked
+        return
+    fi
+    if [ "$SIM_NATIVE" = 1 ] && [ ! -e /run/mu300/sim-radio-ready ]; then
+        bash "${MU300_SIM2_WARMUP:-/opt/mu300/bin/mu300-sim2-warmup}" --deferred || return 1
+    else
+        under_radio_lock rf_on_locked || return 1
+        voice_replay
+    fi
+    # the data that was held for the radio comes back: under netifd the WAN mu300cell made unavailable (netifd starts
+    # it unless somebody took it down: ifdown, the panel's button, the data cap); on Ubuntu the connection the hold
+    # marker names (a stopped service left none)
+    if via_netifd; then
+        rm -f "$RF_HELD"
+        wan_available
+    elif [ -e "$RF_HELD" ]; then
+        rm -f "$RF_HELD"
+        [ -e /run/mu300-mobile-data-down ] || ( setsid "$0" up </dev/null >/dev/null 2>&1 & ) || true
+    fi
+    return 0
+}
+
+# MU300_LIB=1: define the functions only (the tests source this script)
+[ -z "${MU300_LIB:-}" ] || return 0
+
+case "${1:-status}" in
+    up) up "${2:-}" ;;
+    radio-on)
+        # K66: the radio alone, for the early warm-up (K20); the dial finds it on and goes straight to registering
+        modem_stack || { echo "no modem stack in this kernel ($(uname -r))" >&2; exit 3; }
+        tty_setup
+        mark radio-warmup-enter
+        rc=0; radio_on || rc=$?
+        # switched off in the SIM's settings: nothing more to do, and that is no failure (FINDINGS 185)
+        [ "$rc" != 7 ] || { mark radio-warmup-done; exit 0; }
+        [ "$rc" = 0 ] || exit "$rc"
+        voice_replay
+        mark radio-warmup-done
+        ;;
+    signal) signal ;;
+    at) [ -n "${2:-}" ] || { echo "usage: $0 at \"AT+COMMAND\"" >&2; exit 2; }
+        tty_setup; at "$2" "${3:-6}" ;;
+    # an explicit down (by hand, the service stopped: the panel, the data cap) also ends a hold for roaming, so the
+    # watchdog does not bring data back that somebody turned off; under netifd it is the teardown of every failed dial
+    # and the hold stays (the watchdog ends it when the wan is taken down)
+    # (and the hold for a SIM radio switched off: every down ends it - netifd's teardown too, which an ifdown runs; the
+    # restart rf-apply asks for runs the dial again after it, which holds once more)
+    down) via_netifd || rm -f "$ROAM_HELD"; rm -f "$RF_HELD" "$SIM_HELD"; down ;;
+    status) status ;;
+    roaming) roaming_cmd "${@:2}" ;;
+    voice) voice_cmd "${@:2}" ;;
+    rf-apply) rf_apply ;;
+    sim-reset) sim_reset ;;
+    watch) watch ;;
+    suspend) bounded suspend "${2:-off}" ;;
+    resume) case ${2:-} in ''|nodial) bounded resume "${2:-}" ;; *) echo "usage: $0 resume [nodial]" >&2; exit 2 ;; esac ;;
+    radio-locked)
+        # Another program's radio sequence (the LuCI panel's radio on/off, modem reset and lock apply) under the radio
+        # lock, so it never runs beside the dial's, the watchdog's or the warm-up's radio_on (K57): this process holds
+        # the lock (lock_owner_alive knows it by its name) while CMD runs. MU300_RADIO_LOCK_WAIT: how long to wait for
+        # a holder, 0 by default (the panel answers "busy" instead). Exit 75 when it is still held: CMD did not run.
+        # A TERM is acted on once CMD has finished (bash waits for a foreground command), so the lock covers it.
+        shift
+        [ $# -gt 0 ] || { echo "usage: $0 radio-locked CMD [ARG...]" >&2; exit 2; }
+        if ! lock_take "$RADIOLOCK" "${MU300_RADIO_LOCK_WAIT:-0}"; then
+            echo "mobile-data: the radio is busy (pid ${LOCK_HOLDER:-?})" >&2
+            exit 75
+        fi
+        trap 'lock_drop "$RADIOLOCK"' EXIT
+        trap 'exit 143' TERM INT
+        rc=0
+        "$@" || rc=$?
+        exit "$rc"
+        ;;
+    radio-busy)
+        # exit 0, printing the holder's pid, while a live process holds the radio lock
+        holder=$(readlink "$RADIOLOCK" 2>/dev/null || true)
+        lock_owner_alive "$holder" || exit 1
+        echo "$holder"
+        ;;
+    *) echo "usage: $0 up [APN] | radio-on | down | status | signal | at \"CMD\" | sim-reset | watch | suspend off|lte | resume [nodial] | radio-locked CMD | radio-busy | roaming [--json|on|off] | voice [--json|volte|vonr] | rf-apply" >&2; exit 2 ;;
+esac

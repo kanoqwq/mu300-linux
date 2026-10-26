@@ -1,0 +1,126 @@
+#!/bin/sh
+# The buttons (Ubuntu and OpenWrt; run by mu300-buttons.service / /etc/init.d/mu300-buttons):
+#   power, short press        wake the LEDs (they go dark after LED_TIMEOUT, see mu300-led)
+#   power, held 3 s           shut down cleanly (the battery-powered U30 Air; the F50 starts again on USB power);
+#                             in the charging boot it starts the device instead, as in the stock charger mode
+#   Wi-Fi key, short press    hotspot 2.4 <-> 5 GHz (U30 Air; the Wi-Fi LED: white 5, blue 2.4, FINDINGS 152)
+#   Wi-Fi key, held 3 s       hotspot off / on
+# Every press lights the LEDs first (`mu300-led wake`: also in mu300-power's idle, and without any daemon), so a key
+# always shows life. Then it wakes mu300-power with the key's name (`mu300-power wake wifi|power`; other keys count as
+# power), in the background: the wake restores whatever is down by looking (hotspot, modem, LEDs, CPU), which can
+# take a minute, and the keys must not wait for it. Idle wakes on any key, a charging boot only on the Wi-Fi key. The
+# band toggle acts on an awake device, so the first Wi-Fi short press on a sleeping device (idle, or the LEDs held
+# dark) only wakes it; a long press wakes and toggles the hotspot in one go. Held power does not wake mu300-power: it leaves the shutdown marker, so the
+# daemon's stop on the way down does not bring the radios back. The hotspot toggle leaves $PST/hotspot-off (with the
+# uptime of the hold) while the user has it off, so neither a wake nor mu300-power's self-check turns it back on; the
+# direction is decided and the marker written before the wake starts, so the wake of the same press cannot undo it.
+# The toggles themselves (hotspot, band) run in the background under a deadline: a later press always shows life.
+# mu300-keys reports the presses; its tick every 5 s lets the LEDs time out and the U30 Air's battery LED follow the
+# battery. Ubuntu's logind leaves the power key to this script (/etc/systemd/logind.conf.d/mu300-buttons.conf): it
+# used to power the device off at a touch.
+export PATH="$PATH:/opt/mu300/bin:/usr/sbin:/sbin"
+KEY_POWER=116
+KEY_WIFI=138   # "Wifi Switch Key" in the U30 Air's device tree (KEY_HELP's code, as its Android maps it)
+is_openwrt() { [ -e /etc/openwrt_release ]; }
+PST=${MU300_RUN:-/run}/mu300/power
+LEDIDLE=${MU300_SYSROOT:-}/run/mu300/led/.idle   # mu300-led idle on (mu300-led keeps its state there)
+
+DEADLINE=${MU300_BUTTONS_DEADLINE:-150}   # a toggle in the background (the LED sync after wifi up runs 120 s)
+
+# --- deadlines (as in mu300-power): "PID PPID" for every process, a process tree killed, a job with a watchdog
+proc_table() {
+    if [ -r /proc/self/stat ]; then
+        for _pt in /proc/[0-9]*; do
+            { read -r _ptl < "$_pt/stat"; } 2>/dev/null || continue
+            _ptl=${_ptl##*) }; _ptl=${_ptl#* }
+            echo "${_pt#/proc/} ${_ptl%% *}"
+        done
+    else
+        ps -A -o pid= -o ppid= 2>/dev/null
+    fi
+}
+# tree_kill PID: the process and everything it started. The tree is stopped until a look finds nothing new (a child
+# forked during one look is caught by the next), then every process any look saw is killed
+tree_kill() {
+    _tk_prev= _tk_seen= _tk_n=0
+    while :; do
+        _tk_all=$(proc_table | awk -v r="$1" '{ pp[$1] = $2 } END { s[r] = 1
+            do { n = 0; for (p in pp) if (!(p in s) && (pp[p] in s)) { s[p] = 1; n++ } } while (n)
+            for (p in s) print p }' | sort -n | tr '\n' ' ')
+        for _tk in $_tk_all; do kill -STOP "$_tk" 2>/dev/null; done
+        _tk_seen="$_tk_seen $_tk_all"   # every process seen: one reparented between looks is killed too
+        _tk_n=$((_tk_n + 1)); [ "$_tk_all" != "$_tk_prev" ] && [ "$_tk_n" -lt 10 ] || break
+        _tk_prev=$_tk_all
+    done
+    for _tk in $_tk_seen; do kill -KILL "$_tk" 2>/dev/null; done
+    return 0
+}
+in_background() {  # in_background SECONDS CMD...: CMD in the background; past SECONDS it and all it started are killed
+    _ib_s=$1; shift
+    ( "$@" & _ib_p=$!
+      ( sleep "$_ib_s"; tree_kill "$_ib_p" ) </dev/null >/dev/null 2>&1 & _ib_w=$!
+      wait "$_ib_p"; kill "$_ib_w" 2>/dev/null ) </dev/null >/dev/null 2>&1 &
+}
+
+probe() {  # probe CMD...: CMD within 5 s (the direction of a hold is decided before the wake; it must not wait long)
+    "$@" </dev/null >/dev/null 2>&1 &
+    _pr_p=$!
+    ( sleep "${MU300_BUTTONS_PROBE_DEADLINE:-5}"; tree_kill "$_pr_p" ) </dev/null >/dev/null 2>&1 &
+    _pr_w=$!
+    wait "$_pr_p"; _pr_rc=$?
+    kill "$_pr_w" 2>/dev/null; wait "$_pr_w" 2>/dev/null
+    return $_pr_rc
+}
+hotspot_is_up() {
+    if is_openwrt; then probe ubus -t 5 call hostapd.wlan0 get_status
+    else probe systemctl is-active --quiet mu300-hotspot; fi
+}
+hotspot_set() {  # hotspot_set on|off: the toggle itself, and the persistent flag the panel writes
+    if is_openwrt; then
+        if [ "$1" = off ]; then
+            uci -q set wireless.@wifi-device[0].disabled=1; uci -q commit wireless
+            wifi down; mu300-led wifi off
+        else
+            uci -q set wireless.@wifi-device[0].disabled=0; uci -q commit wireless
+            wifi up; mu300-led wifi sync 120
+        fi
+    elif [ "$1" = off ]; then systemctl stop mu300-hotspot
+    else systemctl start mu300-hotspot; fi
+}
+band_toggle() { mu300-wifi-band toggle | logger -t mu300-buttons 2>/dev/null; }
+
+mu300-keys -l 3000 -t 5 | { while read -r code kind; do
+    # the tick every 5 s is no press: it lets the LEDs time out, and the U30 Air's battery LED follow the charge
+    # (plugged in, unplugged, the 60 % and 10 % marks)
+    if [ "$kind" = tick ]; then mu300-led tick; continue; fi
+    mu300-led wake   # first, whatever else this key does or whatever state anything is in
+    was_idle=0; s=$(cat "$PST/state" 2>/dev/null); [ -z "$s" ] || [ "$s" = active ] || was_idle=1
+    [ ! -e "$LEDIDLE" ] || was_idle=1   # dark on purpose (idle, or someone's mu300-led idle on): this press only wakes
+    key=power; [ "$code" = "$KEY_WIFI" ] && key=wifi
+    # a Wi-Fi hold decides which way and writes the user's marker even on a sleeping device (idle, or the LEDs held
+    # dark): one press wakes and toggles, and the direction and the marker are set before the wake starts, so the
+    # wake cannot undo them. The charging boot has no services to toggle, so a hold there still only wakes.
+    dir=
+    if [ "$code $kind" = "$KEY_WIFI long" ] && [ "$s" != charging-boot ]; then
+        mkdir -p "$PST" 2>/dev/null
+        if hotspot_is_up; then dir=off; cut -d. -f1 "${MU300_SYSROOT:-}/proc/uptime" > "$PST/hotspot-off" 2>/dev/null
+        else dir=on; rm -f "$PST/hotspot-off"; fi
+    fi
+    # a held power key in the charging boot starts the device (the stock charger mode: hold power to switch it on;
+    # FINDINGS 196): the wake without a key name ends it, as the Wi-Fi key does
+    if [ "$code $kind" = "$KEY_POWER long" ] && [ "$s" = charging-boot ]; then
+        logger -t mu300-buttons "power button held in the charging boot: starting" 2>/dev/null
+        ( mu300-power wake ) </dev/null >/dev/null 2>&1 &
+        continue
+    fi
+    # a held power key shuts down instead
+    [ "$code $kind" = "$KEY_POWER long" ] || ( mu300-power wake "$key" ) </dev/null >/dev/null 2>&1 &
+    case "$code $kind" in
+        "$KEY_POWER long")
+            logger -t mu300-buttons "power button held: shutting down" 2>/dev/null
+            mkdir -p "$PST" 2>/dev/null; : > "$PST/shutdown" 2>/dev/null
+            if is_openwrt; then poweroff; else systemctl poweroff; fi ;;
+        "$KEY_WIFI short") [ "$was_idle" = 1 ] || in_background "$DEADLINE" band_toggle ;;
+        "$KEY_WIFI long") [ -z "$dir" ] || in_background "$DEADLINE" hotspot_set "$dir" ;;
+    esac
+done; wait; }

@@ -1,0 +1,45 @@
+#!/bin/sh
+# Data usage adapter: mu300-traffic for the panel's Data usage page (mu300dash traffic_get, traffic_set). Every reply
+# is one JSON object. The count itself (per day, per billing cycle, the cap) is mu300-traffic's, shared with its CLI.
+#   traffic get               mu300-traffic json, as it is
+#   traffic set OP VALUE      reset_day 1-31 | cap BYTES (0: none) | warn 1-100 | cut on|off | used BYTES | clear yes
+#                             -> {"ok":1}, or {"ok":0,"error":...}; checked here again
+set -u
+export PATH="$PATH:/opt/mu300/bin:/usr/sbin:/sbin"
+LIB=${0%/*}/../../share/unisoc-modem/lib.sh
+[ -f "$LIB" ] || LIB=/usr/share/unisoc-modem/lib.sh
+. "$LIB"
+
+TRAFFIC_CMD=${MU300_TRAFFIC_CMD:-/opt/mu300/bin/mu300-traffic}
+
+error() { printf '{"ok":0,"error":%s}\n' "$(json_str "$1")"; exit 0; }
+# ok VALUE ERE: VALUE is one line matching ^ERE$
+ok() { printf '%s\n' "$1" | grep -Eqx -- "$2" && [ "$(printf '%s' "$1" | wc -l)" -eq 0 ]; }
+
+[ -x "$TRAFFIC_CMD" ] || error 'Data usage is not available on this system'
+
+do_set() {
+    op=${1:-} v=${2:-}
+    case $op in
+        reset_day) ok "$v" '[1-9]|[12][0-9]|3[01]' || error 'Invalid value for this setting'; set -- set reset-day "$v" ;;
+        cap)       ok "$v" '0|[1-9][0-9]{0,15}' || error 'Invalid value for this setting'
+                   [ "$v" != 0 ] || v=off; set -- set cap "$v" ;;
+        warn)      ok "$v" '[1-9]|[1-9][0-9]|100' || error 'Invalid value for this setting'; set -- set warn "$v" ;;
+        cut)       ok "$v" 'on|off' || error 'Invalid value for this setting'; set -- set cut "$v" ;;
+        used)      ok "$v" '0|[1-9][0-9]{0,15}' || error 'Invalid value for this setting'; set -- used "$v" ;;
+        clear)     ok "$v" 'yes' || error 'Invalid value for this setting'; set -- clear --yes ;;
+        *)         error 'Unknown data usage setting' ;;
+    esac
+    if out=$("$TRAFFIC_CMD" "$@" 2>&1 >/dev/null); then
+        echo '{"ok":1}'
+    else
+        printf '{"ok":0,"error":"The setting could not be saved","detail":%s}\n' "$(json_str "$(printf '%s\n' "$out" | tail -n1)")"
+    fi
+}
+
+case ${1:-} in
+    get) out=$("$TRAFFIC_CMD" json 2>/dev/null) && [ -n "$out" ] || error 'The data usage could not be read'
+         printf '%s\n' "$out" ;;
+    set) do_set "${2:-}" "${3:-}" ;;
+    *) error 'Unknown data usage operation' ;;
+esac

@@ -1,0 +1,51 @@
+From: kanoqwq <kanoqwq@qq.com>
+Subject: [PATCH] usb: gadget: f_ncm: retry a timer flush when USB TX is busy, off unless asked for
+
+Ported from kanoqwq/mu300-linux e4ad30a0 (his upstream/patches/0025,
+docs/NCM-TX-TIMER-20261022), a backport of Cosmin Tanislav's linux-usb patch,
+2026-08-17:
+https://lore.kernel.org/linux-usb/20260817192638.437798-1-cosmin-gabriel.tanislav.xa@renesas.com/
+Not in 6.18, 7.2 or 7.3.
+
+A timer-originated flush has no qdisc to requeue NETDEV_TX_BUSY. Keep the
+existing 300us deadline and retry instead of leaving the NTB stranded.
+Advance the expiration before HRTIMER_RESTART to avoid an expired-timer
+busy loop. Existing small-frame flushing, aggregation and USB PM stay intact.
+
+Off by default (usb_f_ncm.tx_busy_retry, 0644): kanoqwq tested it on a C
+fixture built from the real u_ether.c/f_ncm.c, not on a device, and did not
+reproduce the stall it addresses. Without the parameter nothing changes.
+
+--- a/drivers/usb/gadget/function/f_ncm.c
++++ b/drivers/usb/gadget/function/f_ncm.c
+@@ -107,6 +107,16 @@
+ #define TX_TIMEOUT_NSECS	300000
+ 
+ /*
++ * A timer flush that finds every USB request in flight gets NETDEV_TX_BUSY from u_ether, and no qdisc retries a
++ * NULL skb: the half-filled NTB waited for the next frame. With tx_busy_retry the timer tries again a period later.
++ * Off by default (kanoqwq's 0025, from Cosmin Tanislav's linux-usb patch of 2026-08-17; tested on a fixture, not
++ * yet on a device); /sys/module/usb_f_ncm/parameters/tx_busy_retry switches it at run time.
++ */
++static bool tx_busy_retry;
++module_param(tx_busy_retry, bool, 0644);
++MODULE_PARM_DESC(tx_busy_retry, "retry a timer flush of the NTB that found the USB requests busy (default off)");
++
++/*
+  * Although max mtu as dictated by u_ether is 15412 bytes, setting
+  * max_segment_size to 15426 would not be efficient. If user chooses segment
+  * size to be (>= 8192), then we can't aggregate more than one buffer in each
+@@ -1166,7 +1176,12 @@
+ 		 *
+ 		 * This will call directly into u_ether's eth_start_xmit()
+ 		 */
+-		netdev->netdev_ops->ndo_start_xmit(NULL, netdev);
++		/* A timer flush has no qdisc to retry a busy USB request. */
++		if (netdev->netdev_ops->ndo_start_xmit(NULL, netdev) == NETDEV_TX_BUSY &&
++		    READ_ONCE(tx_busy_retry)) {
++			hrtimer_forward_now(data, TX_TIMEOUT_NSECS);
++			return HRTIMER_RESTART;
++		}
+ 	}
+ 	return HRTIMER_NORESTART;
+ }

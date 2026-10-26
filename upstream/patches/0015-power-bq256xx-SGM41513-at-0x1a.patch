@@ -1,0 +1,229 @@
+power: supply: bq256xx: the U30 Air's other charger, an SGM41513 at I2C 0x1a (issue #102)
+
+On a U30 Air of the ABSSV firmware variant the charger never bound ("no charger: -5": nothing acknowledges
+0x6b), while Android and the 5.4 kernel charge the same unit, and i2cget at 0x6b fails there on every kernel.
+ZTE's charger driver (drivers/vendor/common/sqc_v8/sqc_bq2560x.c, the one the U30 Air's kernel builds) explains
+all three: bq2560x_get_chip_vendor_id() reads REG0B at the node's address and, when that fails, sets the client's
+address to 0x1a (SGM41513_I2C_ADDR) and reads again; the device stays "6-006b" in sysfs. So a board can carry an
+SGM41513 at 0x1a under the same "ti,bq2560x_chg" node. That this unit does is not measured yet: its 5.4 log
+(bq2560x_get_chip_vendor_id's lines) or one boot of this patch says.
+
+For the "ti,bq2560x_chg" node only, when the first read at the node's address fails:
+
+- the same read at 0x1a, through a client of its own (devm_i2c_new_dummy_device); when that answers, the regmap
+  is on that client, the model name is "sgm41513", and the log says "nothing at 0x6b (-5): the SGM41513 at 0x1a";
+- the two fields ZTE's driver codes differently for that chip: the fast charge current (eight ranges of eight
+  steps; Android's 1.98 A is code 52, where the bq25601's 60 mA steps would have written 33 = 600 mA) and the
+  termination current (sixteen steps to 240 mA, six times each with REG0D bit 0 clear; the battery node's 300 mA
+  is code 6 in the times-six range, as ZTE's driver sets it);
+- the precharge current is left as the chip has it: ZTE's driver has no code for it, and the bq25601's steps are
+  not this chip's;
+- the input current and voltage limits, the charge voltage, CHG_CONFIG, the watchdog, EN_TERM and the charge
+  status (REG00, 06, 04, 01, 05, 08) ZTE's driver uses unchanged for both chips, and so does this one. What this
+  driver uses and ZTE's does not - OTG_CONFIG, VBUS_STAT and PG_STAT, and IINDET_EN (the input detection that only
+  runs when the PMIC's has no answer) - is taken to be the same on the SGM41513, and is not checked.
+
+A unit whose charger answers at 0x6b (the SSV U30 Air) takes none of these paths. A board with the node and no
+chip (the F50) now fails after two reads instead of one, and the message has both errors ("no charger: E (and E
+at 0x1a)").
+
+--- a/drivers/power/supply/bq256xx_charger.c
++++ b/drivers/power/supply/bq256xx_charger.c
+@@ -162,6 +162,14 @@
+ #define BQ2560X_CHG_ICHG_MAX_uA		1980000	/* what Android charges the U30 Air's 4050 mAh cell with */
+ #define BQ2560X_CHG_VBATREG_MAX_uV	4208000	/* Android's VREG; the battery node says 4.3 V */
+ 
++/*
++ * The SGM41513 that ZTE's driver (sqc_bq2560x.c) looks for when nothing answers at the node's address: the same
++ * registers at I2C 0x1a, with its own fast charge and termination current steps (sgm41513_*).
++ */
++#define SGM41513_I2C_ADDR		0x1a
++#define SGM41513_REG_0D			0x0d
++#define SGM41513_ITERM_X1		BIT(0)	/* REG0D: 1 the termination current as in the table, 0 six times it */
++
+ /**
+  * struct bq256xx_init_data -
+  * @ichg: fast charge current
+@@ -1356,8 +1364,117 @@
+ 
+ 	.max_register = BQ256XX_PART_INFORMATION,
+ 	.cache_type = REGCACHE_NONE,
++};
++
++/* the SGM41513 has the termination current's range in REG0D */
++static const struct regmap_config sgm41513_regmap_config = {
++	.reg_bits = 8,
++	.val_bits = 8,
++
++	.max_register = SGM41513_REG_0D,
++	.cache_type = REGCACHE_NONE,
++};
++
++/*
++ * The SGM41513's fast charge current, as ZTE's driver codes it (bq2560x_charger_get_current() in sqc_bq2560x.c):
++ * the six bits are eight ranges of eight steps, 3 A at most.
++ */
++static const int sgm41513_ichg_base_uA[] = { 0, 40000, 130000, 300000, 540000, 1020000, 1500000, 2460000 };
++static const int sgm41513_ichg_step_uA[] = { 5000, 10000, 20000, 30000, 60000, 60000, 120000, 120000 };
++
++static int sgm41513_ichg_uA(unsigned int code)
++{
++	unsigned int range = (code & BQ256XX_ICHG_MASK) >> 3;
++
++	return min(sgm41513_ichg_base_uA[range] + (int)(code & 7) * sgm41513_ichg_step_uA[range],
++		   BQ256XX_ICHG_MAX_uA);
++}
++
++static int sgm41513_get_ichg_curr(struct bq256xx_device *bq)
++{
++	unsigned int charge_current_limit;
++	int ret;
++
++	ret = regmap_read(bq->regmap, BQ256XX_CHARGE_CURRENT_LIMIT, &charge_current_limit);
++	if (ret)
++		return ret;
++
++	return sgm41513_ichg_uA(charge_current_limit);
++}
++
++/* the largest step that is not above what was asked for */
++static int sgm41513_set_ichg_curr(struct bq256xx_device *bq, int ichg)
++{
++	unsigned int code, ichg_reg_code = 0;
++	int ichg_max = bq->init_data.ichg_max;
++
++	ichg = clamp(ichg, BQ256XX_ICHG_MIN_uA, ichg_max);
++	for (code = 1; code <= BQ256XX_ICHG_MASK; code++)
++		if (sgm41513_ichg_uA(code) <= ichg && sgm41513_ichg_uA(code) > sgm41513_ichg_uA(ichg_reg_code))
++			ichg_reg_code = code;
++
++	return regmap_update_bits(bq->regmap, BQ256XX_CHARGE_CURRENT_LIMIT, BQ256XX_ICHG_MASK, ichg_reg_code);
++}
++
++/*
++ * Its termination current (bq2560x_charger_set_termina_cur() and ..._get_termia_cur() there): sixteen steps up to
++ * 240 mA, or six times each with REG0D bit 0 clear, which is how ZTE's driver sets anything above 240 mA (the U30
++ * Air's battery node asks for 300 mA).
++ */
++static const int sgm41513_iterm_uA[] = {
++	5000, 10000, 15000, 20000, 30000, 40000, 50000, 60000,
++	80000, 100000, 120000, 140000, 160000, 180000, 200000, 240000,
+ };
++
++static int sgm41513_get_term_curr(struct bq256xx_device *bq)
++{
++	unsigned int prechg_and_term_curr_lim, reg0d;
++	int ret;
++
++	ret = regmap_read(bq->regmap, BQ256XX_PRECHG_AND_TERM_CURR_LIM, &prechg_and_term_curr_lim);
++	if (!ret)
++		ret = regmap_read(bq->regmap, SGM41513_REG_0D, &reg0d);
++	if (ret)
++		return ret;
+ 
++	return sgm41513_iterm_uA[prechg_and_term_curr_lim & BQ256XX_ITERM_MASK] *
++	       (reg0d & SGM41513_ITERM_X1 ? 1 : 6);
++}
++
++static int sgm41513_set_term_curr(struct bq256xx_device *bq, int iterm)
++{
++	const unsigned int last = ARRAY_SIZE(sgm41513_iterm_uA) - 1;
++	int mul = iterm > sgm41513_iterm_uA[last] ? 6 : 1;
++	unsigned int code, iterm_reg_code = 0;
++	int ret;
++
++	iterm = clamp(iterm, sgm41513_iterm_uA[0], 6 * sgm41513_iterm_uA[last]);
++	for (code = 1; code <= last; code++)
++		if (sgm41513_iterm_uA[code] * mul <= iterm)
++			iterm_reg_code = code;
++
++	ret = regmap_update_bits(bq->regmap, SGM41513_REG_0D, SGM41513_ITERM_X1,
++				 mul == 1 ? SGM41513_ITERM_X1 : 0);
++	if (ret)
++		return ret;
++
++	return regmap_update_bits(bq->regmap, BQ256XX_PRECHG_AND_TERM_CURR_LIM, BQ256XX_ITERM_MASK, iterm_reg_code);
++}
++
++/*
++ * Its precharge current: ZTE's driver never writes it and has no table for it, and the bq25601's 60 mA steps are
++ * not this chip's. The field stays as the chip has it.
++ */
++static int sgm41513_get_prechrg_curr(struct bq256xx_device *bq)
++{
++	return -ENODATA;
++}
++
++static int sgm41513_set_prechrg_curr(struct bq256xx_device *bq, int iprechg)
++{
++	return 0;
++}
++
+ static const struct bq256xx_chip_info bq256xx_chip_info_tbl[] = {
+ 	[BQ25600] = {
+ 		.model_id = BQ25600,
+@@ -1988,6 +2105,7 @@
+ 	struct device *dev = &client->dev;
+ 	struct bq256xx_device *bq;
+ 	struct power_supply_config psy_cfg = { };
++	struct i2c_client *chip = client;	/* where the registers are: 0x1a for the SGM41513 */
+ 
+ 	int ret;
+ 
+@@ -2006,7 +2124,7 @@
+ 	bq->bq2560x_chg = of_device_is_compatible(dev->of_node, "ti,bq2560x_chg");
+ 	if (bq->bq2560x_chg) {
+ 		struct bq256xx_chip_info *info;
+-		int part;
++		int part, err;
+ 
+ 		/* the bq25601 as it is, without a register cache and with its input detection */
+ 		info = devm_kmemdup(dev, bq->chip_info, sizeof(*info), GFP_KERNEL);
+@@ -2016,10 +2134,36 @@
+ 		info->has_usb_detect = true;
+ 		bq->chip_info = info;
+ 
+-		/* a board that has the node and not the chip (the F50) */
++		/*
++		 * Nothing at the node's address: ZTE's driver then goes on at 0x1a, where an SGM41513 is, and keeps
++		 * the client it has (so the device is "6-006b" under Android whichever chip it is). Here the second
++		 * address is a client of its own, which also keeps i2c-dev off it. A board that has the node and
++		 * neither chip (the F50) probes no further than these two reads.
++		 */
+ 		part = i2c_smbus_read_byte_data(client, BQ256XX_PART_INFORMATION);
+-		if (part < 0)
++		if (part < 0 && client->addr != SGM41513_I2C_ADDR) {
++			err = part;
++			chip = devm_i2c_new_dummy_device(dev, client->adapter, SGM41513_I2C_ADDR);
++			if (IS_ERR(chip))
++				return dev_err_probe(dev, -ENODEV, "no charger: %d (0x%02x not tried: %ld)\n", err,
++						     SGM41513_I2C_ADDR, PTR_ERR(chip));
++			part = i2c_smbus_read_byte_data(chip, BQ256XX_PART_INFORMATION);
++			if (part < 0)
++				return dev_err_probe(dev, -ENODEV, "no charger: %d (and %d at 0x%02x)\n", err, part,
++						     SGM41513_I2C_ADDR);
++			dev_info(dev, "nothing at 0x%02x (%d): the SGM41513 at 0x%02x\n", client->addr, err,
++				 SGM41513_I2C_ADDR);
++			strscpy(bq->model_name, "sgm41513", sizeof(bq->model_name));
++			info->bq256xx_regmap_config = &sgm41513_regmap_config;
++			info->bq256xx_get_ichg = sgm41513_get_ichg_curr;
++			info->bq256xx_set_ichg = sgm41513_set_ichg_curr;
++			info->bq256xx_get_iterm = sgm41513_get_term_curr;
++			info->bq256xx_set_iterm = sgm41513_set_term_curr;
++			info->bq256xx_get_iprechg = sgm41513_get_prechrg_curr;
++			info->bq256xx_set_iprechg = sgm41513_set_prechrg_curr;
++		} else if (part < 0) {
+ 			return dev_err_probe(dev, -ENODEV, "no charger: %d\n", part);
++		}
+ 		dev_info(dev, "part %u, rev %u\n", (part >> 3) & 0xf, part & 0x3);
+ 
+ 		ret = bq2560x_chg_extcon(bq);
+@@ -2027,7 +2171,7 @@
+ 			return ret;
+ 	}
+ 
+-	bq->regmap = devm_regmap_init_i2c(client,
++	bq->regmap = devm_regmap_init_i2c(chip,
+ 					bq->chip_info->bq256xx_regmap_config);
+ 
+ 	if (IS_ERR(bq->regmap)) {

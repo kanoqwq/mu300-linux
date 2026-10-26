@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>更新、回滚和回到 Android：ZTE F50 / U30 Air 上的 MU300 Linux</title>
+<meta name="description" content="MU300 Linux 如何自我更新和回滚，启动失败后如何自动回到 Android，以及如何在 Android 和 Linux 间切换、卸载、找回忘记的密码。">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/zh/updates/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/updates/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/updates/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/updates/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/updates/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="更新、回滚和回到 Android：ZTE F50 / U30 Air 上的 MU300 Linux">
+<meta property="og:description" content="MU300 Linux 如何自我更新和回滚，启动失败后如何自动回到 Android，以及如何在 Android 和 Linux 间切换、卸载、找回忘记的密码。">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/zh/updates/">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="一台有两个房间的 5G 随身热点：一个给 Android，一个给 Linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="更新、回滚和回到 Android：ZTE F50 / U30 Air 上的 MU300 Linux">
+<meta name="twitter:description" content="MU300 Linux 如何自我更新和回滚，启动失败后如何自动回到 Android，以及如何在 Android 和 Linux 间切换、卸载、找回忘记的密码。">
+<meta name="twitter:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;display=swap">
+<link rel="stylesheet" href="../../assets/style.css">
+<script src="../../assets/site.js" defer></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [
+  {
+   "@type": "ListItem",
+   "position": 1,
+   "name": "首页",
+   "item": "https://kaandikec.com/mu300-linux/zh/"
+  },
+  {
+   "@type": "ListItem",
+   "position": 2,
+   "name": "更新与安全",
+   "item": "https://kaandikec.com/mu300-linux/zh/updates/"
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">跳到正文</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../../zh/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../../zh/install/">安装</a>
+<a href="../../zh/web-installer/">网页安装器</a>
+<a href="../../zh/choose/">选择系统</a>
+<a href="../../zh/features/">功能</a>
+<a href="../../zh/updates/" aria-current="page">更新与安全</a>
+<a href="../../zh/troubleshooting/">故障排除</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="语言"><a href="../../updates/" hreflang="en" lang="en">English</a><a href="../../tr/updates/" hreflang="tr" lang="tr">Türkçe</a><a href="../../zh/updates/" hreflang="zh-Hans" lang="zh-Hans" aria-current="true">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="主题|自动|浅色|深色|跟随系统|切换颜色主题"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">菜单</button>
+</div>
+</header>
+<main id="content">
+
+<header class="page-head">
+<div class="prose">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../../zh/">首页</a> <span aria-hidden="true">/</span> <span aria-current="page">更新与安全</span></nav>
+<h1>更新、安全和回到 Android</h1>
+<p class="lede">设备怎么保持最新，为什么一次启动失败不会把你困住，以及在 Android 和 Linux 之间来回的所有方法。</p>
+</div>
+</header>
+
+<div class="prose">
+<nav class="toc" aria-labelledby="toc-h">
+<h2 id="toc-h">本页内容</h2>
+<ol>
+<li><a href="#update">更新</a></li>
+<li><a href="#rollback">回滚</a></li>
+<li><a href="#safety-net">安全网</a></li>
+<li><a href="#to-android">去 Android，再回来</a></li>
+<li><a href="#uninstall">卸载</a></li>
+<li><a href="#password">忘记密码</a></li>
+</ol>
+</nav>
+
+<section id="update">
+<h2>更新</h2>
+<p>设备可以直接从发布版本更新自己，不需要电脑。它会在开机时和之后每 6 小时检查一次新版本，并在登录时和 <code>mu300-toolkit</code> 里提醒你，但<strong>绝不会自己安装</strong>。</p>
+<pre><code>sudo mu300-update check           <span class="c"># 当前版本和最新发布</span>
+sudo mu300-update apply           <span class="c"># 系统、内核和启动镜像；然后重启</span>
+sudo reboot</code></pre>
+<p><code>mu300-toolkit</code> 里的 System &gt; Software update 也能做同样的事。过程是这样的：</p>
+<ol>
+<li>先下载并校验所有文件；全部到齐之前什么都不改。</li>
+<li>新系统解压在旧系统<strong>旁边</strong>，到最后才换上，所以下载中断也不会留下一个更新到一半的系统。</li>
+<li><strong>你在系统里添加和改动的一切都会带过去</strong>：任何目录里的文件（<code>/etc/wireguard</code>、你自己写的服务、crontab、<code>/var/lib/docker</code>、<code>/opt</code>、主目录）、你改过的设置、账户和密码、按你开关状态的服务、从你设备上取来的 Wi-Fi 和基带文件，以及已装的扩展。每个版本都带着自己文件的清单，更新就靠它把版本自带的文件和你的文件区分开。VPN 模块（核心和引擎作为一组）会更新到它的最新版本。</li>
+<li>内核和启动镜像也一起更新。新内核的头几次启动照常按失败次数计算，所以起不来的内核会让设备自己回到 Android。</li>
+</ol>
+<p>换内核也是同样的方式：<code>sudo mu300-update kernel 6.18</code>（或 <code>5.4</code>、<code>7.2</code>、<code>7.3</code>），然后重启。见<a href="../choose/#kernels">选择内核</a>。</p>
+<p><strong>版本名称</strong>是版本构建的日期加上当天的序号：<code>v2026.10.16.1</code>、<code>v2026.10.16.2</code>。它们比所有旧的三段式名称（如 <code>v2026.10.27</code>，其“日期”只是一个计数器）都新。v2026.10.27 或更旧的设备照常用 <code>sudo mu300-update apply</code> 更新到这些版本，但在出现日期为 2026 年 10 月 27 日或更晚的版本之前，登录时不会显示更新提示（<a href="https://github.com/dikeckaan/mu300-linux/wiki/Updating#release-names">详情</a>）。</p>
+
+<div class="callout">
+<strong>从 v2026.09.27 或更早的版本更新</strong>
+<p>先取得新的更新程序，再更新；两步都在刚重启之后做（旧的启动镜像在安静几分钟后可能丢失移动数据）：</p>
+<pre><code>sudo curl -fL https://github.com/dikeckaan/mu300-linux/releases/latest/download/mu300-update -o /opt/mu300/bin/mu300-update
+sudo mu300-update apply</code></pre>
+<p>在 OpenWrt 上，以 root 身份：</p>
+<pre><code>wget -O /opt/mu300/bin/mu300-update https://github.com/dikeckaan/mu300-linux/releases/latest/download/mu300-update
+mu300-update apply</code></pre>
+</div>
+<p>同一个文件你的版本和发布版的版本相遇时，设置用你的，程序用发布版的；需要让开的内容都保存在 <code>/etc/mu300/update-kept/</code> 下，并列在 <code>/etc/mu300/update-report</code> 里（<code>sudo mu300-update report</code>；控制面板里在 系统 &gt; 更新 下）。更新不会打开你关掉的东西：你停用的服务仍然是停用的。以上从第一个四段式标签（vYYYY.MM.DD.N）的版本起；到 v2026.10.27 为止，更新只保留一组固定的位置（设置、用户、主目录、<code>/usr/local</code>）。详情见 wiki 的 <a href="https://github.com/dikeckaan/mu300-linux/wiki/Updating#what-an-update-keeps">Updating</a> 页面。</p>
+<p>用电脑也行：再运行一次安装程序，选 <code>update</code>。它会重装系统、写入新的启动镜像，并像 <code>apply</code> 一样保留你的一切。在现有安装上刷新版本的 Magisk zip 也一样。</p>
+<p><strong>你自己装的软件包</strong>（<code>apk add</code>、<code>apt install</code>）不在发布版的镜像里。更新会把它们列出来，把它们的 OpenWrt 设置先放到一边（免得程序不在了设置还在起作用），新系统在第一次开机联网后再把它们装回来。<code>mu300-user-packages status</code> 显示哪些回来了（控制面板里：系统 &rarr; 更新后的软件包）；<code>mu300-update apply --no-reinstall</code> 跳过这一步。Ubuntu 上你添加的 apt 源（PPA）也会保留。从 v2026.10.20 起。</p>
+<p>装了网页面板扩展的 Ubuntu 上，新镜像里没有 Cockpit：更新后的第一次开机会在后台把它装回来（扩展自带副本就用副本，否则联网后从 Ubuntu 的软件源装）；<code>mu300-panel status</code> 会说明进度。</p>
+</section>
+
+<section id="rollback">
+<h2>回滚</h2>
+<p>上一个版本会以 <code>&lt;os&gt;.old</code> 的形式保留，直到你清理掉；上一个启动镜像也会保留。这样你的文件在磁盘上有两份；空间不够时 <code>apply</code> 会说明并且什么都不改，<code>sudo mu300-update apply --no-rollback</code> 则在不保留上一个版本的情况下更新。</p>
+<pre><code>sudo mu300-update rollback        <span class="c"># 回到上一个系统</span>
+sudo mu300-update rollback-boot   <span class="c"># 回到上一个内核和启动镜像</span>
+sudo mu300-update clean           <span class="c"># 删掉保留的旧版本</span></code></pre>
+</section>
+
+<section id="safety-net">
+<h2>安全网</h2>
+<p>把它想成一顶会自己打开的降落伞。设备每启动一次 Linux，就用掉一次<strong>机会</strong>。USB 网络和 SSH 起来大约 30 秒后，Linux 会确认这次启动成功，机会全部恢复。如果一次启动没走到那一步（断电、电池耗尽、Linux 卡住），那次机会就算用掉了。机会用完，下一次启动就是 Android。</p>
+<figure class="wide"><div class="panel diagram" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" class="mu-dg" viewBox="0 0 960 860" width="960" height="860" role="img" aria-label="流程图：开机，引导程序启动 Linux 并用掉一次尝试。如果 Linux 大约一分钟内启动成功，这次启动被确认，尝试次数全部恢复。否则少一次尝试；还有次数时设备会再试一次，次数用完时自动启动 Android。" lang="zh">
+<title id="boot-zh-t">设备启动时发生什么</title>
+<desc id="boot-zh-d">设备以试用方式启动 Linux。Linux 启动成功后，这次启动被确认，尝试次数重新补满。如果没有成功，就用掉一次；次数用完时，设备会自动启动 Android。</desc>
+<style>
+.mu-dg text { font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #142133; }
+.mu-dg .t-muted { fill: #526276; }
+.mu-dg .t-white { fill: #ffffff; }
+.mu-dg .t-mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.mu-dg .ink { fill: #142133; }
+.mu-dg .stroke-ink { stroke: #142133; }
+.mu-dg .paper { fill: #ffffff; }
+.mu-dg .soft { fill: #eef2f8; }
+.mu-dg .line { stroke: #c9d4e2; }
+.mu-dg .fill-line { fill: #c9d4e2; }
+.mu-dg .lx { fill: #f2b23a; }
+.mu-dg .lx-soft { fill: #fbf0d8; }
+.mu-dg .lx-stroke { stroke: #b97700; }
+.mu-dg .t-lx { fill: #8a5900; }
+.mu-dg .an { fill: #3fae6a; }
+.mu-dg .an-soft { fill: #def2e6; }
+.mu-dg .an-stroke { stroke: #217a47; }
+.mu-dg .t-an { fill: #17603a; }
+.mu-dg .bl { fill: #2259d6; }
+.mu-dg .bl-soft { fill: #e3ebfb; }
+.mu-dg .bl-stroke { stroke: #2259d6; }
+.mu-dg .t-bl { fill: #1b47ad; }
+.mu-dg .rd { fill: #c4302f; }
+.mu-dg .rd-soft { fill: #fbe3e2; }
+.mu-dg .rd-stroke { stroke: #c4302f; }
+.mu-dg .t-rd { fill: #a12625; }
+.mu-dg .body-top { fill: #fdfdfe; }
+.mu-dg .body-side { fill: #dde4ee; }
+.mu-dg .body-edge { stroke: #b6c2d2; }
+.mu-dg .led-white { fill: #ffffff; stroke: #b6c2d2; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .mu-dg text, .mu-dg:root text { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .t-muted, .mu-dg:root .t-muted { fill: #9cabbe; }
+  :root:not([data-theme="light"]) .mu-dg .ink, .mu-dg:root .ink { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .stroke-ink, .mu-dg:root .stroke-ink { stroke: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .paper, .mu-dg:root .paper { fill: #142031; }
+  :root:not([data-theme="light"]) .mu-dg .soft, .mu-dg:root .soft { fill: #1a283b; }
+  :root:not([data-theme="light"]) .mu-dg .line, .mu-dg:root .line { stroke: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .fill-line, .mu-dg:root .fill-line { fill: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-soft, .mu-dg:root .lx-soft { fill: #33290f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-stroke, .mu-dg:root .lx-stroke { stroke: #f2b740; }
+  :root:not([data-theme="light"]) .mu-dg .t-lx, .mu-dg:root .t-lx { fill: #f2c060; }
+  :root:not([data-theme="light"]) .mu-dg .an-soft, .mu-dg:root .an-soft { fill: #12301f; }
+  :root:not([data-theme="light"]) .mu-dg .an-stroke, .mu-dg:root .an-stroke { stroke: #5ccf8a; }
+  :root:not([data-theme="light"]) .mu-dg .t-an, .mu-dg:root .t-an { fill: #7ddba3; }
+  :root:not([data-theme="light"]) .mu-dg .bl, .mu-dg:root .bl { fill: #5b88f0; }
+  :root:not([data-theme="light"]) .mu-dg .bl-soft, .mu-dg:root .bl-soft { fill: #1a2a48; }
+  :root:not([data-theme="light"]) .mu-dg .bl-stroke, .mu-dg:root .bl-stroke { stroke: #7ea6ff; }
+  :root:not([data-theme="light"]) .mu-dg .t-bl, .mu-dg:root .t-bl { fill: #9dbbff; }
+  :root:not([data-theme="light"]) .mu-dg .rd-soft, .mu-dg:root .rd-soft { fill: #3a1a1a; }
+  :root:not([data-theme="light"]) .mu-dg .rd-stroke, .mu-dg:root .rd-stroke { stroke: #ff7b72; }
+  :root:not([data-theme="light"]) .mu-dg .t-rd, .mu-dg:root .t-rd { fill: #ff9b94; }
+  :root:not([data-theme="light"]) .mu-dg .body-top, .mu-dg:root .body-top { fill: #2a3a52; }
+  :root:not([data-theme="light"]) .mu-dg .body-side, .mu-dg:root .body-side { fill: #1c2a3d; }
+  :root:not([data-theme="light"]) .mu-dg .body-edge, .mu-dg:root .body-edge { stroke: #44587a; }
+  :root:not([data-theme="light"]) .mu-dg .led-white, .mu-dg:root .led-white { fill: #f4f7fb; stroke: #44587a; }
+}
+:root[data-theme="dark"] .mu-dg text { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .t-muted { fill: #9cabbe; }
+:root[data-theme="dark"] .mu-dg .ink { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .stroke-ink { stroke: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .paper { fill: #142031; }
+:root[data-theme="dark"] .mu-dg .soft { fill: #1a283b; }
+:root[data-theme="dark"] .mu-dg .line { stroke: #34465f; }
+:root[data-theme="dark"] .mu-dg .fill-line { fill: #34465f; }
+:root[data-theme="dark"] .mu-dg .lx-soft { fill: #33290f; }
+:root[data-theme="dark"] .mu-dg .lx-stroke { stroke: #f2b740; }
+:root[data-theme="dark"] .mu-dg .t-lx { fill: #f2c060; }
+:root[data-theme="dark"] .mu-dg .an-soft { fill: #12301f; }
+:root[data-theme="dark"] .mu-dg .an-stroke { stroke: #5ccf8a; }
+:root[data-theme="dark"] .mu-dg .t-an { fill: #7ddba3; }
+:root[data-theme="dark"] .mu-dg .bl { fill: #5b88f0; }
+:root[data-theme="dark"] .mu-dg .bl-soft { fill: #1a2a48; }
+:root[data-theme="dark"] .mu-dg .bl-stroke { stroke: #7ea6ff; }
+:root[data-theme="dark"] .mu-dg .t-bl { fill: #9dbbff; }
+:root[data-theme="dark"] .mu-dg .rd-soft { fill: #3a1a1a; }
+:root[data-theme="dark"] .mu-dg .rd-stroke { stroke: #ff7b72; }
+:root[data-theme="dark"] .mu-dg .t-rd { fill: #ff9b94; }
+:root[data-theme="dark"] .mu-dg .body-top { fill: #2a3a52; }
+:root[data-theme="dark"] .mu-dg .body-side { fill: #1c2a3d; }
+:root[data-theme="dark"] .mu-dg .body-edge { stroke: #44587a; }
+:root[data-theme="dark"] .mu-dg .led-white { fill: #f4f7fb; stroke: #44587a; }
+</style>
+<defs><marker id="boot-zh-ah" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="ink"/></marker></defs>
+<rect x="160" y="24" width="240" height="60" rx="30" class="soft line" stroke-width="2.5"/>
+<text x="280" y="61" font-size="20" text-anchor="middle" font-weight="700">开机</text>
+<path d="M 280 84 L 280 120" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<rect x="100" y="122" width="360" height="92" rx="14" class="lx-soft lx-stroke" stroke-width="2.5"/>
+<text x="280" y="162" font-size="20" text-anchor="middle">引导程序启动 Linux，</text>
+<text x="280" y="188" font-size="20" text-anchor="middle">并用掉一次尝试</text>
+<path d="M 280 214 L 280 250" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<polygon points="280,251 480,356 280,461 80,356" class="bl-soft bl-stroke" stroke-width="2.5"/>
+<text x="280" y="337" font-size="20" text-anchor="middle" font-weight="700">Linux 大约一分钟内</text>
+<text x="280" y="363" font-size="20" text-anchor="middle" font-weight="700">启动成功了吗？</text>
+<text x="280" y="389" font-size="17" text-anchor="middle" class="t-muted">USB 网络和 SSH</text>
+<path d="M 480 356 L 600 356" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<text x="504" y="342" font-size="18" text-anchor="start" font-weight="700" class="t-muted">是</text>
+<rect x="602" y="310" width="330" height="92" rx="14" class="lx-soft lx-stroke" stroke-width="2.5"/>
+<text x="767" y="350" font-size="20" text-anchor="middle">启动已确认：</text>
+<text x="767" y="376" font-size="20" text-anchor="middle">尝试次数全部恢复</text>
+<path d="M 767 402 L 767 450" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<rect x="637" y="452" width="260" height="60" rx="30" class="lx" stroke-width="2.5"/>
+<text x="767" y="489" font-size="20" text-anchor="middle" font-weight="700">你在使用 Linux</text>
+<path d="M 280 461 L 280 510" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<text x="294" y="492" font-size="18" text-anchor="start" font-weight="700" class="t-muted">否</text>
+<rect x="110" y="512" width="340" height="86" rx="14" class="rd-soft rd-stroke" stroke-width="2.5"/>
+<text x="280" y="549" font-size="20" text-anchor="middle">未确认：</text>
+<text x="280" y="575" font-size="20" text-anchor="middle">少一次尝试</text>
+<path d="M 280 598 L 280 634" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<polygon points="280,635 415,700 280,765 145,700" class="bl-soft bl-stroke" stroke-width="2.5"/>
+<text x="280" y="707" font-size="20" text-anchor="middle" font-weight="700">还有次数吗？</text>
+<path d="M 145 700 H 40 V 54 H 158" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<text x="130" y="688" font-size="18" text-anchor="end" font-weight="700" class="t-muted">是</text>
+<g transform="translate(28 380) rotate(-90)"><text x="0" y="0" font-size="17" text-anchor="middle" class="t-muted">下次启动</text></g>
+<path d="M 415 700 L 600 700" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<text x="440" y="688" font-size="18" text-anchor="start" font-weight="700" class="t-muted">否</text>
+<rect x="602" y="660" width="330" height="80" rx="14" class="an-soft an-stroke" stroke-width="2.5"/>
+<text x="767" y="694" font-size="20" text-anchor="middle" font-weight="700">自动启动</text>
+<text x="767" y="720" font-size="20" text-anchor="middle" font-weight="700">Android</text>
+<text x="40" y="806" font-size="17" text-anchor="start" class="t-muted">尝试次数：1 到 6（默认 5）。</text>
+<text x="40" y="828.1" font-size="17" text-anchor="start" class="t-muted">锁定的 Linux 不会自动回到 Android。</text>
+</svg></div></figure>
+<ul>
+<li>次数在安装时选，<strong>1 到 6，默认 5</strong>；6 是引导程序计数器能存下的最大值。</li>
+<li>如果 Linux 根本起不来，设备也会自己回到 Android。</li>
+<li><strong>锁定 Linux</strong> 就是故意把降落伞关掉：设备永远不会自己回到 Android，失败多少次都不会，系统起不来也不会（这时它会在 USB 上等着，提供一个 telnet shell，在里面运行 <code>sh /run/to-android</code> 就能去 Android）。唯一的例外是 <code>mu300-update</code> 装的新内核，它的头几次启动仍按通常的次数计算。控制面板首页上也有“锁定 Linux”（Lock Linux）。</li>
+</ul>
+<pre><code>sudo mu300-next-boot attempts 3  <span class="c"># 回到 Android 前允许失败几次，1 到 6</span>
+sudo mu300-next-boot lock        <span class="c"># 无论如何都留在 Linux</span>
+sudo mu300-next-boot unlock      <span class="c"># 恢复按次数回退</span>
+sudo mu300-next-boot status</code></pre>
+</section>
+
+<section id="to-android">
+<h2>去 Android，再回来</h2>
+<div class="cards">
+<div class="card android">
+<h3>从 Linux 到 Android</h3>
+<pre><code>sudo mu300-next-boot android
+sudo reboot</code></pre>
+<p>或者用控制面板上的“切换到 Android”（Switch to Android）。手边没有电脑、也登录不了：在开机过程中断电，连续断的次数等于你设的失败次数（见<a href="#password">下文</a>）。</p>
+</div>
+<div class="card linux">
+<h3>从 Android 到 Linux</h3>
+<pre><code>su -c mu300-linux                <span class="c"># 在 Android 里：重启进入 Linux</span>
+su -c 'mu300-linux status'       <span class="c"># 哪个系统在哪个槽位</span></code></pre>
+<p>或者用 Magisk 应用里“MU300 Linux”模块的操作（Action）按钮。这个模块是安装程序装上的；它只写入和安装程序相同的那 32 个字节的 <code>misc</code>。</p>
+</div>
+</div>
+<p>切换到 Android 之前，如果还设着频段或小区锁定，控制面板会提醒你，因为基带把它们存在自己的存储里，Android 也会照用。网络锁定页面上的“全部重置为自动”（Reset all to automatic）（<code>unisoc-modem lock reset</code>）可以清除它们。</p>
+<p>在几个 Linux 系统之间切换：<code>sudo mu300-os ubuntu</code>、<code>openwrt</code> 或 <code>openwrt-luci</code>，然后重启。</p>
+</section>
+
+<section id="uninstall">
+<h2>卸载</h2>
+<p>让设备回到 Android，然后在电脑上运行：</p>
+<pre><code>./uninstall.sh                <span class="c"># macOS / Linux</span>
+.\uninstall.ps1               <span class="c"># Windows（PowerShell）</span>
+uninstall.cmd                 <span class="c"># Windows（cmd）</span></code></pre>
+<p>它会让 Android 重新成为启动系统，恢复第二个启动分区，并擦除 Linux 文件系统。你的 Android 数据不受影响。如果开始时设备正在运行 Linux，它会先提出帮你重启进 Android。擦除的彻底程度由你选：</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">选项</th><th scope="col">作用</th></tr></thead><tbody>
+<tr><th scope="row">secure（默认）</th><td>覆写整个 Linux 区域，并检查它确实清空了。需要几分钟。</td></tr>
+<tr><th scope="row">quick</th><td>只擦除文件系统头部；在空间被再次使用之前，文件在闪存上仍然可读。</td></tr>
+<tr><th scope="row">keep</th><td>不动 Linux 文件系统；它只是再也不会启动。</td></tr>
+</tbody></table></div>
+<p>SD 卡上的 Linux 文件系统会单独问一次：<strong>erase</strong>（默认，覆写前 64 MiB）或 <strong>keep</strong>。装着其他文件系统的卡绝不会被碰。如果你在 32 GB 版本上缩小过 <code>userdata</code>，它会提出把空间还回去；这一项默认关闭，会问两次，而且会再次清空 Android 的数据。</p>
+</section>
+
+<section id="password">
+<h2>忘记密码</h2>
+<p>不用登录也能脱身。（当 Linux 处于<a href="#safety-net">锁定</a>状态时，开机过程中拔电不会让设备回到 Android；这种情况下 README 指向第 2 步，也就是用电脑的办法。）</p>
+<ol>
+<li><strong>回到 Android：</strong>设备通电约十秒后拔掉电源，再插上。连续这样做，次数等于你设的失败次数（默认 5）。设备看到这些没完成的启动，就会自己回到 Android。</li>
+<li><strong>设置新密码：</strong>在电脑上操作，不用启动 Linux，所有数据都保留：
+<pre><code>tools/reset-password.sh            <span class="c"># ubuntu、openwrt 或两者</span></code></pre>
+</li>
+<li>再启动 Linux：在 Android 里运行 <code>su -c mu300-linux</code>，或者如果 Linux 是默认系统，直接重启。</li>
+</ol>
+<p>再运行一次安装程序并选 <code>update</code>，也会把密码设成你输入的那个。</p>
+</section>
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>项目</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">GitHub 上的源代码</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">支持本项目</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">发布版本（下载）</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN 模块</a></li>
+</ul>
+</div>
+<div>
+<h2>帮助</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki（英文）</a></li>
+<li><a href="../../zh/troubleshooting/">故障排除</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">报告问题</a></li>
+<li><a href="https://t.me/mu300project">Telegram 频道（动态与新版本）</a></li>
+</ul>
+</div>
+<div>
+<p>这是一个业余项目，风险自负，不提供任何担保。与 ZTE、紫光展锐或任何运营商无关，也未获其认可。脚本和文档：MIT；内核：GPL-2.0。</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

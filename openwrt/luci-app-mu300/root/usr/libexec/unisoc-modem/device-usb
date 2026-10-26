@@ -1,0 +1,268 @@
+#!/bin/sh
+# Portable USB-role adapter and persistent gadget-mode policy.
+# A platform may provide MU300_USB_ROLE_COMMAND (or UCI usb.role_command) with
+# the contract: COMMAND host|device. F50 uses the requested raw role switch;
+# other known platforms retain their power-sequencing helper.
+set -u
+export PATH="$PATH:/opt/mu300/bin:/usr/sbin:/sbin"
+# the shared JSON escaper and uci allow-lists (/usr/share/unisoc-modem/lib.sh)
+LIB=${0%/*}/../../share/unisoc-modem/lib.sh
+[ -f "$LIB" ] || LIB=/usr/share/unisoc-modem/lib.sh
+. "$LIB"
+
+CFG=unisoc_modem.usb
+ROLE_FILE=${MU300_USB_ROLE_FILE:-/sys/class/usb_role/25100000.dwc3-role-switch/role}
+# The USB network mode for the next boot: ncm, ecm or rndis, alone on its line. boot/init reads it from the system
+# it boots and rebinds the gadget once when it differs (D12), then leaves APPLIED_FILE behind (K8).
+BOOT_FILE=${MU300_USB_NET_FILE:-/etc/mu300/usb-net}
+APPLIED_FILE=${MU300_USB_APPLIED_FILE:-/run/mu300/usb-net-applied}
+NET_CLASS=${MU300_USB_NET_CLASS:-/sys/class/net}
+USB_BUS=${MU300_USB_BUS:-/sys/bus/usb/devices}
+RESCAN_MARKER=${MU300_USB_RESCAN_MARKER:-/run/unisoc-usb-host-rescan-done}
+NETWORK_SERVICE=${MU300_USB_NETWORK_SERVICE:-/etc/init.d/network}
+IP=${MU300_USB_IP_BIN:-ip}
+get() { uci -q get "$CFG.$1" 2>/dev/null || true; }
+put() { uci -q set "$CFG.$1=$2"; }
+error() { printf '{"ok":0,"error":%s}\n' "$(json_str "$1")"; exit 1; }
+role_now() { cat "$ROLE_FILE" 2>/dev/null || echo unavailable; }
+device_name() {
+    if [ -n "${MU300_USB_DEVICE:-}" ]; then echo "$MU300_USB_DEVICE"
+    elif command -v mu300-device >/dev/null 2>&1; then mu300-device
+    else echo generic; fi
+}
+role_command() {
+    # the UI can write role_command: only a program in the platform directory
+    cmd=${MU300_USB_ROLE_COMMAND:-$(safe_program "$(get role_command)")}
+    if [ -n "$cmd" ]; then
+        [ -x "$cmd" ] || error 'USB role adapter is not executable'
+        "$cmd" "$1" || error 'USB role adapter failed'
+    elif case $(device_name) in f50|v50) true ;; *) false ;; esac; then   # (the V50: the F50's role file, kano's port)
+        [ -w "$ROLE_FILE" ] || error 'USB role switch is unavailable'
+        printf '%s\n' "$1" > "$ROLE_FILE" || error 'USB role switch failed'
+    elif command -v mu300-usb >/dev/null 2>&1; then
+        mu300-usb "$1" || error 'USB role switch was refused by platform safety checks'
+    else
+        [ -w "$ROLE_FILE" ] || error 'USB role switch is unavailable'
+        printf '%s\n' "$1" > "$ROLE_FILE" || error 'USB role switch failed'
+    fi
+}
+ensure_section() {
+    uci -q get "$CFG" >/dev/null 2>&1 || uci -q set "$CFG=device"
+}
+sync_boot_file() {
+    mode=$(get net_mode); scope=$(get net_scope); auto=$(get net_auto)
+    [ "$auto" = 1 ] || { rm -f "$BOOT_FILE"; return; }
+    case $mode in ecm|ncm|rndis) ;; *) error 'Invalid USB network mode' ;; esac
+    case $scope in once|permanent) ;; *) error 'Invalid USB network scope' ;; esac
+    mkdir -p "${BOOT_FILE%/*}" || error 'Cannot create USB boot settings directory'
+    tmp="$BOOT_FILE.$$"
+    printf '%s\n' "$mode" > "$tmp" || error 'Cannot write USB boot settings'
+    chmod 600 "$tmp"
+    mv "$tmp" "$BOOT_FILE" || error 'Cannot save USB boot settings'
+}
+usb_net() {
+    name=$1
+    # an interface name (IFNAMSIZ: 15 characters) that is never an option, "."
+    # or "..": it becomes part of a /sys path and an ip/uci argument
+    case $name in ''|[!a-zA-Z0-9]*|*[!a-zA-Z0-9_.:-]*) return 1 ;; esac
+    [ ${#name} -le 15 ] || return 1
+    [ -d "$NET_CLASS/$name" ] || return 1
+    sub=$(readlink -f "$NET_CLASS/$name/device/subsystem" 2>/dev/null)
+    # Configfs gadget interfaces (usb0/rndis0) are not host-side USB NICs.
+    # Their parent belongs to the gadget bus, even if their names contain usb.
+    case $sub in */bus/gadget) return 1 ;; esac
+    case $sub in */bus/usb) return 0 ;; esac
+    path=$(readlink -f "$NET_CLASS/$name/device" 2>/dev/null)
+    case $path in */usb[0-9]*/*) return 0 ;; esac
+    return 1
+}
+bridge_section() {
+    bridge=$(safe_iface "$(uci_get lan_device)" br-lan)
+    [ -n "$bridge" ] || bridge=br-lan
+    uci -q show network | sed -n "s/^\(network\.[^.]*\)\.name='$bridge'$/\1/p" | head -n1
+}
+bridge_has() {
+    section=$1; name=$2
+    ports=$(uci -q get "$section.ports" 2>/dev/null)
+    case " $ports " in *" $name "*) return 0 ;; esac
+    return 1
+}
+sync_host_nic() {
+    name=$1
+    usb_net "$name" || return 0
+    section=$(bridge_section)
+    [ -n "$section" ] && bridge_has "$section" "$name" || return 0
+    bridge=$(safe_iface "$(uci_get lan_device)" br-lan)
+    [ -n "$bridge" ] || bridge=br-lan
+    "$IP" link set dev "$name" up >/dev/null 2>&1 || return 1
+    "$IP" link set dev "$name" master "$bridge" >/dev/null 2>&1
+}
+host_nic_present() {
+    for dir in "$NET_CLASS"/*; do
+        [ -d "$dir" ] && usb_net "${dir##*/}" && return 0
+    done
+    return 1
+}
+start_host_rescan() {
+    # The first hub may enumerate before its downstream Ethernet dongle has
+    # power. Run one non-blocking rescan; never hold up boot or poll forever.
+    ( "$0" host-rescan </dev/null >/dev/null 2>&1 ) &
+}
+case ${1:-} in
+    get)
+        role=$(role_now); role_auto=$(get role_auto); net_auto=$(get net_auto)
+        mode=$(get net_mode); scope=$(get net_scope)
+        case $role_auto in 1) ;; *) role_auto=0 ;; esac
+        case $net_auto in 1) ;; *) net_auto=0 ;; esac
+        case $mode in ecm|ncm|rndis) ;; *) mode=ncm ;; esac
+        case $scope in once|permanent) ;; *) scope=permanent ;; esac
+        [ "$role_auto" = 0 ] || net_auto=0
+        [ "$role" != host ] || net_auto=0
+        available=1
+        if [ "$role" = host ] || [ "$role_auto" = 1 ]; then available=0; fi
+        host_supported=1
+        [ -e "$ROLE_FILE" ] || host_supported=0
+        printf '{"ok":1,"role":%s,"role_auto":%s,"host_supported":%s,"net_mode":"%s","net_scope":"%s","net_auto":%s,"net_available":%s}\n' \
+            "$(json_str "$role")" "$role_auto" "$host_supported" "$mode" "$scope" "$net_auto" "$available"
+        ;;
+    set-role)
+        role=${2:-}; auto=${3:-}
+        case $role in host|device) ;; *) error 'Invalid USB role' ;; esac
+        case $auto in 0|1) ;; *) error 'Invalid boot-auto value' ;; esac
+        [ "$role" = host ] || [ "$auto" = 0 ] || error 'Device is the boot default; host auto-apply is the only persistent role'
+        [ -e "$ROLE_FILE" ] || error 'USB role switch is unavailable'
+        # Persist and acknowledge before dropping the USB management link.
+        # A synchronous role write can tear down the very RPC carrying its
+        # response, leading the browser to report failure after success.
+        ensure_section
+        put role_auto "$auto" || error 'Cannot save USB role policy'
+        if [ "$role" = host ] && [ "$auto" = 1 ]; then
+            put net_auto 0 || error 'Cannot disable USB network boot policy'
+            rm -f "$BOOT_FILE"
+        fi
+        uci commit unisoc_modem || error 'Cannot commit USB role policy'
+        pending=0
+        if [ "$(role_now)" != "$role" ]; then
+            pending=1
+            # Give rpcd/uhttpd a brief chance to flush the acknowledgement
+            # before the USB gadget carrying that response disappears.
+            ( sleep 0.25 2>/dev/null || sleep 1; "$0" apply-role "$role" </dev/null >/dev/null 2>&1 ) &
+        fi
+        printf '{"ok":1,"pending":%s}\n' "$pending"
+        ;;
+    apply-role)
+        role=${2:-}
+        case $role in host|device) ;; *) exit 2 ;; esac
+        [ "$(role_now)" = "$role" ] || role_command "$role" || {
+            logger -t unisoc-usb "role switch to $role failed"
+            exit 1
+        }
+        if [ "$role" = host ]; then
+            start_host_rescan
+        else
+            rmdir "$RESCAN_MARKER" 2>/dev/null || true
+        fi
+        ;;
+    set-net)
+        mode=${2:-}; scope=${3:-}; auto=${4:-}
+        case $mode in ecm|ncm|rndis) ;; *) error 'Invalid USB network mode' ;; esac
+        case $scope in once|permanent) ;; *) error 'Invalid USB network scope' ;; esac
+        case $auto in 0|1) ;; *) error 'Invalid boot-auto value' ;; esac
+        [ "$(role_now)" != host ] || error 'USB network mode is unavailable in host role'
+        [ "$(get role_auto)" != 1 ] || error 'Disable host boot-auto before configuring USB network'
+        ensure_section
+        put net_mode "$mode" && put net_scope "$scope" && put net_auto "$auto" || error 'Cannot save USB network policy'
+        sync_boot_file
+        uci commit unisoc_modem || error 'Cannot commit USB network policy'
+        printf '{"ok":1}\n'
+        ;;
+    boot)
+        # boot/init applied the selected gadget mode before switch_root (one
+        # rebind when it differed). A one-shot mode is consumed only once init
+        # says it was in effect for this boot.
+        if [ "$(get role_auto)" = 1 ] && [ "$(get net_auto)" = 1 ]; then
+            ensure_section
+            put net_auto 0 && uci commit unisoc_modem
+            rm -f "$BOOT_FILE"
+        fi
+        if [ "$(get net_auto)" = 1 ] && [ "$(get net_scope)" = once ] &&
+           [ -f "$APPLIED_FILE" ]; then
+            ensure_section
+            put net_auto 0 && uci commit unisoc_modem
+            rm -f "$BOOT_FILE"
+        fi
+        if [ "$(get role_auto)" = 1 ]; then
+            [ "$(role_now)" = host ] || role_command host
+            start_host_rescan
+        fi
+        "$0" net-sync || true
+        ;;
+    host-rescan)
+        sleep "${MU300_USB_RESCAN_DELAY:-2}"
+        [ "$(role_now)" = host ] || exit 0
+        host_nic_present && exit 0
+        mkdir "$RESCAN_MARKER" 2>/dev/null || exit 0
+        # Reset only the first external hub, once. Re-authorizing its USB
+        # device causes a fresh downstream port scan without touching the
+        # DWC3 role or rebooting the device.
+        for hub in "$USB_BUS"/[0-9]*-[0-9]*; do
+            [ -f "$hub/bDeviceClass" ] || continue
+            [ "$(cat "$hub/bDeviceClass" 2>/dev/null)" = 09 ] || continue
+            [ -w "$hub/authorized" ] || continue
+            case ${hub##*/} in *.*|*:*) continue ;; esac
+            printf '0\n' > "$hub/authorized" || exit 1
+            printf '1\n' > "$hub/authorized" || exit 1
+            logger -t unisoc-usb "rescanned host hub ${hub##*/} after missing USB NIC"
+            break
+        done
+        ;;
+    net-sync)
+        # The role readback can lag behind host netdev events. Only physical
+        # USB NICs explicitly saved as LAN ports are eligible, so attaching
+        # them does not require waiting for the role sysfs state to settle.
+        for dir in "$NET_CLASS"/*; do
+            [ -d "$dir" ] || continue
+            sync_host_nic "${dir##*/}" || true
+        done
+        ;;
+    net-list)
+        [ "$(role_now)" = host ] || { printf '{"ok":1,"devices":[],"host_only":1}\n'; exit 0; }
+        section=$(bridge_section)
+        printf '{"ok":1,"devices":['
+        first=1
+        for dir in "$NET_CLASS"/*; do
+            [ -d "$dir" ] || continue
+            name=${dir##*/}
+            usb_net "$name" || continue
+            "$IP" link set dev "$name" up >/dev/null 2>&1 || true
+            [ "$first" = 1 ] || printf ','
+            first=0
+            joined=0
+            if [ -n "$section" ] && bridge_has "$section" "$name"; then
+                joined=1
+                sync_host_nic "$name" || true
+            fi
+            carrier=$(cat "$dir/carrier" 2>/dev/null); case $carrier in 1) ;; *) carrier=0 ;; esac
+            printf '{"name":%s,"carrier":%s,"in_lan":%s}' "$(json_str "$name")" "$carrier" "$joined"
+        done
+        printf ']}\n'
+        ;;
+    net-add)
+        name=${2:-}
+        [ "$(role_now)" = host ] || error 'USB host mode is required'
+        usb_net "$name" || error 'Not a USB network interface'
+        section=$(bridge_section)
+        [ -n "$section" ] || error 'LAN bridge device section was not found'
+        "$IP" link set dev "$name" up || error 'Cannot bring USB network interface up'
+        if ! bridge_has "$section" "$name"; then
+            uci -q add_list "$section.ports=$name" || error 'Cannot add interface to LAN bridge'
+            uci commit network || error 'Cannot save LAN bridge'
+            "$NETWORK_SERVICE" reload >/dev/null 2>&1 || error 'Network reload failed'
+        fi
+        bridge=$(safe_iface "$(uci_get lan_device)" br-lan)
+        [ -n "$bridge" ] || bridge=br-lan
+        "$IP" link set dev "$name" master "$bridge" >/dev/null 2>&1 || error 'Cannot attach USB interface to LAN bridge'
+        printf '{"ok":1}\n'
+        ;;
+    *) echo "usage: $0 {get|set-role ROLE AUTO|apply-role ROLE|set-net MODE SCOPE AUTO|boot|host-rescan|net-sync|net-list|net-add IFACE}" >&2; exit 2 ;;
+esac

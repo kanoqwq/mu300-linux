@@ -1,0 +1,203 @@
+kernel 5.4: quiet the vendor charger, fuel gauge, WCN and watchdog drivers' periodic log lines (issue #68)
+
+By AgentFan0315 (https://github.com/AgentFan0315/f50-openwrt, kernel/patches/logspam-quiet.patch), GPL-2.0 like the
+code it changes. Each line only changes the printk level to debug; CONFIG_DYNAMIC_DEBUG is on, so any of them comes
+back with `echo 'file <file> +p' > /sys/kernel/debug/dynamic_debug/control`.
+Left out of the original: the WCN_INFO macro in sprdwcn/include/wcn_dbg.h (every WCN info line, including the
+start_marlin/stop_marlin power timeline that FINDINGS 31n/14b were read from) and charger-manager's two
+"battery overheat or cold" warnings (the only record of a JEITA charging stop on the U30 Air).
+
+--- a/drivers/power/supply/charger-manager.c
++++ b/drivers/power/supply/charger-manager.c
+@@ -3962,7 +3962,7 @@ static int cm_get_board_temperature(struct charger_manager *cm, int *temp)
+ 		}
+ 	}
+ #endif
+-	dev_err(cm->dev, "Can not to get board tempperature, return init_temp=%d\n", *temp);
++	dev_dbg(cm->dev, "Can not to get board tempperature, return init_temp=%d\n", *temp);
+ 
+ 	return ret;
+ }
+@@ -4290,7 +4290,7 @@ static int cm_manager_get_jeita_status(struct charger_manager *cm, int cur_temp)
+ 		cm_jeita_temp_goes_up(desc, temp_status, recovery_temp_status, &jeita_status);
+ 
+ out:
+-	dev_info(cm->dev, "%s: jeita status:(%d) %d %d, temperature:%d, jeita_size:%d\n",
++	dev_dbg(cm->dev, "%s: jeita status:(%d) %d %d, temperature:%d, jeita_size:%d\n",
+ 		 __func__, jeita_status, temp_status, recovery_temp_status,
+ 		 cur_temp, desc->jeita_tab_size);
+ 
+@@ -4446,7 +4446,7 @@ static bool _cm_monitor(struct charger_manager *cm)
+ 		power_supply_changed(cm->charger_psy);
+ 	}
+ 
+-	dev_info(cm->dev, "target %d, charging_status %d\n", target, cm->charging_status);
++	dev_dbg(cm->dev, "target %d, charging_status %d\n", target, cm->charging_status);
+ 	return (target == POWER_SUPPLY_STATUS_NOT_CHARGING);
+ 
+ }
+@@ -6932,7 +6932,7 @@ static void cm_batt_works(struct work_struct *work)
+ 	else
+ 		ret = get_charger_input_current(cm, &input_cur);
+ 	if (ret)
+-		dev_warn(cm->dev, "cant not get input_cur.\n");
++		dev_dbg(cm->dev, "cant not get input_cur.\n");
+ 
+ 	ret = get_charger_voltage(cm, &chg_vol);
+ 	if (ret)
+@@ -7004,7 +7004,7 @@ static void cm_batt_works(struct work_struct *work)
+ 	else
+ 		cm->desc->charger_status = cm->battery_status;
+ 
+-	dev_info(cm->dev, "vbat: %d, vbat_avg: %d, OCV: %d, ibat: %d, ibat_avg: %d, ibus: %d,"
++	dev_dbg(cm->dev, "vbat: %d, vbat_avg: %d, OCV: %d, ibat: %d, ibat_avg: %d, ibus: %d,"
+ 		 " vbus: %d, msoc: %d, chg_sts: %d, frce_full: %d, chg_lmt_cur: %d,"
+ 		 " inpt_lmt_cur: %d, chgr_type: %d, Tboard: %d, Tbatt: %d, thm_cur: %d,"
+ 		 " thm_pwr: %d, is_fchg: %d, fchg_en: %d, tflush: %d, tperiod: %d\n",
+@@ -7183,7 +7183,7 @@ static void cm_batt_works(struct work_struct *work)
+ 		uvlo_check_cnt = 0;
+ 	}
+ 
+-	dev_info(cm->dev, "work_cycle = %ds, cap_one_time = %ds\n",
++	dev_dbg(cm->dev, "work_cycle = %ds, cap_one_time = %ds\n",
+ 		 work_cycle, cm->desc->cap_one_time);
+ 
+ 	if (batt_uV < CM_UVLO_CALIBRATION_VOLTAGE_THRESHOLD) {
+@@ -7191,7 +7191,7 @@ static void cm_batt_works(struct work_struct *work)
+ 		schedule_delayed_work(&cm->uvlo_work, msecs_to_jiffies(100));
+ 	}
+ 
+-	dev_info(cm->dev, "new_uisoc = %d, old_uisoc = %d\n", fuel_cap, cm->desc->cap);
++	dev_dbg(cm->dev, "new_uisoc = %d, old_uisoc = %d\n", fuel_cap, cm->desc->cap);
+ 
+ 	if (fuel_cap != cm->desc->cap) {
+ 		if (DIV_ROUND_CLOSEST(fuel_cap, 10) != DIV_ROUND_CLOSEST(cm->desc->cap, 10)) {
+--- a/drivers/power/supply/sc27xx_fuel_gauge.c
++++ b/drivers/power/supply/sc27xx_fuel_gauge.c
+@@ -931,7 +931,7 @@ static void sc27xx_fgu_capacity_loss_by_temperature(struct sc27xx_fgu_data *data
+ 			*cap = SC27XX_FGU_FCC_PERCENT;
+ 		}
+ 
+-		dev_info(data->dev, "%s temp_cap=%d,cap=%d\n", __func__, temp_cap, *cap);
++		dev_dbg(data->dev, "%s temp_cap=%d,cap=%d\n", __func__, temp_cap, *cap);
+ 
+ 		if (*cap <= 5) {
+ 			ret =  sc27xx_fgu_get_vbat_now(data, &data->batt_mv);
+@@ -1183,7 +1183,7 @@ static void sc27xx_fgu_dump_battery_info(struct sc27xx_fgu_data *data, char *str
+ 
+ static void sc27xx_fgu_dump_info(struct sc27xx_fgu_data *data)
+ {
+-	dev_info(data->dev, "init_cap = %d, init_mah = %d, init_clbcnt = %d, cur_clbcnt = %d, "
++	dev_dbg(data->dev, "init_cap = %d, init_mah = %d, init_clbcnt = %d, cur_clbcnt = %d, "
+ 		 "normal_cap = %d, data->cc_mah = %d, Tbat = %d, uusoc_vbat = %d, uusoc_mah = %d, "
+ 		 "cur_1000ma_adc = %d, vol_1000mv_adc = %d, track_sts = %d\n",
+ 		 data->init_cap, data->init_mah, data->init_clbcnt, data->cur_clbcnt,
+@@ -1857,7 +1857,7 @@ static int sc27xx_fgu_get_capacity(struct sc27xx_fgu_data *data, int *cap)
+ 	*cap = delta_cap + data->init_cap;
+ 
+ 	sc27xx_fgu_calc_charge_cycle(data, *cap, &last_fgu_cap);
+-	dev_info(data->dev, "%s,line:%d,cap=%d, data->normal_temp_cap=%d\n", __func__, __LINE__, *cap, data->normal_temp_cap);
++	dev_dbg(data->dev, "%s,line:%d,cap=%d, data->normal_temp_cap=%d\n", __func__, __LINE__, *cap, data->normal_temp_cap);
+ 	data->normal_temp_cap = *cap;
+ 	if (data->normal_temp_cap < 0)
+ 		data->normal_temp_cap = 0;
+@@ -1905,12 +1905,12 @@ static int sc27xx_fgu_get_capacity(struct sc27xx_fgu_data *data, int *cap)
+ 
+ normal_cap_calc:
+ 	sc27xx_fgu_capacity_loss_by_temperature(data, cap);
+-	dev_info(data->dev, "normal_cap_calc,%s,line:%d,cap=%d, data->normal_temp_cap=%d, data->uusoc_vbat=%d\n", __func__, __LINE__, *cap, data->normal_temp_cap, data->uusoc_vbat);
++	dev_dbg(data->dev, "normal_cap_calc,%s,line:%d,cap=%d, data->normal_temp_cap=%d, data->uusoc_vbat=%d\n", __func__, __LINE__, *cap, data->normal_temp_cap, data->uusoc_vbat);
+ capacity_calibration:
+ 	sc27xx_fgu_capacity_calibration(data, false);
+ 
+ 	*cap -= data->uusoc_vbat;
+-	dev_info(data->dev, "capacity_cali, %s,line:%d,cap=%d, data->normal_temp_cap=%d, data->uusoc_vbat=%d\n",  __func__, __LINE__, *cap, data->normal_temp_cap, data->uusoc_vbat);
++	dev_dbg(data->dev, "capacity_cali, %s,line:%d,cap=%d, data->normal_temp_cap=%d, data->uusoc_vbat=%d\n",  __func__, __LINE__, *cap, data->normal_temp_cap, data->uusoc_vbat);
+ 
+ 	if (*cap < 0) {
+ 		dev_info(data->dev, "Capacity_temp < 0, adjust !!!\n");
+@@ -2153,7 +2153,7 @@ static int sc27xx_fgu_get_temp(struct sc27xx_fgu_data *data, int *temp)
+ 
+ 		vol_ntc_uv = temp_vol * 10 + vol_ntc_uv - resistance_vol * 10;
+ 
+-		dev_info(data->dev, "bat_current_ma = %d, vol_adc_mv = %d, vol_ntc_uv = %d\n",
++		dev_dbg(data->dev, "bat_current_ma = %d, vol_adc_mv = %d, vol_ntc_uv = %d\n",
+ 			 bat_current_ma, vol_adc_mv, vol_ntc_uv);
+ 		if (vol_ntc_uv < 0)
+ 			vol_ntc_uv = 0;
+@@ -2161,7 +2161,7 @@ static int sc27xx_fgu_get_temp(struct sc27xx_fgu_data *data, int *temp)
+ 
+ 	if (data->temp_table_len > 0) {
+ 		*temp = sc27xx_fgu_vol2temp(data->temp_table, data->temp_table_len, vol_ntc_uv);
+-		dev_info(data->dev, "%s: temp = %d\n", __func__, *temp);
++		dev_dbg(data->dev, "%s: temp = %d\n", __func__, *temp);
+ 		*temp = sc27xx_fgu_get_average_temp(data, *temp);
+ 	} else {
+ 		*temp = 200;
+@@ -2203,7 +2203,7 @@ static int sc27xx_fgu_suspend_calib_check_temp(struct sc27xx_fgu_data *data)
+ 		ret = -EINVAL;
+ 	}
+ 
+-	dev_info(data->dev, "%s, temp = %d\n", __func__, temp);
++	dev_dbg(data->dev, "%s, temp = %d\n", __func__, temp);
+ 
+ 	return ret;
+ }
+@@ -3059,7 +3059,7 @@ static void sc27xx_fgu_low_capacity_match_ocv(struct sc27xx_fgu_data *data)
+ 		data->uusoc_vbat += SC27XX_FGU_LOW_VBAT_UUSOC_STEP;
+ 		dev_info(data->dev, "%s 4..\n", __func__);
+ 	}
+-	dev_err(data->dev, "test..,data->ocv_uv=%d, data->min_volt_uv=%d, data->normal_temp_cap=%d"
++	dev_dbg(data->dev, "test..,data->ocv_uv=%d, data->min_volt_uv=%d, data->normal_temp_cap=%d"
+ 			" data->alarm_cap=%d,data->first_calib_volt=%d, data->first_calib_cap=%d,data->batt_mv=%d"
+ 			"data->uusoc_vbat=%d\n", data->ocv_uv, data->min_volt_uv, data->normal_temp_cap, data->alarm_cap, data->first_calib_volt, data->first_calib_cap, data->batt_mv, data->uusoc_vbat);
+ 	sc27xx_fgu_adjust_uusoc_vbat(data);
+@@ -3570,7 +3570,7 @@ static bool sc27xx_fgu_cap_track_is_sw_ocv_valid(struct sc27xx_fgu_data *data, i
+ 
+ 	if (data->bat_temp > SC27XX_FGU_TRACK_HIGH_TEMP_THRESHOLD ||
+ 	    data->bat_temp < SC27XX_FGU_TRACK_LOW_TEMP_THRESHOLD) {
+-		dev_err(data->dev, "exceed temp range, sw ocv is invalid\n");
++		dev_dbg(data->dev, "exceed temp range, sw ocv is invalid\n");
+ 		return false;
+ 	}
+ 
+--- a/drivers/unisoc_platform/sprdwcn/platform/wcn_txrx.c
++++ b/drivers/unisoc_platform/sprdwcn/platform/wcn_txrx.c
+@@ -37,7 +37,7 @@ static int mdbg_log_cb(int channel, struct mbuf_t *head,
+ 	struct mbuf_t *mbuf_node;
+ 	int i;
+ 	/* type=0x98:trace log, type=0x9D:DSP log */
+-	pr_info_ratelimited(": %s:type=0x%x,seq=0x%x, num=%d\n", __func__,
++	pr_debug_ratelimited(": %s:type=0x%x,seq=0x%x, num=%d\n", __func__,
+ 		 *(head->buf + 7), *((u32 *)(head->buf + 12)), num);
+ 
+ 	if ((atomic_read(&ring_reg_flag)) == 0) {
+--- a/drivers/watchdog/sprd_wdt_fiq.c
++++ b/drivers/watchdog/sprd_wdt_fiq.c
+@@ -158,7 +158,7 @@ static int sprd_wdt_fiq_load_value(struct sprd_wdt_fiq *wdt, u32 timeout,
+ 	u32 tmr_step = timeout * SPRD_WDT_FIQ_CNT_STEP;
+ 	u32 prtmr_step = pretimeout * SPRD_WDT_FIQ_CNT_STEP;
+ 
+-	pr_err("sprd_wdt_fiq: sprd wdt load value timeout =%d, pretimeout =%d\n",
++	pr_debug("sprd_wdt_fiq: sprd wdt load value timeout =%d, pretimeout =%d\n",
+ 	       timeout, pretimeout);
+ 	wdt->wdt_load = jiffies;
+ 	sprd_wdt_fiq_unlock(wdt);
+@@ -369,7 +369,7 @@ static int __maybe_unused sprd_wdt_fiq_alarm_prepare(struct device *dev)
+ 			now = ktime_get_boottime();
+ 			add = ktime_set(SPRD_WDT_SLEEP_KICKTIME, 0);
+ 			alarm_start(&wdt->sleep_tmr, ktime_add(now, add));
+-			pr_info("sprd_wdt:alarm start end\n");
++			pr_debug("sprd_wdt:alarm start end\n");
+ 		}
+ 	}
+ 	return 0;
+@@ -382,7 +382,7 @@ static void __maybe_unused sprd_wdt_fiq_alarm_complete(struct device *dev)
+ 	 if (wdt_fiq->sleep_en) {
+ 		if (watchdog_active(&wdt->wdd)) {
+ 			alarm_cancel(&wdt->sleep_tmr);
+-			pr_info("sprd_wdt:alarm_cancel end\n");
++			pr_debug("sprd_wdt:alarm_cancel end\n");
+ 		}
+ 	}
+ }

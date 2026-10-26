@@ -1,0 +1,181 @@
+#!/bin/sh
+# mu300-ttl: the TTL (IPv6: hop limit) of every packet that leaves through mobile data (Ubuntu and OpenWrt).
+#   mu300-ttl                 show the setting and the rule in force
+#   mu300-ttl set N           everything out through mobile data leaves with TTL/hop limit N (1-255), kept across
+#                             reboots and updates
+#   mu300-ttl off             leave the TTLs alone (the default)
+#   mu300-ttl apply           apply the saved setting (at boot, from mu300-toolkit apply)
+#
+# Why: a phone or laptop behind the hotspot sends TTL 64 (Windows: 128); the device routes it, and it leaves with
+# 63 (127) - one less than what the device itself sends, which is how an operator can tell tethered traffic apart.
+# With "set 64" every packet leaves exactly like the device's own.
+# Two ways to do it, the first one the kernel can:
+# tc (mainline: act_pedit, act_csum, cls_matchall): a matchall filter on clsact egress of every sipa_eth*, which
+#   rewrites the TTL and fixes the IPv4 checksum. Egress is dev_queue_xmit's, which fw4's software flowtable also
+#   transmits through, so flow offloading stays as it is. The filters belong to the interface: mobile-data calls
+#   "apply" on every bring-up (idempotent), and a sipa_eth* that is not there yet gets them then.
+# nft (the 5.4 vendor kernel, no act_pedit; Ubuntu too when tc cannot): its own table (inet mu300_ttl), postrouting,
+#   matched by name (sipa_eth*), next to OpenWrt's fw4 and the Ubuntu firewall. fw4's flowtable forwards an
+#   established flow from LAN ingress straight to sipa_eth0, past postrouting, so the rule would only see each
+#   connection's first packets: while a TTL is set, offloading is off (also at boot: apply), and it comes back on
+#   with "off" - or with the tc backend, which does not need it off (ttl.offload-off says it was this script that
+#   turned it off). Ubuntu has no fw4: nothing to do there.
+export PATH="$PATH:/opt/mu300/bin:/usr/sbin:/sbin"
+CONF=${MU300_TTL_CONF:-/etc/mu300/ttl.conf}   # (the variables are for tests/)
+MARK=${CONF%/*}/ttl.offload-off
+NET=${MU300_TTL_NET:-/sys/class/net}
+TABLE="inet mu300_ttl"
+P4=10 P6=11   # the tc filters' preferences on egress (ours alone: removed by preference)
+
+saved() { sed -n 's/^TTL=\([0-9]*\)$/\1/p' "$CONF" 2>/dev/null | tail -n1; }
+valid() { case $1 in ''|*[!0-9]*) return 1 ;; esac; [ "$1" -ge 1 ] && [ "$1" -le 255 ]; }
+has_fw4() { command -v fw4 >/dev/null 2>&1 && command -v uci >/dev/null 2>&1; }
+
+# offload 0|1: fw4's flow_offloading, changed (and the firewall reloaded) only when it differs; OpenWrt only
+offload() {
+    has_fw4 || return 0
+    [ "$(uci -q get "firewall.@defaults[0].flow_offloading")" = "$1" ] && return 0
+    uci -q set "firewall.@defaults[0].flow_offloading=$1" && uci commit firewall && fw4 -q reload
+}
+# offload back on, if this script turned it off
+offload_back() {
+    [ -e "$MARK" ] || return 0
+    offload 1 && rm -f "$MARK" || echo "flow offloading could not be turned back on" >&2
+}
+
+sipas() { for d in "$NET"/sipa_eth*; do [ -e "$d" ] && echo "${d##*/}"; done; }
+# the kernel can rewrite TTLs in tc (OpenWrt's kmodloader modprobe takes one module at a time)
+tc_ok() {
+    command -v tc >/dev/null 2>&1 || return 1
+    for m in act_pedit act_csum cls_matchall; do modprobe "$m" >/dev/null 2>&1 || return 1; done
+}
+tc_clear() {
+    for i in $(sipas); do
+        tc filter del dev "$i" egress pref $P4 2>/dev/null
+        tc filter del dev "$i" egress pref $P6 2>/dev/null
+    done
+    return 0
+}
+# tc_set N: every sipa_eth* there is. matchall cannot replace a filter (EEXIST): ours go first, then come back.
+tc_set() {
+    tc_clear
+    for i in $(sipas); do
+        tc qdisc add dev "$i" clsact 2>/dev/null   # already there: fine
+        tc filter add dev "$i" egress pref $P4 protocol ip matchall \
+            action pedit ex munge ip ttl set "$1" pipe action csum ip >/dev/null || return 1
+        tc filter add dev "$i" egress pref $P6 protocol ipv6 matchall \
+            action pedit ex munge ip6 hoplimit set "$1" >/dev/null || return 1
+    done
+}
+# the interfaces that have our filter
+tc_ifaces() {
+    command -v tc >/dev/null 2>&1 || return 0
+    for i in $(sipas); do
+        tc filter show dev "$i" egress 2>/dev/null | grep -q "pref $P4 " && echo "$i"
+    done
+}
+
+apply() {
+    t=$(saved)
+    if ! valid "$t"; then
+        tc_clear
+        nft delete table $TABLE 2>/dev/null
+        return 0
+    fi
+    if tc_ok; then
+        if tc_set "$t"; then
+            nft delete table $TABLE 2>/dev/null
+            offload_back
+            return 0
+        fi
+        tc_clear
+        echo "tc could not set the TTL, using nftables" >&2
+    else
+        tc_clear
+    fi
+    nft delete table $TABLE 2>/dev/null
+    nft -f - <<NFT
+table $TABLE {
+    chain postrouting {
+        type filter hook postrouting priority mangle; policy accept;
+        oifname "sipa_eth*" ip ttl set $t counter
+        oifname "sipa_eth*" ip6 hoplimit set $t counter
+    }
+}
+NFT
+    [ $? = 0 ] || return 1
+    if has_fw4 && [ "$(uci -q get "firewall.@defaults[0].flow_offloading")" != 0 ]; then
+        if offload 0; then mkdir -p "${MARK%/*}" && : > "$MARK"
+        else echo "flow offloading could not be turned off: bulk traffic may keep the client's TTL" >&2; fi
+    fi
+    return 0
+}
+
+offload_state() { has_fw4 && uci -q get "firewall.@defaults[0].flow_offloading"; }
+
+# state: key=value lines for the LuCI adapter (TTL, BACKEND tc|nft|none, IFACES, OFFLOAD 0|1|"" without fw4)
+state() {
+    ifs=$(tc_ifaces | tr '\n' ' '); ifs=${ifs% }
+    if [ -n "$ifs" ]; then b=tc
+    elif nft list table $TABLE >/dev/null 2>&1; then b=nft
+    else b=none; fi
+    printf 'TTL=%s\nBACKEND=%s\nIFACES=%s\nOFFLOAD=%s\n' "$(saved)" "$b" "$ifs" "$(offload_state)"
+}
+
+status() {
+    t=$(saved)
+    if valid "$t"; then echo "TTL: fixed at $t for everything that leaves through mobile data"
+    else echo "TTL: not changed (default)"; fi
+    if [ "$(id -u)" != 0 ]; then
+        echo "rule in force: (only root can read it: sudo mu300-ttl)"
+        return 0
+    fi
+    ifs=$(tc_ifaces)
+    if [ -n "$ifs" ]; then
+        set -- $ifs
+        more=; [ $# -gt 1 ] && more=" (+$(($# - 1)) more)"
+        echo "rule in force: tc on $1$more, flow offload untouched"
+        for i in $ifs; do tc -s filter show dev "$i" egress; done | awk -v t="$t" '
+            /^filter protocol ip pref '$P4' .*handle/   { f = 4; next }
+            /^filter protocol ipv6 pref '$P6' .*handle/ { f = 6; next }
+            /^filter /                                   { f = 0 }
+            f && /Sent .* pkt/ { for (i = 1; i <= NF; i++) if ($i == "pkt") n[f] += $(i - 1); f = 0 }
+            END { printf "               IPv4 TTL %s (%d packets so far)\n", t, n[4]
+                  printf "               IPv6 hop limit %s (%d packets so far)\n", t, n[6] }'
+    elif nft list table $TABLE >/dev/null 2>&1; then
+        o=$(offload_state)
+        echo "rule in force: nft${o:+, flow offload $( [ "$o" = 0 ] && echo off || echo on)}"
+        nft list table $TABLE | awk '
+            /ip ttl set/   { for (i = 1; i <= NF; i++) { if ($i == "set") v = $(i + 1); if ($i == "packets") p = $(i + 1) }
+                             printf "               IPv4 TTL %s (%s packets so far)\n", v, p }
+            /hoplimit set/ { for (i = 1; i <= NF; i++) { if ($i == "set") v = $(i + 1); if ($i == "packets") p = $(i + 1) }
+                             printf "               IPv6 hop limit %s (%s packets so far)\n", v, p }'
+    else
+        echo "rule in force: none"
+    fi
+}
+
+root() { [ "$(id -u)" = 0 ] || { echo "run as root (sudo mu300-ttl ...)" >&2; exit 1; }; }
+
+case ${1:-status} in
+    status) status ;;
+    set)
+        root
+        valid "${2:-}" || { echo "usage: mu300-ttl set N   (N from 1 to 255; 64 is what the device itself sends)" >&2; exit 2; }
+        mkdir -p "${CONF%/*}"
+        echo "TTL=$2" > "$CONF"
+        apply || { echo "the rule could not be set (tc and nftables)" >&2; exit 1; }
+        status ;;
+    off)
+        root
+        rm -f "$CONF"
+        # an nft rule set before ttl.offload-off existed turned offloading off as well
+        nft list table $TABLE >/dev/null 2>&1 && has_fw4 && { mkdir -p "${MARK%/*}"; : > "$MARK"; }
+        apply
+        offload_back
+        status ;;
+    apply) root; apply ;;
+    state) state ;;
+    -h|--help|help) sed -n '2,8s/^# \{0,1\}//p' "$0" ;;
+    *) echo "usage: mu300-ttl [status|set N|off|apply]" >&2; exit 2 ;;
+esac

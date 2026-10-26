@@ -1,0 +1,173 @@
+#!/bin/bash
+# Native selected-SIM cold-start sequence verified on this U30 Air firmware; once per boot.
+# Run once during Linux boot, through: mobile-data radio-locked /path/to/this/script --cold-start
+# Existing nr0/nr1/nr2 and nr3/nr4/nr5 owners must already be running; this opens no modem device.
+#
+# What it leaves for its caller (mu300-sim2-warmup), all under /run/mu300:
+#   sim2-cold-start.log     every command sent and why it stopped; never a reply (no CCID, no cell, no number)
+#   sim2-cold-start.reason  one word when it stops before the radio is up: no-sim, sim-pin, sim-not-ready,
+#                           wrong-card, not-cold, modem-silent, modem-refused, data-route, no-radio
+#   sim2-cold-start.sent    the radio has been told something: a failure after it is not undone within this boot
+set -euo pipefail
+export PATH="$PATH:/opt/mu300/busybox-bin"
+umask 077   # the logs and markers under /run/mu300 are root's alone
+DEVICE=${MU300_DEVICE_CMD:-/opt/mu300/bin/mu300-device}
+[ -e /etc/openwrt_release ] && [ "$("$DEVICE" 2>/dev/null)" = u30air ] || {
+    echo 'Native SIM startup requires U30 Air on OpenWrt' >&2
+    exit 1
+}
+[[ ${1:-} == --cold-start ]] || { echo 'Requires an explicitly prepared cold-start boot.' >&2; exit 2; }
+[[ -e /run/mu300-radio-freeze ]] || { echo 'Automatic radio bring-up must be inhibited before cold-start.' >&2; exit 2; }
+[[ ! -e /run/mu300/charging-boot ]] || exit 0
+SLOT=${MU300_SIM_SLOT:-$(cat /run/mu300/sim-slot 2>/dev/null || echo 1)}
+case "$SLOT" in 0|1) ;; *) exit 2;; esac
+SIM_CONFIG_U30=1
+. "${MU300_SIM_CONFIG_LIB:-/opt/mu300/lib/sim-config.sh}"
+# a fraction of a second where the static busybox takes one (the image's /bin/sleep takes whole seconds only)
+nap() { "${MU300_BUSYBOX:-/opt/mu300/bin/busybox}" sleep "$1" 2>/dev/null || sleep "$1" 2>/dev/null || sleep 1; }
+LOG=/run/mu300/sim2-cold-start.log
+REASON=/run/mu300/sim2-cold-start.reason
+mkdir -p /run/mu300
+say() { printf '%s %s\n' "$(cut -d' ' -f1 /proc/uptime 2>/dev/null || date +%s)" "$*" >> "$LOG"; }
+# stop REASON TEXT [RC]: the word for the page, the line for the log
+stop() { printf '%s\n' "$1" > "$REASON"; say "$2"; exit "${3:-1}"; }
+trap 'result=$?; say "EXIT rc=$result; no further radio commands will be sent"' EXIT
+at() {
+    local slot=$1 command=$2 seconds=${3:-6} directory
+    case "$slot" in main0) directory=/run/mu300-at ;; main1) directory=/run/mu300-at4 ;; data0) directory=/run/mu300-at2 ;; data1) directory=/run/mu300-at5 ;; *) return 2 ;; esac
+    # mu300-at has a direct-device fallback: never allow this probe to take it.
+    [[ -p "$directory/cmd" && -s "$directory/owner/pid" ]] || return 2
+    local owner
+    owner=$(cat "$directory/owner/pid")
+    [[ "$owner" =~ ^[0-9]+$ ]] && kill -0 "$owner" 2>/dev/null || return 2
+    say "TX $slot $command"
+    MU300_AT_DIR="$directory" /opt/mu300/bin/mu300-at -t "$seconds" "$command"
+}
+expect_ok() {
+    local output
+    output=$(at "$@") || { say "FAILED $1 $2 (no completed response)"; return 1; }
+    [[ $(printf '%s\n' "$output" | tr -d '\r' | tail -n 1) == OK ]] || { say "FAILED $1 $2 (modem rejected command)"; return 1; }
+}
+
+# The card's radio is switched off in its settings (mu300-sim-radio, FINDINGS 185): nothing is sent, and the cold start
+# stays possible later in this boot (mu300-sim2-warmup --deferred, when it is switched on). 7: put off, not failed.
+SIM_RADIO=${MU300_SIM_RADIO_BIN:-/opt/mu300/bin/mu300-sim-radio}
+if [[ -x $SIM_RADIO ]] && ! "$SIM_RADIO" allowed "$SLOT" 2>/dev/null; then
+    say "SIM$((SLOT+1)): its radio is switched off in its settings; cold start put off"
+    exit 7
+fi
+[[ ! -e /run/mu300/sim2-cold-start.attempted ]] || { say 'Refusing a second attempt in this boot'; exit 2; }
+: > /run/mu300/sim2-cold-start.attempted
+rm -f "$REASON"
+for directory in /run/mu300-at /run/mu300-at2 /run/mu300-at4 /run/mu300-at5; do
+    [[ -p "$directory/cmd" ]] || stop modem-silent "Missing broker $directory" 2
+done
+say "brokers there; waiting for CP output on nr0"
+# Wait for actual CP output, not merely a FIFO created before open_tty completes (looked for every 0.2 s: the cold
+# start is on the dial's critical path).
+for ((attempt=0; attempt<300; attempt++)); do
+    [[ -s /run/mu300-at/urc/stty_nr0.log ]] && break
+    nap 0.2
+done
+[[ -s /run/mu300-at/urc/stty_nr0.log ]] || stop modem-silent 'No CP unsolicited output; refusing to send bring-up commands'
+say "CP output seen"
+# Verified Android SIM2-primary handshake: nr1, SMMSWAP=0. SMMSWAP=1 is not a slot selector.
+expect_ok main0 'AT+SMMSWAP=0' || stop modem-refused 'The RIL handshake was not taken'
+: > /run/mu300-ril-handshake
+for slot in main0 main1; do
+    response=$(at "$slot" 'AT+CFUN?') || stop modem-silent "$slot does not answer"
+    [[ "$response" == *'+CFUN: 0'* ]] || stop not-cold "$slot was already active; this is not the required cold baseline" 2
+done
+# The card. What it is not is told apart, for the page and the log (the answer itself is never logged):
+#   +CPIN: SIM PIN / SIM PUK    locked; nothing here ever enters a PIN
+#   +CME ERROR: 10              no card - or a position whose SIM power is off. Measured on our U30 Air (7.2.10,
+#                               2026-10-13): its second position answers exactly this at every cold boot, and
+#                               READY, with a card identity of its own, one second after its SIM power is switched
+#                               on. (On the unit the sequence came from it answered READY at once; the modem
+#                               seems to power at boot the cards Android had in use.) So that answer is not
+#                               believed before the power has been on: AT+SPACTCARD=<card>;+SFUN=2, the live
+#                               switch's own first command. It moves no radio, and the other card does not
+#                               notice it (measured, with SIM1's data up). When the card still does not answer,
+#                               the power goes off again (SFUN=3): the position is left as it was found.
+# ask_card TRIES: sets card to ready, sim-pin, no-sim or sim-not-ready; a just-powered card may need a moment
+card=sim-not-ready
+ask_card() {
+    local attempt
+    for ((attempt=0; attempt<$1; attempt++)); do
+        response=$(at main$SLOT 'AT+CPIN?' | tr -d '\r') || stop modem-silent "SIM$((SLOT+1)): no answer to the card query"
+        if [[ "$response" == *'+CPIN: READY'* ]]; then card=ready; return 0
+        elif [[ "$response" == *'+CPIN: SIM PIN'* || "$response" == *'+CPIN: SIM PUK'* ]]; then card=sim-pin; return 0
+        elif [[ "$response" =~ \+CME\ ERROR:\ (10($|[^0-9])|SIM\ not\ inserted) ]]; then card=no-sim
+        else card=sim-not-ready; fi
+        nap 0.3
+    done
+}
+powered=0
+# give_up REASON TEXT: stop, with the SIM power this script switched on switched off again
+give_up() {
+    if [[ $powered == 1 ]]; then at main$SLOT "AT+SPACTCARD=$SLOT;+SFUN=3" 10 >/dev/null 2>&1 || true; fi
+    stop "$@"
+}
+ask_card 2
+if [[ $card == no-sim || $card == sim-not-ready ]]; then
+    expect_ok main$SLOT "AT+SPACTCARD=$SLOT;+SFUN=2" 10 || stop modem-refused "SIM$((SLOT+1)): its SIM power could not be switched on"
+    powered=1
+    say "SIM$((SLOT+1)): SIM power switched on"
+    ask_card 10
+fi
+case $card in
+    ready) ;;
+    sim-pin) give_up sim-pin "SIM$((SLOT+1)) is locked by its PIN or PUK" ;;
+    no-sim) give_up no-sim "SIM$((SLOT+1)): no card answers in this position, with its SIM power on" ;;
+    *) give_up sim-not-ready "SIM$((SLOT+1)) is not ready" ;;
+esac
+response=$(at main$SLOT 'AT+CCID') || give_up modem-silent "SIM$((SLOT+1)): no answer to the identity query"
+identity=$(printf '%s\n' "$response" | sed -n 's/^+CCID: *//p' | tr -d '\r" ')
+[[ -n "$identity" && ( -z ${MU300_EXPECT_CCID:-} || "$identity" == "$MU300_EXPECT_CCID" ) ]] ||
+    give_up wrong-card "SIM$((SLOT+1)) identity did not match the recorded card"
+# The work modes (network mode per card) are the modem's own, kept: read, and written back as they are, so a mode
+# the user locked on the Locks page is not replaced by this start (as kanoqwq's mu300-dual-radio does). Only when
+# the modem does not say is it the pair this firmware's RIL sends, 134,134 (s_modemConfig=7: buildWorkModeCmd
+# does NOT append the primary SIM argument used by mode 6).
+modes=134,134
+response=$(at main0 'AT+SPTESTMODE?' | tr -d '\r') || response=
+pair=$(sed -n 's/^+SPTESTMODE: *\([0-9][0-9]*\), *\([0-9][0-9]*\).*/\1,\2/p' <<< "$response" | sed -n 1p)
+if [[ "$pair" =~ ^[0-9]{1,3},[0-9]{1,3}$ ]]; then modes=$pair; say "work modes kept ($modes)"
+else say "work modes not readable; using $modes"; fi
+# Native-RIL-derived sequence validated by cold-start registration and data traffic on this device.
+# From here on the radio has been told something: a failure past this marker is not undone within this boot
+# (mu300-sim2-warmup falls back to SIM1 in this boot only when nothing was sent).
+: > /run/mu300/sim2-cold-start.sent
+# the data route goes to the second card: the mark that makes a later SIM1 dial put it back (sim-config.sh)
+[[ "$SLOT" != 1 ]] || sim_route_mark_set || stop modem-refused 'Cannot record the data route; not giving it to SIM2'
+expect_ok data$SLOT "AT+SPTESTMODEM=$modes" || stop modem-refused 'The work modes were refused'
+expect_ok data$SLOT 'AT+SPSWDATA' || stop modem-refused 'The data route was refused'
+# Read back which card has the data route (after kanoqwq's mu300-dual-radio). Another card than the one asked for
+# is a failure; a firmware that does not answer the question is not.
+response=$(at main$SLOT 'AT+SPSWDATA?' | tr -d '\r') || response=
+route=$(sed -n 's/^+SPSWDATA: *\([01]\) *$/\1/p' <<< "$response" | sed -n 1p)
+case "$route" in
+    "$SLOT") say "data route read back: SIM$((SLOT+1))" ;;
+    0|1) stop data-route "the data route is on SIM$((route+1)), not on SIM$((SLOT+1))" ;;
+    *) say 'data route read-back not available on this firmware' ;;
+esac
+[[ "$SLOT:$route" != 0:0 ]] || rm -f "$sim_route_mark"
+expect_ok data$SLOT 'AT+SFUN=4' 20 || stop no-radio "SIM$((SLOT+1)): the radio-on command was refused"
+
+for ((attempt=0; attempt<15; attempt++)); do
+    response=$(at main$SLOT 'AT+CFUN?') || stop no-radio "SIM$((SLOT+1)) stopped answering"
+    if [[ "$response" == *'+CFUN: 1'* ]]; then break; fi
+    nap 0.3
+done
+[[ "$response" == *'+CFUN: 1'* ]] || stop no-radio "SIM$((SLOT+1)) did not reach CFUN=1"
+# CFUN=1 is the radio ready, for either card, exactly as the SIM1 path marks it: no service on a card does not
+# invalidate its RF bring-up, and registration is netifd's to wait for and retry (a slow registration used to
+# fail this gate and leave the whole boot without WAN).
+: > /run/mu300/sim-radio-ready
+if [[ "$SLOT" == 0 ]]; then
+    say 'SIM1 native RF ready; data registration belongs to netifd'
+    exit 0
+fi
+: > /run/mu300/sim2-radio-ready
+say 'SIM2 native RF ready (CFUN=1); registration and data attachment belong to netifd on sipa_eth8'
+exit 0

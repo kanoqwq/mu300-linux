@@ -1,0 +1,20 @@
+[Unit]
+Description=MU300 modem AT channel keeper, second channel (nr2) for mobile data (see /opt/mu300/bin/mu300-atd)
+# the SIPC tty only exists once the vendor modem stack is up
+ConditionPathExists=|/dev/stty_nr2
+ConditionPathExists=|/dev/stty_nr5
+After=mu300-vendor.service
+Wants=mu300-vendor.service
+StartLimitIntervalSec=0
+
+[Service]
+Environment=MU300_AT_ROLE=data
+Environment=MU300_AT_DIR=/run/mu300-at2
+# empty: no URC channel here, the nr1 daemon reads the URCs
+Environment=MU300_AT_URC_CHANNELS=
+ExecStart=/opt/mu300/bin/mu300-atd
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

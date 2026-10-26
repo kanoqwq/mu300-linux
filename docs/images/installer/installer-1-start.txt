@@ -1,0 +1,25 @@
+$ ./install.sh
+
+  1) English   2) Türkçe   3) 中文
+  Language / Dil / 语言 [1]: 1
+
+==> Checking host tools and device
+device: F50 / MU300
+
+==> Locating free eMMC space after the last partition
+eMMC: 58.2 GiB (122159104 sectors), partitions end at 25.9 GiB (sector 54218752), free after them: 32.4 GiB
+Linux region: offset 27762098176, 32.4 GiB, existing mu300root filesystem: no
+result: OK: free and empty, same layout as the tested device (~32 GiB after userdata on the 64 GB eMMC)
+
+==> What should be installed?
+  1) Ubuntu LTS: 24.04 or 26.04, asked next (full distribution, apt, ~500 MiB RAM in use)
+  2) OpenWrt 25.12.6 (router, LuCI web UI, ~140 MiB RAM in use)
+  3) both (switch later with: mu300-os ubuntu|openwrt)
+Choice [3]: 3
+Which one should boot (ubuntu/openwrt) [ubuntu]: ubuntu
+
+==> Which Ubuntu?
+  1) 24.04 LTS  the longest tested, supported until 2029
+  2) 26.04 LTS  BETA: the newest (systemd 259, newer packages), supported until 2031; tested less
+Ubuntu [1]: 1
+Boot Linux by default instead of Android (falls back to Android if Linux fails)? (yes/no) [yes]: yes

@@ -1,0 +1,156 @@
+#!/bin/sh
+# mu300-dash-act -- the dashboard's actions, one op per invocation:
+#   mu300-dash-act radio on|off     the radio of the SIM in use, kept across reboots (mu300-sim-radio set)
+#   mu300-dash-act data up|down     netifd wan interface up/down (no AT in-band)
+#   mu300-dash-act roaming on|off   data roaming of the SIM in use (mobile-data roaming; no AT)
+#   mu300-dash-act wifi on|off      uci wireless disabled flag + wifi up/down
+#   mu300-dash-act modem-reset      the SFUN 5/3/2/4 sequence mobile-data uses for sim-reset
+# modem-reset: under mobile-data's radio lock, or "busy" (lib.sh radio_locked); radio: mu300-sim-radio, which takes
+# the lock itself (mobile-data rf-apply)
+#   mu300-dash-act vpn start|stop   /etc/init.d/mu300-vpn
+#   mu300-dash-act reboot|poweroff  restart or power off the whole box, after a 3 s grace for the HTTP reply
+#
+# Every op prints one JSON line on stdout. The rpcd backend (/usr/libexec/rpcd/mu300dash)
+# runs the slow ones via setsid and returns immediately: LuCI's /admin/ubus endpoint
+# kills a call after 30 s, and AT-heavy sequences must never run inside a request
+# anyway (they would starve the dial watchdog; same rule as the collector).
+#
+# The radio button is the SIM in use's own radio setting (docs/FINDINGS.md 185): off is the card's stack off
+# (AT+SFUN=5, FINDINGS 202) and stays off after a reboot, on brings the radio and the WAN back (mobile-data
+# rf-apply). The button
+# used to send AT+CFUN=0 (on: the SFUN dance) for this boot only, to whichever card, and was refused on the U30
+# Air's dual-SIM boots; the setting's path knows both cards and both boots.
+
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/libexec/unisoc-modem:/usr/sbin:/sbin"
+# the shared JSON escaper and uci allow-lists (/usr/share/unisoc-modem/lib.sh)
+LIB=${0%/*}/../../share/unisoc-modem/lib.sh
+[ -f "$LIB" ] || LIB=/usr/share/unisoc-modem/lib.sh
+. "$LIB"
+
+AT=${MU300_AT:-/usr/libexec/unisoc-modem/at}
+# the SIM slot this boot uses (0 without the selector)
+sim_in_use() { if [ -x /opt/mu300/bin/mu300-sim ]; then /opt/mu300/bin/mu300-sim active 2>/dev/null || echo 0; else echo 0; fi; }
+DATA_IFACE=$(safe_iface "$(uci_get data_interface)" wan)
+ok()   { printf '{"ok":1,"op":%s}\n' "$(json_str "$1")"; }
+# fail OP MESSAGE [DETAIL]: a fixed message; what a tool printed goes in detail
+fail() {
+    if [ -n "${3:-}" ]; then
+        printf '{"ok":0,"op":%s,"error":%s,"detail":%s}\n' "$(json_str "$1")" "$(json_str "$2")" "$(json_str "$3")"
+    else
+        printf '{"ok":0,"op":%s,"error":%s}\n' "$(json_str "$1")" "$(json_str "$2")"
+    fi
+}
+
+# The radio ops run under mobile-data's radio lock (lib.sh radio_locked): this script runs itself again inside it.
+# A lock another radio sequence holds is "busy" at once; nothing is sent to the modem.
+# Managed SIM stacks must only be restarted through the card-aware controller.
+# a reset would switch the radio on: refused while the SIM's radio is switched off in its settings
+[ "${1:-}" != modem-reset ] || rf_allowed || { fail modem-reset 'The radio of this SIM is switched off in its settings'; exit 1; }
+case ${1:-} in modem-reset)
+    [ ! -e /run/mu300-radio-freeze ] && [ ! -e /run/mu300/sim-managed ] && [ ! -e /run/mu300/sim-switching ] || { fail "$1" 'Use SIM control or reboot for managed dual-SIM radio'; exit 1; } ;;
+esac
+
+case "${1:-}:${2:-}" in
+    modem-reset:)
+        if [ "${MU300_RADIO_LOCKED:-}" != 1 ]; then
+            rc=0
+            out=$(radio_locked "$0" "$@") || rc=$?
+            if [ "$rc" = 75 ]; then
+                fail "$1${2:+ $2}" 'The radio is busy: the dial or the watchdog is switching it, try again shortly'
+            else
+                printf '%s\n' "$out"
+            fi
+            exit "$rc"
+        fi
+        ;;
+esac
+case "${1:-}:${2:-}" in
+    radio:on|radio:off)
+        if [ ! -x "$SIM_RADIO" ]; then
+            fail "radio $2" "Radio control is not provided by this platform"
+        elif out=$(MU300_WAN="$DATA_IFACE" "$SIM_RADIO" set "$(sim_in_use)" "$2" 2>&1); then
+            ok "radio $2"
+        else
+            fail "radio $2" "The radio did not follow its setting" "$out"
+        fi
+        ;;
+    data:up)
+        ifup "$DATA_IFACE" 2>/dev/null
+        ok "data up"
+        ;;
+    data:down)
+        ifdown "$DATA_IFACE" 2>/dev/null
+        ok "data down"
+        ;;
+    roaming:on|roaming:off)
+        # data roaming of the card in use (mobile-data roaming, docs/FINDINGS.md 120): stored in network.<wan>.roaming
+        # (or roaming_internal); the dial and its watchdog act on it within half a minute
+        if [ ! -x "$MOBILE_DATA" ]; then
+            fail "roaming $2" "Mobile data integration is not provided by this platform"
+        elif out=$(MU300_WAN="$DATA_IFACE" "$MOBILE_DATA" roaming "$2" 2>&1); then
+            ok "roaming $2"
+        else
+            fail "roaming $2" "The data roaming setting could not be saved" "$out"
+        fi
+        ;;
+    wifi:on|wifi:off)
+        # persistent through reboots: the uci flag, not just a runtime wifi down
+        case $2 in on) d=0 ;; off) d=1 ;; esac
+        [ -n "${d:-}" ] || { fail "wifi $2" "Expected on or off"; exit 1; }
+        uci -q set wireless.@wifi-device[0].disabled=$d
+        uci -q commit wireless
+        case $2 in on) wifi up ;; off) wifi down ;; esac >/dev/null 2>&1
+        ok "wifi $2"
+        ;;
+    modem-reset:)
+        if [ -x "$MOBILE_DATA" ]; then
+            "$MOBILE_DATA" sim-reset >/dev/null 2>&1
+        else
+            "$AT" -t 10 'AT+SFUN=5' >/dev/null 2>&1
+            "$AT" -t 30 'AT+SFUN=4' >/dev/null 2>&1
+        fi
+        ok "modem-reset"
+        ;;
+    vpn:start|vpn:stop)
+        # the VPN module (github.com/dikeckaan/mu300-linux-vpn) brings the service; without it there is none (the message
+        # is a translated one of the panel)
+        if [ -x /opt/mu300/bin/mu300-vpn ] && [ -x /etc/init.d/mu300-vpn ]; then
+            /etc/init.d/mu300-vpn "$2" >/dev/null 2>&1
+            ok "vpn $2"
+        else
+            fail "vpn $2" "VPN integration is not provided by this platform"
+        fi
+        ;;
+    reboot:|poweroff:)
+        sleep 3   # the reply has to make it out first
+        "$1"      # procd stops the services and unmounts as usual; never forced
+        ;;
+    os:android)
+        # arm inline (fast, failures surface to the page); reboot DETACHED so
+        # the reply reaches the browser before the box goes down - a reboot
+        # inside the rpcd call kills the ubus reply pipe first
+        if [ ! -x /opt/mu300/bin/mu300-next-boot ]; then
+            fail "os android" "Dual-boot integration is not provided by this platform"
+        elif out=$(/opt/mu300/bin/mu300-next-boot android 2>&1); then
+            ok "os android"
+            setsid sh -c 'sleep 3; reboot' >/dev/null 2>&1 &
+        else
+            fail "os android" "mu300-next-boot failed" "$out"
+        fi
+        ;;
+    os:lock|os:unlock)
+        # mu300-next-boot lock: Linux never goes to Android by itself; unlock: back to the failed-boot attempts
+        if [ ! -x /opt/mu300/bin/mu300-next-boot ]; then
+            fail "os $2" "Dual-boot integration is not provided by this platform"
+        elif out=$(/opt/mu300/bin/mu300-next-boot "$2" 2>&1); then
+            ok "os $2"
+        else
+            fail "os $2" "mu300-next-boot failed" "$out"
+        fi
+        ;;
+    *)
+        echo "usage: $0 radio on|off | data up|down | roaming on|off | wifi on|off | modem-reset | vpn start|stop | reboot | poweroff | os android|lock|unlock" >&2
+        printf '{"ok":0,"error":"Unknown op"}\n'
+        exit 2
+        ;;
+esac

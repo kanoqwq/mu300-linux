@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>Install Linux on the ZTE F50 / MU300 and U30 Air: step-by-step guide</title>
+<meta name="description" content="Beginner's guide: install Ubuntu or OpenWrt on the ZTE F50 / MU300 and U30 Air from Windows, macOS or Linux, with every installer question explained.">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/install/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/install/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/install/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/install/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/install/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="Install Linux on the ZTE F50 / MU300 and U30 Air: step-by-step guide">
+<meta property="og:description" content="Beginner's guide: install Ubuntu or OpenWrt on the ZTE F50 / MU300 and U30 Air from Windows, macOS or Linux, with every installer question explained.">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/install/">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A 5G pocket hotspot with two rooms, one for Android and one for Linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Install Linux on the ZTE F50 / MU300 and U30 Air: step-by-step guide">
+<meta name="twitter:description" content="Beginner's guide: install Ubuntu or OpenWrt on the ZTE F50 / MU300 and U30 Air from Windows, macOS or Linux, with every installer question explained.">
+<meta name="twitter:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/site.js" defer></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "HowTo",
+ "name": "Install Linux on the ZTE F50 / MU300 or U30 Air",
+ "description": "Beginner's guide: install Ubuntu or OpenWrt on the ZTE F50 / MU300 and U30 Air from Windows, macOS or Linux, with every installer question explained.",
+ "totalTime": "PT15M",
+ "tool": [
+  {
+   "@type": "HowToTool",
+   "name": "A computer with adb (Windows 10/11, macOS or Linux)"
+  },
+  {
+   "@type": "HowToTool",
+   "name": "A USB cable"
+  }
+ ],
+ "step": [
+  {
+   "@type": "HowToStep",
+   "name": "Back up",
+   "text": "Run tools/backup-device.sh to copy the device's own calibration and IMEI partitions to your computer.",
+   "url": "https://kaandikec.com/mu300-linux/install/#backup"
+  },
+  {
+   "@type": "HowToStep",
+   "name": "Check",
+   "text": "Run ./install.sh --check. It only reads the device and reports where Linux fits.",
+   "url": "https://kaandikec.com/mu300-linux/install/#check"
+  },
+  {
+   "@type": "HowToStep",
+   "name": "Install",
+   "text": "Run ./install.sh, answer the questions, read the summary and type INSTALL.",
+   "url": "https://kaandikec.com/mu300-linux/install/#install"
+  },
+  {
+   "@type": "HowToStep",
+   "name": "Log in",
+   "text": "About a minute later, ssh ubuntu@192.168.77.1 (U30 Air: 192.168.78.1), or open http://192.168.77.1 for OpenWrt.",
+   "url": "https://kaandikec.com/mu300-linux/install/#login"
+  }
+ ]
+}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [
+  {
+   "@type": "ListItem",
+   "position": 1,
+   "name": "Home",
+   "item": "https://kaandikec.com/mu300-linux/"
+  },
+  {
+   "@type": "ListItem",
+   "position": 2,
+   "name": "Install guide",
+   "item": "https://kaandikec.com/mu300-linux/install/"
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../install/" aria-current="page">Install</a>
+<a href="../web-installer/">Web installer</a>
+<a href="../choose/">Choose a system</a>
+<a href="../features/">Features</a>
+<a href="../updates/">Updates and safety</a>
+<a href="../troubleshooting/">Troubleshooting</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="Language"><a href="../install/" hreflang="en" lang="en" aria-current="true">English</a><a href="../tr/install/" hreflang="tr" lang="tr">Türkçe</a><a href="../zh/install/" hreflang="zh-Hans" lang="zh-Hans">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="Theme|Auto|Light|Dark|follows your system|Change the colour theme"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+</div>
+</header>
+<main id="content">
+
+<header class="page-head">
+<div class="prose">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a> <span aria-hidden="true">/</span> <span aria-current="page">Install guide</span></nav>
+<h1>Install Linux on your F50 or U30 Air</h1>
+<p class="lede">Four steps, about 15 minutes. Every question the installer asks is explained below, with the answer to
+give when you are not sure.</p>
+</div>
+</header>
+
+<div class="wrap">
+<ol class="steps">
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><rect x="8" y="10" width="40" height="36" rx="7" fill="none" stroke="currentColor" stroke-width="3"/><path d="M28 18v16m-7-7 7 7 7-7" fill="none" stroke="#2259d6" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 40h22" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg><h3>Back up</h3><p>Copy your device's own irreplaceable data to your computer. Recommended.</p></li>
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><circle cx="24" cy="24" r="13" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M34 34l11 11" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M18 24l4 4 8-8" fill="none" stroke="#3fae6a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><h3>Check</h3><p><code>--check</code> reads the device and says where Linux fits. It writes nothing.</p></li>
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><rect x="12" y="20" width="32" height="28" rx="7" fill="none" stroke="currentColor" stroke-width="3"/><path d="M28 4v22m-7-7 7 7 7-7" fill="none" stroke="#f2b23a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="22" cy="40" r="2.5" fill="#2259d6"/><circle cx="34" cy="40" r="2.5" fill="#f2b23a"/></svg><h3>Install</h3><p>Answer a few questions, read the summary, type <code>INSTALL</code>.</p></li>
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><rect x="6" y="10" width="44" height="36" rx="7" fill="none" stroke="currentColor" stroke-width="3"/><path d="M15 22l7 6-7 6" fill="none" stroke="#f2b23a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 36h13" stroke="#f2b23a" stroke-width="3.5" stroke-linecap="round"/></svg><h3>Log in</h3><p>About a minute later, over USB: SSH or a web browser.</p></li>
+</ol>
+</div>
+
+<div class="prose">
+
+<nav class="toc" aria-labelledby="toc-h">
+<h2 id="toc-h">On this page</h2>
+<ol>
+<li><a href="#before">Before you start</a></li>
+<li><a href="#backup">Step 0: back up</a></li>
+<li><a href="#check">Step 1: check</a></li>
+<li><a href="#install">Step 2: install</a></li>
+<li><a href="#questions">The installer's questions</a></li>
+<li><a href="#login">Step 3: log in</a></li>
+<li><a href="#after">After the install</a></li>
+<li><a href="#magisk">Without a computer: Magisk zips</a></li>
+<li><a href="#uninstall">Removing it again</a></li>
+</ol>
+</nav>
+
+<div class="callout">
+<strong>New: a web installer</strong>
+<p>The <a href="../web-installer/">web installer</a> does the installation from Chrome or Edge over USB, with nothing to install
+on the computer. It has been run end to end on an F50 from Chrome on macOS; Windows, a Linux computer and the U30 Air have
+not been tested with it yet, and the installer described on this page covers those.</p>
+</div>
+
+<h2 id="before">Before you start</h2>
+<p>In one sentence: <strong>the device must already be rooted, and your computer must be able to talk to it with
+<code>adb</code></strong>. Here is the full list.</p>
+
+<h3>The device</h3>
+<ul>
+<li>A ZTE F50 / MU300 or ZTE U30 Air (not the U30 Pro).</li>
+<li><strong>Rooted and unlocked</strong>: it must already boot a modified Android boot image. Getting it there is
+not part of this project; you do it at your own risk with those tools' own instructions.</li>
+<li><strong>USB debugging</strong> turned on, and the device connected to your computer by USB.</li>
+</ul>
+
+<h3>Your computer</h3>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">Computer</th><th scope="col">What it needs</th><th scope="col">How you run the installer</th></tr></thead><tbody>
+<tr><th scope="row">macOS</th><td><code>adb</code>, Python 3, <code>lz4</code> and <code>curl</code> (usually already there)</td><td><code>./install.sh</code> in Terminal</td></tr>
+<tr><th scope="row">Linux</th><td><code>adb</code>, Python 3, <code>lz4</code> and <code>curl</code></td><td><code>./install.sh</code> in a terminal</td></tr>
+<tr><th scope="row">Windows 10/11</th><td><code>adb</code> and PowerShell. The installer installs Python 3 and its <code>lz4</code> module by itself when they are missing.</td><td><code>.\install.ps1</code> in PowerShell, or <code>install.cmd</code> in cmd (no execution-policy change needed)</td></tr>
+</tbody></table></div>
+<p><code>adb</code> comes with Android's platform tools. On Windows the installer also finds a
+<code>platform-tools</code> folder unzipped next to the project, in your Downloads or on the desktop, even when it is
+not on the PATH.</p>
+
+<h3>Get the project</h3>
+<p>Clone it with git, or download it from GitHub (the green "Code" button, then "Download ZIP") and unpack it.
+Either way the installer brings itself up to date with GitHub when it starts.</p>
+<pre><code>git clone https://github.com/dikeckaan/mu300-linux
+cd mu300-linux</code></pre>
+<p>Then make sure the computer sees the rooted device:</p>
+<pre><code>adb devices          <span class="c"># your device should be listed as "device"</span>
+adb shell su -c id   <span class="c"># should print uid=0(root)</span></code></pre>
+<p>The first time, the device asks to allow USB debugging from this computer, and Magisk may ask to grant root to
+the shell: allow both.</p>
+
+<div class="callout warn">
+<strong>Read this once</strong>
+<p>Installing writes to one boot partition (<code>boot_b</code>, or <code>boot_a</code> when Android runs from slot b,
+as it often does after an update) and to 32 bytes of <code>misc</code>. On the usual 64 GB device, Android, its data
+and the partition table are never modified. Still, a power cut at the wrong moment, a bad cable or a mistake can leave
+a phone-class device needing a recovery tool. Keep a backup and do not install on a device you cannot afford to
+lose.</p>
+</div>
+
+<section class="guide-step" id="backup">
+<span class="num" aria-hidden="true">0</span>
+<h2>Back up what cannot be replaced</h2>
+<p>Recommended. This copies your unit's own data (<code>prodnv</code>, the modem calibration and IMEI partitions, the
+bootloader chain) to your computer and checks every copy against the device.</p>
+<pre><code>tools/backup-device.sh          <span class="c"># macOS / Linux, device in rooted Android</span></code></pre>
+<p>Installing never touches these partitions, but if they are ever lost, no firmware download can bring them back
+and the modem stays broken. Keep the folder somewhere safe and out of any repository: it contains your IMEI. The
+script runs on macOS and Linux.</p>
+</section>
+
+<section class="guide-step" id="check">
+<span class="num" aria-hidden="true">1</span>
+<h2>Check your device</h2>
+<p>This only reads; it writes nothing.</p>
+<pre><code>./install.sh --check          <span class="c"># macOS / Linux</span>
+.\install.ps1 -Check          <span class="c"># Windows (PowerShell)</span>
+install.cmd -Check            <span class="c"># Windows (cmd)</span></code></pre>
+<p>It prints the storage size, where Android's partitions end and how much free space follows them. The last line
+starting with <code>result:</code> is what matters:</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">If it says</th><th scope="col">It means</th></tr></thead><tbody>
+<tr><th scope="row"><code>OK: free and empty, same layout as the tested device (~32 GiB after userdata on the 64 GB eMMC)</code></th><td>The usual 64 GB device. Go on to step 2.</td></tr>
+<tr><th scope="row"><code>OK: free and empty, ... but room for one system only</code>, or <code>OpenWrt fits, Ubuntu does not</code></th><td>A smaller free area. Install what fits, or use an SD card (F50).</td></tr>
+<tr><th scope="row"><code>too little free eMMC space for Linux; the installer will offer the SD card instead</code></th><td>There is a card in the slot; the installer will offer it, and nothing is repartitioned.</td></tr>
+<tr><th scope="row"><code>OK: a MU300 Linux installation is already present</code></th><td>Linux is there already: the installer will offer update or wipe.</td></tr>
+<tr><th scope="row"><code>WARNING: the unpartitioned space is not empty</code></th><td>Something has written to the free area. Installing would overwrite it; the installer asks you to type <code>overwrite</code>.</td></tr>
+</tbody></table></div>
+
+<h3 id="variant-32gb">No free space at all: the 32 GB variant</h3>
+<p>If the check finds no room, you have the 32 GB variant, where Android's <code>userdata</code> fills the whole
+disk. You have two ways:</p>
+<div class="cards">
+<div class="card android"><h3>Use an SD card (F50)</h3><p>Put a card of at least 700 MiB in the slot while the device
+is switched off. The installer offers it, formats it, and nothing on the internal storage is repartitioned.</p></div>
+<div class="card red"><h3>Shrink userdata (experimental)</h3><p>The installer can make room by shrinking
+<code>userdata</code>. That rewrites the partition table and <strong>erases everything in Android</strong>. It asks
+first and wants <code>ERASE</code> typed. Back up with <code>tools/backup-device.sh</code> before saying yes.</p></div>
+</div>
+<p>If the numbers look like neither case, stop and <a href="https://github.com/dikeckaan/mu300-linux/issues">open an issue</a> with what
+<code>--check</code> printed: they identify the variant.</p>
+
+<h3 id="sd">About the SD card (F50 only)</h3>
+<ul>
+<li>A card of at least 700 MiB. It is formatted as ext4 with the label <code>mu300sd</code>. A card that already holds
+another Linux (ext4) filesystem is never formatted.</li>
+<li>Insert it while the device is off. A card inserted while Linux runs can only be read after the next restart.</li>
+<li>A <code>mu300sd</code> card always starts first. Without the card the device starts the internal installation if
+there is one. With none, it waits a few seconds for a card, then returns to Android after about five minutes.</li>
+<li>All four kernels have the card's driver (7.3's not tried on a board yet). The U30 Air has no slot.</li>
+<li>The device starts any card labelled <code>mu300sd</code>, so whoever has the device can also start their own
+system from a card.</li>
+</ul>
+</section>
+
+<section class="guide-step" id="install">
+<span class="num" aria-hidden="true">2</span>
+<h2>Install</h2>
+<pre><code>./install.sh                  <span class="c"># macOS / Linux</span>
+.\install.ps1                 <span class="c"># Windows (PowerShell)</span>
+install.cmd                   <span class="c"># Windows (cmd)</span></code></pre>
+<p>First it asks for the language, brings your copy of the project up to date with GitHub (and restarts itself if
+there was anything new), and checks the device again. Then come the questions below. After them it:</p>
+<ol>
+<li>downloads the ready-made images of the newest release and checks their checksums,</li>
+<li>copies the Wi-Fi and modem files from <em>your own</em> device (the downloads contain no proprietary files),</li>
+<li>shows exactly what it is about to write and waits for you to type <code>INSTALL</code>,</li>
+<li>copies the systems to the device, writes the Linux boot image and arms the Linux slot,</li>
+<li>adds a small Magisk module to Android, so you can start Linux from Android later without a computer,</li>
+<li>restarts the device into Linux.</li>
+</ol>
+<figure>
+<img src="../assets/img/installer-1-start.png" alt="The installer in a terminal: the language menu, the device check, the free eMMC region found, then the questions about which systems to install, which Ubuntu, and whether Linux boots by default." width="1960" height="1047" loading="lazy" decoding="async">
+<figcaption>A real run of the installer, from the language question to the first choices.</figcaption>
+</figure>
+</section>
+
+<h2 id="questions">The installer's questions, one by one</h2>
+<p>The text in grey boxes is what the installer prints (shortened). The value in square brackets, like
+<code>[yes]</code>, is the default: pressing <kbd>Enter</kbd> takes it. Some questions only appear when they apply.</p>
+<div class="qa"><span class="ask">Language / Dil / 语言 [1]</span><p>The language of the installer: 1 English (the default), 2 Türkçe, 3 中文.</p><p class="pick">Press <kbd>Enter</kbd> for English.</p></div>
+<div class="qa"><span class="ask">Where should the Linux filesystem go: internal storage or the SD card (...)? (internal/sd)</span><p>Asked only when an SD card is in the F50. <code>internal</code> uses the free internal space, <code>sd</code> formats the card for Linux (everything on it is erased, and you will type <code>ERASE</code> to confirm).</p><p class="pick">Not sure? <code>internal</code> on a 64 GB device; <code>sd</code> on the 32 GB variant.</p></div>
+<div class="qa"><span class="ask">What should be installed? 1) Ubuntu LTS 2) OpenWrt 3) both</span><p>Ubuntu is a full Linux system with <code>apt</code> (about 500 MiB of RAM in use). OpenWrt is a router system with a web interface (about 140 MiB). Both installs the two side by side; you switch later with <code>mu300-os</code>.</p><p class="pick">Not sure? 3, both (the default), if the check said both fit. See <a href="../choose/">choose a system</a>.</p></div>
+<div class="qa"><span class="ask">Which OpenWrt? 1) the standard LuCI web interface 2) with the MU300 control panel</span><p>Asked when OpenWrt is chosen. The control panel adds a dashboard, cellular locks, SMS, an AT terminal and USB modes.</p><p class="pick">Not sure? 2 if you want to see signal and SMS in the browser; 1 for plain OpenWrt (the default).</p></div>
+<div class="qa"><span class="ask">Which one should boot (ubuntu/openwrt)</span><p>With two systems: which one starts first. The other stays installed.</p><p class="pick">Press <kbd>Enter</kbd> for Ubuntu.</p></div>
+<div class="qa"><span class="ask">Which Ubuntu? 1) 24.04 LTS 2) 26.04 LTS</span><p>24.04 is the default and the longest tested, supported until 2029. 26.04 is the newest (systemd 259, newer packages), supported until 2031, and needs a mainline kernel (6.18, 7.2 or 7.3).</p><p class="pick">Not sure? 1, 24.04 (the default).</p></div>
+<div class="qa"><span class="ask">Boot Linux by default instead of Android (falls back to Android if Linux fails)? (yes/no)</span><p><code>yes</code>: every start goes to Linux, and Android only after failed starts or when you ask for it. <code>no</code>: Android stays the default and you start Linux when you want it.</p><p class="pick">Press <kbd>Enter</kbd> for yes.</p></div>
+<div class="qa"><span class="ask">Failed boots before Android (1-6)</span><p>How many unfinished starts in a row before the device goes back to Android by itself. A start counts as failed when it never finishes within about a minute: the power goes, the battery runs out, or Linux hangs. Higher forgives a flaky cable; lower gets you to Android sooner. It is also your way back with no computer: cut the power while it is starting this many times in a row.</p><p class="pick">Press <kbd>Enter</kbd> for 5. Change it later with <code>mu300-next-boot attempts N</code>.</p></div>
+<div class="qa"><span class="ask">Copy Android's hotspot name and password to Linux? (yes/no)</span><p>Your phones already know the Android hotspot, so they join Linux's hotspot without new settings.</p><p class="pick">Press <kbd>Enter</kbd> for yes.</p></div>
+<div class="qa"><span class="ask">Include the Mali GPU (OpenCL) userspace (~90 MiB)? (yes/no)</span><p>The graphics chip, for computing with OpenCL. There is no screen either way.</p><p class="pick">Press <kbd>Enter</kbd> for yes; say no to save the space.</p></div>
+<div class="qa"><span class="ask">Install the VPN module (about 40 MB more to download, 120 MB on the device)? (yes/no)</span><p>The optional VPN of <a href="https://github.com/dikeckaan/mu300-linux-vpn">mu300-linux-vpn</a>. You can add it later on the device with <code>sudo mu300-extra install vpn</code>.</p><p class="pick">Not sure? no (the default on a first install).</p></div>
+<div class="qa"><span class="ask">Which kernel? 1) 5.4 2) 6.18 3) 7.2 4) 7.3</span><p>The kernel is the core of Linux that talks to the hardware. 5.4 is Unisoc's vendor kernel, the longest tested. 6.18 is mainline Linux's long-term release with newer drivers and the same functions. 7.2 is the stable 7.2 series, tested less than 6.18. 7.3 is the newest mainline release, with the newest drivers and the same functions, tested less than 7.2 (from the next release after v2026.10.19.2 on).</p><p class="pick">Not sure? 1, 5.4 (the default). Ubuntu 26.04 needs 6.18, 7.2 or 7.3. Change it later with <code>sudo mu300-update kernel 6.18</code>.</p></div>
+<div class="qa"><span class="ask">update or wipe</span><p>Asked only when Linux is already installed. <code>update</code> reinstalls the systems and keeps your settings, users, home directories, SSH host keys and OpenWrt's settings. <code>wipe</code> erases the Linux filesystem and starts from scratch.</p><p class="pick">Press <kbd>Enter</kbd> for update.</p></div>
+<div class="qa"><span class="ask">Keep the current password? (yes/no)</span><p>Asked by an update when a system it replaces has a login password of its own. <code>yes</code> asks the current password once for each such system and checks it on the device against that system (press <kbd>Enter</kbd> for none, OpenWrt's <code>root</code> as it ships); after three wrong tries the installer stops and nothing is changed. <code>no</code> asks a new password, typed twice.</p><p class="pick">Press <kbd>Enter</kbd> for yes, then type the password you log in with today.</p></div>
+<div class="qa"><span class="ask">Password for the "ubuntu" user (Ubuntu) and "root" (OpenWrt)</span><p>The password you will log in with, at least 6 characters, typed twice. Nothing shows while you type.</p><p class="pick">Choose one you will remember: you need it in step 3.</p></div>
+<div class="qa"><span class="ask">Type INSTALL to continue</span><p>The last stop. Above it the installer prints exactly what it will write: the systems, the kernel, the default boot and the partitions it touches. Read it. Anything other than <code>INSTALL</code> cancels.</p><p class="pick">Type <code>INSTALL</code> in capitals.</p></div>
+
+<figure>
+<img src="../assets/img/installer-3-summary.png" alt="The installer's summary before installing: the release, the systems, the kernel, the default boot, the filesystem and exactly which partitions are written, followed by the prompt to type INSTALL and the end of the install." width="2194" height="1084" loading="lazy" decoding="async">
+<figcaption>The summary before anything is written, and the end of a successful install.</figcaption>
+</figure>
+
+<section class="guide-step" id="login">
+<span class="num" aria-hidden="true">3</span>
+<h2>Log in</h2>
+<p>Wait about a minute after the restart. The device appears on your computer as a new network adapter over USB.
+Then, in a terminal (on Windows, PowerShell has <code>ssh</code> built in):</p>
+<pre><code>ssh ubuntu@192.168.77.1        <span class="c"># Ubuntu on the F50</span>
+ssh root@192.168.77.1          <span class="c"># OpenWrt on the F50</span>
+ssh ubuntu@192.168.78.1        <span class="c"># Ubuntu on the U30 Air</span></code></pre>
+<p>Use the password you chose during the install. The first time, <code>ssh</code> asks whether you trust the
+device's key: answer <code>yes</code>.</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col"></th><th scope="col">F50 / MU300</th><th scope="col">U30 Air</th></tr></thead><tbody>
+<tr><th scope="row">Address over USB</th><td><code>192.168.77.1</code></td><td><code>192.168.78.1</code></td></tr>
+<tr><th scope="row">Ubuntu</th><td><code>ssh ubuntu@192.168.77.1</code></td><td><code>ssh ubuntu@192.168.78.1</code></td></tr>
+<tr><th scope="row">OpenWrt</th><td><code>ssh root@192.168.77.1</code> or <code>http://192.168.77.1</code> in a browser</td><td><code>ssh root@192.168.78.1</code> or <code>http://192.168.78.1</code></td></tr>
+</tbody></table></div>
+<p>The two addresses differ so that an F50 and a U30 Air can be plugged into one computer at the same time.</p>
+<p>The Wi-Fi network the device broadcasts is its hotspot: unless you chose otherwise, it has the name and password
+copied from Android.</p>
+<div class="callout">
+<strong>On a Mac, unlock the screen the first time</strong>
+<p>macOS does not set up a network interface it has never seen while the screen is locked. The first time you plug
+the device in (or after an update that changed its USB addresses), unlock the Mac and the interface appears.</p>
+</div>
+<p>When the network does not come up at all, there is also a serial console over the same cable, which works even
+without networking:</p>
+<pre><code>screen /dev/cu.usbmodem* 115200   <span class="c"># macOS</span></code></pre>
+</section>
+
+<h2 id="after">After the install</h2>
+<pre><code>sudo mu300-toolkit             <span class="c"># a menu for everything</span>
+sudo mobile-data status        <span class="c"># is the 5G/LTE connection up?</span>
+sudo mu300-update check        <span class="c"># is there a newer release?</span></code></pre>
+<p><code>mu300-toolkit</code> is a menu like <code>raspi-config</code>: temperatures, CPU and RAM use, network speeds,
+performance profiles, Wi-Fi, VPN and software updates. The <a href="../features/">features page</a> lists the
+direct commands, and <a href="../updates/">updates and safety</a> explains updating, rolling back and switching to
+Android and back.</p>
+
+<h3>Choices you can skip by setting them in advance</h3>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">Setting</th><th scope="col">What it does</th></tr></thead><tbody>
+<tr><th scope="row"><code>MU300_LANG=tr ./install.sh</code>, <code>.\install.ps1 -Lang zh</code></th><td>skips the language question (<code>en</code>, <code>tr</code>, <code>zh</code>)</td></tr>
+<tr><th scope="row"><code>MU300_STORAGE=sd</code> or <code>internal</code></th><td>answers the internal storage or SD card question</td></tr>
+<tr><th scope="row"><code>MU300_OPENWRT=plain</code> or <code>luci</code></th><td>answers "Which OpenWrt?"</td></tr>
+<tr><th scope="row"><code>MU300_NO_SELF_UPDATE=1</code>, <code>-NoSelfUpdate</code></th><td>does not update the project from GitHub first</td></tr>
+<tr><th scope="row"><code>MU300_FETCH_JOBS</code>, <code>MU300_RELEASE_URL</code></th><td>parallel download chunks (8 by default), or your own mirror of the release files</td></tr>
+</tbody></table></div>
+
+<h2 id="magisk">Without a computer: Magisk zips</h2>
+<p>If the device already runs a rooted Android with <strong>Magisk 26 or newer</strong>, Linux can be installed from
+the device itself. Every release has one zip per system and kernel; the same zip works on the F50 and the U30 Air and
+finds the place by itself (the internal storage or an SD card).</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">Zip</th><th scope="col">System</th><th scope="col">Kernel</th></tr></thead><tbody>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-k5.4.zip</code></th><td>OpenWrt</td><td>5.4</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-k6.18.zip</code></th><td>OpenWrt</td><td>6.18 LTS</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-k7.2.zip</code></th><td>OpenWrt</td><td>7.2</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-k7.3.zip</code></th><td>OpenWrt</td><td>7.3</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-luci-k5.4.zip</code></th><td>OpenWrt with the control panel</td><td>5.4</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-luci-k6.18.zip</code></th><td>OpenWrt with the control panel</td><td>6.18 LTS</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-luci-k7.2.zip</code></th><td>OpenWrt with the control panel</td><td>7.2</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-luci-k7.3.zip</code></th><td>OpenWrt with the control panel</td><td>7.3</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-24.04-k5.4.zip</code></th><td>Ubuntu 24.04</td><td>5.4</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-24.04-k6.18.zip</code></th><td>Ubuntu 24.04</td><td>6.18 LTS</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-24.04-k7.2.zip</code></th><td>Ubuntu 24.04</td><td>7.2</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-24.04-k7.3.zip</code></th><td>Ubuntu 24.04</td><td>7.3</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-26.04-k6.18.zip</code></th><td>Ubuntu 26.04</td><td>6.18 LTS</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-26.04-k7.2.zip</code></th><td>Ubuntu 26.04</td><td>7.2</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-26.04-k7.3.zip</code></th><td>Ubuntu 26.04</td><td>7.3</td></tr>
+</tbody></table></div>
+<ol>
+<li><strong>Take one zip</strong> from the <a href="https://github.com/dikeckaan/mu300-linux/releases/latest">latest release</a> and check it with
+<code>SHA256SUMS-magisk</code>. A release has 15 of them (11 up to v2026.10.19.2, before 7.3), OpenWrt with the control panel included.</li>
+<li><strong>Install it</strong> in the Magisk app (Modules, Install from storage), or from <code>adb shell</code>:
+<pre><code>su -c 'magisk --install-module /sdcard/Download/&lt;zip&gt;'</code></pre>
+Not from recovery.</li>
+<li><strong>Read the output.</strong> It shows the device it found, where Linux goes, what it writes, and which password
+works: the images' own - Ubuntu's user <code>ubuntu</code> has the password <code>ubuntu</code>, OpenWrt's
+<code>root</code> has none until you set one (<code>passwd</code>, or LuCI's System &gt; Administration);
+<code>MU300_PASSWORD</code> in the settings file sets one of your own. The same note is in
+<code>/data/adb/mu300-linux-password.txt</code>.</li>
+<li><strong>Restart.</strong> Linux starts; if it does not, the device returns to Android by itself.</li>
+</ol>
+<p>For two systems, install the OpenWrt (or control panel) zip and the Ubuntu zip one after the other. The zips never shrink
+<code>userdata</code>; that stays with the computer installer. Settings such as the storage, the boot default or your
+own password go in a <code>mu300-install.conf</code> file, explained in the
+<a href="https://github.com/dikeckaan/mu300-linux#choosing-something-else-mu300-installconf">README</a>.</p>
+
+<p><strong>The password of an update.</strong> A zip installed over a system that is already there keeps its password and asks nothing: nothing can be typed while Magisk installs a zip. The output says "kept, not checked". To have the current password checked, or to set a new one, put a <code>mu300-install.conf</code> at the top of the zip before you install it - on a computer with <code>zip mu300-magisk-&lt;tag&gt;-...zip mu300-install.conf</code>, on Android with a file manager that opens zips. <code>MU300_KEEP_PASSWORD=yes</code> and <code>MU300_CURRENT_PASSWORD=...</code> keep it once it is checked (a wrong one stops the install, nothing changed; without the second line: no password, OpenWrt's <code>root</code> as it ships); <code>MU300_KEEP_PASSWORD=no</code> and <code>MU300_PASSWORD=...</code> set a new one. The file holds the password in plain text: delete the zip, or the file from it, afterwards. Details in the <a href="https://github.com/dikeckaan/mu300-linux#the-password-of-an-update-a-mu300-installconf-in-the-zip">README</a>.</p>
+
+<h2 id="uninstall">Removing it again</h2>
+<p>With the device back in Android, run <code>./uninstall.sh</code> (Windows: <code>.\uninstall.ps1</code> or
+<code>uninstall.cmd</code>). It makes Android the boot system again, restores the second boot partition and erases
+the Linux filesystem. Your Android data is left alone. The choices it offers are on the
+<a href="../updates/#uninstall">updates and safety</a> page.</p>
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>The project</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">Source code on GitHub</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">Support the project</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">Releases (downloads)</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN module</a></li>
+</ul>
+</div>
+<div>
+<h2>Help</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki</a></li>
+<li><a href="../troubleshooting/">Troubleshooting</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">Report a problem</a></li>
+<li><a href="https://t.me/mu300project">Telegram channel (news and releases)</a></li>
+</ul>
+</div>
+<div>
+<p>A hobby project, at your own risk, with no warranty. Not endorsed by ZTE, Unisoc or any operator. Scripts and documentation: MIT; kernels: GPL-2.0.</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

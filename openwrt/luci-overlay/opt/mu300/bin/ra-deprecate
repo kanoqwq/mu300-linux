@@ -1,0 +1,63 @@
+#!/usr/bin/ucode
+// ra-deprecate IFACE ROUTER_LIFETIME PREFIX/64...
+// One router advertisement on IFACE (to all nodes) whose prefix options give each PREFIX a preferred lifetime of 0 and
+// a valid lifetime of two hours: hosts that SLAACed an address in it stop choosing it for new connections at once,
+// and drop it when the two hours are up (RFC 4862 5.5.3 e: a host never shortens a valid lifetime below two hours
+// from an unauthenticated RA). ndp-learn sends it for a /64 the carrier took away (#87): odhcpd's relay forwards the
+// carrier's RAs as they are and keeps no prefix state, and the carrier says nothing about a prefix it stopped using.
+//
+// Every RA also refreshes the sender as the hosts' default router, so ROUTER_LIFETIME is the remaining lifetime of
+// the carrier's router (what the relayed RAs say), never 0: that would take the LAN's IPv6 default route away. The
+// hop limit, reachable time and retransmit timer are left unspecified (0) and the M and O flags clear; the next
+// relayed RA sets the flags again. The source address is IFACE's link-local, the same one odhcpd relays from.
+// Needs ucode-mod-socket. Exit status 0 when the advertisement went out.
+import * as socket from 'socket';
+import { readfile } from 'fs';
+
+const VALID = 7200;
+const IPPROTO_ICMPV6 = 58;
+const ND_ROUTER_ADVERT = 134;
+
+function fail(msg) {
+	warn(`ra-deprecate: ${msg}\n`);
+	exit(1);
+}
+
+let iface = ARGV[0], rlt = +ARGV[1];
+if (length(ARGV) < 3 || !match(iface ?? '', /^[A-Za-z0-9_.-]{1,15}$/) || !match(ARGV[1], /^[0-9]+$/) ||
+    rlt < 1 || rlt > 9000)
+	fail('usage: ra-deprecate IFACE ROUTER_LIFETIME(1-9000) PREFIX/64...');
+let ifindex = +trim(readfile(`/sys/class/net/${iface}/ifindex`) ?? '');
+if (!ifindex)
+	fail(`no interface ${iface}`);
+
+function u8(n) { return chr(n & 255); }
+function u16(n) { return u8(n >> 8) + u8(n); }
+function u32(n) { return u16(n >> 16) + u16(n & 65535); }
+
+// RA: type, code, checksum (the kernel computes it for ICMPv6 raw sockets), hop limit, flags, router lifetime,
+// reachable time, retransmit timer
+let pkt = u8(ND_ROUTER_ADVERT) + u8(0) + u16(0) + u8(0) + u8(0) + u16(rlt) + u32(0) + u32(0);
+for (let i = 2; i < length(ARGV); i++) {
+	let m = match(ARGV[i], /^([0-9a-f:]+)\/64$/);
+	let a = m ? iptoarr(m[1]) : null;
+	// global unicast only (2000::/3), and only the /64 itself
+	if (length(a) != 16 || (a[0] & 0xe0) != 0x20 || a[8] || a[9] || a[10] || a[11] || a[12] || a[13] || a[14] || a[15])
+		fail(`not a global /64: ${ARGV[i]}`);
+	// prefix information: type 3, length 4 (x 8 bytes), prefix length, flags L and A, valid, preferred, reserved
+	pkt += u8(3) + u8(4) + u8(64) + u8(0xc0) + u32(VALID) + u32(0) + u32(0);
+	for (let b in a)
+		pkt += u8(b);
+}
+
+let s = socket.create(socket.AF_INET6, socket.SOCK_RAW, IPPROTO_ICMPV6);
+if (!s)
+	fail(`socket: ${socket.error()}`);
+// RAs are only valid with hop limit 255 (RFC 4861 6.1.2)
+if (!s.setopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_HOPS, 255) ||
+    !s.setopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_IF, ifindex))
+	fail(`setsockopt: ${socket.error()}`);
+let n = s.send(pkt, 0, { family: socket.AF_INET6, address: 'ff02::1', port: 0, scope_id: ifindex });
+s.close();
+if (n != length(pkt))
+	fail(`send: ${socket.error()}`);

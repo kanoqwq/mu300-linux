@@ -1,0 +1,42 @@
+#
+# sprdbt_tty.ko
+#
+# Kbuild: for kernel building external module
+#
+# Note:
+# - Please refer to modules/sample/Kbuild to find out what should be
+#   done is this Kbuild file
+#
+
+# MU300: Marlin3 BT over PCIe
+BSP_BOARD_UNISOC_WCN_SOCKET := pcie
+
+ifeq ($(filter $(strip $(BSP_BOARD_UNISOC_WCN_SOCKET)),sipc sdio pcie sipc2),)
+$(error no BSP_BOARD_UNISOC_WCN_SOCKET, pls fix it !!!)
+endif
+
+TTY_DEVICE := tty-$(strip $(BSP_BOARD_UNISOC_WCN_SOCKET))
+
+#
+# Source List
+#
+KO_MODULE_NAME := sprdbt_tty
+KO_MODULE_PATH := $(src)/$(TTY_DEVICE)
+KO_MODULE_SRC  :=
+
+KO_MODULE_SRC += \
+	$(wildcard $(KO_MODULE_PATH)/*.c) \
+	$(wildcard $(KO_MODULE_PATH)/alignment/*.c)
+
+#
+# Build Options
+#
+ccflags-y += -DDEBUG
+ccflags-y += -include $(src)/../wcn_bsp/kinclude/mu300_compat.h -I$(src)/../wcn_bsp/kinclude
+
+#
+# Final Objects
+#
+obj-m := $(KO_MODULE_NAME).o
+# Comment it if the only object file has the same name with module
+$(KO_MODULE_NAME)-y := $(patsubst $(src)/%.c,%.o,$(KO_MODULE_SRC))

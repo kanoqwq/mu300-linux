@@ -1,0 +1,12 @@
+[Unit]
+Description=MU300 CPU: apply the saved performance profile
+ConditionPathExists=/etc/mu300/cpu.conf
+After=mu300-vendor.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/mu300/bin/mu300-cpu apply
+
+[Install]
+WantedBy=multi-user.target

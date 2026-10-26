@@ -1,0 +1,5 @@
+# Copy to /etc/mu300/lan.conf to change the device's LAN address (USB and Wi-Fi clients).
+# Useful when two devices of one kind are plugged into one PC: give each its own subnet. Without this file the
+# address is 192.168.77.1 on an F50, 192.168.78.1 on a U30 Air and 192.168.79.1 on a V50.
+# Always a /24; DHCP serves .2-.200 of it. Apply with: systemctl restart mu300-lan
+LAN_IP=192.168.77.1

@@ -1,0 +1,9 @@
+[Unit]
+Description=MU300 CPU voltage offset (EXPERIMENTAL): the good mark after 10 minutes up
+
+[Timer]
+OnBootSec=10min
+AccuracySec=10s
+
+[Install]
+WantedBy=timers.target

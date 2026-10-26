@@ -1,0 +1,11 @@
+[Unit]
+Description=MU300 kernel warnings and errors into the journal (info-level vendor chatter stays in dmesg only)
+After=systemd-journald.service
+
+[Service]
+ExecStart=/opt/mu300/bin/kmsg-forward
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=sysinit.target

@@ -1,0 +1,84 @@
+of: reserved_mem: allow skipping /reserved-memory nodes Linux does not need
+
+The 6.18 counterpart of kernel/patches/of-reserved-mem-skip.patch. The F50 device tree reserves a 9 MiB boot
+logo buffer (the device has no display) and a 16 MiB bootloader sysdump area. CONFIG_OF_RESERVED_MEM_SKIP (or
+reserved_mem_skip= on the command line) lists node names that are left as normal RAM. The 464 MiB modem and
+24 MiB Trusty regions must stay. Since 6.x the nodes are walked twice - once to reserve them, once to fill the
+reserved_mem array - so both walks skip them.
+
+diff -ruN a/drivers/of/Kconfig b/drivers/of/Kconfig
+--- a/drivers/of/Kconfig	2026-09-26 15:47:59.779194471 +0000
++++ b/drivers/of/Kconfig	2026-09-26 15:47:59.852470555 +0000
+@@ -99,6 +99,15 @@
+ config OF_RESERVED_MEM
+ 	def_bool OF_EARLY_FLATTREE
+ 
++config OF_RESERVED_MEM_SKIP
++	string "Reserved memory nodes to ignore"
++	depends on OF_RESERVED_MEM
++	default ""
++	help
++	  Comma separated /reserved-memory node names (without @unit) that
++	  are not reserved, so the memory stays available to Linux. Can be
++	  overridden with reserved_mem_skip= on the command line.
++
+ config OF_RESOLVE
+ 	bool
+ 
+diff -ruN a/drivers/of/of_reserved_mem.c b/drivers/of/of_reserved_mem.c
+--- a/drivers/of/of_reserved_mem.c	2026-09-26 15:47:59.780928013 +0000
++++ b/drivers/of/of_reserved_mem.c	2026-09-26 15:47:59.853119263 +0000
+@@ -213,6 +213,33 @@
+  * in /reserved-memory matches the values supported by the current implementation,
+  * also check if ranges property has been provided
+  */
++static char reserved_mem_skip[256] __initdata = CONFIG_OF_RESERVED_MEM_SKIP;
++
++static int __init reserved_mem_skip_setup(char *str)
++{
++	strscpy(reserved_mem_skip, str, sizeof(reserved_mem_skip));
++	return 0;
++}
++early_param("reserved_mem_skip", reserved_mem_skip_setup);
++
++/* true if the node name (without @unit) is in the comma separated skip list */
++static bool __init reserved_mem_skipped(const char *uname)
++{
++	size_t len = strcspn(uname, "@");
++	const char *p = reserved_mem_skip;
++
++	while (*p) {
++		size_t n = strcspn(p, ",");
++
++		if (n == len && !strncmp(p, uname, len))
++			return true;
++		p += n;
++		if (*p == ',')
++			p++;
++	}
++	return false;
++}
++
+ static int __init __reserved_mem_check_root(unsigned long node)
+ {
+ 	const __be32 *prop;
+@@ -276,6 +303,8 @@
+ 			continue;
+ 		if (default_cma && cma_skip_dt_default_reserved_mem())
+ 			continue;
++		if (reserved_mem_skipped(fdt_get_name(fdt, child, NULL)))
++			continue;
+ 
+ 		if (!of_flat_dt_get_addr_size(child, "reg", &b, &s))
+ 			continue;
+@@ -322,6 +351,10 @@
+ 			continue;
+ 
+ 		uname = fdt_get_name(fdt, child, NULL);
++		if (reserved_mem_skipped(uname)) {
++			pr_info("Reserved memory: skipping %s (reserved_mem_skip)\n", uname);
++			continue;
++		}
+ 
+ 		err = __reserved_mem_reserve_reg(child, uname);
+ 		if (!err)

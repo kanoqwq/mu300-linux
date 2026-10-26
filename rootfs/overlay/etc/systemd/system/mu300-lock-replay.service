@@ -1,0 +1,13 @@
+[Unit]
+# The network, band and cell locks the MU300 page (Cockpit) saved: sent to the modem again at every boot, once its AT
+# channel answers (unisoc-modem/boot-replay, as on OpenWrt with the control panel). Nothing saved, or "apply at
+# startup" off: it ends at once, without a single AT command. It never holds the boot up.
+Description=MU300 network locks: replay the saved ones
+After=mu300-atd.service
+ConditionPathExists=/usr/libexec/unisoc-modem/boot-replay
+
+[Service]
+ExecStart=/usr/libexec/unisoc-modem/boot-replay
+
+[Install]
+WantedBy=multi-user.target

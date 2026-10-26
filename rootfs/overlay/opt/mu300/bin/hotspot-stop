@@ -1,0 +1,3 @@
+#!/bin/sh
+ip link set wlan0 nomaster 2>/dev/null
+true

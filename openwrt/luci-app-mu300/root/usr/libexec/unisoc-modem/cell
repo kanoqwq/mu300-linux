@@ -1,0 +1,668 @@
+#!/bin/sh
+# mu300-dash-cell -- the dashboard's cellular collector: modem/cell/SIM readings into ONE
+# cached JSON in the package runtime directory, written by whoever refreshes it.
+#
+# The web page NEVER runs this directly and never waits for it: the rpcd backend
+# (/usr/libexec/rpcd/mu300dash) serves the cache and kicks a background refresh
+# (setsid) whenever it is older than the TTL. That separation is the one hard rule
+# the V50 panel learned in the field: a synchronous AT round inside a web request
+# starves the AT channel, the dial watchdog then sees a dead modem and the box
+# ends up rebooting itself (docs/FINDINGS.md, V50 archive "45g").
+#
+# Everything goes through the configured AT adapter, which is responsible for
+# serializing access with the platform dialer and SMS implementation.
+#
+# Commands per round (about 10, roughly one second on this modem):
+#   AT+CFUN?            radio on/off - the honest state for the toggle
+#   AT+COPS?            operator name + access technology
+#   AT+CEREG?           LTE registration, TAC, cell ID
+#   AT+C5GREG?          NR registration - CEREG alone still reports LTE-style AcT on n78
+#   AT+CESQ             RSRP/RSRQ indexes - the fallback when the engineering mode below says nothing
+#   AT+SPENGMD=0,6,0    Unisoc engineering: LTE serving cell (band/EARFCN/PCI/RSRP/RSRQ/bandwidth/ECI/TAC)
+#   AT+SPENGMD=0,14,1   NR serving cell (band/ARFCN/PCI/RSRP/RSRQ/SINR/MCS/BLER)
+#   AT+SPENGMD=0,6,6    LTE neighbour slots (8 x 12 fields, first 4 per slot are the reading)
+#   AT+SPQ5GNCELLEX     NR neighbour table with real per-cell SINR
+#   AT+CGEQOSRDP=<cid>  QCI + up/down AMBR of the bearer the WAN uses now (its CID from netifd's live device)
+#   AT+CNUM             the SIM's own number (full rounds only, until one is found; see "own number" below)
+#   AT+SPPAURI?         the IMS public identity, when the SIM has no number
+# AT+SPENGMD=0,1,0 is NEVER sent: it switches the AT port into streaming mode and
+# kills the channel until the next reboot (V50 archive; blacklisted in the rpcd
+# AT terminal too).
+#
+# SIM/module identity (IMEI/IMSI/ICCID/model/firmware) changes only when the SIM
+# or the firmware changes, so it lives in the configured state directory and is re-read
+# at most every 6 hours once complete (a partial read: every minute) - not on every
+# round, and never inside a page request.
+
+# Two rounds share this script:
+#   mu300-dash-cell          full: everything below, ~11 commands, neighbours included
+#   mu300-dash-cell fast     serving-cell tier: CFUN/CEREG/C5GREG/CESQ + the two
+#                            SPENGMD serving reads (~6 commands, well under a second),
+#                            written to sig.json only - the page polls this at 1.5 s
+#                            and the slow tier (neighbours, operator, QoS, identity)
+#                            rides the 5 s full cache. A fast round yields to a full
+#                            round in flight (the full round writes sig.json too).
+
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/libexec/unisoc-modem:/usr/sbin:/sbin"
+# the shared JSON escaper and uci allow-lists (/usr/share/unisoc-modem/lib.sh)
+LIB=${0%/*}/../../share/unisoc-modem/lib.sh
+[ -f "$LIB" ] || LIB=/usr/share/unisoc-modem/lib.sh
+. "$LIB"
+# the caches and sim.json (IMSI, ICCID) are root's only
+umask 077
+
+MODE=${1:-full}
+DIR=${MU300_DASH_DIR:-$RUN_DIR}
+CELL=$DIR/cell.json
+SIGF=$DIR/sig.json
+STATE_DIR=$(safe_state_dir "$(uci_get state_dir)" '')
+IDENT_DIR=${MU300_DASH_IDENT_DIR:-${STATE_DIR%/lock-state.d}}
+[ -n "$IDENT_DIR" ] || IDENT_DIR=/etc/unisoc-modem
+IDENT=$IDENT_DIR/sim.json
+AT=${MU300_AT:-/usr/libexec/unisoc-modem/at}
+IMEI_DIAG=${MU300_IMEI_DIAG:-/usr/libexec/unisoc-modem/imei-diag}
+IDENT_MAXAGE=21600   # seconds; a SIM change goes through a reboot, 6 h is plenty
+IDENT_RETRY=60       # seconds a partial identity (modem or SIM not ready) is shown before it is asked again
+
+# a runtime directory someone else made is refused (lib.sh): write nothing
+private_dir "$DIR" || exit 1
+mkdir -p "$IDENT_DIR" 2>/dev/null
+
+# nr3/nr4/nr5 belong to SIM slot 1 and return the wrong state for slot 0.
+# The dashboard therefore uses the two verified slot-0-capable optional
+# channels nr6/nr7; nr1 is only the final fallback for a failed pool channel.
+SIM_SLOT=0
+if [ -x /opt/mu300/bin/mu300-sim ]; then
+    SIM_SLOT=$(/opt/mu300/bin/mu300-sim active) || exit 1
+fi
+SIM_NATIVE=0
+[ ! -e /run/mu300-radio-freeze ] || SIM_NATIVE=1
+ATC=${MU300_DASH_AT_DIR:-}
+DASH_CHANNELS='6 7'
+DASH_FALLBACKS='/run/mu300-at6 /run/mu300-at7 /run/mu300-at'
+if [ "$SIM_SLOT" = 1 ]; then
+    ATC=/run/mu300-at
+    DASH_CHANNELS=4
+    DASH_FALLBACKS=/run/mu300-at
+    IDENT=$IDENT_DIR/sim-slot1.json
+fi
+if [ "$SIM_NATIVE" = 1 ]; then
+    case "$SIM_SLOT" in
+        0) DASH_CHANNELS=1; DASH_FALLBACKS=/run/mu300-at ;;
+        1) DASH_CHANNELS=4; DASH_FALLBACKS=/run/mu300-at4 ;;
+        *) exit 2 ;;
+    esac
+fi
+
+# A whole round has a deadline (MU300_DASH_DEADLINE seconds from now; 25 for a full round, 12 for a fast one).
+# Without one, a modem that stopped answering held a collector for many minutes - every command waited out mu300-at's
+# whole budget (T + 31 s) on each of four channels - and the collectors the panel started kept piling up behind it.
+# Past the deadline every further command fails at once; each one gets at most what is left.
+case ${MU300_DASH_DEADLINE:-} in
+    ''|*[!0-9]*) [ "$MODE" = fast ] && MU300_DASH_DEADLINE=12 || MU300_DASH_DEADLINE=25 ;;
+esac
+DEADLINE=$(( $(date +%s) + MU300_DASH_DEADLINE ))
+at() {
+    local cmd=$1 timeout=${2:-5} d out seen= left
+    # The assigned regular channel is first. A silent channel fails in about
+    # timeout+1 seconds; only then touch the two unpolled disaster channels.
+    for d in "$ATC" $DASH_FALLBACKS; do
+        [ -n "$d" ] && [ -p "$d/cmd" ] || continue
+        case " $seen " in *" $d "*) continue ;; esac
+        seen="$seen $d"
+        left=$(( DEADLINE - $(date +%s) ))
+        [ "$left" -ge 1 ] || return 1
+        # the daemon's drain and collect: T + 4 s is plenty for an answer that comes at all
+        [ "$left" -gt $((timeout + 4)) ] && left=$((timeout + 4))
+        out=$(MU300_AT_LOCK_WAIT=0 MU300_AT_BUDGET=$left MU300_AT_DIR=$d "$AT" -t "$timeout" "$cmd" 2>/dev/null) ||
+            continue
+        printf '%s\n' "$out" | tr -d '\r'
+        return 0
+    done
+    # no daemon directory at all: the adapter's own backend, without waiting for anybody's lock
+    [ -z "$seen" ] || return 1
+    left=$(( DEADLINE - $(date +%s) ))
+    [ "$left" -ge 1 ] || return 1
+    out=$(MU300_AT_LOCK_WAIT=0 MU300_AT_BUDGET=$left "$AT" -t "$timeout" "$cmd" 2>/dev/null) || return 1
+    printf '%s\n' "$out" | tr -d '\r'
+}
+now() { date +%s; }
+n_or_null() { case "$1" in ''|*[!0-9]*) echo null ;; *) echo "$1" ;; esac; }
+qs() { json_str_or_null "$1"; }
+
+# ------------------------------------------------------------- identity
+# ident_token REPLY ERE: the first line of an identity answer that is the value alone, after an optional "+CGSN: "-like
+# prefix and quotes; an error line ("+CME ERROR: 10") is never a value.
+ident_token() {
+    printf '%s\n' "$1" | tr -d '\r"' | grep -v -i 'error' | sed 's/^[+^][A-Za-z]*: *//; s/^ *//; s/ *$//' |
+        grep -E -x "$2" | head -n1
+}
+# iccid_value ICCID: upper case; the F that pads a 19-digit ICCID to 20 nibbles is dropped, the letters of an ICCID
+# that has them (some eSIM profiles and operators use A-F) are kept.
+iccid_value() {
+    local v
+    v=$(printf '%s' "$1" | tr 'abcdef' 'ABCDEF')
+    case "$v" in
+        *[!0-9F]*) ;;
+        *[0-9]F) v=${v%F}; [ "${#v}" -ge 18 ] || v= ;;
+    esac
+    printf '%s' "$v"
+}
+# ident_complete FILE: the identity cache holds IMEI, IMSI and ICCID
+ident_complete() {
+    # fifteen zeros (a modem that answers AT+CGSN with nothing) is no identity, and keeping it in the 6 h cache would
+    # hide the diag read below for hours (FINDINGS 220). A real IMEI may start with 0 (reporting bodies 00-01).
+    grep -q '"imei":"[0-9]' "$1" && ! grep -q '"imei":"000000000000000"' "$1" &&
+        grep -q '"imsi":"[0-9]' "$1" && grep -q '"iccid":"[0-9A-F]' "$1"
+}
+file_age() { echo $(( $(now) - $(date -r "$1" +%s 2>/dev/null || echo 0) )); }
+
+# ------------------------------------------------------------- own number
+# cnum_number: the first number of an AT+CNUM answer, +CNUM: "alpha","number",type[,...]: digits (spaces, dashes and
+# brackets dropped), 3 to 15 of them (E.164), "+" put in front for type 145 (international). A SIM without a number
+# answers OK alone or an empty string: nothing then.
+cnum_number() {
+    awk -F '"' '/^\+CNUM:/ {
+        n = $4; gsub(/[ ()-]/, "", n)
+        if (n !~ /^\+?[0-9][0-9]+[0-9]$/) next
+        d = n; sub(/^\+/, "", d)
+        if (length(d) > 15) next
+        if ($5 ~ /^[ \t]*,[ \t]*145([ \t]*,|[ \t]*$)/ && n !~ /^\+/) n = "+" n
+        print n; exit
+    }'
+}
+# ims_number: the operator-provisioned IMS public identity (AT+SPPAURI?, what the stock RIL reads for the number): a
+# tel: URI first, else a sip:/sips: URI whose user part is an international number. A bare numeric SIP user part
+# is the IMSI on many networks, not a telephone number, so without a "+" it is not taken.
+ims_number() {
+    awk '/^\+SPPAURI:/ {
+        sub(/^\+SPPAURI:[ \t]*/, "")
+        count = split($0, f, /[ \t",<>]+/)
+        for (i = 1; i <= count; i++) {
+            uri = f[i]; lower = tolower(uri)
+            if (lower !~ /^(tel|sips?):/) continue
+            n = uri; sub(/^[^:]*:/, "", n); sub(/[@;?].*$/, "", n); gsub(/[ ().-]/, "", n)
+            d = n; sub(/^\+/, "", d)
+            if (d !~ /^[0-9]+$/ || length(d) < 3 || length(d) > 15) continue
+            if (lower ~ /^tel:/) { print n; done = 1; exit }
+            if (n ~ /^\+/ && sip == "") sip = n
+        }
+    }
+    END { if (!done && sip != "") print sip }'
+}
+
+# --------------------------------------------------------------- one collector
+# the same "one owner, spare waits/takes over" pattern mu300-atd uses, so two
+# kicks (page reload while a refresh runs) cannot interleave AT replies
+alive() { [ -n "$1" ] && [ -d "/proc/$1" ] && { tr '\0' ' ' < "/proc/$1/cmdline"; } 2>/dev/null | grep -q '/unisoc-modem/cell'; }
+take_lock() {  # take_lock DIRVAR - drop overlap, take over a dead holder
+    local lock=$1 owner
+    while ! mkdir "$lock" 2>/dev/null; do
+        owner=$(cat "$lock/pid" 2>/dev/null || true)
+        if alive "$owner"; then
+            exit 0
+        fi
+        # mkdir and writing pid are two operations. An empty pid here is the
+        # acquisition window of a live peer, not proof of a stale lock.
+        [ -n "$owner" ] || exit 0
+        rm -rf "$lock"
+    done
+    echo $$ > "$lock/pid"
+}
+# One writer for a given output directory. Live RPCs have private output dirs,
+# while full/fast status refreshes share DIR and therefore never race a cache.
+LOCK=$DIR/collect.lck
+take_lock "$LOCK"
+
+# Claim one of two physical dashboard channels without waiting. This caps
+# work even when browsers overlap polls: a third collector is discarded and
+# the next 2 s refresh retries. Stale slots are reclaimed by PID ownership.
+POOL=${MU300_DASH_POOL_DIR:-/run/unisoc-modem-at-pool}
+mkdir -p "$POOL" 2>/dev/null
+SLOT=
+for n in $DASH_CHANNELS; do
+    channel_dir=/run/mu300-at$n
+    [ "$SIM_SLOT:$SIM_NATIVE" != 1:0 ] || channel_dir=/run/mu300-at
+    s=$POOL/nr$n
+    if mkdir "$s" 2>/dev/null; then
+        SLOT=$s; ATC=$channel_dir; break
+    fi
+    owner=$(cat "$s/pid" 2>/dev/null || true)
+    if [ -n "$owner" ] && ! alive "$owner"; then
+        rm -rf "$s"
+        if mkdir "$s" 2>/dev/null; then SLOT=$s; ATC=$channel_dir; break; fi
+    fi
+done
+[ -n "$SLOT" ] || exit 0
+echo $$ > "$SLOT/pid"
+trap 'rm -rf "$LOCK" "$SLOT" 2>/dev/null' EXIT INT TERM
+
+# ------------------------------------------------------------------- identity
+IDENT_JSON=null
+
+# ------------------------------------------------------------- SPENGMD decode
+# Unisoc separates fields with "-" and writes negatives as "+<abs>":
+# "1-300-211--11747--654" = band 1, EARFCN 300, PCI 211, RSRP -117.47, RSRQ -6.54.
+# Normalize ",-" -> ",+" and "--" -> "-+" first, then split on "-". A token may
+# carry a comma list (bandwidth codes, CA flags); the scalar is the first field.
+# dB values are centi-units and are divided by 100 inside the awk fragments below.
+# (No backslash line continuations inside the awk: comma-newline is portable,
+# busybox awk does not promise the GNU one.)
+sp_fragment() {  # sp_fragment MODE LINE [PHYLINE]  (MODE: lte | nr | ltenb)
+    [ -n "$2" ] || { echo null; return; }
+    awk -v mode="$1" -v line="$2" -v phy="${3:-}" "$JSON_ESC"'
+        function norm(l, arr,   s, n, i) {
+            s = l; gsub(/\r/, "", s)
+            gsub(/,-/, ",+", s); gsub(/--/, "-+", s); sub(/^-/, "+", s)
+            n = split(s, raw, "-")
+            # Prefix before storing: BusyBox awk tags an all-digit field as a
+            # numeric string and may wrap a 36-bit cell id before fs() sees it.
+            for (i = 1; i <= n; i++) {
+                arr[i-1] = "x" raw[i]; gsub(/ /, "", arr[i-1]); arr[i-1] = substr(arr[i-1], 2)
+            }
+            return n
+        }
+        # scalar part of a token, sign restored ("+11747" -> -11747)
+        function f(x,   v) { v = x; sub(/,.*/, "", v); gsub(/\+/, "-", v); return (v == "" || v == "NA" || v == "N/A") ? "" : v+0 }
+        function num(x) { return (x == "") ? "null" : x }
+        function c1(x) { if (x == "") return "null"; return sprintf("%.1f", x/100) }
+        # large ids (NR cell id is 36 bits) must never go through arithmetic:
+        # busybox awk wraps integers at 32 bits (measured: 2579463431 came out
+        # negative through both %d and %.0f). fs() passes the token as a string.
+        function u32(neg,   top,b,out,i,borrow,d) {
+            top = "4294967296"; b = neg
+            while (length(b) < 10) b = "0" b
+            out = ""; borrow = 0
+            for (i = 10; i > 0; i--) {
+                d = substr(top,i,1) - substr(b,i,1) - borrow
+                if (d < 0) { d += 10; borrow = 1 } else borrow = 0
+                out = d out
+            }
+            sub(/^0+/, "", out); return (out == "") ? "0" : out
+        }
+        function fs(x,   v) {
+            v = x; sub(/,.*/, "", v)
+            if (v ~ /^\+/) v = u32(substr(v, 2))
+            return (v == "" || v == "NA" || v == "N/A") ? "null" : "\"" jesc(v) "\""
+        }
+        function lteband(fr,   a,b,r,i,n) {
+            n = split("1:0-599 2:600-1199 3:1200-1949 4:1950-2399 5:2400-2649 7:2750-3449 8:3450-3799 12:5010-5179 13:5180-5279 14:5280-5379 17:5730-5849 18:5850-5999 19:6000-6149 20:6150-6449 25:8040-8689 26:8690-9039 27:9040-9209 28:9210-9659 30:9770-9869 31:9870-9919 33:36000-36199 34:36200-36349 35:36350-36949 36:36950-37549 37:37550-37749 38:37750-38249 39:38250-38649 40:38650-39649 41:39650-41589 42:41590-43589 43:43590-45589 44:45590-46589 46:46790-54539 47:54540-55239 48:55240-56739 49:56740-58239 50:58240-59089 51:59090-59139 65:65536-66435 66:66436-67335", a, " ")
+            for (i = 1; i <= n; i++) { split(a[i], b, ":"); split(b[2], r, "-")
+                if (fr >= r[1] && fr <= r[2]) return b[1] }
+            return 0
+        }
+        function nrband(fr,   a,b,r,i,n) {
+            n = split("1:422000-434000 3:361000-376000 5:173800-178800 8:185000-192000 28:151600-160600 40:460000-480000 41:499200-537999 78:620000-653333 77:620000-680000 79:693334-733333", a, " ")
+            for (i = 1; i <= n; i++) { split(a[i], b, ":"); split(b[2], r, "-")
+                if (fr >= r[1] && fr <= r[2]) return b[1] }
+            return 0
+        }
+        BEGIN {
+            n = norm(line, t)
+            if (mode == "lte") {
+                band = f(t[0]); earfcn = f(t[1]); pci = f(t[2])
+                if ((band == 0 || band == "") && earfcn == 0 && pci == 0) { print "null"; exit }
+                bw = ""; m = split(t[7], c, ",")
+                for (i = 1; i <= m; i++) { v = c[i]+0
+                    w = (v==0)?1.4:(v==1)?3:(v==2)?5:(v==3)?10:(v==4)?15:(v==5)?20:0
+                    if (w) bw = bw (bw==""?"":"+") w "M" }
+                enb = f(t[11]); cidl = f(t[12])
+                tac = f(t[28]); if (tac == "" || tac == 0) tac = f(t[29])
+                ca = t[13]
+                # 0,0,6 carries the LTE PHY: token 2 = SINR (centi-dB), 3/4 = the UL/DL
+                # MCS histograms (the dominant index is the live MCS), 5/6 = BLER.
+                # Layout per ufi_tools, range-guarded: this device answers all zeros
+                # while camped on 5G SA (no LTE anchor), and an idle histogram is all
+                # zeros too - both mean "no reading", not "0 dB".
+                psinr = pmcs = pumcs = publer = pdbler = ""
+                if (phy != "") {
+                    np = norm(phy, u)
+                    s2 = f(u[2])
+                    if (s2 != "" && s2 >= -2000 && s2 <= 4000) psinr = sprintf("%.1f", s2/100)
+                    publer = c1(f(u[5])); pdbler = c1(f(u[6]))
+                    for (dir = 3; dir <= 4; dir++) {
+                        m2 = split(u[dir], h, ","); best = -1; bestn = 0; total = 0
+                        for (i = 1; i <= m2; i++) { hv = h[i]+0; total += hv
+                            if (hv > bestn) { bestn = hv; best = i - 1 } }
+                        if (total > 0 && best >= 0) {
+                            if (dir == 4) pmcs = best; else pumcs = best
+                        }
+                    }
+                }
+                printf "{\"band\":%d,\"earfcn\":%d,\"pci\":%d,\"rsrp\":%s,\"rsrq\":%s,\"bw\":\"%s\",\"enb\":%s,\"cid\":%s,\"tac\":\"%s\",\"ca\":\"%s\",\"sinr\":%s,\"dl_mcs\":%s,\"ul_mcs\":%s,\"dl_bler\":%s,\"ul_bler\":%s}",
+                    band, earfcn, pci, c1(f(t[3])), c1(f(t[4])), bw, num(enb), num(cidl),
+                    (tac=="")?"":sprintf("%x",tac), (index(ca,"DL_CA")?"DL_CA":""),
+                    (psinr == "" ? "null" : psinr),
+                    (pmcs == "" ? "null" : pmcs), (pumcs == "" ? "null" : pumcs), pdbler, publer
+            } else if (mode == "nr") {
+                band = f(t[0]); arfcn = f(t[1]); pci = f(t[2])
+                if ((band == 0 || band == "") && arfcn == 0 && pci == 0) { print "null"; exit }
+                bw = f(t[7])
+                printf "{\"band\":%d,\"arfcn\":%d,\"pci\":%d,\"rsrp\":%s,\"rsrq\":%s,\"sinr\":%s,\"bw_mhz\":%s,\"gnb\":%s,\"cid\":%s,\"ul_mcs\":%s,\"dl_mcs\":%s,\"ul_bler\":%s,\"dl_bler\":%s}",
+                    band, arfcn, pci, c1(f(t[3])), c1(f(t[4])), c1(f(t[15])), num(bw),
+                    fs(t[8]), fs(t[9]), num(f(t[16])), num(f(t[17])), c1(f(t[18])), c1(f(t[19]))
+            } else {   # ltenb: eight 12-field slots, first four are EARFCN/PCI/RSRP/RSRQ
+                out = ""
+                for (s = 0; s < 8; s++) {
+                    b = s*12; if (b+3 >= n) break
+                    earfcn = f(t[b]); pci = f(t[b+1])
+                    if (earfcn == 0 && pci == 0) continue
+                    out = out sprintf("{\"rat\":\"lte\",\"band\":%d,\"arfcn\":%d,\"pci\":%d,\"rsrp\":%s,\"rsrq\":%s},",
+                        lteband(earfcn), earfcn, pci, c1(f(t[b+2])), c1(f(t[b+3])))
+                }
+                sub(/,$/, "", out); print (out == "" ? "" : out)
+            }
+        }'
+}
+
+nr_neighbours() {  # SPQ5GNCELLEX CSV: serving 8-tuple, count at index 8, then 8-tuples (arfcn,pci,rsrp,rsrq,sinr,..)
+    [ -n "$1" ] || { echo ""; return; }
+    awk -v line="$1" '
+        function nrband(fr,   a,b,r,i,n) {
+            n = split("1:422000-434000 3:361000-376000 5:173800-178800 8:185000-192000 28:151600-160600 40:460000-480000 41:499200-537999 78:620000-653333 77:620000-680000 79:693334-733333", a, " ")
+            for (i = 1; i <= n; i++) { split(a[i], b, ":"); split(b[2], r, "-")
+                if (fr >= r[1] && fr <= r[2]) return b[1] }
+            return 0
+        }
+        BEGIN {
+            m = split(line, a, ","); cnt = a[9]+0
+            out = ""
+            for (i = 0; i < cnt && i < 8; i++) {
+                b = 9 + i*8; if (b+5 > m) break
+                fr = a[b+1]+0; pci = a[b+2]+0
+                if (fr == 0 && pci == 0) continue
+                out = out sprintf("{\"rat\":\"nr\",\"band\":%d,\"arfcn\":%d,\"pci\":%d,\"rsrp\":%.1f,\"rsrq\":%.1f,\"sinr\":%.1f},",
+                    nrband(fr), fr, pci, a[b+3]/100, a[b+4]/100, a[b+5]/100)
+            }
+            sub(/,$/, "", out); print out
+        }'
+}
+
+# registration line "+CEREG: 2,1,\"01F0\",\"0ABCD123\",13" -> fragment
+reg_fragment() {  # reg_fragment LINE
+    [ -n "$1" ] || { echo null; return; }
+    printf '%s\n' "$1" | sed 's/^+C[5]*EREG: *//' | tr -d '"' | awk -F',' "$JSON_ESC"'
+        function reg_num(x) { gsub(/ /, "", x); return (x ~ /^[0-9]+$/) ? x + 0 : "null" }
+        function reg_str(x) { return (x == "") ? "null" : "\"" jesc(x) "\"" }
+        { printf "{\"stat\":%s,\"tac\":%s,\"cid\":%s,\"act\":%s}", reg_num($2), reg_str($3), reg_str($4), reg_num($5) }'
+}
+
+# cops_fragment COPS [NAMED CSCS] -> name/plmn/act. COPS is the +COPS: line as the modem answered it, in whichever
+# format it was left in: <format> 2 is the numeric PLMN, 0 and 1 a name. NAMED is the same answer in the long-name
+# format (operator_name), CSCS the character set the modem said it uses. The format field decides what the quoted
+# text is, never its look: a name may be all digits, and a PLMN is not a UCS2 name. A name is read as UCS2 hex when
+# the character set is UCS2, and it is then passed on as JSON \u escapes (valid UTF-16 and no control character only;
+# anything else stays the text it was). Under any other character set the same reading is taken only for a text that
+# cannot reasonably be a name (issue #174: the F50's modem, character set "HEX", gives a name the SIM or the network
+# holds in UCS2 as its hex, "4E2D56FD8054901A", and an ASCII name as text): two code units or more, not all decimal
+# digits (a name of digits stays a name), and no private-use or non-character code point. The decoding is done on
+# every round from the modem's own line, so nothing decoded is ever cached.
+cops_fragment() {
+    [ -n "$1" ] || { echo null; return; }
+    printf '%s\n%s\n' "$1" "${2:-}" | awk -v cscs="${3:-}" "$JSON_ESC"'
+        function hexv(s,   i, v) { v = 0; for (i = 1; i <= length(s); i++) v = v * 16 + index("0123456789ABCDEF", substr(s, i, 1)) - 1; return v }
+        function ucs2(s, strict,   i, u, v, out, hi) {
+            if (length(s) % 4 || s !~ /^[0-9A-Fa-f]+$/) return ""
+            if (strict && (length(s) < 8 || s ~ /^[0-9]+$/)) return ""
+            out = ""; hi = 0
+            for (i = 1; i <= length(s); i += 4) {
+                u = toupper(substr(s, i, 4)); v = hexv(u)
+                if (v < 32 || (v >= 127 && v < 160)) return ""
+                if (strict && ((v >= 57344 && v <= 63743) || (v >= 64976 && v <= 65007) || v >= 65534)) return ""
+                if (v >= 55296 && v <= 56319) { if (hi) return ""; hi = 1 }
+                else if (v >= 56320 && v <= 57343) { if (!hi) return ""; hi = 0 }
+                else if (hi) return ""
+                out = out "\\u" u
+            }
+            return hi ? "" : out
+        }
+        # one +COPS: line -> F (format), T (the quoted text), A (the access technology)
+        function parse(l,   q, n, f) {
+            F = ""; T = ""; A = ""
+            if (l !~ /^\+COPS: *[0-9]+ *, *[0-9]+ *, *"/) return 0
+            q = index(l, "\""); T = substr(l, q + 1); n = index(T, "\""); if (!n) return 0
+            A = substr(T, n + 1); T = substr(T, 1, n - 1)
+            split(l, f, ","); F = f[2]; gsub(/[^0-9]/, "", F)
+            sub(/^ *, */, "", A); sub(/[^0-9].*$/, "", A)
+            return 1
+        }
+        function name_json(t,   u) {
+            if (t == "") return "null"
+            if ((u = ucs2(t, toupper(cscs) != "UCS2")) != "") return "\"" u "\""
+            return "\"" jesc(t) "\""
+        }
+        NR == 1 { line = $0 }
+        NR == 2 { named = $0 }
+        END {
+            if (!parse(line)) { print "null"; exit }
+            act = A; plmn = ""; name = "null"
+            if (F == "2") {
+                if (T ~ /^[0-9][0-9][0-9][0-9][0-9][0-9]?$/) plmn = T
+                if (parse(named) && (F == "0" || F == "1")) name = name_json(T)
+            } else name = name_json(T)
+            printf "{\"name\":%s,\"plmn\":%s,\"act\":%s}", name, (plmn == "" ? "null" : "\"" plmn "\""), (act == "" ? "null" : act + 0)
+        }'
+}
+
+# operator_name COPS: when the modem answers in the numeric format (the F50's modem keeps format 2, as Android's RIL
+# leaves it), the long name - one line that asks for it and puts the numeric format back (AT+COPS=3,0 then =3,2:
+# the format is the modem's, whoever reads it next gets what it had), with the character set. Once per PLMN: the
+# answer is kept in the runtime directory as "PLMN CSCS" and the named line, so the 5 s rounds send nothing more.
+# Prints the named line and the character set, one per line. A name the modem already gave needs no named line; if
+# it looks like UCS2 hex, the character set is asked for cops_fragment (AT+CSCS?, once per boot, kept beside it).
+operator_name() {
+    local plmn f="$DIR/operator" out named cscs
+    case $1 in
+        '+COPS: '[0-9]','[01]',"'*)
+            printf '%s\n' "$1" | grep -Eq '^[^"]*"([0-9A-Fa-f]{4})+"' || return 0
+            cscs=$(cat "$DIR/cscs" 2>/dev/null)
+            if [ -z "$cscs" ]; then
+                cscs=$(at 'AT+CSCS?' 2 | sed -n 's/^+CSCS: *"\([A-Za-z0-9_]*\)".*/\1/p' | head -n1)
+                [ -z "$cscs" ] || printf '%s\n' "$cscs" > "$DIR/cscs"
+            fi
+            printf '\n%s\n' "$cscs"
+            return 0 ;;
+    esac
+    plmn=$(printf '%s\n' "$1" | sed -n 's/^+COPS: *[0-9]*, *2, *"\([0-9]\{5,6\}\)".*/\1/p')
+    [ -n "$plmn" ] || return 0
+    if [ "$(sed -n '1s/ .*//p' "$f" 2>/dev/null)" = "$plmn" ]; then
+        sed -n '2p' "$f"; sed -n '1s/^[^ ]* //p' "$f"
+        return 0
+    fi
+    out=$(at 'AT+CSCS?;+COPS=3,0;+COPS?;+COPS=3,2' 3)
+    named=$(printf '%s\n' "$out" | grep '^+COPS: *[0-9]*, *[01], *"' | head -n1)
+    cscs=$(printf '%s\n' "$out" | sed -n 's/^+CSCS: *"\([A-Za-z0-9_]*\)".*/\1/p' | head -n1)
+    [ -n "$named" ] || return 0
+    printf '%s %s\n%s\n' "$plmn" "${cscs:-unknown}" "$named" > "$f.part" && mv "$f.part" "$f"
+    printf '%s\n%s\n' "$named" "${cscs:-unknown}"
+}
+
+cesq_fragment() {  # "+CESQ: 24,99,55,255,36,98"
+    [ -n "$1" ] || { echo null; return; }
+    printf '%s\n' "$1" | sed 's/^+CESQ: *//' | awk -F',' '
+        { if ($6 != "" && $6 != 255) rsrp = $6 - 140; else rsrp = "null"
+          if ($5 != "" && $5 != 255) rsrq = sprintf("%.1f", -19.5 + $5*0.5); else rsrq = "null"
+          printf "{\"rsrp\":%s,\"rsrq\":%s}", rsrp, rsrq }'
+}
+
+# wan_status: netifd's account of the data interface (2 s at most), nothing when there is none
+wan_status() {
+    ubus -t 2 call "network.interface.$(safe_iface "$(uci_get data_interface)" wan)" status 2>/dev/null
+}
+# wan_field JSON KEY: a scalar field of ubus's pretty-printed status (the first match: these appear once)
+wan_field() { printf '%s' "$1" | sed -n "s/.*\"$2\": *\"\{0,1\}\([^,\"}]*\).*/\1/p" | head -n1; }
+# bearer_qos: the +CGEQOSRDP line of the bearer the WAN is on now, or nothing. The CID comes from netifd's live device
+# (data_cid: sipa_eth<n> is a CID of this card), never a fixed 1: AT+CGEQOSRDP=1 described context 1 whatever the WAN
+# used, and an old bearer's QoS while the WAN was down. The answer must be for that CID, and afterwards the WAN must
+# still be the same connection - up, on the same device, its uptime not started over (netifd restarts it on every
+# redial, also on the same device) - or the previous bearer's numbers would be shown for the new one.
+bearer_qos() {
+    local st dev cid age reply st2
+    st=$(wan_status) || return 0
+    [ "$(wan_field "$st" up)" = true ] || return 0
+    dev=$(safe_iface "$(wan_field "$st" l3_device)" '')
+    cid=$(data_cid "$dev" "$SIM_SLOT") || return 0
+    age=$(wan_field "$st" uptime)
+    case $age in ''|*[!0-9]*) return 0 ;; esac
+    reply=$(at "AT+CGEQOSRDP=$cid" 2 | sed -n 's/^+CGEQOSRDP: *//p' | head -n1)
+    case ${reply%%,*} in "$cid"|" $cid"|"$cid ") ;; *) return 0 ;; esac
+    st2=$(wan_status) || return 0
+    [ "$(wan_field "$st2" up)" = true ] && [ "$(wan_field "$st2" l3_device)" = "$dev" ] || return 0
+    case $(wan_field "$st2" uptime) in ''|*[!0-9]*) return 0 ;; esac
+    [ "$(wan_field "$st2" uptime)" -ge "$age" ] || return 0
+    printf '%s\n' "$reply"
+}
+
+qos_fragment() {  # "+CGEQOSRDP: 1,9,..OK" (this modem glues OK onto the line)
+    [ -n "$1" ] || { echo null; return; }
+    printf '%s\n' "$1" | sed 's/OK$//; s/^+CGEQOSRDP: *//' | awk -F',' '
+        { if ($2 !~ /^ *[0-9]+ *$/) { print "null"; exit }
+          printf "{\"qci\":%d,\"dl\":%s,\"ul\":%s}", $2 + 0,
+              ($7 != "" && $7 > 0) ? sprintf("%.1f", $7/1000) : "null",
+              ($8 != "" && $8 > 0) ? sprintf("%.1f", $8/1000) : "null" }'
+}
+
+# ---------------------------------------------------------- staged AT round
+# Publish the cheap, universally available core first. The UI can show radio,
+# registration and CESQ while the optional engineering/identity tier continues.
+CFUN=$(at 'AT+CFUN?' 2 | sed -n 's/^+CFUN: *//p' | head -n1)
+CEREG=$(at 'AT+CEREG?' 2 | grep '^+CEREG:' | head -n1)
+C5GREG=$(at 'AT+C5GREG?' 2 | grep '^+C5GREG:' | head -n1)
+CESQ=$(at 'AT+CESQ' 2 | grep '^+CESQ:' | head -n1)
+REG=$(reg_fragment "$CEREG"); REG5=$(reg_fragment "$C5GREG")
+CESQJ=$(cesq_fragment "$CESQ"); CFUNN=$(n_or_null "$CFUN")
+printf '{"ts":%d,"partial":1,"cfun":%s,"reg":%s,"reg5g":%s,"sig_src":"cesq","sig":%s,"lte":null,"nr":null}\n' \
+    "$(now)" "$CFUNN" "$REG" "$REG5" "$CESQJ" > "$SIGF.part" && mv "$SIGF.part" "$SIGF"
+
+# Engineering reads, neighbours and bearer QoS have no useful answer while the
+# modem is searching/no-service. Skipping them avoids a chain of AT timeouts.
+R4=$(printf '%s\n' "$CEREG" | tr -d '"' | awk -F',' '{ gsub(/ /,"",$2); print $2 }')
+R5=$(printf '%s\n' "$C5GREG" | tr -d '"' | awk -F',' '{ gsub(/ /,"",$2); print $2 }')
+REGISTERED=0
+case "$R4:$R5" in 1:*|5:*|10:*|*:1|*:5|*:10) REGISTERED=1 ;; esac
+SP_LTE=; SP_LTEPHY=; SP_NR=; SP_LN=; SP_NRNB=; QOS=; COPS=
+if [ "$REGISTERED" = 1 ]; then
+    SP_LTE=$(at 'AT+SPENGMD=0,6,0' 2 | grep -v '^AT' | grep -- '-' | head -n1)
+    SP_LTEPHY=$(at 'AT+SPENGMD=0,0,6' 2 | grep -v '^AT' | grep -- '-' | head -n1)
+    SP_NR=$(at 'AT+SPENGMD=0,14,1' 2 | grep -v '^AT' | grep -- '-' | head -n1)
+fi
+if [ "$MODE" = full ]; then
+    COPS=$(at 'AT+COPS?' 2 | grep '^+COPS:' | head -n1)
+    OPN=$(operator_name "$COPS")
+    if [ "$REGISTERED" = 1 ]; then
+        SP_LN=$(at 'AT+SPENGMD=0,6,6' 2 | grep -v '^AT' | grep -- '-' | head -n1)
+        SP_NRNB=$(at 'AT+SPQ5GNCELLEX' 2 | sed -n 's/^+SPQ5GNCELLEX: *//p' | head -n1)
+        QOS=$(bearer_qos)
+    fi
+    # The 6 h cache on flash holds a complete identity only: IMEI, IMSI and ICCID all read. A round where the modem
+    # was not ready (AT+CGSN or AT+CIMI timed out while AT+CCID answered) used to cache imei:null for 6 h; now such a
+    # partial read is shown for this round and kept in the runtime directory for a minute, then asked again, and it
+    # never replaces a complete cache (an expired complete one is served meanwhile). No SIM, or a SIM still locked
+    # by its PIN, is the same partial case: re-read every minute, so a SIM that becomes ready shows up within one.
+    IDENT_PART=$DIR/${IDENT##*/}.partial     # per SIM slot, like the cache
+    IDENT_JSON=
+    if [ -s "$IDENT" ] && ident_complete "$IDENT" &&
+       [ "$(file_age "$IDENT")" -le "$IDENT_MAXAGE" ]; then
+        IDENT_JSON=$(cat "$IDENT" 2>/dev/null)
+    elif [ -s "$IDENT_PART" ] && [ "$(file_age "$IDENT_PART")" -le "$IDENT_RETRY" ]; then
+        IDENT_JSON=$(cat "$IDENT_PART" 2>/dev/null)
+    fi
+    if [ -z "$IDENT_JSON" ]; then
+        i_mfg=$(at 'AT+CGMI' 2 | grep -v '^OK' | head -n1)
+        i_model=$(at 'AT+CGMM' 2 | grep -v '^OK' | head -n1)
+        i_fw=$(at 'AT+CGMR' 2 | grep -v '^OK' | head -n1)
+        i_imei=$(ident_token "$(at 'AT+CGSN' 2)" '[0-9]{15,17}' | cut -c1-15)
+        # Some U30 Air firmware answers AT+CGSN with fifteen zeros -- on both SIM slots, and through the vendor's
+        # own miscserver path -- while the NV holds both IMEIs and the diag port reads them (FINDINGS 220). The
+        # panel shows the module's two IMEIs, so read both; the active slot's one still has AT+CGSN as fallback.
+        i_imei1=; i_imei2=
+        if [ -x "$IMEI_DIAG" ]; then
+            i_imei1=$("$IMEI_DIAG" 0 2>/dev/null)
+            i_imei2=$("$IMEI_DIAG" 1 2>/dev/null)
+        fi
+        case $i_imei in ''|000000000000000)
+            if [ "$SIM_SLOT" = 0 ]; then i_imei=$i_imei1; else i_imei=$i_imei2; fi ;;
+        esac
+        i_imsi=$(ident_token "$(at 'AT+CIMI' 2)" '[0-9]{6,15}')
+        i_iccid=$(iccid_value "$(ident_token "$(at 'AT+CCID' 2)" '[0-9A-Fa-f]{18,22}')")
+        IDENT_JSON=$(printf '{"ts":%d,"slot":%d,"mfg":%s,"model":%s,"fw":%s,"imei":%s,"imei1":%s,"imei2":%s,"imsi":%s,"iccid":%s}' \
+            "$(now)" "$SIM_SLOT" "$(qs "$i_mfg")" "$(qs "$i_model")" "$(qs "$i_fw")" "$(qs "$i_imei")" "$(qs "$i_imei1")" "$(qs "$i_imei2")" "$(qs "$i_imsi")" "$(qs "$i_iccid")")
+        if [ -n "$i_imei" ] && [ -n "$i_imsi" ] && [ -n "$i_iccid" ]; then
+            printf '%s\n' "$IDENT_JSON" > "$IDENT.part" 2>/dev/null && mv "$IDENT.part" "$IDENT"
+            rm -f "$IDENT_PART"
+        else
+            # an earlier complete identity (expired) stays what is shown and stays on flash; else this partial one
+            if [ -s "$IDENT" ] && ident_complete "$IDENT"; then
+                IDENT_JSON=$(cat "$IDENT" 2>/dev/null)
+            elif [ -z "$i_imei$i_imsi$i_iccid" ]; then
+                IDENT_JSON=null
+            fi
+            printf '%s\n' "$IDENT_JSON" > "$IDENT_PART.part" 2>/dev/null && mv "$IDENT_PART.part" "$IDENT_PART"
+        fi
+    fi
+    # The SIM's own number (MSISDN): AT+CNUM, else the IMS public identity, which the operator provisions and the
+    # modem has only once IMS is registered - later than the SIM is read. So an empty answer is asked again on every
+    # full round (two commands, ~0.3 s), a number found is kept in the runtime directory for this boot (a SIM change
+    # goes through a reboot). Never in the 6 h identity cache: that file is on flash and a number is personal data.
+    # Never in the fast tier. The panel masks it like the IMSI until "Show SIM identifiers".
+    OWN=$DIR/own-number
+    i_msisdn=; i_msisdn_src=
+    if [ -s "$OWN" ]; then
+        read -r i_msisdn_src i_msisdn < "$OWN" 2>/dev/null || i_msisdn=
+    fi
+    if [ -z "$i_msisdn" ]; then
+        i_msisdn=$(at 'AT+CNUM' 2 | cnum_number); i_msisdn_src=sim
+        if [ -z "$i_msisdn" ]; then
+            i_msisdn=$(at 'AT+SPPAURI?' 2 | ims_number); i_msisdn_src=ims
+        fi
+        if [ -n "$i_msisdn" ]; then
+            printf '%s %s\n' "$i_msisdn_src" "$i_msisdn" > "$OWN.part" 2>/dev/null && mv "$OWN.part" "$OWN"
+        else
+            i_msisdn_src=
+        fi
+    fi
+fi
+
+# "no answer at all" is a modem/daemon problem, not "no signal".
+if [ -z "$CFUN$CEREG$CESQ$SP_LTE$SP_NR$COPS" ]; then
+    printf '{"ts":%d,"error":"AT backend did not answer (radio off, modem restarting, or adapter unavailable)"}\n' \
+        "$(now)" > "$SIGF.part" && mv "$SIGF.part" "$SIGF"
+    [ "$MODE" = full ] && cp "$SIGF" "$CELL"
+    exit 0
+fi
+
+LTE=$(sp_fragment lte "$SP_LTE" "$SP_LTEPHY")
+NR=$(sp_fragment nr "$SP_NR")
+REG=$(reg_fragment "$CEREG")
+REG5=$(reg_fragment "$C5GREG")
+CESQJ=$(cesq_fragment "$CESQ")
+CFUNN=$(n_or_null "$CFUN")
+
+# preferred signal source: NR (NSA/SA), then LTE, then the CESQ fallback
+if [ "$NR" != null ]; then SIG="$NR"; SRC=nr
+elif [ "$LTE" != null ]; then SIG="$LTE"; SRC=lte
+else SIG="$CESQJ"; SRC=cesq; fi
+
+# the fast tier: serving cell + registration only (both modes write it; the page
+# polls this at 1.5 s and overlays it on the slower full cache)
+printf '{"ts":%d,"cfun":%s,"reg":%s,"reg5g":%s,"sig_src":"%s","sig":%s,"lte":%s,"nr":%s}\n' \
+    "$(now)" "$CFUNN" "$REG" "$REG5" "$SRC" "$SIG" "$LTE" "$NR" > "$SIGF.part" && mv "$SIGF.part" "$SIGF"
+
+[ "$MODE" = fast ] && exit 0
+
+# the full tier: everything else the page needs only every few seconds
+LN=$(sp_fragment ltenb "$SP_LN")
+[ "$LN" != null ] || LN=
+NN=$(nr_neighbours "$SP_NRNB")
+# one neighbour list, NR first (the page shows NR cells at the top)
+if [ -n "$NN" ] && [ -n "$LN" ]; then NEIGH="[$NN,$LN]"
+elif [ -n "$NN" ]; then NEIGH="[$NN]"
+elif [ -n "$LN" ]; then NEIGH="[$LN]"
+else NEIGH=null; fi
+
+COPSJ=$(cops_fragment "$COPS" "$(printf '%s\n' "$OPN" | sed -n 1p)" "$(printf '%s\n' "$OPN" | sed -n 2p)")
+QOSJ=$(qos_fragment "$QOS")
+
+printf '{"ts":%d,"cfun":%s,"reg":%s,"reg5g":%s,"operator":%s,"sig_src":"%s","sig":%s,"lte":%s,"nr":%s,"qos":%s,"neigh":%s,"ident":%s,"msisdn":%s,"msisdn_src":%s}\n' \
+    "$(now)" "$CFUNN" "$REG" "$REG5" "$COPSJ" "$SRC" "$SIG" "$LTE" "$NR" "$QOSJ" "$NEIGH" "$IDENT_JSON" \
+    "$(qs "$i_msisdn")" "$(qs "$i_msisdn_src")" > "$CELL.part" && mv "$CELL.part" "$CELL"

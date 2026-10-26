@@ -1,0 +1,175 @@
+mmc: core: a failed HS400ES falls back to HS200, then HS/DDR52 (FINDINGS 160, issue #226)
+
+On some units mainline does not bring the eMMC up at a cold boot: every one of mmc_rescan's four attempts ends in
+`mmc_select_hs400es failed, error -84` and then `Failed to initialize a non-removable card`, so there is no mmcblk0:
+no root and no modem firmware (issue #226: a user's unit on 6.18.56, cold boots failing every time; once on an F50
+here, after a sysrq reboot, FINDINGS 112). -84 is -EILSEQ, a CRC error, and no inner message precedes it, so it is
+one of the two CMD13 status checks of the switch: at 52 MHz HS or, most likely, the one right after the host went
+to HS400 with the enhanced strobe. The vendor 5.4 kernel works on the same units.
+
+The core retried, but every attempt at the same timing. Now a timing that failed is not tried again on that host:
+mmc_init_card drops it from the host's caps (the core reselects the card type from the host caps at every
+initialisation, also of a known card, "since host caps could have been changed when debugging"), and the next
+attempt takes the next slower one. mmc_rescan's four attempts are then HS400ES, HS200 (tuned), HS with DDR52, HS.
+One warning per step names the failed and the next timing; the core's own "new HS200 MMC card" line names the one
+taken. A boot whose HS400ES works is unchanged: nothing is dropped.
+
+HS400ES failing drops HS400 as well (no plain HS400 after tuning): that path has never run on this host. The
+reduced caps last until the host is bound again (a reboot).
+
+A test hook in sdhci-sprd: `sdhci_sprd.fail_hs400es=N` (module parameter, also writable at run time) makes the next
+N HS400ES selections fail with -EILSEQ on the CMD13 that checks the switch, only while a new card is set up. 0, the
+default, changes nothing. Mainline forces its command line (CONFIG_CMDLINE_FORCE), so it is set in a test build:
+build.sh's MU300_CMDLINE_EXTRA.
+
+The same in 6.18 and 7.2: mmc.c and sdhci-sprd.c are the same in 6.18.56/6.18.57 and 7.2.10/7.2.11 apart from two
+permission macros in mmc.c away from this.
+
+--- a/drivers/mmc/core/mmc.c
++++ b/drivers/mmc/core/mmc.c
+@@ -1549,6 +1549,50 @@
+ 		       __func__, err);
+ 	}
+ 	return err;
++}
++
++/*
++ * A bus timing that failed to come up is not tried again on this host: the
++ * next initialisation (mmc_rescan's next attempt, a reset or a resume) takes
++ * the next slower one, HS400ES -> HS200 -> HS/DDR52 -> HS. Some eMMC and host
++ * pairs fail the HS400ES switch with CRC errors at a cold boot and work at
++ * HS200; without this the card was given up after mmc_rescan's attempts, every
++ * one of them at HS400ES. The new card line ("new HS200 MMC card") tells which
++ * timing was taken in the end.
++ */
++static void mmc_timing_fallback(struct mmc_card *card, int err)
++{
++	struct mmc_host *host = card->host;
++	const char *failed, *next;
++
++	if (err == -ENOMEDIUM)
++		return;
++
++	if (card->mmc_avail_type & EXT_CSD_CARD_TYPE_HS400ES) {
++		host->caps2 &= ~(MMC_CAP2_HS400_ES | MMC_CAP2_HS400);
++		failed = "HS400ES";
++	} else if (card->mmc_avail_type & (EXT_CSD_CARD_TYPE_HS200 |
++					   EXT_CSD_CARD_TYPE_HS400)) {
++		host->caps2 &= ~(MMC_CAP2_HS200 | MMC_CAP2_HS400);
++		failed = "HS200";
++	} else if (card->mmc_avail_type & EXT_CSD_CARD_TYPE_DDR_52) {
++		host->caps &= ~MMC_CAP_DDR;
++		failed = "DDR52";
++	} else {
++		return;
++	}
++
++	if (host->caps2 & MMC_CAP2_HS200 &&
++	    card->ext_csd.raw_card_type & EXT_CSD_CARD_TYPE_HS200)
++		next = "HS200";
++	else if (host->caps & MMC_CAP_DDR &&
++		 card->ext_csd.raw_card_type & EXT_CSD_CARD_TYPE_DDR_52)
++		next = "HS/DDR52";
++	else
++		next = "HS";
++
++	pr_warn("%s: %s failed (%d), the next initialisation uses %s\n",
++		mmc_hostname(host), failed, err, next);
+ }
+ 
+ /*
+@@ -1831,7 +1875,7 @@
+ 	 */
+ 	err = mmc_select_timing(card);
+ 	if (err)
+-		goto free_card;
++		goto timing_failed;
+ 
+ 	if (mmc_card_hs200(card)) {
+ 		host->doing_init_tune = 1;
+@@ -1843,12 +1887,12 @@
+ 		host->doing_init_tune = 0;
+ 
+ 		if (err)
+-			goto free_card;
++			goto timing_failed;
+ 	} else if (mmc_card_hs400es(card)) {
+ 		if (host->ops->execute_hs400_tuning) {
+ 			err = host->ops->execute_hs400_tuning(host, card);
+ 			if (err)
+-				goto free_card;
++				goto timing_failed;
+ 		}
+ 	} else {
+ 		/* Select the desired bus width optionally */
+@@ -1856,7 +1900,7 @@
+ 		if (err > 0 && mmc_card_hs(card)) {
+ 			err = mmc_select_hs_ddr(card);
+ 			if (err)
+-				goto free_card;
++				goto timing_failed;
+ 		}
+ 	}
+ 
+@@ -1963,6 +2007,8 @@
+ 
+ 	return 0;
+ 
++timing_failed:
++	mmc_timing_fallback(card, err);
+ free_card:
+ 	if (!oldcard)
+ 		mmc_remove_card(card);
+--- a/drivers/mmc/host/sdhci-sprd.c
++++ b/drivers/mmc/host/sdhci-sprd.c
+@@ -89,7 +89,19 @@
+ 	u32 base_rate;
+ 	int flags; /* backup of host attribute */
+ 	u32 phy_delay[MMC_TIMING_MMC_HS400 + 2];
++	bool fail_hs400es; /* test hook: this HS400ES selection fails */
+ };
++
++/*
++ * MU300 test hook for the core's bus timing fallback: the next N enhanced
++ * strobe (HS400ES) selections of the eMMC fail as some do at a cold boot, with
++ * a CRC error (-EILSEQ) on the CMD13 that checks the switch. Set on the kernel
++ * command line (sdhci_sprd.fail_hs400es=1) or written before the host is bound
++ * again. 0, the default, changes nothing.
++ */
++static unsigned int fail_hs400es;
++module_param(fail_hs400es, uint, 0644);
++MODULE_PARM_DESC(fail_hs400es, "test: fail the next N HS400ES selections with a CRC error");
+ 
+ enum sdhci_sprd_tuning_type {
+ 	SDHCI_SPRD_TUNING_SD_HS_CMD,
+@@ -479,6 +491,16 @@
+ 
+ static void sdhci_sprd_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ {
++	struct sdhci_sprd_host *sprd_host = TO_SPRD_HOST(mmc_priv(mmc));
++
++	/* the test hook: only while a new card is set up at HS400ES */
++	if (unlikely(sprd_host->fail_hs400es) && mmc->ios.enhanced_strobe &&
++	    !mmc->card && mrq->cmd->opcode == MMC_SEND_STATUS) {
++		mrq->cmd->error = -EILSEQ;
++		mmc_request_done(mmc, mrq);
++		return;
++	}
++
+ 	sdhci_sprd_check_auto_cmd23(mmc, mrq);
+ 
+ 	sdhci_request(mmc, mrq);
+@@ -554,6 +576,13 @@
+ 	if (!ios->enhanced_strobe)
+ 		return;
+ 
++	sprd_host->fail_hs400es = fail_hs400es > 0;
++	if (sprd_host->fail_hs400es) {
++		fail_hs400es--;
++		pr_warn("%s: test: this HS400ES selection fails (sdhci_sprd.fail_hs400es)\n",
++			mmc_hostname(mmc));
++	}
++
+ 	sdhci_sprd_sd_clk_off(host);
+ 
+ 	/* Set HS400 enhanced strobe mode */

@@ -1,0 +1,44 @@
+--- a/sbin/fw4
++++ b/sbin/fw4
+@@ -16,6 +16,24 @@
+ 	exit 1
+ }
+ 
++# MU300: a kernel before 5.13 refuses a flowtable that names a device the table's old flowtable still has, even when
++# the same transaction deletes the old one (it counts entries pending deletion): the reload then fails with "flowtable
++# ft: Resource busy" and "flow offload @ft: No such file or directory". The old one goes first, in transactions of
++# its own: the rules that use it (a flowtable in use cannot be deleted - Resource busy again), then the flowtable.
++# The ruleset that follows creates both again (docs/FINDINGS.md 38). Measured on an F50 with 5.4.254.
++drop_old_flowtable() {
++	local v=$(uname -r) maj min c h
++	maj=${v%%.*}; min=${v#*.}; min=${min%%[!0-9]*}
++	[ "$maj" -lt 5 ] 2>/dev/null || { [ "$maj" = 5 ] && [ "${min:-0}" -lt 13 ]; } || return 0
++	nft list flowtables 2>/dev/null | grep -q 'flowtable ft ' || return 0
++	nft -a list table inet fw4 2>/dev/null |
++		awk '/^\tchain / { c = $2 } /flow (add|offload) @ft/ && match($0, /# handle [0-9]+/) {
++			print c, substr($0, RSTART + 9, RLENGTH - 9) }' |
++		while read -r c h; do nft delete rule inet fw4 "$c" handle "$h" 2>/dev/null; done
++	nft delete flowtable inet fw4 ft 2>/dev/null
++	return 0
++}
++
+ start() {
+ 	{
+ 		flock -x 1000
+@@ -32,6 +50,8 @@
+ 			;;
+ 		esac
+ 
++		drop_old_flowtable
++
+ 		ACTION=start \
+ 			utpl -S $MAIN | nft $VERBOSE -f $STDIN
+ 
+@@ -105,6 +125,7 @@
+ 		flush
+ 	;;
+ 	restart)
++		drop_old_flowtable
+ 		QUIET=1 print | nft ${VERBOSE} -c -f $STDIN || die "The rendered ruleset contains errors, not doing firewall restart."
+ 		stop || rm -f $STATE
+ 		start

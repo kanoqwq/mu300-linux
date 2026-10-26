@@ -1,0 +1,448 @@
+MU300 / ZTE F50 - IPA state on stock Android with mobile data working.
+
+Taken so that the same dump from Linux has something to be compared against; see docs/FINDINGS.md 13f for what
+it means and which fields are easy to misread. Collect the Linux side with /opt/mu300/bin/mu300-ipa-dump.
+
+Android does not mount debugfs, so this needs "mount -t debugfs debugfs /sys/kernel/debug" first.
+
+########## MU300 Android IPA reference
+date: Sun Sep 20 22:23:22 +03 2026  kernel: 5.4.254-android12-9-g9c6342244991  uptime: 2099s
+
+########## 1. interfaces
+Inter-|   Receive                                                |  Transmit
+ face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
+erspan0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+sipa_dummy0:  179596     570    0    0    0     0          0         0     1256      16    0    0    0     0       0          0
+  tun0:   32352     192    0    0    0     0          0         0    33377     240    0    0    0     0       0          0
+sipa_eth8:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+sipa_eth15:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+sipa_eth5:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+   br0: 1721037    5171    0    0    0     0          0       153  3187815    4745    0    0    0     0       0          0
+sipa_eth1:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+sipa_eth3:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+sipa_eth10:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+sipa_eth0:  179596     570    0    0    0     0          0         0   449862    1760  102    0    0     0       0          0
+sipa_eth13:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+ip6gre0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+gretap0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+ wlan0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+  usb0: 1722823    5179    0    0    0     0          0         0  3213867    5133    0    0    0     0       0          0
+ tunl0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+ip6_vti0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+    lo:   82668     731    0    0    0     0          0         0    82668     731    0    0    0     0       0          0
+  sit0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+sipa_eth14:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+sipa_eth9:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+sipa_eth2:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+ip6tnl0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+sipa_eth11:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+sipa_eth12:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+dummy0:       0       0    0    0    0     0          0         0      630       9    0    0    0     0       0          0
+  gre0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+ip_vti0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+sipa_eth6:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+sipa_usb0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+sipa_eth7:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+vowifi_tun1:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+sipa_eth4:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+vowifi_tun0:       0       0    0    0    0     0          0         0        0       0    0    0    0     0       0          0
+
+########## 2. sipa interrupts (the receive IRQ is what never fires on Linux)
+ 64:       1869          0          0          0     GICv3 169 Level     sprd,multi-sipa-0
+ 65:          0          0          0          0     GICv3 168 Level     sprd,multi-sipa-1
+ 72:          0          0          0          0     GICv3 170 Level     sprd,general_sipa
+
+########## 3. sipa/nic
+suspend_stage = 0x0 rc = 101 sc = 100 pf = 1
+mode_state = 0x0 is_bypass = 0x1
+i = 0 irq = 64
+i = 1 irq = 65
+open = 0 src_mask = 0x7070 netid = 0 fcs = 0 rm_flow_ctrl = 0 rr = 0 rw = 1 release_in_progress = 1 nrt = 0 rip = 0
+
+########## 4. sipa/rm_res
+/********************************************
+type: 0 -> producer  1 -> consumer
+state: 0 -> released 1 -> request_in_progress
+state: 2 -> granted 3 -> release_in_progress
+*********************************************/
+[res] name = SIPA_RM_RES_PROD_IPA type = 0 ref_count = 2 state = 2
+[res] name = SIPA_RM_RES_PROD_CP type = 0 ref_count = 1 state = 2
+[res] name = SIPA_RM_RES_CONS_WWAN_UL type = 1 ref_count = 1 state = 2
+[res] name = SIPA_RM_RES_CONS_WWAN_DL type = 1 ref_count = 1 state = 2
+[res] name = SIPA_RM_RES_CONS_WIFI_UL type = 1 ref_count = 0 state = 0
+[res] name = SIPA_RM_RES_CONS_WIFI_DL type = 1 ref_count = 0 state = 0
+[res] name = SIPA_RM_RES_CONS_USB type = 1 ref_count = 0 state = 0
+
+SIPA_RM_RES_PROD_IPA[0, Granted] -> SIPA_RM_RES_CONS_WWAN_UL[0, Granted], SIPA_RM_RES_CONS_WWAN_DL[0, Granted], SIPA_RM_RES_CONS_WIFI_UL[0, Released], SIPA_RM_RES_CONS_WIFI_DL[0, Released], SIPA_RM_RES_CONS_USB[0, Released], 
+SIPA_RM_RES_PROD_CP[0, Granted] -> SIPA_RM_RES_CONS_WWAN_UL[0, Granted], SIPA_RM_RES_CONS_WIFI_UL[0, Released], SIPA_RM_RES_CONS_WIFI_DL[0, Released], 
+
+
+########## 5. sipa/mem  (receive buffers posted for the modem to write into)
+chan = 0 index = 0 skb_mem size = 65536 dma_addr 0xf7a90000 virt = 0x0000000008c64f92 page_count = 7
+chan = 0 index = 1 skb_mem size = 65536 dma_addr 0xf7aa0000 virt = 0x000000008575d082 page_count = 33
+chan = 0 index = 2 skb_mem size = 65536 dma_addr 0xf7ab0000 virt = 0x000000006978afbc page_count = 33
+chan = 0 index = 3 skb_mem size = 65536 dma_addr 0xf7ac0000 virt = 0x00000000e6c2e143 page_count = 33
+chan = 0 index = 4 skb_mem size = 65536 dma_addr 0xf7ad0000 virt = 0x0000000080ba3bf8 page_count = 33
+chan = 0 index = 5 skb_mem size = 65536 dma_addr 0xf7ae0000 virt = 0x000000000e985414 page_count = 33
+chan = 0 index = 6 skb_mem size = 65536 dma_addr 0xf7af0000 virt = 0x00000000eea5854e page_count = 33
+chan = 0 index = 7 skb_mem size = 65536 dma_addr 0xf7b00000 virt = 0x0000000098bc3c00 page_count = 33
+chan = 0 index = 8 skb_mem size = 65536 dma_addr 0xf7b10000 virt = 0x0000000017211f44 page_count = 33
+chan = 0 index = 9 skb_mem size = 65536 dma_addr 0xf7b20000 virt = 0x000000005e8500ed page_count = 33
+chan = 0 index = 10 skb_mem size = 65536 dma_addr 0xf7b30000 virt = 0x00000000d76ccb1f page_count = 33
+chan = 0 index = 11 skb_mem size = 65536 dma_addr 0xf7b40000 virt = 0x00000000e77aa3ba page_count = 33
+chan = 0 index = 12 skb_mem size = 65536 dma_addr 0xf7b50000 virt = 0x000000005c0a0e17 page_count = 33
+chan = 0 index = 13 skb_mem size = 65536 dma_addr 0xf7b60000 virt = 0x00000000439c88e4 page_count = 33
+chan = 0 index = 14 skb_mem size = 65536 dma_addr 0xf7b70000 virt = 0x00000000d439c20b page_count = 33
+chan = 0 index = 15 skb_mem size = 65536 dma_addr 0xf7b80000 virt = 0x000000000769c0e0 page_count = 33
+chan = 0 index = 16 skb_mem size = 65536 dma_addr 0xf7b90000 virt = 0x0000000095ea8d9a page_count = 33
+chan = 0 index = 17 skb_mem size = 65536 dma_addr 0xf7ba0000 virt = 0x00000000a33f3432 page_count = 33
+chan = 0 index = 18 skb_mem size = 65536 dma_addr 0xf7bb0000 virt = 0x000000000d27c877 page_count = 33
+chan = 0 index = 19 skb_mem size = 65536 dma_addr 0xf7bc0000 virt = 0x000000006af96415 page_count = 33
+chan = 0 index = 20 skb_mem size = 65536 dma_addr 0xf7bd0000 virt = 0x0000000047c10fdb page_count = 33
+chan = 0 index = 21 skb_mem size = 65536 dma_addr 0xf7be0000 virt = 0x00000000ed566a73 page_count = 33
+chan = 0 index = 22 skb_mem size = 65536 dma_addr 0xf7bf0000 virt = 0x00000000d4fe954c page_count = 33
+chan = 0 index = 23 skb_mem size = 65536 dma_addr 0xf7400000 virt = 0x0000000077ad6bed page_count = 33
+chan = 0 index = 24 skb_mem size = 65536 dma_addr 0xf7410000 virt = 0x000000000f3bfc62 page_count = 33
+chan = 0 index = 25 skb_mem size = 65536 dma_addr 0xf7420000 virt = 0x0000000013956fed page_count = 33
+chan = 0 index = 26 skb_mem size = 65536 dma_addr 0xf7430000 virt = 0x00000000fb2ee5a7 page_count = 33
+chan = 0 index = 27 skb_mem size = 65536 dma_addr 0xf7440000 virt = 0x00000000d05692de page_count = 33
+chan = 0 index = 28 skb_mem size = 65536 dma_addr 0xf7450000 virt = 0x000000001cace5b7 page_count = 33
+chan = 0 index = 29 skb_mem size = 65536 dma_addr 0xf7460000 virt = 0x00000000364db453 page_count = 33
+chan = 0 index = 30 skb_mem size = 65536 dma_addr 0xf7470000 virt = 0x00000000872d3c07 page_count = 33
+chan = 0 index = 31 skb_mem size = 65536 dma_addr 0xf7480000 virt = 0x000000002ae86363 page_count = 33
+chan = 0 index = 32 skb_mem size = 65536 dma_addr 0xf7490000 virt = 0x000000000453ad16 page_count = 33
+chan = 0 index = 33 skb_mem size = 65536 dma_addr 0xf74a0000 virt = 0x000000009faee3e3 page_count = 33
+chan = 0 index = 34 skb_mem size = 65536 dma_addr 0xf74b0000 virt = 0x00000000a5f47efe page_count = 33
+chan = 0 index = 35 skb_mem size = 65536 dma_addr 0xf74c0000 virt = 0x000000008a5c7362 page_count = 33
+chan = 0 index = 36 skb_mem size = 65536 dma_addr 0xf74d0000 virt = 0x000000009da118a1 page_count = 33
+chan = 0 index = 37 skb_mem size = 65536 dma_addr 0xf74e0000 virt = 0x00000000f9087d77 page_count = 33
+chan = 0 index = 38 skb_mem size = 65536 dma_addr 0xf74f0000 virt = 0x000000004a1cb510 page_count = 33
+chan = 0 index = 39 skb_mem size = 65536 dma_addr 0xf7500000 virt = 0x00000000ada2b348 page_count = 33
+... total lines: 256
+
+########## 6. sipa/alloc_skb
+alloc_skb_cnt = 47
+
+########## 7. sipa/no_recycled
+[SENDER] sending list is empty
+
+########## 8. sipa/flex
+FELX_NODE_NUM = 50000
+SIPA_RECV_QUEUES_MAX = 2
+ipa->fifo_rate[i] = 570
+ipa->fifo_rate[i] = 0
+cpu 0 idle percent 0
+cpu 1 idle percent 0
+cpu 2 idle percent 0
+cpu 3 idle percent 0
+cpu 4 idle percent 0
+cpu 5 idle percent 0
+cpu 6 idle percent 0
+cpu 7 idle percent 0
+ipa->cpu_num = 0, ipa->cpu_num_ano = 0
+ipa->udp_frag = 0, ipa->udp_port = 0, ipa->udp_port_num = 0
+ipa->is_bypass = 1, ipa->multi_mode = 0
+
+########## 9. sipa/fifo_cfg
+id = 0 common fifo reg = 0x25220300
+id = 0 [RX] depth = 0x800 v_addr = 0000000006aa1713
+id = 0 [TX] depth = 0x800 v_addr = 000000005fd51b38
+id = 1 common fifo reg = 0x25220380
+id = 1 [RX] depth = 0x80 v_addr = 000000005c22a6ba
+id = 1 [TX] depth = 0x80 v_addr = 00000000347a9267
+id = 2 common fifo reg = 0x25220400
+id = 2 [RX] depth = 0x1000 v_addr = 00000000c326acc4
+id = 2 [TX] depth = 0x1000 v_addr = 000000002019bd0d
+id = 3 common fifo reg = 0x25220480
+id = 3 [RX] depth = 0x1000 v_addr = 000000009ac10ea6
+id = 3 [TX] depth = 0x1000 v_addr = 000000002ec73c7a
+id = 4 common fifo reg = 0x25220500
+id = 4 [RX] depth = 0x1000 v_addr = 00000000f035886e
+id = 4 [TX] depth = 0x1000 v_addr = 00000000992ee804
+id = 5 common fifo reg = 0x25220580
+id = 5 [RX] depth = 0x800 v_addr = 00000000e639c4bd
+id = 5 [TX] depth = 0x800 v_addr = 00000000056b191a
+id = 6 common fifo reg = 0x25220600
+id = 6 [RX] depth = 0x80 v_addr = 00000000d16bfeb8
+id = 6 [TX] depth = 0x80 v_addr = 0000000042871762
+id = 7 common fifo reg = 0x25220680
+id = 7 [RX] depth = 0x1000 v_addr = 00000000fc4e28b0
+id = 7 [TX] depth = 0x1000 v_addr = 000000007b1a8404
+id = 8 common fifo reg = 0x25220700
+id = 8 [RX] depth = 0x1000 v_addr = 00000000871f874b
+id = 8 [TX] depth = 0x1000 v_addr = 00000000ec651ec5
+id = 9 common fifo reg = 0x25220780
+id = 9 [RX] depth = 0x1000 v_addr = 0000000066ee7e27
+id = 9 [TX] depth = 0x1000 v_addr = 0000000033f22f98
+id = 10 common fifo reg = 0x25220800
+id = 10 [RX] depth = 0x1000 v_addr = 00000000f3f5bde2
+id = 10 [TX] depth = 0x1000 v_addr = 000000004412b3ab
+id = 11 common fifo reg = 0x25220880
+id = 11 [RX] depth = 0x1000 v_addr = 0000000000346ae1
+id = 11 [TX] depth = 0x1000 v_addr = 00000000df4eab3c
+id = 12 common fifo reg = 0x25220900
+id = 12 [RX] depth = 0x1000 v_addr = 00000000d9979405
+id = 12 [TX] depth = 0x1000 v_addr = 000000003c5d9387
+id = 13 common fifo reg = 0x25220980
+id = 13 [RX] depth = 0x1000 v_addr = 0000000027e3bcee
+id = 13 [TX] depth = 0x1000 v_addr = 00000000986294f0
+id = 14 common fifo reg = 0x25220a00
+id = 14 [RX] depth = 0x1000 v_addr = 000000007d7a516d
+id = 14 [TX] depth = 0x1000 v_addr = 00000000a4a331f3
+id = 15 common fifo reg = 0x25220a80
+id = 15 [RX] depth = 0x1000 v_addr = 0000000067f4255a
+id = 15 [TX] depth = 0x1000 v_addr = 000000008d150c68
+id = 16 common fifo reg = 0x25220b00
+id = 16 [RX] depth = 0x1000 v_addr = 000000005c6ceea7
+id = 16 [TX] depth = 0x1000 v_addr = 000000008c827980
+
+########## 10. sipa/flow_ctrl
+fifo 0 enter cnt = 0 exit cnt = 0
+fifo 1 enter cnt = 0 exit cnt = 0
+fifo 2 enter cnt = 0 exit cnt = 0
+fifo 3 enter cnt = 0 exit cnt = 0
+fifo 4 enter cnt = 0 exit cnt = 0
+fifo 5 enter cnt = 0 exit cnt = 0
+fifo 6 enter cnt = 0 exit cnt = 0
+fifo 7 enter cnt = 0 exit cnt = 0
+fifo 8 enter cnt = 0 exit cnt = 0
+fifo 9 enter cnt = 0 exit cnt = 0
+fifo 10 enter cnt = 0 exit cnt = 0
+fifo 11 enter cnt = 0 exit cnt = 0
+fifo 12 enter cnt = 0 exit cnt = 0
+fifo 13 enter cnt = 0 exit cnt = 0
+fifo 14 enter cnt = 0 exit cnt = 0
+fifo 15 enter cnt = 0 exit cnt = 0
+fifo 16 enter cnt = 0 exit cnt = 0
+
+########## 11. sipa_dummy/stats + affinity
+DEVICE: sipa_dummy0
+Total rx_packet 570 rx_bytes 179596
+Stats List:
+CPU0: rx_packet 570, rx_bytes 179596
+last_read_empty		0
+last_napi_reschedule	0
+last_napi_complete	2097309402459
+last_irq_trigger	2097309358729
+CPU1: rx_packet 0, rx_bytes 0
+last_read_empty		0
+last_napi_reschedule	0
+last_napi_complete	0
+last_irq_trigger	0
+CPU2: rx_packet 0, rx_bytes 0
+last_read_empty		0
+last_napi_reschedule	0
+last_napi_complete	0
+last_irq_trigger	0
+CPU3: rx_packet 0, rx_bytes 0
+last_read_empty		0
+last_napi_reschedule	0
+last_napi_complete	0
+last_irq_trigger	0
+CPU4: rx_packet 0, rx_bytes 0
+last_read_empty		0
+last_napi_reschedule	0
+last_napi_complete	0
+last_irq_trigger	0
+CPU5: rx_packet 0, rx_bytes 0
+last_read_empty		0
+last_napi_reschedule	0
+last_napi_complete	0
+last_irq_trigger	0
+CPU6: rx_packet 0, rx_bytes 0
+last_read_empty		0
+last_napi_reschedule	0
+last_napi_complete	0
+last_irq_trigger	0
+CPU7: rx_packet 0, rx_bytes 0
+last_read_empty		0
+last_napi_reschedule	0
+last_napi_complete	0
+last_irq_trigger	0
+Dev List:
+device sipa_eth0:
+src_id 6 netid 0 state 1 napi 000000002f36034a
+rx_packets 570 rx_bytes 179596
+tx_packets 1760 tx_bytes 449862
+flow control 0
+device sipa_eth1:
+src_id 6 netid 1 state 0 napi 00000000d773bd36
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device sipa_eth2:
+src_id 6 netid 2 state 0 napi 0000000093f53770
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device sipa_eth3:
+src_id 6 netid 3 state 0 napi 0000000082eb466d
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device sipa_eth4:
+src_id 6 netid 4 state 0 napi 00000000c2d213fd
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device sipa_eth5:
+src_id 6 netid 5 state 0 napi 000000008d9a7aef
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device sipa_eth6:
+src_id 6 netid 6 state 0 napi 00000000fd143ba3
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device sipa_eth7:
+src_id 6 netid 7 state 0 napi 000000003f15dfa2
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device sipa_eth8:
+src_id 6 netid 8 state 0 napi 00000000179a76e4
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device sipa_eth9:
+src_id 6 netid 9 state 0 napi 00000000bb00f414
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device sipa_eth10:
+src_id 6 netid 10 state 0 napi 00000000a64a1a13
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device sipa_eth11:
+src_id 6 netid 11 state 0 napi 0000000034be61e9
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device sipa_eth12:
+src_id 6 netid 12 state 0 napi 00000000d6e2fcf5
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device sipa_eth13:
+src_id 6 netid 13 state 0 napi 00000000edcb6b49
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device sipa_eth14:
+src_id 6 netid 14 state 0 napi 000000001496cd48
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device sipa_eth15:
+src_id 6 netid 15 state 0 napi 000000009ee15960
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device sipa_usb0:
+src_id 1 netid -1 state 0 napi 00000000cab61d08
+rx_packets 0 rx_bytes 0
+tx_packets 0 tx_bytes 0
+flow control 0
+device wlan0: never used
+--- affinity:
+now fifo 0 is on cpu 4096
+
+########## 12. sipa_eth0 stats
+*************************************************
+DEVICE: sipa_eth0, src_id 6, netid 0, state UP
+SG feature on
+
+RX statistics:
+rx_bytes=179596, rx_packets=570
+rx_errors=102, rx_dropped=0
+
+TX statistics:
+tx_bytes=449862, tx_packets=1760
+tx_errors=102, tx_dropped=0
+flowctl=false
+*************************************************
+
+########## 13. sipa module parameters
+
+########## 14. device tree: sipa nodes
+--- /proc/device-tree/sipa-eth0
+  compatible =  73 70 72 64 2c 73 69 70 61 5f 65 74 68
+  name =  73 69 70 61 2d 65 74 68 30
+  phandle =  01 d4
+  sprd,netid =  01
+  sprd,term-type =  06
+--- /proc/device-tree/sipa-dummy
+  compatible =  73 70 72 64 2c 73 69 70 61 5f 64 75 6d 6d 79
+  name =  73 69 70 61 2d 64 75 6d 6d 79
+  phandle =  01 e6
+--- 25220000.sipa node (the IPA controller itself)
+  node: /proc/device-tree/sipa-dummy
+  compatible =  73 70 72 64 2c 73 69 70 61 5f 64 75 6d 6d 79
+  name =  73 69 70 61 2d 64 75 6d 6d 79
+  phandle =  01 e6
+
+########## 15. boot-time sipa kernel messages
+[ 1060.201714] [c1] sipa_rm: SIPA_RM_RES_CONS_WWAN_DL state changed 2->0
+[ 1072.050351] [c2] sipa_rm: SIPA_RM_RES_PROD_IPA state changed 2->0
+[ 1072.050392] [c2] sipa_rm: SIPA_RM_RES_PROD_CP state changed 2->0
+[ 1072.050405] [c2] sipa_rm: SIPA_RM_RES_CONS_WWAN_UL state changed 2->0
+[ 1072.050551] [c3] sipa_dele: smsg_send, dst=5 chan=120 type=5 flag=2
+[ 1072.050559] [c2] sipa 25220000.sipa: sipa ready to suspend and change to single
+[ 1072.050573] [c0] sipa_eth: dev sipa_eth0 SIPA LEAVE FLOWCTRL
+[ 1072.050577] [c2] sipa 25220000.sipa: sipa prepare suspend finished
+[ 1072.050803] [c1] sipa_dele: smsg_recv, smsg_cnt=275, dst=5, chan=120, type=5, flag=0x8, value=0x00000000
+[ 1072.050813] [c1] sipa_dele: prod_id:4, on_cmd, flag = 8
+[ 1072.050864] [c1] sipa_dele: sipa pd_eb_flag = 0, pd_get_flag = 0
+[ 1072.092150] [c2] sipa_rm: calling driver CB
+[ 1072.092189] [c2] sipa_rm: driver CB returned with -115
+[ 1072.092204] [c2] sipa_rm: SIPA_RM_RES_PROD_IPA state changed 0->1
+[ 1072.092212] [c2] sipa_rm: EXIT with -115
+[ 1072.092215] [c2] sipa_rm: calling driver CB
+[ 1072.092242] [c2] sipa_rm: driver CB returned with -115
+[ 1072.092251] [c2] sipa_rm: SIPA_RM_RES_PROD_CP state changed 0->1
+[ 1072.092258] [c2] sipa_rm: EXIT with -115
+[ 1072.092267] [c0] sipa_dele: smsg_send, dst=5 chan=120 type=5 flag=1
+[ 1072.092275] [c2] sipa_rm: SIPA_RM_RES_CONS_WWAN_UL state changed 0->1
+[ 1072.092288] [c2] sipa_eth: fail to send, ret -115
+[ 1072.092293] [c2] sipa_eth: stop queue on dev sipa_eth0
+[ 1072.092306] [c2] sipa 25220000.sipa: don't have this flow ctrl err type
+[ 1072.092451] [c2] sipa resume hrtimer start
+[ 1072.092853] [c1] sipa_dele: smsg_recv, smsg_cnt=276, dst=5, chan=120, type=5, flag=0x7, value=0x00000000
+[ 1072.092859] [c1] sipa_dele: prod_id:4, on_cmd, flag = 7
+[ 1072.092892] [c1] sipa_dele: sipa_dele get pd success ret = 0
+[ 1072.092897] [c1] sipa_dele: sipa pd_eb_flag = 1, pd_get_flag = 1
+[ 1072.092913] [c0] sipa_dele: smsg_send, dst=5 chan=120 type=6 flag=7
+[ 1072.094157] [c1] sipa_dele: smsg_recv, smsg_cnt=277, dst=5, chan=120, type=6, flag=0x1, value=0x00000000
+[ 1072.094224] [c0] sipa_rm: SIPA_RM_RES_CONS_WWAN_UL state changed 1->2
+[ 1072.094245] [c0] sipa_eth: dev sipa_eth0 SIPA LEAVE FLOWCTRL
+[ 1072.094271] [c0] sipa_eth: wakeup queue on dev sipa_eth0
+[ 1078.092597] [c2] sipa_rm: SIPA_RM_RES_PROD_IPA state changed 2->0
+[ 1078.092639] [c2] sipa_rm: SIPA_RM_RES_PROD_CP state changed 2->0
+[ 1078.092650] [c2] sipa_rm: SIPA_RM_RES_CONS_WWAN_UL state changed 2->0
+[ 1078.092792] [c2] sipa 25220000.sipa: sipa ready to suspend and change to single
+[ 1078.092806] [c1] sipa_dele: smsg_send, dst=5 chan=120 type=5 flag=2
+[ 1078.092810] [c2] sipa 25220000.sipa: sipa prepare suspend finished
+[ 1078.092826] [c3] sipa_eth: dev sipa_eth0 SIPA LEAVE FLOWCTRL
+[ 1078.092923] [c1] sipa_dele: smsg_recv, smsg_cnt=278, dst=5, chan=120, type=5, flag=0x8, value=0x00000000
+[ 1078.092930] [c1] sipa_dele: prod_id:4, on_cmd, flag = 8
+[ 1078.092964] [c1] sipa_dele: sipa pd_eb_flag = 0, pd_get_flag = 0
+[ 1082.332215] [c3] sipa_rm: calling driver CB
+[ 1082.332246] [c3] sipa_rm: driver CB returned with -115
+[ 1082.332253] [c3] sipa_rm: SIPA_RM_RES_PROD_IPA state changed 0->1
+[ 1082.332257] [c3] sipa_rm: EXIT with -115
+[ 1082.332261] [c3] sipa_rm: calling driver CB
+[ 1082.332298] [c3] sipa_rm: driver CB returned with -115
+[ 1082.332303] [c3] sipa_rm: SIPA_RM_RES_PROD_CP state changed 0->1
+[ 1082.332307] [c3] sipa_rm: EXIT with -115
+[ 1082.332312] [c3] sipa_rm: SIPA_RM_RES_CONS_WWAN_UL state changed 0->1
+[ 1082.332327] [c1] sipa_dele: smsg_send, dst=5 chan=120 type=5 flag=1
+[ 1082.332330] [c3] sipa_eth: fail to send, ret -115
+[ 1082.332336] [c3] sipa_eth: stop queue on dev sipa_eth0
+[ 1082.332349] [c3] sipa 25220000.sipa: don't have this flow ctrl err type
+[ 1082.332884] [c0] sipa_dele: smsg_recv, smsg_cnt=279, dst=5, chan=120, type=5, flag=0x7, value=0x00000000
+[ 1082.332888] [c0] sipa_dele: prod_id:4, on_cmd, flag = 7
+[ 1082.332907] [c0] sipa_dele: sipa_dele get pd success ret = 0
+
+########## END

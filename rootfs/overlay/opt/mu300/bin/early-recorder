@@ -1,0 +1,81 @@
+#!/bin/sh
+# Early boot recorder: for the first minutes after switch_root, copy dmesg + unit states into the persistent
+# log area inside the Linux slot's boot partition (48 MiB, 8 MiB) every few seconds, so a power cut before journald
+# flushes still leaves evidence that tools/collect-logs.sh can read from Android.
+# OpenWrt: od/timeout come from the static busybox in /opt/mu300/busybox-bin
+export PATH="$PATH:/opt/mu300/busybox-bin"
+# --- slot begin
+# The boot partition of the slot Linux runs from (boot_a when Android runs from b - boot_b is then Android's): what
+# the initramfs published, else the slot LK booted (command line, or the bootargs in the device tree), b only when
+# nothing says.
+S=$(cat "${MU300_RUN:-/run/mu300}/linux-slot" 2>/dev/null)
+case $S in a|b) ;; *)
+    S=$(for f in ${MU300_CMDLINE_SRC:-/proc/cmdline /proc/device-tree/chosen/bootargs}; do
+        [ -r "$f" ] && tr '\000' ' ' < "$f" | sed -n 's/.*androidboot\.slot_suffix=_\([ab]\).*/\1/p'; done | head -n1)
+    S=${S:-b} ;;
+esac
+PART=boot_$S
+# --- slot end
+# --- part begin
+# The partition named $PART on the eMMC, whatever number the eMMC has (FINDINGS 31l): the disk of type MMC, else the
+# first mmcblk disk that is not a card. Never a card's: one can carry the same GPT names (a raw clone of a device
+# backup), and this writes up to 8 MiB into what it finds.
+SYS=${MU300_SYS:-/sys}
+E=
+for b in "$SYS"/block/mmcblk*; do
+    case ${b##*/mmcblk} in ''|*[!0-9]*) continue ;; esac
+    t=$(cat "$b/device/type" 2>/dev/null)
+    [ "$t" = MMC ] && { E=${b##*/}; break; }
+    [ "$t" = SD ] || [ -n "$E" ] || E=${b##*/}
+done
+LOGDEV=
+[ -n "$E" ] && for u in "$SYS/block/$E/$E"p*/uevent; do
+    grep -qx "PARTNAME=$PART" "$u" 2>/dev/null || continue
+    u=${u%/uevent}; LOGDEV=/dev/${u##*/} LOGSYS=$u; break
+done
+# --- part end
+# --- node begin
+# node_ok: is $LOGDEV the block device, so a write goes to the eMMC? On OpenWrt procd puts an empty /dev in place once
+# preinit is over (procd_coldplug) and fills it again from the kernel's events, while this runs on. A dd in that
+# moment creates $LOGDEV as a plain file; the node is then never made, and every later write - this one's and
+# mu300-update's boot image - went into that file in RAM (seen on the U30 Air: /dev/mmcblk0p38 a 50 MB file, FINDINGS
+# 86). So: no write while the node is missing, and a plain file in its place is replaced by the node.
+node_ok() {
+    [ -b "$LOGDEV" ] && return 0
+    [ -f "$LOGDEV" ] && [ ! -L "$LOGDEV" ] || return 1
+    _mm=$(cat "$LOGSYS/dev" 2>/dev/null) || return 1
+    case $_mm in *[!0-9:]*|:*|*:|'') return 1 ;; esac
+    rm -f "$LOGDEV"
+    mknod -m 600 "$LOGDEV" b "${_mm%%:*}" "${_mm#*:}" 2>/dev/null
+    [ -b "$LOGDEV" ]
+}
+# --- node end
+[ -b "$LOGDEV" ] || exit 0
+end=$(( $(cut -d. -f1 /proc/uptime) + ${1:-300} ))
+while [ "$(cut -d. -f1 /proc/uptime)" -lt "$end" ]; do
+    {
+        echo "MU300-PERSIST-BEGIN uptime=$(cut -d' ' -f1 /proc/uptime) (early-recorder)"
+        cat /run/stages 2>/dev/null
+        ip -br addr 2>/dev/null
+        echo "--- lsmod"
+        systemctl list-units --no-legend --plain --state=activating,failed 2>/dev/null
+        [ -f /etc/openwrt_release ] && { echo "--- ps"; ps w 2>/dev/null; echo "--- logread"; logread 2>/dev/null | grep -v PR_CAPBSET | tail -300; echo "--- android logcat"; tail -150 /var/log/android-logcat.txt 2>/dev/null; echo "--- mu300 logs"; tail -40 /tmp/mu300-*.log 2>/dev/null; }
+        echo "--- dmesg"
+        dmesg | tail -c 1000000
+        echo "MU300-PERSIST-END"
+    } > /run/mu300-early.txt 2>&1
+    head -c 65536 /dev/zero >> /run/mu300-early.txt
+    # Write what there is, not the whole 8 MiB window: a fixed count=2048 put eight megabytes on the eMMC every
+    # few seconds - over half a gigabyte per boot - which is flash wear, and I/O that everything else on the
+    # device (the modem's NV server included) has to queue behind. The reader stops at MU300-PERSIST-END, so
+    # older bytes left after it do no harm.
+    blocks=$(( ($(wc -c < /run/mu300-early.txt) + 4095) / 4096 ))
+    [ "$blocks" -gt 2048 ] && blocks=2048
+    # (the node checked again afterwards: /dev can be replaced between the check and the dd)
+    node_ok && dd if=/run/mu300-early.txt of="$LOGDEV" bs=4096 seek=12288 count="$blocks" conv=notrunc 2>/dev/null
+    node_ok
+    sync
+    # every 2 s for the first minute and a half, where the intermittent early hangs have happened; a 10 s gap
+    # left a single snapshot of a boot that died between 11 and 21 s
+    if [ "$(cut -d. -f1 /proc/uptime)" -lt 90 ]; then sleep 2; else sleep 10; fi
+done

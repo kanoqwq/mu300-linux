@@ -1,0 +1,125 @@
+#!/bin/sh
+# Capture the IPA state while packets are actually being pushed at the modem's netdev.
+#
+# This exists because the obvious reading of /sys/kernel/debug/sipa is the wrong one. An idle IPA reports
+# "suspend_stage = 0x3f rc = 0" and a nic line saying "open = 0", and none of that is a fault: the driver sets
+# the full suspend mask in probe and the hardware is woken lazily by the first transmit, and NIC_OPEN is zero
+# because that enum starts at zero. Android in the same idle moment says exactly the same thing. So a dump taken
+# with nothing in flight compares equal to a working system and tells you nothing at all.
+#
+#   mu300-ipa-dump [-i IFACE] [-t TARGET] [-n CONNECTS] > dump.txt
+#
+# The reference to compare it against - the same fields from stock Android on this device with data working - is
+# in docs/FINDINGS.md 13f.
+set -u
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+
+SIM_SLOT=0
+if [ -x /opt/mu300/bin/mu300-sim ]; then
+    SIM_SLOT=$(/opt/mu300/bin/mu300-sim active) || exit 1
+fi
+IFACE=sipa_eth$((SIM_SLOT * 8))
+TARGET=1.1.1.1
+COUNT=3
+while [ $# -gt 0 ]; do
+    case $1 in
+        -i) IFACE=$2; shift 2 ;;
+        -t) TARGET=$2; shift 2 ;;
+        -n) COUNT=$2; shift 2 ;;
+        *) echo "usage: $0 [-i IFACE] [-t TARGET] [-n CONNECTS]" >&2; exit 2 ;;
+    esac
+done
+
+D=/sys/kernel/debug
+[ -d "$D/sipa" ] || mount -t debugfs debugfs "$D" 2>/dev/null
+[ -d "$D/sipa" ] || { echo "no $D/sipa - is sipa_core loaded?" >&2; exit 1; }
+[ -e "/sys/class/net/$IFACE" ] || { echo "no $IFACE" >&2; exit 1; }
+
+counters() {  # netdev counters, which are the ones that say whether anything moved
+    for c in rx_packets rx_bytes rx_errors rx_dropped tx_packets tx_bytes tx_errors tx_dropped; do
+        printf '%s=%s ' "$c" "$(cat "/sys/class/net/$IFACE/statistics/$c" 2>/dev/null)"
+    done
+    echo
+}
+
+dump() {
+    echo "--- sipa/nic";        cat "$D/sipa/nic"
+    echo "--- sipa/rm_res";     cat "$D/sipa/rm_res"
+    echo "--- sipa/flow_ctrl (non-zero only)"
+    grep -v 'enter cnt = 0 exit cnt = 0' "$D/sipa/flow_ctrl" || echo "  (all zero)"
+    echo "--- sipa_eth/$IFACE/stats"; cat "$D/sipa_eth/$IFACE/stats" 2>/dev/null
+    # The receive buffers the driver has posted for the modem to write into. If this is empty the modem has
+    # nowhere to put a packet and will never raise the receive interrupt, however healthy the bearer is.
+    # Android, with data flowing: 256 entries, all chan 0, 65536 bytes each - 16 MiB of them.
+    echo "--- sipa/mem: $(wc -l < "$D/sipa/mem") receive buffers posted"
+    head -3 "$D/sipa/mem"
+    echo "--- sipa/alloc_skb";    cat "$D/sipa/alloc_skb"
+    echo "--- sipa/no_recycled";  cat "$D/sipa/no_recycled"
+    echo "--- sipa/flex";         head -6 "$D/sipa/flex" 2>/dev/null
+    echo "--- sipa_dummy/stats (CPUs that saw anything)"
+    awk '/^CPU/{cpu=$0} /rx_packet [1-9]/{print cpu} /^Total/{print}' "$D/sipa_dummy/stats"
+    echo "--- irq counts for sipa"
+    grep -i sipa /proc/interrupts || echo "  (none named sipa)"
+    # The downlink is the modem's decision, not ours: it asks over SIPC channel 120 (SMSG_CH_COMM_SIPA, dst 5
+    # PSCP), sipa_dele grants SIPA_RM_RES_CONS_WWAN_DL and acks, and only then do packets arrive. Both sides of
+    # that exchange are pr_info, so silence here means the delegate is not talking to the modem at all - and a
+    # modem that is never asked never sends. See FINDINGS 13f.
+    echo "--- sipa_dele conversation (last 12 lines; empty is the answer, not a gap)"
+    dmesg | grep -E 'sipa_dele|sipa_rm' | tail -12 || true
+    echo "--- delegate thread:"
+    ps w 2>/dev/null | grep -E '[d]ele|[s]ipa' | head -5 || true
+}
+
+echo "=== $(date) $(uname -r) uptime=$(cut -d. -f1 /proc/uptime)s iface=$IFACE"
+echo "=== address and route"
+ip -br addr show "$IFACE"
+ip route | grep -w "$IFACE"
+echo "ipv6 disabled: $(cat "/proc/sys/net/ipv6/conf/$IFACE/disable_ipv6" 2>/dev/null)"
+echo "=== modem"
+mu300-at -t 6 'AT+CGACT?' 2>&1 | tr '\n' ' '; echo
+mu300-at -t 6 'AT+CEREG?' 2>&1 | tr '\n' ' '; echo
+
+echo
+echo "=== BEFORE (idle: suspend_stage 0x3f here means nothing has transmitted yet, not a fault)"
+echo "counters: $(counters)"
+dump
+
+echo
+echo "=== pushing traffic at $TARGET through $IFACE"
+# TCP, not ping. On this network ICMP does not come back even over a working link: measured on stock Android,
+# where data demonstrably works, "ping -I sipa_eth0 8.8.8.8" reports 100% loss - and that form binds to the
+# device, so it is the cellular path and not a VPN eating the echo. A ping-based test here reads "nothing
+# arrives" on a link that is fine, which is how this investigation lost time more than once.
+#
+# What answers the question is not whether the connect succeeds - it may well be carried by a VPN, and on
+# Android it was - but whether rx_packets on this interface moves at all. Downlink is downlink whoever the
+# bytes belong to, and ours has never moved.
+src=$(ip -4 -br addr show "$IFACE" | awk '{print $3}' | cut -d/ -f1)
+n=0
+while [ "$n" -lt "$COUNT" ]; do
+    n=$((n + 1))
+    if [ -n "$src" ]; then
+        nc -w 4 -s "$src" "$TARGET" 443 < /dev/null > /dev/null 2>&1 && echo "  tcp/443 connect $n: ok" || echo "  tcp/443 connect $n: failed"
+    else
+        nc -w 4 "$TARGET" 443 < /dev/null > /dev/null 2>&1 && echo "  tcp/443 connect $n: ok" || echo "  tcp/443 connect $n: failed"
+    fi
+done
+# ICMP as well, only so the contrast is on the record rather than mistaken for the answer
+echo "  (ping, expected to fail on this carrier even when data works):"
+ping -I "$IFACE" -c 2 -W 2 "$TARGET" 2>&1 | tail -2 | sed 's/^/    /'
+
+echo
+echo "=== DURING/AFTER (this is the one to compare against the Android reference)"
+echo "counters: $(counters)"
+dump
+
+echo
+echo "=== the question in one line"
+rx=$(cat "/sys/class/net/$IFACE/statistics/rx_packets")
+tx=$(cat "/sys/class/net/$IFACE/statistics/tx_packets")
+if [ "$rx" -gt 0 ]; then
+    echo "downlink WORKS: rx_packets=$rx tx_packets=$tx"
+else
+    echo "downlink still dead: rx_packets=0 tx_packets=$tx - check rc/nrt in sipa/nic above, and whether"
+    echo "SIPA_RM_RES_PROD_CP reached state 2 (granted). Android has rc>0, nrt=0 and PROD_CP granted."
+fi

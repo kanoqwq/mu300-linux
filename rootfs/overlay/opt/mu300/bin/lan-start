@@ -1,0 +1,49 @@
+#!/bin/bash
+# One LAN for USB and Wi-Fi clients: br-lan (192.168.77.1/24 on an F50, 192.168.78.1/24 on a U30 Air, 192.168.79.1/24 on a V50, unless
+# lan.conf says otherwise) with usb0 (NCM/ECM gadget, bound in the initramfs, plus rndis0 for Windows)
+# and wlan0 (added by hostapd via bridge=br-lan). A single dnsmasq serves DHCP/DNS on the bridge.
+set -euo pipefail
+# The address lives in /etc/mu300/lan.conf (LAN_IP=192.168.77.1), so two devices on one PC can each have their
+# own subnet. Always a /24; DHCP hands out .2-.200 of it.
+[ -f /etc/mu300/lan.conf ] && . /etc/mu300/lan.conf
+LAN_IP=${MU300_LAN_IP:-${LAN_IP:-$(/opt/mu300/bin/mu300-lan-ip)}}
+case $LAN_IP in *.*.*.*) ;; *) echo "bad LAN_IP '$LAN_IP' in /etc/mu300/lan.conf" >&2; exit 1 ;; esac
+NET=${LAN_IP%.*}
+ip link show br-lan >/dev/null 2>&1 || ip link add br-lan type bridge
+# udev gives the new bridge its persistent MAC (MACAddressPolicy=persistent). Until it has, the bridge takes the
+# lowest MAC of its ports - usb0's - and when it came up that way, its IPv6 link-local was made from usb0's MAC and
+# stayed so: the link-local changed from boot to boot (U30 Air, 7.2.9). Let udev finish before any port joins.
+udevadm settle --timeout=5 2>/dev/null || true
+ip link set br-lan type bridge stp_state 0 forward_delay 0
+for n in $(seq 1 30); do ip link show usb0 >/dev/null 2>&1 && break; sleep 1; done
+# move the address from usb0 (older setups) to the bridge
+ip addr flush dev usb0 2>/dev/null || true
+ip link set usb0 master br-lan
+ip link set usb0 up
+# rndis0: the gadget's RNDIS configuration, which Windows uses (boot/init); only one of the two carries traffic
+if ip link show rndis0 >/dev/null 2>&1; then
+    # with RNDIS, init's early DHCP server put the address on rndis0 (K5): only the bridge may hold the subnet
+    ip addr flush dev rndis0 2>/dev/null || true
+    ip link set rndis0 master br-lan
+    ip link set rndis0 up
+fi
+ip addr replace "$LAN_IP/24" dev br-lan
+# a LAN address changed while the device runs (mu300-api lan.set restarts this service): the old one goes, or br-lan
+# kept both until the next boot (seen on an F50: 192.168.79.1 and 192.168.90.1, then the same after the way back)
+for a in $(ip -4 -o addr show dev br-lan scope global 2>/dev/null | awk '{ print $4 }'); do
+    [ "$a" = "$LAN_IP/24" ] || ip addr del "$a" dev br-lan 2>/dev/null || true
+done
+ip link set br-lan up
+# the panel extra's Cockpit listens on the LAN address (mu300-panel: ListenStream=ADDRESS:9090, not on the uplink):
+# a changed address moves it along. Only then - at an ordinary boot the drop-in has this address already.
+CP=/etc/systemd/system/cockpit.socket.d/mu300-listen.conf
+if [ -f "$CP" ] && ! grep -qx "ListenStream=$LAN_IP:9090" "$CP" && command -v mu300-panel >/dev/null 2>&1; then
+    mu300-panel link || true
+fi
+# IPv6: mobile-data puts the network's /64 on br-lan when the carrier gives one (and removes it again), and
+# constructor:br-lan advertises whatever global /64 is there - SLAAC, with DNS by RDNSS and stateless DHCPv6.
+# Nothing is advertised while br-lan has no global address. bind-dynamic rather than bind-interfaces, so DNS also
+# answers on that address, which appears after dnsmasq has started.
+exec dnsmasq --keep-in-foreground --conf-file=/dev/null --interface=br-lan --bind-dynamic \
+    --dhcp-range=$NET.2,$NET.200,255.255.255.0,12h --dhcp-leasefile=/run/mu300-lan.leases \
+    --enable-ra --dhcp-range=::,constructor:br-lan,ra-stateless,12h

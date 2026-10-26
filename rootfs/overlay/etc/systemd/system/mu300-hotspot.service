@@ -1,0 +1,27 @@
+[Unit]
+# a charging boot (a flat battery on the charger) keeps the radios off until the Wi-Fi key (see mu300-power)
+ConditionPathExists=!/run/mu300/charging-boot
+# the radio does one thing at a time: no hotspot while the device is a client of another network
+ConditionPathExists=!/run/mu300-wifi-client.active
+# "wifi-client scan-mode on": this boot leaves the radio a station so that networks can be listed (taken from
+# /etc/mu300/wifi-scan-mode by mu300-wifi-scan-mode.service, for this boot only)
+ConditionPathExists=!/run/mu300-wifi-scan-mode
+After=mu300-wifi-scan-mode.service
+Description=MU300 Wi-Fi hotspot (hostapd on wlan0, bridged into br-lan)
+After=mu300-wifi.service mu300-lan.service
+Requires=mu300-wifi.service
+Wants=mu300-lan.service
+# hostapd owns wlan0 in AP mode
+Conflicts=wpa_supplicant.service
+
+[Service]
+ExecStart=/opt/mu300/bin/hotspot-start
+ExecStartPost=-/opt/mu300/bin/hotspot-verify
+ExecStartPost=-/opt/mu300/bin/mu300-led wifi on
+ExecStopPost=/opt/mu300/bin/hotspot-stop
+ExecStopPost=-/opt/mu300/bin/mu300-led wifi off
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

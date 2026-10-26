@@ -1,0 +1,65 @@
+#!/bin/sh
+# The modem of a U30 Air that LK started for its charger (FINDINGS 196; kanoqwq 85d72fa9, issue #253).
+#   mu300-modem-coldboot ANDROID-ROOT VENDOR-CMDLINE
+# prints the modem_control to run, as a path inside the Android chroot, and nothing when it is the stock one.
+#
+# In a charger boot LK runs the PM co-processor but loads no CP (its command line says modem=shutdown), and ZTE's
+# modem_control loads the CP only when modem=shutdown AND the PM is not running yet (0xcf08: modem_has_been_boot,
+# /dev/sctl_pm opens; 0xcf48: the two ORed; 0xcf50: load_modem_img(63), every image, the PM's included). So after a
+# charger boot nothing ever loaded the CP: no AT channel, the panel's "No response", until a reboot - when Android
+# would have rebooted out of its charger mode anyway. Here, and only here, a copy in RAM of the device's own
+# modem_control (the stock one, by its SHA-256) is changed in two instructions: the PM-running result is ignored
+# (0xcf0c mov w19,w0 -> mov w19,wzr) and the load asks for the CP and CH images alone (0xcf50 mov w0,63 -> mov w0,34),
+# so the running PM is left alone. Its SHA-256 is checked again. Nothing on the disk changes; no AT, no NV.
+# Every other boot, board, loader or failure: the stock modem_control as before (this never stops the modem from
+# being started; the worst case is the old behaviour).
+# OFF by default: kanoqwq checked the loader and the copy, but the charger-boot start itself has not been run on a
+# device yet. On with: touch /etc/mu300/modem-coldboot (off again: rm it).
+set -u
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+BIN=${MU300_BIN:-/opt/mu300/bin}
+R=${MU300_SYSROOT:-}
+A=${1:-}
+ARGS=${2:-}
+# the device's file and the copy (the tests, which have no vendor file, name their own)
+STOCK=${MU300_COLDBOOT_STOCK:-43a3bc8c4730b87431d4fc8d90a3652b2458ef8bc9f59772685d4016cc7819a3}
+PATCHED=${MU300_COLDBOOT_PATCHED:-9e3490f222a312e649dd5273df216b87ca9880a621ea68a0a73df0aa6b37c2ae}
+say() {
+    echo "mu300-modem-coldboot: $*" >&2
+    { echo "mu300-modem-coldboot: $*" > "${MU300_KMSG:-/dev/kmsg}"; } 2>/dev/null || true
+}
+[ -n "$A" ] && [ -r "$ARGS" ] || exit 0
+# opt-in until it has been run on a device (FINDINGS 196)
+[ -e "$R/etc/mu300/modem-coldboot" ] || exit 0
+[ "$("$BIN/mu300-device" 2>/dev/null)" = u30air ] || exit 0
+has() { tr '\000' ' ' < "$ARGS" | grep -Eq "(^|[[:space:]])$1([[:space:]]|\$)"; }
+has '(androidboot|sprdboot)\.mode=charger' || exit 0
+has 'modem=shutdown' || { say "a charger boot without modem=shutdown: the stock modem_control"; exit 0; }
+# Is the CP up already (this script runs again when the vendor service restarts)? spipe_open() answers ENODEV at once
+# while the CP's SBUF is not ready; count=0 opens and closes the AT channel without reading or writing it.
+if probe=$(LC_ALL=C dd if="$R/dev/stty_nr1" of=/dev/null count=0 2>&1); then exit 0; fi
+case $probe in
+    *'No such device'*|*'No such file or directory'*) ;;
+    *) say "cannot tell whether the CP is down ($probe): the stock modem_control"; exit 0 ;;
+esac
+src=$A/vendor/bin/modem_control
+h=$(sha256sum "$src" 2>/dev/null) || h=
+[ "${h%% *}" = "$STOCK" ] || { say "not the modem_control this was checked against (${h%% *}): the stock one, the CP may stay down"; exit 0; }
+stage=$R/run/mu300/coldboot
+target=$A/tmp/mu300-coldboot
+for d in "$stage" "$target"; do [ ! -L "$d" ] || { say "$d is a link: the stock modem_control"; exit 0; }; done
+mkdir -p "$stage" "$target" && chmod 0755 "$stage" "$target" || { say "cannot make $stage: the stock modem_control"; exit 0; }
+tmp=$stage/.modem_control.$$
+trap 'rm -f "$tmp"' EXIT HUP INT TERM
+cp "$src" "$tmp" &&
+    printf '\363\003\037\052' | dd of="$tmp" bs=1 seek=53004 count=4 conv=notrunc 2>/dev/null &&
+    printf '\100\004\200\122' | dd of="$tmp" bs=1 seek=53072 count=4 conv=notrunc 2>/dev/null || {
+    say "cannot prepare the copy: the stock modem_control"; exit 0; }
+h=$(sha256sum "$tmp" 2>/dev/null) || h=
+[ "${h%% *}" = "$PATCHED" ] || { say "the copy is not the one expected: the stock modem_control"; exit 0; }
+chmod 0755 "$tmp" && mv -f "$tmp" "$stage/modem_control" || { say "cannot place the copy: the stock modem_control"; exit 0; }
+if ! mountpoint -q "$target"; then
+    mount --bind "$stage" "$target" || { say "cannot bind $stage: the stock modem_control"; exit 0; }
+fi
+say "charger boot with the CP down: loading the CP and CH images (the PM is running)"
+echo /tmp/mu300-coldboot/modem_control

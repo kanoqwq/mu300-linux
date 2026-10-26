@@ -1,0 +1,41 @@
+# The Mali userspace and its library closure, relative to /, as android-vendor/extract-gpu-subset.sh pulls it from
+# the F50 test board. The Magisk installer copies them from the device it runs on (tools/android-boot-image.sh), all
+# of them or none. File names only: the files themselves stay on the device.
+apex/com.android.vndk.v33/lib64/android.hardware.common-V2-ndk.so
+apex/com.android.vndk.v33/lib64/android.hardware.graphics.allocator-V1-ndk.so
+apex/com.android.vndk.v33/lib64/android.hardware.graphics.allocator@2.0.so
+apex/com.android.vndk.v33/lib64/android.hardware.graphics.allocator@3.0.so
+apex/com.android.vndk.v33/lib64/android.hardware.graphics.allocator@4.0.so
+apex/com.android.vndk.v33/lib64/android.hardware.graphics.common-V3-ndk.so
+apex/com.android.vndk.v33/lib64/android.hardware.graphics.common@1.0.so
+apex/com.android.vndk.v33/lib64/android.hardware.graphics.common@1.1.so
+apex/com.android.vndk.v33/lib64/android.hardware.graphics.common@1.2.so
+apex/com.android.vndk.v33/lib64/android.hardware.graphics.mapper@2.0.so
+apex/com.android.vndk.v33/lib64/android.hardware.graphics.mapper@2.1.so
+apex/com.android.vndk.v33/lib64/android.hardware.graphics.mapper@3.0.so
+apex/com.android.vndk.v33/lib64/android.hardware.graphics.mapper@4.0.so
+apex/com.android.vndk.v33/lib64/libbase.so
+apex/com.android.vndk.v33/lib64/libbinder.so
+apex/com.android.vndk.v33/lib64/libc++.so
+apex/com.android.vndk.v33/lib64/libcutils.so
+apex/com.android.vndk.v33/lib64/libdmabufheap.so
+apex/com.android.vndk.v33/lib64/libgralloctypes.so
+apex/com.android.vndk.v33/lib64/libhardware.so
+apex/com.android.vndk.v33/lib64/libhidlbase.so
+apex/com.android.vndk.v33/lib64/libui.so
+apex/com.android.vndk.v33/lib64/libutils.so
+apex/com.android.vndk.v33/lib64/libz.so
+system/lib64/ld-android.so
+system/lib64/libandroid_runtime_lazy.so
+system/lib64/libbinder_ndk.so
+system/lib64/libc.so
+system/lib64/libdl.so
+system/lib64/libdl_android.so
+system/lib64/liblog.so
+system/lib64/libm.so
+system/lib64/libnativewindow.so
+system/lib64/libsync.so
+system/lib64/libvndksupport.so
+vendor/lib64/egl/libGLES_mali.so
+vendor/lib64/hw/vulkan.ums9620.so
+vendor/lib64/libOpenCL.so

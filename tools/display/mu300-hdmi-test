@@ -1,0 +1,9 @@
+#!/bin/sh
+# Show a test pattern on the USB-C DisplayPort/HDMI output (stop the desktop first: systemctl stop mu300-desktop)
+st=$(cat /sys/class/drm/card0-DP-1/status)
+echo "DP-1: $st"
+[ "$st" = connected ] || { echo "no monitor detected on DP-1"; exit 1; }
+id=$(modetest -M sprd -c | awk '/connected/ && /DP/ {print $1; exit}')
+mode=$(modetest -M sprd -c | awk -v id="$id" '$1==id{f=1} f && /^  modes:/{m=1; next} m && /#/{print $2; exit}')
+echo "connector $id, mode $mode (Ctrl+C to stop)"
+exec modetest -M sprd -s "$id:$mode"

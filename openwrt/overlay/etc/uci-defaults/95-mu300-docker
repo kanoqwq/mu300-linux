@@ -1,0 +1,58 @@
+#!/bin/sh
+# Docker's networks in fw4 (docs/FINDINGS.md 130), once per device: the marker /etc/mu300/docker-zone is a file of
+# the device that every update carries, so a zone the user changed or deleted stays as the user left it.
+#
+# dockerd runs with the nftables backend (/etc/docker/daemon.json): its own tables (ip docker-bridges) do the NAT
+# and keep containers apart, but a forwarded packet must also pass fw4's forward chain, which rejects what no zone
+# lets through. The zone "docker" holds every network Docker makes - docker0 and the br-<id> bridges of
+# "docker network create" and compose, never the LAN's br-lan - and only from the range Docker is given
+# (default-address-pools, 172.16.0.0/12): a bridge someone else names br-something, with addresses of its own, is not
+# taken in. Containers go out to wan (masqueraded by Docker), the LAN reaches the ports they publish (Docker's DNAT,
+# then lan -> docker), and nothing comes in from wan: there is no wan -> docker forwarding (add one to publish to the
+# cellular side). Containers are other people's software: the router itself is closed to them (input REJECT: no SSH,
+# LuCI, ubus or dnsmasq from a container - their DNS goes through Docker's resolver, which asks from the router's own
+# side), they open nothing on the LAN (no docker -> lan), and one Docker network does not reach another through the
+# router (forward REJECT; containers on one network talk over their bridge, which this does not touch).
+# The names are those of the package's own "/etc/init.d/dockerd uciadd", which its boot() runs whenever dockerd is
+# enabled, and its interface and bridge device are made here as uciadd makes them: uciadd then finds everything in
+# place and changes nothing. When it had to add them, its network reload at that boot took docker0 away from the
+# dockerd that had just made it ("adding interface ... to bridge docker0 failed: Device does not exist", F50, 5.4).
+[ -e /etc/mu300/docker-zone ] && exit 0
+if ! uci -q get network.docker >/dev/null; then
+	uci -q batch <<'UCI'
+set network.docker=interface
+set network.docker.device='docker0'
+set network.docker.proto='none'
+set network.docker.auto='0'
+commit network
+UCI
+fi
+uci -q show network | grep -q "^network\.@device\[[0-9]*\]\.name='docker0'$" || uci -q batch >/dev/null <<'UCI'
+add network device
+set network.@device[-1].type='bridge'
+set network.@device[-1].name='docker0'
+commit network
+UCI
+if ! uci -q get firewall.docker >/dev/null; then
+	uci -q batch <<'UCI'
+set firewall.docker=zone
+set firewall.docker.name='docker'
+set firewall.docker.input='REJECT'
+set firewall.docker.output='ACCEPT'
+set firewall.docker.forward='REJECT'
+add_list firewall.docker.network='docker'
+add_list firewall.docker.device='docker0'
+add_list firewall.docker.device='br-+'
+add_list firewall.docker.device='!br-lan'
+add_list firewall.docker.subnet='172.16.0.0/12'
+set firewall.docker_wan=forwarding
+set firewall.docker_wan.src='docker'
+set firewall.docker_wan.dest='wan'
+set firewall.lan_docker=forwarding
+set firewall.lan_docker.src='lan'
+set firewall.lan_docker.dest='docker'
+commit firewall
+UCI
+fi
+mkdir -p /etc/mu300 && : > /etc/mu300/docker-zone
+exit 0

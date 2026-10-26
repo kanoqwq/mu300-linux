@@ -1,0 +1,12 @@
+[Unit]
+Description=MU300 buttons: power wakes the LEDs (held: shut down), the U30 Air's Wi-Fi key switches the hotspot band
+ConditionPathExists=/opt/mu300/bin/mu300-keys
+After=mu300-fixups.service
+
+[Service]
+ExecStart=/opt/mu300/bin/mu300-buttons
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

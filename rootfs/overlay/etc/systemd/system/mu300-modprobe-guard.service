@@ -1,0 +1,13 @@
+[Unit]
+Description=MU300: rare protocols and filesystems not loaded on demand (mu300-modprobe-guard, FINDINGS 163)
+DefaultDependencies=no
+After=local-fs.target systemd-sysctl.service
+Before=sysinit.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/mu300/bin/mu300-modprobe-guard --prepare
+
+[Install]
+WantedBy=sysinit.target

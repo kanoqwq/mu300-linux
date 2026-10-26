@@ -1,0 +1,25 @@
+#!/bin/sh
+# hostapd reports AP-ENABLED even when the SC2355 firmware refuses CMD_START_AP (for example a 5 GHz
+# channel the firmware does not offer, or a driver without wlan_combo-5ghz-ap-ds-params.patch).
+# Detect that and restart on 2.4 GHz.
+# The mainline driver prints only the answers that are failures, so a good start leaves no line: once the access point
+# is up (iw shows its SSID; CMD_START_AP is a synchronous command, its answer came before that) the log is read one
+# last time instead of waiting out the 20 s (that wait held every boot; the unit is started only when this ends).
+# Only an SSID set up by this start counts: hotspot-start execs hostapd after it has taken wlan0 down, so the unit's
+# main process ($MAINPID, from systemd) must be hostapd by then (a restart can find the old access point still up).
+since=$(cut -d. -f1 /proc/uptime)
+start_ap_rsp() { dmesg | awk -v s="$since" -F'[][]' '$2+0>=s' | grep -o "rsp\[CMD_START_AP\].*" | tail -1; }
+for n in $(seq 1 40); do
+    sleep 0.5
+    resp=$(start_ap_rsp)
+    [ -n "$resp" ] && break
+    { [ -z "${MAINPID:-}" ] || [ "$(cat /proc/$MAINPID/comm 2>/dev/null)" = hostapd ]; } || continue
+    if iw dev wlan0 info 2>/dev/null | grep -q '^[[:space:]]*ssid '; then resp=$(start_ap_rsp); break; fi
+done
+case "$resp" in
+    *NOT_SUPPORT*|*ERROR*)
+        echo "firmware rejected the access point ($resp); falling back to 2.4 GHz" >&2
+        touch /run/mu300-hotspot-force-2g
+        systemctl --no-block restart mu300-hotspot.service ;;
+esac
+true

@@ -1,0 +1,61 @@
+{
+  "_comment": "Copy to tools/smoke.json (git ignores it) and fill in your boards. Fields starting with _ are comments. docs/RELEASING.md says what each field does.",
+  "timeouts": {
+    "_comment": "seconds; these are the defaults",
+    "command": 120,
+    "apply": 3600,
+    "down": 300,
+    "boot": 900,
+    "settle": 60,
+    "push": 900,
+    "install": 1800,
+    "poll": 10
+  },
+  "boards": [
+    {
+      "_comment": "Ubuntu on an F50, updated online; ssh as ubuntu needs sudo without a password (sudo -n)",
+      "name": "f50-ubuntu",
+      "device": "f50",
+      "system": "ubuntu",
+      "ssh": {"host": "192.168.77.1", "user": "ubuntu", "port": 22,
+              "fingerprint": "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "hostname": "mu300"},
+      "adb_serial": "MU300LINUX-000000000000-00000000",
+      "update": "online"
+    },
+    {
+      "_comment": "OpenWrt with the control panel on a U30 Air, from a mirror on the computer (MU300_RELEASE_URL=<mirror_url>/<tag>). Never sent to Android.",
+      "name": "u30-openwrt",
+      "device": "u30air",
+      "system": "openwrt-luci",
+      "ssh": {"host": "192.168.78.1", "user": "root",
+              "fingerprint": "SHA256:BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", "hostname": "OpenWrt"},
+      "allow_android": false,
+      "update": "mirror",
+      "mirror_url": "http://192.168.78.2:8000/download"
+    },
+    {
+      "_comment": "OpenWrt on an F50, from a release directory on the device (mu300-update apply --from); --release-dir uploads it first",
+      "name": "f50-openwrt",
+      "device": "f50",
+      "system": "openwrt",
+      "ssh": {"host": "192.168.77.1", "port": 2222,
+              "fingerprint": "SHA256:CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"},
+      "update": "from",
+      "from_path": "/mnt/mu300-disk/smoke-release",
+      "apply_args": ["--unsigned"],
+      "expect_kernel": "6.18"
+    },
+    {
+      "_comment": "The release's Magisk zip on an F50 that is in Linux now: sent to Android, the zip installed with magisk --install-module, back to Linux",
+      "name": "f50-magisk",
+      "device": "f50",
+      "system": "openwrt-luci",
+      "ssh": {"host": "192.168.77.1",
+              "fingerprint": "SHA256:DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"},
+      "android_serial": "000000000000",
+      "allow_android": true,
+      "update": "magisk",
+      "magisk_zip": "openwrt-luci-k6.18"
+    }
+  ]
+}

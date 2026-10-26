@@ -1,0 +1,121 @@
+#!/bin/sh
+# The kernel's module helper on Ubuntu and OpenWrt (FINDINGS 163). When code asks the kernel for something a module
+# provides - a socket of a protocol family, a filesystem type, a netlink family, a link kind - the kernel runs its
+# helper (sysctl kernel.modprobe) as root: "HELPER -q -- REQUEST". Any user can make it do that
+# (socket(AF_TIPC, ...) is enough), so every installed module would be one any user can load.
+#   mu300-modprobe-guard --prepare    at boot (mu300-modprobe-guard.service, OpenWrt's mu300-hw): makes the alias
+#                                     table, then makes this script the kernel's helper
+#   mu300-modprobe-guard -q -- REQ    what the kernel runs: refuses REQ when it resolves to a module of
+#                                     /opt/mu300/lib/autoload-blocked, else runs /sbin/modprobe with the same arguments
+# The modules are refused by MODULE, not by request string: a request is refused when it is one of their names or
+# matches one of their aliases (the "alias=" strings of each module file, with modprobe's glob rules and its
+# "-" = "_"), however the asker spelled it. The list holds every module that depends on one of them as well
+# (make-bundle.sh checks it against the build), so no request reaches them through a dependency. Root loads a refused
+# module deliberately with `modprobe NAME` (that runs /sbin/modprobe, not this), and
+# `touch /etc/mu300/autoload-allow-all` turns the refusal off altogether.
+#   The table lives in /run/mu300-modprobe-guard (root's, mode 700), one file per kernel release. Making it takes
+# about 2 s on the U30 Air, so it is made at boot before the guard takes over, never inside a request; only a table
+# gone stale since (the running kernel's modules reinstalled) is made again on the spot. A request for an alias of a
+# module that is not installed is handed on: modprobe finds nothing for it either. Without any table (the cache
+# directory is not root's own) the names are checked, and socket/diag/genetlink families, filesystems, line
+# disciplines and link kinds are refused altogether (fail closed), with a line in the kernel log.
+#   A fault here would stop every on-demand load (crypto, netfilter, filesystems), so the script keeps to what busybox
+# ash and dash both do, and hands on whatever it cannot decide.
+LIST=${MU300_AUTOLOAD_BLOCKED:-/opt/mu300/lib/autoload-blocked}
+ALLOW=${MU300_AUTOLOAD_ALLOW:-/etc/mu300/autoload-allow-all}
+MODPROBE=${MU300_MODPROBE:-/sbin/modprobe}
+MODINFO=${MU300_MODINFO:-modinfo}
+KREL=${MU300_KREL:-$(uname -r)}
+MODDIR=${MU300_MODDIR:-/lib/modules/$KREL}
+CACHE=${MU300_GUARD_CACHE:-/run/mu300-modprobe-guard}
+SELF=/opt/mu300/bin/mu300-modprobe-guard
+HELPER=${MU300_HELPER_SYSCTL:-/proc/sys/kernel/modprobe}
+PATH=/usr/sbin:/usr/bin:/sbin:/bin:$PATH
+
+# "-" and "_" are one character to modprobe, except inside [...] of an alias pattern
+norm() { awk '{ o = ""; b = 0; n = length($0)
+    for (i = 1; i <= n; i++) { c = substr($0, i, 1)
+        if (c == "[") b = 1; else if (c == "]") b = 0
+        if (c == "-" && !b) c = "_"; o = o c }
+    print o }'; }
+
+# names: the listed modules and every module whose dependencies (modules.dep, where there is one: Ubuntu's depmod
+# makes it; OpenWrt has none, and make-bundle.sh checks that the list itself holds all of them) reach a listed one
+names() {
+    { sed 's/#.*//' "$LIST"; [ -r "$MODDIR/modules.dep" ] && awk -v list="$LIST" '
+        function nm(p) { sub(/.*\//, "", p); sub(/\.ko.*$/, "", p); gsub(/-/, "_", p); return p }
+        BEGIN { while ((getline l < list) > 0) { sub(/#.*/, "", l); gsub(/[ \t]/, "", l); if (l != "") bad[l] = 1 } }
+        { split($0, kv, ":"); m = nm(kv[1]); n = split(kv[2], d, " "); deps[m] = ""
+          for (i = 1; i <= n; i++) deps[m] = deps[m] " " nm(d[i]) }
+        END { do { more = 0
+                for (m in deps) if (!(m in bad)) { n = split(deps[m], d, " ")
+                    for (i = 1; i <= n; i++) if (d[i] in bad) { bad[m] = 1; more = 1; print m; break } }
+              } while (more) }' "$MODDIR/modules.dep"; } | while read -r m; do [ -n "$m" ] && echo "$m"; done | sort -u
+}
+
+# the table: "PATTERN MODULE" lines, the modules' own names first
+table() {
+    nf=$CACHE/names.$$
+    names > "$nf" || return 1
+    sed 's/.*/& &/' "$nf"
+    # the files of those modules ("NAME PATH"; a-b.ko is a_b), found in one pass
+    find "$MODDIR" -name '*.ko*' 2>/dev/null | awk -v list="$nf" '
+        BEGIN { while ((getline l < list) > 0) want[l] = 1 }
+        { b = $0; sub(/.*\//, "", b); sub(/\.ko.*$/, "", b); gsub(/-/, "_", b); if (b in want) print b, $0 }' |
+    while read -r m f; do
+        # straight from the file: OpenWrt's modinfo reads all 3000 modules on every call (7 s for the list);
+        # modinfo only for a compressed module
+        case $f in
+            *.ko) tr '\000' '\n' < "$f" 2>/dev/null | sed -n "s/^alias=\\([^ ]*\\)\$/\\1 $m/p" ;;
+            *) "$MODINFO" "$f" 2>/dev/null | sed -n "s/^alias:[[:space:]]*\\([^ ]*\\)\$/\\1 $m/p" ;;
+        esac
+    done | norm
+    rm -f "$nf"
+}
+
+# fresh_table: the table of this kernel, made again when missing or older than the list or the modules; prints its
+# path, or nothing when it cannot be had (a cache directory that is not root's own)
+fresh_table() {
+    t=$CACHE/$(echo "$KREL" | tr -c 'A-Za-z0-9._\n-' _)
+    if [ ! -s "$t" ] || [ "$LIST" -nt "$t" ] || [ "$MODDIR" -nt "$t" ]; then
+        if [ -L "$CACHE" ] || { [ -e "$CACHE" ] && { [ ! -d "$CACHE" ] || [ ! -O "$CACHE" ]; }; }; then return 0; fi
+        mkdir -p -m 700 "$CACHE" 2>/dev/null
+        # a table that cannot be made again leaves the one there was (if any)
+        table > "$t.new.$$" 2>/dev/null && mv -f "$t.new.$$" "$t" 2>/dev/null || rm -f "$t.new.$$"
+    fi
+    [ -s "$t" ] && echo "$t"
+}
+
+if [ "${1:-}" = --prepare ]; then
+    [ -r "$LIST" ] || exit 0
+    t=$(fresh_table)
+    [ -e "$ALLOW" ] && { echo "mu300-modprobe-guard: $ALLOW is there, the kernel's helper stays $(cat "$HELPER")"; exit 0; }
+    echo "$SELF" > "$HELPER" || exit 1
+    echo "mu300-modprobe-guard: the kernel's helper; $(sed 's/#.*//' "$LIST" | grep -c .) modules not loaded on demand${t:+, $(wc -l < "$t") names and aliases}"
+    exit 0
+fi
+
+name=
+for a in "$@"; do name=$a; done
+[ -n "$name" ] && [ ! -e "$ALLOW" ] && [ -r "$LIST" ] || exec "$MODPROBE" "$@"
+req=$(printf '%s\n' "$name" | norm)
+t=$(fresh_table)
+hit=
+if [ -n "$t" ]; then
+    while read -r p m; do
+        # shellcheck disable=SC2254
+        case $req in $p) hit=$m; break ;; esac
+    done < "$t"
+else
+    # no table (a cache directory that is not root's own): the names, and nothing of the kinds of request the list is
+    # about - socket, diag and genetlink families, filesystems, line disciplines, link kinds - fail closed
+    for m in $(sed 's/#.*//' "$LIST"); do [ "$req" = "$m" ] && { hit=$m; break; }; done
+    case $req in net_pf_*|fs_*|tty_ldisc_*|rtnl_*) [ -n "$hit" ] || hit="no alias table" ;; esac
+fi
+if [ -n "$hit" ]; then
+    fix=$hit; [ "$hit" = "no alias table" ] && fix=$name
+    echo "mu300: on-demand loading of $name ($hit) refused (root: modprobe $fix; FINDINGS 163)" \
+        > "${MU300_KMSG:-/dev/kmsg}" 2>/dev/null
+    exit 1
+fi
+exec "$MODPROBE" "$@"

@@ -1,0 +1,40 @@
+# The Android files modem_control needs, relative to /, as android-vendor/extract-subset.sh takes them over adb.
+# The Magisk installer copies them from the device it runs on (tools/android-boot-image.sh); tests check that both
+# lists are the same.
+apex/com.android.runtime/bin/linker64
+apex/com.android.runtime/lib64/bionic
+system/lib64/libcutils.so
+system/lib64/libexpat.so
+system/lib64/liblog.so
+system/lib64/libhardware_legacy.so
+system/lib64/libc++.so
+system/lib64/libbase.so
+system/lib64/libbinder.so
+system/lib64/libbinder_ndk.so
+system/lib64/libhidlbase.so
+system/lib64/libutils.so
+system/lib64/android.system.suspend-V1-ndk.so
+system/lib64/libtrusty.so
+system/lib64/libandroid_runtime_lazy.so
+system/lib64/libvndksupport.so
+system/lib64/libz.so
+system/lib64/libcrypto.so
+system/lib64/libselinux.so
+system/lib64/libpcre2.so
+system/lib64/libpackagelistparser.so
+system/lib64/libprocessgroup.so
+system/lib64/libcgrouprc.so
+vendor/lib64/libkernelbootcp.trusty.so
+vendor/lib64/lib_crypto.so
+vendor/bin/modem_control
+vendor/bin/cp_diskserver
+vendor/bin/refnotify
+vendor/bin/sh
+vendor/bin/toybox_vendor
+vendor/bin/getprop
+vendor/etc/modem_cp_info.xml
+vendor/etc/modem_sp_info.xml
+vendor/etc/modem_ch_info.xml
+vendor/etc/cp_dump_info.xml
+vendor/etc/ueventd.rc
+dev/__properties__

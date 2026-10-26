@@ -1,0 +1,9 @@
+[Unit]
+Description=MU300 install the packages of the system before the update again (mu300-user-packages)
+ConditionFileNotEmpty=/etc/mu300/user-packages/wanted
+After=network.target mu300-mobile-data.service
+
+[Service]
+# it waits for the internet itself (an hour at most, then again at the next boot): the boot does not wait for it
+Type=simple
+ExecStart=/opt/mu300/bin/mu300-user-packages run

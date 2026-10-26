@@ -1,0 +1,34 @@
+#!/bin/sh
+# MU300: OpenWrt firmware images (armsr/armv8) are whole-disk images with their own kernel. Flashing one here would
+# overwrite the eMMC partition table and bootloaders and brick the device, so flashing is refused.
+# The configuration tools still go to the original sysupgrade: create a backup (-b/--create-backup FILE), restore
+# one (-r/--restore-backup FILE; LuCI's System > Backup "Upload archive" runs this) and list what a backup would hold
+# (-l/--list-backup), with the options that only shape a backup (-k -u -c -o -p, and -v -q). One of those operations,
+# nothing else: any other word (an image file, -n, -F, -T ...) is refused. After kanoqwq's b8d4f222.
+backup_operation() {
+    mode=
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            -b|--create-backup|-r|--restore-backup)
+                [ -z "$mode" ] && [ "$#" -ge 2 ] && [ -n "$2" ] || return 1
+                mode=$1
+                shift 2
+                ;;
+            -l|--list-backup)
+                [ -z "$mode" ] || return 1
+                mode=$1
+                shift
+                ;;
+            -k|-u|-c|-o|-p|-v|-q) shift ;;
+            *) return 1 ;;
+        esac
+    done
+    [ -n "$mode" ]
+}
+if backup_operation "$@"; then
+    exec "${MU300_SYSUPGRADE:-/sbin/sysupgrade.openwrt}" "$@"   # MU300_SYSUPGRADE: the tests
+fi
+echo "sysupgrade is disabled on the MU300: firmware images would overwrite the eMMC." >&2
+echo "Update with mu300-update (or the panel's Update page); configuration backup (-b), restore (-r) and" >&2
+echo "listing (-l) still work." >&2
+exit 1

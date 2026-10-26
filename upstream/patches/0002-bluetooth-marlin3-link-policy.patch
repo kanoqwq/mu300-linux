@@ -1,0 +1,22 @@
+Bluetooth: request only Role Switch and Sniff in the default link policy
+
+The Unisoc Marlin3 (SC2355) firmware advertises LMP Hold Mode and Park State but rejects
+HCI_Write_Default_Link_Policy_Settings with 0x12 whenever HCI_LP_HOLD or HCI_LP_PARK is set, which aborts
+the controller init. Park State was removed in Core 5.0 and Hold Mode is unused by BlueZ.
+(6.18 version of kernel/patches/bluetooth-marlin3-link-policy.patch)
+
+--- a/net/bluetooth/hci_sync.c
++++ b/net/bluetooth/hci_sync.c
+@@ -4326,12 +4326,8 @@ static int hci_setup_link_policy_sync(struct hci_dev *hdev)
+ 
+ 	if (lmp_rswitch_capable(hdev))
+ 		link_policy |= HCI_LP_RSWITCH;
+-	if (lmp_hold_capable(hdev))
+-		link_policy |= HCI_LP_HOLD;
+ 	if (lmp_sniff_capable(hdev))
+ 		link_policy |= HCI_LP_SNIFF;
+-	if (lmp_park_capable(hdev))
+-		link_policy |= HCI_LP_PARK;
+ 
+ 	cp.policy = cpu_to_le16(link_policy);
+ 

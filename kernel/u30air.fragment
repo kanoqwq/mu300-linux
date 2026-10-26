@@ -1,0 +1,23 @@
+# ZTE U30 Air on top of the MU300 (F50) kernel config: what its stock kernel (/proc/config.gz, U30Air_SSV1.0.0B14)
+# sets differently. Same board and SoC, but a battery with ZTE's "SQC" charger stack, USB-PD, LEDs, a SAR sensor
+# and an NFC tag. Only modules may change: the kernel Image has to stay the one the F50 build made (the U30 Air
+# modules load next to its modules). So I2C_CHARDEV, built in there, is a module here, and I2C_SMBUS is left out:
+# it also compiles code into the i2c core (of_i2c_setup_smbus_alert), and no driver of the U30 Air needs it.
+CONFIG_I2C_CHARDEV=m
+CONFIG_LEDS_GPIO=m
+CONFIG_NFC_FM11TAG=m
+CONFIG_SAR_PARA="bougain"
+CONFIG_SAR_SENSOR_STK501XX=m
+CONFIG_SC27XX_PD=m
+CONFIG_VENDOR_CHARGER_POLICY_SERVICE=m
+CONFIG_VENDOR_SQC_BQ2560X=m
+CONFIG_VENDOR_SQC_CHARGER=y
+CONFIG_VENDOR_SQC_CHARGER_V8=y
+CONFIG_VENDOR_SQC_CHARGER_VERSION="sqc_v8"
+CONFIG_VENDOR_SQC_COMM_MODULE=y
+CONFIG_VENDOR_SQC_MODULE=m
+CONFIG_VENDOR_SQC_NETLINK=m
+CONFIG_VENDOR_ZTE_MISC=m
+CONFIG_ZTE_LDO_LEDS=m
+CONFIG_ZTE_POWER_SUPPLY=m
+CONFIG_ZTE_POWER_SUPPLY_COMMON=y

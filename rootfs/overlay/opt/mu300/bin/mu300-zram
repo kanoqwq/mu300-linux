@@ -1,0 +1,134 @@
+#!/bin/sh
+# mu300-zram: compressed swap in RAM (zram), on by default (Ubuntu, Arch and OpenWrt alike).
+#   mu300-zram                status: on or off, size, compressor, and what the swapped-out pages cost in RAM
+#   mu300-zram on|off         switch it on or off, now and at every boot (kept in /etc/mu300/zram.conf)
+#   mu300-zram start          what the boot runs (mu300-zram.service, OpenWrt's mu300-hw): set up unless switched off
+#   mu300-zram stop           swap off and free the device until the next boot
+#   mu300-zram brief          one line, for mu300-toolkit info
+# Settings (all optional) in /etc/mu300/zram.conf, KEY=VALUE; /opt/mu300/lib/zram.conf.example explains them:
+#   ZRAM_ENABLE=1  ZRAM_SIZE_PERCENT=50  ZRAM_ALGORITHM=lz4  ZRAM_PRIORITY=100  ZRAM_SWAPPINESS=100
+# A change of size or compressor takes effect at "mu300-zram stop; mu300-zram start" or at the next boot.
+#
+# The size is that of the swap device, i.e. how much uncompressed memory it can take in: 50 % of the ~1.4 GiB the
+# kernel sees is ~700 MiB of swap. It costs nothing while empty; full, it holds those pages in about a third of that
+# (lz4 ~2.5:1, zstd ~3.5:1 on typical anonymous memory) - the trade the kernel makes instead of killing a process.
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+CONF=${MU300_ZRAM_CONF:-/etc/mu300/zram.conf}   # (the variables are for tests/)
+SYS=${MU300_ZRAM_SYS:-/sys/block}
+PROC=${MU300_ZRAM_PROC:-/proc}
+Z=$SYS/zram0
+DEV=${MU300_ZRAM_DEV:-/dev/zram0}
+
+conf() {  # conf KEY DEFAULT: the last KEY= line of the settings, digits/letters/-/_ only, else DEFAULT
+    v=$(sed -n "s/^$1=\([A-Za-z0-9_-]*\)[[:space:]]*$/\1/p" "$CONF" 2>/dev/null | tail -n1)
+    echo "${v:-$2}"
+}
+num() {  # num VALUE MIN MAX DEFAULT
+    case $1 in ''|*[!0-9]*) echo "$4"; return ;; esac
+    if [ "$1" -lt "$2" ] || [ "$1" -gt "$3" ]; then echo "$4"; else echo "$1"; fi
+}
+enabled() { [ "$(conf ZRAM_ENABLE 1)" != 0 ]; }
+active() { grep -q "^$DEV[[:space:]]" "$PROC/swaps" 2>/dev/null; }
+conf_set() {  # conf_set KEY VALUE: the other lines as they were, KEY's last
+    mkdir -p "${CONF%/*}" || return 1
+    { grep -v "^$1=" "$CONF" 2>/dev/null; echo "$1=$2"; } > "$CONF.new" && mv "$CONF.new" "$CONF"
+}
+need_root() {
+    [ "$(id -u)" = 0 ] && return 0
+    command -v sudo >/dev/null && exec sudo "$0" "$@"
+    echo "run as root" >&2; exit 1
+}
+# to stderr, and to syslog where that is not the same place (systemd puts a unit's output in the journal already)
+log() {
+    echo "mu300-zram: $*" >&2
+    [ -z "${INVOCATION_ID:-}" ] && command -v logger >/dev/null && logger -t mu300-zram "$*" 2>/dev/null
+    return 0
+}
+
+# the compressors this kernel offers (comp_algorithm: "lzo lzo-rle [lz4] zstd", the chosen one in brackets)
+algorithms() { tr -d '[]' < "$Z/comp_algorithm" 2>/dev/null; }
+current_algorithm() {
+    awk '{for (i = 1; i <= NF; i++) if ($i ~ /^\[/ || NF == 1) {gsub(/\[|\]/, "", $i); print $i}}' "$Z/comp_algorithm" 2>/dev/null
+}
+
+vm_tune() {
+    sw=$(num "$(conf ZRAM_SWAPPINESS 100)" 0 200 100)
+    # 5.4 takes at most 100 (200 since 5.8)
+    echo "$sw" > "$PROC/sys/vm/swappiness" 2>/dev/null || echo 100 > "$PROC/sys/vm/swappiness" 2>/dev/null
+    # one page at a time: read-ahead from a RAM device only costs
+    echo 0 > "$PROC/sys/vm/page-cluster" 2>/dev/null
+    return 0
+}
+
+start() {
+    enabled || { log "switched off in $CONF"; return 0; }
+    if active; then vm_tune; return 0; fi
+    [ -e "$Z" ] || modprobe zram num_devices=1 2>/dev/null
+    [ -e "$Z" ] || { log "no zram in this kernel"; return 1; }
+    pct=$(num "$(conf ZRAM_SIZE_PERCENT 50)" 1 200 50)
+    prio=$(num "$(conf ZRAM_PRIORITY 100)" 0 32767 100)
+    want=$(conf ZRAM_ALGORITHM lz4)
+    size=$(awk -v p="$pct" '/^MemTotal:/ {printf "%d", $2 * p / 100}' "$PROC/meminfo")
+    [ "${size:-0}" -gt 0 ] || { log "cannot read MemTotal"; return 1; }
+    echo 1 > "$Z/reset" 2>/dev/null
+    # the algorithm must be chosen before the size; one the kernel lacks: lz4, else the kernel's default
+    for a in "$want" lz4; do
+        case " $(algorithms) " in *" $a "*) echo "$a" > "$Z/comp_algorithm" 2>/dev/null && break ;; esac
+    done
+    [ "$(current_algorithm)" = "$want" ] || log "$want not offered by this kernel ($(algorithms)), using $(current_algorithm)"
+    echo "${size}K" > "$Z/disksize" || { log "cannot size $DEV"; return 1; }
+    mkswap "$DEV" >/dev/null || { log "mkswap $DEV failed"; return 1; }
+    swapon -p "$prio" "$DEV" || { log "swapon $DEV failed"; return 1; }
+    vm_tune
+    log "on: $((size / 1024)) MiB ($pct % of RAM), $(current_algorithm), priority $prio"
+}
+
+stop() {
+    if active; then
+        # its pages come back into RAM; with too little free, swapoff refuses and zram stays on
+        swapoff "$DEV" || { log "swapoff $DEV failed (not enough free RAM for what it holds?)"; return 1; }
+    fi
+    [ -e "$Z/reset" ] && echo 1 > "$Z/reset" 2>/dev/null
+    return 0
+}
+
+mib() { awk -v b="$1" 'BEGIN {printf "%.0f MiB", b / 1048576}'; }
+# mm_stat: orig_data_size compr_data_size mem_used_total ... (bytes)
+stats() { [ -r "$Z/mm_stat" ] && read -r orig compr used _ < "$Z/mm_stat"; }
+
+status() {
+    if active; then
+        printf 'zram swap: on, %s, %s, priority %s\n' "$(mib "$(cat "$Z/disksize")")" "$(current_algorithm)" \
+            "$(awk -v d="$DEV" '$1 == d {print $5}' "$PROC/swaps")"
+        if stats && [ "${orig:-0}" -gt 0 ]; then
+            printf '  holds %s of swapped-out memory in %s of RAM (%s:1)\n' "$(mib "$orig")" "$(mib "$used")" \
+                "$(awk -v o="$orig" -v u="$used" 'BEGIN {printf "%.1f", (u > 0 ? o / u : 0)}')"
+        else
+            echo "  empty (costs no RAM until something is swapped out)"
+        fi
+    elif enabled; then
+        echo "zram swap: off now (on at the next boot; mu300-zram start)"
+    else
+        echo "zram swap: off ($CONF: ZRAM_ENABLE=0; mu300-zram on)"
+    fi
+    printf '  vm.swappiness %s, vm.page-cluster %s\n' "$(cat "$PROC/sys/vm/swappiness" 2>/dev/null)" \
+        "$(cat "$PROC/sys/vm/page-cluster" 2>/dev/null)"
+}
+
+brief() {
+    if active; then
+        stats; printf 'zram on, %s %s, %s used\n' "$(mib "$(cat "$Z/disksize")")" "$(current_algorithm)" "$(mib "${orig:-0}")"
+    elif enabled; then echo "zram off now"
+    else echo "zram off"; fi
+}
+
+case ${1:-status} in
+    status) status ;;
+    brief) brief ;;
+    start) need_root "$@"; start ;;
+    stop) need_root "$@"; stop ;;
+    on) need_root "$@"; conf_set ZRAM_ENABLE 1 || exit 1; start && status ;;
+    off) need_root "$@"; conf_set ZRAM_ENABLE 0 || exit 1; stop; rc=$?; status; exit $rc ;;
+    -h|--help|help) sed -n '2,9s/^# \{0,1\}//p' "$0" ;;
+    *) echo "usage: mu300-zram [status|on|off|start|stop|brief]" >&2; exit 2 ;;
+esac

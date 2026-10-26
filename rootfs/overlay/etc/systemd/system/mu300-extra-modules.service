@@ -1,0 +1,12 @@
+[Unit]
+Description=MU300 extra vendor drivers (thermal cooling, LEDs, SAR, SIM tray, DVFS)
+After=mu300-vendor.service systemd-modules-load.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=/bin/sleep 20
+ExecStart=/opt/mu300/bin/extra-modules
+
+[Install]
+WantedBy=multi-user.target

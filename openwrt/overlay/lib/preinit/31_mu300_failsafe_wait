@@ -1,0 +1,18 @@
+# MU300: no failsafe key, and no failsafe network. OpenWrt's failsafe_wait (30_failsafe_wait) gives the serial console
+# fs_failsafe_wait_timeout seconds (4 in this rootfs) to have "f" typed on it - on a device whose UART only test pads
+# reach, that was 4 s of every boot for nothing. Recovery here is the bootloader's (a Linux slot that does not come up
+# is left for Android after its tries), and failsafe= on the kernel command line still enters failsafe mode.
+# Sourced after 30_failsafe_wait, so this is the definition its hook runs.
+failsafe_wait() {
+	FAILSAFE=
+	if grep -q 'failsafe=' /proc/cmdline; then
+		FAILSAFE=true
+		export FAILSAFE
+		touch /tmp/failsafe
+	fi
+	return 0
+}
+# ...and no failsafe address: preinit_ip ran board_detect (0.9 s) to put 192.168.1.1 on usb0 for a failsafe nobody can
+# enter, and run_init then flushed usb0's addresses and took it down - the early DHCP server's address with them
+# (06_mu300_early_usb). With this set, preinit_ip returns at once and run_init leaves usb0 alone.
+pi_preinit_no_failsafe="y"

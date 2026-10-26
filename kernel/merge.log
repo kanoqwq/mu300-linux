@@ -1,0 +1,249 @@
+Using /src/out-linux/.config as base
+Merging /work/mu300-linux.fragment
+Value of CONFIG_DEVTMPFS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_DEVTMPFS is not set
+New value: CONFIG_DEVTMPFS=y
+
+Value of CONFIG_FHANDLE is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_FHANDLE is not set
+New value: CONFIG_FHANDLE=y
+
+Value of CONFIG_AUTOFS_FS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_AUTOFS_FS is not set
+New value: CONFIG_AUTOFS_FS=y
+
+Value of CONFIG_TMPFS_POSIX_ACL is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_TMPFS_POSIX_ACL is not set
+New value: CONFIG_TMPFS_POSIX_ACL=y
+
+Value of CONFIG_TMPFS_XATTR is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_TMPFS_XATTR is not set
+New value: CONFIG_TMPFS_XATTR=y
+
+Value of CONFIG_CGROUP_PIDS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_CGROUP_PIDS is not set
+New value: CONFIG_CGROUP_PIDS=y
+
+Value of CONFIG_CGROUP_DEVICE is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_CGROUP_DEVICE is not set
+New value: CONFIG_CGROUP_DEVICE=y
+
+Value of CONFIG_CGROUP_PERF is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_CGROUP_PERF is not set
+New value: CONFIG_CGROUP_PERF=y
+
+Value of CONFIG_CGROUP_NET_PRIO is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_CGROUP_NET_PRIO is not set
+New value: CONFIG_CGROUP_NET_PRIO=y
+
+Value of CONFIG_CGROUP_NET_CLASSID is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_CGROUP_NET_CLASSID is not set
+New value: CONFIG_CGROUP_NET_CLASSID=y
+
+Value of CONFIG_SYSVIPC is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_SYSVIPC is not set
+New value: CONFIG_SYSVIPC=y
+
+Value of CONFIG_POSIX_MQUEUE is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_POSIX_MQUEUE is not set
+New value: CONFIG_POSIX_MQUEUE=y
+
+Value of CONFIG_PID_NS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_PID_NS is not set
+New value: CONFIG_PID_NS=y
+
+Value of CONFIG_USER_NS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_USER_NS is not set
+New value: CONFIG_USER_NS=y
+
+Value of CONFIG_CHECKPOINT_RESTORE is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_CHECKPOINT_RESTORE is not set
+New value: CONFIG_CHECKPOINT_RESTORE=y
+
+Value of CONFIG_FANOTIFY is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_FANOTIFY is not set
+New value: CONFIG_FANOTIFY=y
+
+Value of CONFIG_ENCRYPTED_KEYS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_ENCRYPTED_KEYS is not set
+New value: CONFIG_ENCRYPTED_KEYS=y
+
+Value of CONFIG_KEY_DH_OPERATIONS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_KEY_DH_OPERATIONS is not set
+New value: CONFIG_KEY_DH_OPERATIONS=y
+
+Value of CONFIG_STATIC_USERMODEHELPER is redefined by fragment /work/mu300-linux.fragment:
+Previous value: CONFIG_STATIC_USERMODEHELPER=y
+New value: # CONFIG_STATIC_USERMODEHELPER is not set
+
+Value of CONFIG_UEVENT_HELPER is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_UEVENT_HELPER is not set
+New value: CONFIG_UEVENT_HELPER=y
+
+Value of CONFIG_SECURITY_APPARMOR is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_SECURITY_APPARMOR is not set
+New value: CONFIG_SECURITY_APPARMOR=y
+
+Value of CONFIG_NF_TABLES is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_NF_TABLES is not set
+New value: CONFIG_NF_TABLES=y
+
+Value of CONFIG_IP_SET is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_IP_SET is not set
+New value: CONFIG_IP_SET=y
+
+Value of CONFIG_MACVLAN is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_MACVLAN is not set
+New value: CONFIG_MACVLAN=y
+
+Value of CONFIG_IPVLAN is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_IPVLAN is not set
+New value: CONFIG_IPVLAN=y
+
+Value of CONFIG_VXLAN is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_VXLAN is not set
+New value: CONFIG_VXLAN=y
+
+Value of CONFIG_VLAN_8021Q is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_VLAN_8021Q is not set
+New value: CONFIG_VLAN_8021Q=y
+
+Value of CONFIG_NET_SCH_FQ_CODEL is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_NET_SCH_FQ_CODEL is not set
+New value: CONFIG_NET_SCH_FQ_CODEL=y
+
+Value of CONFIG_NET_SCH_CAKE is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_NET_SCH_CAKE is not set
+New value: CONFIG_NET_SCH_CAKE=y
+
+Value of CONFIG_NET_ACT_BPF is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_NET_ACT_BPF is not set
+New value: CONFIG_NET_ACT_BPF=y
+
+Value of CONFIG_PACKET_DIAG is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_PACKET_DIAG is not set
+New value: CONFIG_PACKET_DIAG=y
+
+Value of CONFIG_UNIX_DIAG is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_UNIX_DIAG is not set
+New value: CONFIG_UNIX_DIAG=y
+
+Value of CONFIG_BTRFS_FS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_BTRFS_FS is not set
+New value: CONFIG_BTRFS_FS=y
+
+Value of CONFIG_XFS_FS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_XFS_FS is not set
+New value: CONFIG_XFS_FS=y
+
+Value of CONFIG_SQUASHFS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_SQUASHFS is not set
+New value: CONFIG_SQUASHFS=y
+
+Value of CONFIG_ISO9660_FS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_ISO9660_FS is not set
+New value: CONFIG_ISO9660_FS=y
+
+Value of CONFIG_UDF_FS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_UDF_FS is not set
+New value: CONFIG_UDF_FS=y
+
+Value of CONFIG_CIFS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_CIFS is not set
+New value: CONFIG_CIFS=m
+
+Value of CONFIG_NFS_FS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_NFS_FS is not set
+New value: CONFIG_NFS_FS=m
+
+Value of CONFIG_NFSD is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_NFSD is not set
+New value: CONFIG_NFSD=m
+
+Value of CONFIG_ZRAM is redefined by fragment /work/mu300-linux.fragment:
+Previous value: CONFIG_ZRAM=m
+New value: CONFIG_ZRAM=y
+
+Value of CONFIG_USB_SERIAL is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_USB_SERIAL is not set
+New value: CONFIG_USB_SERIAL=m
+
+Value of CONFIG_USB_NET_RNDIS_HOST is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_USB_NET_RNDIS_HOST is not set
+New value: CONFIG_USB_NET_RNDIS_HOST=m
+
+Value of CONFIG_USB_NET_QMI_WWAN is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_USB_NET_QMI_WWAN is not set
+New value: CONFIG_USB_NET_QMI_WWAN=m
+
+Value of CONFIG_USB_NET_HUAWEI_CDC_NCM is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_USB_NET_HUAWEI_CDC_NCM is not set
+New value: CONFIG_USB_NET_HUAWEI_CDC_NCM=m
+
+Value of CONFIG_USB_NET_CDC_MBIM is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_USB_NET_CDC_MBIM is not set
+New value: CONFIG_USB_NET_CDC_MBIM=m
+
+Value of CONFIG_USB_WDM is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_USB_WDM is not set
+New value: CONFIG_USB_WDM=m
+
+Value of CONFIG_USB_PRINTER is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_USB_PRINTER is not set
+New value: CONFIG_USB_PRINTER=m
+
+Value of CONFIG_CRYPTO_USER_API_HASH is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_CRYPTO_USER_API_HASH is not set
+New value: CONFIG_CRYPTO_USER_API_HASH=y
+
+Value of CONFIG_CRYPTO_USER_API_SKCIPHER is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_CRYPTO_USER_API_SKCIPHER is not set
+New value: CONFIG_CRYPTO_USER_API_SKCIPHER=y
+
+Value of CONFIG_CRYPTO_USER_API_AEAD is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_CRYPTO_USER_API_AEAD is not set
+New value: CONFIG_CRYPTO_USER_API_AEAD=y
+
+Value of CONFIG_CRYPTO_USER_API_RNG is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_CRYPTO_USER_API_RNG is not set
+New value: CONFIG_CRYPTO_USER_API_RNG=y
+
+Value of CONFIG_TLS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_TLS is not set
+New value: CONFIG_TLS=y
+
+Value of CONFIG_MODULE_SIG_FORCE is redefined by fragment /work/mu300-linux.fragment:
+Previous value: CONFIG_MODULE_SIG_FORCE=y
+New value: # CONFIG_MODULE_SIG_FORCE is not set
+
+Value of CONFIG_IKHEADERS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: CONFIG_IKHEADERS=y
+New value: CONFIG_IKHEADERS=m
+
+Value of CONFIG_USB_CONFIGFS_ACM is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_USB_CONFIGFS_ACM is not set
+New value: CONFIG_USB_CONFIGFS_ACM=y
+
+Value of CONFIG_I2C_CHARDEV is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_I2C_CHARDEV is not set
+New value: CONFIG_I2C_CHARDEV=m
+
+Value of CONFIG_SPI_SPIDEV is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_SPI_SPIDEV is not set
+New value: CONFIG_SPI_SPIDEV=m
+
+Value of CONFIG_ZTE_AW883XX_SMART_PA is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_ZTE_AW883XX_SMART_PA is not set
+New value: CONFIG_ZTE_AW883XX_SMART_PA=m
+
+Value of CONFIG_SPRD_ROTATION_TASK is redefined by fragment /work/mu300-linux.fragment:
+Previous value: CONFIG_SPRD_ROTATION_TASK=y
+New value: # CONFIG_SPRD_ROTATION_TASK is not set
+
+Value of CONFIG_SND_DRIVERS is redefined by fragment /work/mu300-linux.fragment:
+Previous value: # CONFIG_SND_DRIVERS is not set
+New value: # CONFIG_SND_DRIVERS is the menu that gates them and the stock config has it off. CONFIG_SND_DRIVERS=y
+
+#
+# merged configuration written to /src/out-linux/.config (needs make)
+#

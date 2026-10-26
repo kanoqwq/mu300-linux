@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- This page talks to a device over USB. Its policy: scripts and styles from this site only, and no connection
+     to anything but this site and GitHub's API. (The hash is the theme script below; no web fonts here.) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-OMJkqZr7SKqxdIEl/JawS5rmqBdCOZaNDw1i12YqLwg='; style-src 'self'; img-src 'self' data:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>网页安装器：在浏览器中为 ZTE F50 / U30 Air 安装和管理 Linux</title>
+<meta name="description" content="在 Chrome 或 Edge 中通过 USB 为已 root 的 ZTE F50 / MU300 或 U30 Air 安装 Ubuntu 或 OpenWrt，电脑上无需 adb、Python 或脚本。">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/zh/web-installer/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/web-installer/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/web-installer/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/web-installer/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/web-installer/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="网页安装器：在浏览器中为 ZTE F50 / U30 Air 安装和管理 Linux">
+<meta property="og:description" content="在 Chrome 或 Edge 中通过 USB 为已 root 的 ZTE F50 / MU300 或 U30 Air 安装 Ubuntu 或 OpenWrt，电脑上无需 adb、Python 或脚本。">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/zh/web-installer/">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../assets/style.css">
+<link rel="stylesheet" href="../../assets/web-installer/web-installer.css">
+<script src="../../assets/site.js" defer></script>
+<script type="module" src="../../assets/web-installer/app.js"></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [
+  {"@type": "ListItem", "position": 1, "name": "首页", "item": "https://kaandikec.com/mu300-linux/zh/"},
+  {"@type": "ListItem", "position": 2, "name": "网页安装器", "item": "https://kaandikec.com/mu300-linux/zh/web-installer/"}
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">跳到正文</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../../zh/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../../zh/install/">安装</a>
+<a href="../../zh/web-installer/" aria-current="page">网页安装器</a>
+<a href="../../zh/choose/">选择系统</a>
+<a href="../../zh/features/">功能</a>
+<a href="../../zh/updates/">更新与安全</a>
+<a href="../../zh/troubleshooting/">故障排除</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="语言"><a href="../../web-installer/" hreflang="en" lang="en">English</a><a href="../../tr/web-installer/" hreflang="tr" lang="tr">Türkçe</a><a href="../../zh/web-installer/" hreflang="zh-Hans" lang="zh-Hans" aria-current="true">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="主题|自动|浅色|深色|跟随系统|切换颜色主题"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">菜单</button>
+</div>
+</header>
+<main id="content">
+
+<header class="page-head">
+<div class="prose">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../">首页</a> <span aria-hidden="true">/</span> <span aria-current="page">网页安装器</span></nav>
+<h1>网页安装器</h1>
+<p class="lede">在本页面通过 USB，用 Chrome 或 Edge 安装、更新和移除 Linux。电脑上无需安装任何东西。</p>
+<p class="sponsor-line">免费，由土耳其的一个人开发。 <a class="btn sponsor small" href="https://github.com/sponsors/dikeckaan"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="M8 14.2 6.9 13.2C3 9.7.5 7.4.5 4.6.5 2.4 2.2.7 4.4.7c1.2 0 2.4.6 3.1 1.5C8.2 1.3 9.4.7 10.6.7c2.2 0 3.9 1.7 3.9 3.9 0 2.8-2.5 5.1-6.4 8.6z"/></svg>赞助本项目</a></p>
+<div class="callout wi-tested">
+<strong>已在一台 F50 上用 macOS 的 Chrome 测试</strong>
+<p>2026-10-13，本页面在一台 ZTE F50（64 GB，Android 13，Magisk 30.6）上用 macOS 的 Chrome 155 和版本 v2026.10.25 从头到尾运行过：安装一个系统和两个系统（由设备自行下载版本，以及手动选择文件两种方式）、安装中途关闭标签页、启动 Linux、管理它、回到 Android，以及卸载。</p>
+<p><strong>尚未测试：</strong>Windows（那里 adb 接口需要 WinUSB 驱动）和以 Linux 作为电脑系统（需要下文的 udev 规则）；U30 Air；以 SD 卡为安装目标；Magisk 以外的 root 管理器；以及设备通过真实移动数据自行下载（测试设备的 Android 没有网络，它的下载是经由测试电脑到达 GitHub 的）。这些情况下，经过测试的方式是<a href="../install/">电脑安装器</a>和 <a href="../install/#magisk">Magisk zip</a>。如果这里出了问题，请保留日志（页面可以保存），并<a href="https://github.com/dikeckaan/mu300-linux/issues">告诉我们</a>。</p>
+</div>
+</div>
+</header>
+
+<div class="wrap">
+<noscript><p class="wi-noscript">本页面需要 JavaScript 和支持 WebUSB 的浏览器（电脑上的 Chrome 或 Edge）。<a href="../install/">安装指南</a>不需要这两者。</p></noscript>
+<div class="wi" id="wi-app" hidden><p class="wi-wait">正在加载安装器…</p></div>
+</div>
+
+<div class="prose">
+
+<nav class="toc" aria-labelledby="toc-h">
+<h2 id="toc-h">本页内容</h2>
+<ol>
+<li><a href="#before">开始之前</a></li>
+<li><a href="#does">页面做什么，设备上运行什么</a></li>
+<li><a href="#cannot-open">如果浏览器无法打开设备</a></li>
+<li><a href="#linux-adb">管理 MU300 Linux：先打开 adb</a></li>
+<li><a href="#safety">如果标签页被关闭或数据线脱落</a></li>
+<li><a href="#privacy">页面能看到和保存什么</a></li>
+<li><a href="#phone">用手机行吗？</a></li>
+</ol>
+</nav>
+
+<h2 id="before">开始之前</h2>
+<ul>
+<li>一台<strong>已用 Magisk 26 或更新版本 root</strong> 的 ZTE F50 / MU300 或 U30 Air。页面会显示设备是否已 root，以及 bootloader 对其锁定状态的说明，但两者都不改动：它不给设备 root，也不解锁 bootloader。</li>
+<li><strong>Windows、macOS 或 Linux 上的 Chrome、Edge 或其他 Chromium 浏览器。</strong>Firefox 和 Safari 没有 WebUSB。</li>
+<li>Android 中已打开 USB 调试，设备已接好，且没有其他程序占用它。正在运行的 adb 服务会占用它（用 <code>adb kill-server</code> 停止），另一个打开了本页面并已连接设备的浏览器窗口也会。</li>
+<li>设备最好能上网（装有带移动数据的 SIM 卡）：这样设备会自行下载版本。否则由您下载文件再交给页面。</li>
+<li><code>v2026.10.23</code> 之后的版本：更早版本的 Magisk zip 不认识本页面。</li>
+</ul>
+
+<h2 id="does">页面做什么，设备上运行什么</h2>
+<p>页面是一个小型 adb 客户端。它通过 USB 与设备通信，在设备上做三件事：把项目的几个脚本和该版本的 Magisk zip 放到设备上，用您的选择启动 <strong>zip 自带的安装器</strong>（也就是 Magisk 应用运行的那个），并显示该安装器的输出。安装、检查和写入顺序都由设备完成，与在 Magisk 中刷入 zip 完全相同。</p>
+<ul>
+<li>从已 root 的 Android <strong>安装</strong>：一个或两个系统、内核、内部存储或 SD 卡、VPN 模块。</li>
+<li><strong>管理</strong>运行 MU300 Linux（已打开 adb）的设备：版本、更新、内核、启动哪个系统、重启、回到 Android、日志。</li>
+<li><strong>备份</strong>安装会写入的内容，以及<strong>卸载</strong>。</li>
+</ul>
+<p>它不会在 32 GB 型号上缩小 Android 的数据分区（只显示数字并指向<a href="../install/#variant-32gb">电脑安装器</a>），也不会把它扩回去。</p>
+<p>您选择系统、内核和版本；页面会说明这一选择对应的文件及其大小，并在您不必下载任何东西的情况下把它送到设备上：它让<strong>设备自行下载该文件</strong>（从本项目在 GitHub 上的版本，通过设备自己的网络连接），并显示进度。中断的下载会从断点继续。这会消耗设备与文件大小相当的移动数据（每个系统 39 到 124 MB），运营商可能按流量计费。如果设备没有网络，页面会如实说明，并改由<strong>这台电脑下载文件</strong>：从本项目在 GitHub 上的版本镜像获取，再通过数据线发送（GitHub 不允许网页读取版本自身的文件，所以项目在网页可以读取的地方保留了一份副本）。最后的办法是您自己下载文件并选择它。</p>
+<p>无论文件通过哪种方式到来，设备只在它与 GitHub 为该版本公布的校验和一致时才使用它；这个校验和由浏览器直接从 GitHub 读取。文件的完整性来自这个固定的校验和，而不是它所经过的连接：设备上的下载工具（Magisk 的 busybox）无法验证 GitHub 的证书，因此不会因为文件“看起来来自哪里”而信任它。页面还会把下载限制在版本所标明的大小之内，并中止被转到 GitHub 以外地址的下载。</p>
+
+<h2 id="cannot-open">如果浏览器无法打开设备</h2>
+<div class="qa"><p><strong>所有系统</strong></p>
+<p>正在运行的 adb 服务（Android Studio、终端里的 <code>adb</code>、scrcpy、某些手机工具）占用了设备，或者另一个浏览器窗口打开了本页面并连接着设备。同一时间只能有一个程序与设备通信。</p>
+<div><code>adb kill-server</code>，关闭这些程序以及那个窗口或标签页，然后重新连接。如果原因在此，页面会提示“有别的程序正在使用设备”。</div></div>
+<div class="qa"><p><strong>Windows</strong></p>
+<p>浏览器只能使用装有 <strong>WinUSB</strong> 驱动的接口。在多数设备上，Android 的 adb 接口会自行向 Windows 请求它；F50 和 U30 Air 是否如此尚未实测。如果那里装的是厂商自己的 adb 驱动，浏览器就会被挡住。</p>
+<div>在设备管理器中查看设备的“ADB Interface”。如果它用的是其他驱动或没有驱动，请安装 Google 的 USB 驱动（它就是 WinUSB），或用 Zadig 给该接口绑定 WinUSB。只改 adb 接口，不要改网络或调制解调器接口。</div></div>
+<div class="qa"><p><strong>Linux</strong></p>
+<p>设备节点属于 root，浏览器无权写入。</p>
+<div>为 adb 接口添加一条 udev 规则，然后重新插入设备：
+<pre><code>echo 'SUBSYSTEM=="usb", ATTR{bInterfaceClass}=="ff", ATTR{bInterfaceSubClass}=="42", MODE="0660", TAG+="uaccess"' | sudo tee /etc/udev/rules.d/51-adb-webusb.rules
+sudo udevadm control --reload &amp;&amp; sudo udevadm trigger</code></pre>
+以 snap 或 flatpak 方式安装的浏览器可能还需要单独的 USB 权限。</div></div>
+<div class="qa"><p><strong>macOS</strong></p>
+<p>无需安装任何东西。只有其他程序占用设备时浏览器才会受阻。</p>
+<div>退出该程序。</div></div>
+<p>在浏览器能告知的范围内，页面会说明遇到的是哪一种情况。</p>
+
+<h2 id="linux-adb">管理 MU300 Linux：先打开 adb</h2>
+<p>从 v2026.10.23 之后的版本起，Linux 通过同一根线向所有电脑提供 adb，页面无需任何准备即可管理它。更早的 Linux 默认关闭 adb（<code>sudo mu300-usb adb on</code>）；被设置为只接受已授权密钥的系统，则只让它认识其 adb 密钥的电脑接入；没有可供询问的屏幕。此浏览器有自己的密钥（页面在“此浏览器的 adb 密钥”下显示）。要为它授权，请在设备上通过 SSH 运行：</p>
+<pre><code>echo '&lt;页面显示的密钥行&gt;' | sudo mu300-usb adb key -
+sudo mu300-usb adb on</code></pre>
+<p>持有已授权密钥的人可以获得设备的 root shell，所以只给您自己的浏览器和电脑授权。</p>
+
+<h2 id="safety">如果标签页被关闭或数据线脱落</h2>
+<p>安装是设备上的一项任务。它不需要本页面：关闭标签页、浏览器崩溃或电脑休眠，结束的只是页面对它的观察，而不是任务本身。重新连接后，页面会显示进行到哪一步。<strong>从 F50 上拔掉数据线就是断电</strong>（它没有电池）；U30 Air 会继续运行。</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">在这一步中断</th><th scope="col">设备的状态</th></tr></thead><tbody>
+<tr><th scope="row">发送文件、制定计划、构建启动镜像</th><td>存储中没有写入任何内容。它启动 Android。</td></tr>
+<tr><th scope="row">安装系统</th><td>留下一个未完成、没有任何东西会启动它的 Linux 文件系统。启动分区和 misc 没有改动：它启动 Android。请再次运行安装。</td></tr>
+<tr><th scope="row">写入启动镜像</th><td>只写入 Linux 槽位的启动分区，绝不写 Android 的。写到一半的镜像不是启动目标：让设备尝试它的那 32 个字节最后才写，而且是在镜像读回校验之后。它启动 Android。</td></tr>
+<tr><th scope="row">准备启动（misc 的 32 个字节）</th><td>一次很小的写入，写后读回，校验不通过就撤销。那里要么是 Android 的块，要么是 Linux 的试启动块。</td></tr>
+<tr><th scope="row">此后</th><td>设备尝试启动 Linux；没能完成启动的 Linux 会自行回退到 Android。</td></tr>
+</tbody></table></div>
+<p>卸载的顺序正好相反：先把 Android 设为启动的系统，再把 Android 的启动镜像放回 Linux 槽位，最后擦除 Linux 文件系统。无论在哪一步中断，设备启动的都是 Android。</p>
+
+<h2 id="privacy">页面能看到和保存什么</h2>
+<ul>
+<li>它访问 <strong>GitHub 的 API</strong> 获取版本列表，访问本站获取自己的文件。除此之外没有别的：没有统计分析，没有来自其他网站的字体或脚本。版本本身按您的选择，由设备从 GitHub 下载，或由浏览器从本项目在 <code>raw.githubusercontent.com</code> 上的镜像下载。</li>
+<li>它从不向设备索取 IMEI、IMSI、ICCID 或电话号码，也从不读取存有设备身份和射频校准的分区。</li>
+<li>序列号以遮盖形式显示。日志中，无论在屏幕上还是在可保存的文件里，序列号、身份号码、电话号码、MAC 地址、密码和密钥都会被遮盖。</li>
+<li>它在浏览器为本站提供的存储中只保存一样东西：此浏览器的 adb 密钥。</li>
+</ul>
+
+<h2 id="phone">用手机行吗？</h2>
+<p>Android 上的 Chrome 也有 WebUSB，所以带 OTG 线的手机原则上可以运行本页面。但它不是为此设计的，也没有这样测试过：手机必须在整个安装过程中通过转接线给 F50 供电，而且版本文件得在手机上。请使用电脑。</p>
+
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>项目</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">GitHub 上的源代码</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">支持本项目</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">发布版本（下载）</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN 模块</a></li>
+</ul>
+</div>
+<div>
+<h2>帮助</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki（英文）</a></li>
+<li><a href="../../zh/troubleshooting/">故障排除</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">报告问题</a></li>
+<li><a href="https://t.me/mu300project">Telegram 频道（动态与新版本）</a></li>
+</ul>
+</div>
+<div>
+<p>这是一个业余项目，风险自负，不提供任何担保。与 ZTE、紫光展锐或任何运营商无关，也未获其认可。脚本和文档：MIT；内核：GPL-2.0。</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,26 @@
+#!/bin/sh
+# Keep the modem's log channel empty.
+#
+# The CP streams its own debug log into a SIPC "spool" channel (label slog_nr in the device tree). On Android
+# slogmodem opens it and reads it for ever. Nothing here did, so the ring filled up - 257 KB were sitting in it
+# when this was found - and the modem stopped servicing SIPC altogether about ninety seconds into every boot:
+# AT answered at 67 s and was silent by 89 s, and restarting the vendor daemons did not bring it back.
+#
+# The driver registers the channel as a char device (see /proc/devices, "spool-<dst>-<channel>") but creates no
+# node, so make one and read it into the bit bucket.
+set -u
+export PATH="$PATH:/opt/mu300/busybox-bin"
+name=${1:-spool-5-5}
+node=${2:-/dev/slog_nr}
+for _ in $(seq 1 60); do
+    maj=$(awk -v n="$name" '$2 == n { print $1 }' /proc/devices)
+    [ -n "$maj" ] && break
+    sleep 2   # the modem stack may still be loading
+done
+[ -n "$maj" ] || { echo "modem-log-drain: no $name char device in this kernel" >&2; exit 0; }
+[ -c "$node" ] || { rm -f "$node"; mknod "$node" c "$maj" 0 || exit 0; }
+while :; do
+    # returns when the channel closes (a modem restart); pick it up again
+    dd if="$node" of=/dev/null bs=4096 2>/dev/null
+    sleep 1
+done

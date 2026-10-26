@@ -1,0 +1,19 @@
+#!/bin/sh
+# temporary: keep the Type-C/PD/DP kernel log on disk while testing on a dock (the device may lose power)
+L=/var/log/mu300-pd-dock.log
+echo "######## boot $(cat /proc/sys/kernel/random/boot_id) ########" >> $L
+for n in $(seq 1 72); do
+    if [ "$n" = 12 ]; then
+        for p in /sys/class/typec/port*; do
+            [ -e "$p/data_role" ] || continue
+            echo "== $(date +%T) $p: data $(cat $p/data_role) power $(cat $p/power_role); requesting host" >> $L
+            echo host > "$p/data_role" 2>> $L
+        done
+    fi
+    { echo "== $(date +%T) up $(cut -d' ' -f1 /proc/uptime) DP-1: $(cat /sys/class/drm/card0-DP-1/status 2>/dev/null)"
+      for s in /sys/class/power_supply/*; do echo "$(basename $s): $(grep -hE 'ONLINE|VOLTAGE_NOW|CURRENT_NOW|INPUT_CURRENT_LIMIT' $s/uevent 2>/dev/null | tr '\n' ' ')"; done
+      for p in /sys/class/typec/port*; do [ -e "$p/data_role" ] && echo "$p: data $(cat $p/data_role) power $(cat $p/power_role)"; done
+      dmesg -c | grep -aiE "tcpm|sc27xx-pd|sprd_pd|MU300|dptx|\[drm\]|displayport|altmode|typec"; } >> $L
+    sync
+    sleep 5
+done

@@ -1,0 +1,24 @@
+# Compressed swap in RAM (zram) for the MU300: Ubuntu, Arch and OpenWrt read the same file. It is on by default with
+# the values below (this file is /opt/mu300/lib/zram.conf.example); to change one, put the line in /etc/mu300/zram.conf,
+# which updates keep:
+#   sudo cp /opt/mu300/lib/zram.conf.example /etc/mu300/zram.conf
+# `mu300-zram off` / `mu300-zram on` (or mu300-toolkit -> System -> Compressed swap) write ZRAM_ENABLE for you.
+# Size and compressor take effect at the next boot, or now with: sudo mu300-zram stop; sudo mu300-zram start
+
+# 0 switches it off (also at every boot), 1 on.
+#ZRAM_ENABLE=1
+
+# The swap size in percent of the RAM Linux sees (~1.4 GiB, so 50 = ~700 MiB of swap). This is how much
+# uncompressed memory it takes in, not what it costs: an empty zram costs nothing, a full one about a third of it.
+#ZRAM_SIZE_PERCENT=50
+
+# The compressor: lz4 (fast, ~2.5:1) or zstd (slower, ~3.5:1); lzo-rle and lzo also exist. One the kernel does not
+# offer falls back to lz4. 6.18/7.2 offer lz4 and zstd; 5.4 offers every one of them.
+#ZRAM_ALGORITHM=lz4
+
+# The swap priority: above any swap file or partition you add, so zram fills first.
+#ZRAM_PRIORITY=100
+
+# vm.swappiness: how readily memory goes to swap rather than dropping file cache. 100 weighs the two equally, which
+# suits a swap that is RAM; up to 200 on the mainline kernels (5.4 stops at 100).
+#ZRAM_SWAPPINESS=100

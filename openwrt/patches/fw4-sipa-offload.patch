@@ -1,0 +1,14 @@
+--- a/usr/share/ucode/fw4.uc
++++ b/usr/share/ucode/fw4.uc
+@@ -551,6 +551,11 @@
+ 					if (fs.access(`/sys/class/net/${device}`))
+ 						push(devices, device);
+ 
++			/* mu300cell exposes sipa_eth0 as l3_device only, so fw4's
++			 * physical-device discovery misses its software ingress hook. */
++			if (fs.access('/sys/class/net/sipa_eth0'))
++				push(devices, 'sipa_eth0');
++
+ 			devices = sort(uniq(devices));
+ 		}
+ 

@@ -1,0 +1,72 @@
+#!/bin/sh
+# openwrt-luci's settings: a security part on every run, and first-install defaults once.
+#
+# This runs more than once: mu300-update apply and android-install.sh UPDATE=1 unpack a fresh rootfs (which carries
+# /etc/uci-defaults again) and keep /etc/config, so it runs on the first boot after every update, against the
+# user's settings.
+#
+# Every run: no NDP relay (security review of the port, unlike the fork). odhcpd's NDP relay turns every br-lan
+# neighbour entry into a /128 route to br-lan (ndproxy_routing, on by default), and a LAN host creates such an entry
+# for any address with one spoofed neighbour solicitation, even off-prefix (a DNS server, say): a route hijack. NAT66
+# rewrites every client source to the router's own address, so the carrier never needs NDP for a client address. Any
+# ndp or ndproxy_routing value is deleted (odhcpd's default is no NDP relay), whoever set it.
+# One by one, outside a batch: deleting an option that is not there is an error, which must not stop the others.
+for o in dhcp.lan.ndp dhcp.wan.ndp dhcp.lan.ndproxy_routing dhcp.wan.ndproxy_routing; do
+    uci -q delete $o
+done
+uci commit dhcp
+
+# Once: the defaults below are a first install's, and never overwrite what the user chose since (a PDP type or IPv6
+# mode that works on their carrier, a theme, a language). The marker luci.mu300.defaults is written last, in
+# /etc/config with the settings it guards: an update keeps both, a fresh or reset configuration has neither and gets
+# the defaults again. "Only when unset" per option cannot tell a choice from a default here: the themes' own
+# uci-defaults set mediaurlbase and luci-base sets lang before this runs, and an unset wan.ipv6 is plain OpenWrt's
+# 'extend', which a user can pick by clearing it.
+[ "$(uci -q get luci.mu300.defaults)" = 1 ] && exit 0
+
+# Aurora is the LuCI theme (Bootstrap stays installed and selectable), and LuCI and the MU300 panel start in English
+# (90-mu300 set it already; System > System > Language and Style switches to Turkish, Chinese or a language of the
+# lang extra). Runs after 90-mu300 and after the themes' own uci-defaults, which would otherwise pick their own
+# default.
+uci -q batch <<UCI
+set luci.main.mediaurlbase='/luci-static/aurora'
+set luci.main.lang='en'
+UCI
+# IPv6 by RA relay with NAT66 (K30, spec D9; kanoqwq/clean-tf-7.2 cd4fb28): mu300cell's ipv6 'relay' on a
+# dual-stack context. Measured in the fork on China Telecom IoT, whose +CGCONTRDP only ever shows a placeholder v6
+# address: the real public address arrives by SLAAC from the carrier's RA on the bearer.
+# - wan.ipv6 relay + pdptype IPV4V6: mu300cell.sh lets sipa_eth0 accept the RA (accept_ra 2) and runs the event
+#   monitor mu300cell-v6.sh; plain OpenWrt keeps ipv6 'extend' (unset) and pdptype IP
+# - dhcp.wan master: odhcpd relays RS/RA and DHCPv6 both ways between the LAN and wan, so clients SLAAC public
+#   addresses out of the carrier's /64 (no separate wan6 interface: the relay master is the interface that owns
+#   sipa_eth0); no NDP relay (above)
+# - firewall masq6: egress NAT66 through the device's own public address (the carrier routes one address per bearer;
+#   Android's tethering does the same)
+# - lan ip6assign 60: a local range for the LAN itself, from the random RFC 4193 ULA OpenWrt generated on its own
+#   first boot (no fixed ULA: one shared by every device collides when two LANs are joined, and fingerprints them)
+# - init.d/mu300-ndp (ndp-learn) routes the carrier's /64 to br-lan, below the RA route's metric, so NAT66 replies
+#   reach the clients
+uci -q batch <<UCI
+set network.wan.ipv6='relay'
+set network.wan.pdptype='IPV4V6'
+set network.lan.ip6assign='60'
+set dhcp.wan=dhcp
+set dhcp.wan.interface='wan'
+set dhcp.wan.master='1'
+set dhcp.wan.ra='relay'
+set dhcp.wan.dhcpv6='relay'
+set dhcp.lan.ra='relay'
+set dhcp.lan.dhcpv6='relay'
+UCI
+zone=$(uci -q show firewall | sed -n "s/^\(firewall\.@zone\[[0-9]*\]\)\.name='wan'$/\1/p")
+[ -n "$zone" ] && uci -q set $zone.masq6='1'
+uci commit network
+uci commit dhcp
+uci commit firewall
+# the marker last: a first run cut short runs again in full
+uci -q batch <<UCI
+set luci.mu300=mu300
+set luci.mu300.defaults='1'
+UCI
+uci commit luci
+exit 0

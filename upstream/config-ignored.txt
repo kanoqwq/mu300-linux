@@ -1,0 +1,5 @@
+# Options of mu300-mainline.config that a kernel may not have; build.sh lets them be unset (whole lines, CONFIG_ name).
+# Every other option Kconfig does not take stops the build.
+# 7.3 folded PROC_SYSCTL into SYSCTL (/proc/sys is now just SYSCTL); the fragment sets CONFIG_SYSCTL=y as well, so
+# /proc/sys is still checked on every kernel (FINDINGS 206).
+CONFIG_PROC_SYSCTL

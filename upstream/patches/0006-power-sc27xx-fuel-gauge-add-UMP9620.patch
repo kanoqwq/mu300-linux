@@ -1,0 +1,249 @@
+power: supply: sc27xx_fuel_gauge: UMP9620 (UMS9620's PMIC)
+
+The same FGU as the SC2731 with its enable bits at 0x2008/0x2010 and the 4200 mV calibration in bits 15:7 of
+its efuse word (Unisoc's 5.4 driver). On these boards "bat-temp" is the NTC's voltage: the battery node's
+voltage-temp-table turns it into a temperature. The charger IC has no driver, so the status comes from the
+battery current. current_now read a discharge current as a huge positive one (an unsigned subtraction; the
+vendor driver casts to s64 first). The ZTE U30 Air's battery under mainline.
+
+--- a/drivers/power/supply/sc27xx_fuel_gauge.c
++++ b/drivers/power/supply/sc27xx_fuel_gauge.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0
+ // Copyright (C) 2018 Spreadtrum Communications Inc.
+ 
++#include <linux/fixp-arith.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/iio/consumer.h>
+ #include <linux/interrupt.h>
+@@ -11,12 +12,15 @@
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/power_supply.h>
++#include <linux/property.h>
+ #include <linux/regmap.h>
+ #include <linux/slab.h>
+ 
+ /* PMIC global control registers definition */
+ #define SC27XX_MODULE_EN0		0xc08
+ #define SC27XX_CLK_EN0			0xc18
++#define UMP9620_MODULE_EN0		0x2008
++#define UMP9620_CLK_EN0			0x2010
+ #define SC27XX_FGU_EN			BIT(7)
+ #define SC27XX_FGU_RTC_EN		BIT(6)
+ 
+@@ -94,7 +98,31 @@
+  * @cap_table: capacity table with corresponding ocv
+  * @resist_table: resistance percent table with corresponding temperature
+  */
++/* Where each PMIC keeps the FGU's enable bits and the 4200 mV calibration (Unisoc's 5.4 driver) */
++struct sc27xx_fgu_variant_data {
++	u32 module_en;
++	u32 clk_en;
++	u32 fgu_cal;
++	u32 fgu_cal_shift;
++};
++
++static const struct sc27xx_fgu_variant_data sc2731_info = {
++	.module_en = SC27XX_MODULE_EN0,
++	.clk_en = SC27XX_CLK_EN0,
++	.fgu_cal = GENMASK(8, 0),
++	.fgu_cal_shift = 0,
++};
++
++/* UMS9620's PMIC (ZTE U30 Air; the F50 has no battery) */
++static const struct sc27xx_fgu_variant_data ump9620_info = {
++	.module_en = UMP9620_MODULE_EN0,
++	.clk_en = UMP9620_CLK_EN0,
++	.fgu_cal = GENMASK(15, 7),
++	.fgu_cal_shift = 7,
++};
++
+ struct sc27xx_fgu_data {
++	const struct sc27xx_fgu_variant_data *var;
+ 	struct regmap *regmap;
+ 	struct device *dev;
+ 	struct power_supply *battery;
+@@ -102,6 +130,12 @@
+ 	struct mutex lock;
+ 	struct gpio_desc *gpiod;
+ 	struct iio_channel *channel;
++	/*
++	 * NTC voltage (uV) -> temperature (0.1 degC + 1000) pairs, from the battery node's voltage-temp-table:
++	 * where "bat-temp" is the thermistor's voltage, not a temperature (UMS9620 boards)
++	 */
++	u32 *vt_table;
++	int vt_len;
+ 	struct iio_channel *charge_chan;
+ 	bool bat_present;
+ 	int internal_resist;
+@@ -413,9 +447,10 @@
+ 
+ 	/*
+ 	 * It is ADC values reading from registers which need to convert to
+-	 * corresponding current values.
++	 * corresponding current values. (s64 first: cur is unsigned, and a discharge current, below the
++	 * basic ADC value, wrapped around to a huge positive one)
+ 	 */
+-	*val = sc27xx_fgu_adc_to_current(data, cur - SC27XX_FGU_CUR_BASIC_ADC);
++	*val = sc27xx_fgu_adc_to_current(data, (s64)cur - SC27XX_FGU_CUR_BASIC_ADC);
+ 
+ 	return 0;
+ }
+@@ -528,7 +563,28 @@
+ 
+ static int sc27xx_fgu_get_temp(struct sc27xx_fgu_data *data, int *temp)
+ {
+-	return iio_read_channel_processed(data->channel, temp);
++	int ret, mv, uv, i;
++
++	ret = iio_read_channel_processed(data->channel, &mv);
++	if (ret < 0 || !data->vt_len) {
++		*temp = mv;
++		return ret < 0 ? ret : 0;
++	}
++
++	/* the voltage falls as the temperature rises; interpolate between the two pairs around it */
++	uv = mv * 1000;
++	for (i = 0; i < data->vt_len; i++)
++		if (uv > data->vt_table[2 * i])
++			break;
++	if (i == 0)
++		*temp = data->vt_table[1];
++	else if (i == data->vt_len)
++		*temp = data->vt_table[2 * i - 1];
++	else
++		*temp = fixp_linear_interpolate(data->vt_table[2 * i], data->vt_table[2 * i + 1],
++						data->vt_table[2 * i - 2], data->vt_table[2 * i - 1], uv);
++	*temp -= 1000;
++	return 0;
+ }
+ 
+ static int sc27xx_fgu_get_health(struct sc27xx_fgu_data *data, int *health)
+@@ -551,8 +607,35 @@
+ {
+ 	union power_supply_propval val;
+ 	struct power_supply *psy;
+-	int i, ret = -EINVAL;
++	int i, ret = -EINVAL, cur;
+ 
++	/*
++	 * Without one of the SC27xx chargers (the U30 Air's charger IC runs on its own, with no driver), the
++	 * battery current tells: charging or discharging beyond 20 mA. The device draws hundreds of mA, so less
++	 * than that in either direction means external power and a full battery. (Not the capacity: its
++	 * calibration asks for the status, which recursed until the stack overflowed.)
++	 */
++	if (data->var == &ump9620_info) {
++		for (i = 0; i < ARRAY_SIZE(sc27xx_charger_supply_name); i++) {
++			psy = power_supply_get_by_name(sc27xx_charger_supply_name[i]);
++			if (psy)
++				break;
++		}
++		if (!psy) {
++			ret = sc27xx_fgu_get_cur_now(data, &cur);
++			if (ret)
++				return ret;
++			if (cur > 20)
++				*status = POWER_SUPPLY_STATUS_CHARGING;
++			else if (cur < -20)
++				*status = POWER_SUPPLY_STATUS_DISCHARGING;
++			else
++				*status = POWER_SUPPLY_STATUS_FULL;
++			return 0;
++		}
++		power_supply_put(psy);
++	}
++
+ 	for (i = 0; i < ARRAY_SIZE(sc27xx_charger_supply_name); i++) {
+ 		psy = power_supply_get_by_name(sc27xx_charger_supply_name[i]);
+ 		if (!psy)
+@@ -936,8 +1019,8 @@
+ {
+ 	struct sc27xx_fgu_data *data = _data;
+ 
+-	regmap_update_bits(data->regmap, SC27XX_CLK_EN0, SC27XX_FGU_RTC_EN, 0);
+-	regmap_update_bits(data->regmap, SC27XX_MODULE_EN0, SC27XX_FGU_EN, 0);
++	regmap_update_bits(data->regmap, data->var->clk_en, SC27XX_FGU_RTC_EN, 0);
++	regmap_update_bits(data->regmap, data->var->module_en, SC27XX_FGU_EN, 0);
+ }
+ 
+ static int sc27xx_fgu_cap_to_clbcnt(struct sc27xx_fgu_data *data, int capacity)
+@@ -979,7 +1062,7 @@
+ 	 * according to below formula. Then convert to ADC values corresponding
+ 	 * to 1000 mV and 1000 mA.
+ 	 */
+-	cal_4200mv = (calib_data & 0x1ff) + 6963 - 4096 - 256;
++	cal_4200mv = ((calib_data & data->var->fgu_cal) >> data->var->fgu_cal_shift) + 6963 - 4096 - 256;
+ 	data->vol_1000mv_adc = DIV_ROUND_CLOSEST(cal_4200mv * 10, 42);
+ 	data->cur_1000ma_adc =
+ 		DIV_ROUND_CLOSEST(data->vol_1000mv_adc * 4 * data->calib_resist,
+@@ -1046,7 +1129,7 @@
+ 		return ret;
+ 
+ 	/* Enable the FGU module */
+-	ret = regmap_update_bits(data->regmap, SC27XX_MODULE_EN0,
++	ret = regmap_update_bits(data->regmap, data->var->module_en,
+ 				 SC27XX_FGU_EN, SC27XX_FGU_EN);
+ 	if (ret) {
+ 		dev_err(data->dev, "failed to enable fgu\n");
+@@ -1054,7 +1137,7 @@
+ 	}
+ 
+ 	/* Enable the FGU RTC clock to make it work */
+-	ret = regmap_update_bits(data->regmap, SC27XX_CLK_EN0,
++	ret = regmap_update_bits(data->regmap, data->var->clk_en,
+ 				 SC27XX_FGU_RTC_EN, SC27XX_FGU_RTC_EN);
+ 	if (ret) {
+ 		dev_err(data->dev, "failed to enable fgu RTC clock\n");
+@@ -1130,9 +1213,9 @@
+ 	return 0;
+ 
+ disable_clk:
+-	regmap_update_bits(data->regmap, SC27XX_CLK_EN0, SC27XX_FGU_RTC_EN, 0);
++	regmap_update_bits(data->regmap, data->var->clk_en, SC27XX_FGU_RTC_EN, 0);
+ disable_fgu:
+-	regmap_update_bits(data->regmap, SC27XX_MODULE_EN0, SC27XX_FGU_EN, 0);
++	regmap_update_bits(data->regmap, data->var->module_en, SC27XX_FGU_EN, 0);
+ 
+ 	return ret;
+ }
+@@ -1149,6 +1232,9 @@
+ 		return -ENOMEM;
+ 
+ 	data->regmap = dev_get_regmap(dev->parent, NULL);
++	data->var = device_get_match_data(dev);
++	if (!data->var)
++		data->var = &sc2731_info;
+ 	if (!data->regmap) {
+ 		dev_err(dev, "failed to get regmap\n");
+ 		return -ENODEV;
+@@ -1169,6 +1255,19 @@
+ 		return ret;
+ 	}
+ 
++	{
++		struct device_node *bat = of_parse_phandle(dev->of_node, "monitored-battery", 0);
++		int n = bat ? of_property_count_u32_elems(bat, "voltage-temp-table") : 0;
++
++		if (n >= 4 && !(n % 2)) {
++			data->vt_table = devm_kcalloc(dev, n, sizeof(u32), GFP_KERNEL);
++			if (data->vt_table && !of_property_read_u32_array(bat, "voltage-temp-table",
++									 data->vt_table, n))
++				data->vt_len = n / 2;
++		}
++		of_node_put(bat);
++	}
++
+ 	data->channel = devm_iio_channel_get(dev, "bat-temp");
+ 	if (IS_ERR(data->channel)) {
+ 		dev_err(dev, "failed to get IIO channel\n");
+@@ -1332,7 +1431,8 @@
+ };
+ 
+ static const struct of_device_id sc27xx_fgu_of_match[] = {
+-	{ .compatible = "sprd,sc2731-fgu", },
++	{ .compatible = "sprd,sc2731-fgu", .data = &sc2731_info },
++	{ .compatible = "sprd,ump9620-fgu", .data = &ump9620_info },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, sc27xx_fgu_of_match);

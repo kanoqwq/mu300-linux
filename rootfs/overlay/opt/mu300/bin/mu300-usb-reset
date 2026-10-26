@@ -1,0 +1,91 @@
+#!/bin/sh
+# Make the host re-enumerate the USB gadget, so it asks for a DHCP lease again.
+#
+# Why this exists: the host starts its DHCP the moment the gadget appears and gives up after a few seconds. A
+# device that is still booting (modules, modem, services) answers too late, the host falls back to a
+# self-assigned 169.254 address and, on macOS at least, stops asking. Re-enumerating looks like a fresh cable to
+# the host and it tries again.
+#
+# It detaches itself on purpose: unbinding the gadget kills the ACM console (and the SSH session over ECM) that
+# this was most likely started from, and a rebind that never runs leaves the device with no USB at all.
+# --fast-run / --ready (K67, ported from the kanoqwq fork, 4e70d02 and cd4fb28): the same rebind in about 100 ms,
+# for use once the LAN is up (OpenWrt's mu300-post).
+set -u
+export PATH="$PATH:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+G=${MU300_GADGET:-/sys/kernel/config/usb_gadget/linux}
+ROLE=${MU300_USB_ROLE:-/sys/class/usb_role/25100000.dwc3-role-switch/role}
+HOOK=${MU300_USB_HOOK:-/etc/hotplug.d/iface/10-mu300-usb}
+RUN=${MU300_RUN_DIR:-/run}
+
+# A gadget rebind is meaningless in host role and could race a deliberate boot-time role switch. Leave the host
+# controller and its attached NICs alone.
+[ "$(cat "$ROLE" 2>/dev/null)" = host ] && exit 0
+
+# init unmounts configfs before switch_root: mount it at the normal rootfs location so the gadget can be found.
+if [ ! -d "$G" ]; then
+    mkdir -p /sys/kernel/config 2>/dev/null
+    mount -t configfs configfs /sys/kernel/config 2>/dev/null || true
+fi
+[ -d "$G" ] || { echo "mu300-usb-reset: no gadget at $G" >&2; exit 1; }
+
+usl() { usleep "$1" 2>/dev/null || /opt/mu300/bin/busybox usleep "$1" 2>/dev/null || sleep 1; }
+
+if [ "${1:-}" = --ready ]; then
+    setsid "$0" --fast-run </dev/null >/dev/null 2>&1 &
+    exit 0
+fi
+
+# "--if-no-lease": used at the end of the boot. If the host took an address, leave it alone; if it is still
+# waiting (it gave up while the device was booting), re-enumerate once.
+if [ "${1:-}" = --if-no-lease ]; then
+    sleep "${2:-20}"
+    for f in ${MU300_LEASES:-} /tmp/dhcp.leases /var/lib/misc/dnsmasq.leases /var/lib/dnsmasq/dnsmasq.leases; do
+        [ -n "$f" ] && [ -s "$f" ] && exit 0
+    done
+    set -- --detach
+fi
+
+if [ "${1:-}" != --run ] && [ "${1:-}" != --fast-run ]; then
+    setsid "$0" --run </dev/null >/dev/null 2>&1 &
+    echo "re-enumerating: the console and any SSH session drop for a few seconds"
+    exit 0
+fi
+
+udc=$(cat "$G/UDC" 2>/dev/null)
+[ -n "$udc" ] || udc=$(ls /sys/class/udc 2>/dev/null | head -n1)
+if [ "${1:-}" = --fast-run ]; then
+    echo "" > "$G/UDC" 2>/dev/null
+    n=0
+    while [ -n "$(cat "$G/UDC" 2>/dev/null)" ] && [ "$n" -lt 100 ]; do
+        n=$((n + 1)); usl 20000
+    done
+    # USB 2.0 wants a visible disconnect interval; 100 ms is enough for the hosts' stacks to see the removal
+    usl 100000
+    n=0
+    while [ "$n" -lt 100 ]; do
+        echo "$udc" > "$G/UDC" 2>/dev/null && [ "$(cat "$G/UDC" 2>/dev/null)" = "$udc" ] && break
+        n=$((n + 1)); usl 20000
+    done
+    for nic in usb0 rndis0; do
+        [ -e "/sys/class/net/$nic" ] || continue
+        ip link set "$nic" master br-lan 2>/dev/null || true
+        ip link set "$nic" up 2>/dev/null || ifconfig "$nic" up 2>/dev/null
+    done
+    # the second enumeration can come after lan/ifup: complete the LAN handoff once more (OpenWrt only)
+    [ -x "$HOOK" ] && MU300_USB_SKIP_REBIND=1 ACTION=ifup INTERFACE=lan "$HOOK"
+    { cut -d ' ' -f 1 /proc/uptime 2>/dev/null || echo 0; } > "$RUN/mu300-usb-rebind-done" 2>/dev/null
+    logger -t mu300-usb "fast gadget rebind completed on $udc"
+    exit 0
+fi
+sleep 2
+echo "" > "$G/UDC" 2>/dev/null
+sleep 3
+n=0
+while [ "$n" -lt 10 ]; do
+    echo "$udc" > "$G/UDC" 2>/dev/null && break
+    n=$((n + 1))
+    sleep 2
+done
+sleep 1
+ip link set usb0 up 2>/dev/null || ifconfig usb0 up 2>/dev/null
+ip link set rndis0 up 2>/dev/null || true   # the RNDIS configuration for Windows, when the gadget has one

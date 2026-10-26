@@ -1,0 +1,88 @@
+name: Mainline kernel build
+
+# Builds the mainline port (upstream/: kernel + every out-of-tree vendor module) against the current longterm
+# release, the newest stable release, the newest mainline release (not a release candidate) and the newest of each
+# series the releases ship (6.18, 7.2, 7.3), every week and on changes to upstream/. The build stops on anything that
+# drifts silently - a patch that no longer applies, a config option Kconfig drops, a port edit whose anchor moved,
+# an API a module uses that is gone - so a red run is the early warning for the next kernel jump.
+
+on:
+  schedule:
+    - cron: '30 4 * * 1'
+  push:
+    branches: [main]
+    paths: ['upstream/**', '.github/workflows/mainline.yml']
+  workflow_dispatch:
+    inputs:
+      kv:
+        description: 'Kernel version to build (empty: longterm, stable, mainline and the shipped series from kernel.org)'
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  versions:
+    runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.pick.outputs.list }}
+    steps:
+      - id: pick
+        env:
+          KV_INPUT: ${{ github.event.inputs.kv }}
+        run: |
+          if [ -n "$KV_INPUT" ]; then
+            echo "$KV_INPUT" | grep -Eq '^[0-9]+\.[0-9]+(\.[0-9]+)?$' || { echo "not a kernel version: $KV_INPUT"; exit 1; }
+            echo "list=[\"$KV_INPUT\"]" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          curl -fsSL https://www.kernel.org/releases.json | python3 -c '
+          import json, re, sys
+          r = json.load(sys.stdin)["releases"]
+          lts = next(x["version"] for x in r if x["moniker"] == "longterm" and x["version"].startswith("6.18."))
+          stable = next(x["version"] for x in r if x["moniker"] == "stable" and not x.get("iseol"))
+          # a mainline release is X.Y until X.Y.1 (7.3: linux-7.3.tar.xz); a release candidate has no tarball there
+          vs = [x["version"] for x in r if re.fullmatch(r"[0-9]+\.[0-9]+(\.[0-9]+)?", x["version"])]
+          main = [x["version"] for x in r if x["moniker"] == "mainline" and x["version"] in vs]
+          def newest(series):
+              got = sorted((v for v in vs if v == series or v.startswith(series + ".")), key=lambda v: [int(p) for p in v.split(".")])
+              return got[-1:]
+          shipped = [v for s in ("7.2", "7.3") for v in newest(s)]
+          print("list=" + json.dumps(sorted({lts, stable, *main, *shipped})))
+          ' >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: versions
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        kv: ${{ fromJSON(needs.versions.outputs.list) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build environment
+        run: docker build -t mu300-mainline-build upstream/
+      - name: Kernel ${{ matrix.kv }}
+        env:
+          KV: ${{ matrix.kv }}
+        run: |
+          docker volume create mu300-mainline
+          docker run --rm -e KV="$KV" -v mu300-mainline:/src -v "$PWD/upstream":/work \
+            mu300-mainline-build bash /work/build.sh
+      - name: Vendor modules
+        env:
+          KV: ${{ matrix.kv }}
+        run: |
+          docker run --rm -e KV="$KV" -v mu300-mainline:/src -v "$PWD/upstream":/work \
+            mu300-mainline-build bash /work/build-modules.sh > /dev/null
+          ls upstream/out/modules/*.ko | wc -l
+      # every module of the boards is built now (FINDINGS 163): the tree and its objects take ~7 GB per kernel; the
+      # arm64 runner has had ~108 GB free on / (release run 37658534103), and this shows what is left
+      - name: Disk
+        if: always()
+        run: |
+          df -h / | tail -1
+          sudo du -sh /var/lib/docker/volumes/mu300-mainline 2>/dev/null || docker system df
+      - name: Build logs
+        if: failure()
+        run: tail -n 60 upstream/out/modules/*.log 2>/dev/null || true

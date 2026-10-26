@@ -1,0 +1,293 @@
+#!/bin/sh
+# adb over USB to Linux: adbd (/opt/mu300/bin/adbd, tools/adbd) as a function of the USB gadget, next to the network
+# and the serial console. Run by the mu300-adbd service unless "mu300-usb adb off" (/etc/mu300/adb) says not to: adb
+# is on by default. By hand:
+#   mu300-adbd run       keep adbd running in the gadget (the service): exits at once when adb is off
+#   mu300-adbd stop      take it out of the gadget again (after the service: its ExecStopPost; turn adb off with
+#                        mu300-usb adb off, or the service puts it back)
+#   mu300-adbd status    what is set up
+#   mu300-adbd auth      open or keys: who adbd lets in (below)
+# The gadget (boot/init) is made and bound before any system runs; adbd joins it later, so this rebinds it once, which
+# looks like a replug to the computer (the network and the console drop for a moment). FunctionFS wants its
+# descriptors before the bind: the function goes into the configuration once adbd has written them (ep1 exists).
+# FunctionFS also unbinds the whole gadget whenever adbd closes its control endpoint, and adbd does that at the end of
+# every adb connection (a computer that unplugs, sleeps or resets its USB): Android's init then binds the gadget again
+# (sys.usb.ffs.ready), here the loop of "run" does it, with adb when adbd is ready and without it otherwise, so the
+# network and the console never stay away. Not in the U30 Air's host role (mu300-usb host): the gadget is left alone.
+# Interfaces: the network function, the console, then adb (ff/42/01, "ADB Interface"): adding adb changes no number.
+# bcdDevice 0x0303 (0x0304 with RNDIS) while adb is in the gadget: Windows caches the MS OS descriptors per
+# VID/PID/bcdDevice, and adbd's ask for WinUSB for its interface, as Android's do. The MS OS descriptors are on in the
+# NCM/ECM configuration too while adb is there (boot/init has them for RNDIS only).
+# Authentication (mu300-usb adb auth open|keys, /etc/mu300/adb_auth), handed to adbd as MU300_ADB_AUTH when it starts:
+#   open  the default (the owner's decision of 2026-10-13, FINDINGS 70): adbd accepts every computer, no key asked.
+#         Anyone who can plug a cable into the device gets a root shell without a password, whatever passwords are
+#         set. A browser (WebUSB) or a GUI makes its own adb key, which nobody could have put on the device first.
+#   keys  only the keys listed in /etc/mu300/adb_keys or /root/.android/adb_keys (mu300-usb adb key) get in, with a
+#         root shell; every other computer sees "unauthorized".
+# A device set up before open existed keeps keys, and open is only ever read from a state that is whole: see
+# auth_read. adbd itself has no listener but USB in either mode (tools/adbd: no TCP, no vsock).
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+G=${MU300_GADGET:-/sys/kernel/config/usb_gadget/linux}
+ROLE=${MU300_USB_ROLE:-/sys/class/usb_role/25100000.dwc3-role-switch/role}
+FFS=${MU300_FFS:-/dev/usb-ffs/adb}
+ADBD=${MU300_ADBD_BIN:-/opt/mu300/bin/adbd}
+CONF=${MU300_ADB_CONF:-/etc/mu300/adb}
+AUTH_CONF=${MU300_ADB_AUTH_CONF:-/etc/mu300/adb_auth}
+KEYS=${MU300_ADB_KEYS:-/etc/mu300/adb_keys}
+ROOT_KEYS=${MU300_ADB_ROOT_KEYS:-/root/.android/adb_keys}
+OWNER=${MU300_ADB_OWNER:-0}    # whose the state must be (tests/: the user who runs them)
+FILESYSTEMS=${MU300_PROC_FILESYSTEMS:-/proc/filesystems}
+MOUNTS=${MU300_PROC_MOUNTS:-/proc/mounts}
+BUILTIN=${MU300_MODULES_BUILTIN:-/lib/modules/$(uname -r)/modules.builtin}
+UDC_CLASS=${MU300_UDC_CLASS:-/sys/class/udc}
+HOOK=${MU300_USB_HOOK:-/etc/hotplug.d/iface/10-mu300-usb}
+TICK=${MU300_ADBD_TICK:-1}     # seconds between two looks at the gadget
+GRACE=${MU300_ADBD_GRACE:-5}   # looks at an unbound gadget before it is bound again
+F=$G/functions/ffs.adb
+L=$G/configs/c.1/f3
+
+log() { echo "mu300-adbd: $*" >&2; }   # the service keeps it (journal, logread)
+nap() { sleep "$1" 2>/dev/null || sleep 1; }
+# The state is two small files in /etc/mu300, part of the root filesystem (no mount of its own to wait for) and
+# kept by mu300-update apply with the rest of that directory. The default applies only where there is no file at
+# all; a file that is there and cannot be read as what mu300-usb writes (empty, cut short, unreadable, another
+# word) is never the default: it is the closed reading, and the log says why.
+there() { [ -e "$1" ] || [ -L "$1" ]; }
+# root's, and writable by nobody else: a file or directory another user could write to decides nothing here
+trusted() {
+    set -- $(ls -ldn "$1" 2>/dev/null)
+    [ "${3:-}" = "$OWNER" ] || return 1
+    case $1 in [-d]????w*|[-d]???????w*) return 1 ;; [-d]*) return 0 ;; esac
+    return 1   # a symlink, or nothing
+}
+# on unless turned off: no file is a device that was never asked (a new installation, or an update from a release
+# where adb was off by default), and "off" is somebody's "mu300-usb adb off", which stays. A file that says
+# neither is somebody's choice that got damaged: adb stays off.
+adb_on() {
+    there "$CONF" || return 0
+    [ "$(cat "$CONF" 2>/dev/null)" = on ]
+}
+adb_damaged() { there "$CONF" && case $(cat "$CONF" 2>/dev/null) in on|off) false ;; esac; }
+has_keys() { grep -qs '^QAAAA' "$KEYS" "$ROOT_KEYS"; }
+# auth_read: MODE=open|keys, and WHY when it is keys although nobody wrote "keys".
+# open is one of two things and nothing else: "open" in a whole /etc/mu300/adb_auth, or no state at all in a
+# directory that is root's. Keys is everything else:
+#   - "keys" in adb_auth
+#   - an adb_auth that is empty, unreadable, a symlink, writable by others, or says anything else
+#   - no adb_auth on a device where adb was set up under v2026.10.20-23, when adb was keys only: "on" (or anything
+#     but "off") in /etc/mu300/adb, or a key authorised. mu300-usb writes adb_auth with every "adb on", "off", "key"
+#     and "auth" since, so only such a device looks like this; it stays keys until "mu300-usb adb auth open".
+#   - /etc/mu300 missing or not root's alone
+# In keys mode with no key in adb_keys nobody gets in (adbd has nothing a signature could match, and no way to
+# approve a new key).
+auth_read() {
+    MODE=keys WHY=
+    _d=${AUTH_CONF%/*}
+    trusted "$_d" || { WHY="$_d is missing or not root's alone"; return 0; }
+    if there "$AUTH_CONF"; then
+        case $(cat "$AUTH_CONF" 2>/dev/null) in
+            keys) ;;
+            open) if trusted "$AUTH_CONF"; then MODE=open; else WHY="$AUTH_CONF is not a file of root's alone"; fi ;;
+            *) WHY="$AUTH_CONF is empty, unreadable or says neither open nor keys" ;;
+        esac
+    elif there "$CONF" && [ "$(cat "$CONF" 2>/dev/null)" != off ]; then
+        WHY="adb was turned on when it took keys only (no $AUTH_CONF)"
+    elif has_keys; then WHY="a key was authorised when adb took keys only (no $AUTH_CONF)"
+    else MODE=open; fi
+    return 0
+}
+auth_mode() { auth_read; echo "$MODE"; }
+host_role() { [ "$(cat "$ROLE" 2>/dev/null)" = host ]; }
+ffs_ready() { [ -e "$FFS/ep1" ]; }
+linked() { [ -e "$L" ] || [ -L "$L" ]; }
+rndis() { case $(readlink "$G/configs/c.1/f1" 2>/dev/null) in *rndis*) return 0 ;; esac; return 1; }
+udc_name() {  # the controller: the one bound now, or the first there is
+    u=$(cat "$G/UDC" 2>/dev/null)
+    [ -n "$u" ] || u=$(ls "$UDC_CLASS" 2>/dev/null | head -n1)
+    echo "$u"
+}
+unbind() { [ -z "$(cat "$G/UDC" 2>/dev/null)" ] || echo "" > "$G/UDC" 2>/dev/null; }
+
+# the configuration with or without adb (unbound only: configfs refuses links and descriptors of a bound gadget)
+with_adb() {
+    linked || ln -s "$F" "$L" || return 1
+    if rndis; then echo 0x0304 > "$G/bcdDevice"; else
+        echo 0x0303 > "$G/bcdDevice"
+        echo 0xcd > "$G/os_desc/b_vendor_code" 2>/dev/null
+        echo MSFT100 > "$G/os_desc/qw_sign" 2>/dev/null
+        echo 1 > "$G/os_desc/use" 2>/dev/null
+        [ -e "$G/os_desc/c.1" ] || [ -L "$G/os_desc/c.1" ] || ln -s "$G/configs/c.1" "$G/os_desc/c.1" 2>/dev/null
+    fi
+    return 0
+}
+# The MS OS descriptors stay on once with_adb has turned them on: f_ncm/f_rndis keep a stale os_desc_table after
+# an unbind, a bind without them leaves it so and the next unbind frees it twice (kmalloc-16 corrupted, oops of
+# 2026-10-22; kernel patch 0027). NCM's compatible_id is empty, so the computer sees no other function for it.
+without_adb() {
+    rm -f "$L"
+    if rndis; then echo 0x0302 > "$G/bcdDevice"; else
+        echo 0x0301 > "$G/bcdDevice"
+    fi
+    return 0
+}
+
+# bind UDC; up to N tries 0.2 s apart (adbd rewrites its descriptors when no bind came within a second, and a bind
+# in that gap fails)
+bind() {
+    n=0
+    while [ "$n" -lt "${2:-10}" ]; do
+        echo "$1" > "$G/UDC" 2>/dev/null && [ "$(cat "$G/UDC" 2>/dev/null)" = "$1" ] && return 0
+        n=$((n + 1)); nap 0.2
+    done
+    return 1
+}
+# the gadget netdevs back into the LAN after a rebind (as mu300-usb-reset): they should survive it, this is a guard
+lan_back() {
+    for nic in usb0 rndis0; do
+        [ -e "/sys/class/net/$nic" ] || continue
+        ip link set "$nic" master br-lan 2>/dev/null || true
+        ip link set "$nic" up 2>/dev/null || true
+    done
+    [ -x "$HOOK" ] && MU300_USB_SKIP_REBIND=1 ACTION=ifup INTERFACE=lan "$HOOK" >/dev/null 2>&1
+    return 0
+}
+
+# rebind WANT: unbind, put adb in (WANT=adb, when adbd is ready) or take it out, bind again. A gadget that will not
+# bind with adb is bound without it: the network and the console come first. Status 2: bound, but without the adb
+# that was wanted; 1: not bound at all.
+rebind() {
+    u=$(udc_name)
+    [ -n "$u" ] || { log "no USB device controller"; return 1; }
+    unbind
+    if [ "$1" = adb ] && ffs_ready && with_adb && bind "$u"; then
+        lan_back; log "gadget bound on $u with adb"; return 0
+    fi
+    without_adb
+    bind "$u" 30 || { log "could not bind the gadget on $u"; return 1; }
+    lan_back
+    [ "$1" = adb ] || return 0
+    log "gadget bound on $u without adb (adbd is not ready)"
+    return 2
+}
+
+prepare() {
+    if [ ! -d "$G" ]; then   # init unmounts configfs before switch_root
+        mkdir -p /sys/kernel/config 2>/dev/null
+        mount -t configfs configfs /sys/kernel/config 2>/dev/null
+    fi
+    [ -d "$G" ] || { log "no USB gadget at $G"; return 1; }
+    [ -d "$F" ] || mkdir "$F" 2>/dev/null || { log "cannot make the FunctionFS function (kernel without USB_CONFIGFS_F_FS?)"; return 1; }
+    mkdir -p "$FFS"
+    grep -q " $FFS functionfs " "$MOUNTS" 2>/dev/null || mount -t functionfs adb "$FFS" ||
+        { log "cannot mount FunctionFS at $FFS"; return 1; }
+}
+# out of the gadget: unbound, unlinked, bound again; then the function and its mount go
+teardown() {
+    if linked; then
+        rebind none
+    elif [ -z "$(cat "$G/UDC" 2>/dev/null)" ] && ! host_role; then
+        u=$(udc_name); [ -n "$u" ] && bind "$u" 30 && lan_back
+    fi
+    grep -q " $FFS functionfs " "$MOUNTS" 2>/dev/null && umount "$FFS" 2>/dev/null
+    [ -d "$F" ] && ! linked && rmdir "$F" 2>/dev/null
+    return 0
+}
+
+usable() {  # why adb cannot run here, if it cannot
+    [ -x "$ADBD" ] || { echo "no adbd in this system ($ADBD): mu300-update apply brings an image with it"; return 1; }
+    # FunctionFS registers its filesystem only with its first function: before that, the kernel's list of built-in
+    # modules tells, or making the function
+    grep -qw functionfs "$FILESYSTEMS" 2>/dev/null || grep -qs '/usb_f_fs\.ko$' "$BUILTIN" || [ -d "$F" ] ||
+        { mkdir "$F" 2>/dev/null && rmdir "$F"; } ||
+        { echo "this kernel has no FunctionFS (CONFIG_USB_CONFIGFS_F_FS): 5.4 has it, a mainline kernel from a release with adb (mu300-update kernel)"; return 1; }
+}
+
+run() {
+    if ! adb_on; then
+        if adb_damaged; then log "$CONF says neither on nor off: adb stays off (mu300-usb adb on, or adb off)"; fi
+        echo "adb is off (mu300-usb adb on)"; exit 0
+    fi
+    # Not at the first no: early in a boot the FunctionFS module cannot be had yet (OpenWrt starts this at S19, 13 s
+    # after power-on on an F50, and making the function failed there; a minute later it works - FINDINGS 82). With adb
+    # on by default a service that gives up then leaves every OpenWrt without adb until somebody restarts it. Asked
+    # again for a minute (MU300_ADB_WAIT), and only then is the reason logged.
+    _w=0
+    until why=$(usable); do
+        _w=$((_w + 1)); [ "$_w" -le "${MU300_ADB_WAIT:-60}" ] || { log "$why"; exit 0; }
+        nap 1
+    done
+    prepare || exit 1
+    auth_read; auth=$MODE
+    if [ "$auth" = open ]; then
+        log "auth open: every computer on the USB cable gets a root shell (mu300-usb adb auth keys, or adb off)"
+    else
+        log "auth keys: only the authorised keys get in${WHY:+ ($WHY)}"
+        has_keys || log "no key is authorised: nobody gets in (mu300-usb adb key FILE)"
+    fi
+    stopping= pid= exits= t0= idle=0 cool=0
+    trap 'stopping=1' TERM INT HUP
+    while [ -z "$stopping" ]; do
+        if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then
+            if [ -n "$pid" ]; then
+                wait "$pid" 2>/dev/null; log "adbd exited ($?), restarting it"
+                now=$(cut -d. -f1 /proc/uptime 2>/dev/null || echo 0)
+                [ -n "$t0" ] && [ $((now - t0)) -lt 60 ] || { t0=$now; exits=0; }
+                exits=$((exits + 1))
+                [ "$exits" -lt 5 ] || { log "adbd keeps exiting: adb is left out of the gadget"; teardown; exit 1; }
+                cool=0
+            fi
+            MU300_ADB_AUTH=$auth "$ADBD" </dev/null &
+            pid=$!
+            # its first descriptors: up to 5 s
+            n=0; while [ "$n" -lt 25 ] && ! ffs_ready && kill -0 "$pid" 2>/dev/null; do nap 0.2; n=$((n + 1)); done
+        fi
+        if host_role; then idle=0
+        elif [ -z "$(cat "$G/UDC" 2>/dev/null)" ]; then
+            # FunctionFS took the gadget off the controller (an adb connection ended). Not at once: mu300-usb-reset
+            # and the OpenWrt LAN hook unbind it on purpose for a few seconds, and bind it again themselves.
+            idle=$((idle + 1))
+            if [ "$idle" -ge "$GRACE" ]; then
+                n=0; while [ "$n" -lt 25 ] && ! ffs_ready; do nap 0.2; n=$((n + 1)); done
+                rebind adb || cool=30
+                idle=0
+            fi
+        elif [ "$cool" -gt 0 ]; then
+            # adb would not bind a moment ago: the gadget is bound without it, and is not unbound every second
+            idle=0; cool=$((cool - 1))
+        else
+            idle=0
+            linked || ! ffs_ready || rebind adb || cool=30   # adbd has just started: into the gadget
+        fi
+        nap "$TICK"
+    done
+    [ -n "$pid" ] && kill "$pid" 2>/dev/null && wait "$pid" 2>/dev/null
+    teardown
+    exit 0
+}
+
+case ${1:-status} in
+    run) run ;;
+    usable) usable ;;
+    auth) auth_mode ;;
+    state)  # one word for programs (mu300-device --json): off, unavailable (no adbd or no FunctionFS), open, keys
+        if ! adb_on; then echo off; elif ! usable >/dev/null; then echo unavailable; else auth_mode; fi ;;
+    stop)
+        [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; }
+        [ -d "$G" ] || exit 0
+        pkill -x adbd 2>/dev/null || killall adbd 2>/dev/null
+        teardown ;;
+    status)
+        if adb_on; then echo "adb: on"; elif adb_damaged; then echo "adb: off ($CONF says neither on nor off)"
+        else echo "adb: off"; fi
+        auth_read
+        if [ "$MODE" = open ]; then echo "auth: open (every computer on the USB cable gets a root shell, no key asked)"
+        else echo "auth: keys (only the authorised keys get in${WHY:+; $WHY})"; fi
+        why=$(usable) && echo "adbd: $ADBD" || echo "adbd: cannot run: $why"
+        if linked; then echo "gadget: adb is in it ($(cat "$G/UDC" 2>/dev/null || echo unbound))"; else echo "gadget: without adb"; fi
+        k=0
+        for f in "$KEYS" "$ROOT_KEYS"; do
+            c=$(grep -c '^QAAAA' "$f" 2>/dev/null); k=$((k + ${c:-0}))
+        done
+        [ "$(id -u)" = 0 ] && echo "authorised keys: $k" ;;
+    *) sed -n '2,9s/^# \{0,1\}//p' "$0" >&2; exit 2 ;;
+esac

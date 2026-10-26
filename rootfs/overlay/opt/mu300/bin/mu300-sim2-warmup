@@ -1,0 +1,183 @@
+#!/bin/bash
+# One native bring-up of the selected card per Linux boot; all modem I/O stays in persistent brokers.
+# procd instance of init.d/mu300-atd's dual-SIM path. Three things, in this order:
+#
+# 1. The cold start (mu300-sim2-start). When the radio is up the boot is confirmed: /etc/mu300-sim-pending goes.
+# 2. When the cold start cannot be done, the settings go back to SIM1 without live switching and the reason is
+#    kept in /etc/mu300-sim-fallback for the Dual SIM page. Then this boot is made a SIM1 boot:
+#    - nothing was sent to the radio yet (no card, a PIN, the channels never came up): the pin, the freeze and the
+#      markers go and the ordinary SIM1 warm-up runs, through the owner of nr1 that is already there; without one,
+#      the AT service starts over as the ordinary SIM1 service (nothing holds a channel then).
+#    - the radio had been told to start the other card: that is not undone in a running modem, so the device
+#      restarts once, into a plain SIM1 boot (the settings are SIM1's by then; it cannot repeat).
+# 3. The second card's first data. A SIM2 that has never had mobile data under Linux gets a time to get it
+#    (network.wan.sim_data_wait, 300 s; 0: no check). With data it is remembered (/etc/mu300/sim-data-seen) and
+#    never checked again: an outage is not the card's failure. Without, the choice is given up as in 2 (reason
+#    no-data) and the device restarts into SIM1 - a card chosen from far away that turns out to have no service
+#    must not keep the device off the network until somebody walks up to it. Whether SIM1 has data is not asked:
+#    a user whose SIM1 has none is at the device and reads the reason on the page.
+set -euo pipefail
+export PATH="$PATH:/opt/mu300/busybox-bin"
+umask 077   # the logs and markers under /run/mu300 are root's alone
+DEVICE=${MU300_DEVICE_CMD:-/opt/mu300/bin/mu300-device}
+[ -e /etc/openwrt_release ] && [ "$("$DEVICE" 2>/dev/null)" = u30air ] || {
+    echo 'Native SIM startup requires U30 Air on OpenWrt' >&2
+    exit 1
+}
+PENDING=/etc/mu300-sim-pending
+FALLBACK=/etc/mu300-sim-fallback
+CHECK=/run/mu300/sim-boot-check
+MD=/opt/mu300/bin/mobile-data
+ATD_INIT=${MU300_ATD_INIT:-/etc/init.d/mu300-atd}
+REBOOT=${MU300_REBOOT_CMD:-reboot}
+SIM_CONFIG_U30=1
+. "${MU300_SIM_CONFIG_LIB:-/opt/mu300/lib/sim-config.sh}"
+# a fraction of a second where the static busybox takes one (the image's /bin/sleep takes whole seconds only)
+nap() { "${MU300_BUSYBOX:-/opt/mu300/bin/busybox}" sleep "$1" 2>/dev/null || sleep "$1" 2>/dev/null || sleep 1; }
+# Preserve the charging-only boot's promise to leave both radios off (the pending marker stays for the real boot).
+[[ ! -e /run/mu300/charging-boot ]] || exit 0
+SLOT=$(cat /run/mu300/sim-slot 2>/dev/null || echo 1)
+case "$SLOT" in 0|1) ;; *) SLOT=1 ;; esac
+say() { logger -t mu300-sim "$*" 2>/dev/null || true; }
+# The chosen card's radio is switched off in its settings (mu300-sim-radio, FINDINGS 185): no cold start now, and no
+# verdict on the card. The boot is the one the user asked for, so the pending marker goes (left, it would make the next
+# boot a SIM1 boot), and the cold start runs when the radio is switched on (mobile-data rf-apply runs this script
+# again with --deferred: the same cold start, without the first-data trial).
+DEFERRED=0
+[[ ${1:-} != --deferred ]] || DEFERRED=1
+SIM_RADIO=${MU300_SIM_RADIO_BIN:-/opt/mu300/bin/mu300-sim-radio}
+rf_off() { [[ -x $SIM_RADIO ]] && ! "$SIM_RADIO" allowed "$SLOT" 2>/dev/null; }
+put_off() {
+    rm -f "$PENDING"
+    atomic "$CHECK" kept
+    say "SIM$((SLOT+1)): its radio is switched off in its settings; the cold start waits until it is switched on"
+    exit 0
+}
+if [[ $DEFERRED == 1 && -e /run/mu300/sim-radio-ready ]]; then exit 0; fi
+# A second run in one boot is the AT service restarted by hand: the owners were closed and opened again, and the
+# cold start cannot be repeated. Nothing is concluded from it and no setting is changed.
+if [[ -e /run/mu300/sim2-cold-start.attempted ]]; then
+    : > /run/mu300/sim-active-unknown
+    say "the AT service was restarted in a dual-SIM boot: the radio state is unknown, reboot"
+    exit 1
+fi
+MU300_EXPECT_CCID=$(cat /etc/mu300/sim$((SLOT+1))-iccid 2>/dev/null || true)
+export MU300_EXPECT_CCID
+atomic() { local t; t=$(mktemp "$1.XXXXXX") && printf '%s\n' "$2" > "$t" && mv -f "$t" "$1"; }
+uptime_s() { cut -d. -f1 /proc/uptime 2>/dev/null || date +%s; }
+if rf_off; then
+    [[ $DEFERRED == 0 ]] || { echo "SIM$((SLOT+1)): its radio is still switched off in its settings" >&2; exit 1; }
+    put_off
+fi
+broker_ready() {
+    local directory=$1 owner
+    [[ -p "$directory/cmd" && -s "$directory/owner/pid" ]] || return 1
+    owner=$(cat "$directory/owner/pid")
+    [[ "$owner" =~ ^[0-9]+$ ]] && kill -0 "$owner" 2>/dev/null
+}
+# settings_to_sim1 REASON: SIM1 without live switching from the next boot on, the reason for the page. The pending
+# marker goes only when both settings were written: left there, it makes the next boot a SIM1 boot all the same.
+settings_to_sim1() {
+    local saved=1
+    atomic "$FALLBACK" "$1" || true
+    sim_cfg_save_default 0 || saved=0
+    sim_cfg_save_hot 0 || saved=0
+    [[ $saved == 0 ]] || rm -f "$PENDING"
+}
+# restart_for_sim1 WHY: the one restart into a plain SIM1 boot. Not before the boot has been marked good (S99 and
+# 30 s: mu300-next-boot --rearm), so that it is never counted as a failed boot; nothing dials meanwhile.
+restart_for_sim1() {
+    : > /run/mu300/sim-active-unknown
+    if [[ "$(sim_cfg_auto_restart)" != 1 ]]; then
+        say "$1: reboot for SIM1 (network.wan.sim_restart is 0: not restarting by itself)"
+        exit 1
+    fi
+    say "$1: restarting into SIM1"
+    while [[ -r /proc/uptime && $(uptime_s) -lt ${MU300_SIM_REBOOT_AFTER:-120} ]]; do sleep 5; done
+    sync 2>/dev/null || true
+    exec $REBOOT
+}
+fallback() {  # fallback REASON: see 2. above
+    local reason=$1
+    settings_to_sim1 "$reason"
+    say "SIM$((SLOT+1)) cold start failed ($reason): SIM1 without live switching from now on"
+    if [[ -e /run/mu300/sim2-cold-start.sent ]]; then
+        restart_for_sim1 "the radio was already told to start SIM$((SLOT+1))"
+    fi
+    # Nothing reached the radio: this boot can still be an ordinary SIM1 boot. The pinned slot becomes 0, the
+    # freeze and the managed marker go; sim-fallback-boot keeps init.d/mu300-atd on the SIM1 path for this boot
+    # whatever the settings say.
+    : > /run/mu300/sim-fallback-boot
+    atomic /run/mu300/sim-slot 0 || printf '0\n' > /run/mu300/sim-slot
+    rm -f /run/mu300/sim-managed /run/mu300-radio-freeze /run/mu300/sim2-radio-ready /run/mu300/sim-active-unknown
+    if broker_ready /run/mu300-at; then
+        # a data owner that died left its fifo behind: without it the dial goes through nr1
+        broker_ready /run/mu300-at2 || rm -f /run/mu300-at2/cmd
+        say "nothing was sent to the radio: starting SIM1 in this boot"
+        exec "$MD" radio-on
+    fi
+    say "nothing was sent to the radio and nr1 has no owner: the AT service starts over for SIM1"
+    setsid "$ATD_INIT" restart </dev/null >/dev/null 2>&1 &
+    exit 1
+}
+# the brokers are polled every 0.2 s (the cold start is on the dial's critical path)
+for ((attempt=0; attempt<450; attempt++)); do
+    ready=1
+    for directory in /run/mu300-at /run/mu300-at2 /run/mu300-at4 /run/mu300-at5; do
+        broker_ready "$directory" || ready=0
+    done
+    [[ $ready == 1 ]] && break
+    nap 0.2
+done
+[[ $ready == 1 ]] || fallback brokers-missing
+# (the radio lock is waited for: netifd's first dial takes it for a moment at about the same time, only to find
+# the radio not ready, and "busy" here would be a cold start that never ran)
+start_rc=0
+MU300_RADIO_LOCK_WAIT=30 "$MD" radio-locked /bin/bash /opt/mu300/bin/mu300-sim2-start --cold-start || start_rc=$?
+# 7: the radio was switched off meanwhile (mu300-sim2-start sent nothing)
+if [[ $start_rc == 7 ]]; then
+    [[ $DEFERRED == 0 ]] || exit 1
+    put_off
+fi
+if [[ $start_rc != 0 ]]; then
+    reason=$(head -c 40 /run/mu300/sim2-cold-start.reason 2>/dev/null | tr -cd 'a-z0-9-')
+    fallback "${reason:-cold-start-failed}"
+fi
+rm -f "$PENDING" /run/mu300/sim-active-unknown
+# put off at boot and started now: the trial for a first data is not run (the device is not restarted under a user
+# who has just switched the radio on)
+[[ $DEFERRED == 0 ]] || { atomic "$CHECK" kept; exit 0; }
+
+# 3. the second card's first data
+[[ "$SLOT" == 1 ]] || exit 0
+if sim_seen 1; then atomic "$CHECK" confirmed; exit 0; fi
+wait=$(sim_cfg_data_wait)
+if [[ "$wait" == 0 ]]; then atomic "$CHECK" off; exit 0; fi
+end=$(( $(uptime_s) + wait ))
+atomic "$CHECK" "waiting $end"
+while :; do
+    if sim_wan_up sipa_eth8; then
+        sim_seen_add 1 || true
+        atomic "$CHECK" confirmed
+        say "SIM2 has mobile data: remembered, and not checked again"
+        exit 0
+    fi
+    # the user moved on: another card now (a live switch), or SIM1 chosen for the next boot
+    [[ "$(cat /run/mu300/sim-slot 2>/dev/null)" == 1 && "$(sim_cfg_default 2>/dev/null)" == 1 ]] || {
+        atomic "$CHECK" off; exit 0; }
+    [[ $(uptime_s) -lt $end ]] || break
+    sleep 2
+done
+# No verdict on a card whose data nobody was trying to bring up: taken down by hand, switched off in the settings,
+# suspended by mu300-power, in the middle of a live switch, or held back because it is roaming with data roaming
+# off (mobile-data, FINDINGS 120: registered, and no data on purpose).
+if sim_wan_held_down || [[ -s /run/mu300-mobile-data.suspend || -e /run/mu300/sim-switching ]] ||
+   [[ -e /run/mu300/data-roaming-held ]] ||
+   [[ "$(uci -q get network.wan.auto 2>/dev/null || true)" == 0 || "$(uci -q get network.wan.disabled 2>/dev/null || true)" == 1 ]]; then
+    atomic "$CHECK" kept
+    say "SIM2 has no mobile data, but the connection was off: the choice is kept"
+    exit 0
+fi
+atomic "$CHECK" failed
+settings_to_sim1 no-data
+restart_for_sim1 "SIM2 got no mobile data within $wait s of being chosen"

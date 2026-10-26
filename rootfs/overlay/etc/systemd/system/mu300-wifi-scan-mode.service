@@ -1,0 +1,14 @@
+[Unit]
+Description=MU300 Wi-Fi scan mode for this boot (the hotspot off so the radio can list networks; 10 minutes at most)
+ConditionPathExists=/etc/mu300/wifi-scan-mode
+# wifi-client needs wlan0, which mu300-wifi brings
+After=mu300-wifi.service
+Wants=mu300-wifi.service
+Before=mu300-hotspot.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/mu300/bin/wifi-client scan-mode boot
+
+[Install]
+WantedBy=multi-user.target

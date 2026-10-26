@@ -1,0 +1,4050 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: hu\n"
+
+msgid "Status dashboard"
+msgstr "Állapot-irányítópult"
+
+msgid "Cellular"
+msgstr "Mobilhálózat"
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM"
+msgstr "Dual SIM"
+
+msgid "SIM settings"
+msgstr "SIM-beállítások"
+
+msgid "Network locks"
+msgstr "Hálózati zárolások"
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "SMS forwarding"
+msgstr "SMS-továbbítás"
+
+msgid "AT terminal"
+msgstr "AT-terminál"
+
+msgid "Adapter settings"
+msgstr "Adapterbeállítások"
+
+msgid "TTL"
+msgstr "TTL"
+
+msgid "Data usage"
+msgstr "Adatforgalom"
+
+msgid "Device management"
+msgstr "Eszközkezelés"
+
+msgid "Update"
+msgstr "Frissítés"
+
+msgid "Backup of settings"
+msgstr "Beállítások mentése"
+
+msgid "Languages"
+msgstr "Nyelvek"
+
+msgid "Power"
+msgstr "Energia"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Terminal"
+msgstr "Terminál"
+
+msgid "Terminal settings"
+msgstr "Terminál beállításai"
+
+msgid "Overview"
+msgstr "Áttekintés"
+
+msgid "Profiles"
+msgstr "Profilok"
+
+msgid "Subscriptions"
+msgstr "Előfizetések"
+
+msgid "Engines"
+msgstr "Motorok"
+
+msgid "Settings"
+msgstr "Beállítások"
+
+msgid "Logs"
+msgstr "Naplók"
+
+msgid "Packages after an update"
+msgstr "Csomagok frissítés után"
+
+msgid "MU300 control center: status dashboard, network locks, AT terminal, SMS and VPN"
+msgstr "MU300 vezérlőközpont: állapotpanel, hálózati zárak, AT terminál, SMS és VPN"
+
+msgid "Terminal: a root shell on the device in the browser"
+msgstr "Terminál: root shell az eszközön, a böngészőben"
+
+msgid "China Mobile"
+msgstr "China Mobile"
+
+msgid "China Unicom"
+msgstr "China Unicom"
+
+msgid "China Telecom"
+msgstr "China Telecom"
+
+msgid "China Broadnet"
+msgstr "China Broadnet"
+
+msgid "China Tietong"
+msgstr "China Tietong"
+
+msgid "Excellent"
+msgstr "Kiváló"
+
+msgid "Good"
+msgstr "Jó"
+
+msgid "Fair"
+msgstr "Közepes"
+
+msgid "Poor"
+msgstr "Gyenge"
+
+msgid "Unknown"
+msgstr "Ismeretlen"
+
+msgid "%d d %d h"
+msgstr "%d nap %d óra"
+
+msgid "%d h %d min"
+msgstr "%d óra %d perc"
+
+msgid "%d min"
+msgstr "%d perc"
+
+msgid "No neighbor-cell data"
+msgstr "Nincsenek szomszédcella-adatok"
+
+msgid "Locked"
+msgstr "Zárolva"
+
+msgid "Lock"
+msgstr "Zárolás"
+
+msgid "Unknown error"
+msgstr "Ismeretlen hiba"
+
+msgid "Confirm"
+msgstr "Megerősítés"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Mégse"
+
+msgid "%d s"
+msgstr "%d mp"
+
+msgid "%d h"
+msgstr "%d óra"
+
+msgid "New SMS · %s"
+msgstr "Új SMS · %s"
+
+msgid "Unknown number"
+msgstr "Ismeretlen szám"
+
+msgid "Select"
+msgstr "Kiválasztás"
+
+msgid "never"
+msgstr "soha"
+
+msgid "just now"
+msgstr "az imént"
+
+msgid "%s ago"
+msgstr "%s ezelőtt"
+
+msgid "Failed: %s"
+msgstr "Sikertelen: %s"
+
+msgid "Management connection lost"
+msgstr "A felügyeleti kapcsolat megszakadt"
+
+msgid "Installing the VPN module"
+msgstr "A VPN-modul telepítése"
+
+msgid "Installing the engine"
+msgstr "A motor telepítése"
+
+msgid "Adding the subscription"
+msgstr "Előfizetés hozzáadása"
+
+msgid "Refreshing the subscriptions"
+msgstr "Az előfizetések frissítése"
+
+msgid "Testing the latency of every profile"
+msgstr "Minden profil késleltetésének mérése"
+
+msgid "Downloading the config"
+msgstr "A konfiguráció letöltése"
+
+msgid "Working…"
+msgstr "Folyamatban…"
+
+msgid "done"
+msgstr "kész"
+
+msgid "failed"
+msgstr "sikertelen"
+
+msgid "Verify the uploaded file"
+msgstr "Feltöltött fájl ellenőrzése"
+
+msgid "The uploaded file is checked against the SHA256SUMS of the VPN module's latest release, downloaded over HTTPS. When that is not possible (offline, an older release), it is installed only if you allow an unverified file: it then runs as root with no check."
+msgstr "A feltöltött fájlt a VPN-modul legújabb kiadásának HTTPS-en letöltött SHA256SUMS fájljával ellenőrizzük. Ha ez nem lehetséges (offline, régebbi kiadás), csak akkor települ, ha engedélyez egy nem ellenőrzött fájlt: ekkor ellenőrzés nélkül, rootként fut."
+
+msgid "Install it even if it cannot be verified"
+msgstr "Telepítés akkor is, ha nem ellenőrizhető"
+
+msgid "Install only a verified file"
+msgstr "Csak ellenőrzött fájl telepítése"
+
+msgid "Upload failed: %s"
+msgstr "A feltöltés sikertelen: %s"
+
+msgid "The VPN module is too old for this panel"
+msgstr "A VPN-modul túl régi ehhez a panelhez"
+
+msgid "The VPN module is not installed"
+msgstr "A VPN-modul nincs telepítve"
+
+msgid "This page needs the VPN module with the machine-readable mu300-vpn (module v2 or newer). Updating it keeps the profiles and the settings."
+msgstr "Ehhez az oldalhoz a gépileg olvasható mu300-vpn-t tartalmazó VPN-modul kell (v2 vagy újabb modul). A frissítés megtartja a profilokat és a beállításokat."
+
+msgid "The VPN is a module of its own: mu300-vpn with its kill switch and profiles, and one extra per engine (Xray, sing-box, mihomo, dae). It is installed with mu300-extra install vpn."
+msgstr "A VPN önálló modul: a mu300-vpn a kill switch-csel és a profilokkal, plusz egy-egy extra motoronként (Xray, sing-box, mihomo, dae). A mu300-extra install vpn paranccsal telepíthető."
+
+msgid "The download is a few MB for the module and up to tens of MB per engine: on mobile data it counts towards your plan."
+msgstr "A letöltés a modulnál néhány MB, motoronként akár több tíz MB: mobiladaton ez a csomagja terhére megy."
+
+msgid "Update the VPN module"
+msgstr "A VPN-modul frissítése"
+
+msgid "Install the VPN module"
+msgstr "A VPN-modul telepítése"
+
+msgid "Upload the file…"
+msgstr "Fájl feltöltése…"
+
+msgid "Offline: upload mu300-linux-vpn-core.tar.gz (or the bundle mu300-linux-vpn.tar.gz) from the release page of the VPN module."
+msgstr "Offline: töltse fel a mu300-linux-vpn-core.tar.gz fájlt (vagy a mu300-linux-vpn.tar.gz csomagot) a VPN-modul kiadási oldaláról."
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "This is a network or frequency scan: it takes one to three minutes, holds the modem's AT channel all that time, and mobile data may pause meanwhile. It runs in the background; the reply appears here when it is done."
+msgstr "Ez egy hálózat- vagy frekvenciakeresés: egy-három percig tart, a modem AT-csatornáját egész idő alatt lefoglalja, és a mobiladat közben szünetelhet. A háttérben fut; a válasz itt jelenik meg, amikor elkészül."
+
+msgid "This changes a network mode, band or cell setting the modem stores: it stays in force after a reboot, and in Android too, where a network that does not match it shows as No Service. The Locks page shows these settings and resets them."
+msgstr "Ez a modem által tárolt hálózati módot, sávot vagy cellabeállítást módosít: újraindítás után is érvényben marad, Androidon is, ahol a nem megfelelő hálózat „Nincs szolgáltatás” állapotban jelenik meg. A Zárolások oldal megmutatja és visszaállítja ezeket a beállításokat."
+
+msgid "This switches the radio, the data connection or the modem itself: mobile data drops until it is restored, and this page may lose its connection for a while."
+msgstr "Ez a rádiót, az adatkapcsolatot vagy magát a modemet kapcsolja: a mobiladat megszakad, amíg vissza nem áll, és ez az oldal egy időre elveszítheti a kapcsolatot."
+
+msgid "This changes the data profiles (APNs) stored in the modem, which mobile data and Android use."
+msgstr "Ez a modemben tárolt adatprofilokat (APN-eket) módosítja, amelyeket a mobiladat és az Android használ."
+
+msgid "This changes the SIM's PIN lock or enters a PIN: wrong PINs block the SIM until its PUK is entered."
+msgstr "Ez a SIM PIN-zárát módosítja vagy PIN-kódot ad meg: a hibás PIN-kódok letiltják a SIM-et, amíg meg nem adják a PUK-kódját."
+
+msgid "Basic"
+msgstr "Alap"
+
+msgid "Registration/signal"
+msgstr "Regisztráció/jel"
+
+msgid "Bearer"
+msgstr "Vivő"
+
+msgid "Engineering mode"
+msgstr "Mérnöki mód"
+
+msgid "AT command (↑↓ history, Enter to send)"
+msgstr "AT-parancs (↑↓ előzmények, Enter a küldéshez)"
+
+msgid "Send"
+msgstr "Küldés"
+
+msgid "Clear screen"
+msgstr "Képernyő törlése"
+
+msgid "Ready."
+msgstr "Kész."
+
+msgid "Session history (click to reuse)"
+msgstr "Munkamenet-előzmények (kattintás az újrahasználathoz)"
+
+msgid "Running in the background (at most %d s); the reply appears here when it is done…"
+msgstr "A háttérben fut (legfeljebb %d mp); a válasz itt jelenik meg, amikor elkészül…"
+
+msgid "The modem gave no final answer in time"
+msgstr "A modem nem adott időben végleges választ"
+
+msgid "%d s in the background"
+msgstr "%d mp a háttérben"
+
+msgid "(no output)"
+msgstr "(nincs kimenet)"
+
+msgid "This command changes the modem's state."
+msgstr "Ez a parancs megváltoztatja a modem állapotát."
+
+msgid "Not sent yet: waiting for confirmation"
+msgstr "Még nincs elküldve: megerősítésre vár"
+
+msgid "Send this AT command?"
+msgstr "Elküldi ezt az AT-parancsot?"
+
+msgid "Send anyway"
+msgstr "Küldés mégis"
+
+msgid "Not sent"
+msgstr "Nincs elküldve"
+
+msgid "Request failed"
+msgstr "A kérés sikertelen"
+
+msgid "(empty)"
+msgstr "(üres)"
+
+msgid "Passphrase (8 characters or more)"
+msgstr "Jelmondat (legalább 8 karakter)"
+
+msgid "The passphrase again"
+msgstr "A jelmondat újra"
+
+msgid "Download the backup"
+msgstr "A mentés letöltése"
+
+msgid "Back up the settings"
+msgstr "Beállítások mentése"
+
+msgid "One file with the hotspot, mobile data and the APN, the network locks, the VPN profiles and settings, SMS forwarding, the LAN address, the host name, the time zone and the SSH keys. It holds passwords: with a passphrase it is encrypted, and only that passphrase opens it again."
+msgstr "Egy fájl a hotspottal, a mobiladattal és az APN-nel, a hálózati zárakkal, a VPN-profilokkal és -beállításokkal, az SMS-továbbítással, a LAN-címmel, a gépnévvel, az időzónával és az SSH-kulcsokkal. Jelszavakat tartalmaz: jelmondattal titkosítva van, és csak az a jelmondat nyitja meg újra."
+
+msgid "Include the login password"
+msgstr "A bejelentkezési jelszóval együtt"
+
+msgid "Passphrase, if the file is encrypted"
+msgstr "Jelmondat, ha a fájl titkosított"
+
+msgid "Show what would change"
+msgstr "Mutassa, mi változna"
+
+msgid "Restore"
+msgstr "Visszaállítás"
+
+msgid "The file is larger than 4 MiB"
+msgstr "A fájl nagyobb 4 MiB-nál"
+
+msgid "The settings of the file replace these. The hotspot, mobile data or the LAN may restart, and this page may lose its connection for a moment."
+msgstr "A fájl beállításai felváltják ezeket. A hotspot, a mobiladat vagy a LAN újraindulhat, és ez az oldal egy pillanatra elveszítheti a kapcsolatot."
+
+msgid "Restore from a backup"
+msgstr "Visszaállítás mentésből"
+
+msgid "Every value of the file is checked first; one that is refused and nothing is changed. What is the same is left alone, and no VPN profile, subscription or SSH key of this device is removed."
+msgstr "A fájl minden értéke előbb ellenőrzésre kerül; ha egyet elutasít, semmi sem változik. Ami ugyanaz, az érintetlen marad, és az eszköz egyetlen VPN-profilja, előfizetése vagy SSH-kulcsa sem törlődik."
+
+msgid "Keep this device's login password"
+msgstr "Az eszköz bejelentkezési jelszavának megtartása"
+
+msgid "Take a file of another device model"
+msgstr "Más eszközmodell fájljának elfogadása"
+
+msgid "The two passphrases differ"
+msgstr "A két jelmondat eltér"
+
+msgid "The passphrase needs 8 characters or more"
+msgstr "A jelmondatnak legalább 8 karakter kell"
+
+msgid "Saved (encrypted)"
+msgstr "Mentve (titkosítva)"
+
+msgid "Saved. The file is not encrypted: it holds passwords, keep it safe."
+msgstr "Mentve. A fájl nincs titkosítva: jelszavakat tartalmaz, tartsa biztonságban."
+
+msgid "Choose a backup file first"
+msgstr "Előbb válasszon mentésfájlt"
+
+msgid "Restoring…"
+msgstr "Visszaállítás…"
+
+msgid "Restored"
+msgstr "Visszaállítva"
+
+msgid "The restore did not finish: see the lines above"
+msgstr "A visszaállítás nem fejeződött be: lásd a fenti sorokat"
+
+msgid "Loading…"
+msgstr "Betöltés…"
+
+msgid "Channel Analysis"
+msgstr "Csatornaelemzés"
+
+msgid "A scan takes the Wi-Fi hotspot off its channel for a moment: connected devices drop, and some (macOS in particular) may not reconnect by themselves. This page scans as soon as it opens and again every few seconds. Reach the panel over USB or another way first if you depend on the hotspot."
+msgstr "A keresés egy pillanatra leveszi a Wi-Fi hozzáférési pontot a csatornájáról: a csatlakozott eszközök kapcsolata megszakad, és némelyik (főleg a macOS) magától nem csatlakozik újra. Ez az oldal megnyitáskor azonnal keres, utána pedig néhány másodpercenként. Ha a hozzáférési pontra támaszkodik, előbb érje el a panelt USB-n vagy más úton."
+
+msgid "Scan anyway"
+msgstr "Keresés mégis"
+
+msgid "Saved"
+msgstr "Mentve"
+
+msgid "CPU profile unavailable"
+msgstr "CPU profile unavailable"
+
+msgid "Power saving"
+msgstr "Power saving"
+
+msgid "Balanced"
+msgstr "Balanced"
+
+msgid "Performance"
+msgstr "Performance"
+
+msgid "Cores capped at about 60 %% of their maximum (cooler, less power)."
+msgstr "Cores capped at about 60 %% of their maximum (cooler, less power)."
+
+msgid "Schedutil across the full hardware range (the stock behaviour)."
+msgstr "Schedutil across the full hardware range (the stock behaviour)."
+
+msgid "Every cluster pinned at its hardware maximum."
+msgstr "Every cluster pinned at its hardware maximum."
+
+msgid "CPU profile"
+msgstr "CPU profile"
+
+msgid "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+msgstr "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+
+msgid "Saved profile: %s"
+msgstr "Saved profile: %s"
+
+msgid "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+msgstr "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+
+msgid "Clusters"
+msgstr "Clusters"
+
+msgid "Cores"
+msgstr "Cores"
+
+msgid "Governor"
+msgstr "Governor"
+
+msgid "Now"
+msgstr "Now"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Hardware max"
+msgstr "Hardware max"
+
+msgid "Frequencies in MHz."
+msgstr "Frequencies in MHz."
+
+msgid "Highlighted cores are online. A core taken offline stays offline, also after a reboot, until it is brought back. CPU0 always stays online."
+msgstr "A kiemelt magok online állapotban vannak. A kikapcsolt mag offline marad, újraindítás után is, amíg vissza nem kapcsolják. A CPU0 mindig online marad."
+
+msgid "Low latency: on"
+msgstr "Alacsony késleltetés: be"
+
+msgid "Low latency: off"
+msgstr "Alacsony késleltetés: ki"
+
+msgid "Low latency keeps CPU0 out of its idle states, as ZTE's U30 Air firmware does: Wi-Fi delays are much shorter, and the device draws more power. Off by default."
+msgstr "Az alacsony késleltetés kívül tartja a CPU0-t az üresjárati állapotokon, ahogy a ZTE U30 Air firmware-e is: a Wi-Fi késleltetése jóval kisebb, az eszköz pedig több energiát fogyaszt. Alapértelmezés szerint ki."
+
+msgid "Thermal"
+msgstr "Hőmérséklet"
+
+msgid "The kernel's thermal zones, read only. A zone with trip points throttles the cooling devices bound to it at its passive trip; a cooling state of 0 is no throttling."
+msgstr "A kernel hőzónái, csak olvasható. A küszöbpontokkal rendelkező zóna a passzív küszöbénél korlátozza a hozzá kötött hűtőeszközöket; a 0 hűtési állapot azt jelenti, hogy nincs korlátozás."
+
+msgid "Zone"
+msgstr "Zóna"
+
+msgid "Temperature"
+msgstr "Hőmérséklet"
+
+msgid "Trip points"
+msgstr "Küszöbpontok"
+
+msgid "Cooling devices"
+msgstr "Hűtőeszközök"
+
+msgid "Stress test started"
+msgstr "Terheléses teszt elindítva"
+
+msgid "Saved: it takes effect at the next reboot"
+msgstr "Mentve: a következő újraindításkor lép életbe"
+
+msgid "CPU voltage offset (EXPERIMENTAL)"
+msgstr "CPU-feszültségeltolás (KÍSÉRLETI)"
+
+msgid "Experimental: changing the CPU voltage can make the device unstable, corrupt your data and permanently damage your device. Use it entirely at your own risk."
+msgstr "Kísérleti funkció: a CPU-feszültség módosítása instabillá teheti az eszközt, megrongálhatja az adatait, és véglegesen károsíthatja az eszközét. Használata teljes mértékben a saját felelősségére történik."
+
+msgid "CPU voltage offset unavailable"
+msgstr "A CPU-feszültségeltolás nem érhető el"
+
+msgid "Not available with this kernel (a mainline kernel of this release or later has it)."
+msgstr "Ezzel a kernellel nem érhető el (ennek a kiadásnak vagy egy újabbnak a mainline kernele tartalmazza)."
+
+msgid "Off: the stock voltages"
+msgstr "Ki: a gyári feszültségek"
+
+msgid "Changes at the next reboot"
+msgstr "A következő újraindításkor változik"
+
+msgid "Trial boot: kept once this boot has been up 10 minutes"
+msgstr "Próbaindítás: megmarad, amint ez az indítás 10 percig fut"
+
+msgid "Kept: this offset passed its trial boot"
+msgstr "Megtartva: ez az eltolás átment a próbaindításon"
+
+msgid "a boot with it ended without a clean shutdown"
+msgstr "egy vele történt indítás tiszta leállítás nélkül ért véget"
+
+msgid "its trial boot ended before 10 minutes"
+msgstr "a próbaindítása 10 percen belül véget ért"
+
+msgid "invalid value"
+msgstr "érvénytelen érték"
+
+msgid "unknown SoC firmware"
+msgstr "ismeretlen SoC-firmware"
+
+msgid "refused by the kernel"
+msgstr "a kernel elutasította"
+
+msgid "the kernel could not start CPU scaling with it"
+msgstr "a kernel nem tudta elindítani vele a CPU-frekvenciaskálázást"
+
+msgid "Offsets in µV for the three CPU domains (cores 0-3, 4-6 and 7), in whole steps. A new offset takes effect at the next reboot, as a trial: it is kept once that boot has been up 10 minutes, and dropped (back to 0) if a boot with it ends in a crash, a watchdog reset or a power cut."
+msgstr "Eltolások µV-ban a három CPU-tartományhoz (0-3., 4-6. és 7. CPU-mag), egész lépésekben. Az új eltolás a következő újraindításkor lép életbe, próbaként: megmarad, amint az az indítás 10 percig fut, és elvetésre kerül (vissza 0-ra), ha egy vele történt indítás összeomlással, watchdog-visszaállítással vagy áramszünettel ér véget."
+
+msgid "Running now (µV)"
+msgstr "Most fut (µV)"
+
+msgid "Saved for the next boot (µV)"
+msgstr "Mentve a következő indításra (µV)"
+
+msgid "State"
+msgstr "Állapot"
+
+msgid "Taken back automatically: %s µV (%s)"
+msgstr "Automatikusan visszavonva: %s µV (%s)"
+
+msgid "The SoC firmware of this device is not one whose voltage encoding is known: only the stock voltages are possible."
+msgstr "Az eszköz SoC-firmware-e nem olyan, amelynek feszültségkódolása ismert: csak a gyári feszültségek lehetségesek."
+
+msgid "Domain"
+msgstr "Tartomány"
+
+msgid "Offset now (µV)"
+msgstr "Jelenlegi eltolás (µV)"
+
+msgid "Highest step"
+msgstr "Legmagasabb lépcső"
+
+msgid "New offset (µV)"
+msgstr "Új eltolás (µV)"
+
+msgid "Limits: %d to %d µV, in steps of %d µV."
+msgstr "Korlátok: %d és %d µV között, %d µV-os lépésekben."
+
+msgid "Save for the next boot"
+msgstr "Mentés a következő indításra"
+
+msgid "Each offset must be a multiple of %d µV between %d and %d."
+msgstr "Minden eltolásnak %d µV többszörösének kell lennie %d és %d között."
+
+msgid "Type %s to confirm."
+msgstr "Írja be a(z) %s szót a megerősítéshez."
+
+msgid "Back to the stock voltages"
+msgstr "Vissza a gyári feszültségekre"
+
+msgid "Type %s to confirm:"
+msgstr "Írja be a(z) %s szót a megerősítéshez:"
+
+msgid "Run a 10-minute CPU stress test"
+msgstr "10 perces CPU-terheléses teszt futtatása"
+
+msgid "Test a new offset under load during its trial boot. The device may crash if the voltage is too low; the next boot then runs at the stock voltages."
+msgstr "Tesztelje az új eltolást terhelés alatt a próbaindítása során. Ha a feszültség túl alacsony, az eszköz összeomolhat; a következő indítás ekkor a gyári feszültségekkel fut."
+
+msgid "A stress test is running."
+msgstr "Terheléses teszt fut."
+
+msgid "USB role"
+msgstr "USB-szerep"
+
+msgid "Current role"
+msgstr "Jelenlegi szerep"
+
+msgid "Switch USB role"
+msgstr "USB-szerep váltása"
+
+msgid "Device mode"
+msgstr "Eszköz mód"
+
+msgid "Host mode"
+msgstr "Gazda mód"
+
+msgid "Enable host mode at boot"
+msgstr "Gazda mód engedélyezése rendszerindításkor"
+
+msgid "Apply role"
+msgstr "Szerep alkalmazása"
+
+msgid "Host mode disconnects USB networking and serial on this port. F50 has no battery; management may be lost and a USB adapter usually needs a powered hub."
+msgstr "A gazda mód bontja az USB-hálózatot és a soros kapcsolatot ezen a porton. Az F50-nek nincs akkumulátora; a felügyelet megszakadhat, és egy USB-adapterhez általában tápellátással rendelkező hub kell."
+
+msgid "USB network mode"
+msgstr "USB-hálózati mód"
+
+msgid "Network protocol"
+msgstr "Hálózati protokoll"
+
+msgid "Apply duration"
+msgstr "Alkalmazás időtartama"
+
+msgid "Next reboot only"
+msgstr "Csak a következő újraindításkor"
+
+msgid "Permanent"
+msgstr "Végleges"
+
+msgid "Enable selected protocol"
+msgstr "Kiválasztott protokoll engedélyezése"
+
+msgid "Save; apply after reboot"
+msgstr "Mentés; alkalmazás újraindítás után"
+
+msgid "NCM is the default. Windows does not natively support ECM; RNDIS changes enumeration. With Enable selected protocol off, only your choice is saved. Next reboot only applies once, then returns to NCM."
+msgstr "Az NCM az alapértelmezett. A Windows nem támogatja natívan az ECM-et; az RNDIS megváltoztatja az enumerálást. Ha a Kiválasztott protokoll engedélyezése ki van kapcsolva, csak a választás kerül mentésre. A Csak a következő újraindításkor egyszer érvényesül, majd visszaáll NCM-re."
+
+msgid "USB adapters"
+msgstr "USB-adapterek"
+
+msgid "Refresh"
+msgstr "Frissítés"
+
+msgid "Available only in host mode. Refresh brings discovered USB adapters up; adding to LAN saves the bridge and reloads networking."
+msgstr "Csak gazda módban érhető el. A Frissítés aktiválja a felismert USB-adaptereket; a LAN-hoz adás menti a hidat és újratölti a hálózatot."
+
+msgid "Recent modem operations"
+msgstr "Legutóbbi modemműveletek"
+
+msgid "Show"
+msgstr "Megjelenítés"
+
+msgid "The control panel's recent calls, of this boot and the one before: when, which page call or AT command, how long it took and how it ended (ok, error, busy, killed). No values, replies or messages are kept. Useful when the panel was stuck."
+msgstr "A vezérlőpult legutóbbi hívásai ebből és az előző indításból: mikor, melyik oldalhívás vagy AT-parancs, mennyi ideig tartott és hogyan ért véget (ok, hiba, foglalt, leállítva). Értékeket, válaszokat vagy üzeneteket nem tárol. Hasznos, ha a panel elakadt."
+
+msgid "Unavailable"
+msgstr "Nem érhető el"
+
+msgid "USB network mode is unavailable in host mode; host auto-start also disables USB network auto-start."
+msgstr "Az USB-hálózati mód gazda módban nem érhető el; a gazda mód automatikus indítása az USB-hálózat automatikus indítását is letiltja."
+
+msgid "Host mode immediately disconnects USB management. F50 has no battery and peripherals may need external power; make sure another management path exists."
+msgstr "A gazda mód azonnal bontja az USB-n keresztüli felügyeletet. Az F50-nek nincs akkumulátora, és a perifériáknak külső tápellátás kellhet; győződjön meg róla, hogy van más felügyeleti útvonal."
+
+msgid "USB networking and serial will re-enumerate in device mode."
+msgstr "Az USB-hálózat és a soros kapcsolat eszköz módban újra enumerálódik."
+
+msgid "Switch USB role?"
+msgstr "USB-szerep váltása?"
+
+msgid "Apply"
+msgstr "Alkalmaz"
+
+msgid "Switching USB role…"
+msgstr "USB-szerep váltása…"
+
+msgid "Switch failed: %s"
+msgstr "A váltás sikertelen: %s"
+
+msgid "Management connection lost; reconnect to confirm the USB role."
+msgstr "A felügyeleti kapcsolat megszakadt; csatlakozzon újra az USB-szerep megerősítéséhez."
+
+msgid "Switch request accepted; the USB connection may briefly disconnect."
+msgstr "A váltási kérés elfogadva; az USB-kapcsolat rövid időre megszakadhat."
+
+msgid "USB role applied"
+msgstr "USB-szerep alkalmazva"
+
+msgid "Save USB network mode?"
+msgstr "USB-hálózati mód mentése?"
+
+msgid "The network mode applies on the next reboot; USB management may need to reconnect."
+msgstr "A hálózati mód a következő újraindításkor lép életbe; az USB-n keresztüli felügyelethez újracsatlakozás kellhet."
+
+msgid "Save the selection only; with the selected protocol disabled, the next boot still uses default NCM."
+msgstr "Csak a választás mentése; letiltott kiválasztott protokollal a következő indítás is az alapértelmezett NCM-et használja."
+
+msgid "Save"
+msgstr "Mentés"
+
+msgid "Saving USB network settings…"
+msgstr "USB-hálózati beállítások mentése…"
+
+msgid "Settings saved"
+msgstr "Beállítások mentve"
+
+msgid "Save failed: %s"
+msgstr "A mentés sikertelen: %s"
+
+msgid "This boot"
+msgstr "Ez az indítás"
+
+msgid "Previous boot"
+msgstr "Előző indítás"
+
+msgid "Unable to confirm the role yet; reconnect and refresh the page."
+msgstr "A szerep még nem erősíthető meg; csatlakozzon újra, és frissítse az oldalt."
+
+msgid "Switch to host mode to see USB adapters."
+msgstr "Váltson gazda módra az USB-adapterek megtekintéséhez."
+
+msgid "Scanning USB adapters…"
+msgstr "USB-adapterek keresése…"
+
+msgid "No USB adapters found."
+msgstr "Nem található USB-adapter."
+
+msgid "Link connected"
+msgstr "Kapcsolat létrejött"
+
+msgid "No link; enable attempted"
+msgstr "Nincs kapcsolat; aktiválás megkísérelve"
+
+msgid "Added to LAN"
+msgstr "Hozzáadva a LAN-hoz"
+
+msgid "Add to LAN"
+msgstr "Hozzáadás a LAN-hoz"
+
+msgid "Add USB adapter to LAN?"
+msgstr "USB-adapter hozzáadása a LAN-hoz?"
+
+msgid "This saves the bridge configuration and reloads networking; existing connections may briefly drop."
+msgstr "Ez menti a híd konfigurációját és újratölti a hálózatot; a meglévő kapcsolatok rövid időre megszakadhatnak."
+
+msgid "Add"
+msgstr "Hozzáadás"
+
+msgid "Adding USB adapter…"
+msgstr "USB-adapter hozzáadása…"
+
+msgid "Add failed: %s"
+msgstr "A hozzáadás sikertelen: %s"
+
+msgid "Leave empty to keep the saved value"
+msgstr "Hagyja üresen a mentett érték megtartásához"
+
+msgid "Saved: %s"
+msgstr "Mentve: %s"
+
+msgid "Remove the saved value"
+msgstr "A mentett érték törlése"
+
+msgid "Presets"
+msgstr "Előbeállítások"
+
+msgid "Form (URL-encoded)"
+msgstr "Űrlap (URL-kódolt)"
+
+msgid "Plain text"
+msgstr "Egyszerű szöveg"
+
+msgid "Received messages are sent on as they reach the SMS pool. A failed delivery is retried after 30 s, then after twice as long each time (an hour at most), ten times in all."
+msgstr "A fogadott üzenetek továbbítása azonnal megtörténik, amint az SMS-tárba érnek. A sikertelen kézbesítést 30 mp után, majd minden alkalommal kétszer annyi idő után (legfeljebb egy óra) újra megpróbálja, összesen tízszer."
+
+msgid "Forward received messages"
+msgstr "Fogadott üzenetek továbbítása"
+
+msgid "Message template"
+msgstr "Üzenetsablon"
+
+msgid "Placeholders: {sender}, {time}, {text}, {device}"
+msgstr "Helyőrzők: {sender}, {time}, {text}, {device}"
+
+msgid "Only these senders"
+msgstr "Csak ezek a feladók"
+
+msgid "One per line; empty: every sender. A * at the end matches the start of a sender."
+msgstr "Soronként egy; üres: minden feladó. A végén álló * a feladó elejére illeszkedik."
+
+msgid "Never these senders"
+msgstr "Soha ezek a feladók"
+
+msgid "Only messages containing one of these words"
+msgstr "Csak az ezen szavak egyikét tartalmazó üzenetek"
+
+msgid "One per line; empty: every message."
+msgstr "Soronként egy; üres: minden üzenet."
+
+msgid "Webhook"
+msgstr "Webhook"
+
+msgid "Enabled"
+msgstr "Engedélyezve"
+
+msgid "Address (http:// or https://)"
+msgstr "Cím (http:// vagy https://)"
+
+msgid "Body"
+msgstr "Törzs"
+
+msgid "Fields: sender, time, text, device, message (the template filled in)"
+msgstr "Mezők: sender, time, text, device, message (a kitöltött sablon)"
+
+msgid "Custom body"
+msgstr "Egyéni törzs"
+
+msgid "Empty: the standard fields (plain text: the message). Placeholders: {sender}, {time}, {text}, {device}, {message}. Each value is escaped for the chosen type. This body is shown again here: keep secrets in the address or a header."
+msgstr "Üres: a szabványos mezők (egyszerű szöveg: az üzenet). Helyőrzők: {sender}, {time}, {text}, {device}, {message}. Minden érték a választott típusnak megfelelően kap escape-elést. Ez a törzs itt újra megjelenik: a titkokat a címben vagy egy fejlécben tartsa."
+
+msgid "Extra headers (one \"Name: value\" per line)"
+msgstr "További fejlécek (soronként egy \"Név: érték\")"
+
+msgid "The answer must contain"
+msgstr "A válasznak tartalmaznia kell"
+
+msgid "Empty: every HTTP 2xx answer counts as delivered. With key=value (for example errcode=0), the answer must also be a JSON object that has this value under this key at its top level; otherwise the delivery fails. Only the result of the check is logged, never the answer."
+msgstr "Üres: minden HTTP 2xx válasz kézbesítettnek számít. A kulcs=érték megadásával (például errcode=0) a válasznak ezenfelül olyan JSON-objektumnak kell lennie, amelynek legfelső szintjén e kulcs alatt ez az érték áll; különben a kézbesítés sikertelen. A naplóba csak az ellenőrzés eredménye kerül, a válasz soha."
+
+msgid "Bot token"
+msgstr "Bot token"
+
+msgid "Chat ID (a number, or @channel)"
+msgstr "Csevegésazonosító (szám vagy @csatorna)"
+
+msgid "E-mail"
+msgstr "E-mail"
+
+msgid "E-mail needs msmtp, which this image does not have"
+msgstr "Az e-mailhez msmtp kell, ami ebben a képfájlban nincs"
+
+msgid "Mail server"
+msgstr "Levelezőkiszolgáló"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Security"
+msgstr "Biztonság"
+
+msgid "None"
+msgstr "Nincs"
+
+msgid "User name"
+msgstr "Felhasználónév"
+
+msgid "Password"
+msgstr "Jelszó"
+
+msgid "From"
+msgstr "Feladó"
+
+msgid "To"
+msgstr "Címzett"
+
+msgid "SMS to another phone"
+msgstr "SMS egy másik telefonra"
+
+msgid "Phone number"
+msgstr "Telefonszám"
+
+msgid "Sent as one SMS: a longer message is cut short."
+msgstr "Egy SMS-ként megy el: a hosszabb üzenet lerövidül."
+
+msgid "Send test"
+msgstr "Teszt küldése"
+
+msgid "Tokens, passwords and the webhook address and headers stay on the device and are never shown again."
+msgstr "A tokenek, jelszavak, valamint a webhook címe és fejlécei az eszközön maradnak, és soha többé nem jelennek meg."
+
+msgid "Delivered"
+msgstr "Kézbesítve"
+
+msgid "Will retry"
+msgstr "Újrapróbálás"
+
+msgid "Failed"
+msgstr "Sikertelen"
+
+msgid "Filtered out"
+msgstr "Kiszűrve"
+
+msgid "Dropped"
+msgstr "Eldobva"
+
+msgid "Clear"
+msgstr "Törlés"
+
+msgid "Test"
+msgstr "Teszt"
+
+msgid "Delivery log"
+msgstr "Kézbesítési napló"
+
+msgid "Waiting to be delivered"
+msgstr "Kézbesítésre vár"
+
+msgid "Time"
+msgstr "Idő"
+
+msgid "Message"
+msgstr "Üzenet"
+
+msgid "Target"
+msgstr "Cél"
+
+msgid "Result"
+msgstr "Eredmény"
+
+msgid "Detail"
+msgstr "Részletek"
+
+msgid "No deliveries yet"
+msgstr "Még nincs kézbesítés"
+
+msgid "Test started with the saved settings; the result appears in the delivery log."
+msgstr "A teszt elindult a mentett beállításokkal; az eredmény a kézbesítési naplóban jelenik meg."
+
+msgid "Automatic without 2G (152)"
+msgstr "Automatikus 2G nélkül (152)"
+
+msgid "4G only"
+msgstr "Csak 4G"
+
+msgid "Network mode: %s"
+msgstr "Hálózati mód: %s"
+
+msgid "EN-DC off"
+msgstr "EN-DC ki"
+
+msgid "NR band lock: %s"
+msgstr "NR-sávzárolás: %s"
+
+msgid "LTE band lock: %s"
+msgstr "LTE-sávzárolás: %s"
+
+msgid "Cell lock: %s"
+msgstr "Cellazár: %s"
+
+msgid "Modulation DL/UL"
+msgstr "Moduláció DL/UL"
+
+msgid "Estimated from current MCS"
+msgstr "A jelenlegi MCS alapján becsülve"
+
+msgid "MCS DL/UL"
+msgstr "MCS DL/UL"
+
+msgid "BLER DL/UL"
+msgstr "BLER DL/UL"
+
+msgid "%s of %s"
+msgstr "%s / %s"
+
+msgid "The monthly cap is reached"
+msgstr "A havi keret elfogyott"
+
+msgid "%d%% of the monthly cap is used"
+msgstr "A havi keret %d%%-a elhasználva"
+
+msgid "This billing cycle"
+msgstr "Ez a számlázási időszak"
+
+msgid "Link & traffic"
+msgstr "Kapcsolat és forgalom"
+
+msgid "Download rate"
+msgstr "Letöltési sebesség"
+
+msgid "Upload rate"
+msgstr "Feltöltési sebesség"
+
+msgid "Total received"
+msgstr "Összes fogadott"
+
+msgid "Total sent"
+msgstr "Összes küldött"
+
+msgid "Used today"
+msgstr "Ma felhasznált"
+
+msgid "SIM source"
+msgstr "SIM-forrás"
+
+msgid "Session duration"
+msgstr "Munkamenet időtartama"
+
+msgid "Registration"
+msgstr "Regisztráció"
+
+msgid "Data roaming"
+msgstr "Adatroaming"
+
+msgid "Bandwidth"
+msgstr "Sávszélesség"
+
+msgid "AMBR DL/UL"
+msgstr "AMBR DL/UL"
+
+msgid "Wi-Fi · LAN · Device · SIM"
+msgstr "Wi-Fi · LAN · Eszköz · SIM"
+
+msgid "CPU usage"
+msgstr "CPU-használat"
+
+msgid "Memory"
+msgstr "Memória"
+
+msgid "Storage"
+msgstr "Tárhely"
+
+msgid "Battery"
+msgstr "Akkumulátor"
+
+msgid "Channel"
+msgstr "Csatorna"
+
+msgid "Encryption"
+msgstr "Titkosítás"
+
+msgid "Hidden SSID"
+msgstr "Rejtett SSID"
+
+msgid "Country"
+msgstr "Ország"
+
+msgid "AP status"
+msgstr "AP-állapot"
+
+msgid "USB network"
+msgstr "USB-hálózat"
+
+msgid "Connection tracking"
+msgstr "Kapcsolatkövetés"
+
+msgid "LAN address"
+msgstr "LAN-cím"
+
+msgid "Wi-Fi clients"
+msgstr "Wi-Fi-kliensek"
+
+msgid "DHCP leases"
+msgstr "DHCP-bérletek"
+
+msgid "Device model"
+msgstr "Eszközmodell"
+
+msgid "System"
+msgstr "Rendszer"
+
+msgid "Modem"
+msgstr "Modem"
+
+msgid "Carrier"
+msgstr "Szolgáltató"
+
+msgid "Own number"
+msgstr "Saját szám"
+
+msgid "Module"
+msgstr "Modul"
+
+msgid "Firmware"
+msgstr "Firmware"
+
+msgid "Show SIM identifiers"
+msgstr "SIM-azonosítók megjelenítése"
+
+msgid "Quick controls"
+msgstr "Gyorsvezérlők"
+
+msgid "Data connection"
+msgstr "Adatkapcsolat"
+
+msgid "Cellular radio"
+msgstr "Mobilrádió"
+
+msgid "Wi-Fi hotspot"
+msgstr "Wi-Fi hotspot"
+
+msgid "Restart modem"
+msgstr "Modem újraindítása"
+
+msgid "Power off or restart"
+msgstr "Kikapcsolás vagy újraindítás"
+
+msgid "Switch to Android"
+msgstr "Váltás Androidra"
+
+msgid "Lock Linux"
+msgstr "Linux zárolása"
+
+msgid "Neighbor cells"
+msgstr "Szomszédos cellák"
+
+msgid "RAT/Band"
+msgstr "RAT/Sáv"
+
+msgid "Frequency"
+msgstr "Frekvencia"
+
+msgid "Running %s…"
+msgstr "%s futtatása…"
+
+msgid "Started in background: %s"
+msgstr "Elindítva a háttérben: %s"
+
+msgid "Done: %s"
+msgstr "Kész: %s"
+
+msgid "Disconnecting data…"
+msgstr "Adatkapcsolat bontása…"
+
+msgid "Connecting data…"
+msgstr "Adatkapcsolat létrehozása…"
+
+msgid "Turn off cellular radio"
+msgstr "Mobilrádió kikapcsolása"
+
+msgid "This SIM will have no calls, SMS or data, and its radio stays off after a reboot until you turn it on again."
+msgstr "Ezen a SIM-en nem lesz hívás, SMS és adat, és a rádiója újraindítás után is kikapcsolva marad, amíg újra be nem kapcsolja."
+
+msgid "Turn on cellular radio"
+msgstr "Mobilrádió bekapcsolása"
+
+msgid "The radio of the SIM in use comes on and stays on after a reboot (up to about 1 minute)."
+msgstr "A használt SIM rádiója bekapcsol, és újraindítás után is bekapcsolva marad (legfeljebb kb. 1 perc)."
+
+msgid "Turn data roaming off"
+msgstr "Adatroaming kikapcsolása"
+
+msgid "While the SIM is registered on a roaming network, mobile data stays off; SMS, calls and the registration are not affected. Some SIMs report roaming at home (an MVNO, national roaming): there, data would stop as well."
+msgstr "Amíg a SIM roaminghálózatban van regisztrálva, a mobiladat kikapcsolva marad; az SMS-t, a hívásokat és a regisztrációt ez nem érinti. Egyes SIM-ek otthon is roamingot jeleznek (MVNO, belföldi roaming): ott is leállna az adatforgalom."
+
+msgid "Allow data roaming"
+msgstr "Adatroaming engedélyezése"
+
+msgid "Mobile data is used on roaming networks too, which can cost extra. Some SIMs report roaming at home (an MVNO, national roaming) and need this to have data at all."
+msgstr "A mobiladat roaminghálózatokon is használatban van, ami többletköltséggel járhat. Egyes SIM-ek otthon is roamingot jeleznek (MVNO, belföldi roaming), és ehhez erre van szükségük, hogy egyáltalán legyen adat."
+
+msgid "Cellular connectivity may stop for 1–2 minutes."
+msgstr "A mobilkapcsolat 1–2 percre leállhat."
+
+msgid "All connections will be interrupted."
+msgstr "Minden kapcsolat megszakad."
+
+msgid "Power off"
+msgstr "Kikapcsolás"
+
+msgid "Restart"
+msgstr "Újraindítás"
+
+msgid "The next boot will enter Android and reboot now. This management page and cellular sharing will disconnect."
+msgstr "A következő indítás Androidba történik, és az eszköz most újraindul. Ez a felügyeleti oldal és a mobilhálózat-megosztás megszakad."
+
+msgid "To return to OpenWrt, run mu300-next-boot linux in Android and reboot."
+msgstr "Az OpenWrt-hez való visszatéréshez futtassa Androidban a mu300-next-boot linux parancsot, majd indítsa újra."
+
+msgid "Or do nothing: after five boots that do not finish, it falls back automatically."
+msgstr "Vagy ne tegyen semmit: öt be nem fejeződő indítás után automatikusan visszaáll."
+
+msgid "Preparing Android boot and rebooting…"
+msgstr "Android-indítás előkészítése és újraindítás…"
+
+msgid "Switch and reboot"
+msgstr "Váltás és újraindítás"
+
+msgid "Not automatic: %s. The network mode and band locks are stored in the modem and stay in force in Android too; if the network does not match them, Android shows No Service."
+msgstr "Nem automatikus: %s. A hálózati mód és a sávzárak a modemben tárolódnak, és Androidon is érvényben maradnak; ha a hálózat nem felel meg nekik, az Android „Nincs szolgáltatás” üzenetet mutat."
+
+msgid "Reset locks and switch"
+msgstr "Zárak visszaállítása és váltás"
+
+msgid "Unlock Linux"
+msgstr "Linux zárolásának feloldása"
+
+msgid "After five boots in a row that do not finish, the device falls back to Android again."
+msgstr "Öt egymást követő befejezetlen indítás után az eszköz ismét visszatér az Androidra."
+
+msgid "Unlock"
+msgstr "Feloldás"
+
+msgid "The device will never switch to Android by itself, not even after failed boots: Android only from this page (Switch to Android) or with mu300-next-boot android."
+msgstr "Az eszköz soha nem vált magától Androidra, sikertelen indítások után sem: Androidra csak erről az oldalról (Váltás Androidra) vagy a mu300-next-boot android paranccsal."
+
+msgid "A new kernel from an update still gets its first boots on trial, and locks again once one of them succeeds."
+msgstr "Egy frissítésből származó új kernel ettől még először próbaindításokkal indul, és újra zárol, amint az egyik sikerül."
+
+msgid "If the system itself no longer starts, the device waits on USB (telnet) instead of going to Android."
+msgstr "Ha maga a rendszer már nem indul el, az eszköz USB-n (telnet) vár ahelyett, hogy Androidra váltana."
+
+msgid "Hide SIM identifiers"
+msgstr "SIM-azonosítók elrejtése"
+
+msgid "Lock cell %s?"
+msgstr "Zárolja a(z) %s cellát?"
+
+msgid "The radio stack will restart (SFUN); cellular service will stop for about 30 seconds."
+msgstr "A rádióverem újraindul (SFUN); a mobilszolgáltatás kb. 30 másodpercre leáll."
+
+msgid "Locking %s in the background, about 30 seconds"
+msgstr "%s zárolása a háttérben, kb. 30 másodperc"
+
+msgid "Locked %s in the background; the status will refresh shortly"
+msgstr "%s zárolva a háttérben; az állapot hamarosan frissül"
+
+msgid "Lock failed: %s"
+msgstr "A zárolás sikertelen: %s"
+
+msgid "Resetting the network locks to automatic (SFUN restart, about 30 seconds)…"
+msgstr "A hálózati zárak visszaállítása automatikusra (SFUN újraindítás, kb. 30 másodperc)…"
+
+msgid "Reset failed: %s. The saved lock settings were kept."
+msgstr "A visszaállítás nem sikerült: %s. A mentett zárolási beállítások megmaradtak."
+
+msgid "The lock reset was not confirmed in time; switching anyway."
+msgstr "A zárak visszaállítása nem erősítődött meg időben; a váltás így is megtörténik."
+
+msgid "Internal SIM selected: in use after a reboot"
+msgstr "Belső SIM kiválasztva: újraindítás után lesz használatban"
+
+msgid "Internal SIM selected, but not supported on this device: the external SIM is in use"
+msgstr "Belső SIM kiválasztva, de ez az eszköz nem támogatja: a külső SIM van használatban"
+
+msgid "Uptime %s"
+msgstr "Üzemidő: %s"
+
+msgid "Radio off"
+msgstr "Rádió kikapcsolva"
+
+msgid "No response"
+msgstr "Nincs válasz"
+
+msgid "Modem busy: cellular readings from %s ago"
+msgstr "A modem foglalt: %s előtti mobilhálózati értékek"
+
+msgid "%s · Signal %s %s/10"
+msgstr "%s · Jel %s %s/10"
+
+msgid "%s · Signal %s"
+msgstr "%s · Jel %s"
+
+msgid "Anchor B%s"
+msgstr "Horgony B%s"
+
+msgid "No serving cell"
+msgstr "Nincs kiszolgáló cella"
+
+msgid "Version %s is out: update"
+msgstr "Megjelent a(z) %s verzió: frissítsen"
+
+msgid "Not registered"
+msgstr "Nincs regisztrálva"
+
+msgid "Registered"
+msgstr "Regisztrálva"
+
+msgid "Searching"
+msgstr "Keresés"
+
+msgid "Registration denied"
+msgstr "Regisztráció elutasítva"
+
+msgid "Registered (roaming)"
+msgstr "Regisztrálva (roaming)"
+
+msgid "Emergency only"
+msgstr "Csak segélyhívás"
+
+msgid "Status %s"
+msgstr "Állapot: %s"
+
+msgid "Off: data held back while roaming"
+msgstr "Ki: adatforgalom visszatartva roamingban"
+
+msgid "Allowed"
+msgstr "Engedélyezve"
+
+msgid "Off"
+msgstr "Ki"
+
+msgid "LTE anchor"
+msgstr "LTE-horgony"
+
+msgid "LTE link"
+msgstr "LTE-kapcsolat"
+
+msgid "Hidden"
+msgstr "Rejtett"
+
+msgid "No"
+msgstr "Nem"
+
+msgid "Running"
+msgstr "Fut"
+
+msgid "Not running"
+msgstr "Nem fut"
+
+msgid "Connected"
+msgstr "Csatlakoztatva"
+
+msgid "Disconnected"
+msgstr "Leválasztva"
+
+msgid "%s entries"
+msgstr "%s bejegyzés"
+
+msgid "%s clients"
+msgstr "%s kliens"
+
+msgid "Recent DHCP leases"
+msgstr "Legutóbbi DHCP-bérletek"
+
+msgid "Board"
+msgstr "Alaplap"
+
+msgid "No temperature readings"
+msgstr "Nincsenek hőmérsékleti adatok"
+
+msgid "Cluster %d"
+msgstr "%d. fürt"
+
+msgid "Total %s · free %s"
+msgstr "Összesen %s · szabad %s"
+
+msgid "charging %s W"
+msgstr "töltés %s W"
+
+msgid "charging"
+msgstr "töltés"
+
+msgid "drawing %s W"
+msgstr "fogyasztás %s W"
+
+msgid "not charging"
+msgstr "nem töltődik"
+
+msgid "on battery"
+msgstr "akkumulátorról"
+
+msgid "full"
+msgstr "feltöltve"
+
+msgid "USB in %s W"
+msgstr "USB-bemenet %s W"
+
+msgid "Online"
+msgstr "Online"
+
+msgid "AT adapter unavailable"
+msgstr "Az AT-adapter nem érhető el"
+
+msgid "Linux locked"
+msgstr "Linux zárolva"
+
+msgid "Installing the language pack…"
+msgstr "A nyelvi csomag telepítése…"
+
+msgid "The language pack is installed"
+msgstr "A nyelvi csomag telepítve"
+
+msgid "The language pack could not be installed"
+msgstr "A nyelvi csomagot nem sikerült telepíteni"
+
+msgid "Language of the browser"
+msgstr "A böngésző nyelve"
+
+msgid "Language of the web interface"
+msgstr "A webes felület nyelve"
+
+msgid "English, Turkish and Chinese come with the system; the language pack adds the others."
+msgstr "Az angol, a török és a kínai a rendszer része; a nyelvi csomag adja hozzá a többit."
+
+msgid "The same setting is in System > System > Language and Style."
+msgstr "Ugyanez a beállítás a Rendszer > Rendszer > Nyelv és Stílus menüben található."
+
+msgid "Language pack"
+msgstr "Nyelvi csomag"
+
+msgid "The language pack (mu300-extra-lang.tar.gz, about 2 MB) adds LuCI in about 40 more languages and this panel in 29 of them. Download it from the release of this system, or upload the file from the release page when the device has no internet."
+msgstr "A nyelvi csomag (mu300-extra-lang.tar.gz, kb. 2 MB) a LuCI-t további kb. 40 nyelven, ezt a panelt közülük 29 nyelven teszi elérhetővé. Töltse le a rendszer kiadásából, vagy töltse fel a fájlt a kiadási oldalról, ha az eszköznek nincs internetkapcsolata."
+
+msgid "Download from the release"
+msgstr "Letöltés a kiadásból"
+
+msgid "Release"
+msgstr "Kiadás"
+
+msgid "Enable all"
+msgstr "Összes engedélyezése"
+
+msgid "Disable all"
+msgstr "Összes letiltása"
+
+msgid "Remove the language pack"
+msgstr "A nyelvi csomag eltávolítása"
+
+msgid "Remove the language pack?"
+msgstr "Eltávolítja a nyelvi csomagot?"
+
+msgid "Its languages disappear from the list; a page in one of them switches to English."
+msgstr "Nyelvei eltűnnek a listából; az ezek egyikén megjelenő oldal angolra vált."
+
+msgid "Remove"
+msgstr "Eltávolítás"
+
+msgid "Disable"
+msgstr "Letiltás"
+
+msgid "Enable"
+msgstr "Engedélyezés"
+
+msgid "LuCI and this panel"
+msgstr "LuCI és ez a panel"
+
+msgid "LuCI only"
+msgstr "Csak LuCI"
+
+msgid "Disabled"
+msgstr "Letiltva"
+
+msgid "Language"
+msgstr "Nyelv"
+
+msgid "Code"
+msgstr "Kód"
+
+msgid "Translated"
+msgstr "Lefordítva"
+
+msgid "LuCI's own translations come from OpenWrt. This panel's translations other than Turkish and Chinese are machine (AI) translations; corrections are welcome."
+msgstr "A LuCI saját fordításai az OpenWrt-ből származnak. Ennek a panelnek a török és kínai kivételével minden fordítása gépi (AI) fordítás; a javításokat szívesen fogadjuk."
+
+msgid "Automatic"
+msgstr "Automatikus"
+
+msgid "Serving network"
+msgstr "Kiszolgáló hálózat"
+
+msgid "Network mode · EN-DC"
+msgstr "Hálózati mód · EN-DC"
+
+msgid "Refresh lock status"
+msgstr "Zárolási állapot frissítése"
+
+msgid "Apply at startup"
+msgstr "Alkalmazás indításkor"
+
+msgid "Turning this off only stops replay at the next boot; saved network mode, EN-DC, band and cell settings remain."
+msgstr "Kikapcsolása csak a következő indításkori újraalkalmazást állítja le; a mentett hálózati mód, EN-DC, sáv- és cellabeállítások megmaradnak."
+
+msgid "Band locking"
+msgstr "Sávzárolás"
+
+msgid "NR bands"
+msgstr "NR-sávok"
+
+msgid "LTE bands"
+msgstr "LTE-sávok"
+
+msgid "Apply NR bands"
+msgstr "NR-sávok alkalmazása"
+
+msgid "Apply LTE bands"
+msgstr "LTE-sávok alkalmazása"
+
+msgid "Neighbor cells and cell locking"
+msgstr "Szomszédos cellák és cellazárolás"
+
+msgid "Lock current serving cell"
+msgstr "Jelenlegi kiszolgáló cella zárolása"
+
+msgid "Unlock cell"
+msgstr "Cellazárolás feloldása"
+
+msgid "Enter a cell"
+msgstr "Cella megadása"
+
+msgid "Type"
+msgstr "Típus"
+
+msgid "Channel number (EARFCN / NR-ARFCN)"
+msgstr "Csatornaszám (EARFCN / NR-ARFCN)"
+
+msgid "Lock this cell"
+msgstr "Ennek a cellának a zárolása"
+
+msgid "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. A channel number, not a frequency in MHz; the cell need not be in the neighbor list."
+msgstr "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. Csatornaszám, nem MHz-ben megadott frekvencia; a cellának nem kell szerepelnie a szomszédos cellák listájában."
+
+msgid "Applying restarts the radio stack (SFUN) and briefly interrupts cellular service. Settings are saved and replayed by the plugin after AT is ready when Apply at startup is enabled. A platform pre-radio hook can replay without a restart. Apply with no bands selected to restore automatic mode."
+msgstr "Az alkalmazás újraindítja a rádióvermet (SFUN), és rövid időre megszakítja a mobilszolgáltatást. A beállítások mentésre kerülnek, és ha az Alkalmazás indításkor engedélyezve van, a bővítmény újraalkalmazza őket, amint az AT készen áll. Egy rádió előtti platformhook újraindítás nélkül is újraalkalmazhatja őket. Az automatikus mód visszaállításához alkalmazza kiválasztott sávok nélkül."
+
+msgid "Back to automatic"
+msgstr "Vissza automatikusra"
+
+msgid "The network mode and band locks are stored in the modem and stay in force in Android too. If you are not sure, reset them before switching to Android."
+msgstr "A hálózati mód és a sávzárak a modemben tárolódnak, és Androidon is érvényben maradnak. Ha nem biztos benne, állítsa vissza őket az Androidra váltás előtt."
+
+msgid "Reset all to automatic"
+msgstr "Minden visszaállítása automatikusra"
+
+msgid "Apply “%s”?"
+msgstr "Alkalmazza: „%s”?"
+
+msgid "Applying %s in the background…"
+msgstr "%s alkalmazása a háttérben…"
+
+msgid "Applying %s in the background… (SFUN restart and re-registration, about 30 seconds)"
+msgstr "%s alkalmazása a háttérben… (SFUN-újraindítás és újraregisztráció, kb. 30 másodperc)"
+
+msgid "Queued: another lock is being applied during SFUN restart; this will take effect afterward"
+msgstr "Sorba állítva: az SFUN-újraindítás alatt egy másik zárolás alkalmazása folyik; ez utána lép életbe"
+
+msgid "Confirming the EN-DC status…"
+msgstr "Az EN-DC állapot megerősítése…"
+
+msgid "Confirming apply at startup…"
+msgstr "Az indításkori alkalmazás megerősítése…"
+
+msgid "Started in background: %s (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Elindítva a háttérben: %s (SFUN-újraindítás, kb. 30 másodperc); az állapot visszaolvasása…"
+
+msgid "Disable EN-DC (NSA anchor)"
+msgstr "EN-DC letiltása (NSA-horgony)"
+
+msgid "Enable EN-DC (NSA anchor)"
+msgstr "EN-DC engedélyezése (NSA-horgony)"
+
+msgid "Disable apply at startup"
+msgstr "Indításkori alkalmazás letiltása"
+
+msgid "Enable apply at startup"
+msgstr "Indításkori alkalmazás engedélyezése"
+
+msgid "Reading the modem directly (a few seconds at most)…"
+msgstr "A modem közvetlen olvasása (legfeljebb néhány másodperc)…"
+
+msgid "Refresh failed"
+msgstr "A frissítés sikertelen"
+
+msgid "Refreshed"
+msgstr "Frissítve"
+
+msgid "NR bands: back to automatic"
+msgstr "NR-sávok: vissza automatikusra"
+
+msgid "LTE bands: back to automatic"
+msgstr "LTE-sávok: vissza automatikusra"
+
+msgid "Network mode automatic, EN-DC on, all LTE and NR bands, no cell lock. The saved lock settings are cleared, so nothing is replayed at startup."
+msgstr "Hálózati mód automatikus, EN-DC be, minden LTE- és NR-sáv, nincs cellazár. A mentett zárbeállítások törlődnek, így indításkor semmi nem kerül újra alkalmazásra."
+
+msgid "Reset"
+msgstr "Visszaállítás"
+
+msgid "Remove the %s cell lock"
+msgstr "A(z) %s cellazárolás eltávolítása"
+
+msgid "The radio stack will restart (SFUN), taking about 30 seconds."
+msgstr "A rádióverem újraindul (SFUN), ez kb. 30 másodpercig tart."
+
+msgid "Removing the %s cell lock…"
+msgstr "A(z) %s cellazárolás eltávolítása…"
+
+msgid "Unlock failed: %s"
+msgstr "A feloldás sikertelen: %s"
+
+msgid "Unlock started in background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Feloldás elindítva a háttérben (SFUN-újraindítás, kb. 30 másodperc); az állapot visszaolvasása…"
+
+msgid "Locking %s in the background…"
+msgstr "%s zárolása a háttérben…"
+
+msgid "Locked %s in the background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "%s zárolva a háttérben (SFUN-újraindítás, kb. 30 másodperc); az állapot visszaolvasása…"
+
+msgid "Enter a channel number and a PCI in the ranges below"
+msgstr "Adjon meg egy csatornaszámot és egy PCI-t az alábbi tartományokon belül"
+
+msgid "No serving-network data"
+msgstr "Nincsenek kiszolgálóhálózat-adatok"
+
+msgid "NR serving cell"
+msgstr "NR kiszolgáló cella"
+
+msgid "Status confirmed"
+msgstr "Állapot megerősítve"
+
+msgid "Readback timed out; select “Refresh lock status”"
+msgstr "A visszaolvasás időtúllépés miatt megszakadt; válassza a „Zárolási állapot frissítése” lehetőséget"
+
+msgid "Reset verified: network mode automatic, EN-DC on, all bands, no cell lock; the saved lock settings are cleared"
+msgstr "Visszaállítás ellenőrizve: hálózati mód automatikus, EN-DC be, minden sáv, nincs cellazárolás; a mentett zárolási beállítások törölve"
+
+msgid "Applied (EN-DC does not require a radio-stack restart)"
+msgstr "Alkalmazva (az EN-DC-hez nem kell újraindítani a rádióvermet)"
+
+msgid "Apply at startup is on"
+msgstr "Az indításkori alkalmazás be van kapcsolva"
+
+msgid "Apply at startup is off"
+msgstr "Az indításkori alkalmazás ki van kapcsolva"
+
+msgid "EN-DC status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Az EN-DC állapot visszaolvasása időtúllépés miatt megszakadt; a megerősítéshez használja a „Zárolási állapot frissítése” lehetőséget"
+
+msgid "Apply-at-startup status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Az indításkori alkalmazás állapotának visszaolvasása időtúllépés miatt megszakadt; a megerősítéshez használja a „Zárolási állapot frissítése” lehetőséget"
+
+msgid "Locked cells"
+msgstr "Zárolt cellák"
+
+msgid "Unlock %s"
+msgstr "%s feloldása"
+
+msgid "Automatic (%d supported)"
+msgstr "Automatikus (%d támogatott)"
+
+msgid "%d locked: %s"
+msgstr "%d zárolva: %s"
+
+msgid "Repair DNS?"
+msgstr "Javítja a DNS-t?"
+
+msgid "This removes the DNS forwarder of a package that is no longer installed. If no other DNS server is left, the device then uses the DNS servers of the mobile connection: the carrier sees the names you look up, outside any proxy or VPN."
+msgstr "Ez eltávolítja egy már nem telepített csomag DNS-továbbítását. Ha nem marad más DNS-kiszolgáló, az eszköz a mobilkapcsolat DNS-kiszolgálóit használja: a szolgáltató látja a lekérdezett neveket, bármilyen proxyn vagy VPN-en kívül."
+
+msgid "Repair DNS"
+msgstr "DNS javítása"
+
+msgid "Packages installed on the device are not part of a release image. An update writes them down, and the new system installs them again at its first boot, once it is online. Until a package is back its settings are set aside."
+msgstr "Az eszközre telepített csomagok nem részei a kiadás képfájljának. A frissítés feljegyzi őket, és az új rendszer az első indításkor újratelepíti őket, amint van internet. Amíg egy csomag vissza nem tér, a beállításai félre vannak téve."
+
+msgid "No packages to install again."
+msgstr "Nincs újratelepítendő csomag."
+
+msgid "All back"
+msgstr "Mind visszakerült"
+
+msgid "Not installed yet"
+msgstr "Még nincs telepítve"
+
+msgid "Could not be installed again"
+msgstr "Nem sikerült újratelepíteni"
+
+msgid "Waiting for the internet"
+msgstr "Várakozás az internetre"
+
+msgid "Given up: no internet at five boots"
+msgstr "Feladva: öt indításnál nem volt internet"
+
+msgid "Skipped"
+msgstr "Kihagyva"
+
+msgid "Written down by the update from %s"
+msgstr "Feljegyezte a(z) %s verzióról történt frissítés"
+
+msgid "Installed again"
+msgstr "Újratelepítve"
+
+msgid "Install them yourself from where you got them (a package file: apk add --allow-untrusted FILE.apk)."
+msgstr "Telepítse őket saját maga onnan, ahonnan szerezte (csomagfájl: apk add --allow-untrusted FILE.apk)."
+
+msgid "Settings set aside in /etc/mu300/orphaned-config"
+msgstr "Félretett beállítások itt: /etc/mu300/orphaned-config"
+
+msgid "DNS still goes to a package that is not installed: the device has no DNS through it."
+msgstr "A DNS még mindig egy nem telepített csomaghoz megy: az eszköznek nincs DNS-e rajta keresztül."
+
+msgid "Try again"
+msgstr "Újra"
+
+msgid "Dismiss the note"
+msgstr "Értesítés elrejtése"
+
+msgid "started"
+msgstr "elindítva"
+
+msgid "asleep now (asked)"
+msgstr "alvás most (kérésre)"
+
+msgid "woken: power daemon stopping"
+msgstr "felébresztve: az energiaszolgáltatás leáll"
+
+msgid "woken by a key"
+msgstr "gomb ébresztette"
+
+msgid "woken by the Wi-Fi key"
+msgstr "a Wi-Fi gomb ébresztette"
+
+msgid "woken (mu300-power wake)"
+msgstr "felébresztve (mu300-power wake)"
+
+msgid "woken by a computer on USB"
+msgstr "USB-s számítógép ébresztette"
+
+msgid "woken: plugged in"
+msgstr "felébresztve: töltőre téve"
+
+msgid "woken by a Wi-Fi client"
+msgstr "Wi-Fi kliens ébresztette"
+
+msgid "charging boot (powered on by the charger)"
+msgstr "töltési indítás (a töltő kapcsolta be)"
+
+msgid "the hotspot is down"
+msgstr "a hotspot ki van kapcsolva"
+
+msgid "the VPN is still stopped"
+msgstr "a VPN még mindig leállt"
+
+msgid "5G (EN-DC) is still off after a failed resume"
+msgstr "az 5G (EN-DC) sikertelen folytatás után is ki van kapcsolva"
+
+msgid "self-check: %s"
+msgstr "önellenőrzés: %s"
+
+msgid "asleep: no client for %d min (%s)"
+msgstr "alszik: %d perce nincs kliens (%s)"
+
+msgid "asleep: profile now %s"
+msgstr "alszik: a profil most %s"
+
+msgid "woken by the %s key"
+msgstr "a(z) %s gomb ébresztette"
+
+msgid "the modem is suspended (%s)"
+msgstr "a modem fel van függesztve (%s)"
+
+msgid "Enter a whole number from 0 to %d"
+msgstr "Adjon meg egy egész számot 0 és %d között"
+
+msgid "Power status unavailable"
+msgstr "Az energiaállapot nem érhető el"
+
+msgid "Plugged in"
+msgstr "Hálózaton"
+
+msgid "On battery"
+msgstr "Akkumulátoron"
+
+msgid "Saver"
+msgstr "Takarékos"
+
+msgid "Asleep: hotspot off"
+msgstr "Alvó: hotspot kikapcsolva"
+
+msgid "Charging boot: press the Wi-Fi key to start"
+msgstr "Töltési indítás: indításhoz nyomja meg a Wi-Fi gombot"
+
+msgid "Awake"
+msgstr "Ébren"
+
+msgid "forced"
+msgstr "kényszerített"
+
+msgid "automatic, battery under %d %%"
+msgstr "automatikus, akkumulátor %d %% alatt"
+
+msgid "automatic"
+msgstr "automatikus"
+
+msgid "Nobody connected for %d s"
+msgstr "Már %d másodperce nincs csatlakozva senki"
+
+msgid "Power source"
+msgstr "Tápforrás"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Profile in use: %s (%s)"
+msgstr "Használt profil: %s (%s)"
+
+msgid "%d %%, %s, %d mV, %d mA, %.1f °C"
+msgstr "%d %%, %s, %d mV, %d mA, %.1f °C"
+
+msgid "Charger"
+msgstr "Töltő"
+
+msgid "Charger: %s, %s port"
+msgstr "Töltő: %s, %s port"
+
+msgid "Charging paused: battery temperature"
+msgstr "Töltés szüneteltetve: akkumulátor hőmérséklete"
+
+msgid "Charging paused: charge limit"
+msgstr "Töltés szüneteltetve: töltési korlát"
+
+msgid "Sleep now"
+msgstr "Altatás most"
+
+msgid "Wake"
+msgstr "Ébresztés"
+
+msgid "Nobody connected means no Wi-Fi client and no computer on USB. The Wi-Fi key, a computer on USB or the charger wake the device."
+msgstr "A nincs csatlakozva senki azt jelenti: nincs Wi-Fi kliens és nincs számítógép az USB-n. A Wi-Fi gomb, az USB-n lévő számítógép vagy a töltő felébreszti az eszközt."
+
+msgid "Automatic: plugged in / on battery"
+msgstr "Automatikus: hálózaton / akkumulátoron"
+
+msgid "Switch to Saver under %"
+msgstr "Váltás Takarékosra ez alatt: %"
+
+msgid "Stop charging at"
+msgstr "Töltés leállítása itt"
+
+msgid "0 % never charges the battery (the device runs on the charger), 100 % charges it full; in between, charging stops at that level and starts again 5 points lower. Under 5 % the battery always charges."
+msgstr "A 0 % soha nem tölti az akkumulátort (az eszköz a töltőről működik), a 100 % teljesen feltölti; a kettő között a töltés ezen a szinten leáll, és 5 ponttal lejjebb újraindul. 5 % alatt az akkumulátor mindig töltődik."
+
+msgid "80 % keeps the battery healthier on a device that stays plugged in."
+msgstr "A 80 % kíméli az akkumulátort egy folyamatosan hálózaton lévő eszközben."
+
+msgid "When the charger switches the device on"
+msgstr "Amikor a töltő bekapcsolja az eszközt"
+
+msgid "Charge only, until a key starts it"
+msgstr "Csak töltés, amíg egy gomb el nem indítja"
+
+msgid "Start normally"
+msgstr "Normál indítás"
+
+msgid "Keep as is"
+msgstr "Változatlanul hagyás"
+
+msgid "LTE only (5G off)"
+msgstr "Csak LTE (5G kikapcsolva)"
+
+msgid "On"
+msgstr "Be"
+
+msgid "Full"
+msgstr "Teljes"
+
+msgid "Eco: big core off"
+msgstr "Takarékos: nagy mag kikapcsolva"
+
+msgid "Hotspot off after (min, 0 = never)"
+msgstr "Hotspot kikapcsolása ennyi idő után (perc, 0 = soha)"
+
+msgid "Modem when idle"
+msgstr "Modem tétlenül"
+
+msgid "LEDs when idle"
+msgstr "LED-ek tétlenül"
+
+msgid "Ignored lines in power.conf: %s"
+msgstr "Figyelmen kívül hagyott sorok a power.conf fájlban: %s"
+
+msgid "Configure how this plugin connects to the current Unisoc OpenWrt platform. Changes do not require editing the dashboard, AT, locks or SMS pages."
+msgstr "Annak beállítása, hogyan csatlakozik ez a bővítmény a jelenlegi Unisoc OpenWrt platformhoz. A változtatásokhoz nem kell szerkeszteni az irányítópult, AT, zárolási vagy SMS oldalakat."
+
+msgid "Platform adapter"
+msgstr "Platformadapter"
+
+msgid "AT backend"
+msgstr "AT-háttérrendszer"
+
+msgid "Auto-detect"
+msgstr "Automatikus felismerés"
+
+msgid "atinout + serial port"
+msgstr "atinout + soros port"
+
+msgid "Custom adapter"
+msgstr "Egyéni adapter"
+
+msgid "AT serial port"
+msgstr "AT soros port"
+
+msgid "Custom AT adapter"
+msgstr "Egyéni AT-adapter"
+
+msgid "The executable receives a timeout in seconds and the complete AT command, in that order. It must share the serial lock with the platform dialer."
+msgstr "A program egy másodpercben megadott időkorlátot és a teljes AT-parancsot kapja meg, ebben a sorrendben. A soros zárolást meg kell osztania a platform tárcsázójával."
+
+msgid "SMS adapter"
+msgstr "SMS-adapter"
+
+msgid "Implement the list, show, send, delete and sync subcommands; leave blank to find mu300-sms automatically."
+msgstr "Valósítsa meg a list, show, send, delete és sync alparancsokat; hagyja üresen a mu300-sms automatikus megkereséséhez."
+
+msgid "SMS pool directory"
+msgstr "SMS-tároló könyvtára"
+
+msgid "Cellular logical interface"
+msgstr "Mobilhálózati logikai csatoló"
+
+msgid "Cellular IPv6 interface"
+msgstr "Mobilhálózati IPv6-csatoló"
+
+msgid "Cellular network device"
+msgstr "Mobilhálózati eszköz"
+
+msgid "Leave blank to detect from netifd"
+msgstr "Hagyja üresen a netifd alapján történő felismeréshez"
+
+msgid "LAN bridge"
+msgstr "LAN-híd"
+
+msgid "Wi-Fi device"
+msgstr "Wi-Fi-eszköz"
+
+msgid "USB device"
+msgstr "USB-eszköz"
+
+msgid "Maximum wait for AT readiness (seconds)"
+msgstr "Maximális várakozás az AT készenlétére (másodperc)"
+
+msgid "Home dashboard refresh interval (seconds)"
+msgstr "A kezdőlap frissítési időköze (másodperc)"
+
+msgid "Controls only the home dashboard refresh rate; 0.5–60 seconds. Reopen Home after saving to apply."
+msgstr "Csak a kezdőlap frissítési gyakoriságát szabályozza; 0.5–60 másodperc. Mentés után nyissa meg újra a Kezdőlapot az alkalmazáshoz."
+
+msgid "Persistent state directory"
+msgstr "Állandó állapot könyvtára"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM. Mobile data will disconnect briefly."
+msgstr "Switching SIM. Mobile data will disconnect briefly."
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switch failed; check SIM readiness and hot switching."
+msgstr "SIM switch failed; check SIM readiness and hot switching."
+
+# Source-language fallback for untranslated new controls.
+msgid "Ready"
+msgstr "Ready"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM"
+msgstr "Switching SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switched; saved as boot default"
+msgstr "SIM switched; saved as boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch failed; previous SIM restored"
+msgstr "Switch failed; previous SIM restored"
+
+msgid "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+msgstr "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+
+msgid "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+msgstr "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+
+# Source-language fallback for untranslated new controls.
+msgid "Radio state unknown; reboot required"
+msgstr "Radio state unknown; reboot required"
+
+msgid "Radio state unknown; the device is restarting."
+msgstr "Radio state unknown; the device is restarting."
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM control is only for the U30 Air on OpenWrt."
+msgstr "Dual SIM control is only for the U30 Air on OpenWrt."
+
+# Source-language fallback for untranslated new controls.
+msgid "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+msgstr "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+
+msgid "No card answered in the chosen SIM position at the last boot."
+msgstr "No card answered in the chosen SIM position at the last boot."
+
+msgid "The chosen SIM is locked by its PIN."
+msgstr "The chosen SIM is locked by its PIN."
+
+msgid "The chosen SIM got no mobile data within the time at its first boot."
+msgstr "The chosen SIM got no mobile data within the time at its first boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The second SIM's modem channels did not come up at the last boot."
+msgstr "The second SIM's modem channels did not come up at the last boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The last dual-SIM boot never confirmed itself."
+msgstr "The last dual-SIM boot never confirmed itself."
+
+msgid "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+msgstr "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+
+# Source-language fallback for untranslated new controls.
+msgid "Active SIM"
+msgstr "Active SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "Cold-boot default"
+msgstr "Cold-boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control unavailable"
+msgstr "SIM control unavailable"
+
+# Source-language fallback for untranslated new controls.
+msgid "The device is back on SIM1 without live switching; choose again below to try once more."
+msgstr "The device is back on SIM1 without live switching; choose again below to try once more."
+
+msgid "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+msgstr "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching"
+msgstr "Enable hot switching"
+
+msgid "This device supports next-boot SIM selection only; live switching is unavailable."
+msgstr "This device supports next-boot SIM selection only; live switching is unavailable."
+
+# Source-language fallback for untranslated new controls.
+msgid "Reboot after enabling hot switching to prepare both SIM channels."
+msgstr "Reboot after enabling hot switching to prepare both SIM channels."
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch to SIM%d"
+msgstr "Switch to SIM%d"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM%d at next boot"
+msgstr "Use SIM%d at next boot"
+
+msgid "Built-in SIM 1"
+msgstr "Beépített SIM 1"
+
+msgid "Built-in SIM 2"
+msgstr "Beépített SIM 2"
+
+msgid "Built-in SIM 3"
+msgstr "Beépített SIM 3"
+
+msgid "External SIM"
+msgstr "Külső SIM"
+
+msgid "SIM card"
+msgstr "SIM-kártya"
+
+msgid "Built-in SIM 3 shares SIM2, the external SIM shares SIM1. The card chosen here is switched in before the modem starts, at the next boot; without a choice the cards stay as the bootloader sets them."
+msgstr "A beépített SIM 3 a SIM2-n, a külső SIM a SIM1-en osztozik. Az itt választott kártyát a következő indításkor, a modem indulása előtt kapcsolja be; választás nélkül a kártyák úgy maradnak, ahogy a rendszerbetöltő beállítja őket."
+
+msgid "As the bootloader sets them"
+msgstr "Ahogy a rendszerbetöltő beállítja"
+
+msgid "Applying the radio setting…"
+msgstr "Rádióbeállítás alkalmazása…"
+
+msgid "SIM settings are not available"
+msgstr "A SIM-beállítások nem érhetők el"
+
+msgid "Modem default"
+msgstr "A modem alapértéke"
+
+msgid "SIM%d"
+msgstr "SIM%d"
+
+msgid "in use"
+msgstr "használatban"
+
+msgid "Turn off the radio of SIM%d"
+msgstr "SIM%d rádiójának kikapcsolása"
+
+msgid "Radio"
+msgstr "Rádió"
+
+msgid "VoLTE"
+msgstr "VoLTE"
+
+msgid "VoNR"
+msgstr "VoNR"
+
+msgid "Modem: %s"
+msgstr "Modem: %s"
+
+msgid "Sent to this SIM when its radio next starts."
+msgstr "Ennek a SIM-nek a rádiója következő indulásakor lesz elküldve."
+
+msgid "VoLTE and VoNR for each SIM, kept across reboots and sent again whenever that SIM starts. VoLTE is on unless switched off; VoNR stays as the modem has it until set."
+msgstr "VoLTE és VoNR SIM-enként; újraindítás után is megmaradnak, és a SIM minden indulásakor újra elküldésre kerülnek. A VoLTE be van kapcsolva, amíg ki nem kapcsolja; a VoNR a modem szerinti marad, amíg be nem állítja."
+
+msgid "All radios off (airplane mode)"
+msgstr "Minden rádió ki (repülő üzemmód)"
+
+msgid "All radios on"
+msgstr "Minden rádió be"
+
+msgid "No SIM will have calls, SMS or data, also after a reboot, until a radio is turned on again here or with the dashboard's radio button."
+msgstr "Egyik SIM-en sem lesz hívás, SMS és adat, újraindítás után sem, amíg egy rádiót újra be nem kapcsolnak itt vagy az irányítópult rádiógombjával."
+
+msgid "Each SIM's radio stays as set here after a reboot. A SIM whose radio is off has no calls, SMS or data, and the device does not switch to it."
+msgstr "Minden SIM rádiója újraindítás után is az itt beállított marad. A kikapcsolt rádiójú SIM-en nincs hívás, SMS és adat, és az eszköz nem vált rá."
+
+msgid "The setting is saved, but the radio did not follow it yet."
+msgstr "A beállítás mentve, de a rádió még nem követte."
+
+msgid "Recipient: number, e.g. 10086 or +86..."
+msgstr "Címzett: szám, pl. 10086 vagy +86..."
+
+msgid "Sync from SIM"
+msgstr "Szinkronizálás a SIM-ről"
+
+msgid "Clear local pool"
+msgstr "Helyi tároló törlése"
+
+msgid "Select a conversation on the left, or enter a number below to send."
+msgstr "Válasszon egy beszélgetést bal oldalon, vagy adjon meg lent egy számot a küldéshez."
+
+msgid "Message (Enter to send, Shift+Enter for newline)"
+msgstr "Üzenet (Enter a küldéshez, Shift+Enter új sorhoz)"
+
+msgid "Sending uses AT+CMGS (PDU mode); retry if the channel is busy. To delete one message, use the bin icon on its bubble."
+msgstr "A küldés AT+CMGS-t használ (PDU mód); ha a csatorna foglalt, próbálja újra. Egy üzenet törléséhez használja a buborékján lévő kuka ikont."
+
+msgid "Sending…"
+msgstr "Küldés…"
+
+msgid "Sent; the list refreshes shortly."
+msgstr "Elküldve; a lista hamarosan frissül."
+
+msgid "Sending failed"
+msgstr "A küldés sikertelen"
+
+msgid "Syncing from the SIM in the background (AT+CMGL)…"
+msgstr "Szinkronizálás a SIM-ről a háttérben (AT+CMGL)…"
+
+msgid "SIM sync started; the list refreshes in a few seconds."
+msgstr "A SIM-szinkronizálás elindult; a lista néhány másodperc múlva frissül."
+
+msgid "Clear local SMS pool"
+msgstr "Helyi SMS-tároló törlése"
+
+msgid "Only local files will be deleted; messages on the SIM remain."
+msgstr "Csak a helyi fájlok törlődnek; a SIM-en lévő üzenetek megmaradnak."
+
+msgid "Delete this SMS"
+msgstr "Az SMS törlése"
+
+msgid "Deletion cannot be undone."
+msgstr "A törlés nem vonható vissza."
+
+msgid "Local only"
+msgstr "Csak helyi"
+
+msgid "Local + SIM"
+msgstr "Helyi + SIM"
+
+msgid "Delete failed"
+msgstr "A törlés sikertelen"
+
+msgid "Deleted (local + SIM)"
+msgstr "Törölve (helyi + SIM)"
+
+msgid "Deleted (local only)"
+msgstr "Törölve (csak helyi)"
+
+msgid "Enter both a number and a message."
+msgstr "Adjon meg számot és üzenetet is."
+
+msgid "· %d messages, %d unread · %d conversations"
+msgstr "· %d üzenet, %d olvasatlan · %d beszélgetés"
+
+msgid "· %d messages · %d conversations"
+msgstr "· %d üzenet · %d beszélgetés"
+
+msgid "The pool is empty. Incoming and sent messages appear here, or select “Sync from SIM”."
+msgstr "A tároló üres. A bejövő és elküldött üzenetek itt jelennek meg, vagy válassza a „Szinkronizálás a SIM-ről” lehetőséget."
+
+msgid "Me: %s"
+msgstr "Én: %s"
+
+msgid "Incomplete: %d of %d parts arrived"
+msgstr "Hiányos: %d / %d rész érkezett meg"
+
+msgid "Delete"
+msgstr "Törlés"
+
+msgid "ttyd is not installed."
+msgstr "A ttyd nincs telepítve."
+
+msgid "The terminal is turned off (/etc/config/ttyd)."
+msgstr "A terminál ki van kapcsolva (/etc/config/ttyd)."
+
+msgid "Too many terminals are opening at once. Try again in a minute."
+msgstr "Túl sok terminál nyílik meg egyszerre. Próbálja újra egy perc múlva."
+
+msgid "The terminal is not available."
+msgstr "A terminál nem érhető el."
+
+msgid "This is a root shell on the device: every command runs with full rights, and a mistake can make the device unbootable."
+msgstr "Ez az eszköz root shellje: minden parancs teljes jogokkal fut, és egy hiba miatt az eszköz nem fog elindulni."
+
+msgid "It is reachable from the LAN only (USB and the hotspot), never from mobile data, and only from this logged-in page."
+msgstr "Csak a LAN-ról érhető el (USB és a hotspot), mobiladatról soha, és csak erről a bejelentkezett oldalról."
+
+msgid "It closes after a minute without activity."
+msgstr "Egy perc tétlenség után bezárul."
+
+msgid "It closes after %d minutes without activity."
+msgstr "%d perc tétlenség után bezárul."
+
+msgid "Reconnect"
+msgstr "Újracsatlakozás"
+
+msgid "Open in a new tab"
+msgstr "Megnyitás új lapon"
+
+msgid "This page was opened over HTTPS, and the terminal is served over HTTP on the LAN: it opens in a tab of its own."
+msgstr "Ez az oldal HTTPS-en nyílt meg, a terminál pedig HTTP-n fut a LAN-on: ezért saját lapon nyílik meg."
+
+msgid "The data usage could not be read"
+msgstr "Az adatforgalom nem olvasható"
+
+msgid "Today"
+msgstr "Ma"
+
+msgid "Days left in this cycle"
+msgstr "Hátralévő napok az időszakban"
+
+msgid "Received"
+msgstr "Fogadott"
+
+msgid "Sent"
+msgstr "Küldött"
+
+msgid "Corrected by"
+msgstr "Korrekció"
+
+msgid "Monthly cap"
+msgstr "Havi keret"
+
+msgid "%s, warning at %d%%"
+msgstr "%s, figyelmeztetés %d%%-nál"
+
+msgid "The monthly cap is reached: mobile data was turned off. It comes back on when the next cycle starts."
+msgstr "A havi keret elfogyott: a mobilinternet ki lett kapcsolva. A következő időszak kezdetén újra bekapcsol."
+
+msgid "%s waits for the clock: it has not been set over the network yet. It already counts towards this cycle and goes to its day once the clock is set."
+msgstr "%s az órára vár: még nem lett beállítva a hálózatról. Már beleszámít ebbe az időszakba, és az óra beállítása után a saját napjára kerül."
+
+msgid "The interface %s is not there right now: nothing is counted until it comes back."
+msgstr "A(z) %s interfész most nincs jelen: amíg vissza nem tér, semmi sem számít."
+
+msgid "Counted on %s, both ways, as the operator counts it (a VPN's overhead included)."
+msgstr "Számolva ezen: %s, mindkét irányban, ahogy a szolgáltató számolja (a VPN többletével együtt)."
+
+msgid "The count is kept in memory and written to the disk every 30 minutes and at shutdown: a power cut loses at most the last half hour."
+msgstr "A számláló a memóriában van, és 30 percenként, valamint leállításkor a lemezre íródik: áramszünetnél legfeljebb az utolsó fél óra vész el."
+
+msgid "Counting since %s."
+msgstr "Számolás kezdete: %s."
+
+msgid "Per day"
+msgstr "Naponta"
+
+msgid "Date"
+msgstr "Dátum"
+
+msgid "Total"
+msgstr "Összesen"
+
+msgid "Per billing cycle"
+msgstr "Számlázási időszakonként"
+
+msgid "Billing cycle"
+msgstr "Számlázási időszak"
+
+msgid "Enter a size in GB, for example 50 or 2.5"
+msgstr "Adjon meg egy méretet GB-ban, például 50 vagy 2.5"
+
+msgid "Enter a percentage from 1 to 100"
+msgstr "Adjon meg egy százalékot 1 és 100 között"
+
+msgid "Turn mobile data off at the cap"
+msgstr "Mobilinternet kikapcsolása a keretnél"
+
+msgid "When this cycle reaches the cap, mobile data is turned off: no internet through the operator until the next cycle starts, the cap is raised or this is turned off again. Turning mobile data back on by hand keeps it on until the next reboot."
+msgstr "Ha ez az időszak eléri a keretet, a mobilinternet kikapcsol: nincs internet a szolgáltatón keresztül, amíg a következő időszak el nem kezdődik, a keretet meg nem emelik, vagy ezt újra ki nem kapcsolják. A kézzel újra bekapcsolt mobilinternet a következő újraindításig bekapcsolva marad."
+
+msgid "Set"
+msgstr "Beállítás"
+
+msgid "Clear the count"
+msgstr "Számláló törlése"
+
+msgid "Every day and billing cycle counted so far is forgotten. Counting goes on from now."
+msgstr "Minden eddig számolt nap és számlázási időszak törlődik. A számolás mostantól folytatódik."
+
+msgid "Billing cycle and cap"
+msgstr "Számlázási időszak és keret"
+
+msgid "A billing cycle starts on day"
+msgstr "A számlázási időszak kezdőnapja"
+
+msgid "31: on the last day of each month"
+msgstr "31: minden hónap utolsó napján"
+
+msgid "Monthly cap (GB, 0: none)"
+msgstr "Havi keret (GB, 0: nincs)"
+
+msgid "Warning at this percentage of the cap"
+msgstr "Figyelmeztetés a keret ennyi százalékánál"
+
+msgid "Used so far in this cycle (GB)"
+msgstr "Eddig felhasznált ebben az időszakban (GB)"
+
+msgid "What the operator shows for this cycle (for example when counting started in the middle of it); the count is corrected to it."
+msgstr "Amit a szolgáltató erre az időszakra mutat (például ha a számolás az időszak közepén kezdődött); a számláló ehhez igazodik."
+
+msgid "Current setting"
+msgstr "Jelenlegi beállítás"
+
+msgid "Fixed at %d"
+msgstr "Rögzítve: %d"
+
+msgid "Not changed (default)"
+msgstr "Nincs módosítva (alapértelmezett)"
+
+msgid "Rule in force"
+msgstr "Érvényes szabály"
+
+msgid "Flow offloading"
+msgstr "Folyamtehermentesítés (flow offloading)"
+
+msgid "TTL of mobile data"
+msgstr "A mobiladat TTL-je"
+
+msgid "Every packet that leaves through mobile data gets this TTL (IPv6: hop limit). A phone or laptop behind the hotspot sends 64 (Windows: 128) and the device forwards it with one less, which is how an operator can tell tethered traffic apart."
+msgstr "Minden csomag, amely a mobiladaton át távozik, ezt a TTL-t kapja (IPv6: hop limit). A hotspot mögötti telefon vagy laptop 64-et küld (Windows: 128), az eszköz pedig eggyel kevesebbel továbbítja – erről ismerheti fel a szolgáltató a megosztott forgalmat."
+
+msgid "On this kernel the firewall fast-path is off while a TTL is set"
+msgstr "Ezen a kernelen a tűzfal gyorsútja ki van kapcsolva, amíg TTL van beállítva"
+
+msgid "Set %d"
+msgstr "Legyen %d"
+
+msgid "Enter a number from 1 to 255"
+msgstr "Adjon meg egy számot 1 és 255 között"
+
+msgid "Turn off"
+msgstr "Kikapcsolás"
+
+msgid "64 makes every packet leave like the device's own traffic"
+msgstr "64 esetén minden csomag úgy távozik, mint az eszköz saját forgalma"
+
+msgid "Check for updates"
+msgstr "Frissítések keresése"
+
+msgid "Checking the file"
+msgstr "A fájl ellenőrzése"
+
+msgid "Update from a file"
+msgstr "Frissítés fájlból"
+
+msgid "Back to the previous version"
+msgstr "Vissza az előző verzióra"
+
+msgid "Back to the previous boot image"
+msgstr "Vissza az előző rendszerindító képre"
+
+msgid "Remove the previous version"
+msgstr "Az előző verzió eltávolítása"
+
+msgid "Kernel change"
+msgstr "Kernelcsere"
+
+msgid "Starting…"
+msgstr "Indítás…"
+
+msgid "Downloading"
+msgstr "Letöltés"
+
+msgid "All files are here and verified"
+msgstr "Minden fájl megvan és ellenőrizve van"
+
+msgid "Unpacking the new system"
+msgstr "Az új rendszer kicsomagolása"
+
+msgid "Carrying over your settings"
+msgstr "A beállításai átvitele"
+
+msgid "Writing down the packages you installed"
+msgstr "Az Ön által telepített csomagok feljegyzése"
+
+msgid "Switching to the new system"
+msgstr "Váltás az új rendszerre"
+
+msgid "Kernel and boot image"
+msgstr "Kernel és rendszerindító kép"
+
+msgid "Restart the device?"
+msgstr "Újraindítja az eszközt?"
+
+msgid "The device restarts now. The default boot is Android, so it starts Android: switch to Linux from there to start the updated system."
+msgstr "Az eszköz most újraindul. Az alapértelmezett indítás az Android, ezért az Android indul el: onnan váltson Linuxra a frissített rendszer elindításához."
+
+msgid "The device restarts now and is away for about a minute. If the new system does not start, the device goes back to Android by itself after the failed attempts."
+msgstr "Az eszköz most újraindul, és körülbelül egy percig nem érhető el. Ha az új rendszer nem indul el, az eszköz a sikertelen kísérletek után magától visszatér az Androidra."
+
+msgid "Restarting… open this page again in about a minute."
+msgstr "Újraindítás… nyissa meg újra ezt az oldalt körülbelül egy perc múlva."
+
+msgid "Running for %s. It goes on when this page is closed; do not switch the device off."
+msgstr "%s óta fut. Az oldal bezárása után is folytatódik; ne kapcsolja ki az eszközt."
+
+msgid "Done. Restart the device to start it."
+msgstr "Kész. Az életbe lépéséhez indítsa újra az eszközt."
+
+msgid "Done. Nothing needs a restart."
+msgstr "Kész. Nincs szükség újraindításra."
+
+msgid "It did not finish, and part of it was done: read the log before you restart."
+msgstr "Nem fejeződött be, de egy része megtörtént: újraindítás előtt olvassa el a naplót."
+
+msgid "It did not finish. Nothing was changed; the log says why."
+msgstr "Nem fejeződött be. Semmi sem változott; az okát a napló tartalmazza."
+
+msgid "Log"
+msgstr "Napló"
+
+msgid "Restart now"
+msgstr "Újraindítás most"
+
+msgid "Later"
+msgstr "Később"
+
+msgid "Close"
+msgstr "Bezárás"
+
+msgid "Updating is not available on this system"
+msgstr "A frissítés ezen a rendszeren nem érhető el"
+
+msgid "Another update is running on the device"
+msgstr "Az eszközön már fut egy másik frissítés"
+
+msgid "It was started outside this page (a terminal, the toolkit). Nothing can be started here until it has finished."
+msgstr "Ezen az oldalon kívül indították el (terminál, toolkit). Amíg be nem fejeződik, itt semmi sem indítható."
+
+msgid "Restart needed"
+msgstr "Újraindítás szükséges"
+
+msgid "This system was updated and still runs the old version. The new one starts at the next restart."
+msgstr "Ez a rendszer frissült, de még a régi verzió fut. Az új a következő újraindításkor indul el."
+
+msgid "Installed"
+msgstr "Telepítve"
+
+msgid "This system"
+msgstr "Ez a rendszer"
+
+msgid "Also on this device"
+msgstr "Szintén ezen az eszközön"
+
+msgid "Kernel"
+msgstr "Kernel"
+
+msgid "choice %s"
+msgstr "választás: %s"
+
+msgid "Boot image"
+msgstr "Rendszerindító kép"
+
+msgid "from the installer"
+msgstr "a telepítőből"
+
+msgid "Default boot"
+msgstr "Alapértelmezett indítás"
+
+msgid "Free space"
+msgstr "Szabad hely"
+
+msgid "Release signatures"
+msgstr "Kiadások aláírásai"
+
+msgid "checked with the project's key"
+msgstr "a projekt kulcsával ellenőrizve"
+
+msgid "this system has no release key"
+msgstr "ezen a rendszeren nincs kiadási kulcs"
+
+msgid "The default boot is Android: a restart goes to Android, and Linux is started from there."
+msgstr "Az alapértelmezett indítás az Android: újraindításkor az Android indul el, a Linux pedig onnan indítható."
+
+msgid "Linux is locked as the default boot: a failed start does not send the device to Android by itself, except the first starts of a new boot image."
+msgstr "A Linux alapértelmezett indításként zárolva van: sikertelen indítás után az eszköz nem vált magától Androidra, kivéve egy új rendszerindító kép első indításait."
+
+msgid "If Linux fails to start %d times in a row, the device starts Android by itself."
+msgstr "Ha a Linux egymás után %d alkalommal nem indul el, az eszköz magától az Androidot indítja el."
+
+msgid "Report of the last update"
+msgstr "Jelentés az utolsó frissítésről"
+
+msgid "Online update"
+msgstr "Online frissítés"
+
+msgid "Asking GitHub…"
+msgstr "A GitHub lekérdezése…"
+
+msgid "Checked %s ago"
+msgstr "Ellenőrizve ennyi ideje: %s"
+
+msgid "Not checked yet"
+msgstr "Még nincs ellenőrizve"
+
+msgid "Mirror (release files)"
+msgstr "Tükör (kiadási fájlok)"
+
+msgid "Leave empty for GitHub."
+msgstr "Hagyd üresen a GitHubhoz."
+
+msgid "Install the packages I added again after the update (needs the device online at the first start)"
+msgstr "A frissítés után telepítse újra az általam hozzáadott csomagokat (az első indításkor az eszköznek online kell lennie)"
+
+msgid "Pre-release"
+msgstr "Előzetes kiadás"
+
+msgid "Newest release"
+msgstr "Legújabb kiadás"
+
+msgid "Release notes"
+msgstr "Kiadási megjegyzések"
+
+msgid "Download"
+msgstr "Letöltés"
+
+msgid "Free space needed"
+msgstr "Szükséges szabad hely"
+
+msgid "not enough: remove the previous version first"
+msgstr "nem elég: előbb távolítsa el az előző verziót"
+
+msgid "A pre-release is a release still being tried: it can have faults a release does not. The previous version is kept all the same."
+msgstr "Az előzetes kiadás még kipróbálás alatt álló kiadás: lehetnek olyan hibái, amilyenek egy rendes kiadásnak nincsenek. Az előző verzió ekkor is megmarad."
+
+msgid "This system is newer than the newest release (a test release)."
+msgstr "Ez a rendszer újabb a legújabb kiadásnál (tesztkiadás)."
+
+msgid "Up to date."
+msgstr "Naprakész."
+
+msgid "This release is not signed, and this system checks signatures: it is not installed from here. Update from its file below, which asks you to confirm."
+msgstr "Ez a kiadás nincs aláírva, és ez a rendszer ellenőrzi az aláírásokat: innen nem települ. Frissítsen lent a fájljából, amely megerősítést kér."
+
+msgid "Update to %s"
+msgstr "Frissítés erre: %s"
+
+msgid "Choose at least one system"
+msgstr "Válasszon legalább egy rendszert"
+
+msgid "Update to %s?"
+msgstr "Frissít erre: %s?"
+
+msgid "The device downloads %s, puts the new system beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Az eszköz letölti ezt: %s, az új rendszert a futó mellé teszi, és a következő újraindításkor átvált rá. A beállításai átkerülnek, és az előző verzió megmarad. Ez több percig tart; ne kapcsolja ki az eszközt."
+
+msgid "Also offer the pre-release %s"
+msgstr "A(z) %s előzetes kiadás felajánlása is"
+
+msgid "Systems to update:"
+msgstr "Frissítendő rendszerek:"
+
+msgid "GitHub could not be reached: the device has no internet connection, or GitHub did not answer. Without internet, update from a file below."
+msgstr "A GitHub nem érhető el: az eszköznek nincs internetkapcsolata, vagy a GitHub nem válaszolt. Internet nélkül frissítsen fájlból, lent."
+
+msgid "release"
+msgstr "kiadás"
+
+msgid "For a device without internet: download the Magisk zip of a release for this system and this kernel on another computer, from the release page on GitHub, and upload it here. For this device that is:"
+msgstr "Internet nélküli eszközhöz: töltse le egy másik számítógépen a kiadás GitHub-oldaláról az ehhez a rendszerhez és ehhez a kernelhez való Magisk zipet, és töltse fel ide. Ehhez az eszközhöz ez kell:"
+
+msgid "Uploaded file"
+msgstr "Feltöltött fájl"
+
+msgid "Checking the file…"
+msgstr "A fájl ellenőrzése…"
+
+msgid "It says it is"
+msgstr "A fájl szerint ez"
+
+msgid "kernel %s"
+msgstr "kernel: %s"
+
+msgid "Signature"
+msgstr "Aláírás"
+
+msgid "signed with the project's release key"
+msgstr "a projekt kiadási kulcsával aláírva"
+
+msgid "WRONG: it does not match the project's release key"
+msgstr "HIBÁS: nem egyezik a projekt kiadási kulcsával"
+
+msgid "not signed"
+msgstr "nincs aláírva"
+
+msgid "cannot be checked on this system"
+msgstr "ezen a rendszeren nem ellenőrizhető"
+
+msgid "Its system is not installed on this device."
+msgstr "A benne lévő rendszer nincs telepítve erre az eszközre."
+
+msgid "It is the other Ubuntu release, not the one installed."
+msgstr "Ez a másik Ubuntu-kiadás, nem a telepített."
+
+msgid "It carries another kernel than this device uses. Take the zip for kernel %s, or change the kernel first."
+msgstr "Más kernelt tartalmaz, mint amit ez az eszköz használ. Válassza a(z) %s kernelhez való zipet, vagy előbb cserélje le a kernelt."
+
+msgid "Its kernel does not run on this model."
+msgstr "A benne lévő kernel nem fut ezen a modellen."
+
+msgid "The file is damaged: its contents do not match their checksums."
+msgstr "A fájl sérült: a tartalma nem egyezik az ellenőrzőösszegekkel."
+
+msgid "Its signature is wrong. This file does not come from the project as it is; it is never installed."
+msgstr "Az aláírása hibás. Ez a fájl ebben a formában nem a projekttől származik; soha nem települ."
+
+msgid "This file cannot be used here."
+msgstr "Ez a fájl itt nem használható."
+
+msgid "Compare the SHA-256 with the one in SHA256SUMS-magisk on the release page: it is the only proof of where an unsigned file comes from."
+msgstr "Hasonlítsa össze a SHA-256 értéket a kiadás oldalán lévő SHA256SUMS-magisk fájlban szereplővel: ez az egyetlen bizonyíték arra, honnan származik egy aláíratlan fájl."
+
+msgid "This release is installed already; the update would only refresh the boot image."
+msgstr "Ez a kiadás már telepítve van; a frissítés csak a rendszerindító képet frissítené."
+
+msgid "I know this file is not signed: nothing proves that it comes from the project. I compared its SHA-256 myself and want it installed."
+msgstr "Tudom, hogy ez a fájl nincs aláírva: semmi sem bizonyítja, hogy a projekttől származik. A SHA-256 értékét magam hasonlítottam össze, és szeretném telepíteni."
+
+msgid "I know this is %s, older than the installed %s, and want to go back to it."
+msgstr "Tudom, hogy ez a(z) %s, amely régebbi a telepített %s verziónál, és vissza szeretnék térni rá."
+
+msgid "This is not a release file of this project: a Magisk zip of a release is expected."
+msgstr "Ez nem ennek a projektnek a kiadási fájlja: egy kiadás Magisk zipje szükséges."
+
+msgid "Update from this file"
+msgstr "Frissítés ebből a fájlból"
+
+msgid "Tick the confirmations above first"
+msgstr "Előbb jelölje be a fenti megerősítéseket"
+
+msgid "The device puts the system of this file beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Az eszköz a fájlban lévő rendszert a futó mellé teszi, és a következő újraindításkor átvált rá. A beállításai átkerülnek, és az előző verzió megmarad. Ez több percig tart; ne kapcsolja ki az eszközt."
+
+msgid "Check the file"
+msgstr "A fájl ellenőrzése"
+
+msgid "Remove the file"
+msgstr "A fájl eltávolítása"
+
+msgid "Previous version"
+msgstr "Előző verzió"
+
+msgid "No previous version is kept on this device."
+msgstr "Ezen az eszközön nincs megőrzött előző verzió."
+
+msgid "replaced %s"
+msgstr "lecserélve: %s"
+
+msgid "I want the previous system back; what I changed since the update stays in the version I leave."
+msgstr "Vissza szeretném kapni az előző rendszert; amit a frissítés óta módosítottam, abban a verzióban marad, amelyet elhagyok."
+
+msgid "Back to the previous version?"
+msgstr "Vissza az előző verzióra?"
+
+msgid "The previous system (%s) becomes the one that starts at the next restart. The version you leave is not kept; settings you changed since the update are not carried back."
+msgstr "A következő újraindításkor az előző rendszer (%s) indul el. Az elhagyott verzió nem marad meg; a frissítés óta módosított beállítások nem kerülnek vissza."
+
+msgid "Go back"
+msgstr "Visszatérés"
+
+msgid "The previous version is the one running now: restart first."
+msgstr "Most éppen az előző verzió fut: előbb indítsa újra az eszközt."
+
+msgid "I want the previous kernel and boot image back."
+msgstr "Vissza szeretném kapni az előző kernelt és rendszerindító képet."
+
+msgid "Back to the previous boot image?"
+msgstr "Vissza az előző rendszerindító képre?"
+
+msgid "The previous boot image (%s) is written to the Linux slot and starts at the next restart. If it does not start, the device goes back to Android by itself."
+msgstr "Az előző rendszerindító kép (%s) a Linux-slotba íródik, és a következő újraindításkor indul el. Ha nem indul el, az eszköz magától visszatér az Androidra."
+
+msgid "I do not need to go back: delete the previous system to free its space."
+msgstr "Nem kell visszatérnem: törölje az előző rendszert, hogy felszabaduljon a helye."
+
+msgid "Remove the previous version?"
+msgstr "Eltávolítja az előző verziót?"
+
+msgid "The kept copy of the previous system is deleted for good. After that there is no going back to it from this page."
+msgstr "Az előző rendszer megőrzött másolata végleg törlődik. Ezután erről az oldalról már nem lehet visszatérni rá."
+
+msgid "the vendor kernel"
+msgstr "a gyártói kernel"
+
+msgid "mainline"
+msgstr "mainline"
+
+msgid "not with Ubuntu 26.04"
+msgstr "Ubuntu 26.04-gyel nem"
+
+msgid "Change the kernel"
+msgstr "Kernel cseréje"
+
+msgid "This kernel is the one in use"
+msgstr "Jelenleg ez a kernel van használatban"
+
+msgid "Change the kernel to %s?"
+msgstr "Lecseréli a kernelt erre: %s?"
+
+msgid "The device downloads that kernel from the newest release and writes a new boot image; it starts at the next restart. The previous boot image is kept, and if the new one does not start the device goes back to Android by itself. The device must be online."
+msgstr "Az eszköz letölti ezt a kernelt a legújabb kiadásból, és új rendszerindító képet ír; ez a következő újraindításkor indul el. Az előző rendszerindító kép megmarad, és ha az új nem indul el, az eszköz magától visszatér az Androidra. Az eszköznek online kell lennie."
+
+msgid "Start Android at the next restart"
+msgstr "Android indítása a következő újraindításkor"
+
+msgid "Start Android at the next restart?"
+msgstr "Android induljon a következő újraindításkor?"
+
+msgid "The next restart, and the ones after it, start Android instead of Linux. Linux is started again from Android (the Magisk module's Action button, or mu300-linux)."
+msgstr "A következő és az azt követő újraindítások a Linux helyett az Androidot indítják el. A Linux az Androidból indítható újra (a Magisk-modul Művelet gombjával vagy az mu300-linux paranccsal)."
+
+msgid "Start Android next"
+msgstr "Legközelebb Android induljon"
+
+msgid "What an update keeps"
+msgstr "Mit őriz meg egy frissítés"
+
+msgid "An update puts the system of the new release in place and carries over what is yours: the settings, the accounts and their passwords, the device's keys and the home directories. Packages you installed yourself are written down and installed again at the first start, once the device is online. The previous version stays on the device until you remove it, so you can go back."
+msgstr "A frissítés feltelepíti az új kiadás rendszerét, és átviszi mindazt, ami az Öné: a beállításokat, a fiókokat és jelszavaikat, az eszköz kulcsait és a saját könyvtárakat. Az Ön által telepített csomagokat feljegyzi, és az első indításkor, amint az eszköz online lesz, újratelepíti őket. Az előző verzió az eszközön marad, amíg el nem távolítja, így vissza tud térni rá."
+
+msgid "The wiki's Updating page lists exactly what is kept."
+msgstr "A wiki frissítésről szóló oldala pontosan felsorolja, mi marad meg."
+
+msgid "Choose a file first"
+msgstr "Előbb válasszon egy fájlt"
+
+msgid "Uploading: %s of %s"
+msgstr "Feltöltés: %s / %s"
+
+msgid "running"
+msgstr "fut"
+
+msgid "(about %s)"
+msgstr "(kb. %s)"
+
+msgid "Install %s?"
+msgstr "Telepíti a következőt: %s?"
+
+msgid "It is installed from this system's package feed."
+msgstr "A rendszer csomagforrásából települ."
+
+msgid "It is downloaded from the release of the VPN module and checked against its SHA256SUMS."
+msgstr "A VPN-modul kiadásából töltődik le, és a SHA256SUMS alapján ellenőrzi a rendszer."
+
+msgid "An engine is tens of MB: on mobile data the download counts towards your plan."
+msgstr "Egy motor több tíz MB: mobiladaton a letöltés a csomagja terhére megy."
+
+msgid "Install"
+msgstr "Telepítés"
+
+msgid "Remove %s?"
+msgstr "Eltávolítja: %s?"
+
+msgid "Profiles run on it: %s. They cannot start until it is installed again (the module refuses while the running profile needs it)."
+msgstr "Ezen futó profilok: %s. Amíg újra nem telepíti, nem indulhatnak el (a modul megtagadja az eltávolítást, ha a futó profilnak szüksége van rá)."
+
+msgid "No profile runs on it."
+msgstr "Egy profil sem fut rajta."
+
+msgid "Removed"
+msgstr "Eltávolítva"
+
+msgid "Each engine is an extra of its own: install only the ones your profiles need. Xray runs vless, vmess, trojan and ss links (with hev-socks5-tunnel), sing-box the same links and its own JSON, mihomo Clash subscriptions, dae hysteria2, tuic and the rest on newer kernels. WireGuard and OpenVPN are packages of the system."
+msgstr "Minden motor külön extra: csak azokat telepítse, amelyekre a profiljainak szüksége van. Az Xray vless, vmess, trojan és ss hivatkozásokat futtat (hev-socks5-tunnel-lel), a sing-box ugyanezeket és a saját JSON-ját, a mihomo Clash előfizetéseket, a dae pedig hysteria2-t, tuic-ot és a többit újabb kerneleken. A WireGuard és az OpenVPN a rendszer csomagjai."
+
+msgid "Downloads are tens of MB per engine: on mobile data they count towards your plan. Offline, upload the engine's tarball from the release page of the VPN module."
+msgstr "A letöltések motoronként több tíz MB-osak: mobiladaton ez a csomagja terhére megy. Offline esetben töltse fel a motor tarballját a VPN-modul kiadási oldaláról."
+
+msgid "The available versions come from the latest release of the VPN module."
+msgstr "Az elérhető verziók a VPN-modul legfrissebb kiadásából származnak."
+
+msgid "system package"
+msgstr "rendszercsomag"
+
+msgid "in the vpn bundle"
+msgstr "a vpn csomagban"
+
+msgid "extra %s"
+msgstr "extra: %s"
+
+msgid "not installed"
+msgstr "nincs telepítve"
+
+msgid "cannot run here"
+msgstr "itt nem futhat"
+
+msgid "update available"
+msgstr "frissítés érhető el"
+
+msgid "installed"
+msgstr "telepítve"
+
+msgid "Kind"
+msgstr "Típus"
+
+msgid "Version"
+msgstr "Verzió"
+
+msgid "Available"
+msgstr "Elérhető"
+
+msgid "not checked"
+msgstr "nincs ellenőrizve"
+
+msgid "Size"
+msgstr "Méret"
+
+msgid "Needed by"
+msgstr "Ki használja"
+
+msgid "no profile"
+msgstr "nincs profil"
+
+msgid "dae needs a kernel with BTF, 5.17 or newer: not the 5.4 vendor kernel (mu300-update kernel 6.18). It can be installed anyway."
+msgstr "A dae-hez BTF-es, 5.17-es vagy újabb kernel kell: az 5.4-es gyártói kernelen nem fut (mu300-update kernel 6.18). Ettől még telepíthető."
+
+msgid "All engines"
+msgstr "Minden motor"
+
+msgid "Last %s lines"
+msgstr "Utolsó %s sor"
+
+msgid "VPN service log"
+msgstr "A VPN szolgáltatás naplója"
+
+msgid "Every 5 s"
+msgstr "5 mp-enként"
+
+msgid "The log is empty."
+msgstr "A napló üres."
+
+msgid "The VPN is starting"
+msgstr "A VPN indul"
+
+msgid "The VPN is stopped"
+msgstr "A VPN le van állítva"
+
+msgid "The VPN is restarting"
+msgstr "A VPN újraindul"
+
+msgid "With the kill switch on, nothing leaves the device or the LAN outside the tunnel: while the VPN is down, starting or broken, every connection fails instead of going out directly. It stays up until you stop the VPN here (Stop removes it)."
+msgstr "Bekapcsolt kill switch mellett semmi sem hagyja el az eszközt vagy a LAN-t az alagúton kívül: amíg a VPN nem működik, indul vagy hibás, minden kapcsolat meghiúsul ahelyett, hogy közvetlenül kimenne. Addig marad bekapcsolva, amíg itt le nem állítja a VPN-t (a Leállítás eltávolítja)."
+
+msgid "Without the kill switch, traffic goes out directly, unprotected, whenever the tunnel is down (while it starts, after a crash, when the engine is missing)."
+msgstr "Kill switch nélkül a forgalom védelem nélkül, közvetlenül megy ki, valahányszor az alagút nem működik (induláskor, összeomlás után, ha hiányzik a motor)."
+
+msgid "Turn the kill switch on?"
+msgstr "Bekapcsolja a kill switch-et?"
+
+msgid "Turn the kill switch off?"
+msgstr "Kikapcsolja a kill switch-et?"
+
+msgid "Turn on"
+msgstr "Bekapcsolás"
+
+msgid "unknown"
+msgstr "ismeretlen"
+
+msgid "The exit address could not be found (is the tunnel up?)"
+msgstr "A kilépési cím nem található (működik az alagút?)"
+
+msgid "Connecting…"
+msgstr "Csatlakozás…"
+
+msgid "On, but not running"
+msgstr "Be van kapcsolva, de nem fut"
+
+msgid "Stopped"
+msgstr "Leállítva"
+
+msgid "Install it"
+msgstr "Telepítés"
+
+msgid "The engine of the active profile is not installed: %s"
+msgstr "Az aktív profil motorja nincs telepítve: %s"
+
+msgid "The kill switch keeps everything closed until it is there; the service downloads it by itself when it can."
+msgstr "A kill switch mindent zárva tart, amíg az meg nem érkezik; a szolgáltatás magától letölti, ha tudja."
+
+msgid "The VPN cannot start until it is installed."
+msgstr "A VPN nem indulhat el, amíg nincs telepítve."
+
+msgid "%s cannot run on this system"
+msgstr "A(z) %s nem futhat ezen a rendszeren"
+
+msgid "The VPN is on, but no profile is active: choose one below."
+msgstr "A VPN be van kapcsolva, de nincs aktív profil: válasszon egyet lent."
+
+msgid "Profile: %s"
+msgstr "Profil: %s"
+
+msgid "No active profile"
+msgstr "Nincs aktív profil"
+
+msgid "engine %s"
+msgstr "motor: %s"
+
+msgid "interface %s"
+msgstr "interfész: %s"
+
+msgid "Kill switch active"
+msgstr "Kill switch aktív"
+
+msgid "Kill switch on"
+msgstr "Kill switch be"
+
+msgid "Kill switch off"
+msgstr "Kill switch ki"
+
+msgid "IPv6 in the tunnel"
+msgstr "IPv6 az alagútban"
+
+msgid "IPv6 blocked"
+msgstr "IPv6 blokkolva"
+
+msgid "IPv6 untouched"
+msgstr "IPv6 érintetlen"
+
+msgid "Module %s"
+msgstr "Modul: %s"
+
+msgid "Check"
+msgstr "Ellenőrzés"
+
+msgid "Uptime"
+msgstr "Üzemidő"
+
+msgid "Rate"
+msgstr "Sebesség"
+
+msgid "Exit address"
+msgstr "Kilépési cím"
+
+msgid "Start"
+msgstr "Indítás"
+
+msgid "Stop"
+msgstr "Leállítás"
+
+msgid "Stop the VPN?"
+msgstr "Leállítja a VPN-t?"
+
+msgid "Traffic then goes out directly, without the tunnel; the kill switch is taken down with it."
+msgstr "A forgalom ekkor az alagút nélkül, közvetlenül megy ki; a kill switch is leáll vele együtt."
+
+msgid "The VPN is on: it starts again by itself after a reboot."
+msgstr "A VPN be van kapcsolva: újraindítás után magától újra elindul."
+
+msgid "The VPN is off."
+msgstr "A VPN ki van kapcsolva."
+
+msgid "Kill switch"
+msgstr "Kill switch"
+
+msgid "Setting"
+msgstr "Beállítás"
+
+msgid "Active: only the tunnel can reach the internet"
+msgstr "Aktív: az internetet csak az alagút érheti el"
+
+msgid "Not active"
+msgstr "Nem aktív"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down, so nothing ever leaves without the tunnel. If the tunnel cannot come up (a dead server, an expired account), the device stays offline until you fix the profile or stop the VPN. The panel itself stays reachable from the LAN."
+msgstr "A kill switch blokkolja az eszköz és a LAN teljes forgalmát, amíg a VPN nem működik, így semmi sem hagyja el az eszközt alagút nélkül. Ha az alagút nem épül fel (halott szerver, lejárt fiók), az eszköz offline marad, amíg nem javítja a profilt vagy nem állítja le a VPN-t. Maga a panel továbbra is elérhető a LAN-ról."
+
+msgid "Choose a profile"
+msgstr "Válasszon profilt"
+
+msgid "No profiles yet"
+msgstr "Még nincs profil"
+
+msgid "engine not installed"
+msgstr "a motor nincs telepítve"
+
+msgid "Use"
+msgstr "Használat"
+
+msgid "Switched: the VPN restarts on the new profile"
+msgstr "Átváltva: a VPN az új profillal indul újra"
+
+msgid "Active profile"
+msgstr "Aktív profil"
+
+msgid "A running VPN restarts on the profile you choose; the kill switch stays up in between."
+msgstr "A futó VPN a kiválasztott profillal indul újra; a kill switch közben aktív marad."
+
+msgid "Manage the profiles"
+msgstr "Profilok kezelése"
+
+msgid "Automatic: through the tunnel where the engine can carry it"
+msgstr "Automatikus: az alagúton át, ahol a motor továbbítani tudja"
+
+msgid "Ask the engine for IPv6 in the tunnel"
+msgstr "IPv6 kérése a motortól az alagútban"
+
+msgid "Never through the tunnel (blocked while the VPN is up)"
+msgstr "Soha az alagúton át (blokkolva, amíg a VPN fut)"
+
+msgid "Saved: it applies from the next start (Restart)"
+msgstr "Mentve: a következő indítástól érvényes (Újraindítás)"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "The tunnel carries IPv6"
+msgstr "Az alagút IPv6-ot visz"
+
+msgid "Yes"
+msgstr "Igen"
+
+msgid "IPv6 guard"
+msgstr "IPv6-védelem"
+
+msgid "Active: IPv6 outside the tunnel is refused"
+msgstr "Aktív: az alagúton kívüli IPv6 elutasítva"
+
+msgid "While the VPN is up, IPv6 never leaves beside a tunnel that does not carry it: it is refused at once, so programs and LAN clients fall back to IPv4 instead of leaking or waiting. Automatic: WireGuard and OpenVPN use the IPv6 addresses of their config; Xray, sing-box and mihomo are asked at every start whether IPv6 works through the tunnel, and carry it only then; dae stays IPv4."
+msgstr "Amíg a VPN fut, az IPv6 soha nem megy ki egy azt nem szállító alagút mellett: azonnal elutasításra kerül, így a programok és a LAN-kliensek kiszivárogtatás vagy várakozás helyett IPv4-re váltanak. Automatikus: a WireGuard és az OpenVPN a konfigurációjuk IPv6-címeit használja; az Xray, a sing-box és a mihomo esetében minden indításkor ellenőrzésre kerül, hogy az IPv6 működik-e az alagúton át, és csak akkor szállítják; a dae IPv4-en marad."
+
+msgid "%d ms"
+msgstr "%d ms"
+
+msgid "UDP: not testable"
+msgstr "UDP: nem mérhető"
+
+msgid "blocked by the kill switch"
+msgstr "a kill switch blokkolta"
+
+msgid "A WireGuard or OpenVPN config, a Clash/mihomo YAML, an Xray or sing-box JSON, a dae config"
+msgstr "WireGuard vagy OpenVPN konfiguráció, Clash/mihomo YAML, Xray vagy sing-box JSON, dae konfiguráció"
+
+msgid "After OK, choose the file: a WireGuard .conf, an OpenVPN .ovpn, a Clash/mihomo .yaml, an Xray or sing-box .json or a dae config (at most 1 MiB)."
+msgstr "Az OK után válassza ki a fájlt: WireGuard .conf, OpenVPN .ovpn, Clash/mihomo .yaml, Xray vagy sing-box .json vagy dae konfiguráció (legfeljebb 1 MiB)."
+
+msgid "From the source"
+msgstr "Forrásból"
+
+msgid "Detect"
+msgstr "Felismerés"
+
+msgid "The URL may hold a token: it goes to the device on its own, never into a command line or a log."
+msgstr "Az URL tokent tartalmazhat: külön jut el az eszközhöz, soha nem kerül parancssorba vagy naplóba."
+
+msgid "Share link"
+msgstr "Megosztási hivatkozás"
+
+msgid "Paste"
+msgstr "Beillesztés"
+
+msgid "File"
+msgstr "Fájl"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Not a share link this panel takes"
+msgstr "Ez a panel nem fogad el ilyen megosztási hivatkozást"
+
+msgid "The config is empty"
+msgstr "A konfiguráció üres"
+
+msgid "Not an https URL"
+msgstr "Nem https URL"
+
+msgid "Invalid name: 1-64 characters, no control characters"
+msgstr "Érvénytelen név: 1-64 karakter, vezérlőkarakterek nélkül"
+
+msgid "Add a profile"
+msgstr "Profil hozzáadása"
+
+msgid "Name"
+msgstr "Név"
+
+msgid "Detect: the module tells the kind from the link or the file. Choose the type for a JSON that could be either Xray or sing-box, or for a link that should run on another engine."
+msgstr "Felismerés: a modul a hivatkozásból vagy a fájlból állapítja meg a típust. Válassza ki a típust olyan JSON-hoz, amely Xray és sing-box is lehet, vagy olyan hivatkozáshoz, amelynek másik motoron kell futnia."
+
+msgid "The profile is added"
+msgstr "A profil hozzáadva"
+
+msgid "Rename the profile"
+msgstr "Profil átnevezése"
+
+msgid "Delete the profile %s?"
+msgstr "Törli a(z) %s profilt?"
+
+msgid "It is the active profile: with the VPN on, the module refuses; stop the VPN or choose another profile first."
+msgstr "Ez az aktív profil: bekapcsolt VPN mellett a modul megtagadja; előbb állítsa le a VPN-t, vagy válasszon másik profilt."
+
+msgid "Its config and credentials are deleted from the device."
+msgstr "A konfigurációja és a hitelesítő adatai törlődnek az eszközről."
+
+msgid "Deleted"
+msgstr "Törölve"
+
+msgid "The profile passes the check"
+msgstr "A profil megfelel az ellenőrzésnek"
+
+msgid "Show the config?"
+msgstr "Megjeleníti a konfigurációt?"
+
+msgid "The config holds the credentials of the profile (keys, passwords, UUIDs). It is shown on this screen only; anyone who can see the screen can read it."
+msgstr "A konfiguráció a profil hitelesítő adatait (kulcsok, jelszavak, UUID-k) tartalmazza. Csak ezen a képernyőn jelenik meg; bárki elolvashatja, aki látja a képernyőt."
+
+msgid "Saving checks the config with the engine first (profile edit); a config that does not pass is not saved and the old one stays."
+msgstr "Mentéskor a rendszer előbb ellenőrzi a konfigurációt a motorral (profile edit); az ellenőrzésen elbukó konfiguráció nem kerül mentésre, a régi marad."
+
+msgid "This profile comes from a subscription: its next refresh replaces your changes."
+msgstr "Ez a profil egy előfizetésből származik: a következő frissítése felülírja a módosításait."
+
+msgid "Config of %s"
+msgstr "%s konfigurációja"
+
+msgid "Rename"
+msgstr "Átnevezés"
+
+msgid "Show / edit the config"
+msgstr "Konfiguráció megjelenítése / szerkesztése"
+
+msgid "Test the latency of all"
+msgstr "Mindegyik késleltetésének mérése"
+
+msgid "No profiles yet: add one from a share link, a config file or a subscription."
+msgstr "Még nincs profil: adjon hozzá egyet megosztási hivatkozásból, konfigurációs fájlból vagy előfizetésből."
+
+msgid "Active"
+msgstr "Aktív"
+
+msgid "This profile is the active one now"
+msgstr "Ez a profil most az aktív"
+
+msgid "More"
+msgstr "Továbbiak"
+
+msgid "active"
+msgstr "aktív"
+
+msgid "subscription"
+msgstr "előfizetés"
+
+msgid "migrated"
+msgstr "átemelt"
+
+msgid "gone from its subscription"
+msgstr "kikerült az előfizetéséből"
+
+msgid "Server"
+msgstr "Szerver"
+
+msgid "Engine"
+msgstr "Motor"
+
+msgid "Latency"
+msgstr "Késleltetés"
+
+msgid "The latency is a TCP connection to the server, through the tunnel when the VPN is up. WireGuard and OpenVPN servers usually speak UDP and cannot be tested this way."
+msgstr "A késleltetés egy TCP-kapcsolat a szerverhez, bekapcsolt VPN mellett az alagúton át. A WireGuard- és OpenVPN-szerverek általában UDP-t használnak, és így nem tesztelhetők."
+
+msgid "Enter an IPv4 or IPv6 address"
+msgstr "Adjon meg egy IPv4- vagy IPv6-címet"
+
+msgid "On: nothing leaves outside the tunnel"
+msgstr "Be: semmi sem megy ki az alagúton kívül"
+
+msgid "Off: traffic goes out directly while the tunnel is down"
+msgstr "Ki: az alagút leállása esetén a forgalom közvetlenül megy ki"
+
+msgid "Yes: Tailscale's own connections go through the tunnel"
+msgstr "Igen: a Tailscale saját kapcsolatai az alagúton mennek át"
+
+msgid "No: Tailscale connects directly"
+msgstr "Nem: a Tailscale közvetlenül csatlakozik"
+
+msgid "Routing"
+msgstr "Útválasztás"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down."
+msgstr "A kill switch blokkolja az eszköz és a LAN teljes forgalmát, amíg a VPN nem működik."
+
+msgid "Bypass the tunnel"
+msgstr "Alagút megkerülése"
+
+msgid "Enter address ranges like 192.168.0.0/16, separated by commas"
+msgstr "Adjon meg címtartományokat, például 192.168.0.0/16, vesszővel elválasztva"
+
+msgid "Address ranges that never go into the tunnel, besides the LAN itself (which never does). Empty: the LAN only."
+msgstr "Címtartományok, amelyek soha nem kerülnek az alagútba, magán a LAN-on kívül (az sosem kerül bele). Üres: csak a LAN."
+
+msgid "Tailscale through the VPN"
+msgstr "Tailscale a VPN-en át"
+
+msgid "When Tailscale runs on the device, its WireGuard, DERP and control connections go through whichever tunnel runs (dae catches them like any other)."
+msgstr "Amikor a Tailscale fut az eszközön, a WireGuard-, DERP- és vezérlőkapcsolatai az éppen működő alagúton mennek át (a dae ezeket is elkapja, mint a többit)."
+
+msgid "DNS"
+msgstr "DNS"
+
+msgid "DNS through the tunnel"
+msgstr "DNS az alagúton át"
+
+msgid "The resolver the device's and the LAN's lookups go to, through the tunnel. Nothing goes to the carrier's resolver."
+msgstr "A feloldó, amelyhez az eszköz és a LAN lekérdezései az alagúton át jutnak. Semmi sem megy a szolgáltató feloldójához."
+
+msgid "Bootstrap DNS"
+msgstr "Bootstrap DNS"
+
+msgid "Finds the VPN server's own address before the tunnel is up (directly, on the engine's own connection)."
+msgstr "Megkeresi a VPN-szerver saját címét az alagút felépülése előtt (közvetlenül, a motor saját kapcsolatán)."
+
+msgid "Empty puts a setting back to its default."
+msgstr "Üresen hagyva a beállítás visszaáll az alapértelmezettre."
+
+msgid "TUN stack"
+msgstr "TUN-verem"
+
+msgid "Default (gvisor)"
+msgstr "Alapértelmezett (gvisor)"
+
+msgid "system (not on the 5.4 kernel)"
+msgstr "system (az 5.4-es kernelen nem)"
+
+msgid "set (unchanged unless you type a new one)"
+msgstr "beállítva (változatlan, hacsak nem ír be újat)"
+
+msgid "not set"
+msgstr "nincs beállítva"
+
+msgid "Upstream HTTP proxy"
+msgstr "Upstream HTTP-proxy"
+
+msgid "TLS certificate pin (SHA-256)"
+msgstr "TLS-tanúsítvány rögzítése (SHA-256)"
+
+msgid "Enter host:port"
+msgstr "Adja meg: host:port"
+
+msgid "Enter the SHA-256 in hex"
+msgstr "Adja meg a SHA-256 értéket hexadecimálisan"
+
+msgid "Profile options"
+msgstr "Profilbeállítások"
+
+msgid "None of the profiles has options of its type."
+msgstr "Egyik profilnak sincsenek a típusához tartozó beállításai."
+
+msgid "mihomo's mode (rule, global, direct), the engines' log levels, dae's groups and routing are part of each profile's own config: VPN > Profiles, Show / edit the config."
+msgstr "A mihomo módja (rule, global, direct), a motorok naplószintjei, a dae csoportjai és útválasztása az egyes profilok saját konfigurációjának részei: VPN > Profilok, Konfiguráció megjelenítése / szerkesztése."
+
+msgid "Delete the subscription %s?"
+msgstr "Törli a(z) %s előfizetést?"
+
+msgid "Its profiles can go with it or stay as profiles of their own. The active profile is never removed while the VPN is on."
+msgstr "A profiljai vele együtt törölhetők, vagy önálló profilként megmaradhatnak. Az aktív profil bekapcsolt VPN mellett soha nem törlődik."
+
+msgid "Keep the profiles"
+msgstr "Profilok megtartása"
+
+msgid "Delete with its profiles"
+msgstr "Törlés a profiljaival együtt"
+
+msgid "Only by hand"
+msgstr "Csak kézzel"
+
+msgid "Every %d h"
+msgstr "%d óránként"
+
+msgid "Share links: one profile per link"
+msgstr "Megosztási hivatkozások: hivatkozásonként egy profil"
+
+msgid "Clash/mihomo YAML: one mihomo profile"
+msgstr "Clash/mihomo YAML: egy mihomo profil"
+
+msgid "dae: one profile with every node in one group"
+msgstr "dae: egy profil, minden csomópont egy csoportban"
+
+msgid "Add a subscription"
+msgstr "Előfizetés hozzáadása"
+
+msgid "Format"
+msgstr "Formátum"
+
+msgid "The URL usually holds your account token: it is stored on the device readable by root only, and never shown again. The subscription is fetched over the device's own connection: through the tunnel when the VPN is up; with the kill switch up and the tunnel down it cannot be fetched."
+msgstr "Az URL általában a fiókja tokenjét tartalmazza: az eszközön csak root által olvashatóan tárolódik, és többé nem jelenik meg. Az előfizetés letöltése az eszköz saját kapcsolatán történik: bekapcsolt VPN mellett az alagúton át; aktív kill switch és leállt alagút mellett nem tölthető le."
+
+msgid "Refresh all"
+msgstr "Összes frissítése"
+
+msgid "No subscriptions yet."
+msgstr "Még nincs előfizetés."
+
+msgid "Host"
+msgstr "Gazdagép"
+
+msgid "Updated"
+msgstr "Frissítve"
+
+msgid "Share links"
+msgstr "Megosztási hivatkozások"
+
+msgid "A refresh keeps the profiles whose name is unchanged, adds the new ones and removes the ones that are gone (the active one stays while the VPN is on, marked as gone). A refresh of the active profile restarts the running VPN."
+msgstr "A frissítés megtartja a változatlan nevű profilokat, hozzáadja az újakat, és eltávolítja a megszűnteket (az aktív profil bekapcsolt VPN mellett marad, megszűntként megjelölve). Az aktív profil frissítése újraindítja a futó VPN-t."
+
+msgid "Dashboard info failed"
+msgstr "Az irányítópult adatai nem érhetők el"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch): no live signal right now"
+msgstr "The modem is restarting (network locks or a SIM switch): no live signal right now"
+
+msgid "Live signal read failed"
+msgstr "Az élő jel olvasása sikertelen"
+
+msgid "Unknown op"
+msgstr "Ismeretlen művelet"
+
+msgid "Invalid argument for this op"
+msgstr "Érvénytelen argumentum ehhez a művelethez"
+
+msgid "The radio is busy: the dial or the watchdog is switching it, try again shortly"
+msgstr "A rádió foglalt: a tárcsázó vagy a watchdog éppen kapcsolja, próbálja újra kicsit később"
+
+msgid "The action gave no valid reply"
+msgstr "A művelet nem adott érvényes választ"
+
+msgid "The confirm parameter must be 0 or 1"
+msgstr "A confirm paraméter értéke 0 vagy 1 lehet"
+
+msgid "An AT command is one line of printable ASCII, at most 512 characters"
+msgstr "Egy AT-parancs egyetlen sor nyomtatható ASCII, legfeljebb 512 karakter"
+
+msgid "Must be an AT command"
+msgstr "AT-parancsnak kell lennie"
+
+msgid "No \";\" command chaining"
+msgstr "Nincs parancsláncolás \";\" jellel"
+
+msgid "Denied: this command wedges the AT port until a reboot"
+msgstr "Elutasítva: ez a parancs újraindításig megbénítja az AT-portot"
+
+msgid "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+msgstr "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+msgstr "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+
+msgid "A long AT command is still running in the background; try again when it has finished"
+msgstr "Egy hosszú AT-parancs még fut a háttérben; próbálja újra, ha befejeződött"
+
+msgid "This command needs confirmation"
+msgstr "Ez a parancs megerősítést igényel"
+
+msgid "The AT channel is busy; the command was not sent, try again"
+msgstr "Az AT-csatorna foglalt; a parancs nem lett elküldve, próbálja újra"
+
+msgid "The modem did not answer in time; the command may still run, check before sending it again"
+msgstr "A modem nem válaszolt időben; a parancs még futhat, ellenőrizze, mielőtt újra elküldi"
+
+msgid "The fresh parameter must be 0 or 1"
+msgstr "A fresh paraméter értéke 0 vagy 1 lehet"
+
+msgid "Reading the locks from the modem; try again in a few seconds"
+msgstr "A zárolások beolvasása a modemből folyamatban; próbálja újra néhány másodperc múlva"
+
+msgid "Lock read failed"
+msgstr "A zárolás olvasása sikertelen"
+
+msgid "Unknown lock kind"
+msgstr "Ismeretlen zárolástípus"
+
+msgid "Invalid value for this lock kind"
+msgstr "Érvénytelen érték ehhez a zárolástípushoz"
+
+msgid "None of these bands is supported by this modem"
+msgstr "Ez a modem ezek közül egyik sávot sem támogatja"
+
+msgid "Band, mode and cell locks are not supported for SIM2 yet"
+msgstr "A sáv-, mód- és cellazár a SIM2-nél még nem támogatott"
+
+msgid "Band, mode and cell locks are not supported while dual-SIM switching manages the radio"
+msgstr "A sáv-, mód- és cellazár nem támogatott, amíg a kettős SIM váltás kezeli a rádiót"
+
+msgid "Invalid page"
+msgstr "Érvénytelen oldal"
+
+msgid "mu300-sms is not available (the SMS service is not installed or not running)"
+msgstr "A mu300-sms nem érhető el (az SMS-szolgáltatás nincs telepítve vagy nem fut)"
+
+msgid "No output"
+msgstr "Nincs kimenet"
+
+msgid "Bad ID"
+msgstr "Hibás azonosító"
+
+msgid "Read failed"
+msgstr "Az olvasás sikertelen"
+
+msgid "The number may only contain digits (and a leading +)"
+msgstr "A szám csak számjegyeket tartalmazhat (és egy kezdő + jelet)"
+
+msgid "The message is empty"
+msgstr "Az üzenet üres"
+
+msgid "The message is too long (over 480 characters)"
+msgstr "Az üzenet túl hosszú (több mint 480 karakter)"
+
+msgid "The message contains a control character"
+msgstr "Az üzenet vezérlőkaraktert tartalmaz"
+
+msgid "The sim parameter must be 0 or 1"
+msgstr "A sim paraméter értéke 0 vagy 1 lehet"
+
+msgid "The USB adapter (device-usb) gave no valid reply"
+msgstr "Az USB-adapter (device-usb) nem adott érvényes választ"
+
+msgid "The auto parameter must be 0 or 1"
+msgstr "Az auto paraméter értéke 0 vagy 1 lehet"
+
+msgid "Invalid USB role"
+msgstr "Érvénytelen USB-szerep"
+
+msgid "A USB role takes no scope"
+msgstr "Az USB-szerephez nem tartozik hatókör"
+
+msgid "Invalid USB network mode"
+msgstr "Érvénytelen USB-hálózati mód"
+
+msgid "Invalid USB network scope"
+msgstr "Érvénytelen USB-hálózati hatókör"
+
+msgid "Unknown USB setting"
+msgstr "Ismeretlen USB-beállítás"
+
+msgid "Invalid interface name"
+msgstr "Érvénytelen csatolónév"
+
+msgid "The power adapter gave no valid reply"
+msgstr "A tápellátás-adapter nem adott érvényes választ"
+
+msgid "Unknown power operation"
+msgstr "Ismeretlen energiaművelet"
+
+msgid "Unknown power setting"
+msgstr "Ismeretlen energiabeállítás"
+
+msgid "Invalid power value"
+msgstr "Érvénytelen energiaérték"
+
+msgid "Invalid power request"
+msgstr "Érvénytelen energiakérés"
+
+msgid "The languages adapter gave no valid reply"
+msgstr "A nyelvi adapter nem adott érvényes választ"
+
+msgid "Unknown language operation"
+msgstr "Ismeretlen nyelvi művelet"
+
+msgid "Invalid language code"
+msgstr "Érvénytelen nyelvkód"
+
+msgid "Invalid language request"
+msgstr "Érvénytelen nyelvi kérés"
+
+msgid "Unknown source"
+msgstr "Ismeretlen forrás"
+
+msgid "The TTL adapter gave no valid reply"
+msgstr "A TTL-adapter nem adott érvényes választ"
+
+msgid "Invalid TTL"
+msgstr "Érvénytelen TTL"
+
+msgid "The data usage adapter gave no valid reply"
+msgstr "Az adatforgalom-adapter nem adott érvényes választ"
+
+msgid "Unknown data usage setting"
+msgstr "Ismeretlen adatforgalom-beállítás"
+
+msgid "Invalid value for this setting"
+msgstr "Érvénytelen érték ehhez a beállításhoz"
+
+msgid "The forwarding adapter gave no valid reply"
+msgstr "A továbbító adapter nem adott érvényes választ"
+
+msgid "The CPU adapter gave no valid reply"
+msgstr "The CPU adapter gave no valid reply"
+
+msgid "Invalid CPU profile"
+msgstr "Invalid CPU profile"
+
+msgid "Invalid CPU core"
+msgstr "Érvénytelen CPU-mag"
+
+msgid "Unknown CPU operation"
+msgstr "Unknown CPU operation"
+
+msgid "Unknown CPU voltage operation"
+msgstr "Ismeretlen CPU-feszültségművelet"
+
+msgid "Invalid CPU voltage request"
+msgstr "Érvénytelen CPU-feszültségkérés"
+
+msgid "Invalid CPU voltage offset"
+msgstr "Érvénytelen CPU-feszültségeltolás"
+
+msgid "Type the confirmation word to apply a voltage offset"
+msgstr "Írja be a megerősítő szót a feszültségeltolás alkalmazásához"
+
+msgid "Invalid stress test length"
+msgstr "Érvénytelen terheléses teszthossz"
+
+msgid "The packages adapter gave no valid reply"
+msgstr "A csomagadapter nem adott érvényes választ"
+
+msgid "Invalid packages operation"
+msgstr "Érvénytelen csomagművelet"
+
+msgid "The sizes parameter must be 0 or 1"
+msgstr "A sizes paraméter értéke csak 0 vagy 1 lehet"
+
+msgid "The update adapter gave no valid reply"
+msgstr "A frissítési adapter nem adott érvényes választ"
+
+msgid "Unknown update operation"
+msgstr "Ismeretlen frissítési művelet"
+
+msgid "Invalid update request"
+msgstr "Érvénytelen frissítési kérés"
+
+msgid "The backup tool gave no valid reply"
+msgstr "A mentőeszköz nem adott érvényes választ"
+
+msgid "Mobile data integration is not provided by this platform"
+msgstr "A mobiladat-integráció ezen a platformon nem érhető el"
+
+msgid "The SIM settings could not be read"
+msgstr "A SIM-beállítások nem olvashatók"
+
+msgid "Radio control is not provided by this platform"
+msgstr "Ez a platform nem biztosít rádióvezérlést"
+
+msgid "A SIM radio change is already running"
+msgstr "Már folyamatban van egy SIM-rádió módosítás"
+
+# Source-language fallback for untranslated new controls.
+msgid "Invalid SIM setting"
+msgstr "Invalid SIM setting"
+
+msgid "The modem did not take the setting; nothing was saved"
+msgstr "A modem nem fogadta el a beállítást; semmi sem lett mentve"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control failed"
+msgstr "SIM control failed"
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching; reboot if channels are unavailable or wait until idle"
+msgstr "Enable hot switching; reboot if channels are unavailable or wait until idle"
+
+msgid "Request too large"
+msgstr "A kérés túl nagy"
+
+msgid "The runtime directory is not safe; nothing was run"
+msgstr "A futtatási könyvtár nem biztonságos; semmi sem futott"
+
+msgid "No such method"
+msgstr "Nincs ilyen metódus"
+
+msgid "The VPN module refused the request"
+msgstr "A VPN-modul elutasította a kérést"
+
+msgid "The VPN panel is busy, try again"
+msgstr "A VPN-panel foglalt, próbálja újra"
+
+msgid "Another VPN task is still running"
+msgstr "Egy másik VPN-feladat még fut"
+
+msgid "The exit_ip parameter must be 0 or 1"
+msgstr "Az exit_ip paraméter értéke 0 vagy 1 lehet"
+
+msgid "The VPN status could not be read"
+msgstr "A VPN állapota nem olvasható"
+
+msgid "The profiles could not be read"
+msgstr "A profilok nem olvashatók"
+
+msgid "The check parameter must be 0 or 1"
+msgstr "A check paraméter értéke 0 vagy 1 lehet"
+
+msgid "The engines could not be read"
+msgstr "A motorok nem olvashatók"
+
+msgid "The subscriptions could not be read"
+msgstr "Az előfizetések nem olvashatók"
+
+msgid "The VPN settings could not be read"
+msgstr "A VPN beállításai nem olvashatók"
+
+msgid "Unknown VPN operation"
+msgstr "Ismeretlen VPN-művelet"
+
+msgid "The VPN could not be switched"
+msgstr "A VPN-t nem sikerült átkapcsolni"
+
+msgid "The kill switch is on or off"
+msgstr "A kill switch be- vagy kikapcsolt lehet"
+
+msgid "The kill switch could not be changed"
+msgstr "A kill switch-et nem sikerült módosítani"
+
+msgid "Invalid profile id"
+msgstr "Érvénytelen profilazonosító"
+
+msgid "The profile could not be made the active one"
+msgstr "A profilt nem sikerült aktívvá tenni"
+
+msgid "Unknown profile source"
+msgstr "Ismeretlen profilforrás"
+
+msgid "Unknown profile type"
+msgstr "Ismeretlen profiltípus"
+
+msgid "The config is empty, too large or holds control characters"
+msgstr "A konfiguráció üres, túl nagy vagy vezérlőkaraktereket tartalmaz"
+
+msgid "Invalid profile request"
+msgstr "Érvénytelen profilkérés"
+
+msgid "A config from a URL takes the type it says"
+msgstr "Az URL-ről érkező konfiguráció azt a típust veszi fel, amelyet megad"
+
+msgid "No uploaded file"
+msgstr "Nincs feltöltött fájl"
+
+msgid "The file is larger than 1 MiB"
+msgstr "A fájl nagyobb 1 MiB-nál"
+
+msgid "The profile could not be added"
+msgstr "A profilt nem sikerült hozzáadni"
+
+msgid "The profile could not be renamed"
+msgstr "A profilt nem sikerült átnevezni"
+
+msgid "The profile could not be removed"
+msgstr "A profilt nem sikerült eltávolítani"
+
+msgid "The profile does not pass the check"
+msgstr "A profil nem felel meg az ellenőrzésnek"
+
+msgid "Unknown profile option"
+msgstr "Ismeretlen profilbeállítás"
+
+msgid "Invalid value for this option"
+msgstr "Érvénytelen érték ehhez a beállításhoz"
+
+msgid "The option could not be set"
+msgstr "A beállítást nem sikerült megadni"
+
+msgid "The config could not be read"
+msgstr "A konfiguráció nem olvasható"
+
+msgid "The config was not saved"
+msgstr "A konfiguráció nem lett mentve"
+
+msgid "The latency test failed"
+msgstr "A késleltetésmérés sikertelen"
+
+msgid "The refresh interval is 1 to 999 hours"
+msgstr "A frissítési időköz 1 és 999 óra között lehet"
+
+msgid "Unknown subscription type"
+msgstr "Ismeretlen előfizetéstípus"
+
+msgid "Invalid subscription id"
+msgstr "Érvénytelen előfizetés-azonosító"
+
+msgid "The keep parameter must be 0 or 1"
+msgstr "A keep paraméter értéke 0 vagy 1 lehet"
+
+msgid "The subscription could not be removed"
+msgstr "Az előfizetést nem sikerült eltávolítani"
+
+msgid "The file is too large"
+msgstr "A fájl túl nagy"
+
+msgid "Unknown engine"
+msgstr "Ismeretlen motor"
+
+msgid "The unverified parameter must be 0 or 1"
+msgstr "Az unverified paraméter értéke 0 vagy 1 lehet"
+
+msgid "This engine is a system package: it has no file to upload"
+msgstr "Ez a motor rendszercsomag: nincs feltölthető fájlja"
+
+msgid "The engine could not be removed"
+msgstr "A motort nem sikerült eltávolítani"
+
+msgid "mu300-extra is not on this system"
+msgstr "A mu300-extra nincs a rendszeren"
+
+msgid "Unknown VPN setting"
+msgstr "Ismeretlen VPN-beállítás"
+
+msgid "The setting could not be saved"
+msgstr "A beállítás nem menthető"
+
+msgid "The number of lines is 1 to 1000"
+msgstr "A sorok száma 1 és 1000 közötti"
+
+msgid "The log could not be read"
+msgstr "A napló nem olvasható"
+
+msgid "The radio of this SIM is switched off in its settings"
+msgstr "Ennek a SIM-nek a rádiója ki van kapcsolva a beállításaiban"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM control or reboot for managed dual-SIM radio"
+msgstr "Use SIM control or reboot for managed dual-SIM radio"
+
+msgid "The radio did not follow its setting"
+msgstr "A rádió nem követte a beállítását"
+
+msgid "The data roaming setting could not be saved"
+msgstr "Az adatroaming beállítását nem sikerült menteni"
+
+msgid "Expected on or off"
+msgstr "on vagy off érték szükséges"
+
+msgid "VPN integration is not provided by this platform"
+msgstr "Ez a platform nem biztosít VPN-integrációt"
+
+msgid "Dual-boot integration is not provided by this platform"
+msgstr "Ez a platform nem biztosít kettős indítási integrációt"
+
+msgid "mu300-next-boot failed"
+msgstr "A mu300-next-boot sikertelen"
+
+msgid "AT backend did not answer (radio off, modem restarting, or adapter unavailable)"
+msgstr "Az AT-háttérrendszer nem válaszolt (rádió kikapcsolva, modem újraindul vagy az adapter nem érhető el)"
+
+msgid "The CPU profile could not be read"
+msgstr "The CPU profile could not be read"
+
+msgid "The CPU profile could not be set"
+msgstr "The CPU profile could not be set"
+
+msgid "The CPU core could not be switched"
+msgstr "A CPU-magot nem sikerült átkapcsolni"
+
+msgid "Invalid low latency setting"
+msgstr "Érvénytelen alacsony késleltetési beállítás"
+
+msgid "The low latency setting could not be applied"
+msgstr "Az alacsony késleltetési beállítást nem sikerült alkalmazni"
+
+msgid "The CPU voltage offset could not be read"
+msgstr "A CPU-feszültségeltolás nem olvasható be"
+
+msgid "The CPU voltage offset was refused"
+msgstr "A CPU-feszültségeltolást elutasították"
+
+msgid "The CPU voltage offset could not be turned off"
+msgstr "A CPU-feszültségeltolás nem kapcsolható ki"
+
+msgid "The stress test could not be started"
+msgstr "A terheléses teszt nem indítható el"
+
+msgid "USB role adapter is not executable"
+msgstr "Az USB-szerep adapter nem futtatható"
+
+msgid "USB role adapter failed"
+msgstr "Az USB-szerep adapter hibát jelzett"
+
+msgid "USB role switch is unavailable"
+msgstr "Az USB-szerepváltás nem érhető el"
+
+msgid "USB role switch failed"
+msgstr "Az USB-szerepváltás sikertelen"
+
+msgid "USB role switch was refused by platform safety checks"
+msgstr "Az USB-szerepváltást a platform biztonsági ellenőrzései elutasították"
+
+msgid "Cannot create USB boot settings directory"
+msgstr "Az USB-indítási beállítások könyvtára nem hozható létre"
+
+msgid "Cannot write USB boot settings"
+msgstr "Az USB-indítási beállítások nem írhatók"
+
+msgid "Cannot save USB boot settings"
+msgstr "Az USB-indítási beállítások nem menthetők"
+
+msgid "Invalid boot-auto value"
+msgstr "Érvénytelen boot-auto érték"
+
+msgid "Device is the boot default; host auto-apply is the only persistent role"
+msgstr "Az eszköz az indítási alapértelmezés; csak a gazda automatikus alkalmazása lehet állandó szerep"
+
+msgid "Cannot save USB role policy"
+msgstr "Az USB-szerep szabálya nem menthető"
+
+msgid "Cannot disable USB network boot policy"
+msgstr "Az USB-hálózat indítási szabálya nem tiltható le"
+
+msgid "Cannot commit USB role policy"
+msgstr "Az USB-szerep szabálya nem véglegesíthető"
+
+msgid "USB network mode is unavailable in host role"
+msgstr "Az USB-hálózati mód gazda szerepben nem érhető el"
+
+msgid "Disable host boot-auto before configuring USB network"
+msgstr "Az USB-hálózat beállítása előtt tiltsa le a gazda boot-auto beállítását"
+
+msgid "Cannot save USB network policy"
+msgstr "Az USB-hálózati szabály nem menthető"
+
+msgid "Cannot commit USB network policy"
+msgstr "Az USB-hálózati szabály nem véglegesíthető"
+
+msgid "USB host mode is required"
+msgstr "USB gazda mód szükséges"
+
+msgid "Not a USB network interface"
+msgstr "Nem USB-hálózati csatoló"
+
+msgid "LAN bridge device section was not found"
+msgstr "A LAN-híd eszközszakasza nem található"
+
+msgid "Cannot bring USB network interface up"
+msgstr "Az USB-hálózati csatoló nem aktiválható"
+
+msgid "Cannot add interface to LAN bridge"
+msgstr "A csatoló nem adható hozzá a LAN-hídhoz"
+
+msgid "Cannot save LAN bridge"
+msgstr "A LAN-híd nem menthető"
+
+msgid "Network reload failed"
+msgstr "A hálózat újratöltése sikertelen"
+
+msgid "Cannot attach USB interface to LAN bridge"
+msgstr "Az USB-csatoló nem kapcsolható a LAN-hídhoz"
+
+msgid "Invalid forwarding setting"
+msgstr "Érvénytelen továbbítási beállítás"
+
+msgid "The message template is too long or contains a control character"
+msgstr "Az üzenetsablon túl hosszú vagy vezérlőkaraktert tartalmaz"
+
+msgid "Invalid filter list (at most 50 lines)"
+msgstr "Érvénytelen szűrőlista (legfeljebb 50 sor)"
+
+msgid "The webhook address must be an http:// or https:// URL"
+msgstr "A webhook címének http:// vagy https:// URL-nek kell lennie"
+
+msgid "The webhook body is too long or contains a control character"
+msgstr "A webhook törzse túl hosszú, vagy vezérlőkaraktert tartalmaz"
+
+msgid "The answer check must be key=value, like errcode=0 or ok=true (the value a whole number or lowercase letters, 16 at most)"
+msgstr "A válasz ellenőrzésének kulcs=érték alakúnak kell lennie, például errcode=0 vagy ok=true (az érték egész szám vagy kisbetűk, legfeljebb 16)"
+
+msgid "Invalid header (one \"Name: value\" per line; Host, Content-Type, Content-Length, Transfer-Encoding and Connection are set by the device)"
+msgstr "Érvénytelen fejléc (soronként egy \"Név: érték\"; a Host, Content-Type, Content-Length, Transfer-Encoding és Connection fejlécet az eszköz állítja be)"
+
+msgid "Invalid Telegram bot token"
+msgstr "Érvénytelen Telegram bot token"
+
+msgid "Invalid Telegram chat (a number, or @channel)"
+msgstr "Érvénytelen Telegram csevegés (szám vagy @csatorna)"
+
+msgid "Invalid e-mail setting"
+msgstr "Érvénytelen e-mail beállítás"
+
+msgid "The webhook needs an address"
+msgstr "A webhookhoz cím kell"
+
+msgid "Telegram needs a bot token and a chat"
+msgstr "A Telegramhoz bot token és csevegés kell"
+
+msgid "E-mail needs a server, a sender and a recipient"
+msgstr "Az e-mailhez kiszolgáló, feladó és címzett kell"
+
+msgid "SMS forwarding needs a phone number"
+msgstr "Az SMS-továbbításhoz telefonszám kell"
+
+msgid "The forwarding settings could not be saved"
+msgstr "A továbbítási beállításokat nem sikerült menteni"
+
+msgid "SMS forwarding is not installed"
+msgstr "Az SMS-továbbítás nincs telepítve"
+
+msgid "A test was started a moment ago; wait a few seconds"
+msgstr "Egy teszt az imént indult el; várjon néhány másodpercet"
+
+msgid "The delivery log could not be cleared"
+msgstr "A kézbesítési naplót nem sikerült törölni"
+
+msgid "Unknown forwarding operation"
+msgstr "Ismeretlen továbbítási művelet"
+
+msgid "The language pack is not installed"
+msgstr "A nyelvi csomag nincs telepítve"
+
+msgid "No language given"
+msgstr "Nincs megadva nyelv"
+
+msgid "The language could not be changed"
+msgstr "A nyelvet nem sikerült módosítani"
+
+msgid "LuCI does not offer this language"
+msgstr "A LuCI nem kínálja ezt a nyelvet"
+
+msgid "No uploaded language pack"
+msgstr "Nincs feltöltött nyelvi csomag"
+
+msgid "An installation is already running"
+msgstr "Egy telepítés már folyamatban van"
+
+msgid "The language pack could not be removed"
+msgstr "A nyelvi csomagot nem sikerült eltávolítani"
+
+msgid "Lock cache unavailable"
+msgstr "A zárolási gyorsítótár nem érhető el"
+
+msgid "The modem refused a write"
+msgstr "A modem elutasított egy írást"
+
+msgid "The saved locks could not be cleared"
+msgstr "A mentett zárolásokat nem sikerült törölni"
+
+msgid "No serving cell to lock to"
+msgstr "Nincs kiszolgáló cella a zároláshoz"
+
+msgid "The modem did not answer the mode query; nothing was sent"
+msgstr "A modem nem válaszolt a mód lekérdezésére; semmi nem lett elküldve"
+
+msgid "The read-back does not match the automatic values"
+msgstr "A visszaolvasás nem egyezik az automatikus értékekkel"
+
+msgid "The read-back after the stack restart does not match the automatic values"
+msgstr "A verem újraindítása utáni visszaolvasás nem egyezik az automatikus értékekkel"
+
+msgid "The reset was interrupted"
+msgstr "A visszaállítás megszakadt"
+
+msgid "Reinstalling packages is not available on this system"
+msgstr "A csomagok újratelepítése nem érhető el ezen a rendszeren"
+
+msgid "No packages were written down by an update"
+msgstr "Egy frissítés sem jegyzett fel csomagot"
+
+msgid "Reinstalling is running already"
+msgstr "Az újratelepítés már fut"
+
+msgid "The note could not be dropped"
+msgstr "Az értesítést nem sikerült eltávolítani"
+
+msgid "Unknown packages operation"
+msgstr "Ismeretlen csomagművelet"
+
+msgid "usage: power get|set KEY VALUE|wake|idle"
+msgstr "usage: power get|set KEY VALUE|wake|idle"
+
+msgid "Data usage is not available on this system"
+msgstr "Az adatforgalom ezen a rendszeren nem érhető el"
+
+msgid "Unknown data usage operation"
+msgstr "Ismeretlen adatforgalom-művelet"
+
+msgid "The TTL setting could not be read"
+msgstr "A TTL-beállítás nem olvasható"
+
+msgid "The TTL could not be set"
+msgstr "A TTL nem állítható be"
+
+msgid "Unknown TTL operation"
+msgstr "Ismeretlen TTL-művelet"
+
+msgid "An update task is already running"
+msgstr "Már fut egy frissítési feladat"
+
+msgid "The task could not be started"
+msgstr "A feladatot nem sikerült elindítani"
+
+msgid "The updater gave no valid reply"
+msgstr "A frissítőprogram nem adott érvényes választ"
+
+msgid "This needs confirmation"
+msgstr "Ehhez megerősítés szükséges"
+
+msgid "Check for updates first"
+msgstr "Előbb keressen frissítéseket"
+
+msgid "The upload directory is not safe; nothing was changed"
+msgstr "A feltöltési könyvtár nem biztonságos; semmi sem változott"
+
+msgid "Not enough memory for this upload"
+msgstr "Nincs elég memória ehhez a feltöltéshez"
+
+msgid "Not enough free space on the Linux partition"
+msgstr "Nincs elég szabad hely a Linux-partíción"
+
+msgid "The file was not checked; upload it again"
+msgstr "A fájl nem lett ellenőrizve; töltse fel újra"
+
+msgid "This file is not for this device"
+msgstr "Ez a fájl nem ehhez az eszközhöz való"
+
+msgid "The signature of this file is wrong"
+msgstr "A fájl aláírása hibás"
+
+msgid "This file is not signed: that needs confirmation"
+msgstr "Ez a fájl nincs aláírva: ehhez megerősítés szükséges"
+
+msgid "This file is older than what is installed: that needs confirmation"
+msgstr "Ez a fájl régebbi a telepítettnél: ehhez megerősítés szükséges"
+
+msgid "The release source was not changed"
+msgstr "A kiadás forrása nem változott"

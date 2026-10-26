@@ -1,0 +1,20 @@
+[Unit]
+Description=MU300 simple desktop (labwc on the USB-C DisplayPort output)
+After=mu300-display.service
+Wants=mu300-display.service
+
+[Service]
+User=ubuntu
+PAMName=login
+RuntimeDirectory=user/1000
+RuntimeDirectoryMode=0700
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+# the 5.4 kernel has no VT and there is no seat manager: open DRM/input directly, render on the CPU
+Environment=LIBSEAT_BACKEND=noop WLR_RENDERER=pixman WLR_NO_HARDWARE_CURSORS=1
+ExecStartPre=/bin/sh -c 'grep -qx connected /sys/class/drm/card0-DP-1/status'
+ExecStart=/usr/bin/labwc
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

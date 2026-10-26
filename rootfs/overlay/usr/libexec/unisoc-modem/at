@@ -1,0 +1,71 @@
+#!/bin/sh
+# Stable AT adapter used by the LuCI application. A platform port only needs
+# to configure one of these backends; no page or collector talks to a tty.
+
+available=0
+[ "${1:-}" = --available ] && { available=1; shift; }
+timeout=8
+[ "${1:-}" = -t ] && { timeout=${2:-8}; shift 2; }
+cmd=${1:-}
+[ "$available" = 1 ] || [ -n "$cmd" ] || { echo "unisoc-at: command required" >&2; exit 2; }
+# one command per call: a CR or LF inside it would reach the modem as a second
+# command (the atinout backend writes it to the tty as it is)
+case $cmd in *"$(printf '\r')"*|*'
+'*) echo "unisoc-at: one command per call (no CR or LF)" >&2; exit 2 ;; esac
+case $timeout in ''|*[!0-9]*) timeout=8 ;; esac
+
+# the shared JSON escaper and uci allow-lists (/usr/share/unisoc-modem/lib.sh)
+LIB=${0%/*}/../../share/unisoc-modem/lib.sh
+[ -f "$LIB" ] || LIB=/usr/share/unisoc-modem/lib.sh
+. "$LIB"
+# The UI can write these options: the port must be a tty under /dev, the custom
+# command a program in the platform directory; anything else is ignored.
+backend=$(uci_get at_backend); backend=${backend:-auto}
+port=$(safe_tty "$(uci_get at_port)" /dev/stty_nr1)
+custom=$(safe_program "$(uci_get at_command)")
+
+find_mu300_at() {
+	for p in /opt/mu300/bin/mu300-at /usr/bin/mu300-at; do
+		[ -x "$p" ] && { printf '%s\n' "$p"; return; }
+	done
+}
+
+case $backend in
+	auto)
+		legacy=$(find_mu300_at)
+		if [ -n "$legacy" ]; then backend=mu300
+		elif command -v atinout >/dev/null 2>&1 && [ -c "$port" ]; then backend=atinout
+		elif [ -n "$custom" ]; then backend=custom
+		else echo "unisoc-at: no AT backend configured" >&2; exit 127
+		fi
+		;;
+esac
+
+case $backend in
+	mu300)
+		legacy=$(find_mu300_at)
+		[ -n "$legacy" ] || { echo "unisoc-at: mu300-at not found" >&2; exit 127; }
+		[ "$available" = 0 ] || exit 0
+		exec "$legacy" -t "$timeout" "$cmd"
+		;;
+	atinout)
+		[ -c "$port" ] || { echo "unisoc-at: AT port $port is unavailable" >&2; exit 1; }
+		[ "$available" = 0 ] || exit 0
+		lock=/var/lock/unisoc-modem-at.lock
+		n=0
+		while ! mkdir "$lock" 2>/dev/null; do
+			n=$((n + 1)); [ "$n" -ge "$timeout" ] && { echo "unisoc-at: busy" >&2; exit 1; }
+			sleep 1
+		done
+		trap 'rmdir "$lock" 2>/dev/null' EXIT INT TERM
+		printf '%s\r' "$cmd" | timeout "$timeout" atinout - "$port" -
+		;;
+	custom)
+		[ -n "$custom" ] && [ -x "$custom" ] || {
+			echo "unisoc-at: custom at_command must be an executable" >&2; exit 127; }
+		[ "$available" = 0 ] || exit 0
+		# Contract: custom adapter receives TIMEOUT then the complete AT command.
+		exec "$custom" "$timeout" "$cmd"
+		;;
+	*) echo "unisoc-at: unknown backend $backend" >&2; exit 2 ;;
+esac

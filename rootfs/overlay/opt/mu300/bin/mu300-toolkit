@@ -1,0 +1,1018 @@
+#!/bin/sh
+# mu300-toolkit: raspi-config style menu and task-manager view for the MU300 (Ubuntu and OpenWrt, POSIX sh + awk).
+#   mu300-toolkit              menu
+#   mu300-toolkit top          live monitor: CPU/core load and frequency, RAM, temperatures, network rates, processes
+#   mu300-toolkit info         one-shot summary
+#   mu300-toolkit profile [eco|balanced|performance]
+#   mu300-toolkit stress [cpu,gpu,net|all] [MINUTES]   stress test with live monitor and a summary (0 = until q)
+#   mu300-toolkit apply        apply the saved settings: performance profile, TTL (boot service)
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+CONF=/etc/mu300/toolkit.conf
+VPN_CONF=/etc/mu300/vpn.conf
+CPUFREQ=/sys/devices/system/cpu/cpufreq
+GPU=$(ls -d /sys/class/devfreq/*.gpu 2>/dev/null | head -n1)
+# The U30 Air's battery: "battery" under 5.4 (the vendor charger manager), "sc27xx-fgu" under mainline. The F50 has
+# none, but the same PMIC: its fuel gauge shows up under mainline too, with made-up values - so only a U30 Air.
+BATDIR=
+if [ "$(/opt/mu300/bin/mu300-device 2>/dev/null)" = u30air ]; then
+    for d in /sys/class/power_supply/battery /sys/class/power_supply/sc27xx-fgu; do
+        [ -r "$d/capacity" ] && { BATDIR=$d; break; }
+    done
+fi
+BATTERY=$([ -n "$BATDIR" ] && ls "$BATDIR/capacity" "$BATDIR/status" \
+    /sys/class/power_supply/usb/online /sys/class/power_supply/ac/online 2>/dev/null)
+PROFILES="eco balanced performance"
+
+if [ -t 1 ]; then
+    B=$(printf '\033[1m'); D=$(printf '\033[2m'); R=$(printf '\033[31m'); G=$(printf '\033[32m')
+    Y=$(printf '\033[33m'); C=$(printf '\033[36m'); N=$(printf '\033[0m')
+else
+    B= D= R= G= Y= C= N=
+fi
+
+is_openwrt() { [ -e /etc/openwrt_release ]; }
+need_root() {
+    [ "$(id -u)" = 0 ] && return 0
+    if command -v sudo >/dev/null; then exec sudo "$0" "$@"; fi
+    echo "run as root" >&2; exit 1
+}
+conf_get() { [ -r "$CONF" ] && sed -n "s/^$1=//p" "$CONF" | tail -n1; }
+current_profile() { p=$(conf_get CPU_PROFILE); echo "${p:-balanced}"; }
+conf_set() {  # conf_set KEY VALUE
+    mkdir -p "${CONF%/*}"; touch "$CONF"
+    if grep -q "^$1=" "$CONF"; then sed -i "s|^$1=.*|$1=$2|" "$CONF"; else echo "$1=$2" >> "$CONF"; fi
+}
+pause() { printf '\n%sPress Enter to continue%s' "$D" "$N"; read -r _; }
+title() { printf '\033[H\033[2J%s mu300-toolkit %s %s%s\n\n' "$B$C" "$N$B" "$1" "$N"; }
+
+# ---------------------------------------------------------------- services (systemd on Ubuntu, procd on OpenWrt)
+svc() {  # svc ACTION NAME ; ACTION: start stop restart enable disable status
+    if command -v systemctl >/dev/null; then
+        case $1 in
+            status) systemctl is-active "$2" 2>/dev/null ;;
+            enable|disable) systemctl "$1" --now "$2" ;;
+            *) systemctl "$1" "$2" ;;
+        esac
+    elif [ -x "/etc/init.d/$2" ]; then
+        case $1 in
+            status) "/etc/init.d/$2" running >/dev/null 2>&1 && echo active || echo inactive ;;
+            enable) "/etc/init.d/$2" enable; "/etc/init.d/$2" start ;;
+            disable) "/etc/init.d/$2" stop; "/etc/init.d/$2" disable ;;
+            *) "/etc/init.d/$2" "$1" ;;
+        esac
+    else
+        echo "missing"
+    fi
+}
+state_color() { case $1 in active) printf '%s%s%s' "$G" "$1" "$N" ;; failed) printf '%s%s%s' "$R" "$1" "$N" ;; *) printf '%s%s%s' "$Y" "$1" "$N" ;; esac; }
+
+# ---------------------------------------------------------------- performance profiles
+# The frequency tables (and the voltages behind them) are fixed by the SoC firmware: a profile moves between the
+# hardware minimum and maximum, it never goes beyond them. The kernel thermal trips keep throttling in every profile.
+profile_apply() {
+    p=$1
+    case " $PROFILES " in *" $p "*) ;; *) echo "unknown profile '$p' ($PROFILES)" >&2; return 1 ;; esac
+    for pol in "$CPUFREQ"/policy*; do
+        [ -d "$pol" ] || continue
+        read -r hwmin < "$pol/cpuinfo_min_freq"; read -r hwmax < "$pol/cpuinfo_max_freq"
+        case $p in
+            eco)
+                # highest table step at or below ~60 % of the maximum
+                cap=$(tr ' ' '\n' < "$pol/scaling_available_frequencies" | awk -v lim=$((hwmax * 6 / 10)) '$1 != "" && $1 <= lim && $1 > c {c = $1} END {print c}')
+                gov=schedutil; min=$hwmin; max=${cap:-$hwmax} ;;
+            balanced) gov=schedutil; min=$hwmin; max=$hwmax ;;
+            performance) gov=performance; min=$hwmin; max=$hwmax ;;
+        esac
+        grep -qw "$gov" "$pol/scaling_available_governors" || gov=$(cut -d' ' -f1 "$pol/scaling_available_governors")
+        # order matters: never set min above the current max or max below the current min
+        echo "$min" > "$pol/scaling_min_freq" 2>/dev/null
+        echo "$max" > "$pol/scaling_max_freq" 2>/dev/null
+        echo "$gov" > "$pol/scaling_governor" 2>/dev/null
+    done
+    if [ -n "$GPU" ]; then
+        gfreqs=$(tr ' ' '\n' < "$GPU/available_frequencies" | grep . | sort -n)
+        glo=$(echo "$gfreqs" | head -n1); ghi=$(echo "$gfreqs" | tail -n1)
+        echo "$glo" > "$GPU/min_freq" 2>/dev/null
+        case $p in
+            eco) echo "$glo" > "$GPU/max_freq" 2>/dev/null; echo simple_ondemand > "$GPU/governor" 2>/dev/null ;;
+            balanced) echo "$ghi" > "$GPU/max_freq" 2>/dev/null; echo simple_ondemand > "$GPU/governor" 2>/dev/null ;;
+            performance) echo "$ghi" > "$GPU/max_freq" 2>/dev/null; echo performance > "$GPU/governor" 2>/dev/null ;;
+        esac
+    fi
+}
+
+profile_show() {
+    printf '  %-10s %-12s %10s %10s %10s %10s\n' policy governor cur min max hw-max
+    for pol in "$CPUFREQ"/policy*; do
+        [ -d "$pol" ] || continue
+        printf '  %-10s %-12s %10s %10s %10s %10s\n' "cpu$(cut -d' ' -f1 "$pol/related_cpus")-$(awk '{print $NF}' "$pol/related_cpus")" \
+            "$(cat "$pol/scaling_governor")" "$(($(cat "$pol/scaling_cur_freq") / 1000))" "$(($(cat "$pol/scaling_min_freq") / 1000))" \
+            "$(($(cat "$pol/scaling_max_freq") / 1000))" "$(($(cat "$pol/cpuinfo_max_freq") / 1000))"
+    done
+    [ -n "$GPU" ] && printf '  %-10s %-12s %10s %10s %10s\n' gpu "$(cat "$GPU/governor")" "$(($(cat "$GPU/cur_freq") / 1000000))" \
+        "$(($(cat "$GPU/min_freq") / 1000000))" "$(($(cat "$GPU/max_freq") / 1000000))"
+    printf '  %s(MHz)%s\n' "$D" "$N"
+    thr=$(throttle_state)
+    printf '\n  thermal throttling: %s\n' "$( [ -n "$thr" ] && printf '%sactive%s (%s)' "$Y" "$N" "$thr" || printf '%snone%s' "$G" "$N")"
+}
+
+# cooling devices currently limiting something ("cpufreq-0:3 ...")
+throttle_state() {
+    for c in /sys/class/thermal/cooling_device*; do
+        read -r s < "$c/cur_state" 2>/dev/null || continue
+        [ "$s" -gt 0 ] 2>/dev/null && printf '%s:%s ' "$(sed 's/^thermal-//' "$c/type")" "$s"
+    done
+}
+
+# ---------------------------------------------------------------- live monitor
+snapshot() {
+    echo @stat; cat /proc/stat
+    echo @mem; cat /proc/meminfo
+    echo @net; cat /proc/net/dev
+    echo @load; cat /proc/loadavg /proc/uptime
+    echo @disk; cat /proc/diskstats
+    echo @sys
+    grep -H . /sys/class/thermal/thermal_zone*/type /sys/class/thermal/thermal_zone*/temp \
+        /sys/class/thermal/cooling_device*/cur_state "$CPUFREQ"/policy*/scaling_cur_freq \
+        "$CPUFREQ"/policy*/related_cpus "$CPUFREQ"/policy*/scaling_governor \
+        ${GPU:+"$GPU/cur_freq"} $BATTERY 2>/dev/null
+    echo @proc; cat /proc/[0-9]*/stat 2>/dev/null
+    if [ -n "$STRESS_DIR" ]; then echo @extra; stress_status; fi
+    echo @end
+}
+
+MONITOR_AWK='
+function human(b) { return b >= 1073741824 ? sprintf("%.1fG", b / 1073741824) : b >= 1048576 ? sprintf("%.1fM", b / 1048576) : sprintf("%.0fK", b / 1024) }
+function rate(b) { b = b * 8 / dt; return b >= 1000000 ? sprintf("%.1f Mbit/s", b / 1000000) : sprintf("%.0f kbit/s", b / 1000) }
+function bar(pct, w,   n, s, i, col) {
+    if (pct < 0) pct = 0; if (pct > 100) pct = 100
+    n = int(pct * w / 100 + 0.5); col = pct >= 85 ? RD : pct >= 60 ? YE : GR
+    s = col; for (i = 0; i < n; i++) s = s "|"; s = s DI; for (; i < w; i++) s = s "."; return s NO
+}
+function tcol(t) { return (t >= 85 ? RD : t >= 70 ? YE : GR) sprintf("%4.1f", t) NO }
+function line(s) { if (row < rows - 1) { printf "%s\033[K\n", s; row++ } }
+BEGIN {
+    RD = "\033[31m"; GR = "\033[32m"; YE = "\033[33m"; CY = "\033[36m"; BO = "\033[1m"; DI = "\033[2m"; NO = "\033[0m"
+    while ((getline l < prevfile) > 0) { split(l, a, " "); prev[a[1]] = a[2] }
+    close(prevfile)
+}
+/^@/ { sec = substr($0, 2); next }
+sec == "stat" && /^cpu/ {
+    tot = 0; for (i = 2; i <= NF; i++) tot += $i
+    idle = $5 + $6; k = $1
+    dtot = tot - prev["t_" k]; didle = idle - prev["i_" k]
+    busy[k] = (prev["t_" k] != "" && dtot > 0) ? 100 * (dtot - didle) / dtot : 0
+    cur["t_" k] = tot; cur["i_" k] = idle
+    if (k != "cpu") ncpu++
+}
+sec == "mem" { m[$1] = $2 * 1024 }
+sec == "net" && /:/ {
+    sub(/^ */, ""); split($0, p, ":"); ifc = p[1]; split(p[2], f, " ")
+    if (ifc == "lo" || ifc ~ /^(dummy|tunl|gre|gretap|erspan|ip_vti|ip6_vti|sit|ip6tnl|ip6gre|sipa_dummy)/) next
+    if (f[1] == 0 && f[9] == 0) next
+    nif++; ifn[nif] = ifc; rxb[ifc] = f[1]; txb[ifc] = f[9]
+    cur["rx_" ifc] = f[1]; cur["tx_" ifc] = f[9]
+}
+sec == "load" { if (NF == 5) load = $1 " " $2 " " $3; else up = int($1) }
+sec == "disk" && $3 ~ /^mmcblk[0-9]+$/ { cur["dw"] += $10; cur["dr"] += $6 }
+sec == "sys" {
+    i = index($0, ":"); path = substr($0, 1, i - 1); val = substr($0, i + 1)
+    n = split(path, pp, "/"); leaf = pp[n]; node = pp[n - 1]
+    if (leaf == "type" && node ~ /^thermal_zone/) ztype[node] = val
+    else if (leaf == "temp") ztemp[node] = val
+    else if (leaf == "cur_state" && val + 0 > 0) thr++
+    else if (leaf == "scaling_cur_freq") pfreq[node] = val
+    else if (leaf == "related_cpus") prel[node] = val
+    else if (leaf == "scaling_governor") pgov[node] = val
+    else if (leaf == "cur_freq") gpuf = val
+    else if ((node == "battery" || node == "sc27xx-fgu") && leaf == "capacity") bcap = val
+    else if ((node == "battery" || node == "sc27xx-fgu") && leaf == "status") bstat = val
+    else if ((node == "usb" || node == "ac") && leaf == "online" && val == 1) bext = 1
+}
+sec == "extra" { nextra++; extra[nextra] = $0; next }
+sec == "proc" {
+    o = index($0, " ("); c = 0; for (i = length($0); i > 0; i--) if (substr($0, i, 1) == ")") { c = i; break }
+    if (!o || !c) next
+    pid = substr($0, 1, o - 1); name = substr($0, o + 2, c - o - 2)
+    split(substr($0, c + 2), f, " ")
+    ticks = f[12] + f[13]; cur["p_" pid] = ticks
+    pcpu = (prev["p_" pid] != "") ? (ticks - prev["p_" pid]) * 100 / (hz * dt) : 0
+    np++; plist[np] = sprintf("%08.2f %s %s %s", pcpu, pid, f[22] * 4096, name)
+}
+END {
+    for (k in cur) print k, cur[k] > prevfile
+    close(prevfile)
+    row = 0
+    printf "\033[H"
+    line(sprintf("%s mu300-toolkit %s %s  up %dd %02dh%02dm  load %s  profile %s%s%s   %s[q] quit%s", BO CY, NO BO, host, up / 86400, up % 86400 / 3600, up % 3600 / 60, load, CY, profile, NO, DI, NO))
+    for (i = 1; i <= nextra; i++) line(YE extra[i] NO)
+    line("")
+    thrs = thr ? YE "throttling (" thr " limits)" NO : GR "not throttling" NO
+    line(sprintf("%sCPU%s  %s %5.1f%%   %s", BO, NO, bar(busy["cpu"], 30), busy["cpu"], thrs))
+    for (pol in prel) {
+        ncs = split(prel[pol], cs, " "); s = ""
+        for (i = 1; i <= ncs; i++) s = s sprintf(" cpu%s %s%3.0f%%", cs[i], bar(busy["cpu" cs[i]], 6), busy["cpu" cs[i]])
+        polline[cs[1]] = sprintf("  %-4s %4d MHz %-11s%s", (cs[1] == 0 ? "lit" : ncs == 1 ? "big" : "mid"), pfreq[pol] / 1000, pgov[pol], s)
+    }
+    for (i = 0; i < ncpu; i++) if (i in polline) line(polline[i])
+    used = m["MemTotal:"] - m["MemAvailable:"]
+    line(sprintf("%sRAM%s  %s %5.1f%%   used %s / %s  avail %s  cache %s", BO, NO, bar(100 * used / m["MemTotal:"], 30), 100 * used / m["MemTotal:"], human(used), human(m["MemTotal:"]), human(m["MemAvailable:"]), human(m["Cached:"] + m["Buffers:"])))
+    if (m["SwapTotal:"] > 0) line(sprintf("  swap %s / %s (zram)", human(m["SwapTotal:"] - m["SwapFree:"]), human(m["SwapTotal:"])))
+    if (gpuf != "") line(sprintf("%sGPU%s  %d MHz", BO, NO, gpuf / 1000000))
+    # (no bar: bar() colours a full one red, which is right for load and wrong for a battery)
+    if (bcap != "") line(sprintf("%sBAT%s  %d%%   %s", BO, NO, bcap, bstat == "Charging" ? "charging" : (bstat == "Full" ? "full, on USB power" : (bext ? "on USB power" : "on battery"))))
+    line("")
+    # temperatures: most useful zones first, then any other readable zone
+    split("soc big7 mid4 mid5 lit0 gpu ai0 mm board chg pa nr", want, " ")
+    s = ""; cnt = 0; hot = 0
+    for (z in ztemp) { t = ztemp[z] / 1000; if (t > hot) hot = t; tbyname[ztype[z]] = t }
+    for (i = 1; i in want; i++) {
+        nm = want[i] "-thmzone"; if (!(nm in tbyname)) continue
+        s = s sprintf("%-6s%s  ", want[i], tcol(tbyname[nm])); cnt++
+        if (cnt % 6 == 0) { line((cnt == 6 ? BO "TEMP" NO " " : "     ") s); s = "" }
+    }
+    if (s != "") line((cnt <= 6 ? BO "TEMP" NO " " : "     ") s)
+    line(sprintf("     hottest %s C", tcol(hot)))
+    line("")
+    line(sprintf("%sNET%s  %-10s %15s %15s %10s %10s", BO, NO, "interface", "down", "up", "rx total", "tx total"))
+    for (i = 1; i <= nif; i++) {
+        ifc = ifn[i]
+        dr = (prev["rx_" ifc] != "") ? rxb[ifc] - prev["rx_" ifc] : 0
+        du = (prev["tx_" ifc] != "") ? txb[ifc] - prev["tx_" ifc] : 0
+        line(sprintf("     %-10s %s%15s%s %s%15s%s %10s %10s", ifc, GR, rate(dr), NO, CY, rate(du), NO, human(rxb[ifc]), human(txb[ifc])))
+    }
+    if (prev["dw"] != "") line(sprintf("%sDISK%s eMMC read %s/s  write %s/s", BO, NO, human((cur["dr"] - prev["dr"]) * 512 / dt), human((cur["dw"] - prev["dw"]) * 512 / dt)))
+    line("")
+    line(sprintf("%s%7s %6s %7s  %s%s", BO, "PID", "CPU%", "RSS", "NAME", NO))
+    # simple selection of the busiest processes (awk has no portable sort)
+    for (k = 0; row < rows - 1 && k < 30; k++) {
+        best = 0; for (i = 1; i <= np; i++) if (!(i in shown) && (best == 0 || plist[i] > plist[best])) best = i
+        if (!best) break; shown[best] = 1; split(plist[best], q, " ")
+        nm = plist[best]; sub(/^[^ ]+ [^ ]+ [^ ]+ /, "", nm)
+        line(sprintf("%7s %6.1f %7s  %s", q[2], q[1], human(q[3]), nm))
+    }
+    printf "\033[J"
+}'
+
+monitor() {
+    interval=${1:-2}
+    state=$(mktemp "${TMPDIR:-/tmp}/mu300-toolkit.XXXXXX")
+    hz=$(getconf CLK_TCK 2>/dev/null || echo 100)
+    host=$(cat /proc/sys/kernel/hostname)
+    old=$(stty -g 2>/dev/null)
+    MON_STOP=
+    trap 'MON_STOP=1' INT TERM
+    stty -icanon -echo min 0 time $((interval * 10)) 2>/dev/null
+    printf '\033[?25l\033[2J'
+    dt=$interval
+    while :; do
+        size=$(stty size 2>/dev/null); rows=${size% *}; [ -n "$rows" ] && [ "$rows" -gt 5 ] || rows=40
+        profile=$(current_profile)
+        snapshot | awk -v prevfile="$state" -v dt="$dt" -v hz="$hz" -v rows="$rows" -v host="$host" -v profile="$profile" "$MONITOR_AWK"
+        key=$(dd bs=1 count=1 2>/dev/null)
+        case $key in q|Q) break ;; esac
+        [ -n "$MON_STOP" ] && break
+        [ -n "${MON_UNTIL:-}" ] && [ "$(date +%s)" -ge "$MON_UNTIL" ] && break
+        stress_hot && break
+    done
+    stty "$old" 2>/dev/null; printf '\033[?25h\033[2J\033[H'; rm -f "$state"
+    trap - INT TERM
+}
+
+# ---------------------------------------------------------------- stress tests
+STRESS_DIR=
+CLTEST=/opt/mu300/android/system/bin/cltest
+
+kill_tree() {  # kill_tree PID: the process and all of its descendants
+    for c in $(cat /proc/[0-9]*/stat 2>/dev/null | awk -v p="$1" '{ r = substr($0, index($0, ") ") + 2); split(r, f, " "); if (f[2] == p) print $1 }'); do
+        kill_tree "$c"
+    done
+    kill "$1" 2>/dev/null
+}
+fmt_dur() { printf '%02d:%02d' $(($1 / 60)) $(($1 % 60)); }
+
+stress_cpu() {
+    n=$(grep -c '^processor' /proc/cpuinfo)
+    if command -v stress-ng >/dev/null; then
+        stress-ng --cpu "$n" --cpu-method matrixprod >/dev/null 2>&1 & echo $! >> "$STRESS_DIR/pids"
+    else
+        i=0
+        while [ "$i" -lt "$n" ]; do
+            awk 'BEGIN { for (;;) x = sin(x) + sqrt(x * x + 1) }' & echo $! >> "$STRESS_DIR/pids"
+            i=$((i + 1))
+        done
+    fi
+}
+
+# Mali GPU through Android's OpenCL driver in the vendor chroot (tools/gpu/cltest loop)
+stress_gpu() {
+    /opt/mu300/bin/android-gpu-run /system/bin/cltest loop 0 > "$STRESS_DIR/gpu.log" 2>&1 & echo $! >> "$STRESS_DIR/pids"
+}
+
+net_once() {
+    t=$(date +%H:%M:%S)
+    if [ "$NET_TOOL" = ookla ]; then
+        # tsv: server, id, latency ms, jitter, loss, download B/s, upload B/s, ...
+        r=$(speedtest --accept-license --accept-gdpr -f tsv 2>/dev/null | awk -F'\t' -v t="$t" \
+            'NF >= 7 && $6 > 0 { printf "%s down %.1f up %.1f Mbit/s ping %.0f ms (%s)\n", t, $6 * 8 / 1e6, $7 * 8 / 1e6, $3, $1 }')
+    else
+        # speed.cloudflare.com refuses downloads above 50 MB (403); -f turns HTTP errors into a failed run
+        d=$(curl -fs -o /dev/null -m 30 -w '%{speed_download}' 'https://speed.cloudflare.com/__down?bytes=50000000'); rc=$?
+        [ "$rc" = 0 ] || [ "$rc" = 28 ] || d=0
+        u=$(head -c 25000000 /dev/zero | curl -fs -o /dev/null -m 30 -w '%{speed_upload}' --data-binary @- https://speed.cloudflare.com/__up) || u=0
+        r=$(awk -v t="$t" -v d="${d:-0}" -v u="${u:-0}" 'BEGIN { if (d + u > 0) printf "%s down %.1f up %.1f Mbit/s (speed.cloudflare.com)\n", t, d * 8 / 1e6, u * 8 / 1e6 }')
+        # curl exit 28 is the time limit: the average speed is still valid
+        [ -n "$r" ] || r="$t failed (curl exit $rc)"
+    fi
+    echo "${r:-$t failed}"
+}
+stress_net() {
+    ( while [ ! -e "$STRESS_DIR/stop" ]; do net_once >> "$STRESS_DIR/net.log"; sleep 2; done ) & echo $! >> "$STRESS_DIR/pids"
+}
+
+# The test stops itself when the hottest sensor reaches STRESS_LIMIT, well before thermal-guard's power-off at 105 C:
+# a device whose cooling cannot hold the load (mainline's step_wise could not, FINDINGS 166) must not be switched off
+# by the test that is recommended to check it, and a hot power-off can cost the next boot its eMMC.
+STRESS_LIMIT=${MU300_STRESS_LIMIT:-95000}
+
+# every 2 s: time, hottest sensor, active cooling devices, cur freq per policy, max freq per policy; at STRESS_LIMIT
+# the reading goes to $STRESS_DIR/hot and the sampler ends (stress_run then stops the load)
+stress_sampler() {
+    ( while [ ! -e "$STRESS_DIR/stop" ]; do
+          hot=$(cat "${MU300_SYSROOT:-}"/sys/class/thermal/thermal_zone*/temp 2>/dev/null | sort -n | tail -n1)
+          echo "$(date +%s) $hot $(throttle_state | wc -w) $(cat "$CPUFREQ"/policy*/scaling_cur_freq | tr '\n' ' ')$(cat "$CPUFREQ"/policy*/scaling_max_freq | tr '\n' ' ')"
+          [ "${hot:-0}" -ge "$STRESS_LIMIT" ] 2>/dev/null && { echo "$hot" > "$STRESS_DIR/hot"; break; }
+          sleep 2
+      done > "$STRESS_DIR/samples" ) & echo $! >> "$STRESS_DIR/pids"
+}
+stress_hot() { [ -n "${STRESS_DIR:-}" ] && [ -e "$STRESS_DIR/hot" ]; }
+stress_hot_message() {  # why the test ended early, at the top of the summary
+    stress_hot || return 0
+    printf 'STOPPED EARLY after %s: the SoC reached %s C, the limit is %s C. The load was stopped so that the\n' \
+        "$(fmt_dur $(( $(date +%s) - STRESS_START )))" "$(( $(cat "$STRESS_DIR/hot") / 1000 ))" "$((STRESS_LIMIT / 1000))"
+    printf 'device does not power itself off (thermal-guard does at 105 C). Its cooling did not hold this load: let\n'
+    printf 'it cool down, check that nothing covers it, and report it with this summary.\n\n'
+}
+
+stress_status() {
+    el=$(( $(date +%s) - STRESS_START ))
+    printf 'STRESS %s   %s / %s   [q] stop\n' "$STRESS_WHAT" "$(fmt_dur "$el")" "$( [ "$STRESS_SECS" -gt 0 ] && fmt_dur "$STRESS_SECS" || echo "until q")"
+    case ",$STRESS_WHAT," in *,gpu,*) printf '  %s\n' "$(tail -n1 "$STRESS_DIR/gpu.log" 2>/dev/null | cut -c1-100)" ;; esac
+    case ",$STRESS_WHAT," in *,net,*) printf '  net: %s (%s runs)\n' "$(tail -n1 "$STRESS_DIR/net.log" 2>/dev/null)" "$(wc -l < "$STRESS_DIR/net.log" 2>/dev/null || echo 0)" ;; esac
+}
+
+stress_summary() {
+    el=$(( $(date +%s) - STRESS_START ))
+    hw=$(cat "$CPUFREQ"/policy*/cpuinfo_max_freq | tr '\n' ' ')
+    printf 'mu300-toolkit stress test: %s, %s, profile %s, %s\n\n' "$STRESS_WHAT" "$(fmt_dur "$el")" "$(current_profile)" "$(date '+%Y-%m-%d %H:%M')"
+    awk -v hw="$hw" '
+        { n++; t = $2 / 1000; if (n == 1) first = t; last = t; if (t > max) max = t; if ($3 > 0) thr++
+          np = (NF - 3) / 2
+          for (i = 1; i <= np; i++) { sum[i] += $(3 + i); c = $(3 + np + i); if (!(i in cap) || c < cap[i]) cap[i] = c } }
+        END {
+            if (!n) { print "no samples"; exit }
+            printf "Temperature  start %.0f C, max %.0f C, end %.0f C\n", first, max, last
+            printf "Throttling   %.0f%% of the time\n", 100 * thr / n
+            split(hw, h, " "); split("little mid big", lbl, " ")
+            for (i = 1; i <= np; i++)
+                printf "CPU %-7s  avg %4.0f MHz, lowest cap %4.0f MHz of %4.0f MHz\n", (np == 3 ? lbl[i] : "policy" i), sum[i] / n / 1000, cap[i] / 1000, h[i] / 1000
+        }' "$STRESS_DIR/samples"
+    if [ -s "$STRESS_DIR/gpu.log" ]; then
+        awk '/runs\/s/ { v = $3 + 0; n++; a[n] = v; s += v }
+             END {
+                 if (!n) { print "GPU          no result (OpenCL not available?)"; exit }
+                 k = n < 30 ? n : 30; for (i = 1; i <= k; i++) { f += a[i]; l += a[n - k + i] }
+                 printf "GPU          avg %.2f runs/s, first %ds %.2f, last %ds %.2f (%+.0f%%)\n", s / n, k, f / k, k, l / k, f ? 100 * (l - f) / f : 0
+             }' "$STRESS_DIR/gpu.log"
+        grep -v 'runs/s' "$STRESS_DIR/gpu.log" | grep -iE 'error|fail|enqueue|clBuild' | head -n3 | sed 's/^/             /'
+    fi
+    if [ -s "$STRESS_DIR/net.log" ]; then
+        awk '/ down / { n++; d = $3; u = $5; sd += d; su += u; if (n == 1 || d < mind) mind = d; if (d > maxd) maxd = d; if (n == 1 || u < minu) minu = u; if (u > maxu) maxu = u }
+             / failed$/ { fail++ }
+             END { printf "Network      %d runs, %d failed", n, fail
+                   if (n) printf "; down avg %.1f (%.1f-%.1f), up avg %.1f (%.1f-%.1f) Mbit/s", sd / n, mind, maxd, su / n, minu, maxu
+                   printf "\n" }' "$STRESS_DIR/net.log"
+    fi
+    kmsg=$(dmesg 2>/dev/null | tail -n +"$((STRESS_DMESG + 1))" | grep -iE 'error|fail|warn|oops|bug|watchdog|hung|lockup|over.?temp|critical' | grep -v 'hw csum')
+    printf 'Kernel       %s new warning/error lines\n' "$(printf '%s' "$kmsg" | grep -c .)"
+    printf '%s' "$kmsg" | head -n5 | cut -c1-150 | sed 's/^/             /'
+    if command -v systemctl >/dev/null; then
+        f=$(systemctl --failed --no-legend --plain 2>/dev/null | awk '{print $1}' | tr '\n' ' ')
+        printf 'Services     failed: %s\n' "${f:-none}"
+    fi
+}
+
+stress_run() {  # stress_run WHAT(cpu,gpu,net|all) SECONDS
+    STRESS_WHAT=$1; [ "$STRESS_WHAT" = all ] && STRESS_WHAT=cpu,gpu,net
+    STRESS_SECS=${2:-600}
+    case ",$STRESS_WHAT," in *,gpu,*)
+        [ -x "$CLTEST" ] || { echo "GPU test needs $CLTEST (tools/gpu/cltest) and the Android GPU subset" >&2; return 1; } ;;
+    esac
+    NET_TOOL=
+    case ",$STRESS_WHAT," in *,net,*)
+        if command -v speedtest >/dev/null && speedtest --version 2>/dev/null | grep -q Ookla && [ "$(conf_get OOKLA_ACCEPTED)" = 1 ]; then NET_TOOL=ookla
+        elif command -v curl >/dev/null; then NET_TOOL=curl
+        else echo "network test needs curl or the Ookla speedtest CLI" >&2; return 1; fi ;;
+    esac
+    STRESS_DIR=$(mktemp -d "${TMPDIR:-/tmp}/mu300-stress.XXXXXX")
+    STRESS_START=$(date +%s)
+    STRESS_DMESG=$(dmesg 2>/dev/null | wc -l)
+    stress_sampler
+    case ",$STRESS_WHAT," in *,cpu,*) stress_cpu ;; esac
+    case ",$STRESS_WHAT," in *,gpu,*) stress_gpu ;; esac
+    case ",$STRESS_WHAT," in *,net,*) stress_net ;; esac
+    MON_UNTIL=; [ "$STRESS_SECS" -gt 0 ] && MON_UNTIL=$((STRESS_START + STRESS_SECS))
+    if [ -t 0 ] && [ -t 1 ]; then
+        monitor 2
+    else
+        while { [ -z "$MON_UNTIL" ] || [ "$(date +%s)" -lt "$MON_UNTIL" ]; } && ! stress_hot; do sleep 1; done
+    fi
+    MON_UNTIL=
+    touch "$STRESS_DIR/stop"
+    for pid in $(cat "$STRESS_DIR/pids"); do kill_tree "$pid"; done
+    wait 2>/dev/null
+    out=${MU300_STRESS_LOGDIR:-/var/log}/mu300-stress-$(date +%Y%m%d-%H%M%S).txt
+    { stress_hot_message; stress_summary; } | tee "$out"
+    printf '\nsaved to %s\n' "$out"
+    rm -rf "$STRESS_DIR"; STRESS_DIR=
+}
+
+menu_stress() {
+    title "Stress test"
+    printf '  Loads the device while the monitor runs, then prints a summary (temperatures, throttling,\n'
+    printf '  frequencies, GPU throughput, speed test results, new kernel warnings). q stops early.\n\n'
+    printf '  %s1%s  CPU, all cores\n  %s2%s  GPU (Mali, OpenCL)\n  %s3%s  Network (speed test in a loop)\n' "$C" "$N" "$C" "$N" "$C" "$N"
+    printf '  %s4%s  CPU + GPU\n  %s5%s  Everything (CPU + GPU + network)\n\n  %s0%s  Back\n\n  > ' "$C" "$N" "$C" "$N" "$C" "$N"
+    read -r c || return
+    case $c in 1) w=cpu ;; 2) w=gpu ;; 3) w=net ;; 4) w=cpu,gpu ;; 5) w=all ;; *) return ;; esac
+    printf '  Duration in minutes [10, 0 = until q]: '; read -r m
+    m=${m:-10}; [ "$m" -ge 0 ] 2>/dev/null || m=10
+    case $w in *net*|all)
+        if command -v speedtest >/dev/null && speedtest --version 2>/dev/null | grep -q Ookla && [ "$(conf_get OOKLA_ACCEPTED)" != 1 ]; then
+            printf '\n  The Ookla Speedtest CLI is installed. Using it means accepting Ookla'"'"'s EULA and privacy policy\n'
+            printf '  (https://www.speedtest.net/about/eula, https://www.speedtest.net/about/privacy).\n'
+            printf '  Accept and use Speedtest? [y/N] (N uses speed.cloudflare.com instead) '; read -r a
+            case $a in y|Y) conf_set OOKLA_ACCEPTED 1 ;; esac
+        fi ;;
+    esac
+    stress_run "$w" $((m * 60))
+    pause
+}
+
+# ---------------------------------------------------------------- info
+# charging, full, on battery...: the SQC charger says "Unknown" once the battery is full, so the power source says
+# more than the status alone (5.4: usb/ac; mainline: the U30 Air's bq256xx-charger)
+battery_state() {
+    st=$(cat "$BATDIR/status" 2>/dev/null)
+    [ "$st" = Unknown ] && st=
+    ext=0; for s in usb ac bq256xx-charger; do [ "$(cat /sys/class/power_supply/$s/online 2>/dev/null)" = 1 ] && ext=1; done
+    case $st in
+        Charging) echo charging ;;
+        Full) echo "full, on USB power" ;;
+        Discharging) [ $ext = 1 ] && echo "on USB power, not charging" || echo "on battery" ;;
+        *) [ $ext = 1 ] && echo "on USB power${st:+ ($st)}" || echo "on battery${st:+ ($st)}" ;;
+    esac
+}
+info() {
+    . /etc/os-release 2>/dev/null
+    printf '%sSystem%s   %s, kernel %s, up %s\n' "$B" "$N" "${PRETTY_NAME:-unknown}" "$(uname -r)" "$(awk '{printf "%dd %dh %dm", $1/86400, $1%86400/3600, $1%3600/60}' /proc/uptime)"
+    # the mu300-linux release of this system, its boot image and the extras (no network: mu300-update version)
+    printf '%sRelease%s  %s (boot image %s)\n' "$B" "$N" "$(cat /etc/mu300/image-version 2>/dev/null || echo unknown)" \
+        "$(cat /mnt/mu300-disk/boot/installed.tag 2>/dev/null || echo "from the installer")"
+    xs=$(/opt/mu300/bin/mu300-update version 2>/dev/null | sed -n 's/^extras *//p')
+    [ -n "$xs" ] && printf '%sExtras%s  %s\n' "$B" "$N" "$xs"
+    printf '%sLoad%s     %s\n' "$B" "$N" "$(cut -d' ' -f1-3 /proc/loadavg)"
+    awk -v b="$B" -v n="$N" '/^MemTotal/{t=$2} /^MemAvailable/{a=$2} END{printf "%sRAM%s      %d MB used of %d MB (%d MB available)\n", b, n, (t-a)/1024, t/1024, a/1024}' /proc/meminfo
+    printf '%sSwap%s     %s\n' "$B" "$N" "$(/opt/mu300/bin/mu300-zram brief 2>/dev/null || echo unknown)"
+    printf '%sStorage%s  %s\n' "$B" "$N" "$(df -h / | awk 'NR==2 {print $3 " used of " $2 " (" $5 ")"}')"
+    hot=$(cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null | sort -n | tail -n1)
+    printf '%sTemp%s     hottest %s C, profile %s\n' "$B" "$N" "$((hot / 1000))" "$(current_profile)"
+    # the U30 Air has a battery (the F50 has none)
+    [ -n "$BATDIR" ] &&
+        printf '%sBattery%s  %s%%, %s\n' "$B" "$N" "$(cat "$BATDIR/capacity")" "$(battery_state)"
+    printf '%sNetwork%s\n' "$B" "$N"
+    ip -4 -br addr 2>/dev/null | awk '$1 !~ /^(lo|sipa_dummy)/ && $3 != "" {printf "  %-12s %s\n", $1, $3}'
+    ip route show default 2>/dev/null | sed 's/^/  default /' | head -n2
+}
+
+# ---------------------------------------------------------------- menus
+menu() {  # menu TITLE "label" ... -> sets CHOICE to the number (0 = back)
+    t=$1; shift; title "$t"
+    # a newer release (mu300-update notice, at boot and every 6 hours)
+    [ "$t" = "Main menu" ] && [ -s /run/mu300/update-available ] && printf '  %s%s%s\n\n' "$B" "$(cat /run/mu300/update-available)" "$N"
+    i=1; for l in "$@"; do printf '  %s%2d%s  %s\n' "$C" "$i" "$N" "$l"; i=$((i + 1)); done
+    printf '\n  %s 0%s  %s\n\n  > ' "$C" "$N" "$( [ "$t" = "Main menu" ] && echo Exit || echo Back)"
+    read -r CHOICE || CHOICE=0
+}
+
+menu_performance() {
+    while :; do
+        title "Performance"
+        profile_show
+        printf '\n  saved profile: %s%s%s\n\n' "$B" "$(current_profile)" "$N"
+        printf '  %s1%s  eco          cores capped at ~60 %% of max, GPU at lowest step (cooler, less power)\n' "$C" "$N"
+        printf '  %s2%s  balanced     schedutil across the full hardware range (stock behaviour)\n' "$C" "$N"
+        printf '  %s3%s  performance  all cores and GPU pinned at their hardware maximum\n' "$C" "$N"
+        printf '  %s4%s  %sCPU voltage offset (EXPERIMENTAL - can permanently damage the device)%s\n' "$C" "$N" "$R" "$N"
+        printf '\n  %sThis SoC cannot be overclocked beyond its frequency table. "performance" is the fastest safe\n' "$D"
+        printf '  setting; the kernel still throttles at 85 C and the passively cooled case reaches that within\n'
+        printf '  minutes under full load.%s\n' "$N"
+        printf '\n  %s0%s  Back\n\n  > ' "$C" "$N"
+        read -r c || return
+        case $c in
+            1) p=eco ;; 2) p=balanced ;; 3) p=performance ;; 4) menu_voltage; continue ;; *) return ;;
+        esac
+        profile_apply "$p" && conf_set CPU_PROFILE "$p"
+    done
+}
+
+wifi_pick_and_join() {
+    title "Wi-Fi: join a network"
+    pass=
+    err=/run/mu300-wifi-scan.err
+    if /opt/mu300/bin/wifi-client status 2>/dev/null | grep -q '^mode  *hotspot'; then
+        # the radio is the access point: it cannot look for other networks, and this driver cannot turn it
+        # back into a client without a reboot. Two ways out, both offered here.
+        list=
+        printf '  %sThe radio is the hotspot right now, so it cannot list the networks around you.%s\n\n' "$Y" "$N"
+        printf '  %s1%s  Reboot with the hotspot off, then pick from the list (one reboot, then everything\n' "$C" "$N"
+        printf '      works live and "Disconnect" brings the hotspot straight back)\n'
+        printf '  %s2%s  Type the name now and let the device join it after a reboot\n' "$C" "$N"
+        printf '\n  %s0%s  Back\n\n  > ' "$C" "$N"
+        read -r w || return
+        case $w in
+            1) /opt/mu300/bin/wifi-client scan-mode on 2>&1 | sed 's/^/  /'
+               # the reboot takes the hotspot away: whoever came in over it loses this session (reported)
+               printf '\n  %sConnected through this hotspot? The session ends here, and the hotspot is off after the\n' "$Y"
+               printf '  reboot. Come back over USB (%s) or wait: it returns within 10 minutes if no network\n' "$(/opt/mu300/bin/mu300-lan-ip 2>/dev/null || echo 192.168.77.1)"
+               printf '  is joined.%s\n' "$N"
+               printf '\n  %sReboot now?%s [y/N] ' "$B" "$N"
+               read -r a
+               case $a in y|Y|e|E) printf '\n  rebooting...\n'; sync; reboot ;; esac
+               pause; return ;;
+            2) ;;
+            *) return ;;
+        esac
+    else
+        printf '  scanning...\n\n'
+        list=$(/opt/mu300/bin/wifi-client scan 2>"$err")
+        [ -n "$list" ] || { sed 's/^/  /' "$err" 2>/dev/null; rm -f "$err"; }
+    fi
+    if [ -z "$list" ]; then
+        printf '\n  Network name (empty = back)\n  > '
+        IFS= read -r ssid || return
+        [ -n "$ssid" ] || return
+        # people paste the whole example line, quotes and all: "NAME" "PASSWORD"
+        case $ssid in
+            \"*\"?*\"*\")
+                pass=${ssid#*\" \"}; pass=${pass%\"}
+                ssid=${ssid%%\" \"*}; ssid=${ssid#\"} ;;
+            \"*\") ssid=${ssid#\"}; ssid=${ssid%\"} ;;
+        esac
+    else
+        rm -f "$err"
+        printf '%s\n' "$list" | awk '{ printf "  %s%2d%s  %s\n", "'"$C"'", NR, "'"$N"'", $0 }'
+        printf '\n  %s 0%s  Back\n\n  > ' "$C" "$N"
+        read -r n || return
+        case $n in ''|0|*[!0-9]*) return ;; esac
+        line=$(printf '%s\n' "$list" | sed -n "${n}p")
+        [ -n "$line" ] || return
+        # the scan output is "%4s dBm  %-6s  %s", so the name starts at column 19 and may contain spaces
+        ssid=$(printf '%s' "$line" | cut -c19-)
+        [ -n "$ssid" ] || return
+        # a name shown with \xNN escapes (control or invisible characters, a backslash) is not its real name
+        case $ssid in *'\x'*)
+            printf '\n  %sThis name has characters that are shown escaped; join it with\n' "$Y"
+            printf '  sudo wifi-client connect "<its real name>"%s\n' "$N"; pause; return ;;
+        esac
+    fi
+    # wifi-client's own check of a name (the one connect makes), before a password is asked for it; what is shown
+    # of a typed name is what wifi-client shows of it
+    if ! /opt/mu300/bin/wifi-client valid-name "$ssid"; then
+        printf '\n  %sA network name is 1 to 32 bytes, without control characters.%s\n' "$Y" "$N"; pause; return
+    fi
+    printf '\n  password for %s%s%s (empty for an open network, nothing is shown as you type): ' "$B" \
+        "$(/opt/mu300/bin/wifi-client shown-name "$ssid")" "$N"
+    stty -echo 2>/dev/null; IFS= read -r pass; stty echo 2>/dev/null; printf '\n\n'
+    # on stdin: as an argument it would show in ps. The exit status is wifi-client's, not sed's (3: saved, the radio
+    # is the hotspot and a reboot joins it)
+    { rc=$( { { printf '%s\n' "$pass" | /opt/mu300/bin/wifi-client connect "$ssid" - 2>&1 3>&- 4>&-; echo "$?" >&3; } |
+              sed 's/^/  /' >&4; } 3>&1 ); } 4>&1
+    if [ "$rc" = 3 ] || grep -qFx "SSID=$ssid" /etc/mu300/wifi-client.conf 2>/dev/null && [ ! -e /run/mu300-wifi-client.active ]; then
+        printf '\n  %sReboot now to join it?%s [y/N] ' "$B" "$N"
+        read -r a
+        case $a in y|Y|e|E) printf '\n  rebooting...\n'; sync; reboot ;; esac
+    fi
+    pause
+}
+
+menu_wifi() {
+    while :; do
+        mode=$(/opt/mu300/bin/wifi-client status 2>/dev/null | sed -n 's/^mode  *//p')
+        menu "Wi-Fi  [${mode:-unknown}]" "Status" "Join a network (scan and connect)" \
+            "Reconnect the saved network" "Disconnect (the hotspot comes back, also after a reboot)" "Forget the saved network" \
+            "Hotspot: restart" "Hotspot: name and password"
+        case $CHOICE in
+            1) title "Wi-Fi"; /opt/mu300/bin/wifi-client status 2>&1 | sed 's/^/  /'; pause ;;
+            2) wifi_pick_and_join ;;
+            3) title "Wi-Fi"; /opt/mu300/bin/wifi-client reconnect 2>&1 | sed 's/^/  /'; pause ;;
+            4) title "Wi-Fi"; /opt/mu300/bin/wifi-client disconnect 2>&1 | sed 's/^/  /'; pause ;;
+            5) title "Wi-Fi"; /opt/mu300/bin/wifi-client forget 2>&1 | sed 's/^/  /'; pause ;;
+            6) if is_openwrt; then wifi reload; else svc restart mu300-hotspot; fi; echo "  restarted"; pause ;;
+            7) title "Hotspot"
+               printf '  name and password live in %s/etc/mu300/hotspot.conf%s:\n\n' "$B" "$N"
+               sed -n 's/^\(SSID\|BAND\|CHANNEL\|COUNTRY\)=/  &/p' /etc/mu300/hotspot.conf 2>/dev/null
+               printf '  PSK=%s\n' "$(sed -n 's/^PSK=//p' /etc/mu300/hotspot.conf 2>/dev/null | head -1)"
+               printf '\n  %sEdit that file and restart the hotspot to change them.%s\n' "$D" "$N"
+               printf '  %sCHANNEL on 5 GHz: auto, 36-48 or 149-165. The driver cannot detect radar, so a DFS channel\n' "$D"
+               printf '  (52-144) is replaced by the default one.%s\n' "$N"; pause ;;
+            *) return ;;
+        esac
+    done
+}
+
+vpn_enabled() { [ -r "$VPN_CONF" ] && grep -q '^ENABLE=1' "$VPN_CONF"; }
+# the VPN is a module of its own (github.com/dikeckaan/mu300-linux-vpn): its hooks link mu300-vpn here
+VPN=${MU300_VPN_CMD:-/opt/mu300/bin/mu300-vpn}
+vpn_present() { [ -x "$VPN" ]; }
+# the VPN on with its kill switch and no module: mobile data and the Wi-Fi client stay down (lib/vpn-orphan.sh)
+VPN_ORPHAN_LIB=${MU300_VPN_ORPHAN_LIB:-/opt/mu300/lib/vpn-orphan.sh}
+[ ! -r "$VPN_ORPHAN_LIB" ] || . "$VPN_ORPHAN_LIB"
+vpn_orphaned() { command -v vpn_killswitch_orphaned >/dev/null 2>&1 && vpn_killswitch_orphaned "$VPN" "${MU300_SYSROOT:-}"; }
+# installed: the module's mu300-vpn in the vpn extra on the disk (mu300-extra's own test, vpn_module_in), whether or
+# not it is linked into this system
+vpn_installed() { [ -x "${MU300_DISK:-/mnt/mu300-disk}/extra/vpn/bin/mu300-vpn" ]; }
+# the menus show the VPN only to someone who has the module (or had it: the VPN on with its kill switch and the module
+# gone keeps mobile data down, and the user must learn why); without it they say nothing of a VPN - the module is
+# installed with mu300-extra install vpn
+vpn_shown() { vpn_installed || vpn_orphaned; }
+# without the module: what it is and how to get it (mu300-extra downloads it, or takes a copy from a USB stick)
+menu_vpn_missing() {
+    title "VPN"
+    printf '  The VPN (mu300-vpn: VLESS, VMess, Trojan, Shadowsocks, WireGuard, OpenVPN, Clash/mihomo profiles,
+'
+    printf '  with a kill switch) is a module of its own: https://github.com/dikeckaan/mu300-linux-vpn
+
+'
+    if vpn_orphaned; then
+        printf '  %sThe VPN is on with its kill switch, and the module is missing: mobile data and the Wi-Fi client\n' "$B"
+        printf '  stay down until it is installed (or the VPN is turned off: ENABLE=0 in /etc/mu300/vpn.conf).%s\n\n' "$N"
+    fi
+    printf '  It is not installed. To install it (about 40 MB to download):
+
+'
+    printf '    sudo mu300-extra install vpn
+'
+    printf '    sudo mu300-extra install vpn --from /path/to/mu300-linux-vpn.tar.gz   (offline, a copied file)
+
+'
+    printf '  %s1%s  Install it now (downloads the latest release)
+  %s0%s  Back
+
+  > ' "$C" "$N" "$C" "$N"
+    read -r c || return 0
+    [ "$c" = 1 ] || return 0
+    "${MU300_EXTRA_CMD:-/opt/mu300/bin/mu300-extra}" install vpn
+    pause
+}
+# vpn_ask_id PROMPT: the profile list, then one id typed by the user into $id (empty: the user changed their mind).
+# The id is checked here as mu300-vpn checks it, so a stray paste never reaches a command line or an error message.
+vpn_ask_id() {
+    printf '\n'; "$VPN" profile list 2>/dev/null | sed 's/^/  /'
+    printf '\n  %s: ' "$1"; read -r id || id=
+    case $id in
+        '') return 1 ;;
+        *[!a-z0-9-]*) echo "  a profile id is lowercase letters, digits and -"; pause; return 1 ;;
+    esac
+    [ ${#id} -le 32 ] || { echo "  a profile id is at most 32 characters"; pause; return 1; }
+}
+# The VPN works in profiles (mu300-vpn profile ...); vpn.conf only holds the ENABLE switch now, so there is nothing
+# to edit here. Everything below calls mu300-vpn, which prints what it did; it never prints a link or a key, and
+# neither does this menu: a pasted link is read with read -r and handed over as one argument, not echoed or logged.
+menu_vpn() {
+    vpn_present || { menu_vpn_missing; return; }
+    while :; do
+        title "VPN"
+        printf '  service: %s   switch: %s\n\n' "$(state_color "$(svc status mu300-vpn)")" \
+            "$( [ -r "$VPN_CONF" ] && (vpn_enabled && echo "on" || echo "off") || echo "off (no vpn.conf yet)")"
+        "$VPN" status 2>/dev/null | sed 's/^/  /'
+        if command -v vpn_engine_missing >/dev/null 2>&1 && miss=$(vpn_engine_missing "${MU300_SYSROOT:-}"); then
+            printf '\n  %sThe VPN is on and the engine of its profile (%s) is not installed: nothing gets out until it is.%s\n' "$B" "$miss" "$N"
+            printf '  The service fetches it by itself when the device is online; or Engines below.\n'
+        fi
+        menu_items="Turn on|Turn off|Profiles (list / use)|Import a profile (link or file path)|Remove a profile|Kill switch on/off|Engines (install / remove)|Restart"
+        printf '\n'
+        i=1; IFS='|'; for l in $menu_items; do printf '  %s%d%s  %s\n' "$C" "$i" "$N" "$l"; i=$((i + 1)); done; unset IFS
+        printf '\n  %s0%s  Back\n\n  > ' "$C" "$N"
+        read -r c || return
+        case $c in
+            # on checks the active profile and its engines itself and says what is missing (mu300-vpn engines install)
+            1) "$VPN" on || pause; sleep 3 ;;
+            2) "$VPN" off; pause ;;
+            3) vpn_ask_id "Profile to make active (Enter: back)" || continue
+               # a running VPN restarts on the new profile; off, it is only remembered
+               "$VPN" profile use "$id"; pause ;;
+            4) printf '\n  A share link (vless://, vmess://, trojan://, ss://), or the path of a .conf, .ovpn, .json or\n'
+               printf '  .yaml file on this device. It is stored under /etc/mu300/vpn and not shown again.\n\n  Link or path: '
+               read -r src || src=
+               # - would make mu300-vpn read the terminal as the file; the link itself goes here
+               case $src in '') continue ;; -) echo "  paste the link itself, or a file path"; pause; continue ;; esac
+               printf '  Name (Enter: from the link or file): '; read -r name || name=
+               # a link goes through stdin ("-"), never as an argument every local user could read in the process
+               # list; a file path stays an argument (mu300-vpn reads the file itself)
+               case $src in
+                   *://*) if [ -n "$name" ]; then printf '%s\n' "$src" | "$VPN" profile import - "$name"
+                          else printf '%s\n' "$src" | "$VPN" profile import -; fi ;;
+                   *) if [ -n "$name" ]; then "$VPN" profile import "$src" "$name"; else "$VPN" profile import "$src"; fi ;;
+               esac
+               unset src
+               echo; echo "  make it active with Profiles (list / use), then Turn on"; pause ;;
+            5) vpn_ask_id "Profile to remove (Enter: back)" || continue
+               "$VPN" profile remove "$id"; pause ;;
+            6) ks=$("$VPN" settings get KILL_SWITCH 2>/dev/null)
+               if [ "$ks" = 0 ]; then
+                   printf '  The kill switch is off. Turn it on? Nothing but the tunnel will leave the device, also while the tunnel is down. [y/N] '
+                   read -r a; case $a in y|Y) "$VPN" settings set KILL_SWITCH 1 ;; *) continue ;; esac
+               else
+                   printf '  The kill switch is on. Turn it off? Traffic leaves the device unprotected while the tunnel is down. [y/N] '
+                   read -r a; case $a in y|Y) "$VPN" settings set KILL_SWITCH 0 ;; *) continue ;; esac
+               fi
+               # the setting is read at start: a VPN that is on restarts (off, it is used from the next start)
+               vpn_enabled && { "$VPN" restart; sleep 3; } ;;
+            7) printf '\n'; "$VPN" engines 2>/dev/null | sed 's/^/  /'
+               printf '\n  Each engine is an extra of its own (xray also runs VLESS/VMess/Trojan/Shadowsocks links; dae needs a\n'
+               printf '  kernel with BTF, i.e. mainline). Engine to install (xray, sing-box, mihomo, dae, wireguard, openvpn),\n'
+               printf '  or "remove NAME" to take one off (Enter: back): '
+               read -r eng || eng=
+               op=install
+               case $eng in remove\ *) op=remove; eng=${eng#remove } ;; esac
+               case $eng in
+                   '') continue ;;
+                   *[!a-z0-9-]*) echo "  not an engine name"; pause; continue ;;
+               esac
+               # (engines install is the spelling every mu300-vpn knows; remove is the module's v2 engine command)
+               if [ "$op" = install ]; then "$VPN" engines install "$eng"; else "$VPN" engine remove "$eng"; fi
+               pause ;;
+            8) "$VPN" restart; sleep 3 ;;
+            *) return ;;
+        esac
+    done
+}
+
+# Live radio quality: move the device around and watch RSRP. The watchdog is paused while this runs, because only
+# one reader can have the modem's AT channel at a time.
+menu_signal() {
+    title "Mobile signal"
+    printf '  Move the device and watch the numbers; RSRP is the one that matters.\n'
+    printf '  %s-85 dBm and better: excellent    -95: good    -105: fair    below -115: barely usable%s\n\n' "$D" "$N"
+    printf '  %s[q] back%s\n\n' "$D" "$N"
+    svc stop mu300-mobile-data-watch >/dev/null 2>&1
+    old=$(stty -g 2>/dev/null)
+    stty -icanon -echo min 0 time 30 2>/dev/null
+    while :; do
+        out=$(timeout 25 /opt/mu300/bin/mobile-data signal 2>/dev/null)
+        printf '\033[s'
+        printf '%s\n' "$out" | sed 's/^/  /'
+        printf '\033[u'
+        key=$(dd bs=1 count=1 2>/dev/null)
+        case $key in q|Q) break ;; esac
+    done
+    stty "$old" 2>/dev/null
+    printf '\033[J\n'
+    svc start mu300-mobile-data-watch >/dev/null 2>&1
+}
+
+# The TTL (IPv6: hop limit) that everything leaving through mobile data gets (mu300-ttl, /etc/mu300/ttl.conf)
+menu_ttl() {
+    while :; do
+        title "TTL of mobile data"
+        /opt/mu300/bin/mu300-ttl status | sed 's/^/  /'
+        printf '\n  %sHotspot clients send TTL 64 (Windows 128); routed by the device they leave with one less,\n' "$D"
+        printf '  which is how an operator can tell tethered traffic. A fixed TTL makes it all look like the device.%s\n\n' "$N"
+        printf '  %s1%s  Fixed 64 (recommended: what the device, Android and Linux send)\n' "$C" "$N"
+        printf '  %s2%s  Fixed 128 (what Windows sends)\n' "$C" "$N"
+        printf '  %s3%s  Fixed, another value\n' "$C" "$N"
+        printf '  %s4%s  Off - leave the TTL alone (default)\n' "$C" "$N"
+        printf '\n  %s0%s  Back\n\n  > ' "$C" "$N"
+        read -r CHOICE || CHOICE=0
+        case $CHOICE in
+            1) /opt/mu300/bin/mu300-ttl set 64 >/dev/null ;;
+            2) /opt/mu300/bin/mu300-ttl set 128 >/dev/null ;;
+            3) printf '  TTL (1-255): '; read -r v
+               /opt/mu300/bin/mu300-ttl set "$v" >/dev/null || pause ;;
+            4) /opt/mu300/bin/mu300-ttl off >/dev/null ;;
+            *) return ;;
+        esac
+    done
+}
+
+# Data roaming (mobile-data roaming, docs/FINDINGS.md 120): allowed by default; off keeps mobile data down while the
+# SIM is registered on a roaming network
+menu_roaming() {
+    while :; do
+        title "Data roaming"
+        timeout 20 /opt/mu300/bin/mobile-data roaming 2>&1 | sed 's/^/  /'
+        printf '\n  %sWith data roaming off, mobile data stays down while the SIM is registered on a roaming network;\n' "$D"
+        printf '  SMS and calls keep working. Some SIMs report roaming at home (an MVNO, national roaming): those\n'
+        printf '  need it on. A change applies within half a minute.%s\n\n' "$N"
+        printf '  %s1%s  Allow data roaming (default)\n' "$C" "$N"
+        printf '  %s2%s  Data roaming off\n' "$C" "$N"
+        printf '\n  %s0%s  Back\n\n  > ' "$C" "$N"
+        read -r CHOICE || CHOICE=0
+        case $CHOICE in
+            1) /opt/mu300/bin/mobile-data roaming on >/dev/null || pause ;;
+            2) /opt/mu300/bin/mobile-data roaming off >/dev/null || pause ;;
+            *) return ;;
+        esac
+    done
+}
+
+menu_network() {
+    while :; do
+        # the VPN item only with the module (vpn_shown); without it TTL moves up to 8
+        if vpn_shown; then vpn_item=$(vpn_present && echo VPN || echo "VPN (not installed: how to add it)"); else vpn_item=; fi
+        menu "Network" "Live traffic (monitor)" "Interfaces and addresses" "Mobile data: status" \
+            "Mobile signal (live, for finding a better spot)" "Mobile data: reconnect" "Mobile data: disconnect" \
+            "Wi-Fi (hotspot, or join a network)" ${vpn_item:+"$vpn_item"} \
+            "TTL of mobile data (hide hotspot use)" "Mobile data: data roaming"
+        case $CHOICE in
+            1) monitor ;;
+            2) title "Interfaces"; { ip -br addr 2>/dev/null || ip addr; } | grep -vE '^(dummy|tunl|gre|erspan|ip_vti|ip6_vti|sit|ip6tnl|ip6gre|sipa_eth[1-9])' | sed 's/^/  /'
+               printf '\n'; ip route | sed 's/^/  /'; pause ;;
+            3) title "Mobile data"; timeout 30 /opt/mu300/bin/mobile-data status 2>&1 | sed 's/^/  /'; pause ;;
+            4) menu_signal ;;
+            5) if is_openwrt; then ifdown wan; ifup wan; else svc restart mu300-mobile-data; fi
+               echo "  reconnect started"; pause ;;
+            6) if is_openwrt; then ifdown wan; else svc stop mu300-mobile-data; fi; pause ;;
+            7) menu_wifi ;;
+            8) if [ -n "$vpn_item" ]; then menu_vpn; else menu_ttl; fi ;;
+            9) if [ -n "$vpn_item" ]; then menu_ttl; else menu_roaming; fi ;;
+            10) if [ -n "$vpn_item" ]; then menu_roaming; else return 0; fi ;;
+            *) return ;;
+        esac
+    done
+}
+
+MU300_SERVICES="mu300-vendor mu300-wifi mu300-hotspot mu300-lan mu300-mobile-data mu300-mobile-data-watch mu300-bluetooth mu300-vpn mu300-firewall mu300-thermal-guard mu300-zram mu300-toolkit"
+menu_services() {
+    while :; do
+        title "Services"
+        if command -v systemctl >/dev/null; then
+            names=$(for s in $MU300_SERVICES; do [ "$s" != mu300-vpn ] || vpn_present && printf '%s ' "$s"; done)
+            i=1; for s in $names; do
+                printf '  %s%2d%s  %-26s %s\n' "$C" "$i" "$N" "$s" "$(state_color "$(systemctl is-active "$s" 2>/dev/null)")"; i=$((i + 1))
+            done
+            failed=$(systemctl --failed --no-legend --plain 2>/dev/null | awk '{print $1}' | tr '\n' ' ')
+            printf '\n  failed units: %s\n' "${failed:-${G}none${N}}"
+        else
+            names=
+            i=1; for s in /etc/init.d/mu300-* /etc/init.d/network /etc/init.d/dnsmasq /etc/init.d/dropbear; do
+                [ -x "$s" ] || continue; n=${s##*/}; names="$names $n"
+                printf '  %s%2d%s  %-26s %s\n' "$C" "$i" "$N" "$n" "$(state_color "$(svc status "$n")")"; i=$((i + 1))
+            done
+        fi
+        printf '\n  Enter a number to restart that service, 0 to go back\n\n  > '
+        read -r c || return
+        [ "$c" -gt 0 ] 2>/dev/null || return
+        s=$(echo $names | cut -d' ' -f"$c")
+        [ -n "$s" ] && { svc restart "$s"; echo "  restarted $s"; sleep 1; }
+    done
+}
+
+# Software update from a published release (mu300-update does the work and keeps the previous version)
+menu_update() {
+    while :; do
+        title "Software update"
+        # offline, check cannot reach GitHub: then at least what is installed
+        { /opt/mu300/bin/mu300-update check 2>&1 || /opt/mu300/bin/mu300-update version 2>&1; } | sed 's/^/  /'
+        printf '\n  %s1%s  Update the installed systems (settings, users and vendor files are kept)\n' "$C" "$N"
+        printf '  %s2%s  Roll back to the previous version\n' "$C" "$N"
+        printf '  %s3%s  Delete the kept previous version (frees space)\n' "$C" "$N"
+        printf '\n  %sUpdating takes the systems, the kernel and the boot image to the newest release (the boot image\n' "$D"
+        printf '  keeps this device'"'"'s own Android parts); the previous version stays for a rollback.%s\n' "$N"
+        printf '\n  %s0%s  Back\n\n  > ' "$C" "$N"
+        read -r c || return
+        case $c in
+            1) title "Software update"; /opt/mu300/bin/mu300-update apply 2>&1 | sed 's/^/  /'; pause ;;
+            2) title "Rollback"; /opt/mu300/bin/mu300-update rollback 2>&1 | sed 's/^/  /'; pause ;;
+            3) title "Clean up"; /opt/mu300/bin/mu300-update clean 2>&1 | sed 's/^/  /'; pause ;;
+            *) return ;;
+        esac
+    done
+}
+
+# The CPU voltage offset (EXPERIMENTAL): mu300-cpu voltage does the work and the checks; this asks, shows the warning
+# in three languages and wants the confirmation word typed. Nothing changes before the next reboot.
+menu_voltage() {
+    while :; do
+        title "CPU voltage offset (EXPERIMENTAL)"
+        printf '%s' "$R$B"; /opt/mu300/bin/mu300-cpu voltage warning | sed 's/^/  /'; printf '%s\n' "$N"
+        /opt/mu300/bin/mu300-cpu voltage status | sed 's/^/  /'
+        printf '\n  %s1%s  Set offsets for the next boot (uV, domains 0,1,2: CPUs 0-3, 4-6, 7)\n' "$C" "$N"
+        printf '  %s2%s  Back to the stock voltages (from the next boot)\n' "$C" "$N"
+        printf '  %s3%s  CPU stress test (10 minutes) - run it during the trial boot of a new offset\n' "$C" "$N"
+        printf '\n  %s0%s  Back\n\n  > ' "$C" "$N"
+        read -r c || return
+        case $c in
+            1) printf '  Offsets in uV, e.g. -6250,-3125,0 (steps of 3125, -25000..12500): '; read -r v
+               [ -n "$v" ] || continue
+               printf '\n  %sThis can PERMANENTLY DAMAGE the device. Type EXPERIMENTAL to go ahead:%s ' "$R$B" "$N"; read -r w
+               /opt/mu300/bin/mu300-cpu voltage set "$v" --confirm "$w"
+               pause ;;
+            2) /opt/mu300/bin/mu300-cpu voltage off; pause ;;
+            3) /opt/mu300/bin/mu300-cpu voltage stress 10; pause ;;
+            *) return ;;
+        esac
+    done
+}
+
+# Compressed swap in RAM (mu300-zram, /etc/mu300/zram.conf): on by default
+menu_zram() {
+    while :; do
+        title "Compressed swap (zram)"
+        /opt/mu300/bin/mu300-zram status 2>&1 | sed 's/^/  /'
+        printf '\n  %s1%s  On (now and at every boot)\n' "$C" "$N"
+        printf '  %s2%s  Off (now and at every boot)\n' "$C" "$N"
+        printf '\n  %sSize, compressor and swappiness: /etc/mu300/zram.conf (see /opt/mu300/lib/zram.conf.example).%s\n' "$D" "$N"
+        printf '\n  %s0%s  Back\n\n  > ' "$C" "$N"
+        read -r c || return
+        case $c in
+            1) /opt/mu300/bin/mu300-zram on >/dev/null || pause ;;
+            2) /opt/mu300/bin/mu300-zram off >/dev/null || pause ;;
+            *) return ;;
+        esac
+    done
+}
+
+menu_system() {
+    while :; do
+        menu "System" "Summary" "Software update" "Change password (${SUDO_USER:-$(id -un)})" "Hostname" "Timezone" \
+            "Recent warnings and errors" "Storage usage" "Compressed swap (zram)" "Next boot: Android" "Reboot" "Power off"
+        case $CHOICE in
+            1) title "Summary"; info; pause ;;
+            2) menu_update ;;
+            3) passwd "${SUDO_USER:-$(id -un)}"; pause ;;
+            4) printf '  current: %s\n  new hostname (empty = keep): ' "$(cat /proc/sys/kernel/hostname)"; read -r h
+               case $h in
+                   "") ;;
+                   *[!A-Za-z0-9-]*) echo "  letters, digits and - only"; pause ;;
+                   *) if is_openwrt; then uci set system.@system[0].hostname="$h"; uci commit system; /etc/init.d/system reload
+                      else hostnamectl set-hostname "$h" 2>/dev/null || { echo "$h" > /etc/hostname; hostname "$h"; }; fi ;;
+               esac ;;
+            5) if is_openwrt; then
+                   printf '  current: %s\n  zonename (e.g. Europe/Istanbul) and POSIX TZ (e.g. <+03>-3)\n  zonename: ' "$(uci -q get system.@system[0].zonename)"; read -r zn
+                   printf '  TZ: '; read -r tz
+                   [ -n "$zn" ] && [ -n "$tz" ] && { uci set system.@system[0].zonename="$zn"; uci set system.@system[0].timezone="$tz"; uci commit system; /etc/init.d/system reload; }
+               else
+                   printf '  current: %s\n  timezone (e.g. Europe/Istanbul): ' "$(readlink /etc/localtime | sed 's|.*zoneinfo/||')"; read -r zn
+                   [ -n "$zn" ] && { timedatectl set-timezone "$zn" || pause; }
+               fi ;;
+            6) title "Recent warnings and errors"
+               if command -v journalctl >/dev/null; then journalctl -b -p warning -n 40 --no-pager | cut -c1-200
+               else logread | grep -iE 'warn|err|fail' | tail -n 40 | cut -c1-200; fi
+               pause ;;
+            7) title "Storage"; df -h 2>/dev/null | grep -vE '^(tmpfs|devtmpfs|none|overlay|cgroup)' | sed 's/^/  /'; pause ;;
+            8) menu_zram ;;
+            9) printf '  The next boot starts stock Android (Linux stays installed). Continue? [y/N] '; read -r a
+               case $a in y|Y) /opt/mu300/bin/mu300-next-boot android; pause ;; esac ;;
+            10) printf '  Reboot now? [y/N] '; read -r a; case $a in y|Y) reboot ;; esac ;;
+            11) printf '  Power off now? (needs a replug to start again) [y/N] '; read -r a; case $a in y|Y) poweroff ;; esac ;;
+            *) return ;;
+        esac
+    done
+}
+
+main_menu() {
+    while :; do
+        menu "Main menu" "Monitor (task manager)" "Performance profile (CPU/GPU)" "Stress test (CPU/GPU/network)" \
+            "Network, mobile data$(vpn_shown && echo ', VPN')" "Services" "System (password, hostname, timezone, reboot)" "Summary"
+        case $CHOICE in
+            1) monitor ;;
+            2) menu_performance ;;
+            3) menu_stress ;;
+            4) menu_network ;;
+            5) menu_services ;;
+            6) menu_system ;;
+            7) title "Summary"; info; pause ;;
+            *) printf '\033[H\033[2J'; exit 0 ;;
+        esac
+    done
+}
+
+case ${1:-menu} in
+    menu) need_root "$@"; main_menu ;;
+    top|monitor) shift; monitor "${1:-2}" ;;
+    info) info ;;
+    profile)
+        if [ -z "${2:-}" ]; then profile_show; exit 0; fi
+        need_root "$@"; profile_apply "$2" && conf_set CPU_PROFILE "$2" && profile_show ;;
+    stress)
+        need_root "$@"
+        stress_run "${2:-all}" $(( ${3:-10} * 60 )) ;;
+    apply)
+        p=$(conf_get CPU_PROFILE)
+        [ -n "$p" ] && profile_apply "$p" && echo "applied profile $p"
+        /opt/mu300/bin/mu300-ttl apply ;;
+    -h|--help|help) sed -n '2,8s/^# \{0,1\}//p' "$0" ;;
+    *) echo "usage: mu300-toolkit [menu|top [seconds]|info|profile [eco|balanced|performance]|stress [cpu,gpu,net|all] [minutes]|apply]" >&2; exit 2 ;;
+esac

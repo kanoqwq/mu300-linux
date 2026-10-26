@@ -1,0 +1,19 @@
+{
+	"admin/status/channel_analysis": {
+		"action": {
+			"type": "view",
+			"path": "mu300/channel_analysis"
+		},
+		"depends": {
+			"acl": [ "luci-mod-status-channel_analysis" ],
+			"uci": { "wireless": { "@wifi-device": true } }
+		}
+	},
+
+	"admin/status/logs/syslog": {
+		"action": {
+			"type": "view",
+			"path": "mu300/syslog"
+		}
+	}
+}

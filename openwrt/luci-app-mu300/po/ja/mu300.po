@@ -1,0 +1,4050 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: ja\n"
+
+msgid "Status dashboard"
+msgstr "ステータスダッシュボード"
+
+msgid "Cellular"
+msgstr "セルラー"
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM"
+msgstr "Dual SIM"
+
+msgid "SIM settings"
+msgstr "SIM 設定"
+
+msgid "Network locks"
+msgstr "ネットワークロック"
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "SMS forwarding"
+msgstr "SMS 転送"
+
+msgid "AT terminal"
+msgstr "AT ターミナル"
+
+msgid "Adapter settings"
+msgstr "アダプタ設定"
+
+msgid "TTL"
+msgstr "TTL"
+
+msgid "Data usage"
+msgstr "データ使用量"
+
+msgid "Device management"
+msgstr "デバイス管理"
+
+msgid "Update"
+msgstr "更新"
+
+msgid "Backup of settings"
+msgstr "設定のバックアップ"
+
+msgid "Languages"
+msgstr "言語"
+
+msgid "Power"
+msgstr "電源"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Terminal"
+msgstr "ターミナル"
+
+msgid "Terminal settings"
+msgstr "ターミナルの設定"
+
+msgid "Overview"
+msgstr "概要"
+
+msgid "Profiles"
+msgstr "プロファイル"
+
+msgid "Subscriptions"
+msgstr "サブスクリプション"
+
+msgid "Engines"
+msgstr "エンジン"
+
+msgid "Settings"
+msgstr "設定"
+
+msgid "Logs"
+msgstr "ログ"
+
+msgid "Packages after an update"
+msgstr "アップデート後のパッケージ"
+
+msgid "MU300 control center: status dashboard, network locks, AT terminal, SMS and VPN"
+msgstr "MU300 コントロールセンター: ステータスダッシュボード、ネットワークロック、AT ターミナル、SMS、VPN"
+
+msgid "Terminal: a root shell on the device in the browser"
+msgstr "ターミナル: ブラウザーで使うデバイスの root シェル"
+
+msgid "China Mobile"
+msgstr "China Mobile"
+
+msgid "China Unicom"
+msgstr "China Unicom"
+
+msgid "China Telecom"
+msgstr "China Telecom"
+
+msgid "China Broadnet"
+msgstr "China Broadnet"
+
+msgid "China Tietong"
+msgstr "China Tietong"
+
+msgid "Excellent"
+msgstr "非常に良好"
+
+msgid "Good"
+msgstr "良好"
+
+msgid "Fair"
+msgstr "普通"
+
+msgid "Poor"
+msgstr "不良"
+
+msgid "Unknown"
+msgstr "不明"
+
+msgid "%d d %d h"
+msgstr "%d 日 %d 時間"
+
+msgid "%d h %d min"
+msgstr "%d 時間 %d 分"
+
+msgid "%d min"
+msgstr "%d 分"
+
+msgid "No neighbor-cell data"
+msgstr "隣接セルのデータなし"
+
+msgid "Locked"
+msgstr "ロック済み"
+
+msgid "Lock"
+msgstr "ロック"
+
+msgid "Unknown error"
+msgstr "不明なエラー"
+
+msgid "Confirm"
+msgstr "確認"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "%d s"
+msgstr "%d 秒"
+
+msgid "%d h"
+msgstr "%d 時間"
+
+msgid "New SMS · %s"
+msgstr "新着 SMS · %s"
+
+msgid "Unknown number"
+msgstr "不明な番号"
+
+msgid "Select"
+msgstr "選択"
+
+msgid "never"
+msgstr "なし"
+
+msgid "just now"
+msgstr "たった今"
+
+msgid "%s ago"
+msgstr "%s前"
+
+msgid "Failed: %s"
+msgstr "失敗: %s"
+
+msgid "Management connection lost"
+msgstr "管理接続が切断されました"
+
+msgid "Installing the VPN module"
+msgstr "VPN モジュールをインストール中"
+
+msgid "Installing the engine"
+msgstr "エンジンをインストール中"
+
+msgid "Adding the subscription"
+msgstr "サブスクリプションを追加中"
+
+msgid "Refreshing the subscriptions"
+msgstr "サブスクリプションを更新中"
+
+msgid "Testing the latency of every profile"
+msgstr "全プロファイルのレイテンシーをテスト中"
+
+msgid "Downloading the config"
+msgstr "設定をダウンロード中"
+
+msgid "Working…"
+msgstr "処理中…"
+
+msgid "done"
+msgstr "完了"
+
+msgid "failed"
+msgstr "失敗"
+
+msgid "Verify the uploaded file"
+msgstr "アップロードしたファイルを検証"
+
+msgid "The uploaded file is checked against the SHA256SUMS of the VPN module's latest release, downloaded over HTTPS. When that is not possible (offline, an older release), it is installed only if you allow an unverified file: it then runs as root with no check."
+msgstr "アップロードしたファイルは、HTTPS でダウンロードした VPN モジュール最新リリースの SHA256SUMS と照合されます。照合できない場合 (オフライン、古いリリース) は、未検証ファイルを許可したときだけインストールされ、その場合は一切のチェックなしで root として実行されます。"
+
+msgid "Install it even if it cannot be verified"
+msgstr "検証できなくてもインストール"
+
+msgid "Install only a verified file"
+msgstr "検証済みのファイルのみインストール"
+
+msgid "Upload failed: %s"
+msgstr "アップロードに失敗しました: %s"
+
+msgid "The VPN module is too old for this panel"
+msgstr "VPN モジュールがこのパネルには古すぎます"
+
+msgid "The VPN module is not installed"
+msgstr "VPN モジュールがインストールされていません"
+
+msgid "This page needs the VPN module with the machine-readable mu300-vpn (module v2 or newer). Updating it keeps the profiles and the settings."
+msgstr "このページには、機械可読な mu300-vpn を備えた VPN モジュール (モジュール v2 以降) が必要です。更新してもプロファイルと設定は保持されます。"
+
+msgid "The VPN is a module of its own: mu300-vpn with its kill switch and profiles, and one extra per engine (Xray, sing-box, mihomo, dae). It is installed with mu300-extra install vpn."
+msgstr "VPN は独立したモジュールです: キルスイッチとプロファイルを備えた mu300-vpn と、エンジンごとに 1 つのエクストラ (Xray、sing-box、mihomo、dae) があります。mu300-extra install vpn でインストールします。"
+
+msgid "The download is a few MB for the module and up to tens of MB per engine: on mobile data it counts towards your plan."
+msgstr "ダウンロードサイズはモジュールで数 MB、エンジンごとに最大数十 MB です。モバイルデータ通信ではプランの通信量を消費します。"
+
+msgid "Update the VPN module"
+msgstr "VPN モジュールを更新"
+
+msgid "Install the VPN module"
+msgstr "VPN モジュールをインストール"
+
+msgid "Upload the file…"
+msgstr "ファイルをアップロード…"
+
+msgid "Offline: upload mu300-linux-vpn-core.tar.gz (or the bundle mu300-linux-vpn.tar.gz) from the release page of the VPN module."
+msgstr "オフライン: VPN モジュールのリリースページから mu300-linux-vpn-core.tar.gz (またはバンドル mu300-linux-vpn.tar.gz) をアップロードしてください。"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "This is a network or frequency scan: it takes one to three minutes, holds the modem's AT channel all that time, and mobile data may pause meanwhile. It runs in the background; the reply appears here when it is done."
+msgstr "これはネットワークまたは周波数のスキャンです。1～3 分かかり、その間ずっとモデムの AT チャネルを占有し、モバイルデータが一時停止することがあります。バックグラウンドで実行され、終わると応答がここに表示されます。"
+
+msgid "This changes a network mode, band or cell setting the modem stores: it stays in force after a reboot, and in Android too, where a network that does not match it shows as No Service. The Locks page shows these settings and resets them."
+msgstr "これはモデムが保存するネットワークモード、バンド、またはセルの設定を変更します。再起動後も有効で、Android でも有効です。そこで設定に合わないネットワークは「圏外」と表示されます。ロックのページでこれらの設定を確認し、リセットできます。"
+
+msgid "This switches the radio, the data connection or the modem itself: mobile data drops until it is restored, and this page may lose its connection for a while."
+msgstr "これは無線、データ接続、またはモデム自体を切り替えます。モバイルデータは復旧するまで切断され、このページもしばらく接続を失うことがあります。"
+
+msgid "This changes the data profiles (APNs) stored in the modem, which mobile data and Android use."
+msgstr "これはモデムに保存されたデータプロファイル (APN) を変更します。モバイルデータと Android が使用します。"
+
+msgid "This changes the SIM's PIN lock or enters a PIN: wrong PINs block the SIM until its PUK is entered."
+msgstr "これは SIM の PIN ロックを変更するか PIN を入力します。誤った PIN を繰り返すと、PUK を入力するまで SIM がロックされます。"
+
+msgid "Basic"
+msgstr "基本"
+
+msgid "Registration/signal"
+msgstr "登録/信号"
+
+msgid "Bearer"
+msgstr "ベアラ"
+
+msgid "Engineering mode"
+msgstr "エンジニアリングモード"
+
+msgid "AT command (↑↓ history, Enter to send)"
+msgstr "AT コマンド (↑↓ で履歴、Enter で送信)"
+
+msgid "Send"
+msgstr "送信"
+
+msgid "Clear screen"
+msgstr "画面をクリア"
+
+msgid "Ready."
+msgstr "準備完了。"
+
+msgid "Session history (click to reuse)"
+msgstr "セッション履歴 (クリックで再利用)"
+
+msgid "Running in the background (at most %d s); the reply appears here when it is done…"
+msgstr "バックグラウンドで実行中 (最大 %d 秒)。終わると応答がここに表示されます…"
+
+msgid "The modem gave no final answer in time"
+msgstr "モデムが時間内に最終応答を返しませんでした"
+
+msgid "%d s in the background"
+msgstr "バックグラウンドで %d 秒"
+
+msgid "(no output)"
+msgstr "(出力なし)"
+
+msgid "This command changes the modem's state."
+msgstr "このコマンドはモデムの状態を変更します。"
+
+msgid "Not sent yet: waiting for confirmation"
+msgstr "まだ送信していません: 確認待ち"
+
+msgid "Send this AT command?"
+msgstr "この AT コマンドを送信しますか？"
+
+msgid "Send anyway"
+msgstr "それでも送信"
+
+msgid "Not sent"
+msgstr "送信しませんでした"
+
+msgid "Request failed"
+msgstr "リクエスト失敗"
+
+msgid "(empty)"
+msgstr "(空)"
+
+msgid "Passphrase (8 characters or more)"
+msgstr "パスフレーズ（8 文字以上）"
+
+msgid "The passphrase again"
+msgstr "パスフレーズをもう一度"
+
+msgid "Download the backup"
+msgstr "バックアップをダウンロード"
+
+msgid "Back up the settings"
+msgstr "設定をバックアップ"
+
+msgid "One file with the hotspot, mobile data and the APN, the network locks, the VPN profiles and settings, SMS forwarding, the LAN address, the host name, the time zone and the SSH keys. It holds passwords: with a passphrase it is encrypted, and only that passphrase opens it again."
+msgstr "ホットスポット、モバイルデータと APN、ネットワークロック、VPN プロファイルと設定、SMS 転送、LAN アドレス、ホスト名、タイムゾーン、SSH 鍵をまとめた 1 つのファイルです。パスワードを含みます。パスフレーズを付けると暗号化され、そのパスフレーズでしか開けません。"
+
+msgid "Include the login password"
+msgstr "ログインパスワードも含める"
+
+msgid "Passphrase, if the file is encrypted"
+msgstr "パスフレーズ（ファイルが暗号化されている場合）"
+
+msgid "Show what would change"
+msgstr "変更内容を表示"
+
+msgid "Restore"
+msgstr "復元"
+
+msgid "The file is larger than 4 MiB"
+msgstr "ファイルが 4 MiB を超えています"
+
+msgid "The settings of the file replace these. The hotspot, mobile data or the LAN may restart, and this page may lose its connection for a moment."
+msgstr "ファイルの設定で現在の設定を置き換えます。ホットスポット、モバイルデータ、LAN が再起動し、このページの接続が一時的に切れることがあります。"
+
+msgid "Restore from a backup"
+msgstr "バックアップから復元"
+
+msgid "Every value of the file is checked first; one that is refused and nothing is changed. What is the same is left alone, and no VPN profile, subscription or SSH key of this device is removed."
+msgstr "ファイルの値はすべて先に検査され、1 つでも拒否されると何も変更されません。同じ設定はそのままで、このデバイスの VPN プロファイル、サブスクリプション、SSH 鍵は削除されません。"
+
+msgid "Keep this device's login password"
+msgstr "このデバイスのログインパスワードを保持"
+
+msgid "Take a file of another device model"
+msgstr "別のデバイスモデルのファイルを受け入れる"
+
+msgid "The two passphrases differ"
+msgstr "2 つのパスフレーズが一致しません"
+
+msgid "The passphrase needs 8 characters or more"
+msgstr "パスフレーズは 8 文字以上必要です"
+
+msgid "Saved (encrypted)"
+msgstr "保存しました（暗号化）"
+
+msgid "Saved. The file is not encrypted: it holds passwords, keep it safe."
+msgstr "保存しました。ファイルは暗号化されていません。パスワードを含むので安全に保管してください。"
+
+msgid "Choose a backup file first"
+msgstr "先にバックアップファイルを選んでください"
+
+msgid "Restoring…"
+msgstr "復元中…"
+
+msgid "Restored"
+msgstr "復元しました"
+
+msgid "The restore did not finish: see the lines above"
+msgstr "復元が完了しませんでした。上の行を確認してください"
+
+msgid "Loading…"
+msgstr "読み込み中…"
+
+msgid "Channel Analysis"
+msgstr "チャネル分析"
+
+msgid "A scan takes the Wi-Fi hotspot off its channel for a moment: connected devices drop, and some (macOS in particular) may not reconnect by themselves. This page scans as soon as it opens and again every few seconds. Reach the panel over USB or another way first if you depend on the hotspot."
+msgstr "スキャン中は Wi-Fi アクセスポイントが一時的にチャネルを離れます。接続中の端末は切断され、一部 (特に macOS) は自動で再接続しないことがあります。このページは開くとすぐにスキャンし、その後も数秒ごとにスキャンします。アクセスポイントに依存している場合は、先に USB など別の経路でパネルに接続してください。"
+
+msgid "Scan anyway"
+msgstr "それでもスキャン"
+
+msgid "Saved"
+msgstr "保存しました"
+
+msgid "CPU profile unavailable"
+msgstr "CPU profile unavailable"
+
+msgid "Power saving"
+msgstr "Power saving"
+
+msgid "Balanced"
+msgstr "Balanced"
+
+msgid "Performance"
+msgstr "Performance"
+
+msgid "Cores capped at about 60 %% of their maximum (cooler, less power)."
+msgstr "Cores capped at about 60 %% of their maximum (cooler, less power)."
+
+msgid "Schedutil across the full hardware range (the stock behaviour)."
+msgstr "Schedutil across the full hardware range (the stock behaviour)."
+
+msgid "Every cluster pinned at its hardware maximum."
+msgstr "Every cluster pinned at its hardware maximum."
+
+msgid "CPU profile"
+msgstr "CPU profile"
+
+msgid "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+msgstr "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+
+msgid "Saved profile: %s"
+msgstr "Saved profile: %s"
+
+msgid "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+msgstr "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+
+msgid "Clusters"
+msgstr "Clusters"
+
+msgid "Cores"
+msgstr "Cores"
+
+msgid "Governor"
+msgstr "Governor"
+
+msgid "Now"
+msgstr "Now"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Hardware max"
+msgstr "Hardware max"
+
+msgid "Frequencies in MHz."
+msgstr "Frequencies in MHz."
+
+msgid "Highlighted cores are online. A core taken offline stays offline, also after a reboot, until it is brought back. CPU0 always stays online."
+msgstr "強調表示されたコアはオンラインです。オフにしたコアは、再起動後も、再びオンにするまでオフラインのままです。CPU0 は常にオンラインです。"
+
+msgid "Low latency: on"
+msgstr "低遅延: オン"
+
+msgid "Low latency: off"
+msgstr "低遅延: オフ"
+
+msgid "Low latency keeps CPU0 out of its idle states, as ZTE's U30 Air firmware does: Wi-Fi delays are much shorter, and the device draws more power. Off by default."
+msgstr "低遅延モードは、ZTE の U30 Air ファームウェアと同様に CPU0 をアイドル状態に入れません。Wi-Fi の遅延が大幅に短くなり、消費電力は増えます。既定ではオフです。"
+
+msgid "Thermal"
+msgstr "温度管理"
+
+msgid "The kernel's thermal zones, read only. A zone with trip points throttles the cooling devices bound to it at its passive trip; a cooling state of 0 is no throttling."
+msgstr "カーネルのサーマルゾーン（読み取り専用）。トリップポイントを持つゾーンは、パッシブトリップでそのゾーンに結び付けられた冷却デバイスを制限します。冷却状態 0 は制限なしです。"
+
+msgid "Zone"
+msgstr "ゾーン"
+
+msgid "Temperature"
+msgstr "温度"
+
+msgid "Trip points"
+msgstr "トリップポイント"
+
+msgid "Cooling devices"
+msgstr "冷却デバイス"
+
+msgid "Stress test started"
+msgstr "ストレステストを開始しました"
+
+msgid "Saved: it takes effect at the next reboot"
+msgstr "保存しました：次回の再起動で有効になります"
+
+msgid "CPU voltage offset (EXPERIMENTAL)"
+msgstr "CPU 電圧オフセット（実験的）"
+
+msgid "Experimental: changing the CPU voltage can make the device unstable, corrupt your data and permanently damage your device. Use it entirely at your own risk."
+msgstr "実験的機能：CPU 電圧を変更すると、デバイスが不安定になり、データが破損し、デバイスに恒久的な損傷を与えるおそれがあります。すべて自己責任でご使用ください。"
+
+msgid "CPU voltage offset unavailable"
+msgstr "CPU 電圧オフセットは利用できません"
+
+msgid "Not available with this kernel (a mainline kernel of this release or later has it)."
+msgstr "このカーネルでは利用できません（このリリース以降のメインラインカーネルで利用できます）。"
+
+msgid "Off: the stock voltages"
+msgstr "オフ：工場出荷時の電圧"
+
+msgid "Changes at the next reboot"
+msgstr "次回の再起動で変更されます"
+
+msgid "Trial boot: kept once this boot has been up 10 minutes"
+msgstr "試行起動：この起動が 10 分間稼働すると確定します"
+
+msgid "Kept: this offset passed its trial boot"
+msgstr "確定：このオフセットは試行起動に合格しました"
+
+msgid "a boot with it ended without a clean shutdown"
+msgstr "このオフセットでの起動が正常なシャットダウンなしに終了しました"
+
+msgid "its trial boot ended before 10 minutes"
+msgstr "試行起動が 10 分未満で終了しました"
+
+msgid "invalid value"
+msgstr "無効な値"
+
+msgid "unknown SoC firmware"
+msgstr "不明な SoC ファームウェア"
+
+msgid "refused by the kernel"
+msgstr "カーネルに拒否されました"
+
+msgid "the kernel could not start CPU scaling with it"
+msgstr "カーネルがこのオフセットで CPU スケーリングを開始できませんでした"
+
+msgid "Offsets in µV for the three CPU domains (cores 0-3, 4-6 and 7), in whole steps. A new offset takes effect at the next reboot, as a trial: it is kept once that boot has been up 10 minutes, and dropped (back to 0) if a boot with it ends in a crash, a watchdog reset or a power cut."
+msgstr "3 つの CPU ドメイン（コア 0-3、4-6、7）のオフセット（µV 単位、ステップの整数倍）。新しいオフセットは次回の再起動で試行として有効になります。その起動が 10 分間稼働すると確定し、そのオフセットでの起動がクラッシュ、ウォッチドッグによるリセット、または電源断で終了した場合は破棄されます（0 に戻ります）。"
+
+msgid "Running now (µV)"
+msgstr "現在の動作値（µV）"
+
+msgid "Saved for the next boot (µV)"
+msgstr "次回起動用に保存済み（µV）"
+
+msgid "State"
+msgstr "状態"
+
+msgid "Taken back automatically: %s µV (%s)"
+msgstr "自動的に取り消されました：%s µV（%s）"
+
+msgid "The SoC firmware of this device is not one whose voltage encoding is known: only the stock voltages are possible."
+msgstr "このデバイスの SoC ファームウェアは、電圧エンコードが判明しているものではありません。工場出荷時の電圧のみ使用できます。"
+
+msgid "Domain"
+msgstr "ドメイン"
+
+msgid "Offset now (µV)"
+msgstr "現在のオフセット（µV）"
+
+msgid "Highest step"
+msgstr "最高ステップ"
+
+msgid "New offset (µV)"
+msgstr "新しいオフセット（µV）"
+
+msgid "Limits: %d to %d µV, in steps of %d µV."
+msgstr "範囲：%d ～ %d µV、%d µV 刻み。"
+
+msgid "Save for the next boot"
+msgstr "次回起動用に保存"
+
+msgid "Each offset must be a multiple of %d µV between %d and %d."
+msgstr "各オフセットは %d µV の倍数で、%d から %d の範囲である必要があります。"
+
+msgid "Type %s to confirm."
+msgstr "確認のため %s と入力してください。"
+
+msgid "Back to the stock voltages"
+msgstr "工場出荷時の電圧に戻す"
+
+msgid "Type %s to confirm:"
+msgstr "確認のため %s と入力してください："
+
+msgid "Run a 10-minute CPU stress test"
+msgstr "10 分間の CPU ストレステストを実行"
+
+msgid "Test a new offset under load during its trial boot. The device may crash if the voltage is too low; the next boot then runs at the stock voltages."
+msgstr "新しいオフセットを試行起動中に負荷をかけてテストします。電圧が低すぎるとデバイスがクラッシュすることがあります。その場合、次回の起動は工場出荷時の電圧で動作します。"
+
+msgid "A stress test is running."
+msgstr "ストレステストを実行中です。"
+
+msgid "USB role"
+msgstr "USB ロール"
+
+msgid "Current role"
+msgstr "現在のロール"
+
+msgid "Switch USB role"
+msgstr "USB ロールの切り替え"
+
+msgid "Device mode"
+msgstr "デバイスモード"
+
+msgid "Host mode"
+msgstr "ホストモード"
+
+msgid "Enable host mode at boot"
+msgstr "起動時にホストモードを有効化"
+
+msgid "Apply role"
+msgstr "ロールを適用"
+
+msgid "Host mode disconnects USB networking and serial on this port. F50 has no battery; management may be lost and a USB adapter usually needs a powered hub."
+msgstr "ホストモードではこのポートの USB ネットワークとシリアルが切断されます。F50 にはバッテリーがないため、管理接続が失われる可能性があり、USB アダプタには通常セルフパワーのハブが必要です。"
+
+msgid "USB network mode"
+msgstr "USB ネットワークモード"
+
+msgid "Network protocol"
+msgstr "ネットワークプロトコル"
+
+msgid "Apply duration"
+msgstr "適用期間"
+
+msgid "Next reboot only"
+msgstr "次回の再起動のみ"
+
+msgid "Permanent"
+msgstr "恒久的"
+
+msgid "Enable selected protocol"
+msgstr "選択したプロトコルを有効化"
+
+msgid "Save; apply after reboot"
+msgstr "保存し、再起動後に適用"
+
+msgid "NCM is the default. Windows does not natively support ECM; RNDIS changes enumeration. With Enable selected protocol off, only your choice is saved. Next reboot only applies once, then returns to NCM."
+msgstr "既定は NCM です。Windows は ECM をネイティブにサポートしていません。RNDIS では列挙方法が変わります。「選択したプロトコルを有効化」がオフの場合は選択内容のみ保存されます。「次回の再起動のみ」は一度だけ適用され、その後 NCM に戻ります。"
+
+msgid "USB adapters"
+msgstr "USB アダプタ"
+
+msgid "Refresh"
+msgstr "更新"
+
+msgid "Available only in host mode. Refresh brings discovered USB adapters up; adding to LAN saves the bridge and reloads networking."
+msgstr "ホストモードでのみ利用できます。更新すると検出された USB アダプタを起動します。LAN に追加するとブリッジ設定を保存し、ネットワークを再読み込みします。"
+
+msgid "Recent modem operations"
+msgstr "最近のモデム操作"
+
+msgid "Show"
+msgstr "表示"
+
+msgid "The control panel's recent calls, of this boot and the one before: when, which page call or AT command, how long it took and how it ended (ok, error, busy, killed). No values, replies or messages are kept. Useful when the panel was stuck."
+msgstr "今回と前回の起動におけるコントロールパネルの最近の呼び出し: いつ、どのページ呼び出しまたは AT コマンドか、所要時間、終わり方 (ok、エラー、ビジー、強制終了)。値、応答、メッセージは保存しません。パネルが固まったときに役立ちます。"
+
+msgid "Unavailable"
+msgstr "利用不可"
+
+msgid "USB network mode is unavailable in host mode; host auto-start also disables USB network auto-start."
+msgstr "ホストモードでは USB ネットワークモードを使用できません。ホストモードの自動起動を有効にすると USB ネットワークの自動起動も無効になります。"
+
+msgid "Host mode immediately disconnects USB management. F50 has no battery and peripherals may need external power; make sure another management path exists."
+msgstr "ホストモードにすると USB 管理接続がすぐに切断されます。F50 にはバッテリーがなく、周辺機器には外部電源が必要な場合があります。別の管理経路があることを確認してください。"
+
+msgid "USB networking and serial will re-enumerate in device mode."
+msgstr "デバイスモードでは USB ネットワークとシリアルが再列挙されます。"
+
+msgid "Switch USB role?"
+msgstr "USB ロールを切り替えますか?"
+
+msgid "Apply"
+msgstr "適用"
+
+msgid "Switching USB role…"
+msgstr "USB ロールを切り替えています…"
+
+msgid "Switch failed: %s"
+msgstr "切り替えに失敗しました: %s"
+
+msgid "Management connection lost; reconnect to confirm the USB role."
+msgstr "管理接続が切断されました。再接続して USB ロールを確認してください。"
+
+msgid "Switch request accepted; the USB connection may briefly disconnect."
+msgstr "切り替え要求を受け付けました。USB 接続が一時的に切断される場合があります。"
+
+msgid "USB role applied"
+msgstr "USB ロールを適用しました"
+
+msgid "Save USB network mode?"
+msgstr "USB ネットワークモードを保存しますか?"
+
+msgid "The network mode applies on the next reboot; USB management may need to reconnect."
+msgstr "ネットワークモードは次回の再起動時に適用されます。USB 管理接続の再接続が必要になる場合があります。"
+
+msgid "Save the selection only; with the selected protocol disabled, the next boot still uses default NCM."
+msgstr "選択内容のみ保存します。選択したプロトコルが無効のため、次回の起動でも既定の NCM が使われます。"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Saving USB network settings…"
+msgstr "USB ネットワーク設定を保存しています…"
+
+msgid "Settings saved"
+msgstr "設定を保存しました"
+
+msgid "Save failed: %s"
+msgstr "保存に失敗しました: %s"
+
+msgid "This boot"
+msgstr "今回の起動"
+
+msgid "Previous boot"
+msgstr "前回の起動"
+
+msgid "Unable to confirm the role yet; reconnect and refresh the page."
+msgstr "まだロールを確認できません。再接続してページを更新してください。"
+
+msgid "Switch to host mode to see USB adapters."
+msgstr "USB アダプタを表示するにはホストモードに切り替えてください。"
+
+msgid "Scanning USB adapters…"
+msgstr "USB アダプタをスキャンしています…"
+
+msgid "No USB adapters found."
+msgstr "USB アダプタが見つかりません。"
+
+msgid "Link connected"
+msgstr "リンク接続済み"
+
+msgid "No link; enable attempted"
+msgstr "リンクなし、有効化を試行済み"
+
+msgid "Added to LAN"
+msgstr "LAN に追加済み"
+
+msgid "Add to LAN"
+msgstr "LAN に追加"
+
+msgid "Add USB adapter to LAN?"
+msgstr "USB アダプタを LAN に追加しますか?"
+
+msgid "This saves the bridge configuration and reloads networking; existing connections may briefly drop."
+msgstr "ブリッジ設定を保存してネットワークを再読み込みします。既存の接続が一時的に切断される場合があります。"
+
+msgid "Add"
+msgstr "追加"
+
+msgid "Adding USB adapter…"
+msgstr "USB アダプタを追加しています…"
+
+msgid "Add failed: %s"
+msgstr "追加に失敗しました: %s"
+
+msgid "Leave empty to keep the saved value"
+msgstr "保存済みの値を残すには空欄のままにします"
+
+msgid "Saved: %s"
+msgstr "保存済み: %s"
+
+msgid "Remove the saved value"
+msgstr "保存済みの値を削除"
+
+msgid "Presets"
+msgstr "プリセット"
+
+msgid "Form (URL-encoded)"
+msgstr "フォーム（URL エンコード）"
+
+msgid "Plain text"
+msgstr "プレーンテキスト"
+
+msgid "Received messages are sent on as they reach the SMS pool. A failed delivery is retried after 30 s, then after twice as long each time (an hour at most), ten times in all."
+msgstr "受信したメッセージは SMS プールに届きしだい転送されます。送信に失敗すると 30 秒後に再試行し、その後は毎回 2 倍の間隔（最大 1 時間）で、合計 10 回試みます。"
+
+msgid "Forward received messages"
+msgstr "受信したメッセージを転送する"
+
+msgid "Message template"
+msgstr "メッセージテンプレート"
+
+msgid "Placeholders: {sender}, {time}, {text}, {device}"
+msgstr "プレースホルダー: {sender}, {time}, {text}, {device}"
+
+msgid "Only these senders"
+msgstr "これらの送信者のみ"
+
+msgid "One per line; empty: every sender. A * at the end matches the start of a sender."
+msgstr "1 行に 1 つ。空欄: すべての送信者。末尾の * は送信者の先頭部分に一致します。"
+
+msgid "Never these senders"
+msgstr "これらの送信者は除外"
+
+msgid "Only messages containing one of these words"
+msgstr "これらの語のいずれかを含むメッセージのみ"
+
+msgid "One per line; empty: every message."
+msgstr "1 行に 1 つ。空欄: すべてのメッセージ。"
+
+msgid "Webhook"
+msgstr "Webhook"
+
+msgid "Enabled"
+msgstr "有効"
+
+msgid "Address (http:// or https://)"
+msgstr "アドレス（http:// または https://）"
+
+msgid "Body"
+msgstr "本文"
+
+msgid "Fields: sender, time, text, device, message (the template filled in)"
+msgstr "フィールド: sender, time, text, device, message（埋め込み済みテンプレート）"
+
+msgid "Custom body"
+msgstr "カスタム本文"
+
+msgid "Empty: the standard fields (plain text: the message). Placeholders: {sender}, {time}, {text}, {device}, {message}. Each value is escaped for the chosen type. This body is shown again here: keep secrets in the address or a header."
+msgstr "空欄: 標準のフィールド（プレーンテキスト: メッセージ）。プレースホルダー: {sender}、{time}、{text}、{device}、{message}。各値は選択した形式に合わせてエスケープされます。この本文はここに再表示されます。秘密情報はアドレスかヘッダーに入れてください。"
+
+msgid "Extra headers (one \"Name: value\" per line)"
+msgstr "追加ヘッダー（1 行に 1 つの \"Name: value\"）"
+
+msgid "The answer must contain"
+msgstr "応答に含まれるべき内容"
+
+msgid "Empty: every HTTP 2xx answer counts as delivered. With key=value (for example errcode=0), the answer must also be a JSON object that has this value under this key at its top level; otherwise the delivery fails. Only the result of the check is logged, never the answer."
+msgstr "空欄: HTTP 2xx の応答はすべて配信済みとみなします。キー=値（例: errcode=0）を指定すると、応答はさらに、最上位のそのキーにその値を持つ JSON オブジェクトでなければならず、そうでない場合は配信失敗になります。ログに記録されるのは確認の結果だけで、応答そのものは記録されません。"
+
+msgid "Bot token"
+msgstr "ボットトークン"
+
+msgid "Chat ID (a number, or @channel)"
+msgstr "チャット ID（数値または @チャンネル）"
+
+msgid "E-mail"
+msgstr "メール"
+
+msgid "E-mail needs msmtp, which this image does not have"
+msgstr "メールには msmtp が必要ですが、このイメージにはありません"
+
+msgid "Mail server"
+msgstr "メールサーバー"
+
+msgid "Port"
+msgstr "ポート"
+
+msgid "Security"
+msgstr "セキュリティ"
+
+msgid "None"
+msgstr "なし"
+
+msgid "User name"
+msgstr "ユーザー名"
+
+msgid "Password"
+msgstr "パスワード"
+
+msgid "From"
+msgstr "差出人"
+
+msgid "To"
+msgstr "宛先"
+
+msgid "SMS to another phone"
+msgstr "別の電話へ SMS"
+
+msgid "Phone number"
+msgstr "電話番号"
+
+msgid "Sent as one SMS: a longer message is cut short."
+msgstr "1 通の SMS として送信: 長いメッセージは切り詰められます。"
+
+msgid "Send test"
+msgstr "テスト送信"
+
+msgid "Tokens, passwords and the webhook address and headers stay on the device and are never shown again."
+msgstr "トークン、パスワード、Webhook のアドレスとヘッダーはデバイス内にのみ保存され、二度と表示されません。"
+
+msgid "Delivered"
+msgstr "配信済み"
+
+msgid "Will retry"
+msgstr "再試行予定"
+
+msgid "Failed"
+msgstr "失敗"
+
+msgid "Filtered out"
+msgstr "フィルターで除外"
+
+msgid "Dropped"
+msgstr "破棄"
+
+msgid "Clear"
+msgstr "クリア"
+
+msgid "Test"
+msgstr "テスト"
+
+msgid "Delivery log"
+msgstr "配信ログ"
+
+msgid "Waiting to be delivered"
+msgstr "配信待ち"
+
+msgid "Time"
+msgstr "時刻"
+
+msgid "Message"
+msgstr "メッセージ"
+
+msgid "Target"
+msgstr "宛先種別"
+
+msgid "Result"
+msgstr "結果"
+
+msgid "Detail"
+msgstr "詳細"
+
+msgid "No deliveries yet"
+msgstr "配信はまだありません"
+
+msgid "Test started with the saved settings; the result appears in the delivery log."
+msgstr "保存済みの設定でテストを開始しました。結果は配信ログに表示されます。"
+
+msgid "Automatic without 2G (152)"
+msgstr "自動（2G なし）（152）"
+
+msgid "4G only"
+msgstr "4G のみ"
+
+msgid "Network mode: %s"
+msgstr "ネットワークモード: %s"
+
+msgid "EN-DC off"
+msgstr "EN-DC オフ"
+
+msgid "NR band lock: %s"
+msgstr "NR バンドロック: %s"
+
+msgid "LTE band lock: %s"
+msgstr "LTE バンドロック: %s"
+
+msgid "Cell lock: %s"
+msgstr "セルロック: %s"
+
+msgid "Modulation DL/UL"
+msgstr "変調方式 DL/UL"
+
+msgid "Estimated from current MCS"
+msgstr "現在の MCS から推定"
+
+msgid "MCS DL/UL"
+msgstr "MCS DL/UL"
+
+msgid "BLER DL/UL"
+msgstr "BLER DL/UL"
+
+msgid "%s of %s"
+msgstr "%s / %s"
+
+msgid "The monthly cap is reached"
+msgstr "月間上限に達しました"
+
+msgid "%d%% of the monthly cap is used"
+msgstr "月間上限の %d%% を使用"
+
+msgid "This billing cycle"
+msgstr "今回の請求期間"
+
+msgid "Link & traffic"
+msgstr "リンクとトラフィック"
+
+msgid "Download rate"
+msgstr "ダウンロード速度"
+
+msgid "Upload rate"
+msgstr "アップロード速度"
+
+msgid "Total received"
+msgstr "受信合計"
+
+msgid "Total sent"
+msgstr "送信合計"
+
+msgid "Used today"
+msgstr "今日の使用量"
+
+msgid "SIM source"
+msgstr "SIM の選択"
+
+msgid "Session duration"
+msgstr "セッション時間"
+
+msgid "Registration"
+msgstr "登録"
+
+msgid "Data roaming"
+msgstr "データローミング"
+
+msgid "Bandwidth"
+msgstr "帯域幅"
+
+msgid "AMBR DL/UL"
+msgstr "AMBR DL/UL"
+
+msgid "Wi-Fi · LAN · Device · SIM"
+msgstr "Wi-Fi · LAN · デバイス · SIM"
+
+msgid "CPU usage"
+msgstr "CPU 使用率"
+
+msgid "Memory"
+msgstr "メモリ"
+
+msgid "Storage"
+msgstr "ストレージ"
+
+msgid "Battery"
+msgstr "バッテリー"
+
+msgid "Channel"
+msgstr "チャネル"
+
+msgid "Encryption"
+msgstr "暗号化"
+
+msgid "Hidden SSID"
+msgstr "非表示 SSID"
+
+msgid "Country"
+msgstr "国"
+
+msgid "AP status"
+msgstr "AP ステータス"
+
+msgid "USB network"
+msgstr "USB ネットワーク"
+
+msgid "Connection tracking"
+msgstr "コネクショントラッキング"
+
+msgid "LAN address"
+msgstr "LAN アドレス"
+
+msgid "Wi-Fi clients"
+msgstr "Wi-Fi クライアント"
+
+msgid "DHCP leases"
+msgstr "DHCP リース"
+
+msgid "Device model"
+msgstr "デバイスモデル"
+
+msgid "System"
+msgstr "システム"
+
+msgid "Modem"
+msgstr "モデム"
+
+msgid "Carrier"
+msgstr "キャリア"
+
+msgid "Own number"
+msgstr "自分の番号"
+
+msgid "Module"
+msgstr "モジュール"
+
+msgid "Firmware"
+msgstr "ファームウェア"
+
+msgid "Show SIM identifiers"
+msgstr "SIM 識別情報を表示"
+
+msgid "Quick controls"
+msgstr "クイックコントロール"
+
+msgid "Data connection"
+msgstr "データ接続"
+
+msgid "Cellular radio"
+msgstr "セルラー無線"
+
+msgid "Wi-Fi hotspot"
+msgstr "Wi-Fi ホットスポット"
+
+msgid "Restart modem"
+msgstr "モデムを再起動"
+
+msgid "Power off or restart"
+msgstr "電源オフまたは再起動"
+
+msgid "Switch to Android"
+msgstr "Android に切り替え"
+
+msgid "Lock Linux"
+msgstr "Linuxをロック"
+
+msgid "Neighbor cells"
+msgstr "隣接セル"
+
+msgid "RAT/Band"
+msgstr "RAT/バンド"
+
+msgid "Frequency"
+msgstr "周波数"
+
+msgid "Running %s…"
+msgstr "%s を実行中…"
+
+msgid "Started in background: %s"
+msgstr "バックグラウンドで開始: %s"
+
+msgid "Done: %s"
+msgstr "完了: %s"
+
+msgid "Disconnecting data…"
+msgstr "データ接続を切断しています…"
+
+msgid "Connecting data…"
+msgstr "データ接続を確立しています…"
+
+msgid "Turn off cellular radio"
+msgstr "セルラー無線をオフにする"
+
+msgid "This SIM will have no calls, SMS or data, and its radio stays off after a reboot until you turn it on again."
+msgstr "この SIM では通話・SMS・データが使えなくなり、再度オンにするまで再起動後も無線はオフのままです。"
+
+msgid "Turn on cellular radio"
+msgstr "セルラー無線をオンにする"
+
+msgid "The radio of the SIM in use comes on and stays on after a reboot (up to about 1 minute)."
+msgstr "使用中の SIM の無線がオンになり、再起動後もオンのままです（最大約 1 分）。"
+
+msgid "Turn data roaming off"
+msgstr "データローミングをオフにする"
+
+msgid "While the SIM is registered on a roaming network, mobile data stays off; SMS, calls and the registration are not affected. Some SIMs report roaming at home (an MVNO, national roaming): there, data would stop as well."
+msgstr "SIM がローミングネットワークに登録されている間、モバイルデータはオフのままです。SMS、通話、登録には影響しません。一部の SIM は国内でもローミングと報告します (MVNO、国内ローミング)。その場合、そこでもデータが止まります。"
+
+msgid "Allow data roaming"
+msgstr "データローミングを許可"
+
+msgid "Mobile data is used on roaming networks too, which can cost extra. Some SIMs report roaming at home (an MVNO, national roaming) and need this to have data at all."
+msgstr "ローミングネットワークでもモバイルデータが使われ、追加料金がかかることがあります。一部の SIM は国内でもローミングと報告し (MVNO、国内ローミング)、データを使うにはこれが必要です。"
+
+msgid "Cellular connectivity may stop for 1–2 minutes."
+msgstr "セルラー接続が 1～2 分間停止する場合があります。"
+
+msgid "All connections will be interrupted."
+msgstr "すべての接続が中断されます。"
+
+msgid "Power off"
+msgstr "電源オフ"
+
+msgid "Restart"
+msgstr "再起動"
+
+msgid "The next boot will enter Android and reboot now. This management page and cellular sharing will disconnect."
+msgstr "次回の起動で Android に入るよう設定し、今すぐ再起動します。この管理ページとセルラー共有は切断されます。"
+
+msgid "To return to OpenWrt, run mu300-next-boot linux in Android and reboot."
+msgstr "OpenWrt に戻るには、Android で mu300-next-boot linux を実行して再起動してください。"
+
+msgid "Or do nothing: after five boots that do not finish, it falls back automatically."
+msgstr "または何もしなければ、起動が 5 回完了しなかった時点で自動的にフォールバックします。"
+
+msgid "Preparing Android boot and rebooting…"
+msgstr "Android 起動を準備して再起動しています…"
+
+msgid "Switch and reboot"
+msgstr "切り替えて再起動"
+
+msgid "Not automatic: %s. The network mode and band locks are stored in the modem and stay in force in Android too; if the network does not match them, Android shows No Service."
+msgstr "自動ではありません: %s。ネットワークモードとバンドロックはモデムに保存され、Android でも有効なままです。ネットワークが合わない場合、Android は「圏外」と表示します。"
+
+msgid "Reset locks and switch"
+msgstr "ロックをリセットして切り替え"
+
+msgid "Unlock Linux"
+msgstr "Linuxのロックを解除"
+
+msgid "After five boots in a row that do not finish, the device falls back to Android again."
+msgstr "完了しない起動が5回続くと、デバイスは再びAndroidに戻ります。"
+
+msgid "Unlock"
+msgstr "ロック解除"
+
+msgid "The device will never switch to Android by itself, not even after failed boots: Android only from this page (Switch to Android) or with mu300-next-boot android."
+msgstr "起動に失敗しても、デバイスが自動でAndroidに切り替わることはありません。Androidへはこのページ（Androidに切り替え）または mu300-next-boot android からのみ切り替えます。"
+
+msgid "A new kernel from an update still gets its first boots on trial, and locks again once one of them succeeds."
+msgstr "アップデートによる新しいカーネルは最初の起動を試行として行い、いずれかが成功すると再びロックされます。"
+
+msgid "If the system itself no longer starts, the device waits on USB (telnet) instead of going to Android."
+msgstr "システム自体が起動しなくなった場合、デバイスはAndroidに切り替わらずUSB（telnet）で待機します。"
+
+msgid "Hide SIM identifiers"
+msgstr "SIM 識別情報を隠す"
+
+msgid "Lock cell %s?"
+msgstr "セル %s をロックしますか?"
+
+msgid "The radio stack will restart (SFUN); cellular service will stop for about 30 seconds."
+msgstr "無線スタックが再起動します (SFUN)。セルラーサービスは約 30 秒間停止します。"
+
+msgid "Locking %s in the background, about 30 seconds"
+msgstr "バックグラウンドで %s をロック中、約 30 秒"
+
+msgid "Locked %s in the background; the status will refresh shortly"
+msgstr "バックグラウンドで %s をロックしました。まもなくステータスが更新されます"
+
+msgid "Lock failed: %s"
+msgstr "ロックに失敗しました: %s"
+
+msgid "Resetting the network locks to automatic (SFUN restart, about 30 seconds)…"
+msgstr "ネットワークロックを自動にリセットしています（SFUN 再起動、約 30 秒）…"
+
+msgid "Reset failed: %s. The saved lock settings were kept."
+msgstr "リセットに失敗しました: %s。保存されたロック設定は保持されました。"
+
+msgid "The lock reset was not confirmed in time; switching anyway."
+msgstr "ロックのリセットを時間内に確認できませんでした。そのまま切り替えます。"
+
+msgid "Internal SIM selected: in use after a reboot"
+msgstr "内蔵 SIM を選択済み: 再起動後に使用されます"
+
+msgid "Internal SIM selected, but not supported on this device: the external SIM is in use"
+msgstr "内蔵 SIM を選択済みですが、このデバイスでは対応していません: 外部 SIM を使用中です"
+
+msgid "Uptime %s"
+msgstr "稼働時間 %s"
+
+msgid "Radio off"
+msgstr "無線オフ"
+
+msgid "No response"
+msgstr "応答なし"
+
+msgid "Modem busy: cellular readings from %s ago"
+msgstr "モデムがビジーです: セルラーの値は %s 前のものです"
+
+msgid "%s · Signal %s %s/10"
+msgstr "%s · 信号 %s %s/10"
+
+msgid "%s · Signal %s"
+msgstr "%s · 信号 %s"
+
+msgid "Anchor B%s"
+msgstr "アンカー B%s"
+
+msgid "No serving cell"
+msgstr "サービングセルなし"
+
+msgid "Version %s is out: update"
+msgstr "バージョン %s が公開されました: 更新する"
+
+msgid "Not registered"
+msgstr "未登録"
+
+msgid "Registered"
+msgstr "登録済み"
+
+msgid "Searching"
+msgstr "検索中"
+
+msgid "Registration denied"
+msgstr "登録拒否"
+
+msgid "Registered (roaming)"
+msgstr "登録済み (ローミング)"
+
+msgid "Emergency only"
+msgstr "緊急通報のみ"
+
+msgid "Status %s"
+msgstr "ステータス %s"
+
+msgid "Off: data held back while roaming"
+msgstr "オフ: ローミング中はデータを停止中"
+
+msgid "Allowed"
+msgstr "許可"
+
+msgid "Off"
+msgstr "オフ"
+
+msgid "LTE anchor"
+msgstr "LTE アンカー"
+
+msgid "LTE link"
+msgstr "LTE リンク"
+
+msgid "Hidden"
+msgstr "非表示"
+
+msgid "No"
+msgstr "いいえ"
+
+msgid "Running"
+msgstr "実行中"
+
+msgid "Not running"
+msgstr "停止中"
+
+msgid "Connected"
+msgstr "接続済み"
+
+msgid "Disconnected"
+msgstr "切断"
+
+msgid "%s entries"
+msgstr "%s 件"
+
+msgid "%s clients"
+msgstr "%s 台"
+
+msgid "Recent DHCP leases"
+msgstr "最近の DHCP リース"
+
+msgid "Board"
+msgstr "ボード"
+
+msgid "No temperature readings"
+msgstr "温度データなし"
+
+msgid "Cluster %d"
+msgstr "クラスタ %d"
+
+msgid "Total %s · free %s"
+msgstr "合計 %s · 空き %s"
+
+msgid "charging %s W"
+msgstr "%s W で充電中"
+
+msgid "charging"
+msgstr "充電中"
+
+msgid "drawing %s W"
+msgstr "%s W を消費中"
+
+msgid "not charging"
+msgstr "充電していません"
+
+msgid "on battery"
+msgstr "バッテリー駆動"
+
+msgid "full"
+msgstr "満充電"
+
+msgid "USB in %s W"
+msgstr "USB 入力 %s W"
+
+msgid "Online"
+msgstr "オンライン"
+
+msgid "AT adapter unavailable"
+msgstr "AT アダプタを利用できません"
+
+msgid "Linux locked"
+msgstr "Linuxロック中"
+
+msgid "Installing the language pack…"
+msgstr "言語パックをインストールしています…"
+
+msgid "The language pack is installed"
+msgstr "言語パックをインストールしました"
+
+msgid "The language pack could not be installed"
+msgstr "言語パックをインストールできませんでした"
+
+msgid "Language of the browser"
+msgstr "ブラウザの言語"
+
+msgid "Language of the web interface"
+msgstr "Web インターフェースの言語"
+
+msgid "English, Turkish and Chinese come with the system; the language pack adds the others."
+msgstr "英語、トルコ語、中国語はシステムに含まれています。その他の言語は言語パックで追加されます。"
+
+msgid "The same setting is in System > System > Language and Style."
+msgstr "同じ設定は システム > システム > 言語とスタイル にもあります。"
+
+msgid "Language pack"
+msgstr "言語パック"
+
+msgid "The language pack (mu300-extra-lang.tar.gz, about 2 MB) adds LuCI in about 40 more languages and this panel in 29 of them. Download it from the release of this system, or upload the file from the release page when the device has no internet."
+msgstr "言語パック (mu300-extra-lang.tar.gz、約 2 MB) は LuCI に約 40 の言語を追加し、そのうち 29 言語でこのパネルも利用できるようにします。このシステムのリリースからダウンロードするか、デバイスがインターネットに接続できない場合はリリースページのファイルをアップロードしてください。"
+
+msgid "Download from the release"
+msgstr "リリースからダウンロード"
+
+msgid "Release"
+msgstr "リリース"
+
+msgid "Enable all"
+msgstr "すべて有効化"
+
+msgid "Disable all"
+msgstr "すべて無効化"
+
+msgid "Remove the language pack"
+msgstr "言語パックを削除"
+
+msgid "Remove the language pack?"
+msgstr "言語パックを削除しますか?"
+
+msgid "Its languages disappear from the list; a page in one of them switches to English."
+msgstr "その言語は一覧から消えます。それらの言語で表示中のページは英語に切り替わります。"
+
+msgid "Remove"
+msgstr "削除"
+
+msgid "Disable"
+msgstr "無効化"
+
+msgid "Enable"
+msgstr "有効化"
+
+msgid "LuCI and this panel"
+msgstr "LuCI とこのパネル"
+
+msgid "LuCI only"
+msgstr "LuCI のみ"
+
+msgid "Disabled"
+msgstr "無効"
+
+msgid "Language"
+msgstr "言語"
+
+msgid "Code"
+msgstr "コード"
+
+msgid "Translated"
+msgstr "翻訳範囲"
+
+msgid "LuCI's own translations come from OpenWrt. This panel's translations other than Turkish and Chinese are machine (AI) translations; corrections are welcome."
+msgstr "LuCI 自体の翻訳は OpenWrt によるものです。このパネルのトルコ語と中国語以外の翻訳は機械 (AI) 翻訳です。修正を歓迎します。"
+
+msgid "Automatic"
+msgstr "自動"
+
+msgid "Serving network"
+msgstr "サービングネットワーク"
+
+msgid "Network mode · EN-DC"
+msgstr "ネットワークモード · EN-DC"
+
+msgid "Refresh lock status"
+msgstr "ロック状態を更新"
+
+msgid "Apply at startup"
+msgstr "起動時に適用"
+
+msgid "Turning this off only stops replay at the next boot; saved network mode, EN-DC, band and cell settings remain."
+msgstr "オフにしても次回起動時の再適用が止まるだけで、保存済みのネットワークモード、EN-DC、バンド、セルの設定は残ります。"
+
+msgid "Band locking"
+msgstr "バンドロック"
+
+msgid "NR bands"
+msgstr "NR バンド"
+
+msgid "LTE bands"
+msgstr "LTE バンド"
+
+msgid "Apply NR bands"
+msgstr "NR バンドを適用"
+
+msgid "Apply LTE bands"
+msgstr "LTE バンドを適用"
+
+msgid "Neighbor cells and cell locking"
+msgstr "隣接セルとセルロック"
+
+msgid "Lock current serving cell"
+msgstr "現在のサービングセルをロック"
+
+msgid "Unlock cell"
+msgstr "セルロックを解除"
+
+msgid "Enter a cell"
+msgstr "セルを入力"
+
+msgid "Type"
+msgstr "種類"
+
+msgid "Channel number (EARFCN / NR-ARFCN)"
+msgstr "チャネル番号（EARFCN / NR-ARFCN）"
+
+msgid "Lock this cell"
+msgstr "このセルをロック"
+
+msgid "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. A channel number, not a frequency in MHz; the cell need not be in the neighbor list."
+msgstr "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. MHz 単位の周波数ではなくチャネル番号です。セルが隣接セル一覧にある必要はありません。"
+
+msgid "Applying restarts the radio stack (SFUN) and briefly interrupts cellular service. Settings are saved and replayed by the plugin after AT is ready when Apply at startup is enabled. A platform pre-radio hook can replay without a restart. Apply with no bands selected to restore automatic mode."
+msgstr "適用すると無線スタックが再起動し (SFUN)、セルラーサービスが一時的に中断されます。設定は保存され、「起動時に適用」が有効な場合は AT の準備完了後にプラグインが再適用します。プラットフォームの無線起動前フックがあれば再起動なしで再適用できます。バンドを何も選択せずに適用すると自動モードに戻ります。"
+
+msgid "Back to automatic"
+msgstr "自動に戻す"
+
+msgid "The network mode and band locks are stored in the modem and stay in force in Android too. If you are not sure, reset them before switching to Android."
+msgstr "ネットワークモードとバンドロックはモデムに保存され、Android でも有効なままです。不明な場合は、Android に切り替える前にリセットしてください。"
+
+msgid "Reset all to automatic"
+msgstr "すべて自動にリセット"
+
+msgid "Apply “%s”?"
+msgstr "「%s」を適用しますか?"
+
+msgid "Applying %s in the background…"
+msgstr "バックグラウンドで %s を適用しています…"
+
+msgid "Applying %s in the background… (SFUN restart and re-registration, about 30 seconds)"
+msgstr "バックグラウンドで %s を適用しています… (SFUN 再起動と再登録、約 30 秒)"
+
+msgid "Queued: another lock is being applied during SFUN restart; this will take effect afterward"
+msgstr "キュー登録: SFUN 再起動中に別のロックを適用中です。完了後に有効になります"
+
+msgid "Confirming the EN-DC status…"
+msgstr "EN-DC の状態を確認しています…"
+
+msgid "Confirming apply at startup…"
+msgstr "起動時の適用を確認しています…"
+
+msgid "Started in background: %s (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "バックグラウンドで開始: %s (SFUN 再起動、約 30 秒)。ステータスを読み戻しています…"
+
+msgid "Disable EN-DC (NSA anchor)"
+msgstr "EN-DC を無効化 (NSA アンカー)"
+
+msgid "Enable EN-DC (NSA anchor)"
+msgstr "EN-DC を有効化 (NSA アンカー)"
+
+msgid "Disable apply at startup"
+msgstr "起動時の適用を無効化"
+
+msgid "Enable apply at startup"
+msgstr "起動時の適用を有効化"
+
+msgid "Reading the modem directly (a few seconds at most)…"
+msgstr "モデムから直接読み取っています (最大数秒)…"
+
+msgid "Refresh failed"
+msgstr "更新に失敗しました"
+
+msgid "Refreshed"
+msgstr "更新しました"
+
+msgid "NR bands: back to automatic"
+msgstr "NR バンド: 自動に戻しました"
+
+msgid "LTE bands: back to automatic"
+msgstr "LTE バンド: 自動に戻しました"
+
+msgid "Network mode automatic, EN-DC on, all LTE and NR bands, no cell lock. The saved lock settings are cleared, so nothing is replayed at startup."
+msgstr "ネットワークモード自動、EN-DC オン、すべての LTE/NR バンド、セルロックなし。保存されたロック設定は消去され、起動時に再適用されません。"
+
+msgid "Reset"
+msgstr "リセット"
+
+msgid "Remove the %s cell lock"
+msgstr "%s のセルロックを解除"
+
+msgid "The radio stack will restart (SFUN), taking about 30 seconds."
+msgstr "無線スタックが再起動します (SFUN)。約 30 秒かかります。"
+
+msgid "Removing the %s cell lock…"
+msgstr "%s のセルロックを解除しています…"
+
+msgid "Unlock failed: %s"
+msgstr "ロック解除に失敗しました: %s"
+
+msgid "Unlock started in background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "バックグラウンドでロック解除を開始しました (SFUN 再起動、約 30 秒)。ステータスを読み戻しています…"
+
+msgid "Locking %s in the background…"
+msgstr "バックグラウンドで %s をロックしています…"
+
+msgid "Locked %s in the background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "バックグラウンドで %s をロックしました (SFUN 再起動、約 30 秒)。ステータスを読み戻しています…"
+
+msgid "Enter a channel number and a PCI in the ranges below"
+msgstr "下記の範囲内でチャネル番号と PCI を入力してください"
+
+msgid "No serving-network data"
+msgstr "サービングネットワークのデータなし"
+
+msgid "NR serving cell"
+msgstr "NR サービングセル"
+
+msgid "Status confirmed"
+msgstr "ステータスを確認しました"
+
+msgid "Readback timed out; select “Refresh lock status”"
+msgstr "読み戻しがタイムアウトしました。「ロック状態を更新」を選択してください"
+
+msgid "Reset verified: network mode automatic, EN-DC on, all bands, no cell lock; the saved lock settings are cleared"
+msgstr "リセットを確認しました: ネットワークモード自動、EN-DC オン、全バンド、セルロックなし。保存されたロック設定は消去されました"
+
+msgid "Applied (EN-DC does not require a radio-stack restart)"
+msgstr "適用しました (EN-DC は無線スタックの再起動を必要としません)"
+
+msgid "Apply at startup is on"
+msgstr "起動時の適用はオンです"
+
+msgid "Apply at startup is off"
+msgstr "起動時の適用はオフです"
+
+msgid "EN-DC status readback timed out; use “Refresh lock status” to confirm"
+msgstr "EN-DC 状態の読み戻しがタイムアウトしました。「ロック状態を更新」で確認してください"
+
+msgid "Apply-at-startup status readback timed out; use “Refresh lock status” to confirm"
+msgstr "起動時の適用状態の読み戻しがタイムアウトしました。「ロック状態を更新」で確認してください"
+
+msgid "Locked cells"
+msgstr "ロック中のセル"
+
+msgid "Unlock %s"
+msgstr "%s のロックを解除"
+
+msgid "Automatic (%d supported)"
+msgstr "自動 (%d 個対応)"
+
+msgid "%d locked: %s"
+msgstr "%d 件ロック中: %s"
+
+msgid "Repair DNS?"
+msgstr "DNS を修復しますか？"
+
+msgid "This removes the DNS forwarder of a package that is no longer installed. If no other DNS server is left, the device then uses the DNS servers of the mobile connection: the carrier sees the names you look up, outside any proxy or VPN."
+msgstr "インストールされなくなったパッケージの DNS 転送先を削除します。ほかに DNS サーバーが残っていない場合、デバイスはモバイル回線の DNS サーバーを使います。通信事業者は、プロキシや VPN を経由せずに調べた名前を見ることができます。"
+
+msgid "Repair DNS"
+msgstr "DNS を修復"
+
+msgid "Packages installed on the device are not part of a release image. An update writes them down, and the new system installs them again at its first boot, once it is online. Until a package is back its settings are set aside."
+msgstr "デバイスに入れたパッケージはリリースイメージに含まれません。アップデートがそれらを記録し、新しいシステムは初回起動時にオンラインになると再インストールします。パッケージが戻るまで、その設定は退避されます。"
+
+msgid "No packages to install again."
+msgstr "再インストールするパッケージはありません。"
+
+msgid "All back"
+msgstr "すべて復元済み"
+
+msgid "Not installed yet"
+msgstr "まだインストールされていません"
+
+msgid "Could not be installed again"
+msgstr "再インストールできませんでした"
+
+msgid "Waiting for the internet"
+msgstr "インターネット待ち"
+
+msgid "Given up: no internet at five boots"
+msgstr "中止：5 回の起動でインターネットなし"
+
+msgid "Skipped"
+msgstr "スキップ"
+
+msgid "Written down by the update from %s"
+msgstr "%s からのアップデートで記録"
+
+msgid "Installed again"
+msgstr "再インストール済み"
+
+msgid "Install them yourself from where you got them (a package file: apk add --allow-untrusted FILE.apk)."
+msgstr "入手元から自分でインストールしてください（パッケージファイル：apk add --allow-untrusted FILE.apk）。"
+
+msgid "Settings set aside in /etc/mu300/orphaned-config"
+msgstr "/etc/mu300/orphaned-config に退避された設定"
+
+msgid "DNS still goes to a package that is not installed: the device has no DNS through it."
+msgstr "DNS がまだインストールされていないパッケージに向いています：それを通じた DNS は使えません。"
+
+msgid "Try again"
+msgstr "再試行"
+
+msgid "Dismiss the note"
+msgstr "通知を閉じる"
+
+msgid "started"
+msgstr "起動しました"
+
+msgid "asleep now (asked)"
+msgstr "今すぐスリープ（要求）"
+
+msgid "woken: power daemon stopping"
+msgstr "復帰：電源デーモン停止"
+
+msgid "woken by a key"
+msgstr "キーで復帰"
+
+msgid "woken by the Wi-Fi key"
+msgstr "Wi-Fi キーで復帰"
+
+msgid "woken (mu300-power wake)"
+msgstr "復帰（mu300-power wake）"
+
+msgid "woken by a computer on USB"
+msgstr "USB 接続のコンピューターで復帰"
+
+msgid "woken: plugged in"
+msgstr "復帰：電源に接続"
+
+msgid "woken by a Wi-Fi client"
+msgstr "Wi-Fi クライアントで復帰"
+
+msgid "charging boot (powered on by the charger)"
+msgstr "充電起動（充電器で電源オン）"
+
+msgid "the hotspot is down"
+msgstr "ホットスポットはオフです"
+
+msgid "the VPN is still stopped"
+msgstr "VPN はまだ停止中です"
+
+msgid "5G (EN-DC) is still off after a failed resume"
+msgstr "再開に失敗したため 5G（EN-DC）はまだオフです"
+
+msgid "self-check: %s"
+msgstr "セルフチェック：%s"
+
+msgid "asleep: no client for %d min (%s)"
+msgstr "スリープ：%d 分間クライアントなし（%s）"
+
+msgid "asleep: profile now %s"
+msgstr "スリープ：プロファイルは %s になりました"
+
+msgid "woken by the %s key"
+msgstr "%s キーで復帰"
+
+msgid "the modem is suspended (%s)"
+msgstr "モデムは一時停止中です（%s）"
+
+msgid "Enter a whole number from 0 to %d"
+msgstr "0 から %d までの整数を入力してください"
+
+msgid "Power status unavailable"
+msgstr "電源の状態を取得できません"
+
+msgid "Plugged in"
+msgstr "電源接続中"
+
+msgid "On battery"
+msgstr "バッテリー駆動"
+
+msgid "Saver"
+msgstr "節電"
+
+msgid "Asleep: hotspot off"
+msgstr "スリープ中：ホットスポットはオフ"
+
+msgid "Charging boot: press the Wi-Fi key to start"
+msgstr "充電起動：Wi-Fi キーを押すと開始します"
+
+msgid "Awake"
+msgstr "起動中"
+
+msgid "forced"
+msgstr "強制"
+
+msgid "automatic, battery under %d %%"
+msgstr "自動、バッテリー %d %% 未満"
+
+msgid "automatic"
+msgstr "自動"
+
+msgid "Nobody connected for %d s"
+msgstr "%d 秒間、誰も接続していません"
+
+msgid "Power source"
+msgstr "電源の種類"
+
+msgid "Profile"
+msgstr "プロファイル"
+
+msgid "Profile in use: %s (%s)"
+msgstr "使用中のプロファイル：%s（%s）"
+
+msgid "%d %%, %s, %d mV, %d mA, %.1f °C"
+msgstr "%d %%, %s, %d mV, %d mA, %.1f °C"
+
+msgid "Charger"
+msgstr "充電器"
+
+msgid "Charger: %s, %s port"
+msgstr "充電器：%s、%s ポート"
+
+msgid "Charging paused: battery temperature"
+msgstr "充電を一時停止：バッテリー温度"
+
+msgid "Charging paused: charge limit"
+msgstr "充電を一時停止：充電上限"
+
+msgid "Sleep now"
+msgstr "今すぐスリープ"
+
+msgid "Wake"
+msgstr "スリープ解除"
+
+msgid "Nobody connected means no Wi-Fi client and no computer on USB. The Wi-Fi key, a computer on USB or the charger wake the device."
+msgstr "誰も接続していないとは、Wi-Fi クライアントがなく、USB にコンピューターもない状態です。Wi-Fi キー、USB のコンピューター、または充電器でデバイスが復帰します。"
+
+msgid "Automatic: plugged in / on battery"
+msgstr "自動：電源接続 / バッテリー駆動"
+
+msgid "Switch to Saver under %"
+msgstr "次の値未満で節電に切り替え %"
+
+msgid "Stop charging at"
+msgstr "充電を止める残量"
+
+msgid "0 % never charges the battery (the device runs on the charger), 100 % charges it full; in between, charging stops at that level and starts again 5 points lower. Under 5 % the battery always charges."
+msgstr "0 % ではバッテリーを充電しません（本体は充電器で動作します）。100 % では満充電します。その間の値では、その残量で充電を止め、5 ポイント下がると再開します。5 % 未満では常に充電します。"
+
+msgid "80 % keeps the battery healthier on a device that stays plugged in."
+msgstr "80 % にすると、常時電源につないだままの機器でバッテリーが長持ちします。"
+
+msgid "When the charger switches the device on"
+msgstr "充電器がデバイスの電源を入れたとき"
+
+msgid "Charge only, until a key starts it"
+msgstr "充電のみ (キーで起動するまで)"
+
+msgid "Start normally"
+msgstr "通常どおり起動"
+
+msgid "Keep as is"
+msgstr "そのまま"
+
+msgid "LTE only (5G off)"
+msgstr "LTE のみ（5G オフ）"
+
+msgid "On"
+msgstr "オン"
+
+msgid "Full"
+msgstr "フルパワー"
+
+msgid "Eco: big core off"
+msgstr "エコ：大コアをオフ"
+
+msgid "Hotspot off after (min, 0 = never)"
+msgstr "ホットスポットをオフにするまでの時間（分、0 = オフにしない）"
+
+msgid "Modem when idle"
+msgstr "アイドル時のモデム"
+
+msgid "LEDs when idle"
+msgstr "アイドル時の LED"
+
+msgid "Ignored lines in power.conf: %s"
+msgstr "power.conf で無視された行：%s"
+
+msgid "Configure how this plugin connects to the current Unisoc OpenWrt platform. Changes do not require editing the dashboard, AT, locks or SMS pages."
+msgstr "このプラグインが現在の Unisoc OpenWrt プラットフォームに接続する方法を設定します。変更してもダッシュボード、AT、ロック、SMS の各ページを編集する必要はありません。"
+
+msgid "Platform adapter"
+msgstr "プラットフォームアダプタ"
+
+msgid "AT backend"
+msgstr "AT バックエンド"
+
+msgid "Auto-detect"
+msgstr "自動検出"
+
+msgid "atinout + serial port"
+msgstr "atinout + シリアルポート"
+
+msgid "Custom adapter"
+msgstr "カスタムアダプタ"
+
+msgid "AT serial port"
+msgstr "AT シリアルポート"
+
+msgid "Custom AT adapter"
+msgstr "カスタム AT アダプタ"
+
+msgid "The executable receives a timeout in seconds and the complete AT command, in that order. It must share the serial lock with the platform dialer."
+msgstr "実行ファイルにはタイムアウト秒数と完全な AT コマンドがこの順で渡されます。プラットフォームのダイヤラーとシリアルロックを共有する必要があります。"
+
+msgid "SMS adapter"
+msgstr "SMS アダプタ"
+
+msgid "Implement the list, show, send, delete and sync subcommands; leave blank to find mu300-sms automatically."
+msgstr "list、show、send、delete、sync のサブコマンドを実装してください。空欄の場合は mu300-sms を自動で検出します。"
+
+msgid "SMS pool directory"
+msgstr "SMS プールディレクトリ"
+
+msgid "Cellular logical interface"
+msgstr "セルラー論理インターフェース"
+
+msgid "Cellular IPv6 interface"
+msgstr "セルラー IPv6 インターフェース"
+
+msgid "Cellular network device"
+msgstr "セルラーネットワークデバイス"
+
+msgid "Leave blank to detect from netifd"
+msgstr "空欄にすると netifd から検出します"
+
+msgid "LAN bridge"
+msgstr "LAN ブリッジ"
+
+msgid "Wi-Fi device"
+msgstr "Wi-Fi デバイス"
+
+msgid "USB device"
+msgstr "USB デバイス"
+
+msgid "Maximum wait for AT readiness (seconds)"
+msgstr "AT 準備完了の最大待機時間 (秒)"
+
+msgid "Home dashboard refresh interval (seconds)"
+msgstr "ホームダッシュボードの更新間隔 (秒)"
+
+msgid "Controls only the home dashboard refresh rate; 0.5–60 seconds. Reopen Home after saving to apply."
+msgstr "ホームダッシュボードの更新頻度のみを制御します。0.5～60 秒。保存後にホームを開き直すと反映されます。"
+
+msgid "Persistent state directory"
+msgstr "永続状態ディレクトリ"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM. Mobile data will disconnect briefly."
+msgstr "Switching SIM. Mobile data will disconnect briefly."
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switch failed; check SIM readiness and hot switching."
+msgstr "SIM switch failed; check SIM readiness and hot switching."
+
+# Source-language fallback for untranslated new controls.
+msgid "Ready"
+msgstr "Ready"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM"
+msgstr "Switching SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switched; saved as boot default"
+msgstr "SIM switched; saved as boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch failed; previous SIM restored"
+msgstr "Switch failed; previous SIM restored"
+
+msgid "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+msgstr "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+
+msgid "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+msgstr "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+
+# Source-language fallback for untranslated new controls.
+msgid "Radio state unknown; reboot required"
+msgstr "Radio state unknown; reboot required"
+
+msgid "Radio state unknown; the device is restarting."
+msgstr "Radio state unknown; the device is restarting."
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM control is only for the U30 Air on OpenWrt."
+msgstr "Dual SIM control is only for the U30 Air on OpenWrt."
+
+# Source-language fallback for untranslated new controls.
+msgid "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+msgstr "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+
+msgid "No card answered in the chosen SIM position at the last boot."
+msgstr "No card answered in the chosen SIM position at the last boot."
+
+msgid "The chosen SIM is locked by its PIN."
+msgstr "The chosen SIM is locked by its PIN."
+
+msgid "The chosen SIM got no mobile data within the time at its first boot."
+msgstr "The chosen SIM got no mobile data within the time at its first boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The second SIM's modem channels did not come up at the last boot."
+msgstr "The second SIM's modem channels did not come up at the last boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The last dual-SIM boot never confirmed itself."
+msgstr "The last dual-SIM boot never confirmed itself."
+
+msgid "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+msgstr "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+
+# Source-language fallback for untranslated new controls.
+msgid "Active SIM"
+msgstr "Active SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "Cold-boot default"
+msgstr "Cold-boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control unavailable"
+msgstr "SIM control unavailable"
+
+# Source-language fallback for untranslated new controls.
+msgid "The device is back on SIM1 without live switching; choose again below to try once more."
+msgstr "The device is back on SIM1 without live switching; choose again below to try once more."
+
+msgid "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+msgstr "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching"
+msgstr "Enable hot switching"
+
+msgid "This device supports next-boot SIM selection only; live switching is unavailable."
+msgstr "This device supports next-boot SIM selection only; live switching is unavailable."
+
+# Source-language fallback for untranslated new controls.
+msgid "Reboot after enabling hot switching to prepare both SIM channels."
+msgstr "Reboot after enabling hot switching to prepare both SIM channels."
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch to SIM%d"
+msgstr "Switch to SIM%d"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM%d at next boot"
+msgstr "Use SIM%d at next boot"
+
+msgid "Built-in SIM 1"
+msgstr "内蔵SIM 1"
+
+msgid "Built-in SIM 2"
+msgstr "内蔵SIM 2"
+
+msgid "Built-in SIM 3"
+msgstr "内蔵SIM 3"
+
+msgid "External SIM"
+msgstr "外部SIM"
+
+msgid "SIM card"
+msgstr "SIMカード"
+
+msgid "Built-in SIM 3 shares SIM2, the external SIM shares SIM1. The card chosen here is switched in before the modem starts, at the next boot; without a choice the cards stay as the bootloader sets them."
+msgstr "内蔵SIM 3はSIM2を、外部SIMはSIM1を共有します。ここで選んだカードは、次回起動時にモデムが起動する前に切り替えられます。選択しない場合、カードはブートローダーの設定のままです。"
+
+msgid "As the bootloader sets them"
+msgstr "ブートローダーの設定のまま"
+
+msgid "Applying the radio setting…"
+msgstr "無線設定を適用中…"
+
+msgid "SIM settings are not available"
+msgstr "SIM 設定は利用できません"
+
+msgid "Modem default"
+msgstr "モデムの既定値"
+
+msgid "SIM%d"
+msgstr "SIM%d"
+
+msgid "in use"
+msgstr "使用中"
+
+msgid "Turn off the radio of SIM%d"
+msgstr "SIM%d の無線をオフにする"
+
+msgid "Radio"
+msgstr "無線"
+
+msgid "VoLTE"
+msgstr "VoLTE"
+
+msgid "VoNR"
+msgstr "VoNR"
+
+msgid "Modem: %s"
+msgstr "モデム: %s"
+
+msgid "Sent to this SIM when its radio next starts."
+msgstr "この SIM の無線が次に起動したときに送信されます。"
+
+msgid "VoLTE and VoNR for each SIM, kept across reboots and sent again whenever that SIM starts. VoLTE is on unless switched off; VoNR stays as the modem has it until set."
+msgstr "SIM ごとの VoLTE と VoNR。再起動後も保持され、その SIM が起動するたびに再送されます。VoLTE はオフにしない限りオン、VoNR は設定するまでモデムの状態のままです。"
+
+msgid "All radios off (airplane mode)"
+msgstr "すべての無線をオフ（機内モード）"
+
+msgid "All radios on"
+msgstr "すべての無線をオン"
+
+msgid "No SIM will have calls, SMS or data, also after a reboot, until a radio is turned on again here or with the dashboard's radio button."
+msgstr "ここまたはダッシュボードの無線ボタンで無線を再びオンにするまで、再起動後もどの SIM でも通話・SMS・データは使えません。"
+
+msgid "Each SIM's radio stays as set here after a reboot. A SIM whose radio is off has no calls, SMS or data, and the device does not switch to it."
+msgstr "各 SIM の無線は再起動後もここでの設定のままです。無線がオフの SIM では通話・SMS・データが使えず、デバイスはその SIM に切り替えません。"
+
+msgid "The setting is saved, but the radio did not follow it yet."
+msgstr "設定は保存されましたが、無線はまだ反映していません。"
+
+msgid "Recipient: number, e.g. 10086 or +86..."
+msgstr "宛先: 番号 (例: 10086 または +86...)"
+
+msgid "Sync from SIM"
+msgstr "SIM から同期"
+
+msgid "Clear local pool"
+msgstr "ローカルプールをクリア"
+
+msgid "Select a conversation on the left, or enter a number below to send."
+msgstr "左側の会話を選択するか、下に番号を入力して送信してください。"
+
+msgid "Message (Enter to send, Shift+Enter for newline)"
+msgstr "メッセージ (Enter で送信、Shift+Enter で改行)"
+
+msgid "Sending uses AT+CMGS (PDU mode); retry if the channel is busy. To delete one message, use the bin icon on its bubble."
+msgstr "送信には AT+CMGS (PDU モード) を使用します。チャネルがビジーの場合は再試行してください。1 件だけ削除するには、吹き出しのゴミ箱アイコンを使用します。"
+
+msgid "Sending…"
+msgstr "送信中…"
+
+msgid "Sent; the list refreshes shortly."
+msgstr "送信しました。まもなく一覧が更新されます。"
+
+msgid "Sending failed"
+msgstr "送信に失敗しました"
+
+msgid "Syncing from the SIM in the background (AT+CMGL)…"
+msgstr "バックグラウンドで SIM から同期しています (AT+CMGL)…"
+
+msgid "SIM sync started; the list refreshes in a few seconds."
+msgstr "SIM の同期を開始しました。数秒後に一覧が更新されます。"
+
+msgid "Clear local SMS pool"
+msgstr "ローカル SMS プールをクリア"
+
+msgid "Only local files will be deleted; messages on the SIM remain."
+msgstr "ローカルファイルのみ削除されます。SIM 上のメッセージは残ります。"
+
+msgid "Delete this SMS"
+msgstr "この SMS を削除"
+
+msgid "Deletion cannot be undone."
+msgstr "削除は元に戻せません。"
+
+msgid "Local only"
+msgstr "ローカルのみ"
+
+msgid "Local + SIM"
+msgstr "ローカル + SIM"
+
+msgid "Delete failed"
+msgstr "削除に失敗しました"
+
+msgid "Deleted (local + SIM)"
+msgstr "削除しました (ローカル + SIM)"
+
+msgid "Deleted (local only)"
+msgstr "削除しました (ローカルのみ)"
+
+msgid "Enter both a number and a message."
+msgstr "番号とメッセージの両方を入力してください。"
+
+msgid "· %d messages, %d unread · %d conversations"
+msgstr "· %d 件、未読 %d 件 · 会話 %d 件"
+
+msgid "· %d messages · %d conversations"
+msgstr "· %d 件 · 会話 %d 件"
+
+msgid "The pool is empty. Incoming and sent messages appear here, or select “Sync from SIM”."
+msgstr "プールは空です。受信・送信したメッセージがここに表示されます。または「SIM から同期」を選択してください。"
+
+msgid "Me: %s"
+msgstr "自分: %s"
+
+msgid "Incomplete: %d of %d parts arrived"
+msgstr "不完全: %d / %d 部分が届きました"
+
+msgid "Delete"
+msgstr "削除"
+
+msgid "ttyd is not installed."
+msgstr "ttyd がインストールされていません。"
+
+msgid "The terminal is turned off (/etc/config/ttyd)."
+msgstr "ターミナルはオフです (/etc/config/ttyd)。"
+
+msgid "Too many terminals are opening at once. Try again in a minute."
+msgstr "同時に開かれているターミナルが多すぎます。1 分後にもう一度お試しください。"
+
+msgid "The terminal is not available."
+msgstr "ターミナルは利用できません。"
+
+msgid "This is a root shell on the device: every command runs with full rights, and a mistake can make the device unbootable."
+msgstr "これはデバイスの root シェルです。すべてのコマンドが完全な権限で実行され、操作を誤るとデバイスが起動しなくなることがあります。"
+
+msgid "It is reachable from the LAN only (USB and the hotspot), never from mobile data, and only from this logged-in page."
+msgstr "LAN (USB とホットスポット) からのみ、ログイン済みのこのページからのみ利用でき、モバイルデータ側からは決して届きません。"
+
+msgid "It closes after a minute without activity."
+msgstr "1 分間操作がないと閉じます。"
+
+msgid "It closes after %d minutes without activity."
+msgstr "%d 分間操作がないと閉じます。"
+
+msgid "Reconnect"
+msgstr "再接続"
+
+msgid "Open in a new tab"
+msgstr "新しいタブで開く"
+
+msgid "This page was opened over HTTPS, and the terminal is served over HTTP on the LAN: it opens in a tab of its own."
+msgstr "このページは HTTPS で開かれていますが、ターミナルは LAN 上の HTTP で提供されるため、別のタブで開きます。"
+
+msgid "The data usage could not be read"
+msgstr "データ使用量を読み取れませんでした"
+
+msgid "Today"
+msgstr "今日"
+
+msgid "Days left in this cycle"
+msgstr "期間の残り日数"
+
+msgid "Received"
+msgstr "受信"
+
+msgid "Sent"
+msgstr "送信"
+
+msgid "Corrected by"
+msgstr "補正"
+
+msgid "Monthly cap"
+msgstr "月間上限"
+
+msgid "%s, warning at %d%%"
+msgstr "%s、%d%% で警告"
+
+msgid "The monthly cap is reached: mobile data was turned off. It comes back on when the next cycle starts."
+msgstr "月間上限に達しました: モバイルデータをオフにしました。次の期間が始まるとオンに戻ります。"
+
+msgid "%s waits for the clock: it has not been set over the network yet. It already counts towards this cycle and goes to its day once the clock is set."
+msgstr "%s は時刻待ちです: 時刻がまだネットワークから設定されていません。すでに今回の期間に計上されており、時刻が設定されるとその日に記録されます。"
+
+msgid "The interface %s is not there right now: nothing is counted until it comes back."
+msgstr "インターフェース %s は現在ありません: 戻るまで何も計上されません。"
+
+msgid "Counted on %s, both ways, as the operator counts it (a VPN's overhead included)."
+msgstr "%s で、送受信の両方向を、通信事業者と同じ方法で計上します (VPN のオーバーヘッドを含む)。"
+
+msgid "The count is kept in memory and written to the disk every 30 minutes and at shutdown: a power cut loses at most the last half hour."
+msgstr "カウントはメモリに保持され、30 分ごとと終了時にディスクへ書き込まれます: 停電で失われるのは最大で直近 30 分です。"
+
+msgid "Counting since %s."
+msgstr "%s から計上中。"
+
+msgid "Per day"
+msgstr "日別"
+
+msgid "Date"
+msgstr "日付"
+
+msgid "Total"
+msgstr "合計"
+
+msgid "Per billing cycle"
+msgstr "請求期間別"
+
+msgid "Billing cycle"
+msgstr "請求期間"
+
+msgid "Enter a size in GB, for example 50 or 2.5"
+msgstr "GB 単位でサイズを入力してください (例: 50 や 2.5)"
+
+msgid "Enter a percentage from 1 to 100"
+msgstr "1 から 100 までのパーセントを入力してください"
+
+msgid "Turn mobile data off at the cap"
+msgstr "上限でモバイルデータをオフにする"
+
+msgid "When this cycle reaches the cap, mobile data is turned off: no internet through the operator until the next cycle starts, the cap is raised or this is turned off again. Turning mobile data back on by hand keeps it on until the next reboot."
+msgstr "今回の期間が上限に達するとモバイルデータをオフにします: 次の期間が始まる、上限を上げる、またはこの設定をオフにするまで、通信事業者経由のインターネットは使えません。手動でモバイルデータをオンに戻すと、次の再起動までオンのままです。"
+
+msgid "Set"
+msgstr "設定"
+
+msgid "Clear the count"
+msgstr "カウントを消去"
+
+msgid "Every day and billing cycle counted so far is forgotten. Counting goes on from now."
+msgstr "これまでに計上したすべての日と請求期間を消去します。今から計上を続けます。"
+
+msgid "Billing cycle and cap"
+msgstr "請求期間と上限"
+
+msgid "A billing cycle starts on day"
+msgstr "請求期間の開始日"
+
+msgid "31: on the last day of each month"
+msgstr "31: 毎月の最終日"
+
+msgid "Monthly cap (GB, 0: none)"
+msgstr "月間上限 (GB、0: なし)"
+
+msgid "Warning at this percentage of the cap"
+msgstr "上限のこのパーセントで警告"
+
+msgid "Used so far in this cycle (GB)"
+msgstr "今回の期間のこれまでの使用量 (GB)"
+
+msgid "What the operator shows for this cycle (for example when counting started in the middle of it); the count is corrected to it."
+msgstr "通信事業者が今回の期間について表示している量 (例えば期間の途中で計上を始めた場合)。カウントがこの値に補正されます。"
+
+msgid "Current setting"
+msgstr "現在の設定"
+
+msgid "Fixed at %d"
+msgstr "%d に固定"
+
+msgid "Not changed (default)"
+msgstr "変更なし（既定）"
+
+msgid "Rule in force"
+msgstr "適用中のルール"
+
+msgid "Flow offloading"
+msgstr "フローオフロード"
+
+msgid "TTL of mobile data"
+msgstr "モバイルデータの TTL"
+
+msgid "Every packet that leaves through mobile data gets this TTL (IPv6: hop limit). A phone or laptop behind the hotspot sends 64 (Windows: 128) and the device forwards it with one less, which is how an operator can tell tethered traffic apart."
+msgstr "モバイルデータから出ていくすべてのパケットにこの TTL（IPv6: ホップ制限）が付きます。ホットスポットにつないだスマートフォンやノート PC は 64（Windows: 128）で送信し、デバイスは 1 減らして転送するため、通信事業者はそこから共有トラフィックを見分けられます。"
+
+msgid "On this kernel the firewall fast-path is off while a TTL is set"
+msgstr "このカーネルでは、TTL を設定している間はファイアウォールの高速経路がオフになります"
+
+msgid "Set %d"
+msgstr "%d に設定"
+
+msgid "Enter a number from 1 to 255"
+msgstr "1 から 255 までの数値を入力してください"
+
+msgid "Turn off"
+msgstr "オフにする"
+
+msgid "64 makes every packet leave like the device's own traffic"
+msgstr "64 にすると、すべてのパケットがデバイス自身の通信と同じように送出されます"
+
+msgid "Check for updates"
+msgstr "更新を確認"
+
+msgid "Checking the file"
+msgstr "ファイルを確認中"
+
+msgid "Update from a file"
+msgstr "ファイルから更新"
+
+msgid "Back to the previous version"
+msgstr "前のバージョンに戻す"
+
+msgid "Back to the previous boot image"
+msgstr "前のブートイメージに戻す"
+
+msgid "Remove the previous version"
+msgstr "前のバージョンを削除"
+
+msgid "Kernel change"
+msgstr "カーネルの変更"
+
+msgid "Starting…"
+msgstr "開始しています…"
+
+msgid "Downloading"
+msgstr "ダウンロード中"
+
+msgid "All files are here and verified"
+msgstr "すべてのファイルが揃い、検証されました"
+
+msgid "Unpacking the new system"
+msgstr "新しいシステムを展開中"
+
+msgid "Carrying over your settings"
+msgstr "設定を引き継ぎ中"
+
+msgid "Writing down the packages you installed"
+msgstr "インストールしたパッケージを記録中"
+
+msgid "Switching to the new system"
+msgstr "新しいシステムに切り替え中"
+
+msgid "Kernel and boot image"
+msgstr "カーネルとブートイメージ"
+
+msgid "Restart the device?"
+msgstr "デバイスを再起動しますか?"
+
+msgid "The device restarts now. The default boot is Android, so it starts Android: switch to Linux from there to start the updated system."
+msgstr "デバイスを再起動します。既定の起動先は Android なので Android が起動します: 更新後のシステムを起動するには、そこから Linux に切り替えてください。"
+
+msgid "The device restarts now and is away for about a minute. If the new system does not start, the device goes back to Android by itself after the failed attempts."
+msgstr "デバイスを再起動します。約 1 分間は接続できません。新しいシステムが起動しない場合は、何度か失敗したあと自動的に Android に戻ります。"
+
+msgid "Restarting… open this page again in about a minute."
+msgstr "再起動中… 約 1 分後にこのページを開き直してください。"
+
+msgid "Running for %s. It goes on when this page is closed; do not switch the device off."
+msgstr "%s 実行中です。このページを閉じても続行されます。デバイスの電源を切らないでください。"
+
+msgid "Done. Restart the device to start it."
+msgstr "完了しました。デバイスを再起動すると起動します。"
+
+msgid "Done. Nothing needs a restart."
+msgstr "完了しました。再起動は必要ありません。"
+
+msgid "It did not finish, and part of it was done: read the log before you restart."
+msgstr "完了せず、一部だけ実行されました: 再起動する前にログを読んでください。"
+
+msgid "It did not finish. Nothing was changed; the log says why."
+msgstr "完了しませんでした。何も変更されていません。理由はログにあります。"
+
+msgid "Log"
+msgstr "ログ"
+
+msgid "Restart now"
+msgstr "今すぐ再起動"
+
+msgid "Later"
+msgstr "あとで"
+
+msgid "Close"
+msgstr "閉じる"
+
+msgid "Updating is not available on this system"
+msgstr "このシステムでは更新を利用できません"
+
+msgid "Another update is running on the device"
+msgstr "デバイスで別の更新が実行中です"
+
+msgid "It was started outside this page (a terminal, the toolkit). Nothing can be started here until it has finished."
+msgstr "このページの外 (端末、ツールキット) から開始されました。終了するまで、ここからは何も開始できません。"
+
+msgid "Restart needed"
+msgstr "再起動が必要です"
+
+msgid "This system was updated and still runs the old version. The new one starts at the next restart."
+msgstr "このシステムは更新されましたが、まだ古いバージョンで動作しています。新しいバージョンは次回の再起動で起動します。"
+
+msgid "Installed"
+msgstr "インストール済み"
+
+msgid "This system"
+msgstr "このシステム"
+
+msgid "Also on this device"
+msgstr "このデバイスにあるその他のシステム"
+
+msgid "Kernel"
+msgstr "カーネル"
+
+msgid "choice %s"
+msgstr "選択 %s"
+
+msgid "Boot image"
+msgstr "ブートイメージ"
+
+msgid "from the installer"
+msgstr "インストーラーによる"
+
+msgid "Default boot"
+msgstr "既定の起動先"
+
+msgid "Free space"
+msgstr "空き容量"
+
+msgid "Release signatures"
+msgstr "リリースの署名"
+
+msgid "checked with the project's key"
+msgstr "プロジェクトの鍵で確認"
+
+msgid "this system has no release key"
+msgstr "このシステムにはリリース鍵がありません"
+
+msgid "The default boot is Android: a restart goes to Android, and Linux is started from there."
+msgstr "既定の起動先は Android です: 再起動すると Android になり、Linux はそこから起動します。"
+
+msgid "Linux is locked as the default boot: a failed start does not send the device to Android by itself, except the first starts of a new boot image."
+msgstr "Linux が既定の起動先として固定されています: 起動に失敗しても自動的に Android にはなりません。ただし新しいブートイメージの最初の数回の起動は除きます。"
+
+msgid "If Linux fails to start %d times in a row, the device starts Android by itself."
+msgstr "Linux の起動に %d 回続けて失敗すると、デバイスは自動的に Android を起動します。"
+
+msgid "Report of the last update"
+msgstr "前回のアップデートのレポート"
+
+msgid "Online update"
+msgstr "オンラインアップデート"
+
+msgid "Asking GitHub…"
+msgstr "GitHub に問い合わせ中…"
+
+msgid "Checked %s ago"
+msgstr "%s前に確認"
+
+msgid "Not checked yet"
+msgstr "まだ確認していません"
+
+msgid "Mirror (release files)"
+msgstr "ミラー（リリースファイル）"
+
+msgid "Leave empty for GitHub."
+msgstr "GitHub を使うには空のままにします。"
+
+msgid "Install the packages I added again after the update (needs the device online at the first start)"
+msgstr "自分で追加したパッケージをアップデート後に再インストールする (最初の起動時にデバイスがオンラインである必要があります)"
+
+msgid "Pre-release"
+msgstr "プレリリース"
+
+msgid "Newest release"
+msgstr "最新のリリース"
+
+msgid "Release notes"
+msgstr "リリースノート"
+
+msgid "Download"
+msgstr "ダウンロード"
+
+msgid "Free space needed"
+msgstr "必要な空き容量"
+
+msgid "not enough: remove the previous version first"
+msgstr "不足: 先に前のバージョンを削除してください"
+
+msgid "A pre-release is a release still being tried: it can have faults a release does not. The previous version is kept all the same."
+msgstr "プレリリースはまだ試験中のリリースです: リリースにはない不具合があるかもしれません。前のバージョンは同じように残されます。"
+
+msgid "This system is newer than the newest release (a test release)."
+msgstr "このシステムは最新のリリースより新しいものです (テスト版)。"
+
+msgid "Up to date."
+msgstr "最新です。"
+
+msgid "This release is not signed, and this system checks signatures: it is not installed from here. Update from its file below, which asks you to confirm."
+msgstr "このリリースは署名されておらず、このシステムは署名を確認します。ここからはインストールされません。下のファイルから更新してください。確認を求められます。"
+
+msgid "Update to %s"
+msgstr "%s に更新"
+
+msgid "Choose at least one system"
+msgstr "システムを 1 つ以上選んでください"
+
+msgid "Update to %s?"
+msgstr "%s に更新しますか?"
+
+msgid "The device downloads %s, puts the new system beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "デバイスは %s をダウンロードし、新しいシステムを実行中のシステムの隣に置き、次回の再起動で切り替えます。設定は引き継がれ、前のバージョンは残されます。数分かかります。デバイスの電源を切らないでください。"
+
+msgid "Also offer the pre-release %s"
+msgstr "プレリリース %s も表示する"
+
+msgid "Systems to update:"
+msgstr "更新するシステム:"
+
+msgid "GitHub could not be reached: the device has no internet connection, or GitHub did not answer. Without internet, update from a file below."
+msgstr "GitHub に接続できませんでした: デバイスがインターネットに接続されていないか、GitHub が応答しませんでした。インターネットがない場合は、下のファイルからの更新を使ってください。"
+
+msgid "release"
+msgstr "リリース"
+
+msgid "For a device without internet: download the Magisk zip of a release for this system and this kernel on another computer, from the release page on GitHub, and upload it here. For this device that is:"
+msgstr "インターネットのないデバイス向け: このシステムとこのカーネル用のリリースの Magisk zip を、別のコンピューターで GitHub のリリースページからダウンロードし、ここにアップロードしてください。このデバイスの場合は次のファイルです:"
+
+msgid "Uploaded file"
+msgstr "アップロードしたファイル"
+
+msgid "Checking the file…"
+msgstr "ファイルを確認中…"
+
+msgid "It says it is"
+msgstr "ファイルの自己申告"
+
+msgid "kernel %s"
+msgstr "カーネル %s"
+
+msgid "Signature"
+msgstr "署名"
+
+msgid "signed with the project's release key"
+msgstr "プロジェクトのリリース鍵で署名済み"
+
+msgid "WRONG: it does not match the project's release key"
+msgstr "不正: プロジェクトのリリース鍵と一致しません"
+
+msgid "not signed"
+msgstr "署名なし"
+
+msgid "cannot be checked on this system"
+msgstr "このシステムでは確認できません"
+
+msgid "Its system is not installed on this device."
+msgstr "このファイルのシステムは、このデバイスにインストールされていません。"
+
+msgid "It is the other Ubuntu release, not the one installed."
+msgstr "これはもう一方の Ubuntu リリースで、インストールされているものではありません。"
+
+msgid "It carries another kernel than this device uses. Take the zip for kernel %s, or change the kernel first."
+msgstr "このデバイスが使っているものとは別のカーネルが入っています。カーネル %s 用の zip を使うか、先にカーネルを変更してください。"
+
+msgid "Its kernel does not run on this model."
+msgstr "このファイルのカーネルは、この機種では動作しません。"
+
+msgid "The file is damaged: its contents do not match their checksums."
+msgstr "ファイルが壊れています: 内容がチェックサムと一致しません。"
+
+msgid "Its signature is wrong. This file does not come from the project as it is; it is never installed."
+msgstr "署名が正しくありません。このファイルはプロジェクトが配布したままのものではなく、インストールされることはありません。"
+
+msgid "This file cannot be used here."
+msgstr "このファイルはここでは使えません。"
+
+msgid "Compare the SHA-256 with the one in SHA256SUMS-magisk on the release page: it is the only proof of where an unsigned file comes from."
+msgstr "SHA-256 を、リリースページの SHA256SUMS-magisk にある値と比べてください: 署名のないファイルの出どころを示す証拠はそれだけです。"
+
+msgid "This release is installed already; the update would only refresh the boot image."
+msgstr "このリリースはすでにインストールされています。更新してもブートイメージが書き直されるだけです。"
+
+msgid "I know this file is not signed: nothing proves that it comes from the project. I compared its SHA-256 myself and want it installed."
+msgstr "このファイルに署名がないことを理解しています: プロジェクトのものであることを示す証拠はありません。SHA-256 は自分で比較済みで、インストールを希望します。"
+
+msgid "I know this is %s, older than the installed %s, and want to go back to it."
+msgstr "これが %s で、インストール済みの %s より古いことを理解したうえで、このバージョンに戻します。"
+
+msgid "This is not a release file of this project: a Magisk zip of a release is expected."
+msgstr "これはこのプロジェクトのリリースファイルではありません: リリースの Magisk zip が必要です。"
+
+msgid "Update from this file"
+msgstr "このファイルから更新"
+
+msgid "Tick the confirmations above first"
+msgstr "先に上の確認事項にチェックを入れてください"
+
+msgid "The device puts the system of this file beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "デバイスはこのファイルのシステムを実行中のシステムの隣に置き、次回の再起動で切り替えます。設定は引き継がれ、前のバージョンは残されます。数分かかります。デバイスの電源を切らないでください。"
+
+msgid "Check the file"
+msgstr "ファイルを確認"
+
+msgid "Remove the file"
+msgstr "ファイルを削除"
+
+msgid "Previous version"
+msgstr "前のバージョン"
+
+msgid "No previous version is kept on this device."
+msgstr "このデバイスには前のバージョンが残されていません。"
+
+msgid "replaced %s"
+msgstr "%s に置き換え"
+
+msgid "I want the previous system back; what I changed since the update stays in the version I leave."
+msgstr "前のシステムに戻します。アップデート後に変更した内容は、離れるほうのバージョンに残ります。"
+
+msgid "Back to the previous version?"
+msgstr "前のバージョンに戻しますか?"
+
+msgid "The previous system (%s) becomes the one that starts at the next restart. The version you leave is not kept; settings you changed since the update are not carried back."
+msgstr "前のシステム (%s) が、次回の再起動で起動するシステムになります。離れるほうのバージョンは残されません。アップデート後に変更した設定は引き継がれません。"
+
+msgid "Go back"
+msgstr "戻す"
+
+msgid "The previous version is the one running now: restart first."
+msgstr "いま動作しているのが前のバージョンです: 先に再起動してください。"
+
+msgid "I want the previous kernel and boot image back."
+msgstr "前のカーネルとブートイメージに戻します。"
+
+msgid "Back to the previous boot image?"
+msgstr "前のブートイメージに戻しますか?"
+
+msgid "The previous boot image (%s) is written to the Linux slot and starts at the next restart. If it does not start, the device goes back to Android by itself."
+msgstr "前のブートイメージ (%s) が Linux スロットに書き込まれ、次回の再起動で起動します。起動しない場合、デバイスは自動的に Android に戻ります。"
+
+msgid "I do not need to go back: delete the previous system to free its space."
+msgstr "戻す必要はありません: 前のシステムを削除して容量を空けます。"
+
+msgid "Remove the previous version?"
+msgstr "前のバージョンを削除しますか?"
+
+msgid "The kept copy of the previous system is deleted for good. After that there is no going back to it from this page."
+msgstr "残されている前のシステムのコピーは完全に削除されます。その後は、このページからそこへ戻すことはできません。"
+
+msgid "the vendor kernel"
+msgstr "ベンダーカーネル"
+
+msgid "mainline"
+msgstr "メインライン"
+
+msgid "not with Ubuntu 26.04"
+msgstr "Ubuntu 26.04 では不可"
+
+msgid "Change the kernel"
+msgstr "カーネルを変更"
+
+msgid "This kernel is the one in use"
+msgstr "このカーネルは現在使用中です"
+
+msgid "Change the kernel to %s?"
+msgstr "カーネルを %s に変更しますか?"
+
+msgid "The device downloads that kernel from the newest release and writes a new boot image; it starts at the next restart. The previous boot image is kept, and if the new one does not start the device goes back to Android by itself. The device must be online."
+msgstr "デバイスはそのカーネルを最新のリリースからダウンロードし、新しいブートイメージを書き込みます。次回の再起動で起動します。前のブートイメージは残され、新しいものが起動しない場合、デバイスは自動的に Android に戻ります。デバイスがオンラインである必要があります。"
+
+msgid "Start Android at the next restart"
+msgstr "次回の再起動で Android を起動"
+
+msgid "Start Android at the next restart?"
+msgstr "次回の再起動で Android を起動しますか?"
+
+msgid "The next restart, and the ones after it, start Android instead of Linux. Linux is started again from Android (the Magisk module's Action button, or mu300-linux)."
+msgstr "次回以降の再起動では、Linux ではなく Android が起動します。Linux は Android からもう一度起動できます (Magisk モジュールの Action ボタン、または mu300-linux)。"
+
+msgid "Start Android next"
+msgstr "次回は Android を起動"
+
+msgid "What an update keeps"
+msgstr "アップデートで残るもの"
+
+msgid "An update puts the system of the new release in place and carries over what is yours: the settings, the accounts and their passwords, the device's keys and the home directories. Packages you installed yourself are written down and installed again at the first start, once the device is online. The previous version stays on the device until you remove it, so you can go back."
+msgstr "アップデートは新しいリリースのシステムを配置し、あなたのものを引き継ぎます: 設定、アカウントとそのパスワード、デバイスの鍵、ホームディレクトリです。自分でインストールしたパッケージは記録され、デバイスがオンラインになると最初の起動時に再インストールされます。前のバージョンは削除するまでデバイスに残るので、戻すことができます。"
+
+msgid "The wiki's Updating page lists exactly what is kept."
+msgstr "何が残るかは、Wiki の「アップデート」ページに正確な一覧があります。"
+
+msgid "Choose a file first"
+msgstr "先にファイルを選んでください"
+
+msgid "Uploading: %s of %s"
+msgstr "アップロード中: %s / %s"
+
+msgid "running"
+msgstr "実行中"
+
+msgid "(about %s)"
+msgstr "(約 %s)"
+
+msgid "Install %s?"
+msgstr "%s をインストールしますか?"
+
+msgid "It is installed from this system's package feed."
+msgstr "このシステムのパッケージフィードからインストールされます。"
+
+msgid "It is downloaded from the release of the VPN module and checked against its SHA256SUMS."
+msgstr "VPN モジュールのリリースからダウンロードされ、SHA256SUMS で検証されます。"
+
+msgid "An engine is tens of MB: on mobile data the download counts towards your plan."
+msgstr "エンジンは数十 MB です。モバイルデータ通信ではダウンロードがプランの通信量を消費します。"
+
+msgid "Install"
+msgstr "インストール"
+
+msgid "Remove %s?"
+msgstr "%s を削除しますか?"
+
+msgid "Profiles run on it: %s. They cannot start until it is installed again (the module refuses while the running profile needs it)."
+msgstr "これで動作中のプロファイル: %s。再インストールするまで開始できません (実行中のプロファイルが必要としている間は、モジュールが削除を拒否します)。"
+
+msgid "No profile runs on it."
+msgstr "これで動作しているプロファイルはありません。"
+
+msgid "Removed"
+msgstr "削除しました"
+
+msgid "Each engine is an extra of its own: install only the ones your profiles need. Xray runs vless, vmess, trojan and ss links (with hev-socks5-tunnel), sing-box the same links and its own JSON, mihomo Clash subscriptions, dae hysteria2, tuic and the rest on newer kernels. WireGuard and OpenVPN are packages of the system."
+msgstr "各エンジンは独立したエクストラです: プロファイルに必要なものだけをインストールしてください。Xray は vless、vmess、trojan、ss のリンクを (hev-socks5-tunnel と併せて) 実行し、sing-box は同じリンクと独自の JSON、mihomo は Clash サブスクリプション、dae は新しいカーネルで hysteria2、tuic などを実行します。WireGuard と OpenVPN はシステムのパッケージです。"
+
+msgid "Downloads are tens of MB per engine: on mobile data they count towards your plan. Offline, upload the engine's tarball from the release page of the VPN module."
+msgstr "ダウンロードはエンジンごとに数十 MB です。モバイルデータ通信ではプランの通信量を消費します。オフラインの場合は、VPN モジュールのリリースページからエンジンの tarball をアップロードしてください。"
+
+msgid "The available versions come from the latest release of the VPN module."
+msgstr "利用可能なバージョンは VPN モジュールの最新リリースに基づきます。"
+
+msgid "system package"
+msgstr "システムパッケージ"
+
+msgid "in the vpn bundle"
+msgstr "vpn バンドルに含まれる"
+
+msgid "extra %s"
+msgstr "エクストラ %s"
+
+msgid "not installed"
+msgstr "未インストール"
+
+msgid "cannot run here"
+msgstr "ここでは実行できません"
+
+msgid "update available"
+msgstr "更新あり"
+
+msgid "installed"
+msgstr "インストール済み"
+
+msgid "Kind"
+msgstr "種類"
+
+msgid "Version"
+msgstr "バージョン"
+
+msgid "Available"
+msgstr "利用可能"
+
+msgid "not checked"
+msgstr "未確認"
+
+msgid "Size"
+msgstr "サイズ"
+
+msgid "Needed by"
+msgstr "使用元"
+
+msgid "no profile"
+msgstr "プロファイルなし"
+
+msgid "dae needs a kernel with BTF, 5.17 or newer: not the 5.4 vendor kernel (mu300-update kernel 6.18). It can be installed anyway."
+msgstr "dae には BTF を備えた 5.17 以降のカーネルが必要です: 5.4 ベンダーカーネルでは動作しません (mu300-update kernel 6.18)。それでもインストールは可能です。"
+
+msgid "All engines"
+msgstr "すべてのエンジン"
+
+msgid "Last %s lines"
+msgstr "最後の %s 行"
+
+msgid "VPN service log"
+msgstr "VPN サービスログ"
+
+msgid "Every 5 s"
+msgstr "5 秒ごと"
+
+msgid "The log is empty."
+msgstr "ログは空です。"
+
+msgid "The VPN is starting"
+msgstr "VPN を開始しています"
+
+msgid "The VPN is stopped"
+msgstr "VPN は停止しています"
+
+msgid "The VPN is restarting"
+msgstr "VPN を再起動しています"
+
+msgid "With the kill switch on, nothing leaves the device or the LAN outside the tunnel: while the VPN is down, starting or broken, every connection fails instead of going out directly. It stays up until you stop the VPN here (Stop removes it)."
+msgstr "キルスイッチがオンの間は、VPN が停止中・開始中・故障中のとき、デバイスや LAN からトンネル外へは何も出ません。接続は直接外へ出る代わりにすべて失敗します。ここで VPN を停止するまで有効なままです (停止するとキルスイッチも解除されます)。"
+
+msgid "Without the kill switch, traffic goes out directly, unprotected, whenever the tunnel is down (while it starts, after a crash, when the engine is missing)."
+msgstr "キルスイッチがない場合、トンネルが停止しているとき (開始中、クラッシュ後、エンジンがないとき) は、トラフィックが保護されないまま直接外へ出ます。"
+
+msgid "Turn the kill switch on?"
+msgstr "キルスイッチをオンにしますか?"
+
+msgid "Turn the kill switch off?"
+msgstr "キルスイッチをオフにしますか?"
+
+msgid "Turn on"
+msgstr "オンにする"
+
+msgid "unknown"
+msgstr "不明"
+
+msgid "The exit address could not be found (is the tunnel up?)"
+msgstr "出口アドレスが見つかりませんでした (トンネルは起動していますか?)"
+
+msgid "Connecting…"
+msgstr "接続中…"
+
+msgid "On, but not running"
+msgstr "オンですが、動作していません"
+
+msgid "Stopped"
+msgstr "停止しました"
+
+msgid "Install it"
+msgstr "インストール"
+
+msgid "The engine of the active profile is not installed: %s"
+msgstr "有効なプロファイルのエンジンがインストールされていません: %s"
+
+msgid "The kill switch keeps everything closed until it is there; the service downloads it by itself when it can."
+msgstr "キルスイッチは、それが入るまですべてを遮断します。サービスは可能なときに自動でダウンロードします。"
+
+msgid "The VPN cannot start until it is installed."
+msgstr "インストールするまで VPN は開始できません。"
+
+msgid "%s cannot run on this system"
+msgstr "%s はこのシステムでは実行できません"
+
+msgid "The VPN is on, but no profile is active: choose one below."
+msgstr "VPN はオンですが、有効なプロファイルがありません: 下から選択してください。"
+
+msgid "Profile: %s"
+msgstr "プロファイル: %s"
+
+msgid "No active profile"
+msgstr "有効なプロファイルなし"
+
+msgid "engine %s"
+msgstr "エンジン %s"
+
+msgid "interface %s"
+msgstr "インターフェース %s"
+
+msgid "Kill switch active"
+msgstr "キルスイッチ作動中"
+
+msgid "Kill switch on"
+msgstr "キルスイッチ オン"
+
+msgid "Kill switch off"
+msgstr "キルスイッチ オフ"
+
+msgid "IPv6 in the tunnel"
+msgstr "トンネル内の IPv6"
+
+msgid "IPv6 blocked"
+msgstr "IPv6 ブロック中"
+
+msgid "IPv6 untouched"
+msgstr "IPv6 は未処理"
+
+msgid "Module %s"
+msgstr "モジュール %s"
+
+msgid "Check"
+msgstr "確認"
+
+msgid "Uptime"
+msgstr "稼働時間"
+
+msgid "Rate"
+msgstr "速度"
+
+msgid "Exit address"
+msgstr "出口アドレス"
+
+msgid "Start"
+msgstr "開始"
+
+msgid "Stop"
+msgstr "停止"
+
+msgid "Stop the VPN?"
+msgstr "VPN を停止しますか?"
+
+msgid "Traffic then goes out directly, without the tunnel; the kill switch is taken down with it."
+msgstr "その後、トラフィックはトンネルなしで直接外へ出ます。キルスイッチも一緒に解除されます。"
+
+msgid "The VPN is on: it starts again by itself after a reboot."
+msgstr "VPN はオンです: 再起動後に自動で再び開始します。"
+
+msgid "The VPN is off."
+msgstr "VPN はオフです。"
+
+msgid "Kill switch"
+msgstr "キルスイッチ"
+
+msgid "Setting"
+msgstr "設定項目"
+
+msgid "Active: only the tunnel can reach the internet"
+msgstr "有効: インターネットに届くのはトンネルだけ"
+
+msgid "Not active"
+msgstr "無効"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down, so nothing ever leaves without the tunnel. If the tunnel cannot come up (a dead server, an expired account), the device stays offline until you fix the profile or stop the VPN. The panel itself stays reachable from the LAN."
+msgstr "キルスイッチは VPN が停止している間、デバイスと LAN のすべてのトラフィックを遮断するので、トンネルなしで外へ出るものはありません。トンネルが立ち上がらない場合 (サーバー停止、アカウント期限切れ) は、プロファイルを修正するか VPN を停止するまで、デバイスはオフラインのままです。パネル自体は LAN から引き続きアクセスできます。"
+
+msgid "Choose a profile"
+msgstr "プロファイルを選択"
+
+msgid "No profiles yet"
+msgstr "プロファイルはまだありません"
+
+msgid "engine not installed"
+msgstr "エンジン未インストール"
+
+msgid "Use"
+msgstr "使用"
+
+msgid "Switched: the VPN restarts on the new profile"
+msgstr "切り替えました: VPN は新しいプロファイルで再起動します"
+
+msgid "Active profile"
+msgstr "有効なプロファイル"
+
+msgid "A running VPN restarts on the profile you choose; the kill switch stays up in between."
+msgstr "実行中の VPN は選択したプロファイルで再起動します。その間もキルスイッチは有効なままです。"
+
+msgid "Manage the profiles"
+msgstr "プロファイルを管理"
+
+msgid "Automatic: through the tunnel where the engine can carry it"
+msgstr "自動: エンジンが運べる場合はトンネル経由"
+
+msgid "Ask the engine for IPv6 in the tunnel"
+msgstr "エンジンにトンネル内の IPv6 を要求"
+
+msgid "Never through the tunnel (blocked while the VPN is up)"
+msgstr "トンネル経由にしない (VPN の稼働中はブロック)"
+
+msgid "Saved: it applies from the next start (Restart)"
+msgstr "保存しました: 次回の開始から適用されます (再起動)"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "The tunnel carries IPv6"
+msgstr "トンネルが IPv6 を運ぶ"
+
+msgid "Yes"
+msgstr "はい"
+
+msgid "IPv6 guard"
+msgstr "IPv6 ガード"
+
+msgid "Active: IPv6 outside the tunnel is refused"
+msgstr "有効: トンネル外の IPv6 は拒否されます"
+
+msgid "While the VPN is up, IPv6 never leaves beside a tunnel that does not carry it: it is refused at once, so programs and LAN clients fall back to IPv4 instead of leaking or waiting. Automatic: WireGuard and OpenVPN use the IPv6 addresses of their config; Xray, sing-box and mihomo are asked at every start whether IPv6 works through the tunnel, and carry it only then; dae stays IPv4."
+msgstr "VPN の稼働中、IPv6 を運ばないトンネルの横から IPv6 が外へ出ることはありません。すぐに拒否されるので、プログラムや LAN クライアントは漏えいや待機ではなく IPv4 に切り替わります。自動: WireGuard と OpenVPN は設定内の IPv6 アドレスを使います。Xray、sing-box、mihomo は起動のたびに IPv6 がトンネル経由で通るかを確認し、通る場合だけ IPv6 を運びます。dae は IPv4 のままです。"
+
+msgid "%d ms"
+msgstr "%d ms"
+
+msgid "UDP: not testable"
+msgstr "UDP: テスト不可"
+
+msgid "blocked by the kill switch"
+msgstr "キルスイッチによりブロック"
+
+msgid "A WireGuard or OpenVPN config, a Clash/mihomo YAML, an Xray or sing-box JSON, a dae config"
+msgstr "WireGuard または OpenVPN の設定、Clash/mihomo の YAML、Xray または sing-box の JSON、dae の設定"
+
+msgid "After OK, choose the file: a WireGuard .conf, an OpenVPN .ovpn, a Clash/mihomo .yaml, an Xray or sing-box .json or a dae config (at most 1 MiB)."
+msgstr "OK の後でファイルを選択してください: WireGuard の .conf、OpenVPN の .ovpn、Clash/mihomo の .yaml、Xray または sing-box の .json、または dae の設定 (最大 1 MiB)。"
+
+msgid "From the source"
+msgstr "ソースから"
+
+msgid "Detect"
+msgstr "検出"
+
+msgid "The URL may hold a token: it goes to the device on its own, never into a command line or a log."
+msgstr "URL にはトークンが含まれる場合があります。デバイスには単独で送られ、コマンドラインやログには決して書かれません。"
+
+msgid "Share link"
+msgstr "共有リンク"
+
+msgid "Paste"
+msgstr "貼り付け"
+
+msgid "File"
+msgstr "ファイル"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Not a share link this panel takes"
+msgstr "このパネルが受け付ける共有リンクではありません"
+
+msgid "The config is empty"
+msgstr "設定が空です"
+
+msgid "Not an https URL"
+msgstr "https の URL ではありません"
+
+msgid "Invalid name: 1-64 characters, no control characters"
+msgstr "無効な名前: 1〜64 文字、制御文字は不可"
+
+msgid "Add a profile"
+msgstr "プロファイルを追加"
+
+msgid "Name"
+msgstr "名前"
+
+msgid "Detect: the module tells the kind from the link or the file. Choose the type for a JSON that could be either Xray or sing-box, or for a link that should run on another engine."
+msgstr "検出: モジュールがリンクまたはファイルから種類を判別します。Xray とも sing-box ともなり得る JSON や、別のエンジンで実行したいリンクの場合は、種類を選択してください。"
+
+msgid "The profile is added"
+msgstr "プロファイルを追加しました"
+
+msgid "Rename the profile"
+msgstr "プロファイル名を変更"
+
+msgid "Delete the profile %s?"
+msgstr "プロファイル %s を削除しますか?"
+
+msgid "It is the active profile: with the VPN on, the module refuses; stop the VPN or choose another profile first."
+msgstr "これは有効なプロファイルです: VPN がオンの間はモジュールが拒否します。先に VPN を停止するか、別のプロファイルを選択してください。"
+
+msgid "Its config and credentials are deleted from the device."
+msgstr "その設定と認証情報はデバイスから削除されます。"
+
+msgid "Deleted"
+msgstr "削除しました"
+
+msgid "The profile passes the check"
+msgstr "プロファイルはチェックに合格しました"
+
+msgid "Show the config?"
+msgstr "設定を表示しますか?"
+
+msgid "The config holds the credentials of the profile (keys, passwords, UUIDs). It is shown on this screen only; anyone who can see the screen can read it."
+msgstr "設定にはプロファイルの認証情報 (キー、パスワード、UUID) が含まれます。この画面にのみ表示されますが、画面を見られる人は誰でも読めます。"
+
+msgid "Saving checks the config with the engine first (profile edit); a config that does not pass is not saved and the old one stays."
+msgstr "保存時には、まずエンジンで設定をチェックします (profile edit)。チェックに通らない設定は保存されず、古いものが残ります。"
+
+msgid "This profile comes from a subscription: its next refresh replaces your changes."
+msgstr "このプロファイルはサブスクリプション由来です: 次回の更新で変更は上書きされます。"
+
+msgid "Config of %s"
+msgstr "%s の設定"
+
+msgid "Rename"
+msgstr "名前を変更"
+
+msgid "Show / edit the config"
+msgstr "設定を表示 / 編集"
+
+msgid "Test the latency of all"
+msgstr "すべてのレイテンシーをテスト"
+
+msgid "No profiles yet: add one from a share link, a config file or a subscription."
+msgstr "プロファイルはまだありません: 共有リンク、設定ファイル、サブスクリプションから追加してください。"
+
+msgid "Active"
+msgstr "有効"
+
+msgid "This profile is the active one now"
+msgstr "このプロファイルは現在有効です"
+
+msgid "More"
+msgstr "その他"
+
+msgid "active"
+msgstr "有効"
+
+msgid "subscription"
+msgstr "サブスクリプション"
+
+msgid "migrated"
+msgstr "移行済み"
+
+msgid "gone from its subscription"
+msgstr "サブスクリプションから消えました"
+
+msgid "Server"
+msgstr "サーバー"
+
+msgid "Engine"
+msgstr "エンジン"
+
+msgid "Latency"
+msgstr "レイテンシー"
+
+msgid "The latency is a TCP connection to the server, through the tunnel when the VPN is up. WireGuard and OpenVPN servers usually speak UDP and cannot be tested this way."
+msgstr "レイテンシーはサーバーへの TCP 接続で測定し、VPN がオンのときはトンネル経由です。WireGuard や OpenVPN のサーバーは通常 UDP を使うため、この方法ではテストできません。"
+
+msgid "Enter an IPv4 or IPv6 address"
+msgstr "IPv4 または IPv6 アドレスを入力してください"
+
+msgid "On: nothing leaves outside the tunnel"
+msgstr "オン: トンネル外へは何も出ません"
+
+msgid "Off: traffic goes out directly while the tunnel is down"
+msgstr "オフ: トンネルが停止中はトラフィックが直接外へ出ます"
+
+msgid "Yes: Tailscale's own connections go through the tunnel"
+msgstr "はい: Tailscale 自身の接続もトンネルを通ります"
+
+msgid "No: Tailscale connects directly"
+msgstr "いいえ: Tailscale は直接接続します"
+
+msgid "Routing"
+msgstr "ルーティング"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down."
+msgstr "キルスイッチは VPN が停止している間、デバイスと LAN のすべてのトラフィックを遮断します。"
+
+msgid "Bypass the tunnel"
+msgstr "トンネルをバイパス"
+
+msgid "Enter address ranges like 192.168.0.0/16, separated by commas"
+msgstr "192.168.0.0/16 のようなアドレス範囲をカンマ区切りで入力してください"
+
+msgid "Address ranges that never go into the tunnel, besides the LAN itself (which never does). Empty: the LAN only."
+msgstr "LAN 自体 (これは常に対象外) に加えて、トンネルに入れないアドレス範囲。空欄: LAN のみ。"
+
+msgid "Tailscale through the VPN"
+msgstr "VPN 経由の Tailscale"
+
+msgid "When Tailscale runs on the device, its WireGuard, DERP and control connections go through whichever tunnel runs (dae catches them like any other)."
+msgstr "デバイスで Tailscale が動作しているとき、その WireGuard、DERP、コントロールの接続は、動作中のトンネルを通ります (dae は他の通信と同様にそれらを捕捉します)。"
+
+msgid "DNS"
+msgstr "DNS"
+
+msgid "DNS through the tunnel"
+msgstr "トンネル経由の DNS"
+
+msgid "The resolver the device's and the LAN's lookups go to, through the tunnel. Nothing goes to the carrier's resolver."
+msgstr "デバイスと LAN の名前解決クエリがトンネル経由で送られるリゾルバー。通信事業者のリゾルバーには何も送られません。"
+
+msgid "Bootstrap DNS"
+msgstr "ブートストラップ DNS"
+
+msgid "Finds the VPN server's own address before the tunnel is up (directly, on the engine's own connection)."
+msgstr "トンネルが立ち上がる前に VPN サーバー自身のアドレスを調べます (エンジン自身の接続で直接)。"
+
+msgid "Empty puts a setting back to its default."
+msgstr "空欄にすると設定は既定値に戻ります。"
+
+msgid "TUN stack"
+msgstr "TUN スタック"
+
+msgid "Default (gvisor)"
+msgstr "既定 (gvisor)"
+
+msgid "system (not on the 5.4 kernel)"
+msgstr "system (5.4 カーネルでは不可)"
+
+msgid "set (unchanged unless you type a new one)"
+msgstr "設定済み (新しい値を入力しない限り変更されません)"
+
+msgid "not set"
+msgstr "未設定"
+
+msgid "Upstream HTTP proxy"
+msgstr "アップストリーム HTTP プロキシ"
+
+msgid "TLS certificate pin (SHA-256)"
+msgstr "TLS 証明書ピン (SHA-256)"
+
+msgid "Enter host:port"
+msgstr "host:port を入力してください"
+
+msgid "Enter the SHA-256 in hex"
+msgstr "SHA-256 を 16 進で入力してください"
+
+msgid "Profile options"
+msgstr "プロファイルオプション"
+
+msgid "None of the profiles has options of its type."
+msgstr "その種類のオプションを持つプロファイルはありません。"
+
+msgid "mihomo's mode (rule, global, direct), the engines' log levels, dae's groups and routing are part of each profile's own config: VPN > Profiles, Show / edit the config."
+msgstr "mihomo のモード (rule、global、direct)、エンジンのログレベル、dae のグループとルーティングは、各プロファイル自身の設定の一部です: VPN > プロファイル、設定を表示 / 編集。"
+
+msgid "Delete the subscription %s?"
+msgstr "サブスクリプション %s を削除しますか?"
+
+msgid "Its profiles can go with it or stay as profiles of their own. The active profile is never removed while the VPN is on."
+msgstr "そのプロファイルは一緒に削除することも、独立したプロファイルとして残すこともできます。VPN がオンの間、有効なプロファイルは削除されません。"
+
+msgid "Keep the profiles"
+msgstr "プロファイルを残す"
+
+msgid "Delete with its profiles"
+msgstr "プロファイルごと削除"
+
+msgid "Only by hand"
+msgstr "手動のみ"
+
+msgid "Every %d h"
+msgstr "%d 時間ごと"
+
+msgid "Share links: one profile per link"
+msgstr "共有リンク: リンクごとに 1 つのプロファイル"
+
+msgid "Clash/mihomo YAML: one mihomo profile"
+msgstr "Clash/mihomo YAML: mihomo プロファイル 1 つ"
+
+msgid "dae: one profile with every node in one group"
+msgstr "dae: すべてのノードを 1 グループにまとめた 1 つのプロファイル"
+
+msgid "Add a subscription"
+msgstr "サブスクリプションを追加"
+
+msgid "Format"
+msgstr "形式"
+
+msgid "The URL usually holds your account token: it is stored on the device readable by root only, and never shown again. The subscription is fetched over the device's own connection: through the tunnel when the VPN is up; with the kill switch up and the tunnel down it cannot be fetched."
+msgstr "URL には通常アカウントのトークンが含まれます。デバイス上では root のみ読める形で保存され、二度と表示されません。サブスクリプションはデバイス自身の接続で取得されます: VPN がオンのときはトンネル経由で、キルスイッチが有効でトンネルが停止中だと取得できません。"
+
+msgid "Refresh all"
+msgstr "すべて更新"
+
+msgid "No subscriptions yet."
+msgstr "サブスクリプションはまだありません。"
+
+msgid "Host"
+msgstr "ホスト"
+
+msgid "Updated"
+msgstr "更新日時"
+
+msgid "Share links"
+msgstr "共有リンク"
+
+msgid "A refresh keeps the profiles whose name is unchanged, adds the new ones and removes the ones that are gone (the active one stays while the VPN is on, marked as gone). A refresh of the active profile restarts the running VPN."
+msgstr "更新では、名前が変わらないプロファイルは保持され、新しいものは追加され、なくなったものは削除されます (有効なプロファイルは VPN がオンの間は残り、消えたものとして表示されます)。有効なプロファイルの更新は、実行中の VPN を再起動します。"
+
+msgid "Dashboard info failed"
+msgstr "ダッシュボード情報の取得に失敗しました"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch): no live signal right now"
+msgstr "The modem is restarting (network locks or a SIM switch): no live signal right now"
+
+msgid "Live signal read failed"
+msgstr "ライブ信号の読み取りに失敗しました"
+
+msgid "Unknown op"
+msgstr "不明な操作"
+
+msgid "Invalid argument for this op"
+msgstr "この操作の引数が無効です"
+
+msgid "The radio is busy: the dial or the watchdog is switching it, try again shortly"
+msgstr "無線がビジーです: ダイヤルまたはウォッチドッグが切り替え中です。しばらくしてから再試行してください"
+
+msgid "The action gave no valid reply"
+msgstr "操作から有効な応答がありませんでした"
+
+msgid "The confirm parameter must be 0 or 1"
+msgstr "confirm パラメーターは 0 または 1 である必要があります"
+
+msgid "An AT command is one line of printable ASCII, at most 512 characters"
+msgstr "AT コマンドは印字可能な ASCII 文字の 1 行で、最大 512 文字です"
+
+msgid "Must be an AT command"
+msgstr "AT コマンドである必要があります"
+
+msgid "No \";\" command chaining"
+msgstr "\";\" によるコマンドの連結はできません"
+
+msgid "Denied: this command wedges the AT port until a reboot"
+msgstr "拒否: このコマンドは再起動するまで AT ポートを停止させます"
+
+msgid "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+msgstr "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+msgstr "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+
+msgid "A long AT command is still running in the background; try again when it has finished"
+msgstr "長い AT コマンドがまだバックグラウンドで実行中です。終わってからもう一度お試しください"
+
+msgid "This command needs confirmation"
+msgstr "このコマンドには確認が必要です"
+
+msgid "The AT channel is busy; the command was not sent, try again"
+msgstr "AT チャネルがビジーです。コマンドは送信されませんでした。再試行してください"
+
+msgid "The modem did not answer in time; the command may still run, check before sending it again"
+msgstr "モデムが時間内に応答しませんでした。コマンドはまだ実行中の可能性があるため、再送信する前に確認してください"
+
+msgid "The fresh parameter must be 0 or 1"
+msgstr "fresh パラメータは 0 または 1 である必要があります"
+
+msgid "Reading the locks from the modem; try again in a few seconds"
+msgstr "モデムからロックを読み取っています。数秒後にもう一度お試しください"
+
+msgid "Lock read failed"
+msgstr "ロックの読み取りに失敗しました"
+
+msgid "Unknown lock kind"
+msgstr "不明なロック種別"
+
+msgid "Invalid value for this lock kind"
+msgstr "このロック種別に対して無効な値です"
+
+msgid "None of these bands is supported by this modem"
+msgstr "このモデムはこれらのバンドのいずれにも対応していません"
+
+msgid "Band, mode and cell locks are not supported for SIM2 yet"
+msgstr "バンド・モード・セルのロックは SIM2 ではまだサポートされていません"
+
+msgid "Band, mode and cell locks are not supported while dual-SIM switching manages the radio"
+msgstr "デュアル SIM 切り替えが無線を管理している間は、バンド・モード・セルのロックはサポートされていません"
+
+msgid "Invalid page"
+msgstr "無効なページ"
+
+msgid "mu300-sms is not available (the SMS service is not installed or not running)"
+msgstr "mu300-sms を利用できません (SMS サービスがインストールされていないか、実行されていません)"
+
+msgid "No output"
+msgstr "出力なし"
+
+msgid "Bad ID"
+msgstr "無効な ID"
+
+msgid "Read failed"
+msgstr "読み取りに失敗しました"
+
+msgid "The number may only contain digits (and a leading +)"
+msgstr "番号には数字 (と先頭の +) のみ使用できます"
+
+msgid "The message is empty"
+msgstr "メッセージが空です"
+
+msgid "The message is too long (over 480 characters)"
+msgstr "メッセージが長すぎます (480 文字超)"
+
+msgid "The message contains a control character"
+msgstr "メッセージに制御文字が含まれています"
+
+msgid "The sim parameter must be 0 or 1"
+msgstr "sim パラメータは 0 または 1 である必要があります"
+
+msgid "The USB adapter (device-usb) gave no valid reply"
+msgstr "USB アダプタ (device-usb) から有効な応答がありませんでした"
+
+msgid "The auto parameter must be 0 or 1"
+msgstr "auto パラメータは 0 または 1 である必要があります"
+
+msgid "Invalid USB role"
+msgstr "無効な USB ロール"
+
+msgid "A USB role takes no scope"
+msgstr "USB ロールには適用範囲を指定できません"
+
+msgid "Invalid USB network mode"
+msgstr "無効な USB ネットワークモード"
+
+msgid "Invalid USB network scope"
+msgstr "無効な USB ネットワークの適用範囲"
+
+msgid "Unknown USB setting"
+msgstr "不明な USB 設定"
+
+msgid "Invalid interface name"
+msgstr "無効なインターフェース名"
+
+msgid "The power adapter gave no valid reply"
+msgstr "電源アダプターから有効な応答がありませんでした"
+
+msgid "Unknown power operation"
+msgstr "不明な電源操作"
+
+msgid "Unknown power setting"
+msgstr "不明な電源設定"
+
+msgid "Invalid power value"
+msgstr "無効な電源値"
+
+msgid "Invalid power request"
+msgstr "無効な電源リクエスト"
+
+msgid "The languages adapter gave no valid reply"
+msgstr "言語アダプタから有効な応答がありませんでした"
+
+msgid "Unknown language operation"
+msgstr "不明な言語操作"
+
+msgid "Invalid language code"
+msgstr "無効な言語コード"
+
+msgid "Invalid language request"
+msgstr "無効な言語リクエスト"
+
+msgid "Unknown source"
+msgstr "不明なソース"
+
+msgid "The TTL adapter gave no valid reply"
+msgstr "TTL アダプターから有効な応答がありませんでした"
+
+msgid "Invalid TTL"
+msgstr "無効な TTL"
+
+msgid "The data usage adapter gave no valid reply"
+msgstr "データ使用量アダプターが有効な応答を返しませんでした"
+
+msgid "Unknown data usage setting"
+msgstr "不明なデータ使用量の設定"
+
+msgid "Invalid value for this setting"
+msgstr "この設定には無効な値です"
+
+msgid "The forwarding adapter gave no valid reply"
+msgstr "転送アダプターが有効な応答を返しませんでした"
+
+msgid "The CPU adapter gave no valid reply"
+msgstr "The CPU adapter gave no valid reply"
+
+msgid "Invalid CPU profile"
+msgstr "Invalid CPU profile"
+
+msgid "Invalid CPU core"
+msgstr "無効な CPU コア"
+
+msgid "Unknown CPU operation"
+msgstr "Unknown CPU operation"
+
+msgid "Unknown CPU voltage operation"
+msgstr "不明な CPU 電圧操作"
+
+msgid "Invalid CPU voltage request"
+msgstr "無効な CPU 電圧要求"
+
+msgid "Invalid CPU voltage offset"
+msgstr "無効な CPU 電圧オフセット"
+
+msgid "Type the confirmation word to apply a voltage offset"
+msgstr "電圧オフセットを適用するには確認用の単語を入力してください"
+
+msgid "Invalid stress test length"
+msgstr "無効なストレステスト時間"
+
+msgid "The packages adapter gave no valid reply"
+msgstr "パッケージアダプターから有効な応答がありません"
+
+msgid "Invalid packages operation"
+msgstr "無効なパッケージ操作"
+
+msgid "The sizes parameter must be 0 or 1"
+msgstr "sizes パラメーターは 0 か 1 でなければなりません"
+
+msgid "The update adapter gave no valid reply"
+msgstr "更新アダプターから有効な応答がありませんでした"
+
+msgid "Unknown update operation"
+msgstr "不明な更新操作です"
+
+msgid "Invalid update request"
+msgstr "無効な更新リクエストです"
+
+msgid "The backup tool gave no valid reply"
+msgstr "バックアップツールから有効な応答がありません"
+
+msgid "Mobile data integration is not provided by this platform"
+msgstr "このプラットフォームではモバイルデータ連携が提供されていません"
+
+msgid "The SIM settings could not be read"
+msgstr "SIM 設定を読み取れませんでした"
+
+msgid "Radio control is not provided by this platform"
+msgstr "このプラットフォームには無線制御がありません"
+
+msgid "A SIM radio change is already running"
+msgstr "SIM 無線の変更がすでに実行中です"
+
+# Source-language fallback for untranslated new controls.
+msgid "Invalid SIM setting"
+msgstr "Invalid SIM setting"
+
+msgid "The modem did not take the setting; nothing was saved"
+msgstr "モデムが設定を受け付けませんでした。何も保存されていません"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control failed"
+msgstr "SIM control failed"
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching; reboot if channels are unavailable or wait until idle"
+msgstr "Enable hot switching; reboot if channels are unavailable or wait until idle"
+
+msgid "Request too large"
+msgstr "リクエストが大きすぎます"
+
+msgid "The runtime directory is not safe; nothing was run"
+msgstr "ランタイムディレクトリが安全ではありません。何も実行されませんでした"
+
+msgid "No such method"
+msgstr "該当するメソッドがありません"
+
+msgid "The VPN module refused the request"
+msgstr "VPN モジュールがリクエストを拒否しました"
+
+msgid "The VPN panel is busy, try again"
+msgstr "VPN パネルは処理中です。再試行してください"
+
+msgid "Another VPN task is still running"
+msgstr "別の VPN タスクがまだ実行中です"
+
+msgid "The exit_ip parameter must be 0 or 1"
+msgstr "exit_ip パラメーターは 0 または 1 にしてください"
+
+msgid "The VPN status could not be read"
+msgstr "VPN のステータスを読み取れませんでした"
+
+msgid "The profiles could not be read"
+msgstr "プロファイルを読み取れませんでした"
+
+msgid "The check parameter must be 0 or 1"
+msgstr "check パラメーターは 0 または 1 にしてください"
+
+msgid "The engines could not be read"
+msgstr "エンジンを読み取れませんでした"
+
+msgid "The subscriptions could not be read"
+msgstr "サブスクリプションを読み取れませんでした"
+
+msgid "The VPN settings could not be read"
+msgstr "VPN の設定を読み取れませんでした"
+
+msgid "Unknown VPN operation"
+msgstr "不明な VPN 操作"
+
+msgid "The VPN could not be switched"
+msgstr "VPN を切り替えられませんでした"
+
+msgid "The kill switch is on or off"
+msgstr "キルスイッチはオンまたはオフです"
+
+msgid "The kill switch could not be changed"
+msgstr "キルスイッチを変更できませんでした"
+
+msgid "Invalid profile id"
+msgstr "無効なプロファイル ID"
+
+msgid "The profile could not be made the active one"
+msgstr "プロファイルを有効にできませんでした"
+
+msgid "Unknown profile source"
+msgstr "不明なプロファイルソース"
+
+msgid "Unknown profile type"
+msgstr "不明なプロファイルの種類"
+
+msgid "The config is empty, too large or holds control characters"
+msgstr "設定が空、大きすぎる、または制御文字を含んでいます"
+
+msgid "Invalid profile request"
+msgstr "無効なプロファイルリクエスト"
+
+msgid "A config from a URL takes the type it says"
+msgstr "URL からの設定は、そこに記載された種類になります"
+
+msgid "No uploaded file"
+msgstr "アップロードされたファイルがありません"
+
+msgid "The file is larger than 1 MiB"
+msgstr "ファイルが 1 MiB を超えています"
+
+msgid "The profile could not be added"
+msgstr "プロファイルを追加できませんでした"
+
+msgid "The profile could not be renamed"
+msgstr "プロファイル名を変更できませんでした"
+
+msgid "The profile could not be removed"
+msgstr "プロファイルを削除できませんでした"
+
+msgid "The profile does not pass the check"
+msgstr "プロファイルはチェックに合格しませんでした"
+
+msgid "Unknown profile option"
+msgstr "不明なプロファイルオプション"
+
+msgid "Invalid value for this option"
+msgstr "このオプションの値が無効です"
+
+msgid "The option could not be set"
+msgstr "オプションを設定できませんでした"
+
+msgid "The config could not be read"
+msgstr "設定を読み取れませんでした"
+
+msgid "The config was not saved"
+msgstr "設定は保存されませんでした"
+
+msgid "The latency test failed"
+msgstr "レイテンシーテストに失敗しました"
+
+msgid "The refresh interval is 1 to 999 hours"
+msgstr "更新間隔は 1〜999 時間です"
+
+msgid "Unknown subscription type"
+msgstr "不明なサブスクリプションの種類"
+
+msgid "Invalid subscription id"
+msgstr "無効なサブスクリプション ID"
+
+msgid "The keep parameter must be 0 or 1"
+msgstr "keep パラメーターは 0 または 1 にしてください"
+
+msgid "The subscription could not be removed"
+msgstr "サブスクリプションを削除できませんでした"
+
+msgid "The file is too large"
+msgstr "ファイルが大きすぎます"
+
+msgid "Unknown engine"
+msgstr "不明なエンジン"
+
+msgid "The unverified parameter must be 0 or 1"
+msgstr "unverified パラメーターは 0 または 1 である必要があります"
+
+msgid "This engine is a system package: it has no file to upload"
+msgstr "このエンジンはシステムパッケージです: アップロードするファイルはありません"
+
+msgid "The engine could not be removed"
+msgstr "エンジンを削除できませんでした"
+
+msgid "mu300-extra is not on this system"
+msgstr "mu300-extra はこのシステムにありません"
+
+msgid "Unknown VPN setting"
+msgstr "不明な VPN 設定"
+
+msgid "The setting could not be saved"
+msgstr "設定を保存できませんでした"
+
+msgid "The number of lines is 1 to 1000"
+msgstr "行数は 1〜1000 です"
+
+msgid "The log could not be read"
+msgstr "ログを読み取れませんでした"
+
+msgid "The radio of this SIM is switched off in its settings"
+msgstr "この SIM の無線は設定でオフになっています"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM control or reboot for managed dual-SIM radio"
+msgstr "Use SIM control or reboot for managed dual-SIM radio"
+
+msgid "The radio did not follow its setting"
+msgstr "無線が設定に従いませんでした"
+
+msgid "The data roaming setting could not be saved"
+msgstr "データローミングの設定を保存できませんでした"
+
+msgid "Expected on or off"
+msgstr "on または off を指定してください"
+
+msgid "VPN integration is not provided by this platform"
+msgstr "このプラットフォームは VPN 連携を提供していません"
+
+msgid "Dual-boot integration is not provided by this platform"
+msgstr "このプラットフォームはデュアルブート連携を提供していません"
+
+msgid "mu300-next-boot failed"
+msgstr "mu300-next-boot が失敗しました"
+
+msgid "AT backend did not answer (radio off, modem restarting, or adapter unavailable)"
+msgstr "AT バックエンドが応答しませんでした (無線オフ、モデム再起動中、またはアダプタ利用不可)"
+
+msgid "The CPU profile could not be read"
+msgstr "The CPU profile could not be read"
+
+msgid "The CPU profile could not be set"
+msgstr "The CPU profile could not be set"
+
+msgid "The CPU core could not be switched"
+msgstr "CPU コアを切り替えられませんでした"
+
+msgid "Invalid low latency setting"
+msgstr "無効な低遅延設定"
+
+msgid "The low latency setting could not be applied"
+msgstr "低遅延設定を適用できませんでした"
+
+msgid "The CPU voltage offset could not be read"
+msgstr "CPU 電圧オフセットを読み取れませんでした"
+
+msgid "The CPU voltage offset was refused"
+msgstr "CPU 電圧オフセットが拒否されました"
+
+msgid "The CPU voltage offset could not be turned off"
+msgstr "CPU 電圧オフセットをオフにできませんでした"
+
+msgid "The stress test could not be started"
+msgstr "ストレステストを開始できませんでした"
+
+msgid "USB role adapter is not executable"
+msgstr "USB ロールアダプタが実行可能ではありません"
+
+msgid "USB role adapter failed"
+msgstr "USB ロールアダプタが失敗しました"
+
+msgid "USB role switch is unavailable"
+msgstr "USB ロールの切り替えは利用できません"
+
+msgid "USB role switch failed"
+msgstr "USB ロールの切り替えに失敗しました"
+
+msgid "USB role switch was refused by platform safety checks"
+msgstr "USB ロールの切り替えがプラットフォームの安全チェックにより拒否されました"
+
+msgid "Cannot create USB boot settings directory"
+msgstr "USB 起動設定ディレクトリを作成できません"
+
+msgid "Cannot write USB boot settings"
+msgstr "USB 起動設定を書き込めません"
+
+msgid "Cannot save USB boot settings"
+msgstr "USB 起動設定を保存できません"
+
+msgid "Invalid boot-auto value"
+msgstr "無効な boot-auto 値"
+
+msgid "Device is the boot default; host auto-apply is the only persistent role"
+msgstr "起動時の既定はデバイスモードです。永続化できるのはホストモードの自動適用のみです"
+
+msgid "Cannot save USB role policy"
+msgstr "USB ロールポリシーを保存できません"
+
+msgid "Cannot disable USB network boot policy"
+msgstr "USB ネットワークの起動ポリシーを無効化できません"
+
+msgid "Cannot commit USB role policy"
+msgstr "USB ロールポリシーをコミットできません"
+
+msgid "USB network mode is unavailable in host role"
+msgstr "ホストモードでは USB ネットワークモードを使用できません"
+
+msgid "Disable host boot-auto before configuring USB network"
+msgstr "USB ネットワークを設定する前にホストモードの boot-auto を無効にしてください"
+
+msgid "Cannot save USB network policy"
+msgstr "USB ネットワークポリシーを保存できません"
+
+msgid "Cannot commit USB network policy"
+msgstr "USB ネットワークポリシーをコミットできません"
+
+msgid "USB host mode is required"
+msgstr "USB ホストモードが必要です"
+
+msgid "Not a USB network interface"
+msgstr "USB ネットワークインターフェースではありません"
+
+msgid "LAN bridge device section was not found"
+msgstr "LAN ブリッジのデバイスセクションが見つかりません"
+
+msgid "Cannot bring USB network interface up"
+msgstr "USB ネットワークインターフェースを起動できません"
+
+msgid "Cannot add interface to LAN bridge"
+msgstr "インターフェースを LAN ブリッジに追加できません"
+
+msgid "Cannot save LAN bridge"
+msgstr "LAN ブリッジを保存できません"
+
+msgid "Network reload failed"
+msgstr "ネットワークの再読み込みに失敗しました"
+
+msgid "Cannot attach USB interface to LAN bridge"
+msgstr "USB インターフェースを LAN ブリッジに接続できません"
+
+msgid "Invalid forwarding setting"
+msgstr "無効な転送設定"
+
+msgid "The message template is too long or contains a control character"
+msgstr "メッセージテンプレートが長すぎるか、制御文字を含んでいます"
+
+msgid "Invalid filter list (at most 50 lines)"
+msgstr "無効なフィルター一覧（最大 50 行）"
+
+msgid "The webhook address must be an http:// or https:// URL"
+msgstr "Webhook のアドレスは http:// または https:// の URL である必要があります"
+
+msgid "The webhook body is too long or contains a control character"
+msgstr "Webhook の本文が長すぎるか、制御文字を含んでいます"
+
+msgid "The answer check must be key=value, like errcode=0 or ok=true (the value a whole number or lowercase letters, 16 at most)"
+msgstr "応答の確認は キー=値 の形式（例: errcode=0 や ok=true）で指定してください（値は整数または英小文字、16 文字まで）"
+
+msgid "Invalid header (one \"Name: value\" per line; Host, Content-Type, Content-Length, Transfer-Encoding and Connection are set by the device)"
+msgstr "無効なヘッダー（1 行に 1 つの \"Name: value\"。Host、Content-Type、Content-Length、Transfer-Encoding、Connection はデバイスが設定します）"
+
+msgid "Invalid Telegram bot token"
+msgstr "無効な Telegram ボットトークン"
+
+msgid "Invalid Telegram chat (a number, or @channel)"
+msgstr "無効な Telegram チャット（数値または @チャンネル）"
+
+msgid "Invalid e-mail setting"
+msgstr "無効なメール設定"
+
+msgid "The webhook needs an address"
+msgstr "Webhook にはアドレスが必要です"
+
+msgid "Telegram needs a bot token and a chat"
+msgstr "Telegram にはボットトークンとチャットが必要です"
+
+msgid "E-mail needs a server, a sender and a recipient"
+msgstr "メールにはサーバー、差出人、宛先が必要です"
+
+msgid "SMS forwarding needs a phone number"
+msgstr "SMS 転送には電話番号が必要です"
+
+msgid "The forwarding settings could not be saved"
+msgstr "転送設定を保存できませんでした"
+
+msgid "SMS forwarding is not installed"
+msgstr "SMS 転送はインストールされていません"
+
+msgid "A test was started a moment ago; wait a few seconds"
+msgstr "テストを開始したばかりです。数秒待ってください"
+
+msgid "The delivery log could not be cleared"
+msgstr "配信ログを消去できませんでした"
+
+msgid "Unknown forwarding operation"
+msgstr "不明な転送操作"
+
+msgid "The language pack is not installed"
+msgstr "言語パックがインストールされていません"
+
+msgid "No language given"
+msgstr "言語が指定されていません"
+
+msgid "The language could not be changed"
+msgstr "言語を変更できませんでした"
+
+msgid "LuCI does not offer this language"
+msgstr "LuCI はこの言語を提供していません"
+
+msgid "No uploaded language pack"
+msgstr "アップロードされた言語パックがありません"
+
+msgid "An installation is already running"
+msgstr "インストールはすでに実行中です"
+
+msgid "The language pack could not be removed"
+msgstr "言語パックを削除できませんでした"
+
+msgid "Lock cache unavailable"
+msgstr "ロックキャッシュを利用できません"
+
+msgid "The modem refused a write"
+msgstr "モデムが書き込みを拒否しました"
+
+msgid "The saved locks could not be cleared"
+msgstr "保存されたロックを消去できませんでした"
+
+msgid "No serving cell to lock to"
+msgstr "ロックできるサービングセルがありません"
+
+msgid "The modem did not answer the mode query; nothing was sent"
+msgstr "モデムがモード照会に応答しませんでした。何も送信されていません"
+
+msgid "The read-back does not match the automatic values"
+msgstr "読み戻し値が自動の値と一致しません"
+
+msgid "The read-back after the stack restart does not match the automatic values"
+msgstr "スタック再起動後の読み戻し値が自動の値と一致しません"
+
+msgid "The reset was interrupted"
+msgstr "リセットが中断されました"
+
+msgid "Reinstalling packages is not available on this system"
+msgstr "このシステムではパッケージの再インストールを利用できません"
+
+msgid "No packages were written down by an update"
+msgstr "アップデートで記録されたパッケージはありません"
+
+msgid "Reinstalling is running already"
+msgstr "再インストールはすでに実行中です"
+
+msgid "The note could not be dropped"
+msgstr "通知を削除できませんでした"
+
+msgid "Unknown packages operation"
+msgstr "不明なパッケージ操作"
+
+msgid "usage: power get|set KEY VALUE|wake|idle"
+msgstr "usage: power get|set KEY VALUE|wake|idle"
+
+msgid "Data usage is not available on this system"
+msgstr "このシステムではデータ使用量を利用できません"
+
+msgid "Unknown data usage operation"
+msgstr "不明なデータ使用量の操作"
+
+msgid "The TTL setting could not be read"
+msgstr "TTL 設定を読み取れませんでした"
+
+msgid "The TTL could not be set"
+msgstr "TTL を設定できませんでした"
+
+msgid "Unknown TTL operation"
+msgstr "不明な TTL 操作"
+
+msgid "An update task is already running"
+msgstr "更新タスクがすでに実行中です"
+
+msgid "The task could not be started"
+msgstr "タスクを開始できませんでした"
+
+msgid "The updater gave no valid reply"
+msgstr "アップデーターから有効な応答がありませんでした"
+
+msgid "This needs confirmation"
+msgstr "この操作には確認が必要です"
+
+msgid "Check for updates first"
+msgstr "先に更新を確認してください"
+
+msgid "The upload directory is not safe; nothing was changed"
+msgstr "アップロード先のディレクトリが安全ではありません。何も変更していません"
+
+msgid "Not enough memory for this upload"
+msgstr "このアップロードに必要なメモリが足りません"
+
+msgid "Not enough free space on the Linux partition"
+msgstr "Linux パーティションの空き容量が足りません"
+
+msgid "The file was not checked; upload it again"
+msgstr "ファイルが確認されていません。もう一度アップロードしてください"
+
+msgid "This file is not for this device"
+msgstr "このファイルはこのデバイス用ではありません"
+
+msgid "The signature of this file is wrong"
+msgstr "このファイルの署名が正しくありません"
+
+msgid "This file is not signed: that needs confirmation"
+msgstr "このファイルは署名なしです: 確認が必要です"
+
+msgid "This file is older than what is installed: that needs confirmation"
+msgstr "このファイルはインストール済みのものより古いです: 確認が必要です"
+
+msgid "The release source was not changed"
+msgstr "リリース元は変更されませんでした"

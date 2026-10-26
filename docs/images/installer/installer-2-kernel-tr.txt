@@ -1,0 +1,15 @@
+$ MU300_LANG=tr ./install.sh
+  ...
+
+==> Hangi çekirdek?
+  1) 5.4   Unisoc'un üretici çekirdeği (Android 12 tabanlı): en uzun süre test edilen, projenin desteklediği her şey çalışır
+  2) 6.18  ana hat (mainline) Linux, güncel uzun süreli destek (LTS) sürümü: daha yeni sürücüler ve güvenlik düzeltmeleri,
+           aynı işlevler (hotspot, mobil veri, SMS, Bluetooth, VPN, GPU); USB-C görüntü çıkışı henüz yok
+  3) 7.2   ana hat (mainline) Linux, kararlı sürüm: daha yeni sürücüler, 6.18 ile aynı
+           işlevler; 6.18'den daha az test edildi
+  4) 7.3   en yeni ana hat (mainline) Linux (şimdilik 7.3): en yeni sürücüler, 6.18 ile aynı
+           işlevler; 7.2'den daha az test edildi
+  Bu seçim sonradan cihazda değiştirilebilir: sudo mu300-update kernel 5.4|6.18|7.2|7.3
+Çekirdek [1]: 2
+
+  çekirdek:       6.18 (mainline, 6.18.54)

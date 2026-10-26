@@ -1,0 +1,8 @@
+#!/bin/sh
+# USB-C DisplayPort on the 5.4 kernel: enable the disabled DT nodes (PD, DPTX), then USB-PD (DP alt mode) and the
+# Unisoc display driver. sprd_drm/sc27xx_pd are blacklisted for autoloading so this order is kept.
+exec > /var/log/mu300-display-load.log 2>&1
+for m in unisoc-iommu mu300-dp-enable sc27xx_pd sprd_typec_displayport sprd-drm; do
+    echo "== $m"; modprobe "$m" && echo ok || echo FAIL
+done
+ls -la /dev/dri

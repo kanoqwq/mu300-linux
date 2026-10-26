@@ -1,0 +1,183 @@
+/* The web installer. It uses the site's tokens (../style.css): blue for what you do next, amber for Linux, green
+   for Android, red for what erases. No web fonts are loaded on this page: it contacts nothing but GitHub's API. */
+
+.wi { margin-top: 1.2rem; margin-bottom: 2.5rem; display: grid; gap: 1.1rem; }
+.wi[hidden] { display: none; }
+.wi-panel { padding: clamp(1rem, 2.6vw, 1.7rem); border-radius: var(--radius-m); }
+.wi-panel > :last-child { margin-bottom: 0; }
+.wi-panel h2 { font-size: 1.45rem; margin: 0 0 .7rem; }
+.wi-panel h3 { font-size: 1.08rem; margin: 1.5rem 0 .5rem; }
+.wi-panel .callout { margin-top: .9rem; }
+.wi-mono { font-family: var(--font-code); font-size: .9em; }
+.wi-hidden { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.wi-good { color: var(--green); margin: .4rem 0 0; }
+.wi-bad { color: var(--red); margin: .4rem 0 0; }
+
+/* buttons */
+.wi-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+  font: inherit; font-weight: 700; line-height: 1.2; text-decoration: none; cursor: pointer;
+  padding: .55rem 1.05rem; border-radius: 999px;
+  border: 2px solid var(--line); background: var(--surface); color: var(--ink);
+}
+.wi-btn:hover { border-color: var(--blue); }
+.wi-btn.primary { background: var(--blue); border-color: var(--blue); color: var(--on-blue); }
+.wi-btn.danger { border-color: var(--red); color: var(--red); }
+.wi-btn.quiet { border-color: transparent; background: transparent; color: var(--muted); font-weight: 400; }
+.wi-btn.quiet:hover { color: var(--blue); }
+.wi-btn.small { font-size: .88rem; padding: .3rem .8rem; font-weight: 400; }
+.wi-btn.link { border: 0; background: none; padding: 0; color: var(--blue); font-weight: 400; text-decoration: underline; border-radius: 3px; }
+.wi-btn:disabled, .wi-btn[disabled] { opacity: .45; cursor: not-allowed; border-color: var(--line); }
+.wi-btn.primary:disabled { background: var(--muted); border-color: var(--muted); }
+.wi .actions { margin-top: 1rem; align-items: center; }
+.wi-nav { justify-content: space-between; border-top: 1px solid var(--line); padding-top: 1rem; margin-top: 1.5rem; }
+.wi-nav > :only-child { margin-left: auto; }
+
+/* the device panel */
+.wi-device-head { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem .8rem; margin-bottom: .6rem; }
+.wi-device-head h2 { margin: 0; }
+.wi-device-head .wi-btn { margin-left: auto; }
+.wi-chip {
+  display: inline-block; font-size: .82rem; font-weight: 700; padding: .12rem .6rem; border-radius: 999px;
+  background: var(--code-bg); color: var(--ink); white-space: nowrap;
+}
+.wi-chip.ok, .wi-chip.android { background: var(--green-soft); color: var(--green); }
+.wi-chip.linux, .wi-chip.warn { background: var(--amber-soft); color: var(--amber); }
+.wi-chip.bad { background: var(--red-soft); color: var(--red); }
+.wi-chip.wait { background: var(--blue-soft); color: var(--blue); }
+.wi-facts { display: grid; grid-template-columns: minmax(8rem, max-content) 1fr; gap: .3rem 1.2rem; margin: .6rem 0 0; }
+.wi-facts dt { color: var(--muted); }
+.wi-facts dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 520px) { .wi-facts { grid-template-columns: 1fr; gap: 0; } .wi-facts dd { margin-bottom: .5rem; } }
+.wi-check { margin: .8rem 0; padding-left: 1.3em; }
+.wi-wait { color: var(--muted); display: flex; align-items: center; gap: .6rem; }
+.wi-wait::before {
+  content: ""; flex: none; width: 1rem; height: 1rem; border-radius: 50%;
+  border: 2px solid var(--line); border-top-color: var(--blue); animation: wi-spin .9s linear infinite;
+}
+@keyframes wi-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .wi-wait::before { animation: none; border-top-color: var(--line); background: var(--blue-soft); } }
+.wi-explain { margin-top: 1rem; border-top: 1px solid var(--line); padding-top: .7rem; }
+.wi-explain summary { cursor: pointer; color: var(--blue); }
+.wi-explain p { margin: .6rem 0 0; font-size: .97rem; }
+.wi-key code { white-space: pre-wrap; overflow-wrap: anywhere; }
+.wi pre { padding: .8rem 1rem; margin: .6rem 0; font-size: .82rem; }
+.wi pre code { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* storage: the bar is to scale; the colours are the site's (Android green, Linux amber) */
+.wi-storage { margin: .2rem 0 1rem; }
+.wi-bar { display: flex; height: 1.5rem; border-radius: var(--radius-s); overflow: hidden; background: var(--code-bg); border: 1px solid var(--line); gap: 2px; }
+.wi-seg { min-width: 4px; }
+.wi-seg.android-system { background: var(--green-fill); opacity: .55; }
+.wi-seg.userdata { background: var(--green-fill); }
+.wi-seg.linux { background: var(--amber-fill); }
+.wi-seg.free { background: repeating-linear-gradient(135deg, var(--surface) 0 6px, var(--code-bg) 6px 12px); }
+.wi-legend { list-style: none; padding: 0; margin: .5rem 0 0; display: flex; flex-wrap: wrap; gap: .2rem 1.2rem; font-size: .9rem; }
+.wi-legend li { margin: 0; display: flex; align-items: center; gap: .4rem; }
+.wi-legend li::before { content: ""; width: .8rem; height: .8rem; border-radius: 3px; border: 1px solid var(--line); }
+.wi-legend li.android-system::before { background: var(--green-fill); opacity: .55; }
+.wi-legend li.userdata::before { background: var(--green-fill); }
+.wi-legend li.linux::before { background: var(--amber-fill); }
+.wi-legend li.free::before { background: var(--surface); }
+
+/* the wizard */
+.wi-stepper { list-style: none; padding: 0; margin: .3rem 0 1.4rem; display: flex; gap: .3rem; counter-reset: wi; flex-wrap: wrap; }
+.wi-stepper li {
+  counter-increment: wi; margin: 0; flex: 1 1 6.5rem; padding: .45rem .6rem; font-size: .9rem; color: var(--muted);
+  border-top: 4px solid var(--line); display: flex; gap: .4rem; align-items: baseline;
+}
+.wi-stepper li::before { content: counter(wi); font-family: var(--font-display); font-weight: 700; }
+.wi-stepper li.done { border-color: var(--green-fill); color: var(--ink); }
+.wi-stepper li.now { border-color: var(--blue); color: var(--ink); font-weight: 700; }
+.wi-opts { display: grid; gap: .45rem; margin: .4rem 0 .8rem; }
+.wi-opt {
+  display: flex; gap: .65rem; align-items: flex-start; padding: .55rem .8rem; cursor: pointer;
+  border: 1px solid var(--line); border-radius: var(--radius-m); background: var(--surface);
+}
+.wi-opt:has(input:checked) { border-color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); }
+.wi-opt.off { opacity: .5; cursor: not-allowed; }
+.wi-opt input { margin-top: .32rem; accent-color: var(--blue); flex: none; }
+.wi-tiles { display: grid; gap: .6rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); margin-bottom: .6rem; }
+.wi-tile {
+  display: grid; grid-template-columns: auto 1fr; gap: .15rem .6rem; align-items: start; padding: .7rem .85rem; cursor: pointer;
+  border: 1px solid var(--line); border-top: 5px solid var(--line); border-radius: var(--radius-m); background: var(--surface);
+}
+.wi-tile.on { border-color: var(--amber-fill); }
+.wi-tile.off { opacity: .5; cursor: not-allowed; }
+.wi-tile input { margin-top: .32rem; accent-color: var(--blue); grid-row: span 2; }
+.wi-tile .small { color: var(--muted); }
+.wi-field { display: grid; gap: .3rem; margin: .7rem 0; max-width: 28rem; }
+.wi-field input[type="text"], .wi-field input[type="password"], .wi-field select {
+  font: inherit; padding: .5rem .7rem; border: 1px solid var(--line); border-radius: var(--radius-s);
+  background: var(--surface); color: var(--ink); max-width: 100%;
+}
+.wi-field input[type="text"] { font-family: var(--font-code); }
+.wi-pw { display: grid; gap: 0 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.wi-file { border: 1px solid var(--line); border-radius: var(--radius-m); padding: .8rem 1rem; margin-bottom: .6rem; display: grid; gap: .5rem; background: var(--surface); }
+.wi-file.ok { border-color: var(--green-fill); }
+.wi-file-acts { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+/* the device manager (manager.js): tabs, forms, tables, the messages. (A grid item of .wi: never wider than the page,
+   whatever its tabs and tables would like) */
+.wi-mgr, .wi-mgr-body { min-width: 0; }
+.wi-tabs { display: flex; gap: .3rem; overflow-x: auto; border-bottom: 1px solid var(--line); margin: .4rem 0 1rem; scrollbar-width: thin; }
+.wi-tab {
+  font: inherit; font-weight: 700; padding: .55rem .9rem; border: 1px solid transparent; border-bottom: none; white-space: nowrap;
+  border-radius: var(--radius-s) var(--radius-s) 0 0; background: none; color: var(--muted); cursor: pointer; margin-bottom: -1px;
+}
+.wi-tab:hover { color: var(--ink); }
+.wi-tab.on { color: var(--ink); background: var(--surface); border-color: var(--line); border-bottom: 1px solid var(--surface); }
+.wi-tab:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.wi-form { display: grid; gap: 0 1.2rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); align-items: start; }
+.wi-form .wi-opt { margin: .7rem 0; align-self: end; }
+.wi-field textarea, .wi-field input[type="file"] {
+  font: inherit; font-family: var(--font-code); padding: .5rem .7rem; border: 1px solid var(--line); border-radius: var(--radius-s);
+  background: var(--surface); color: var(--ink); max-width: 100%; box-sizing: border-box; width: 100%;
+}
+.wi-secret { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+.wi-secret input { flex: 1 1 10rem; min-width: 0; }
+.wi-show { display: inline-flex; gap: .3rem; align-items: center; font-size: .9rem; color: var(--muted); cursor: pointer; }
+.wi-table-wrap { overflow-x: auto; margin: .4rem 0 .8rem; }
+.wi-table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+.wi-table th, .wi-table td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--line); vertical-align: middle; overflow-wrap: anywhere; }
+.wi-table th { color: var(--muted); font-weight: 700; font-size: .85rem; }
+.wi-row-actions { display: flex; flex-wrap: wrap; gap: .3rem; justify-content: flex-end; }
+.wi-sms { border: 1px solid var(--line); border-radius: var(--radius-m); padding: .6rem .9rem; margin: .5rem 0; background: var(--surface); }
+.wi-sms.unread { border-left: 4px solid var(--blue); }
+.wi-sms p { margin: .3rem 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.wi-sms .actions { margin: 0; }
+.wi-mgr-job pre { max-height: 14rem; }
+@media (max-width: 34rem) {
+  .wi-tab { padding: .5rem .65rem; }
+  .wi-form { grid-template-columns: 1fr; }
+}
+.wi-downloads { padding-left: 1.2em; font-size: .95rem; }
+.wi-planlog { max-height: 16rem; overflow: auto; }
+
+/* progress, steps of a job, the log */
+.wi-progress { height: .6rem; border-radius: 999px; background: var(--code-bg); overflow: hidden; margin: .6rem 0; }
+.wi-progress span { display: block; height: 100%; width: 0; background: var(--blue); transition: width .2s linear; }
+.wi-steps { list-style: none; padding: 0; margin: .6rem 0 1rem; display: grid; gap: .1rem; }
+.wi-steps li { margin: 0; padding: .45rem .2rem .45rem 2.1rem; position: relative; color: var(--muted); display: grid; gap: .15rem; }
+.wi-steps li::before {
+  content: ""; position: absolute; left: .35rem; top: .7rem; width: .85rem; height: .85rem; border-radius: 50%;
+  border: 2px solid var(--line); background: var(--surface);
+}
+.wi-steps li.done { color: var(--ink); }
+.wi-steps li.done::before { background: var(--green-fill); border-color: var(--green-fill); }
+.wi-steps li.now { color: var(--ink); font-weight: 700; background: var(--blue-soft); border-radius: var(--radius-s); }
+.wi-steps li.now .small { font-weight: 400; }
+.wi-steps li.now::before { border-color: var(--blue); border-top-color: transparent; animation: wi-spin .9s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .wi-steps li.now::before { animation: none; border-top-color: var(--blue); background: var(--blue); } }
+.wi-logbox { border: 1px solid var(--line); border-radius: var(--radius-m); background: var(--surface); padding: .6rem 1rem; }
+.wi-logbox summary { cursor: pointer; font-weight: 700; }
+.wi-log { max-height: 22rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .78rem; line-height: 1.45; min-height: 3rem; }
+.wi-action { margin-top: 1.2rem; border-top: 1px solid var(--line); }
+.wi-help ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: .3rem 1.5rem; font-size: .97rem; }
+.wi-help li { margin: 0; }
+.wi-follow { margin-top: 1.2rem; }
+.wi-noscript { border: 1px solid var(--line); border-radius: var(--radius-m); padding: 1rem 1.2rem; background: var(--surface); }
+
+/* the files a choice downloads, by name and size */
+.wi-filelist { list-style: none; margin: 0.3rem 0 0.6rem; padding: 0; overflow-wrap: anywhere; }
+.wi-filelist li { padding: 0.1rem 0; }

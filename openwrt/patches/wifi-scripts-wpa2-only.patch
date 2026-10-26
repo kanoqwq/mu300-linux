@@ -1,0 +1,35 @@
+--- a/usr/share/ucode/wifi/hostapd.uc
++++ b/usr/share/ucode/wifi/hostapd.uc
+@@ -606,6 +606,23 @@
+ 		append_raw(raw);
+ }
+ 
++/* mu300: an access point is WPA2-PSK only on the SC2355 (ZTE F50, U30 Air, V50). SAE runs in the chip's firmware,
++ * which hostapd's own SAE never reaches, and the U30 Air's firmware SAE offload is disabled: the PMK record it hands
++ * back cannot be told from one a client sends (mu300-linux docs/U30AIR-SAE.md, FINDINGS 80). An access point that
++ * asks for SAE - WPA3-Personal, its mixed and compatibility modes, or the offload's hostapd option - is not started,
++ * and this line says why. */
++function mu300_sae_refused(name, config) {
++	let opts = config.hostapd_bss_options ?? [];
++	if (type(opts) != 'array')
++		opts = [ opts ];
++	let base = split(config.encryption ?? 'none', '+', 2)[0];
++	if (!(base in [ 'sae', 'psk3', 'sae-mixed', 'psk3-mixed', 'sae-compat' ]) &&
++	    !length(filter(opts, (o) => wildcard(`${o}`, 'u30_sae_offload*'))))
++		return false;
++	log(`${name}: encryption '${config.encryption}' refused: WPA3/SAE is disabled on this Wi-Fi chip (SC2355, mu300-linux FINDINGS 80); an access point here is WPA2-PSK only (encryption psk2). This access point is not started.`);
++	return true;
++}
++
+ let iface_idx = 0;
+ function setup_interface(interface, data, config, vlans, stas, phy_features, fixup) {
+ 	config = { ...config, fixup };
+@@ -635,6 +652,8 @@
+ 	for (let k, interface in data.interfaces) {
+ 		if (interface.config.mode != 'ap')
+ 			continue;
++		if (mu300_sae_refused(k, interface.config))
++			continue;
+ 
+ 		interface.config.network_bridge = interface.bridge;
+ 		interface.config.network_ifname = interface['bridge-ifname'];

@@ -1,0 +1,172 @@
+#!/bin/sh /etc/rc.common
+# Keep the modem's AT channels open (closing a SIPC tty wedges it; see /opt/mu300/bin/mu300-atd).
+#
+# nr1 is the general command channel (mu300-at, toolkit, diagnostics). nr2, the third channel of the same
+# slot 0 group the vendor RIL opens, is dedicated to mobile-data: AT+CGDATA blocks its channel for 10-20 s,
+# and nr1 stays free for signal checks and SMS meanwhile. Only these two are held open: every channel held
+# open is one more reader that can wedge.
+#
+# START=19, not 91. The wan protocol (S20network) dials through mobile-data, and every AT command of that
+# dial goes through mu300-at -> one of these daemons. At 91 the daemon did not exist yet while netifd ran the
+# first attach, so mu300-at opened /dev/stty_nr1 directly ("works once, and then the channel needs a modem
+# restart") and then the daemon opened the same channel again: two readers on one SIPC tty.
+START=19
+USE_PROCD=1
+export PATH="$PATH:/opt/mu300/busybox-bin"
+
+# Wait for a SIPC tty inside the procd command: the nodes appear when the CP is alive, and an init script
+# that returns without opening an instance never gets a second chance. Bounded (240 s) so a kernel without
+# the modem stack says so instead of spinning silently; procd respawns and retries.
+wait_and_exec() {
+	# $1 = tty node, $2.. = the daemon (its environment is set by procd_set_param env)
+	local dev=$1; shift
+	echo "n=0; while [ ! -c $dev ]; do n=\$((n+1)); if [ \"\$n\" -gt 240 ]; then echo 'mu300-atd: $dev never appeared' >&2; exit 1; fi; sleep 1; done; exec $*"
+}
+
+start_sim1() {
+	local slot=0 cmddev datadev
+	[ ! -x /opt/mu300/bin/mu300-sim ] || slot=$(/opt/mu300/bin/mu300-sim active) || return 1
+	cmddev=/dev/stty_nr$((slot * 3 + 1)); datadev=/dev/stty_nr$((slot * 3 + 2))
+	# boot timeline mark; harmless without bootmark
+	[ -x /opt/mu300/bin/bootmark ] && /opt/mu300/bin/bootmark S19-atd-init || true
+	# Optional plugin handshake: it does nothing without the unisoc-modem panel (the file it tests for is the
+	# panel's); with it, nr1's first-command window is reserved for the panel's radio-on path.
+	[ ! -x /usr/libexec/unisoc-modem/lock ] || : > /run/unisoc-modem-early-hook-pending
+
+	procd_open_instance atd
+	procd_set_param command /bin/sh -c "$(wait_and_exec "$cmddev" /opt/mu300/bin/mu300-atd)"
+	procd_set_param respawn 3600 10 0
+	procd_set_param stdout 1
+	procd_set_param stderr 1
+	procd_close_instance
+
+	# second instance on nr2 (mobile-data's channel); no URC channel, nr1's daemon reads the URCs
+	procd_open_instance atd2
+	procd_set_param command /bin/sh -c "$(wait_and_exec "$datadev" /opt/mu300/bin/mu300-atd)"
+	procd_set_param env MU300_AT_DEV="$datadev" MU300_AT_DIR=/run/mu300-at2 MU300_AT_URC_CHANNELS=
+	procd_set_param respawn 3600 10 0
+	procd_set_param stdout 1
+	procd_set_param stderr 1
+	procd_close_instance
+
+	# K20 (ported from kanoqwq/clean-tf-7.2 cd4fb28): switch the radio on as soon as nr1's daemon reads commands,
+	# in a procd process of its own, so it overlaps the remaining init scripts; the PDP context stays netifd's.
+	# The command fifo is the readiness event (90 s at most). It opens no channel itself, and mobile-data's radio
+	# lock keeps it and the dial from running two CFUN/SFUN sequences at once. No respawn: one round per start;
+	# a failed one is retried by the dial and the watchdog. Not in a charging boot (init's marker): the radio stays off.
+	procd_open_instance radio-warmup
+	procd_set_param command /bin/sh -c '[ -e /run/mu300/charging-boot ] && exit 0; n=0; until [ -p /run/mu300-at/cmd ]; do n=$((n+1)); [ "$n" -gt 90 ] && exit 1; sleep 1; done; exec /opt/mu300/bin/mobile-data radio-on'
+	procd_set_param stdout 1
+	procd_set_param stderr 1
+	procd_close_instance
+}
+
+# U30 Air native cold/live mode is opted into by network.wan.sim_slot/sim_hot.
+# Other devices keep their shared boot selector path; legacy U30 files are migrated at startup.
+
+# broker NAME CHANNEL DIR URC-CHANNELS LIVE-URC-LOG [WAIT]: one persistent owner of a SIPC tty. WAIT is a shell
+# condition the instance waits for (bounded) before it opens the channel: the second group's channels have a node
+# before the CP is up, and spipe_open returns ENODEV until the sbuf is READY, which the driver's seqfile shows.
+# The wait is inside the instance, never in start_service: an init script that waits returns without instances
+# when the wait fails, and a boot without AT brokers is a boot without WAN.
+broker() {
+    local name=$1 channel=$2 directory=$3 urc=$4 live=$5 wait=${6:-} condition=
+    # A literal brace inside ${...:+...} closes the expansion early in ash. Build it separately.
+    [ -z "$wait" ] || condition=" && { $wait; }"
+    procd_open_instance "$name"
+    procd_set_param command /bin/sh -c "n=0; until [ -c /dev/stty_nr$channel ]$condition; do n=\$((n+1)); [ \"\$n\" -gt 240 ] && { echo 'mu300-atd: /dev/stty_nr$channel never became ready' >&2; exit 1; }; sleep 1; done; exec /opt/mu300/bin/mu300-atd"
+    procd_set_param env "MU300_AT_DEV=/dev/stty_nr$channel" "MU300_AT_DIR=$directory" \
+        "MU300_AT_URC_CHANNELS=$urc" "MU300_AT_LIVE_URC_LOG=$live" \
+        MU300_AT_DISABLE_REOPEN=1
+    # A failed owner stays failed during this boot (no respawn): restarting it would reopen a SIPC channel, and
+    # the cold start / the switch refuse to run without all four owners rather than talk to a reopened one.
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_close_instance
+}
+
+SBUF_READY="[ -c /dev/sipc_sbuf ] && grep -q '^sbuf_5_006, state: 1,' /dev/sipc_sbuf"
+start_sim2() {
+    mkdir -p /run/mu300
+    [ ! -x /usr/libexec/unisoc-modem/lock ] || : > /run/unisoc-modem-early-hook-pending
+    # Before S20network or any radio-warmup process: inhibit automatic SIM1 bring-up for this entire boot.
+    : > /run/mu300-radio-freeze
+    : > /run/mu300/sim-active-unknown
+    [ "$hot" != 1 ] || : > /run/mu300/sim-managed
+    broker atd 1 /run/mu300-at 0 /run/mu300-at/urc/stty_nr0.log "$SBUF_READY"
+    broker atd2 2 /run/mu300-at2 '' /run/mu300-at/urc/stty_nr0.log "$SBUF_READY"
+    broker atd4 4 /run/mu300-at4 3 /run/mu300-at4/urc/stty_nr3.log "$SBUF_READY"
+    broker atd5 5 /run/mu300-at5 '' /run/mu300-at4/urc/stty_nr3.log "$SBUF_READY"
+    # The cold start (and its fallback to SIM1 when it cannot be done): mu300-sim2-warmup confirms the boot.
+    procd_open_instance sim2-cold-start
+    procd_set_param command /bin/bash /opt/mu300/bin/mu300-sim2-warmup
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_close_instance
+}
+
+# sim_fallback REASON: back to SIM1 without live switching, the reason kept for the Dual SIM page (mu300-sim status).
+# It never fails its caller: settings that cannot be written (a full or read-only filesystem) leave the pending
+# marker, and the caller makes this boot a SIM1 boot either way.
+sim_fallback() {
+    echo "mu300-atd: dual SIM: $1; SIM1 without live switching from now on" >&2
+    printf '%s\n' "$1" > /etc/mu300-sim-fallback 2>/dev/null
+    sim_cfg_save_default 0 && sim_cfg_save_hot 0 && rm -f /etc/mu300-sim-pending
+    return 0
+}
+# sim1_only: this boot is a plain SIM1 boot, whatever was chosen. The pin says so to every reader (mu300-sim active):
+# without it start_sim1 would take a saved second card for the F50's kind and open nr4/nr5 under SIM1's names.
+sim1_only() {
+    mkdir -p /run/mu300
+    printf '0\n' > /run/mu300/sim-slot
+    start_sim1
+}
+
+# Every path through here ends with AT owners started: a return without instances is a boot without modem control,
+# and nothing starts this service a second time. Whatever cannot be read, written or understood is a SIM1 boot.
+start_service() {
+    local slot hot temporary lib=${MU300_SIM_CONFIG_LIB:-/opt/mu300/lib/sim-config.sh}
+    # Only the U30 Air has the second group and the validated sequences; everywhere else the files are ignored.
+    [ "$(/opt/mu300/bin/mu300-device 2>/dev/null)" = u30air ] || { start_sim1; return; }
+    [ -r "$lib" ] || { start_sim1; return; }
+    SIM_CONFIG_U30=1
+    . "$lib"
+    mkdir -p /run/mu300
+    # mu300-sim2-warmup gave the dual-SIM start up in this boot and started the service over: SIM1, nothing else
+    [ ! -e /run/mu300/sim-fallback-boot ] || { sim1_only; return; }
+    sim_cfg_migrate || sim_fallback invalid-settings
+    slot=$(cat /run/mu300/sim-slot 2>/dev/null || sim_cfg_default) || slot=invalid
+    hot=$(sim_cfg_hot) || hot=invalid
+    case "$hot" in 0|1) ;; *) sim_fallback invalid-hot; slot=0; hot=0;; esac
+    case "$slot" in 0|1) ;; *) sim_fallback invalid-slot; slot=0; hot=0 ;; esac
+    # One boot at a time: the dual-SIM path leaves a pending marker that mu300-sim2-warmup removes once the radio
+    # is up (or it falls back itself). A marker still there at the next boot means that boot never confirmed
+    # (a broker that never came up, a warm-up that died): this boot is a plain SIM1 boot, and the page says why.
+    if [ ! -e /run/mu300/sim-boot-policy ] && [ -e /etc/mu300-sim-pending ]; then
+        sim_fallback unconfirmed
+        : > /run/mu300/sim-boot-policy
+        sim1_only; return
+    fi
+    : > /run/mu300/sim-boot-policy
+    # Pin the active slot for this boot; changing network.wan.sim_slot only affects the next boot.
+    if [ ! -e /run/mu300/sim-slot ]; then
+        temporary=$(mktemp /run/mu300/sim-slot.XXXXXX) || { sim1_only; return; }
+        printf '%s\n' "$slot" > "$temporary"
+        ln "$temporary" /run/mu300/sim-slot 2>/dev/null
+        rm -f "$temporary"
+    fi
+    slot=$(cat /run/mu300/sim-slot 2>/dev/null) || slot=invalid
+    case "$slot:$hot" in
+        0:0) start_sim1 ;;
+        0:1|1:[01])
+            # The dual-SIM path's helpers are bash, and its one-boot guarantee needs the marker on the disk: without
+            # either this is a SIM1 boot, and the settings go back so that the next one does not try again.
+            if command -v bash >/dev/null 2>&1 && touch /etc/mu300-sim-pending 2>/dev/null; then
+                start_sim2
+            else
+                sim_fallback not-startable
+                sim1_only
+            fi ;;
+        *) echo "mu300-atd: invalid SIM slot $slot; SIM1" >&2; sim1_only ;;
+    esac
+}

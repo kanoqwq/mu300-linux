@@ -1,0 +1,187 @@
+# all-modules.py: options (regular expressions on the name without CONFIG_) that are never made modules
+# test, debug and benchmark code
+(^|_)TESTS?($|_)
+KUNIT
+TORTURE
+SELFTEST|SELF_TEST
+SAMPLE
+BENCH
+DEBUG
+LKDTM
+INJECT
+^(KASAN|KCSAN|KMSAN|UBSAN|KCOV|GCOV)
+# ASoC codecs, DAIs and machine glue need board-specific wiring; keep them out.
+^SND_SOC
+dir sound/soc
+# display panels and bridges: wired to a board; there is no display
+^DRM_PANEL
+# fake USB device controller: mu300-usb takes the first UDC it finds
+^USB_DUMMY_HCD$
+# the legacy gadget drivers: mu300-usb builds the gadget through configfs, and these would grab the UDC
+^USB_(ZERO|ETH|G_\w+|GADGETFS|FUNCTIONFS|MASS_STORAGE|GADGET_TARGET|MIDI_GADGET|CDC_COMPOSITE|AUDIO|RAW_GADGET|CONFIGFS_F_\w+_?TEST\w*)$
+# a module of these would demote a built-in (all-modules.py stops on that): MMC_BLOCK "depends on RPMB || !RPMB",
+# BT_HCIUART on SERIAL_DEV_BUS and POWER_SEQUENCING the same way, ext4 serves ext2 only without EXT2_FS, I3C_OR_I2C follows I3C
+^RPMB$
+^(SERIAL_DEV_BUS|POWER_SEQUENCING)$
+^EXT2_FS$
+^I3C$
+# CoreSight trace: selects PERF_EVENTS (kept off, FINDINGS 31p) and would bind to the SoC's trace blocks
+^CORESIGHT
+# board wiring: drivers for chips a board's device tree connects (power, clocks, pins, displays, camera sensors,
+# Ethernet switches, the SoC's own infrastructure). Without a board that has them they never bind, and the ones
+# USB devices need (tuners, demodulators, sensors of a webcam) are still built: their USB driver selects them
+dir drivers/regulator
+dir drivers/mfd
+dir drivers/power
+dir drivers/pinctrl
+dir drivers/clk
+dir drivers/extcon
+dir drivers/leds
+keep ^LEDS_(TRIGGER_\w+|CLASS_MULTICOLOR|CLASS_FLASH)$
+dir drivers/video/backlight
+dir drivers/gpu/drm/bridge
+dir drivers/gpu/drm/panel
+dir drivers/media/i2c
+dir drivers/media/spi
+dir drivers/media/dvb-frontends
+dir drivers/media/tuners
+dir drivers/media/platform
+dir drivers/media/test-drivers
+dir drivers/rtc
+dir drivers/input/touchscreen
+keep ^TOUCHSCREEN_USB_COMPOSITE$
+dir net/dsa
+dir drivers/net/dsa
+dir drivers/phy
+dir drivers/reset
+dir drivers/soc
+dir drivers/irqchip
+dir drivers/clocksource
+dir drivers/iommu
+dir drivers/dma
+dir drivers/mailbox
+dir drivers/remoteproc
+dir drivers/rpmsg
+dir drivers/interconnect
+dir drivers/memory
+dir drivers/pmdomain
+dir drivers/thermal
+dir drivers/cpufreq
+dir drivers/cpuidle
+dir drivers/devfreq
+dir drivers/nvmem
+dir drivers/perf
+dir drivers/firmware
+dir drivers/bus
+dir drivers/hwspinlock
+dir drivers/pwm
+dir drivers/mux
+dir drivers/slimbus
+dir drivers/soundwire
+dir drivers/spmi
+dir drivers/hte
+dir drivers/edac
+dir drivers/fpga
+dir drivers/char/hw_random
+keep ^HW_RANDOM_VIRTIO$
+dir drivers/usb/typec
+dir drivers/usb/phy
+dir drivers/usb/dwc2
+dir drivers/usb/musb
+dir drivers/usb/chipidea
+dir drivers/usb/cdns3
+dir drivers/usb/gadget/udc
+dir drivers/watchdog
+# DRM: only the displays a USB port takes. The SoC GPU drivers (panfrost, lima, etnaviv...) would bind next to
+# the vendor Mali driver and select IOMMU DMA and CMA, which change how every device of the vendor tree maps memory
+dir drivers/gpu/drm
+keep ^(DRM|DRM_UDL|DRM_GUD|DRM_GM12U320|DRM_VGEM)$
+dir drivers/video/fbdev
+dir drivers/auxdisplay
+# platform host and device controllers: the board has its dwc3/xHCI built in (USB serial, storage, network,
+# audio, video and the other class drivers are elsewhere and taken)
+dir drivers/usb/host
+dir drivers/usb/isp1760
+dir drivers/usb/fotg210
+dir drivers/usb/mtu3
+dir drivers/usb/renesas_usbhs
+dir drivers/usb/c67x00
+dir drivers/usb/dwc3
+dir drivers/mmc/host
+keep ^MMC_(VUB300|USHC)$
+# other buses and boards' parts: no PCMCIA, PATA/SATA, UFS, parallel NOR/NAND, platform Ethernet MACs and CAN
+# controllers, server management (IPMI, FSI, PECI, OCC), trace hubs on this board
+dir drivers/pcmcia
+dir sound/pcmcia
+dir drivers/ata
+dir drivers/ufs
+dir drivers/mtd/nand
+dir drivers/mtd/maps
+dir drivers/mtd/chips
+dir drivers/mtd/lpddr
+dir drivers/mtd/spi-nor
+dir drivers/mtd/hyperbus
+dir drivers/mtd/devices
+keep ^MTD_(BLOCK2MTD|PHRAM|MTDRAM|SLRAM)$
+dir drivers/net/ethernet
+dir drivers/net/can/sja1000
+dir drivers/net/can/cc770
+dir drivers/net/can/m_can
+dir drivers/net/can/c_can
+dir drivers/net/can/ctucanfd
+dir drivers/net/can/softing
+dir drivers/net/can/spi
+dir drivers/net/can/ifi_canfd
+dir drivers/char/ipmi
+dir drivers/fsi
+dir drivers/peci
+dir drivers/hwmon/peci
+dir drivers/hwmon/occ
+dir drivers/hwtracing
+dir drivers/most
+dir drivers/mcb
+dir drivers/greybus
+dir drivers/nvdimm
+dir drivers/dax
+dir drivers/char/xillybus
+dir drivers/i2c/muxes
+dir drivers/dibs
+# VFIO: selects the IOMMU API, and mainline has no driver for this SoC's IOMMUs, so there is nothing to pass through
+^VFIO
+# test drivers that do not say so in their names
+dir drivers/iio/dummy
+# the mainline driver of the SoC's SPI controllers: it binds to the vendor tree's sprd,sc9860-spi nodes (check-dt-modules.py)
+^SPI_SPRD$
+# the PMIC's vibrator (the boards have none): udev loaded it on F50-B at boot, though it bound nothing; no other
+# Spreadtrum/Unisoc driver came in with the expansion (SPI_SPRD above), and none may (the rule is general)
+(^|_)(SPRD|SC27XX|UMS9|UNISOC)
+# no realistic use on these devices and a poor security record (security review of #256, FINDINGS 163): not built
+# at all. TIPC, SCTP, CAN, NFC and IEEE 802.15.4 stay, but the kernel does not load them on demand
+# (mu300-modprobe-guard); root loads them by name.
+^N_GSM$                # GSM 07.10 mux line discipline (CVE-2023-6546 and more); no modem here sits on a tty
+^N_HDLC$               # synchronous HDLC line discipline (CVE-2017-2636)
+dir net/atm            # ATM and the DSL modems on it
+dir drivers/atm
+dir drivers/usb/atm
+dir drivers/isdn       # ISDN/CAPI
+dir net/ax25           # amateur radio: AX.25, NET/ROM, ROSE and their drivers
+dir net/netrom
+dir net/rose
+dir drivers/net/hamradio
+dir net/x25            # X.25, LAPB and the WAN cards they serve
+dir net/lapb
+dir drivers/net/wan
+dir net/appletalk
+dir net/phonet         # Nokia's phone protocol
+dir net/rds            # RDS (many holes reachable by unprivileged sockets)
+dir net/caif           # ST-Ericsson modems' CAIF
+dir drivers/net/caif
+dir net/kcm            # kernel connection multiplexor
+dir net/smc            # IBM's shared-memory sockets
+dir net/qrtr           # Qualcomm's IPC router (over PCIe MHI)
+dir net/rxrpc          # AF_RXRPC and the AFS client over it
+dir fs/afs
+dir net/dccp
+dir drivers/parport    # legacy buses
+dir drivers/hsi
+^LLC2$                 # AF_LLC (net-pf-26), LLC type 2; the bridge needs only llc, which is built in

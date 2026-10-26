@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>ZTE F50 / MU300 和 U30 Air 刷 Linux：Ubuntu 与 OpenWrt | MU300 Linux</title>
+<meta name="description" content="在 ZTE F50 / MU300 和 U30 Air 上与 Android 并存安装 Ubuntu 或 OpenWrt：带 5G、热点、SSH 和 VPN 的 Linux 路由器。">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/zh/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="ZTE F50 / MU300 和 U30 Air 刷 Linux：Ubuntu 与 OpenWrt | MU300 Linux">
+<meta property="og:description" content="在 ZTE F50 / MU300 和 U30 Air 上与 Android 并存安装 Ubuntu 或 OpenWrt：带 5G、热点、SSH 和 VPN 的 Linux 路由器。">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/zh/">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="一台有两个房间的 5G 随身热点：一个给 Android，一个给 Linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ZTE F50 / MU300 和 U30 Air 刷 Linux：Ubuntu 与 OpenWrt | MU300 Linux">
+<meta name="twitter:description" content="在 ZTE F50 / MU300 和 U30 Air 上与 Android 并存安装 Ubuntu 或 OpenWrt：带 5G、热点、SSH 和 VPN 的 Linux 路由器。">
+<meta name="twitter:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/site.js" defer></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "SoftwareApplication",
+ "name": "MU300 Linux",
+ "alternateName": [
+  "mu300-linux",
+  "Linux for the ZTE F50 / MU300 and U30 Air"
+ ],
+ "description": "在 ZTE F50 / MU300 和 U30 Air 上与 Android 并存安装 Ubuntu 或 OpenWrt：带 5G、热点、SSH 和 VPN 的 Linux 路由器。",
+ "url": "https://kaandikec.com/mu300-linux/",
+ "inLanguage": "zh-Hans",
+ "applicationCategory": "UtilitiesApplication",
+ "applicationSubCategory": "Operating system installer",
+ "operatingSystem": "Ubuntu 24.04 / 26.04 LTS, OpenWrt 25.12 (installer runs on Windows 10/11, macOS and Linux)",
+ "isAccessibleForFree": true,
+ "license": "https://github.com/dikeckaan/mu300-linux/blob/main/LICENSE",
+ "codeRepository": "https://github.com/dikeckaan/mu300-linux",
+ "downloadUrl": "https://github.com/dikeckaan/mu300-linux/releases/latest",
+ "softwareHelp": "https://github.com/dikeckaan/mu300-linux/wiki",
+ "offers": {
+  "@type": "Offer",
+  "price": "0",
+  "priceCurrency": "USD"
+ }
+}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "安装 Linux 会删除 Android 或我的数据吗？",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "在常见的 64 GB 设备上不会。Linux 安装在不属于任何分区的约 32 GiB 空间里，Android 的分区、数据和分区表都不会被写入。安装程序只写入一个启动分区（Android 没有在用的那个槽位）以及 misc 的 32 个字节。例外是 32 GB 版本：它完全没有空闲空间。这时可以用 SD 卡（F50），或者让安装程序缩小 userdata，这会清除 Android 里的全部内容。这条路是实验性的，会先要求你输入 ERASE。"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "需要先给设备 root 吗？",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "需要。设备必须已经 root 并解锁：它已经能启动修改过的 Android 启动镜像，并且打开了 USB 调试。做到这一步不属于本项目，你要按照那些工具自己的说明进行，风险自负。"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "如果 Linux 启动不了怎么办？",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "设备会自动回到 Android。每次启动 Linux 都是一次试用；如果连续失败 5 次（安装时可在 1 到 6 之间选择），下一次启动就是 Android。详见安全网。"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "怎样回到 Android？",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "在 Linux 中：sudo mu300-next-boot android，然后 sudo reboot。要彻底移除 Linux，请在设备处于 Android 时运行 ./uninstall.sh（Windows：.\\uninstall.ps1）。在 Android 中，su -c mu300-linux 可以再次启动 Linux。"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Ubuntu 还是 OpenWrt，该选哪个？",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "如果主要想要一个带网页界面的路由器，选 OpenWrt；如果想要一台用 apt 的小服务器，选 Ubuntu。也可以两个都装，用 mu300-os 切换。选择系统页面连同四个内核一起做了说明。"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "支持 ZTE U30 Pro 吗？",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "不支持。U30 Pro 用的是另一颗芯片（UMS9632）。支持的是 ZTE F50 / MU300 和 ZTE U30 Air，两者使用同一块主板和芯片；安装程序会自己识别是哪一台。"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "可以不用电脑安装吗？",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "可以，前提是设备已经运行装有 Magisk 26 或更新版本的 root 过的 Android：每个发布版本都有 Magisk zip，每个系统和内核各一个（共 11 个，包括带控制面板的 OpenWrt），在 Magisk 应用里安装。参见用 Magisk zip 安装。"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "可以把 Linux 装在 SD 卡上吗？",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "F50 可以：卡槽里有一张至少 700 MiB 的卡时，安装程序会问 Linux 是否装到卡上。U30 Air 没有卡槽。"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "有屏幕或声音吗？",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "没有。USB-C 转 HDMI 不工作，主板上也没有扬声器和麦克风。你通过 SSH、网页界面或串口控制台使用设备。"
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "要花钱吗？",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "不要。脚本和文档采用 MIT 许可，内核采用 GPL-2.0。发布的镜像里不含专有文件：安装程序会从你自己的设备上复制 Wi-Fi 和基带文件。"
+   }
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">跳到正文</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../zh/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../zh/install/">安装</a>
+<a href="../zh/web-installer/">网页安装器</a>
+<a href="../zh/choose/">选择系统</a>
+<a href="../zh/features/">功能</a>
+<a href="../zh/updates/">更新与安全</a>
+<a href="../zh/troubleshooting/">故障排除</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="语言"><a href="../" hreflang="en" lang="en">English</a><a href="../tr/" hreflang="tr" lang="tr">Türkçe</a><a href="../zh/" hreflang="zh-Hans" lang="zh-Hans" aria-current="true">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="主题|自动|浅色|深色|跟随系统|切换颜色主题"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">菜单</button>
+</div>
+</header>
+<main id="content">
+
+<section class="hero">
+<div class="wrap">
+<div>
+<h1>你的 5G 随身 Wi-Fi 就是一台 Linux 电脑</h1>
+<p class="lede">在 ZTE F50 / MU300 和 ZTE U30 Air 上，与 Android 并存安装 <strong>Ubuntu</strong> 或
+<strong>OpenWrt</strong>。SSH、Wi-Fi、蓝牙和 5G 基带都能用。Android 会保留；如果哪天 Linux 启动不了，设备会自动回到
+Android。</p>
+<div class="actions">
+<a class="btn primary" href="install/">阅读安装指南</a>
+<a class="btn" href="https://github.com/dikeckaan/mu300-linux/releases/latest">GitHub 上的最新版本</a>
+<a class="btn sponsor" href="https://github.com/sponsors/dikeckaan"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="M8 14.2 6.9 13.2C3 9.7.5 7.4.5 4.6.5 2.4 2.2.7 4.4.7c1.2 0 2.4.6 3.1 1.5C8.2 1.3 9.4.7 10.6.7c2.2 0 3.9 1.7 3.9 3.9 0 2.8-2.5 5.1-6.4 8.6z"/></svg>赞助</a>
+</div>
+<p class="sponsor-note">由土耳其的一个人利用业余时间开发，对所有人免费。如果它帮你省下了一台设备或一些钱，赞助能让项目继续下去。</p>
+</div>
+<svg xmlns="http://www.w3.org/2000/svg" class="mu-dg hero-art" viewBox="0 0 440 440" width="440" height="440" role="img" aria-label="一台小型 5G 随身 Wi-Fi 的插图，带三个状态指示灯。正面有两个房间：绿色给 Android，琥珀色给 Linux。" lang="en">
+<title id="device-t">A 5G pocket hotspot running Linux</title>
+<desc id="device-d">A drawing of a small 5G hotspot with three status LEDs. Its face shows two rooms: a green one for Android and an amber one for Linux.</desc>
+<style>
+.mu-dg text { font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #142133; }
+.mu-dg .t-muted { fill: #526276; }
+.mu-dg .t-white { fill: #ffffff; }
+.mu-dg .t-mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.mu-dg .ink { fill: #142133; }
+.mu-dg .stroke-ink { stroke: #142133; }
+.mu-dg .paper { fill: #ffffff; }
+.mu-dg .soft { fill: #eef2f8; }
+.mu-dg .line { stroke: #c9d4e2; }
+.mu-dg .fill-line { fill: #c9d4e2; }
+.mu-dg .lx { fill: #f2b23a; }
+.mu-dg .lx-soft { fill: #fbf0d8; }
+.mu-dg .lx-stroke { stroke: #b97700; }
+.mu-dg .t-lx { fill: #8a5900; }
+.mu-dg .an { fill: #3fae6a; }
+.mu-dg .an-soft { fill: #def2e6; }
+.mu-dg .an-stroke { stroke: #217a47; }
+.mu-dg .t-an { fill: #17603a; }
+.mu-dg .bl { fill: #2259d6; }
+.mu-dg .bl-soft { fill: #e3ebfb; }
+.mu-dg .bl-stroke { stroke: #2259d6; }
+.mu-dg .t-bl { fill: #1b47ad; }
+.mu-dg .rd { fill: #c4302f; }
+.mu-dg .rd-soft { fill: #fbe3e2; }
+.mu-dg .rd-stroke { stroke: #c4302f; }
+.mu-dg .t-rd { fill: #a12625; }
+.mu-dg .body-top { fill: #fdfdfe; }
+.mu-dg .body-side { fill: #dde4ee; }
+.mu-dg .body-edge { stroke: #b6c2d2; }
+.mu-dg .led-white { fill: #ffffff; stroke: #b6c2d2; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .mu-dg text, .mu-dg:root text { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .t-muted, .mu-dg:root .t-muted { fill: #9cabbe; }
+  :root:not([data-theme="light"]) .mu-dg .ink, .mu-dg:root .ink { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .stroke-ink, .mu-dg:root .stroke-ink { stroke: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .paper, .mu-dg:root .paper { fill: #142031; }
+  :root:not([data-theme="light"]) .mu-dg .soft, .mu-dg:root .soft { fill: #1a283b; }
+  :root:not([data-theme="light"]) .mu-dg .line, .mu-dg:root .line { stroke: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .fill-line, .mu-dg:root .fill-line { fill: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-soft, .mu-dg:root .lx-soft { fill: #33290f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-stroke, .mu-dg:root .lx-stroke { stroke: #f2b740; }
+  :root:not([data-theme="light"]) .mu-dg .t-lx, .mu-dg:root .t-lx { fill: #f2c060; }
+  :root:not([data-theme="light"]) .mu-dg .an-soft, .mu-dg:root .an-soft { fill: #12301f; }
+  :root:not([data-theme="light"]) .mu-dg .an-stroke, .mu-dg:root .an-stroke { stroke: #5ccf8a; }
+  :root:not([data-theme="light"]) .mu-dg .t-an, .mu-dg:root .t-an { fill: #7ddba3; }
+  :root:not([data-theme="light"]) .mu-dg .bl, .mu-dg:root .bl { fill: #5b88f0; }
+  :root:not([data-theme="light"]) .mu-dg .bl-soft, .mu-dg:root .bl-soft { fill: #1a2a48; }
+  :root:not([data-theme="light"]) .mu-dg .bl-stroke, .mu-dg:root .bl-stroke { stroke: #7ea6ff; }
+  :root:not([data-theme="light"]) .mu-dg .t-bl, .mu-dg:root .t-bl { fill: #9dbbff; }
+  :root:not([data-theme="light"]) .mu-dg .rd-soft, .mu-dg:root .rd-soft { fill: #3a1a1a; }
+  :root:not([data-theme="light"]) .mu-dg .rd-stroke, .mu-dg:root .rd-stroke { stroke: #ff7b72; }
+  :root:not([data-theme="light"]) .mu-dg .t-rd, .mu-dg:root .t-rd { fill: #ff9b94; }
+  :root:not([data-theme="light"]) .mu-dg .body-top, .mu-dg:root .body-top { fill: #2a3a52; }
+  :root:not([data-theme="light"]) .mu-dg .body-side, .mu-dg:root .body-side { fill: #1c2a3d; }
+  :root:not([data-theme="light"]) .mu-dg .body-edge, .mu-dg:root .body-edge { stroke: #44587a; }
+  :root:not([data-theme="light"]) .mu-dg .led-white, .mu-dg:root .led-white { fill: #f4f7fb; stroke: #44587a; }
+}
+:root[data-theme="dark"] .mu-dg text { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .t-muted { fill: #9cabbe; }
+:root[data-theme="dark"] .mu-dg .ink { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .stroke-ink { stroke: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .paper { fill: #142031; }
+:root[data-theme="dark"] .mu-dg .soft { fill: #1a283b; }
+:root[data-theme="dark"] .mu-dg .line { stroke: #34465f; }
+:root[data-theme="dark"] .mu-dg .fill-line { fill: #34465f; }
+:root[data-theme="dark"] .mu-dg .lx-soft { fill: #33290f; }
+:root[data-theme="dark"] .mu-dg .lx-stroke { stroke: #f2b740; }
+:root[data-theme="dark"] .mu-dg .t-lx { fill: #f2c060; }
+:root[data-theme="dark"] .mu-dg .an-soft { fill: #12301f; }
+:root[data-theme="dark"] .mu-dg .an-stroke { stroke: #5ccf8a; }
+:root[data-theme="dark"] .mu-dg .t-an { fill: #7ddba3; }
+:root[data-theme="dark"] .mu-dg .bl { fill: #5b88f0; }
+:root[data-theme="dark"] .mu-dg .bl-soft { fill: #1a2a48; }
+:root[data-theme="dark"] .mu-dg .bl-stroke { stroke: #7ea6ff; }
+:root[data-theme="dark"] .mu-dg .t-bl { fill: #9dbbff; }
+:root[data-theme="dark"] .mu-dg .rd-soft { fill: #3a1a1a; }
+:root[data-theme="dark"] .mu-dg .rd-stroke { stroke: #ff7b72; }
+:root[data-theme="dark"] .mu-dg .t-rd { fill: #ff9b94; }
+:root[data-theme="dark"] .mu-dg .body-top { fill: #2a3a52; }
+:root[data-theme="dark"] .mu-dg .body-side { fill: #1c2a3d; }
+:root[data-theme="dark"] .mu-dg .body-edge { stroke: #44587a; }
+:root[data-theme="dark"] .mu-dg .led-white { fill: #f4f7fb; stroke: #44587a; }
+</style>
+<style>
+@media (prefers-reduced-motion: no-preference) {
+  .mu-dg .led { animation: led-on .5s ease-out both; }
+  .mu-dg .led-2 { animation-delay: .5s; } .mu-dg .led-3 { animation-delay: 1s; }
+  @keyframes led-on { from { opacity: .25; } to { opacity: 1; } }
+}
+</style><g transform="translate(78 64)">
+<g fill="none" stroke-linecap="round" class="bl-stroke" stroke-width="7">
+<path d="M 113.6 11.4 A 52 52 0 0 1 186.4 11.4"/>
+<path d="M 89.8 -7.3 A 86 86 0 0 1 210.2 -7.3"/>
+<path d="M 66 -26 A 120 120 0 0 1 234 -26"/>
+</g>
+<rect x="8" y="58" width="284" height="300" rx="46" class="body-side"/>
+<rect x="0" y="46" width="284" height="296" rx="44" class="body-top body-edge" stroke-width="2"/>
+<circle cx="92" cy="92" r="10" class="bl led led-1" stroke-width="2"/>
+<circle cx="142" cy="92" r="10" class="led-white led led-2" stroke-width="2"/>
+<circle cx="192" cy="92" r="10" class="lx led led-3" stroke-width="2"/>
+<rect x="36" y="136" width="100" height="150" rx="18" class="an-soft"/>
+<rect x="148" y="136" width="100" height="150" rx="18" class="lx-soft"/>
+<rect x="64" y="170" width="44" height="78" rx="9" fill="none" class="an-stroke" stroke-width="6"/>
+<circle cx="86" cy="234" r="4.5" class="an"/>
+<path d="M 170 186 l 24 22 l -24 22" fill="none" class="lx-stroke" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 204 238 h 26" class="lx-stroke" stroke-width="8" stroke-linecap="round"/>
+<rect x="118" y="334" width="48" height="12" rx="6" class="ink" opacity=".75"/>
+</g>
+</svg>
+</div>
+</section>
+
+<div class="prose">
+
+<h2 id="what">这是什么？</h2>
+<p>ZTE F50 是一个插 SIM 卡、通过 Wi-Fi 分享 5G 网络的小盒子。它里面是一台运行 Android 的小电脑。本项目在 Android
+旁边装上一个真正的 Linux 系统。</p>
+<p>可以把它想成<strong>一台已经内置 5G 基带、Wi-Fi 热点和 32 GB 存储的树莓派</strong>。ZTE U30 Air
+是同一块主板和芯片再加一块电池，也同样支持。</p>
+
+<h2 id="why">为什么要这样做？</h2>
+<ul class="dots">
+<li><strong>一台由你掌控的 5G 路由器</strong>带 LuCI 网页界面的 OpenWrt、防火墙和你自己的规则，作用于热点上的每一部手机和笔记本。</li>
+<li class="a"><strong>一台口袋服务器</strong>带 systemd 和 <code>apt</code> 的 Ubuntu 24.04 或 26.04 LTS：运行有自己网络连接的服务。</li>
+<li><strong>一个能对话的基带</strong>收发短信、发送 USSD 代码；在控制面板里锁定频段和小区。</li>
+<li class="a"><strong>为身后所有设备提供的 VPN</strong>WireGuard、OpenVPN、VLESS 等，带断网保护（kill switch），作为可选模块提供。</li>
+</ul>
+
+<h2 id="works">哪些功能可用</h2>
+<ul class="dots">
+<li><strong>移动数据：5G NSA 和 LTE</strong>与 Wi-Fi 和 USB 客户端共享；基带重置后会自动重新连接。</li>
+<li><strong>Wi-Fi 热点</strong>5 GHz（802.11ac）或 2.4 GHz，同一时间只能一个。</li>
+<li><strong>Wi-Fi 客户端</strong>连接另一个网络（WPA2、WPA2/WPA3 混合），并通过 USB 共享。</li>
+<li><strong>USB 网络和 SSH</strong>插到电脑上，它会显示为一块网卡。</li>
+<li><strong>短信和 USSD</strong>命令行里的 <code>sms</code> 和 <code>mu300-ussd</code>，控制面板里也有。</li>
+<li><strong>VPN</strong>支持 WireGuard、OpenVPN、VLESS、VMess、Trojan、Shadowsocks、Clash/mihomo 配置；Tailscale 走隧道。</li>
+<li><strong>四个内核</strong>紫光展锐的厂商内核 5.4、主线 6.18 LTS、主线 7.2（稳定版）和主线 7.3（从 v2026.10.19.2 之后的下一个版本起提供），全部支持 KVM。</li>
+<li><strong>网页面板、终端、adb</strong>OpenWrt 上的 LuCI 和 MU300 面板（带 VPN 栏目和浏览器里的终端），Ubuntu 上带 MU300 页面的 Cockpit，以及通过 USB 对 Linux 用 <code>adb shell</code>。</li>
+<li><strong>蓝牙和 GPU</strong>BlueZ，以及用于 OpenCL 的 Mali-G57（无显示输出）。</li>
+<li class="g"><strong>Android 保留</strong>一条命令就能切回去，启动失败会自动回退。</li>
+<li class="r"><strong>没有屏幕，没有声音</strong>USB-C 视频输出不工作，主板上没有扬声器和麦克风。</li>
+</ul>
+
+<h2 id="devices">支持的设备</h2>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col"></th><th scope="col">ZTE F50 / MU300</th><th scope="col">ZTE U30 Air</th></tr></thead><tbody>
+<tr><th scope="row">芯片</th><td>紫光展锐 T760（UMS9620）</td><td>相同</td></tr>
+<tr><th scope="row">供电</th><td>仅 USB</td><td>电池（4050 mAh）、充电芯片和电量计</td></tr>
+<tr><th scope="row">USB 网络地址</th><td><code>192.168.77.1</code></td><td><code>192.168.78.1</code></td></tr>
+<tr><th scope="row">SD 卡</th><td class="yes">Linux 可以放在卡上，代替内部存储</td><td class="no">没有卡槽</td></tr>
+<tr><th scope="row">其他</th><td>状态指示灯</td><td>状态指示灯、电池读数、NFC 标签、通过 OTG 转接头的 USB 主机模式（主线内核）</td></tr>
+</tbody></table></div>
+<p>安装程序会从 Android 读出是哪一台，你不需要手动选择。<strong>U30 Pro</strong> 是另一颗芯片（UMS9632），
+<strong>不受支持</strong>。大多数设备有 64 GB 内部存储；如果是 32 GB 版本，请先阅读<a href="install/#check">检查步骤</a>。</p>
+
+<h2 id="how">它是怎么工作的：讲个故事</h2>
+<p>四张小图就能讲清楚所有重点。</p>
+
+<h3>1. 一栋房子，两个房间</h3>
+<p>你的设备就像一栋房子。Android 已经带着它所有的东西住在一个房间里。在常见的 64 GB 设备上，还有第二个没人用的空房间：
+Android 分区之后大约 32 GiB 的存储空间。Linux 搬进这个空房间。Android 房间里的东西一样都不会被挪动或改变。</p>
+<p>这栋房子还有两扇前门，叫做<strong>启动槽位</strong> A 和 B。Android 用其中一扇。安装程序把 Linux 的门，也就是它的启动镜像，装在另一扇上。</p>
+<figure class="wide"><div class="panel diagram" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" class="mu-dg" viewBox="0 0 960 440" width="960" height="440" role="img" aria-label="用一条长条表示的内部存储：左边 Android 的分区保持原样；右边约 32 GiB 的空闲空间是 Linux 住的地方。下方是两个启动槽位：Android 的槽位从不写入，另一个槽位存放 Linux 的启动镜像。在 F50 上，Linux 也可以放在 SD 卡上。" lang="zh">
+<title id="two-zh-t">一台设备上的 Android 和 Linux</title>
+<desc id="two-zh-d">内部存储：Android 的分区保持原样，Linux 安装在它们后面的空闲空间里。设备有两个启动槽位；Android 保留自己的槽位，Linux 的启动镜像写入另一个。</desc>
+<style>
+.mu-dg text { font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #142133; }
+.mu-dg .t-muted { fill: #526276; }
+.mu-dg .t-white { fill: #ffffff; }
+.mu-dg .t-mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.mu-dg .ink { fill: #142133; }
+.mu-dg .stroke-ink { stroke: #142133; }
+.mu-dg .paper { fill: #ffffff; }
+.mu-dg .soft { fill: #eef2f8; }
+.mu-dg .line { stroke: #c9d4e2; }
+.mu-dg .fill-line { fill: #c9d4e2; }
+.mu-dg .lx { fill: #f2b23a; }
+.mu-dg .lx-soft { fill: #fbf0d8; }
+.mu-dg .lx-stroke { stroke: #b97700; }
+.mu-dg .t-lx { fill: #8a5900; }
+.mu-dg .an { fill: #3fae6a; }
+.mu-dg .an-soft { fill: #def2e6; }
+.mu-dg .an-stroke { stroke: #217a47; }
+.mu-dg .t-an { fill: #17603a; }
+.mu-dg .bl { fill: #2259d6; }
+.mu-dg .bl-soft { fill: #e3ebfb; }
+.mu-dg .bl-stroke { stroke: #2259d6; }
+.mu-dg .t-bl { fill: #1b47ad; }
+.mu-dg .rd { fill: #c4302f; }
+.mu-dg .rd-soft { fill: #fbe3e2; }
+.mu-dg .rd-stroke { stroke: #c4302f; }
+.mu-dg .t-rd { fill: #a12625; }
+.mu-dg .body-top { fill: #fdfdfe; }
+.mu-dg .body-side { fill: #dde4ee; }
+.mu-dg .body-edge { stroke: #b6c2d2; }
+.mu-dg .led-white { fill: #ffffff; stroke: #b6c2d2; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .mu-dg text, .mu-dg:root text { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .t-muted, .mu-dg:root .t-muted { fill: #9cabbe; }
+  :root:not([data-theme="light"]) .mu-dg .ink, .mu-dg:root .ink { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .stroke-ink, .mu-dg:root .stroke-ink { stroke: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .paper, .mu-dg:root .paper { fill: #142031; }
+  :root:not([data-theme="light"]) .mu-dg .soft, .mu-dg:root .soft { fill: #1a283b; }
+  :root:not([data-theme="light"]) .mu-dg .line, .mu-dg:root .line { stroke: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .fill-line, .mu-dg:root .fill-line { fill: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-soft, .mu-dg:root .lx-soft { fill: #33290f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-stroke, .mu-dg:root .lx-stroke { stroke: #f2b740; }
+  :root:not([data-theme="light"]) .mu-dg .t-lx, .mu-dg:root .t-lx { fill: #f2c060; }
+  :root:not([data-theme="light"]) .mu-dg .an-soft, .mu-dg:root .an-soft { fill: #12301f; }
+  :root:not([data-theme="light"]) .mu-dg .an-stroke, .mu-dg:root .an-stroke { stroke: #5ccf8a; }
+  :root:not([data-theme="light"]) .mu-dg .t-an, .mu-dg:root .t-an { fill: #7ddba3; }
+  :root:not([data-theme="light"]) .mu-dg .bl, .mu-dg:root .bl { fill: #5b88f0; }
+  :root:not([data-theme="light"]) .mu-dg .bl-soft, .mu-dg:root .bl-soft { fill: #1a2a48; }
+  :root:not([data-theme="light"]) .mu-dg .bl-stroke, .mu-dg:root .bl-stroke { stroke: #7ea6ff; }
+  :root:not([data-theme="light"]) .mu-dg .t-bl, .mu-dg:root .t-bl { fill: #9dbbff; }
+  :root:not([data-theme="light"]) .mu-dg .rd-soft, .mu-dg:root .rd-soft { fill: #3a1a1a; }
+  :root:not([data-theme="light"]) .mu-dg .rd-stroke, .mu-dg:root .rd-stroke { stroke: #ff7b72; }
+  :root:not([data-theme="light"]) .mu-dg .t-rd, .mu-dg:root .t-rd { fill: #ff9b94; }
+  :root:not([data-theme="light"]) .mu-dg .body-top, .mu-dg:root .body-top { fill: #2a3a52; }
+  :root:not([data-theme="light"]) .mu-dg .body-side, .mu-dg:root .body-side { fill: #1c2a3d; }
+  :root:not([data-theme="light"]) .mu-dg .body-edge, .mu-dg:root .body-edge { stroke: #44587a; }
+  :root:not([data-theme="light"]) .mu-dg .led-white, .mu-dg:root .led-white { fill: #f4f7fb; stroke: #44587a; }
+}
+:root[data-theme="dark"] .mu-dg text { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .t-muted { fill: #9cabbe; }
+:root[data-theme="dark"] .mu-dg .ink { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .stroke-ink { stroke: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .paper { fill: #142031; }
+:root[data-theme="dark"] .mu-dg .soft { fill: #1a283b; }
+:root[data-theme="dark"] .mu-dg .line { stroke: #34465f; }
+:root[data-theme="dark"] .mu-dg .fill-line { fill: #34465f; }
+:root[data-theme="dark"] .mu-dg .lx-soft { fill: #33290f; }
+:root[data-theme="dark"] .mu-dg .lx-stroke { stroke: #f2b740; }
+:root[data-theme="dark"] .mu-dg .t-lx { fill: #f2c060; }
+:root[data-theme="dark"] .mu-dg .an-soft { fill: #12301f; }
+:root[data-theme="dark"] .mu-dg .an-stroke { stroke: #5ccf8a; }
+:root[data-theme="dark"] .mu-dg .t-an { fill: #7ddba3; }
+:root[data-theme="dark"] .mu-dg .bl { fill: #5b88f0; }
+:root[data-theme="dark"] .mu-dg .bl-soft { fill: #1a2a48; }
+:root[data-theme="dark"] .mu-dg .bl-stroke { stroke: #7ea6ff; }
+:root[data-theme="dark"] .mu-dg .t-bl { fill: #9dbbff; }
+:root[data-theme="dark"] .mu-dg .rd-soft { fill: #3a1a1a; }
+:root[data-theme="dark"] .mu-dg .rd-stroke { stroke: #ff7b72; }
+:root[data-theme="dark"] .mu-dg .t-rd { fill: #ff9b94; }
+:root[data-theme="dark"] .mu-dg .body-top { fill: #2a3a52; }
+:root[data-theme="dark"] .mu-dg .body-side { fill: #1c2a3d; }
+:root[data-theme="dark"] .mu-dg .body-edge { stroke: #44587a; }
+:root[data-theme="dark"] .mu-dg .led-white { fill: #f4f7fb; stroke: #44587a; }
+</style>
+<defs><marker id="two-zh-ah" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="ink"/></marker></defs>
+<text x="24" y="40" font-size="20" text-anchor="start" font-weight="700">内部存储（常见的 64 GB 设备）</text>
+<rect x="24" y="62" width="424" height="96" rx="14" class="an-soft"/>
+<rect x="434" y="62" width="502" height="96" rx="14" class="lx-soft"/>
+<rect x="431" y="62" width="6" height="96" class="an"/>
+<line x1="69.5556" y1="138" x2="69.5556" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<line x1="115.111" y1="138" x2="115.111" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<line x1="160.667" y1="138" x2="160.667" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<line x1="206.222" y1="138" x2="206.222" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<line x1="251.778" y1="138" x2="251.778" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<line x1="297.333" y1="138" x2="297.333" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<line x1="342.889" y1="138" x2="342.889" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<line x1="388.444" y1="138" x2="388.444" y2="152" class="an-stroke" stroke-width="1.5" opacity=".35"/>
+<text x="44" y="104" font-size="19" text-anchor="start" font-weight="700" class="t-an">Android 的分区</text>
+<text x="44" y="132" font-size="16" text-anchor="start" class="t-muted">系统、应用、你的数据</text>
+<text x="458" y="104" font-size="19" text-anchor="start" font-weight="700" class="t-lx">空闲空间，约 32 GiB</text>
+<text x="458" y="132" font-size="16" text-anchor="start" class="t-muted">Ubuntu 和/或 OpenWrt</text>
+<path d="M 229 162 v 18" class="an-stroke" stroke-width="2"/>
+<text x="229" y="202" font-size="16" text-anchor="middle" font-weight="700" class="t-an">保持原样</text>
+<path d="M 685 162 v 18" class="lx-stroke" stroke-width="2"/>
+<text x="685" y="202" font-size="16" text-anchor="middle" font-weight="700" class="t-lx">Linux 住在这里</text>
+<text x="24" y="262" font-size="20" text-anchor="start" font-weight="700">两个启动槽位：同一栋房子的两扇前门</text>
+<rect x="24" y="284" width="300" height="118" rx="16" class="paper an-stroke" stroke-width="3" fill-opacity="1"/>
+<rect x="54" y="304" width="56" height="78" rx="8" class="an"/><circle cx="98" cy="346" r="4" class="paper"/>
+<text x="134" y="334" font-size="19" text-anchor="start" font-weight="700">Android 的槽位</text>
+<text x="134" y="362" font-size="16" text-anchor="start" class="t-muted">从不写入</text>
+<rect x="344" y="284" width="300" height="118" rx="16" class="paper lx-stroke" stroke-width="3" fill-opacity="1"/>
+<rect x="374" y="304" width="56" height="78" rx="8" class="lx"/><circle cx="418" cy="346" r="4" class="paper"/>
+<text x="454" y="334" font-size="19" text-anchor="start" font-weight="700">另一个槽位</text>
+<text x="454" y="362" font-size="16" text-anchor="start" class="t-muted">Linux 的启动镜像</text>
+<path d="M 702 292 h 46 l 18 18 v 68 a 6 6 0 0 1 -6 6 h -58 a 6 6 0 0 1 -6 -6 v -80 a 6 6 0 0 1 6 -6 z" class="bl-soft bl-stroke" stroke-width="3"/>
+<rect x="710" y="302" width="7" height="16" rx="2" class="bl"/>
+<rect x="722" y="302" width="7" height="16" rx="2" class="bl"/>
+<rect x="734" y="302" width="7" height="16" rx="2" class="bl"/>
+<rect x="746" y="302" width="7" height="16" rx="2" class="bl"/>
+<text x="780" y="326" font-size="16" text-anchor="start" class="t-bl">F50：Linux 也可以</text>
+<text x="780" y="346.8" font-size="16" text-anchor="start" class="t-bl">放在 SD 卡上</text>
+</svg></div></figure>
+
+<h3>2. 每次启动都是一次试用</h3>
+<p>设备每次启动 Linux，都把它当作一次试用，并用掉一次机会。Linux 启动好以后（USB 网络和 SSH 可用），它会告诉设备“这次启动没问题”，所有机会就都恢复了。如果 Linux 没能起来，这次机会就算用掉了。连续 5 次启动失败后（你可以选 1 到 6），设备就直接启动 Android。你不会因为意外把自己锁在外面。</p>
+<figure class="wide"><div class="panel diagram" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" class="mu-dg" viewBox="0 0 960 860" width="960" height="860" role="img" aria-label="流程图：开机，引导程序启动 Linux 并用掉一次尝试。如果 Linux 大约一分钟内启动成功，启动被确认，尝试次数全部恢复。否则少一次尝试；还有次数时设备会再试，没有次数时自动启动 Android。尝试次数为 1 到 6，默认 5。锁定的 Linux 不会自动回到 Android。" lang="zh">
+<title id="boot-zh-t">设备启动时发生什么</title>
+<desc id="boot-zh-d">设备以试用方式启动 Linux。Linux 启动成功后，这次启动被确认，尝试次数重新补满。如果没有成功，就用掉一次；次数用完时，设备会自动启动 Android。</desc>
+<style>
+.mu-dg text { font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #142133; }
+.mu-dg .t-muted { fill: #526276; }
+.mu-dg .t-white { fill: #ffffff; }
+.mu-dg .t-mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.mu-dg .ink { fill: #142133; }
+.mu-dg .stroke-ink { stroke: #142133; }
+.mu-dg .paper { fill: #ffffff; }
+.mu-dg .soft { fill: #eef2f8; }
+.mu-dg .line { stroke: #c9d4e2; }
+.mu-dg .fill-line { fill: #c9d4e2; }
+.mu-dg .lx { fill: #f2b23a; }
+.mu-dg .lx-soft { fill: #fbf0d8; }
+.mu-dg .lx-stroke { stroke: #b97700; }
+.mu-dg .t-lx { fill: #8a5900; }
+.mu-dg .an { fill: #3fae6a; }
+.mu-dg .an-soft { fill: #def2e6; }
+.mu-dg .an-stroke { stroke: #217a47; }
+.mu-dg .t-an { fill: #17603a; }
+.mu-dg .bl { fill: #2259d6; }
+.mu-dg .bl-soft { fill: #e3ebfb; }
+.mu-dg .bl-stroke { stroke: #2259d6; }
+.mu-dg .t-bl { fill: #1b47ad; }
+.mu-dg .rd { fill: #c4302f; }
+.mu-dg .rd-soft { fill: #fbe3e2; }
+.mu-dg .rd-stroke { stroke: #c4302f; }
+.mu-dg .t-rd { fill: #a12625; }
+.mu-dg .body-top { fill: #fdfdfe; }
+.mu-dg .body-side { fill: #dde4ee; }
+.mu-dg .body-edge { stroke: #b6c2d2; }
+.mu-dg .led-white { fill: #ffffff; stroke: #b6c2d2; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .mu-dg text, .mu-dg:root text { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .t-muted, .mu-dg:root .t-muted { fill: #9cabbe; }
+  :root:not([data-theme="light"]) .mu-dg .ink, .mu-dg:root .ink { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .stroke-ink, .mu-dg:root .stroke-ink { stroke: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .paper, .mu-dg:root .paper { fill: #142031; }
+  :root:not([data-theme="light"]) .mu-dg .soft, .mu-dg:root .soft { fill: #1a283b; }
+  :root:not([data-theme="light"]) .mu-dg .line, .mu-dg:root .line { stroke: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .fill-line, .mu-dg:root .fill-line { fill: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-soft, .mu-dg:root .lx-soft { fill: #33290f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-stroke, .mu-dg:root .lx-stroke { stroke: #f2b740; }
+  :root:not([data-theme="light"]) .mu-dg .t-lx, .mu-dg:root .t-lx { fill: #f2c060; }
+  :root:not([data-theme="light"]) .mu-dg .an-soft, .mu-dg:root .an-soft { fill: #12301f; }
+  :root:not([data-theme="light"]) .mu-dg .an-stroke, .mu-dg:root .an-stroke { stroke: #5ccf8a; }
+  :root:not([data-theme="light"]) .mu-dg .t-an, .mu-dg:root .t-an { fill: #7ddba3; }
+  :root:not([data-theme="light"]) .mu-dg .bl, .mu-dg:root .bl { fill: #5b88f0; }
+  :root:not([data-theme="light"]) .mu-dg .bl-soft, .mu-dg:root .bl-soft { fill: #1a2a48; }
+  :root:not([data-theme="light"]) .mu-dg .bl-stroke, .mu-dg:root .bl-stroke { stroke: #7ea6ff; }
+  :root:not([data-theme="light"]) .mu-dg .t-bl, .mu-dg:root .t-bl { fill: #9dbbff; }
+  :root:not([data-theme="light"]) .mu-dg .rd-soft, .mu-dg:root .rd-soft { fill: #3a1a1a; }
+  :root:not([data-theme="light"]) .mu-dg .rd-stroke, .mu-dg:root .rd-stroke { stroke: #ff7b72; }
+  :root:not([data-theme="light"]) .mu-dg .t-rd, .mu-dg:root .t-rd { fill: #ff9b94; }
+  :root:not([data-theme="light"]) .mu-dg .body-top, .mu-dg:root .body-top { fill: #2a3a52; }
+  :root:not([data-theme="light"]) .mu-dg .body-side, .mu-dg:root .body-side { fill: #1c2a3d; }
+  :root:not([data-theme="light"]) .mu-dg .body-edge, .mu-dg:root .body-edge { stroke: #44587a; }
+  :root:not([data-theme="light"]) .mu-dg .led-white, .mu-dg:root .led-white { fill: #f4f7fb; stroke: #44587a; }
+}
+:root[data-theme="dark"] .mu-dg text { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .t-muted { fill: #9cabbe; }
+:root[data-theme="dark"] .mu-dg .ink { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .stroke-ink { stroke: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .paper { fill: #142031; }
+:root[data-theme="dark"] .mu-dg .soft { fill: #1a283b; }
+:root[data-theme="dark"] .mu-dg .line { stroke: #34465f; }
+:root[data-theme="dark"] .mu-dg .fill-line { fill: #34465f; }
+:root[data-theme="dark"] .mu-dg .lx-soft { fill: #33290f; }
+:root[data-theme="dark"] .mu-dg .lx-stroke { stroke: #f2b740; }
+:root[data-theme="dark"] .mu-dg .t-lx { fill: #f2c060; }
+:root[data-theme="dark"] .mu-dg .an-soft { fill: #12301f; }
+:root[data-theme="dark"] .mu-dg .an-stroke { stroke: #5ccf8a; }
+:root[data-theme="dark"] .mu-dg .t-an { fill: #7ddba3; }
+:root[data-theme="dark"] .mu-dg .bl { fill: #5b88f0; }
+:root[data-theme="dark"] .mu-dg .bl-soft { fill: #1a2a48; }
+:root[data-theme="dark"] .mu-dg .bl-stroke { stroke: #7ea6ff; }
+:root[data-theme="dark"] .mu-dg .t-bl { fill: #9dbbff; }
+:root[data-theme="dark"] .mu-dg .rd-soft { fill: #3a1a1a; }
+:root[data-theme="dark"] .mu-dg .rd-stroke { stroke: #ff7b72; }
+:root[data-theme="dark"] .mu-dg .t-rd { fill: #ff9b94; }
+:root[data-theme="dark"] .mu-dg .body-top { fill: #2a3a52; }
+:root[data-theme="dark"] .mu-dg .body-side { fill: #1c2a3d; }
+:root[data-theme="dark"] .mu-dg .body-edge { stroke: #44587a; }
+:root[data-theme="dark"] .mu-dg .led-white { fill: #f4f7fb; stroke: #44587a; }
+</style>
+<defs><marker id="boot-zh-ah" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="ink"/></marker></defs>
+<rect x="160" y="24" width="240" height="60" rx="30" class="soft line" stroke-width="2.5"/>
+<text x="280" y="61" font-size="20" text-anchor="middle" font-weight="700">开机</text>
+<path d="M 280 84 L 280 120" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<rect x="100" y="122" width="360" height="92" rx="14" class="lx-soft lx-stroke" stroke-width="2.5"/>
+<text x="280" y="162" font-size="20" text-anchor="middle">引导程序启动 Linux，</text>
+<text x="280" y="188" font-size="20" text-anchor="middle">并用掉一次尝试</text>
+<path d="M 280 214 L 280 250" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<polygon points="280,251 480,356 280,461 80,356" class="bl-soft bl-stroke" stroke-width="2.5"/>
+<text x="280" y="337" font-size="20" text-anchor="middle" font-weight="700">Linux 大约一分钟内</text>
+<text x="280" y="363" font-size="20" text-anchor="middle" font-weight="700">启动成功了吗？</text>
+<text x="280" y="389" font-size="17" text-anchor="middle" class="t-muted">USB 网络和 SSH</text>
+<path d="M 480 356 L 600 356" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<text x="504" y="342" font-size="18" text-anchor="start" font-weight="700" class="t-muted">是</text>
+<rect x="602" y="310" width="330" height="92" rx="14" class="lx-soft lx-stroke" stroke-width="2.5"/>
+<text x="767" y="350" font-size="20" text-anchor="middle">启动已确认：</text>
+<text x="767" y="376" font-size="20" text-anchor="middle">尝试次数全部恢复</text>
+<path d="M 767 402 L 767 450" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<rect x="637" y="452" width="260" height="60" rx="30" class="lx" stroke-width="2.5"/>
+<text x="767" y="489" font-size="20" text-anchor="middle" font-weight="700">你在使用 Linux</text>
+<path d="M 280 461 L 280 510" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<text x="294" y="492" font-size="18" text-anchor="start" font-weight="700" class="t-muted">否</text>
+<rect x="110" y="512" width="340" height="86" rx="14" class="rd-soft rd-stroke" stroke-width="2.5"/>
+<text x="280" y="549" font-size="20" text-anchor="middle">未确认：</text>
+<text x="280" y="575" font-size="20" text-anchor="middle">少一次尝试</text>
+<path d="M 280 598 L 280 634" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<polygon points="280,635 415,700 280,765 145,700" class="bl-soft bl-stroke" stroke-width="2.5"/>
+<text x="280" y="707" font-size="20" text-anchor="middle" font-weight="700">还有次数吗？</text>
+<path d="M 145 700 H 40 V 54 H 158" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<text x="130" y="688" font-size="18" text-anchor="end" font-weight="700" class="t-muted">是</text>
+<g transform="translate(28 380) rotate(-90)"><text x="0" y="0" font-size="17" text-anchor="middle" class="t-muted">下次启动</text></g>
+<path d="M 415 700 L 600 700" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#boot-zh-ah)"/>
+<text x="440" y="688" font-size="18" text-anchor="start" font-weight="700" class="t-muted">否</text>
+<rect x="602" y="660" width="330" height="80" rx="14" class="an-soft an-stroke" stroke-width="2.5"/>
+<text x="767" y="694" font-size="20" text-anchor="middle" font-weight="700">自动启动</text>
+<text x="767" y="720" font-size="20" text-anchor="middle" font-weight="700">Android</text>
+<text x="40" y="806" font-size="17" text-anchor="start" class="t-muted">尝试次数：1 到 6（默认 5）。</text>
+<text x="40" y="828.1" font-size="17" text-anchor="start" class="t-muted">锁定的 Linux 不会自动回到 Android。</text>
+</svg></div></figure>
+
+<h3>3. 回到 Android 只需一条命令</h3>
+<p>在 Linux 中，要求下次启动进入 Android，然后重启：</p>
+<pre><code>sudo mu300-next-boot android
+sudo reboot</code></pre>
+<p>在 Android 中，用 <code>su -c mu300-linux</code>，或者安装程序添加的“MU300 Linux” Magisk 模块的 Action 按钮，就能回到 Linux。要永久移除 Linux，在电脑上运行卸载程序。这些都在<a href="updates/">更新与安全</a>页面上。</p>
+
+<h3>4. 桌上的私人网络</h3>
+<p>手机和笔记本连接设备的 Wi-Fi 热点，或者插在它的 USB 口上。设备通过你的 SIM 卡用 5G 或 LTE，或者通过它加入的另一个 Wi-Fi 网络，把它们带到互联网。通过 USB，你的电脑可以在 <code>192.168.77.1</code>（F50）或 <code>192.168.78.1</code>（U30 Air）访问设备本身。</p>
+<figure class="wide"><div class="panel diagram" tabindex="0"><svg xmlns="http://www.w3.org/2000/svg" class="mu-dg" viewBox="0 0 980 410" width="980" height="410" role="img" aria-label="示意图：一部手机连接设备的 Wi-Fi 热点，一台笔记本用 USB 数据线连接。设备（F50 为 192.168.77.1，U30 Air 为 192.168.78.1）通过 SIM 卡的 5G 或 LTE，或者另一个 Wi-Fi 网络连接到互联网。" lang="zh">
+<title id="net-zh-t">设备如何把一切连起来</title>
+<desc id="net-zh-d">手机和笔记本连接设备的 Wi-Fi 热点，或插在它的 USB 口上。设备通过 SIM 卡的 5G 或 LTE，或者另一个 Wi-Fi 网络，把它们带到互联网。</desc>
+<style>
+.mu-dg text { font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #142133; }
+.mu-dg .t-muted { fill: #526276; }
+.mu-dg .t-white { fill: #ffffff; }
+.mu-dg .t-mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.mu-dg .ink { fill: #142133; }
+.mu-dg .stroke-ink { stroke: #142133; }
+.mu-dg .paper { fill: #ffffff; }
+.mu-dg .soft { fill: #eef2f8; }
+.mu-dg .line { stroke: #c9d4e2; }
+.mu-dg .fill-line { fill: #c9d4e2; }
+.mu-dg .lx { fill: #f2b23a; }
+.mu-dg .lx-soft { fill: #fbf0d8; }
+.mu-dg .lx-stroke { stroke: #b97700; }
+.mu-dg .t-lx { fill: #8a5900; }
+.mu-dg .an { fill: #3fae6a; }
+.mu-dg .an-soft { fill: #def2e6; }
+.mu-dg .an-stroke { stroke: #217a47; }
+.mu-dg .t-an { fill: #17603a; }
+.mu-dg .bl { fill: #2259d6; }
+.mu-dg .bl-soft { fill: #e3ebfb; }
+.mu-dg .bl-stroke { stroke: #2259d6; }
+.mu-dg .t-bl { fill: #1b47ad; }
+.mu-dg .rd { fill: #c4302f; }
+.mu-dg .rd-soft { fill: #fbe3e2; }
+.mu-dg .rd-stroke { stroke: #c4302f; }
+.mu-dg .t-rd { fill: #a12625; }
+.mu-dg .body-top { fill: #fdfdfe; }
+.mu-dg .body-side { fill: #dde4ee; }
+.mu-dg .body-edge { stroke: #b6c2d2; }
+.mu-dg .led-white { fill: #ffffff; stroke: #b6c2d2; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .mu-dg text, .mu-dg:root text { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .t-muted, .mu-dg:root .t-muted { fill: #9cabbe; }
+  :root:not([data-theme="light"]) .mu-dg .ink, .mu-dg:root .ink { fill: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .stroke-ink, .mu-dg:root .stroke-ink { stroke: #e3ebf5; }
+  :root:not([data-theme="light"]) .mu-dg .paper, .mu-dg:root .paper { fill: #142031; }
+  :root:not([data-theme="light"]) .mu-dg .soft, .mu-dg:root .soft { fill: #1a283b; }
+  :root:not([data-theme="light"]) .mu-dg .line, .mu-dg:root .line { stroke: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .fill-line, .mu-dg:root .fill-line { fill: #34465f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-soft, .mu-dg:root .lx-soft { fill: #33290f; }
+  :root:not([data-theme="light"]) .mu-dg .lx-stroke, .mu-dg:root .lx-stroke { stroke: #f2b740; }
+  :root:not([data-theme="light"]) .mu-dg .t-lx, .mu-dg:root .t-lx { fill: #f2c060; }
+  :root:not([data-theme="light"]) .mu-dg .an-soft, .mu-dg:root .an-soft { fill: #12301f; }
+  :root:not([data-theme="light"]) .mu-dg .an-stroke, .mu-dg:root .an-stroke { stroke: #5ccf8a; }
+  :root:not([data-theme="light"]) .mu-dg .t-an, .mu-dg:root .t-an { fill: #7ddba3; }
+  :root:not([data-theme="light"]) .mu-dg .bl, .mu-dg:root .bl { fill: #5b88f0; }
+  :root:not([data-theme="light"]) .mu-dg .bl-soft, .mu-dg:root .bl-soft { fill: #1a2a48; }
+  :root:not([data-theme="light"]) .mu-dg .bl-stroke, .mu-dg:root .bl-stroke { stroke: #7ea6ff; }
+  :root:not([data-theme="light"]) .mu-dg .t-bl, .mu-dg:root .t-bl { fill: #9dbbff; }
+  :root:not([data-theme="light"]) .mu-dg .rd-soft, .mu-dg:root .rd-soft { fill: #3a1a1a; }
+  :root:not([data-theme="light"]) .mu-dg .rd-stroke, .mu-dg:root .rd-stroke { stroke: #ff7b72; }
+  :root:not([data-theme="light"]) .mu-dg .t-rd, .mu-dg:root .t-rd { fill: #ff9b94; }
+  :root:not([data-theme="light"]) .mu-dg .body-top, .mu-dg:root .body-top { fill: #2a3a52; }
+  :root:not([data-theme="light"]) .mu-dg .body-side, .mu-dg:root .body-side { fill: #1c2a3d; }
+  :root:not([data-theme="light"]) .mu-dg .body-edge, .mu-dg:root .body-edge { stroke: #44587a; }
+  :root:not([data-theme="light"]) .mu-dg .led-white, .mu-dg:root .led-white { fill: #f4f7fb; stroke: #44587a; }
+}
+:root[data-theme="dark"] .mu-dg text { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .t-muted { fill: #9cabbe; }
+:root[data-theme="dark"] .mu-dg .ink { fill: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .stroke-ink { stroke: #e3ebf5; }
+:root[data-theme="dark"] .mu-dg .paper { fill: #142031; }
+:root[data-theme="dark"] .mu-dg .soft { fill: #1a283b; }
+:root[data-theme="dark"] .mu-dg .line { stroke: #34465f; }
+:root[data-theme="dark"] .mu-dg .fill-line { fill: #34465f; }
+:root[data-theme="dark"] .mu-dg .lx-soft { fill: #33290f; }
+:root[data-theme="dark"] .mu-dg .lx-stroke { stroke: #f2b740; }
+:root[data-theme="dark"] .mu-dg .t-lx { fill: #f2c060; }
+:root[data-theme="dark"] .mu-dg .an-soft { fill: #12301f; }
+:root[data-theme="dark"] .mu-dg .an-stroke { stroke: #5ccf8a; }
+:root[data-theme="dark"] .mu-dg .t-an { fill: #7ddba3; }
+:root[data-theme="dark"] .mu-dg .bl { fill: #5b88f0; }
+:root[data-theme="dark"] .mu-dg .bl-soft { fill: #1a2a48; }
+:root[data-theme="dark"] .mu-dg .bl-stroke { stroke: #7ea6ff; }
+:root[data-theme="dark"] .mu-dg .t-bl { fill: #9dbbff; }
+:root[data-theme="dark"] .mu-dg .rd-soft { fill: #3a1a1a; }
+:root[data-theme="dark"] .mu-dg .rd-stroke { stroke: #ff7b72; }
+:root[data-theme="dark"] .mu-dg .t-rd { fill: #ff9b94; }
+:root[data-theme="dark"] .mu-dg .body-top { fill: #2a3a52; }
+:root[data-theme="dark"] .mu-dg .body-side { fill: #1c2a3d; }
+:root[data-theme="dark"] .mu-dg .body-edge { stroke: #44587a; }
+:root[data-theme="dark"] .mu-dg .led-white { fill: #f4f7fb; stroke: #44587a; }
+</style>
+<defs><marker id="net-zh-ah" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="ink"/></marker></defs>
+<rect x="40" y="40" width="54" height="94" rx="10" class="paper stroke-ink" stroke-width="3"/><rect x="57" y="122" width="20" height="4" rx="2" class="ink"/>
+<text x="67" y="160" font-size="16" text-anchor="middle" font-weight="700">手机</text>
+<rect x="30" y="236" width="104" height="66" rx="8" class="paper stroke-ink" stroke-width="3"/><path d="M 14 308 h 136 l -10 12 h -116 z" class="ink"/>
+<text x="82" y="346" font-size="16" text-anchor="middle" font-weight="700">笔记本</text>
+<path d="M 110 88 C 200 88 230 150 300 170" class="bl-stroke" stroke-width="3" fill="none" stroke-dasharray="2 8" stroke-linecap="round"/>
+<text x="196" y="82" font-size="16" text-anchor="middle" font-weight="700" class="t-bl">Wi-Fi 热点</text>
+<path d="M 150 270 C 220 270 240 240 300 232" class="stroke-ink" stroke-width="5" fill="none" stroke-linecap="round"/>
+<text x="212" y="300" font-size="16" text-anchor="middle" font-weight="700">USB 数据线</text>
+<g transform="translate(300 76)">
+<g fill="none" stroke-linecap="round" class="bl-stroke" stroke-width="3.5">
+<path d="M 56.8 5.7 A 26 26 0 0 1 93.2 5.7"/>
+<path d="M 44.9 -3.65 A 43 43 0 0 1 105.1 -3.65"/>
+<path d="M 33 -13 A 60 60 0 0 1 117 -13"/>
+</g>
+<rect x="4" y="29" width="142" height="150" rx="23" class="body-side"/>
+<rect x="0" y="23" width="142" height="148" rx="22" class="body-top body-edge" stroke-width="1"/>
+<circle cx="46" cy="46" r="5" class="bl" stroke-width="1"/>
+<circle cx="71" cy="46" r="5" class="led-white" stroke-width="1"/>
+<circle cx="96" cy="46" r="5" class="lx" stroke-width="1"/>
+<rect x="18" y="68" width="50" height="75" rx="9" class="an-soft"/>
+<rect x="74" y="68" width="50" height="75" rx="9" class="lx-soft"/>
+<rect x="32" y="85" width="22" height="39" rx="4.5" fill="none" class="an-stroke" stroke-width="3"/>
+<circle cx="43" cy="117" r="2.25" class="an"/>
+<path d="M 85 93 l 12 11 l -12 11" fill="none" class="lx-stroke" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 102 119 h 13" class="lx-stroke" stroke-width="4" stroke-linecap="round"/>
+<rect x="59" y="167" width="24" height="6" rx="3" class="ink" opacity=".75"/>
+</g>
+<text x="371" y="286" font-size="17" text-anchor="middle" font-weight="700">F50 / U30 Air</text>
+<text x="371" y="312" font-size="14" text-anchor="middle" class="t-muted t-mono">192.168.77.1（F50）</text>
+<text x="371" y="330.2" font-size="14" text-anchor="middle" class="t-muted t-mono">192.168.78.1（U30 Air）</text>
+<path d="M 568 210 L 600 70 L 632 210 M 584 120 H 616 M 576 165 H 624" class="stroke-ink" stroke-width="4" fill="none" stroke-linejoin="round"/>
+<circle cx="600" cy="62" r="8" class="bl"/>
+<g fill="none" class="bl-stroke" stroke-width="4" stroke-linecap="round"><path d="M 580 44 a 26 26 0 0 0 0 36"/><path d="M 620 44 a 26 26 0 0 1 0 36"/></g>
+<text x="600" y="238" font-size="16" text-anchor="middle" font-weight="700">5G / LTE</text>
+<text x="600" y="258.8" font-size="16" text-anchor="middle" font-weight="700">使用你的 SIM 卡</text>
+<path d="M 446 150 C 500 140 530 140 560 140" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#net-zh-ah)"/>
+<g transform="translate(600 300)" fill="none" class="stroke-ink" stroke-width="4" stroke-linecap="round"><path d="M -26 0 a 37 37 0 0 1 52 0"/><path d="M -15 11 a 21 21 0 0 1 30 0"/></g><circle cx="600" cy="322" r="5" class="ink"/>
+<text x="600" y="356" font-size="15" text-anchor="middle" class="t-muted">或者另一个</text>
+<text x="600" y="375.5" font-size="15" text-anchor="middle" class="t-muted">Wi-Fi 网络</text>
+<path d="M 446 230 C 500 280 530 300 560 304" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#net-zh-ah)" stroke-dasharray="7 6"/>
+<path d="M 786 230 a 40 40 0 0 1 8 -79 a 54 54 0 0 1 102 -6 a 36 36 0 0 1 4 85 z" class="bl-soft bl-stroke" stroke-width="3"/>
+<text x="860" y="204" font-size="19" text-anchor="middle" font-weight="700" class="t-bl">互联网</text>
+<path d="M 650 140 C 700 140 730 160 772 175" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#net-zh-ah)"/>
+<path d="M 650 312 C 720 312 770 280 800 238" class="stroke-ink" stroke-width="2.5" fill="none" marker-end="url(#net-zh-ah)" stroke-dasharray="7 6"/>
+</svg></div></figure>
+
+<h2 id="quick-start">快速开始</h2>
+<p>在 Windows、macOS 或 Linux 上，设备已 root 并用 USB 连接，大约 15 分钟。<a href="install/">安装指南</a>
+会逐一讲解每个问题。</p>
+</div>
+
+<div class="wrap">
+<ol class="steps">
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><circle cx="24" cy="24" r="13" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M34 34l11 11" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M18 24l4 4 8-8" fill="none" stroke="#3fae6a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><h3>检查</h3><p><code>./install.sh --check</code> 只读取设备，告诉你 Linux 能不能装下、装在哪里。</p></li>
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><rect x="12" y="20" width="32" height="28" rx="7" fill="none" stroke="currentColor" stroke-width="3"/><path d="M28 4v22m-7-7 7 7 7-7" fill="none" stroke="#f2b23a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="22" cy="40" r="2.5" fill="#2259d6"/><circle cx="34" cy="40" r="2.5" fill="#f2b23a"/></svg><h3>安装</h3><p><code>./install.sh</code> 会问几个问题，显示将要写入的内容，并等你输入 <code>INSTALL</code>。</p></li>
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><rect x="6" y="10" width="44" height="36" rx="7" fill="none" stroke="currentColor" stroke-width="3"/><path d="M15 22l7 6-7 6" fill="none" stroke="#f2b23a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 36h13" stroke="#f2b23a" stroke-width="3.5" stroke-linecap="round"/></svg><h3>登录</h3><p>大约一分钟后：<code>ssh ubuntu@192.168.77.1</code>，OpenWrt 则打开 <code>http://192.168.77.1</code>。</p></li>
+</ol>
+</div>
+
+<div class="prose">
+<pre><code>git clone https://github.com/dikeckaan/mu300-linux
+cd mu300-linux
+MU300_LANG=zh ./install.sh --check   <span class="c"># 只读取，不写入任何东西</span>
+MU300_LANG=zh ./install.sh           <span class="c"># Windows: .\install.ps1 -Lang zh</span></code></pre>
+<p><code>MU300_LANG=zh</code>（Windows 上为 <code>-Lang zh</code>）会让安装程序直接以中文启动；不加的话，它会在开始时询问语言。</p>
+
+<h2 id="costs">你会失去什么？（剧透：什么都不会）</h2>
+<p>这些设备上的 Android 本来就没有屏幕、扬声器和 HDMI，所以 Linux 拿不走任何原本就有的东西。它唯一拿走的，是你口袋里还没有一台 5G Linux 服务器的最后一个借口。装了不吃亏，不装才吃亏——亏掉的是一台服务器。</p>
+<ul>
+<li><strong>Android 还在。</strong>两个系统同一时间只运行一个，重启就能切换。</li>
+<li><strong>硬件还是那套硬件，</strong>无论运行哪个系统：没有显示输出（USB-C 转 HDMI 不能用），没有扬声器和麦克风（带声音的语音通话仍在开发中），可用内存约 1.4 GB。</li>
+</ul>
+
+<div class="callout warn" id="risk">
+<strong>业余项目，风险自负</strong>
+<p>这是一个利用业余时间做的实验性项目。它不是产品，没有客服，也不提供任何担保。向手机级设备写入数据可能让它无法使用；
+root、解锁和救砖工具都不属于本项目。请做好备份，不要装在你承受不起损失的设备上。修改设备发出的内容（TTL、频段锁定、VPN）可能违反运营商条款或当地法律。完整说明见 <a href="https://github.com/dikeckaan/mu300-linux#a-hobby-project-at-your-own-risk">README</a>。</p>
+</div>
+
+<h2 id="faq">常见问题</h2>
+<details class="faq">
+<summary>安装 Linux 会删除 Android 或我的数据吗？</summary>
+<div>
+<p>在常见的 64 GB 设备上不会。Linux 安装在不属于任何分区的约 32 GiB 空间里，Android 的分区、数据和分区表都不会被写入。安装程序只写入一个启动分区（Android 没有在用的那个槽位）以及 <code>misc</code> 的 32 个字节。</p><p>例外是 <strong>32 GB 版本</strong>：它完全没有空闲空间。这时可以用 SD 卡（F50），或者让安装程序缩小 <code>userdata</code>，这会清除 Android 里的全部内容。这条路是实验性的，会先要求你输入 <code>ERASE</code>。</p>
+</div>
+</details>
+<details class="faq">
+<summary>需要先给设备 root 吗？</summary>
+<div>
+<p>需要。设备必须已经 <strong>root 并解锁</strong>：它已经能启动修改过的 Android 启动镜像，并且打开了 USB 调试。做到这一步不属于本项目，你要按照那些工具自己的说明进行，风险自负。</p>
+</div>
+</details>
+<details class="faq">
+<summary>如果 Linux 启动不了怎么办？</summary>
+<div>
+<p>设备会自动回到 Android。每次启动 Linux 都是一次试用；如果连续失败 5 次（安装时可在 1 到 6 之间选择），下一次启动就是 Android。详见<a href="updates/#safety-net">安全网</a>。</p>
+</div>
+</details>
+<details class="faq">
+<summary>怎样回到 Android？</summary>
+<div>
+<p>在 Linux 中：<code>sudo mu300-next-boot android</code>，然后 <code>sudo reboot</code>。要彻底移除 Linux，请在设备处于 Android 时运行 <code>./uninstall.sh</code>（Windows：<code>.\uninstall.ps1</code>）。在 Android 中，<code>su -c mu300-linux</code> 可以再次启动 Linux。</p>
+</div>
+</details>
+<details class="faq">
+<summary>Ubuntu 还是 OpenWrt，该选哪个？</summary>
+<div>
+<p>如果主要想要一个带网页界面的路由器，选 OpenWrt；如果想要一台用 <code>apt</code> 的小服务器，选 Ubuntu。也可以两个都装，用 <code>mu300-os</code> 切换。<a href="choose/">选择系统</a>页面连同四个内核一起做了说明。</p>
+</div>
+</details>
+<details class="faq">
+<summary>支持 ZTE U30 Pro 吗？</summary>
+<div>
+<p>不支持。U30 Pro 用的是另一颗芯片（UMS9632）。支持的是 ZTE F50 / MU300 和 ZTE U30 Air，两者使用同一块主板和芯片；安装程序会自己识别是哪一台。</p>
+</div>
+</details>
+<details class="faq">
+<summary>可以不用电脑安装吗？</summary>
+<div>
+<p>可以，前提是设备已经运行装有 Magisk 26 或更新版本的 root 过的 Android：每个发布版本都有 Magisk zip，每个系统和内核各一个（共 11 个，包括带控制面板的 OpenWrt），在 Magisk 应用里安装。参见<a href="install/#magisk">用 Magisk zip 安装</a>。</p>
+</div>
+</details>
+<details class="faq">
+<summary>可以把 Linux 装在 SD 卡上吗？</summary>
+<div>
+<p>F50 可以：卡槽里有一张至少 700 MiB 的卡时，安装程序会问 Linux 是否装到卡上。U30 Air 没有卡槽。</p>
+</div>
+</details>
+<details class="faq">
+<summary>有屏幕或声音吗？</summary>
+<div>
+<p>没有。USB-C 转 HDMI 不工作，主板上也没有扬声器和麦克风。你通过 SSH、网页界面或串口控制台使用设备。</p>
+</div>
+</details>
+<details class="faq">
+<summary>要花钱吗？</summary>
+<div>
+<p>不要。脚本和文档采用 MIT 许可，内核采用 GPL-2.0。发布的镜像里不含专有文件：安装程序会从你自己的设备上复制 Wi-Fi 和基带文件。</p>
+</div>
+</details>
+
+<h2 id="more">接下来去哪里</h2>
+<ul>
+<li><a href="install/">安装指南</a>：面向新手的每一步和每个问题。</li>
+<li><a href="choose/">选择系统</a>：Ubuntu、OpenWrt 还是控制面板，以及选哪个内核。</li>
+<li><a href="features/">功能</a>：移动数据、热点、Wi-Fi 客户端、短信、VPN、电池和指示灯。</li>
+<li><a href="updates/">更新与安全</a>：更新、回滚、回到 Android、卸载。</li>
+<li><a href="troubleshooting/">故障排除</a>：已知问题及解决方法。</li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki</a>（英文）：每个技术词汇的解释，以及更深入的页面。</li>
+</ul>
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>项目</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">GitHub 上的源代码</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">支持本项目</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">发布版本（下载）</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN 模块</a></li>
+</ul>
+</div>
+<div>
+<h2>帮助</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki（英文）</a></li>
+<li><a href="../zh/troubleshooting/">故障排除</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">报告问题</a></li>
+<li><a href="https://t.me/mu300project">Telegram 频道（动态与新版本）</a></li>
+</ul>
+</div>
+<div>
+<p>这是一个业余项目，风险自负，不提供任何担保。与 ZTE、紫光展锐或任何运营商无关，也未获其认可。脚本和文档：MIT；内核：GPL-2.0。</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

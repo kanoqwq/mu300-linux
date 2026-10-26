@@ -1,0 +1,7 @@
+[Unit]
+Description=MU300 reopen Wi-Fi after the driver reset the WCN chip (hotspot or Wi-Fi client)
+# started by /etc/udev/rules.d/70-mu300-wcn.rules on the driver's FW_ERROR uevent
+
+[Service]
+Type=oneshot
+ExecStart=/opt/mu300/bin/wcn-reopen

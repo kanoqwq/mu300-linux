@@ -1,0 +1,326 @@
+#!/bin/sh
+# SMS on the MU300, straight from the modem - no Android, no RIL. (On openwrt-luci the panel's pool, mu300-sms, moves
+# received messages off the SIM within seconds: use its hook, /etc/mu300/sms-hook, rather than "sms watch" there.)
+#
+#   sms list                       every message, long ones joined back together
+#   sms json                       the same as one JSON object (the web panel): {"store", "messages": [{"index": [N...],
+#                                  "sender", "time", "parts", "have", "text"}]}
+#   sms read INDEX                 one message in full
+#   sms send NUMBER TEXT...        send one (Turkish and emoji included; it picks the encoding); sms send --stdin:
+#                                  the number on the first line of stdin, the text after it (nothing in the arguments)
+#   sms delete INDEX | read | all  remove messages from the SIM
+#   sms watch [COMMAND]            wait for new messages, run COMMAND for each (MU300_SMS_WATCH_FROM_NOW=1: what the
+#                                  SIM holds when it starts counts as seen, only what comes after is new)
+#
+# Everything goes through mu300-atd, so it queues behind whatever else is talking to the modem and never opens
+# the channel itself (see that script for why that matters). A send is one transaction under mu300-at's client
+# lock, as mu300-sms's is on openwrt-luci: the modem's own SMSC written back to it unchanged, PDU mode, then the
+# submission, with no other client in between (docs/FINDINGS.md 46).
+#
+# PDU mode, not text mode. Text mode is easier to read but this modem mangles the sender whenever it is a name
+# rather than a number - "144414+4140224P444" where the real sender is "ADANA BLD" - and it cannot say that two
+# messages are halves of one. The PDU carries both correctly; /opt/mu300/lib/sms-pdu.awk decodes it.
+set -u
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+
+AWK=${MU300_SMS_AWK:-/opt/mu300/lib/sms-pdu.awk}
+STATE=${MU300_SMS_STATE:-/etc/mu300/sms}
+ATDIR=${MU300_AT_DIR:-/run/mu300-at}
+CR=$(printf '\r')
+
+[ -f "$AWK" ] || { echo "sms: $AWK is missing" >&2; exit 1; }
+
+at() { mu300-at -t "${2:-8}" "$1" 2>/dev/null; }
+
+# nap SECONDS: a fraction where the static busybox next to us can sleep one (busybox's /bin/sleep takes whole
+# seconds only), else a whole second
+BB=${MU300_BUSYBOX:-/opt/mu300/bin/busybox}
+nap() { "$BB" sleep "$1" 2>/dev/null || sleep 1; }
+
+# at_lock / at_unlock: mu300-at's client lock ($ATDIR/lock, the mutex its clients take around every single command),
+# held here across a whole transaction. A send is several commands (the SMSC refresh, PDU mode, the submission)
+# that must reach the modem with nothing else in between: as separate mu300-at calls, each one let another client
+# in (a panel's collectors, a sync), and on one network the submission then failed (FINDINGS 46). The mu300-at
+# calls made under it are told so (MU300_AT_LOCK_HELD) and take no lock of their own. The rules are mu300-at's: a
+# holder that is gone is taken over, and the wait is MU300_AT_LOCK_WAIT seconds of the clock; giving up says it in
+# mu300-at's own words. The same functions as mu300-sms's (openwrt-luci). Without the daemon mu300-at opens the tty
+# itself and takes no lock either, so there is nothing to hold; and where $ATDIR is not ours (not root) mu300-at
+# says so itself on the first command.
+at_lock() {
+    [ -p "$ATDIR/cmd" ] && [ -w "$ATDIR" ] || return 0
+    _lock=$ATDIR/lock
+    _wait=${MU300_AT_LOCK_WAIT:-90}
+    case $_wait in ''|*[!0-9]*) _wait=90 ;; esac
+    _end=$(( $(date +%s) + _wait ))
+    while ! mkdir "$_lock" 2>/dev/null; do
+        # a holder killed with SIGKILL cannot clean up after itself; take the lock over when it is gone
+        _o=$(cat "$_lock/pid" 2>/dev/null)
+        if [ -n "$_o" ] && ! kill -0 "$_o" 2>/dev/null; then
+            rm -rf "$_lock" 2>/dev/null && continue
+        fi
+        [ "$(date +%s)" -ge "$_end" ] && { echo "mu300-at: busy" >&2; exit 1; }
+        nap 0.1
+    done
+    echo $$ > "$_lock/pid"
+    # when this is done at the latest, as every holder says (lock/until): the four commands of a send, each with
+    # mu300-at's own budget of T + 31 s (8 + 8 + 5 + 40 s of answers), and 10 s more
+    echo $(( $(date +%s) + 195 )) > "$_lock/until"
+    MU300_AT_LOCK_HELD=$$; export MU300_AT_LOCK_HELD
+    trap at_unlock EXIT
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
+}
+at_unlock() {
+    [ "$(cat "$ATDIR/lock/pid" 2>/dev/null)" = "$$" ] && rm -rf "$ATDIR/lock" 2>/dev/null
+    unset MU300_AT_LOCK_HELD
+    trap - EXIT
+}
+
+# smsc_refresh: the SMSC the modem has, written back to it unchanged (AT+CSCA?, then AT+CSCA="<the same>",<type>)
+# before a send. On one network (China Broadnet, FINDINGS 46) every submission failed with the modem's IMS stack
+# saying "SMS FAILED: CODE:600 REASON:Busy Everywhere" until exactly this had been done; what it puts right inside
+# the modem is not known. The address is kept byte for byte as the modem showed it, in the active character set
+# (AT+CSCS, which is never touched here: "HEX" on that device, where the address reads as hexadecimal), with the
+# same type (145: international). A query that fails or answers something else is logged, and the send goes on
+# without the refresh; so does a write the modem refuses: the SMSC in use is the same either way, and the
+# submission's own answer is the one that says what is wrong. Nothing here ever picks another SMSC.
+smsc_refresh() {
+    _r=$(at 'AT+CSCA?' 8) || { echo "sms: the SMSC could not be read; sending without the refresh" >&2; return 0; }
+    _l=$(printf '%s\n' "$_r" | tr -d '\r' | sed -n 's/^+CSCA: *//p' | head -n 1)
+    # "ADDRESS",TYPE: + and digits, or hexadecimal (CSCS "HEX"), then the type as a number
+    _addr=; _type=
+    case $_l in
+        '"'*'",'[0-9]*) _addr=${_l%,*}; _addr=${_addr#\"}; _addr=${_addr%\"}; _type=${_l##*,} ;;
+    esac
+    case $_addr in ''|*[!+0-9A-Fa-f]*) _addr= ;; esac
+    case $_type in [0-9]|[0-9][0-9]|[0-9][0-9][0-9]) ;; *) _addr= ;; esac
+    if [ -z "$_addr" ] || [ ${#_addr} -gt 64 ]; then
+        echo "sms: the modem's SMSC answer was not understood; sending without the refresh" >&2
+        return 0
+    fi
+    _w=$(at "AT+CSCA=\"$_addr\",$_type" 8) || _w=
+    case $(printf '%s\n' "$_w" | tr -d '\r' | tail -n 1) in
+        OK) ;;
+        *) echo "sms: the modem refused to refresh its SMSC: $(printf '%s\n' "$_w" | grep -E 'CMS|CME|ERROR' | head -n 1)" >&2 ;;
+    esac
+    return 0
+}
+
+# The modem keeps messages on the SIM ("SM") or in its own memory ("ME"). Pick whichever holds anything, and
+# remember that AT+CPMS answers differently depending on whether it is being asked or told.
+store=
+pick_store() {
+    [ -n "$store" ] && return 0
+    for s in SM ME; do
+        out=$(at "AT+CPMS=\"$s\",\"$s\",\"$s\"" 10)
+        case $out in *ERROR*|"") continue ;; esac
+        used=$(echo "$out" | sed -n 's/^+CPMS: *\([0-9]*\),.*/\1/p' | head -1)
+        store=$s
+        [ "${used:-0}" != 0 ] && return 0     # this one has messages; stop here
+    done
+    [ -n "$store" ] || { echo "sms: the modem accepted neither SM nor ME storage" >&2; return 1; }
+    return 0
+}
+
+pdu_mode() { at 'AT+CMGF=0' 5 >/dev/null; }
+
+# Fetch every message as "index<TAB>pdu". AT+CMGL=4 is "all" in PDU mode; the PDU follows its header line.
+fetch_all() {
+    at 'AT+CMGL=4' 30 | awk '
+        /^\+CMGL:/ { idx = $0; sub(/^\+CMGL: */, "", idx); sub(/,.*/, "", idx); next }
+        /^[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]+$/ { if (idx != "") { print idx "\t" $0; idx = "" } }
+    '
+}
+
+# byte-wise (LC_ALL=C): the decoder writes UTF-8 a byte at a time with printf "%c", which gawk in a UTF-8 locale
+# turns into a character of its own (ü came out as Ã¼); mawk and busybox awk were never affected
+decode() { LC_ALL=C awk -v mode=decode -F'\t' -f "$AWK"; }
+
+# Join the parts of a concatenated message. They arrive in any order and may be stored under indices that are not
+# adjacent, so sort on message and part before gluing the text together. Which parts are one message is the codec's
+# to say (its group mode: the sender, the reference number, the total and the time, since senders reuse reference
+# numbers and the SIM keeps old messages). reassemble FILE: FILE holds the keys of the messages still waiting (watch),
+# so that each keeps its key, and with it the time it was first seen, while its parts come in.
+reassemble() {
+    LC_ALL=C awk -v mode=group -v known="${1:-}" -f "$AWK" | awk -F'\t' '
+        { idx[NR] = $1; snd[NR] = $2; ts[NR] = $3; tot[NR] = $5; part[NR] = $6; txt[NR] = $7; grp[NR] = $8; n = NR }
+        END {
+            for (i = 1; i <= n; i++) {
+                key = grp[i]
+                if (!(key in seen)) { seen[key] = 1; order[++k] = key; first[key] = i; idxs[key] = idx[i] }
+                else idxs[key] = idxs[key] "," idx[i]
+                body[key, part[i] + 0] = txt[i]
+                if (tot[i] + 0 > parts[key]) parts[key] = tot[i] + 0
+            }
+            for (j = 1; j <= k; j++) {
+                key = order[j]; i = first[key]; t = ""; have = 0
+                for (p = 1; p <= parts[key]; p++) {
+                    if ((key, p) in body) { t = t body[key, p]; have++ } else t = t "[missing part " p "]"
+                }
+                printf "%s\t%s\t%s\t%s\t%s\t%d\t%s\n", idxs[key], snd[i], ts[i], parts[key], t, have, key
+            }
+        }'
+}
+
+show() {   # indices, sender, timestamp, parts, text
+    awk -F'\t' '{
+        printf "\033[1m#%s\033[0m  from \033[36m%s\033[0m  %s%s\n", $1, $2, $3, ($4 > 1 ? "  (" $4 " parts)" : "")
+        print "    " $5
+        print ""
+    }'
+}
+
+# the reassembled lines as JSON: strings escaped byte by byte (backslash, quote; control characters dropped), so the
+# UTF-8 of a message passes through untouched
+tojson() {
+    LC_ALL=C awk -F'\t' -v store="$1" '
+        function js(s,    o, i, c) {
+            o = ""
+            for (i = 1; i <= length(s); i++) {
+                c = substr(s, i, 1)
+                if (c == "\\" || c == "\"") o = o "\\" c
+                else if (c >= " " && c != "\177") o = o c
+            }
+            return "\"" o "\""
+        }
+        BEGIN { printf "{\"store\":%s,\"messages\":[", js(store) }
+        NF >= 6 {
+            n = split($1, ix, ",")
+            printf "%s{\"index\":[", (c++ ? "," : "")
+            for (i = 1; i <= n; i++) printf "%s%d", (i > 1 ? "," : ""), ix[i]
+            printf "],\"sender\":%s,\"time\":%s,\"parts\":%d,\"have\":%d,\"text\":%s}", js($2), js($3), $4, $6, js($5)
+        }
+        END { print "]}" }'
+}
+
+cmd=${1:-list}
+[ $# -gt 0 ] && shift
+
+case $cmd in
+list)
+    pick_store || exit 1
+    pdu_mode
+    all=$(fetch_all)
+    [ -n "$all" ] || { echo "no messages in $store storage"; exit 0; }
+    printf '%s\n' "$all" | decode | reassemble | show
+    ;;
+
+json)
+    pick_store || exit 1
+    pdu_mode
+    all=$(fetch_all)
+    if [ -n "$all" ]; then printf '%s\n' "$all" | decode | reassemble | tojson "$store"; else tojson "$store" </dev/null; fi
+    ;;
+
+read)
+    idx=${1:-}
+    [ -n "$idx" ] || { echo "usage: sms read INDEX" >&2; exit 2; }
+    pick_store || exit 1
+    pdu_mode
+    # read the whole store, so the other parts of a long message come too
+    printf '%s\n' "$(fetch_all)" | decode | reassemble |
+        awk -F'\t' -v want="$idx" '{ split($1, a, ","); for (i in a) if (a[i] == want) print }' | show
+    ;;
+
+send)
+    if [ "${1:-}" = --stdin ]; then
+        [ $# -eq 1 ] || { echo "usage: sms send --stdin  (the number on the first line, the text after it)" >&2; exit 2; }
+        IFS= read -r num || :
+        text=$(cat)
+    else
+        num=${1:-}
+        [ $# -gt 0 ] && shift
+        text=$*
+    fi
+    [ -n "$num" ] && [ -n "$text" ] || { echo "usage: sms send NUMBER TEXT..." >&2; exit 2; }
+    # the number and the text reach the encoder in its environment, never in its arguments (anyone may list those)
+    out=$(MU300_PDU_NUMBER=$num MU300_PDU_TEXT=$text LC_ALL=C awk -v mode=encode -f "$AWK" </dev/null)
+    len=${out%% *}; pdu=${out#* }
+    [ -n "$len" ] && [ -n "$pdu" ] || { echo "sms: could not build the message" >&2; exit 1; }
+    # The whole conversation with the modem under one AT client lock (at_lock): the SMSC refresh, PDU mode and the
+    # submission reach it with nothing from another client in between (FINDINGS 46).
+    at_lock
+    smsc_refresh
+    pdu_mode
+    # AT+CMGS, the CR, the PDU and Ctrl-Z as one request, as mu300-sms sends it: the modem's "> " prompt between
+    # the length and the PDU has no newline, so as a request of its own "AT+CMGS=N" was never answered in the
+    # daemon's eyes (its whole 10 s, and a 25 s drain for a silent command before the PDU); mu300-atd writes the
+    # whole request and collects the answer (FINDINGS 46 on why it stays so).
+    reply=$(at "$(printf 'AT+CMGS=%s\r%s\032' "$len" "$pdu")" 40)
+    at_unlock
+    case $reply in
+        *+CMGS:*) echo "sent (reference $(echo "$reply" | sed -n 's/^+CMGS: *\([0-9]*\).*/\1/p' | head -1))" ;;
+        *ERROR*)  echo "sms: the modem refused it: $(echo "$reply" | tr '\n' ' ')" >&2; exit 1 ;;
+        *)        echo "sms: no confirmation from the modem: $(echo "$reply" | tr '\n' ' ')" >&2; exit 1 ;;
+    esac
+    ;;
+
+delete)
+    what=${1:-}
+    [ -n "$what" ] || { echo "usage: sms delete INDEX | read | all" >&2; exit 2; }
+    pick_store || exit 1
+    case $what in
+        all)  at 'AT+CMGD=1,4' 30 >/dev/null; echo "deleted every message in $store" ;;
+        read) at 'AT+CMGD=1,1' 30 >/dev/null; echo "deleted the messages already read in $store" ;;
+        # only a message index reaches the AT command (anything else would be sent to the modem as it is)
+        *[!0-9]*) echo "sms: not a message index: $what (sms delete INDEX | read | all)" >&2; exit 2 ;;
+        *)    at "AT+CMGD=$what" 20 >/dev/null; echo "deleted #$what" ;;
+    esac
+    ;;
+
+watch)
+    hook=${1:-}
+    mkdir -p "$STATE"
+    seen=$STATE/seen
+    [ -f "$seen" ] || : > "$seen"
+    pick_store || exit 1
+    pdu_mode
+    # Asking the modem how many messages it holds is more dependable here than waiting for a +CMTI URC: the
+    # daemon owns the channel and throws away unsolicited lines between commands, and a message that arrives
+    # while the modem is busy would be missed entirely. Polling cannot miss one.
+    # Nor does this ask for direct delivery (AT+CNMI mt=2, which openwrt-luci's mu300-smsd uses, FINDINGS 51): a
+    # message routed to us must be acknowledged by something that is running, or the modem drops the routing and
+    # stores the next ones unannounced; this tool has no daemon, so the modem keeps storing and this keeps polling.
+    # A long message whose other parts have not come yet waits, up to MU300_SMS_PARTIAL_WAIT seconds (an hour) from
+    # when this first saw it ($STATE/partial, "key <TAB> epoch"): a part the network lost would otherwise hold it back
+    # for ever. Then the parts that did arrive are reported, "[missing part N]" in place of the others; the whole
+    # message is reported again if the rest still comes (its slots, and so its key, differ).
+    wait=${MU300_SMS_PARTIAL_WAIT:-3600}
+    case $wait in ''|*[!0-9]*) wait=3600 ;; esac
+    partial=$STATE/partial
+    echo "watching $store for new messages${hook:+, running: $hook}" >&2
+    # from now (the SMS forwarding service): the first look only notes what is there, so a message that came while
+    # nothing was watching is never handed on later
+    quiet=; [ "${MU300_SMS_WATCH_FROM_NOW:-0}" = 1 ] && quiet=1
+    while :; do
+        now=$(date +%s)
+        : > "$partial.new"
+        fetch_all | decode | reassemble "$partial" | while IFS="$(printf '\t')" read -r idxs sender ts parts text have mkey; do
+            if [ "${have:-0}" -lt "${parts:-0}" ]; then
+                first=$(K=$mkey awk -F'\t' '$1 == ENVIRON["K"] { print $2; exit }' "$partial" 2>/dev/null)
+                case $first in ''|*[!0-9]*) first=$now ;; esac
+                printf '%s\t%s\n' "$mkey" "$first" >> "$partial.new"
+                [ $((now - first)) -ge "$wait" ] || continue
+            fi
+            key=$(printf '%s|%s|%s' "$sender" "$ts" "$idxs")
+            grep -qxF "$key" "$seen" 2>/dev/null && continue
+            printf '%s\n' "$key" >> "$seen"
+            [ -z "$quiet" ] || continue
+            printf '\033[1mnew message\033[0m from \033[36m%s\033[0m  %s\n    %s\n' "$sender" "$ts" "$text"
+            [ -n "$hook" ] && SMS_FROM=$sender SMS_DATE=$ts SMS_TEXT=$text SMS_INDEX=$idxs \
+                sh -c "$hook" </dev/null >/dev/null 2>&1 &
+        done
+        # on flash: rewritten only when it changes
+        if [ -s "$partial.new" ] || [ -s "$partial" ]; then
+            cmp -s "$partial.new" "$partial" || mv "$partial.new" "$partial"
+        fi
+        rm -f "$partial.new"
+        quiet=
+        sleep "${MU300_SMS_POLL:-20}"
+    done
+    ;;
+
+*)
+    sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'
+    exit 2 ;;
+esac

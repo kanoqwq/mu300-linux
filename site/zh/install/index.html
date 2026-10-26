@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>ZTE F50 / MU300 和 U30 Air 安装 Linux：新手安装指南</title>
+<meta name="description" content="ZTE F50 / MU300 和 U30 Air 安装 Ubuntu 或 OpenWrt 的新手指南：检查设备、回答安装问题、通过 USB 和 SSH 登录。">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/zh/install/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/install/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/install/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/install/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/install/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="ZTE F50 / MU300 和 U30 Air 安装 Linux：新手安装指南">
+<meta property="og:description" content="ZTE F50 / MU300 和 U30 Air 安装 Ubuntu 或 OpenWrt 的新手指南：检查设备、回答安装问题、通过 USB 和 SSH 登录。">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/zh/install/">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="一台有两个房间的 5G 随身热点：一个给 Android，一个给 Linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ZTE F50 / MU300 和 U30 Air 安装 Linux：新手安装指南">
+<meta name="twitter:description" content="ZTE F50 / MU300 和 U30 Air 安装 Ubuntu 或 OpenWrt 的新手指南：检查设备、回答安装问题、通过 USB 和 SSH 登录。">
+<meta name="twitter:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;display=swap">
+<link rel="stylesheet" href="../../assets/style.css">
+<script src="../../assets/site.js" defer></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "HowTo",
+ "name": "在 ZTE F50 / MU300 或 U30 Air 上安装 Linux",
+ "description": "ZTE F50 / MU300 和 U30 Air 安装 Ubuntu 或 OpenWrt 的新手指南：检查设备、回答安装问题、通过 USB 和 SSH 登录。",
+ "totalTime": "PT15M",
+ "inLanguage": "zh-Hans",
+ "tool": [
+  {
+   "@type": "HowToTool",
+   "name": "装有 adb 的电脑（Windows 10/11、macOS 或 Linux）"
+  },
+  {
+   "@type": "HowToTool",
+   "name": "一根 USB 数据线"
+  }
+ ],
+ "step": [
+  {
+   "@type": "HowToStep",
+   "name": "备份",
+   "text": "运行 tools/backup-device.sh，把设备的校准和 IMEI 分区复制到电脑。",
+   "url": "https://kaandikec.com/mu300-linux/zh/install/#backup"
+  },
+  {
+   "@type": "HowToStep",
+   "name": "检查",
+   "text": "运行 ./install.sh --check。它只读取设备，并报告 Linux 能装在哪里。",
+   "url": "https://kaandikec.com/mu300-linux/zh/install/#check"
+  },
+  {
+   "@type": "HowToStep",
+   "name": "安装",
+   "text": "运行 ./install.sh，回答问题，阅读摘要并输入 INSTALL。",
+   "url": "https://kaandikec.com/mu300-linux/zh/install/#install"
+  },
+  {
+   "@type": "HowToStep",
+   "name": "登录",
+   "text": "大约一分钟后，ssh ubuntu@192.168.77.1（U30 Air：192.168.78.1），OpenWrt 则打开 http://192.168.77.1。",
+   "url": "https://kaandikec.com/mu300-linux/zh/install/#login"
+  }
+ ]
+}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [
+  {
+   "@type": "ListItem",
+   "position": 1,
+   "name": "首页",
+   "item": "https://kaandikec.com/mu300-linux/zh/"
+  },
+  {
+   "@type": "ListItem",
+   "position": 2,
+   "name": "安装指南",
+   "item": "https://kaandikec.com/mu300-linux/zh/install/"
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">跳到正文</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../../zh/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../../zh/install/" aria-current="page">安装</a>
+<a href="../../zh/web-installer/">网页安装器</a>
+<a href="../../zh/choose/">选择系统</a>
+<a href="../../zh/features/">功能</a>
+<a href="../../zh/updates/">更新与安全</a>
+<a href="../../zh/troubleshooting/">故障排除</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="语言"><a href="../../install/" hreflang="en" lang="en">English</a><a href="../../tr/install/" hreflang="tr" lang="tr">Türkçe</a><a href="../../zh/install/" hreflang="zh-Hans" lang="zh-Hans" aria-current="true">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="主题|自动|浅色|深色|跟随系统|切换颜色主题"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">菜单</button>
+</div>
+</header>
+<main id="content">
+
+<header class="page-head">
+<div class="prose">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../../zh/">首页</a> <span aria-hidden="true">/</span> <span aria-current="page">安装指南</span></nav>
+<h1>在你的 F50 或 U30 Air 上安装 Linux</h1>
+<p class="lede">四个步骤，大约 15 分钟。安装程序会问的每个问题，下面都有解释，并给出你不确定时该怎么回答。</p>
+</div>
+</header>
+
+<div class="wrap">
+<ol class="steps">
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><rect x="8" y="10" width="40" height="36" rx="7" fill="none" stroke="currentColor" stroke-width="3"/><path d="M28 18v16m-7-7 7 7 7-7" fill="none" stroke="#2259d6" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 40h22" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg><h3>备份</h3><p>把设备上无法替代的专属数据复制到电脑。建议执行。</p></li>
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><circle cx="24" cy="24" r="13" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M34 34l11 11" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M18 24l4 4 8-8" fill="none" stroke="#3fae6a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><h3>检查</h3><p><code>--check</code> 读取设备，告诉你 Linux 能装在哪里。它不写入任何东西。</p></li>
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><rect x="12" y="20" width="32" height="28" rx="7" fill="none" stroke="currentColor" stroke-width="3"/><path d="M28 4v22m-7-7 7 7 7-7" fill="none" stroke="#f2b23a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="22" cy="40" r="2.5" fill="#2259d6"/><circle cx="34" cy="40" r="2.5" fill="#f2b23a"/></svg><h3>安装</h3><p>回答几个问题，看一遍摘要，输入 <code>INSTALL</code>。</p></li>
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><rect x="6" y="10" width="44" height="36" rx="7" fill="none" stroke="currentColor" stroke-width="3"/><path d="M15 22l7 6-7 6" fill="none" stroke="#f2b23a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 36h13" stroke="#f2b23a" stroke-width="3.5" stroke-linecap="round"/></svg><h3>登录</h3><p>大约一分钟后，通过 USB：SSH 或网页浏览器。</p></li>
+</ol>
+</div>
+
+<div class="prose">
+
+<nav class="toc" aria-labelledby="toc-h">
+<h2 id="toc-h">本页内容</h2>
+<ol>
+<li><a href="#before">开始之前</a></li>
+<li><a href="#backup">第 0 步：备份</a></li>
+<li><a href="#check">第 1 步：检查</a></li>
+<li><a href="#install">第 2 步：安装</a></li>
+<li><a href="#questions">安装程序的问题</a></li>
+<li><a href="#login">第 3 步：登录</a></li>
+<li><a href="#after">安装之后</a></li>
+<li><a href="#magisk">不用电脑：Magisk zip</a></li>
+<li><a href="#uninstall">再次移除</a></li>
+</ol>
+</nav>
+
+<div class="callout">
+<strong>新功能：网页安装器</strong>
+<p><a href="../web-installer/">网页安装器</a>在 Chrome 或 Edge 中通过 USB 完成安装，电脑上无需安装任何东西。它已在一台 F50 上用 macOS 的 Chrome 从头到尾运行过；Windows、Linux 电脑和 U30 Air 尚未用它测试过，这些情况请使用本页介绍的安装器。</p>
+</div>
+
+<h2 id="before">开始之前</h2>
+<p>一句话：<strong>设备必须已经 root，而且你的电脑能用 <code>adb</code> 和它通信</strong>。完整清单如下。</p>
+
+<h3>设备</h3>
+<ul>
+<li>一台 ZTE F50 / MU300 或 ZTE U30 Air（不是 U30 Pro）。</li>
+<li><strong>已 root 并解锁</strong>：它必须已经能启动修改过的 Android 启动镜像。做到这一步不属于本项目；你要按照那些工具自己的说明进行，风险自负。</li>
+<li>打开了 <strong>USB 调试</strong>，并且设备用 USB 连接到你的电脑。</li>
+</ul>
+
+<h3>你的电脑</h3>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">电脑</th><th scope="col">需要什么</th><th scope="col">怎样运行安装程序</th></tr></thead><tbody>
+<tr><th scope="row">macOS</th><td><code>adb</code>、Python 3、<code>lz4</code> 和 <code>curl</code>（通常已经有了）</td><td>在“终端”中运行 <code>./install.sh</code></td></tr>
+<tr><th scope="row">Linux</th><td><code>adb</code>、Python 3、<code>lz4</code> 和 <code>curl</code></td><td>在终端中运行 <code>./install.sh</code></td></tr>
+<tr><th scope="row">Windows 10/11</th><td><code>adb</code> 和 PowerShell。缺少 Python 3 及其 <code>lz4</code> 模块时，安装程序会自己安装。</td><td>在 PowerShell 中运行 <code>.\install.ps1</code>，或在 cmd 中运行 <code>install.cmd</code>（无需修改执行策略）</td></tr>
+</tbody></table></div>
+<p><code>adb</code> 包含在 Android 的平台工具（platform-tools）里。在 Windows 上，即使不在 PATH 中，安装程序也能找到解压在项目旁边、
+“下载”文件夹或桌面上的 <code>platform-tools</code> 文件夹。</p>
+
+<h3>获取项目</h3>
+<p>用 git 克隆，或者从 GitHub 下载（绿色的“Code”按钮，再点“Download ZIP”）并解压。无论哪种方式，安装程序启动时都会自动从 GitHub 更新自己。</p>
+<pre><code>git clone https://github.com/dikeckaan/mu300-linux
+cd mu300-linux</code></pre>
+<p>然后确认电脑能看到已 root 的设备：</p>
+<pre><code>adb devices          <span class="c"># 你的设备应该显示为 "device"</span>
+adb shell su -c id   <span class="c"># 应该输出 uid=0(root)</span></code></pre>
+<p>第一次时，设备会询问是否允许这台电脑进行 USB 调试，Magisk 也可能请求给 shell 授予 root 权限：两个都允许。</p>
+
+<div class="callout warn">
+<strong>请读一遍</strong>
+<p>安装会写入一个启动分区（<code>boot_b</code>；如果 Android 运行在槽位 b 上，比如更新之后常见的情况，则是 <code>boot_a</code>）以及 <code>misc</code> 的 32 个字节。在常见的 64 GB 设备上，Android、它的数据和分区表都不会被修改。即便如此，在错误的时刻断电、数据线不好或者一个失误，都可能让手机级设备需要用救砖工具恢复。请做好备份，不要装在你承受不起损失的设备上。</p>
+</div>
+
+<section class="guide-step" id="backup">
+<span class="num" aria-hidden="true">0</span>
+<h2>备份无法替代的数据</h2>
+<p>建议执行。它会把设备专属的数据（<code>prodnv</code>、基带校准和 IMEI 分区、引导程序链）复制到你的电脑，并逐一与设备上的内容核对。</p>
+<pre><code>tools/backup-device.sh          <span class="c"># macOS / Linux，设备处于已 root 的 Android</span></code></pre>
+<p>安装从不触碰这些分区，但如果它们哪天丢了，任何固件下载都找不回来，基带会一直坏着。请把这个文件夹放在安全的地方，并且不要放进任何代码仓库：里面有你的 IMEI。这个脚本在 macOS 和 Linux 上运行。</p>
+</section>
+
+<section class="guide-step" id="check">
+<span class="num" aria-hidden="true">1</span>
+<h2>检查你的设备</h2>
+<p>这一步只读取，不写入任何东西。</p>
+<pre><code>MU300_LANG=zh ./install.sh --check    <span class="c"># macOS / Linux</span>
+.\install.ps1 -Check -Lang zh          <span class="c"># Windows (PowerShell)</span>
+install.cmd -Check -Lang zh            <span class="c"># Windows (cmd)</span></code></pre>
+<p>它会输出存储容量、Android 分区结束的位置以及其后有多少空闲空间。重要的是以 <code>结果：</code> 开头的最后一行：</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">如果显示</th><th scope="col">意思是</th></tr></thead><tbody>
+<tr><th scope="row"><code>正常：空闲且为空，与测试设备布局相同（64 GB eMMC 上 userdata 之后约 32 GiB）</code></th><td>常见的 64 GB 设备。继续第 2 步。</td></tr>
+<tr><th scope="row"><code>正常：空闲且为空，但只够安装一个系统</code> 或 <code>可装 OpenWrt，装不下 Ubuntu</code></th><td>空闲区域较小。安装装得下的，或者用 SD 卡（F50）。</td></tr>
+<tr><th scope="row"><code>eMMC 上的空闲空间不足以安装 Linux；安装程序将改为提供 SD 卡选项</code></th><td>卡槽里有卡；安装程序会提供它，不会重新分区。</td></tr>
+<tr><th scope="row"><code>正常：已存在 MU300 Linux 安装</code></th><td>Linux 已经装好了：安装程序会提供 update 或 wipe。</td></tr>
+<tr><th scope="row"><code>警告：未分区空间并非空白</code></th><td>有东西写入过这块空闲区域。安装会覆盖它；安装程序会要求你输入 <code>overwrite</code>。</td></tr>
+</tbody></table></div>
+
+<h3 id="variant-32gb">完全没有空闲空间：32 GB 版本</h3>
+<p>如果检查找不到任何空间，你的设备就是 32 GB 版本，Android 的 <code>userdata</code> 占满了整个磁盘。你有两条路：</p>
+<div class="cards">
+<div class="card android"><h3>使用 SD 卡（F50）</h3><p>在设备关机时插入一张至少 700 MiB 的卡。安装程序会提供它并格式化，内部存储上不会重新分区。</p></div>
+<div class="card red"><h3>缩小 userdata（实验性）</h3><p>安装程序可以通过缩小 <code>userdata</code> 腾出空间。这会重写分区表，并<strong>清除 Android 里的全部内容</strong>。它会先询问，并要求输入 <code>ERASE</code>。同意之前，请先用 <code>tools/backup-device.sh</code> 备份。</p></div>
+</div>
+<p>如果数字和这两种情况都不像，请停下来，带上 <code>--check</code> 的输出<a href="https://github.com/dikeckaan/mu300-linux/issues">提交一个 issue</a>：这些数字能判断设备版本。</p>
+
+<h3 id="sd">关于 SD 卡（仅 F50）</h3>
+<ul>
+<li>一张至少 700 MiB 的卡。它会被格式化为 ext4，卷标为 <code>mu300sd</code>。已经装有其他 Linux（ext4）文件系统的卡永远不会被格式化。</li>
+<li>请在设备关机时插卡。Linux 运行时插入的卡，要到下次重启后才能读取。</li>
+<li><code>mu300sd</code> 卡总是优先启动。没有卡时，如果有内部安装，设备就启动它。两者都没有时，它会等几秒钟看有没有卡，然后在大约五分钟后回到 Android。</li>
+<li>四个内核都带读卡驱动（7.3 尚未在设备上试过）。U30 Air 没有卡槽。</li>
+<li>设备会启动任何卷标为 <code>mu300sd</code> 的卡，所以拿到设备的人也可以从卡上启动他自己的系统。</li>
+</ul>
+</section>
+
+<section class="guide-step" id="install">
+<span class="num" aria-hidden="true">2</span>
+<h2>安装</h2>
+<pre><code>MU300_LANG=zh ./install.sh             <span class="c"># macOS / Linux</span>
+.\install.ps1 -Lang zh                 <span class="c"># Windows (PowerShell)</span>
+install.cmd -Lang zh                   <span class="c"># Windows (cmd)</span></code></pre>
+<p>它会先询问语言，从 GitHub 更新你的项目副本（如果有新内容会自动重启自己），并再次检查设备。接下来是下面的问题。问完之后它会：</p>
+<ol>
+<li>下载最新版本的现成镜像，并核对校验和，</li>
+<li>从<em>你自己的</em>设备上复制 Wi-Fi 和基带文件（下载的内容里不含专有文件），</li>
+<li>准确显示将要写入的内容，并等你输入 <code>INSTALL</code>，</li>
+<li>把系统复制到设备上，写入 Linux 启动镜像，并设置好 Linux 槽位，</li>
+<li>给 Android 添加一个小的 Magisk 模块，以后不用电脑也能从 Android 启动 Linux，</li>
+<li>重启设备进入 Linux。</li>
+</ol>
+<figure>
+<img src="../../assets/img/installer-1-start.png" alt="终端中的安装程序：语言菜单、设备检查、找到的 eMMC 空闲区域，然后是安装哪些系统、哪个 Ubuntu 以及是否默认启动 Linux 的问题（英文界面）。" width="1960" height="1047" loading="lazy" decoding="async">
+<figcaption>安装程序的一次真实运行（英文界面），从语言问题到最初的几个选择。</figcaption>
+</figure>
+</section>
+
+<h2 id="questions">安装程序的问题，逐一说明</h2>
+<p>灰色框里的文字是安装程序（选择中文时）显示的内容，有所缩短。方括号里的值，比如 <code>[是]</code>，是默认值：按 <kbd>Enter</kbd> 就会选它。是/否问题可以输入 <code>是</code>/<code>否</code>，也可以输入 <code>yes</code>/<code>no</code>
+或 <code>y</code>/<code>n</code>。有些问题只在需要时才会出现。</p>
+<div class="qa"><span class="ask">Language / Dil / 语言 [1]</span><p>安装程序的语言：1 English（默认），2 Türkçe，3 中文。如果用 <code>MU300_LANG=zh</code> 启动，就不会问这个问题。</p><p class="pick">输入 <code>3</code> 选择中文。</p></div>
+<div class="qa"><span class="ask">Linux 文件系统要放在哪里：内部存储还是 SD 卡（...）？(internal/sd)</span><p>只有 F50 里插着 SD 卡时才会问。<code>internal</code> 使用内部存储的空闲空间，<code>sd</code> 把卡格式化给 Linux 用（卡上所有内容都会被清除，你需要输入 <code>ERASE</code> 确认）。</p><p class="pick">不确定？64 GB 设备选 <code>internal</code>，32 GB 版本选 <code>sd</code>。</p></div>
+<div class="qa"><span class="ask">要安装什么？1) Ubuntu LTS 2) OpenWrt 3) 两者都装</span><p>Ubuntu 是带 <code>apt</code> 的完整 Linux 系统（约占用 500 MiB 内存）。OpenWrt 是带网页界面的路由器系统（约 140 MiB）。“两者都装”会把它们并排安装；之后用 <code>mu300-os</code> 切换。</p><p class="pick">不确定？如果检查结果说两个都装得下，选 3，两者都装（默认）。参见<a href="../choose/">选择系统</a>。</p></div>
+<div class="qa"><span class="ask">要哪个 OpenWrt？1) 标准的 LuCI 网页界面 2) 搭配 MU300 控制面板</span><p>选择 OpenWrt 时才会问。控制面板增加了仪表盘、蜂窝锁定、短信、AT 终端和 USB 模式。</p><p class="pick">不确定？想在浏览器里看信号和短信就选 2；普通 OpenWrt 选 1（默认）。</p></div>
+<div class="qa"><span class="ask">启动哪个系统（ubuntu/openwrt）</span><p>装了两个系统时：先启动哪一个。另一个仍然保留。</p><p class="pick">按 <kbd>Enter</kbd> 选择 Ubuntu。</p></div>
+<div class="qa"><span class="ask">选择哪个 Ubuntu？1) 24.04 LTS 2) 26.04 LTS</span><p>24.04 是默认选项，测试时间最长，支持到 2029 年。26.04 是最新版本（systemd 259，更新的软件包），支持到 2031 年，需要主线内核（6.18、7.2 或 7.3）。</p><p class="pick">不确定？选 1，24.04（默认）。</p></div>
+<div class="qa"><span class="ask">默认启动 Linux 而不是 Android 吗（Linux 启动失败时会回到 Android）？(是/否)</span><p><code>是</code>：每次开机都进入 Linux，只有启动失败或你主动要求时才进入 Android。<code>否</code>：Android 仍是默认系统，需要时再启动 Linux。</p><p class="pick">按 <kbd>Enter</kbd> 选择“是”。</p></div>
+<div class="qa"><span class="ask">回到 Android 前允许的失败启动次数（1-6）</span><p>设备在自动回到 Android 之前，允许连续多少次没有完成的启动。如果一次启动在大约一分钟内没有完成，就算失败：断电、电池耗尽，或者 Linux 卡住。数字大，能容忍接触不良的数据线；数字小，Linux 真坏了时能更快回到 Android。这也是你手边没有电脑时回到 Android 的办法：在启动过程中连续断电这么多次。</p><p class="pick">按 <kbd>Enter</kbd> 选择 5。之后可以用 <code>mu300-next-boot attempts N</code> 修改。</p></div>
+<div class="qa"><span class="ask">将 Android 的热点名称和密码复制到 Linux 吗？(是/否)</span><p>你的手机已经认识 Android 的热点，这样它们无需重新设置就能连上 Linux 的热点。</p><p class="pick">按 <kbd>Enter</kbd> 选择“是”。</p></div>
+<div class="qa"><span class="ask">包含 Mali GPU（OpenCL）用户空间组件吗（约 90 MiB）？(是/否)</span><p>图形芯片，用于 OpenCL 计算。无论选哪个都没有屏幕。</p><p class="pick">按 <kbd>Enter</kbd> 选择“是”；想省空间就选“否”。</p></div>
+<div class="qa"><span class="ask">安装 VPN 模块吗（约多下载 40 MB，在设备上占用 120 MB）？(是/否)</span><p><a href="https://github.com/dikeckaan/mu300-linux-vpn">mu300-linux-vpn</a> 提供的可选 VPN。之后也可以在设备上用 <code>sudo mu300-extra install vpn</code> 添加。</p><p class="pick">不确定？选“否”（首次安装时的默认值）。</p></div>
+<div class="qa"><span class="ask">选择哪个内核？1) 5.4 2) 6.18 3) 7.2 4) 7.3</span><p>内核是 Linux 中负责和硬件打交道的核心。5.4 是紫光展锐的厂商内核，测试时间最长。6.18 是主线 Linux 的长期支持版本，驱动更新，功能相同。7.2 是稳定的 7.2 系列，测试比 6.18 少。7.3 是最新的主线版本，驱动最新，功能相同，测试比 7.2 少（从 v2026.10.19.2 之后的下一个版本起提供）。</p><p class="pick">不确定？选 1，5.4（默认）。Ubuntu 26.04 需要 6.18、7.2 或 7.3。之后可以用 <code>sudo mu300-update kernel 6.18</code> 修改。</p></div>
+<div class="qa"><span class="ask">update（更新）或 wipe（清除）</span><p>只有已经装过 Linux 时才会问。<code>update</code> 重新安装系统，并保留你的设置、用户、主目录、SSH 主机密钥和 OpenWrt 的设置。<code>wipe</code> 清除 Linux 文件系统，从头安装。</p><p class="pick">按 <kbd>Enter</kbd> 选择 update（也可以输入 <code>更新</code> 或 <code>清除</code>）。</p></div>
+<div class="qa"><span class="ask">保留当前密码吗？（yes/no）</span><p>更新时，如果被替换的系统有自己的登录密码，就会问。<code>yes</code> 会为每个这样的系统问一次当前密码，并在设备上与该系统的密码核对（没有密码时直接按 <kbd>Enter</kbd>；OpenWrt 出厂时的 <code>root</code> 没有密码）；输错三次后安装程序停止，什么都不改。<code>no</code> 会要求输入新密码，输入两次。</p><p class="pick">按 <kbd>Enter</kbd> 选 yes，然后输入你现在登录用的密码。</p></div>
+<div class="qa"><span class="ask">"ubuntu" 用户（Ubuntu）和 "root"（OpenWrt）的密码</span><p>以后登录用的密码，至少 6 个字符，输入两次。输入时屏幕上不会显示任何东西。</p><p class="pick">选一个你记得住的：第 3 步要用。</p></div>
+<div class="qa"><span class="ask">输入 INSTALL 继续</span><p>最后一站。在它上面，安装程序会准确列出将要写入的内容：系统、内核、默认启动和要写入的分区。请看一遍。输入 <code>INSTALL</code> 以外的任何内容都会取消。</p><p class="pick">用大写字母输入 <code>INSTALL</code>。</p></div>
+
+<figure>
+<img src="../../assets/img/installer-3-summary.png" alt="安装前的摘要：版本、系统、内核、默认启动、文件系统，以及具体会写入哪些分区；然后是输入 INSTALL 的提示和安装结束（英文界面）。" width="2194" height="1084" loading="lazy" decoding="async">
+<figcaption>写入任何东西之前的摘要，以及一次成功安装的结尾（英文界面）。</figcaption>
+</figure>
+
+<section class="guide-step" id="login">
+<span class="num" aria-hidden="true">3</span>
+<h2>登录</h2>
+<p>重启后等大约一分钟。设备会通过 USB 在你的电脑上显示为一块新的网卡。然后在终端里（Windows 的 PowerShell 自带 <code>ssh</code>）：</p>
+<pre><code>ssh ubuntu@192.168.77.1        <span class="c"># F50 上的 Ubuntu</span>
+ssh root@192.168.77.1          <span class="c"># F50 上的 OpenWrt</span>
+ssh ubuntu@192.168.78.1        <span class="c"># U30 Air 上的 Ubuntu</span></code></pre>
+<p>使用你在安装时设置的密码。第一次连接时，<code>ssh</code> 会问你是否信任设备的密钥：输入 <code>yes</code>。</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col"></th><th scope="col">F50 / MU300</th><th scope="col">U30 Air</th></tr></thead><tbody>
+<tr><th scope="row">USB 地址</th><td><code>192.168.77.1</code></td><td><code>192.168.78.1</code></td></tr>
+<tr><th scope="row">Ubuntu</th><td><code>ssh ubuntu@192.168.77.1</code></td><td><code>ssh ubuntu@192.168.78.1</code></td></tr>
+<tr><th scope="row">OpenWrt</th><td><code>ssh root@192.168.77.1</code> 或在浏览器打开 <code>http://192.168.77.1</code></td><td><code>ssh root@192.168.78.1</code> 或 <code>http://192.168.78.1</code></td></tr>
+</tbody></table></div>
+<p>两个地址不同，是为了让一台 F50 和一台 U30 Air 可以同时插在同一台电脑上。</p>
+<p>设备发出的 Wi-Fi 网络就是它的热点：除非你另外选择，它的名称和密码是从 Android 复制过来的。</p>
+<div class="callout">
+<strong>在 Mac 上，第一次请先解锁屏幕</strong>
+<p>macOS 在锁屏时不会设置一个从没见过的网络接口。第一次插上设备时（或者在更改了设备 USB 地址的更新之后），解锁 Mac，接口就会出现。</p>
+</div>
+<p>如果网络完全起不来，同一根线上还有一个串口控制台，没有网络也能用：</p>
+<pre><code>screen /dev/cu.usbmodem* 115200   <span class="c"># macOS</span></code></pre>
+</section>
+
+<h2 id="after">安装之后</h2>
+<pre><code>sudo mu300-toolkit             <span class="c"># 一个包办一切的菜单</span>
+sudo mobile-data status        <span class="c"># 5G/LTE 连接是否正常？</span>
+sudo mu300-update check        <span class="c"># 有没有更新的版本？</span></code></pre>
+<p><code>mu300-toolkit</code> 是一个类似 <code>raspi-config</code> 的菜单：温度、CPU 和内存占用、网速、性能模式、Wi-Fi、VPN
+和软件更新。直接命令列在<a href="../features/">功能</a>页面上；更新、回滚以及在 Android 和 Linux 之间来回切换，请看<a href="../updates/">更新与安全</a>。</p>
+
+<h3>可以提前设定、跳过提问的选项</h3>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">设置</th><th scope="col">作用</th></tr></thead><tbody>
+<tr><th scope="row"><code>MU300_LANG=zh ./install.sh</code>、<code>.\install.ps1 -Lang zh</code></th><td>跳过语言问题（<code>en</code>、<code>tr</code>、<code>zh</code>）</td></tr>
+<tr><th scope="row"><code>MU300_STORAGE=sd</code> 或 <code>internal</code></th><td>回答“内部存储还是 SD 卡”的问题</td></tr>
+<tr><th scope="row"><code>MU300_OPENWRT=plain</code> 或 <code>luci</code></th><td>回答“要哪个 OpenWrt？”</td></tr>
+<tr><th scope="row"><code>MU300_NO_SELF_UPDATE=1</code>、<code>-NoSelfUpdate</code></th><td>不先从 GitHub 更新项目</td></tr>
+<tr><th scope="row"><code>MU300_FETCH_JOBS</code>、<code>MU300_RELEASE_URL</code></th><td>并行下载的分块数（默认 8），或者你自己的发布文件镜像</td></tr>
+</tbody></table></div>
+
+<h2 id="magisk">不用电脑：Magisk zip</h2>
+<p>如果设备已经运行装有 <strong>Magisk 26 或更新版本</strong>的 root 过的 Android，就可以直接在设备上安装 Linux。每个发布版本为每个系统和内核各提供一个 zip；同一个 zip 在 F50 和 U30 Air 上都能用，并会自己找到安装位置（内部存储或 SD 卡）。</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">Zip</th><th scope="col">系统</th><th scope="col">内核</th></tr></thead><tbody>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-k5.4.zip</code></th><td>OpenWrt</td><td>5.4</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-k6.18.zip</code></th><td>OpenWrt</td><td>6.18 LTS</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-k7.2.zip</code></th><td>OpenWrt</td><td>7.2</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-k7.3.zip</code></th><td>OpenWrt</td><td>7.3</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-luci-k5.4.zip</code></th><td>带控制面板的 OpenWrt</td><td>5.4</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-luci-k6.18.zip</code></th><td>带控制面板的 OpenWrt</td><td>6.18 LTS</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-luci-k7.2.zip</code></th><td>带控制面板的 OpenWrt</td><td>7.2</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-luci-k7.3.zip</code></th><td>带控制面板的 OpenWrt</td><td>7.3</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-24.04-k5.4.zip</code></th><td>Ubuntu 24.04</td><td>5.4</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-24.04-k6.18.zip</code></th><td>Ubuntu 24.04</td><td>6.18 LTS</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-24.04-k7.2.zip</code></th><td>Ubuntu 24.04</td><td>7.2</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-24.04-k7.3.zip</code></th><td>Ubuntu 24.04</td><td>7.3</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-26.04-k6.18.zip</code></th><td>Ubuntu 26.04</td><td>6.18 LTS</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-26.04-k7.2.zip</code></th><td>Ubuntu 26.04</td><td>7.2</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-26.04-k7.3.zip</code></th><td>Ubuntu 26.04</td><td>7.3</td></tr>
+</tbody></table></div>
+<ol>
+<li><strong>选一个 zip</strong>：从<a href="https://github.com/dikeckaan/mu300-linux/releases/latest">最新版本</a>下载，并用 <code>SHA256SUMS-magisk</code> 校验。每个版本共有 15 个（v2026.10.19.2 及更早、还没有 7.3 时为 11 个），带控制面板的 OpenWrt 也在其中。</li>
+<li><strong>安装</strong>：在 Magisk 应用中（模块，从本地安装），或者在 <code>adb shell</code> 中：
+<pre><code>su -c 'magisk --install-module /sdcard/Download/&lt;zip&gt;'</code></pre>
+不要在 recovery 中安装。</li>
+<li><strong>阅读输出。</strong>它会显示找到的设备、Linux 装在哪里、写入了什么，以及哪个密码有效：镜像自带的密码 -
+Ubuntu 的用户 <code>ubuntu</code> 密码是 <code>ubuntu</code>，OpenWrt 的 <code>root</code> 在你设置之前没有密码（用
+<code>passwd</code>，或在 LuCI 的系统 &gt; 管理权中设置）；设置文件里的 <code>MU300_PASSWORD</code> 可指定你自己的密码。同样的说明也记在
+<code>/data/adb/mu300-linux-password.txt</code> 里。</li>
+<li><strong>重启。</strong>Linux 会启动；如果没有，设备会自动回到 Android。</li>
+</ol>
+<p>要装两个系统，就先后安装 OpenWrt（或带控制面板的 OpenWrt）和 Ubuntu 的 zip。zip 永远不会缩小 <code>userdata</code>，这件事只能用电脑上的安装程序完成。存储位置、默认启动或你自己的密码等设置写在 <code>mu300-install.conf</code> 文件里，说明见
+<a href="https://github.com/dikeckaan/mu300-linux#choosing-something-else-mu300-installconf">README</a>（英文）。</p>
+
+<p><strong>更新时的密码。</strong>装在已有系统上的 zip 会保留密码，什么都不问：Magisk 安装 zip 时无法输入任何东西。输出会写"保留，未核对"。要核对当前密码或设置新密码，请在安装前把一个 <code>mu300-install.conf</code> 放到 zip 的最上层 - 在电脑上用 <code>zip mu300-magisk-&lt;tag&gt;-...zip mu300-install.conf</code>，在 Android 上用能打开 zip 的文件管理器。<code>MU300_KEEP_PASSWORD=yes</code> 加 <code>MU300_CURRENT_PASSWORD=...</code> 会在核对通过后保留密码（不对就停止安装，什么都不改；没有第二行表示没有密码，即 OpenWrt 出厂时的 <code>root</code>）；<code>MU300_KEEP_PASSWORD=no</code> 加 <code>MU300_PASSWORD=...</code> 会设置新密码。该文件以明文保存密码：安装后请删除 zip 或其中的这个文件。详见 <a href="https://github.com/dikeckaan/mu300-linux#the-password-of-an-update-a-mu300-installconf-in-the-zip">README</a>（英文）。</p>
+
+<h2 id="uninstall">再次移除</h2>
+<p>设备回到 Android 后，运行 <code>./uninstall.sh</code>（Windows：<code>.\uninstall.ps1</code> 或 <code>uninstall.cmd</code>）。它会把 Android 重新设为启动系统，恢复第二个启动分区，并清除 Linux 文件系统。你的 Android 数据不受影响。它提供的选项请看<a href="../updates/#uninstall">更新与安全</a>页面。</p>
+<p><a href="../">返回首页</a></p>
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>项目</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">GitHub 上的源代码</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">支持本项目</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">发布版本（下载）</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN 模块</a></li>
+</ul>
+</div>
+<div>
+<h2>帮助</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki（英文）</a></li>
+<li><a href="../../zh/troubleshooting/">故障排除</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">报告问题</a></li>
+<li><a href="https://t.me/mu300project">Telegram 频道（动态与新版本）</a></li>
+</ul>
+</div>
+<div>
+<p>这是一个业余项目，风险自负，不提供任何担保。与 ZTE、紫光展锐或任何运营商无关，也未获其认可。脚本和文档：MIT；内核：GPL-2.0。</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

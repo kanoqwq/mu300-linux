@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- This page talks to a device over USB. Its policy: scripts and styles from this site only, and no connection
+     to anything but this site, GitHub's API and the project's release mirror on raw.githubusercontent.com. (The hash is the theme script below; no web fonts here.) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-OMJkqZr7SKqxdIEl/JawS5rmqBdCOZaNDw1i12YqLwg='; style-src 'self'; img-src 'self' data:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>Web installer: install and manage Linux on the ZTE F50 / U30 Air from the browser</title>
+<meta name="description" content="Install Ubuntu or OpenWrt on a rooted ZTE F50 / MU300 or U30 Air from Chrome or Edge over USB, with no adb, Python or script on the computer.">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/web-installer/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/web-installer/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/web-installer/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/web-installer/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/web-installer/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="Web installer: install and manage Linux on the ZTE F50 / U30 Air from the browser">
+<meta property="og:description" content="Install Ubuntu or OpenWrt on a rooted ZTE F50 / MU300 or U30 Air from Chrome or Edge over USB, with no adb, Python or script on the computer.">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/web-installer/">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/web-installer/web-installer.css">
+<script src="../assets/site.js" defer></script>
+<script type="module" src="../assets/web-installer/app.js"></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [
+  {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://kaandikec.com/mu300-linux/"},
+  {"@type": "ListItem", "position": 2, "name": "Web installer", "item": "https://kaandikec.com/mu300-linux/web-installer/"}
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../install/">Install</a>
+<a href="../web-installer/" aria-current="page">Web installer</a>
+<a href="../choose/">Choose a system</a>
+<a href="../features/">Features</a>
+<a href="../updates/">Updates and safety</a>
+<a href="../troubleshooting/">Troubleshooting</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="Language"><a href="../web-installer/" hreflang="en" lang="en" aria-current="true">English</a><a href="../tr/web-installer/" hreflang="tr" lang="tr">Türkçe</a><a href="../zh/web-installer/" hreflang="zh-Hans" lang="zh-Hans">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="Theme|Auto|Light|Dark|follows your system|Change the colour theme"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+</div>
+</header>
+<main id="content">
+
+<header class="page-head">
+<div class="prose">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a> <span aria-hidden="true">/</span> <span aria-current="page">Web installer</span></nav>
+<h1>Web installer</h1>
+<p class="lede">Install, update and remove Linux from this page, over USB, in Chrome or Edge. Nothing to install on the computer.</p>
+<p class="sponsor-line">Free, made by one person in Turkey. <a class="btn sponsor small" href="https://github.com/sponsors/dikeckaan"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="M8 14.2 6.9 13.2C3 9.7.5 7.4.5 4.6.5 2.4 2.2.7 4.4.7c1.2 0 2.4.6 3.1 1.5C8.2 1.3 9.4.7 10.6.7c2.2 0 3.9 1.7 3.9 3.9 0 2.8-2.5 5.1-6.4 8.6z"/></svg>Sponsor the project</a></p>
+<div class="callout wi-tested">
+<strong>Tested on an F50, from Chrome on macOS</strong>
+<p>On 2026-10-13 this page was run from start to finish on a ZTE F50 (64 GB, Android 13, Magisk 30.6) from Chrome 155 on macOS, with release v2026.10.25: installing one system and two, with the device downloading the release itself and with a file chosen by hand, a tab closed in the middle of an installation, starting Linux, managing it, going back to Android, and uninstalling.</p>
+<p><strong>Not tested yet:</strong> Windows (the adb interface needs the WinUSB driver there) and Linux as the computer's system (it needs the udev rule shown below); a U30 Air; an SD card as the target; a root manager other than Magisk; and the device's own download over real mobile data (the test device's Android had no internet, so its download reached GitHub through the test computer). For those, the <a href="../install/">installer for computers</a> and the <a href="../install/#magisk">Magisk zips</a> are the tested ways. If something goes wrong here, keep the log (the page can save it) and <a href="https://github.com/dikeckaan/mu300-linux/issues">tell us</a>.</p>
+</div>
+</div>
+</header>
+
+<div class="wrap">
+<noscript><p class="wi-noscript">This page needs JavaScript and a browser with WebUSB (Chrome or Edge on a computer). The <a href="../install/">install guide</a> works without either.</p></noscript>
+<div class="wi" id="wi-app" hidden><p class="wi-wait">Loading the installer…</p></div>
+</div>
+
+<div class="prose">
+
+<nav class="toc" aria-labelledby="toc-h">
+<h2 id="toc-h">On this page</h2>
+<ol>
+<li><a href="#before">Before you start</a></li>
+<li><a href="#does">What the page does, and what runs on the device</a></li>
+<li><a href="#cannot-open">If the browser cannot open the device</a></li>
+<li><a href="#linux-adb">Managing MU300 Linux: turn adb on first</a></li>
+<li><a href="#safety">If the tab closes or the cable comes out</a></li>
+<li><a href="#privacy">What the page sees and keeps</a></li>
+<li><a href="#phone">From a phone?</a></li>
+</ol>
+</nav>
+
+<h2 id="before">Before you start</h2>
+<ul>
+<li>A ZTE F50 / MU300 or U30 Air that is <strong>already rooted with Magisk 26 or newer</strong>. The page shows whether the device is rooted and what its bootloader says about its lock, and changes neither: it does not root a device and does not unlock a bootloader.</li>
+<li><strong>Chrome, Edge or another Chromium browser on Windows, macOS or Linux.</strong> Firefox and Safari have no WebUSB.</li>
+<li>USB debugging on in Android, the device plugged in, and no other program holding it. A running adb server holds it (stop it with <code>adb kill-server</code>), and so does another browser window that has this page open and is connected.</li>
+<li>Best with an internet connection on the device (a SIM with mobile data): the device then downloads the release itself. Without one, you download a file and hand it to the page.</li>
+<li>A release from after <code>v2026.10.23</code>: the Magisk zips of older releases do not know this page.</li>
+</ul>
+
+<h2 id="does">What the page does, and what runs on the device</h2>
+<p>The page is a small adb client. It talks to the device over USB and does three things there: it puts a few of the project's scripts and the release's Magisk zip on the device, it starts the <strong>zip's own installer</strong> (the one the Magisk app runs) with your answers, and it shows what that installer prints. The installing, the checks and the order of the writes are the device's, the same as for a zip flashed in Magisk.</p>
+<ul>
+<li><strong>Install</strong> from a rooted Android: one or two systems, the kernel, internal storage or an SD card, the VPN module.</li>
+<li><strong>Manage</strong> a device that runs MU300 Linux (with adb on): version, updates, kernel, which system starts, restart, back to Android, logs.</li>
+<li><strong>Back up</strong> what an installation writes, and <strong>uninstall</strong>.</li>
+</ul>
+<p>It does not shrink Android's data partition on the 32 GB variant (it shows the figures and points to the <a href="../install/#variant-32gb">installer for computers</a>), and it does not grow it back.</p>
+<p>You choose the system, the kernel and the release; the page names the file that belongs to that choice and its size, and gets it onto the device without you downloading anything: it asks the <strong>device to download the file itself</strong> from the project's releases on GitHub, over the device's own internet connection, and shows how far it is. A download that breaks continues where it stopped. That costs the file's size (39 to 124 MB per system) of the device's mobile data, which an operator may charge by volume. When the device has no connection, the page says so and <strong>this computer downloads the file</strong> from the project's mirror of the release on GitHub and sends it over the cable (GitHub does not let a web page read a release's own files, so the project keeps a copy where a page can). As a last way you download the file yourself and choose it.</p>
+<p>Whichever way a file comes, the device uses it only when it has the checksum GitHub publishes for the release, which the browser reads from GitHub directly. A file's integrity comes from that pinned checksum, not from the connection it travelled over: the downloader on the device (Magisk's busybox) cannot verify GitHub's certificate, so nothing is believed because of where it seems to come from. The page also holds a download to the size the release names and stops one that is sent anywhere but GitHub.</p>
+
+<h2 id="cannot-open">If the browser cannot open the device</h2>
+<div class="qa"><p><strong>Everywhere</strong></p>
+<p>A running adb server (Android Studio, <code>adb</code> on a terminal, scrcpy, some phone tools) has claimed the device, or another browser window has this page open and is connected to it. Only one program at a time can talk to the device.</p>
+<div><code>adb kill-server</code>, close those programs and that other window or tab, connect again. The page says “another program is using the device” when this is the reason.</div></div>
+<div class="qa"><p><strong>Windows</strong></p>
+<p>The browser can only use an interface that has the <strong>WinUSB</strong> driver. Android's adb interface asks Windows for it by itself on most devices; whether the F50 and U30 Air do has not been measured. A maker's own adb driver in its place blocks the browser.</p>
+<div>In Device Manager, look at the device's “ADB Interface”. If it has another driver or none, install Google's USB driver (it is WinUSB) or bind WinUSB to that interface with Zadig. Change only the adb interface, not the network or modem ones.</div></div>
+<div class="qa"><p><strong>Linux</strong></p>
+<p>The device node belongs to root, so the browser may not write to it.</p>
+<div>Add a udev rule for adb interfaces, then plug the device in again:
+<pre><code>echo 'SUBSYSTEM=="usb", ATTR{bInterfaceClass}=="ff", ATTR{bInterfaceSubClass}=="42", MODE="0660", TAG+="uaccess"' | sudo tee /etc/udev/rules.d/51-adb-webusb.rules
+sudo udevadm control --reload &amp;&amp; sudo udevadm trigger</code></pre>
+A browser installed as a snap or flatpak may need its own permission for USB.</div></div>
+<div class="qa"><p><strong>macOS</strong></p>
+<p>Nothing to install. Only another program holding the device stops the browser.</p>
+<div>Quit that program.</div></div>
+<p>The page says which of these it ran into, as far as the browser tells it.</p>
+
+<h2 id="linux-adb">Managing MU300 Linux: turn adb on first</h2>
+<p>From the release after v2026.10.23 on, Linux offers adb over the same cable to every computer, and the page can manage it without any preparation. An older Linux has adb off (<code>sudo mu300-usb adb on</code>), and one that was set to authorised keys only lets in just the computers whose adb key it knows; there is no screen to ask on. This browser has a key of its own (the page shows it under “This browser's adb key”). To authorise it, run on the device, over SSH:</p>
+<pre><code>echo '&lt;the key line the page shows&gt;' | sudo mu300-usb adb key -
+sudo mu300-usb adb on</code></pre>
+<p>Whoever holds an authorised key gets a root shell on the device, so authorise only your own browsers and computers.</p>
+
+<h2 id="safety">If the tab closes or the cable comes out</h2>
+<p>The installation is a job on the device. It does not need this page: closing the tab, a browser crash or a sleeping computer ends the page's view of it, not the job. Connect again and the page shows where it is. A cable pulled from an <strong>F50 is a power cut</strong> (it has no battery); a U30 Air runs on.</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">Stopped while</th><th scope="col">The device then</th></tr></thead><tbody>
+<tr><th scope="row">sending files, working out the plan, building the boot image</th><td>Nothing has been written to its storage. It starts Android.</td></tr>
+<tr><th scope="row">installing the system</th><td>An unfinished Linux filesystem that nothing starts. The boot partitions and misc are untouched: it starts Android. Run the installation again.</td></tr>
+<tr><th scope="row">writing the boot image</th><td>Only the Linux slot's boot partition is written, never Android's. The half-written image is not the boot target: the 32 bytes that make the device try it are written last, after the image was read back. It starts Android.</td></tr>
+<tr><th scope="row">arming (32 bytes of misc)</th><td>One small write, read back, and undone if it does not verify. Either Android's block or the Linux trial block is there.</td></tr>
+<tr><th scope="row">after that</th><td>Linux is tried; a Linux that does not finish starting falls back to Android by itself.</td></tr>
+</tbody></table></div>
+<p>Uninstalling goes the other way round: Android is made the boot system first, then the Linux slot gets Android's boot image back, then the Linux filesystem is erased. Whatever stops it, the device starts Android.</p>
+
+<h2 id="privacy">What the page sees and keeps</h2>
+<ul>
+<li>It contacts <strong>GitHub's API</strong> for the list of releases, and this site for its own files. Nothing else: no analytics, no fonts or scripts from other sites. The release itself is downloaded by the device from GitHub, or by the browser from the project's mirror on <code>raw.githubusercontent.com</code>, whichever you choose.</li>
+<li>It never asks the device for its IMEI, IMSI, ICCID or phone number, and never reads the partitions that hold the device's identity and radio calibration.</li>
+<li>Serial numbers are shown masked. The log, on screen and in the file you can save, has serial numbers, identity numbers, phone numbers, MAC addresses, passwords and keys masked.</li>
+<li>It keeps one thing in the browser's storage for this site: this browser's adb key.</li>
+</ul>
+
+<h2 id="phone">From a phone?</h2>
+<p>Chrome on Android has WebUSB too, so a phone with an OTG cable could in principle run this page. It is not built or tested for that: the phone would have to power an F50 through the adapter for the whole installation, and the release files would have to be on the phone. Use a computer.</p>
+
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>The project</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">Source code on GitHub</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">Support the project</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">Releases (downloads)</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN module</a></li>
+</ul>
+</div>
+<div>
+<h2>Help</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki</a></li>
+<li><a href="../troubleshooting/">Troubleshooting</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">Report a problem</a></li>
+<li><a href="https://t.me/mu300project">Telegram channel (news and releases)</a></li>
+</ul>
+</div>
+<div>
+<p>A hobby project, at your own risk, with no warranty. Not endorsed by ZTE, Unisoc or any operator. Scripts and documentation: MIT; kernels: GPL-2.0.</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

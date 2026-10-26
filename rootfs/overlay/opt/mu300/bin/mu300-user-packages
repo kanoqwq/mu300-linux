@@ -1,0 +1,460 @@
+#!/bin/sh
+# The packages installed on the device, installed again after an update replaced the system with the release's image
+# (mu300-update apply, or an installer's update: they write them down, see upk_record in mu300-update).
+#   mu300-user-packages status    what was written down, what is back, what failed and why, the settings set aside
+#   mu300-user-packages retry     try again now (also after skip, a failure or no internet)
+#   mu300-user-packages skip      do not install them again; their settings stay set aside
+#   mu300-user-packages dismiss   drop the note shown at login
+#   mu300-user-packages run       the service at boot (OpenWrt: init.d/mu300-user-packages; Ubuntu: systemd)
+#   mu300-user-packages brief     one line, for mu300-update check
+#   mu300-user-packages repair-dns  remove a dnsmasq forwarder of a package that is not installed; with none left,
+#                                   dnsmasq uses the connection's resolvers (only ever on this request)
+#
+# At boot it waits for the device to be online (MU300_PKG_TRIES rounds of apk update / apt-get update, MU300_PKG_DELAY
+# seconds apart; an hour by default), installs what is missing (OpenWrt: apk add; Ubuntu: apt-get install) and puts
+# the settings the update set aside back in place, with the services enabled as they were. Offline for that long, it
+# tries again at the next boot, five boots at most (then: retry). A package the feeds do not have (installed from a
+# file) fails for good: its settings stay in /etc/mu300/orphaned-config, and status says how to put them back.
+#
+# After the reinstall step OpenWrt's DNS is checked: a proxy (OpenClash and the like) points dnsmasq at a port of its
+# own on 127.0.0.1 while it runs, and an update took that over with /etc/config/dhcp - without the proxy there was no
+# DNS at all (#116). It never weakens DNS privacy by itself (see dns_check): a forwarder of a package that is gone for
+# good is removed only when another server stays; an only one is reported, and repair-dns removes it on request.
+# A LuCI theme whose files are not there is taken off LuCI's list (the default goes back to one that is there).
+export PATH="$PATH:/opt/mu300/bin:/usr/sbin:/sbin"
+R=${MU300_SYSROOT:-}
+BIN=${MU300_BIN:-/opt/mu300/bin}
+# the record's format and the package lists are mu300-update's (MU300_LIB=1: its functions only)
+MU300_LIB=1 . "$BIN/mu300-update" || exit 1
+D=$R/$UPK_DIR
+ORPH=$R/$UPK_ORPH
+LOG=$D/log
+TRIES=${MU300_PKG_TRIES:-12}
+DELAY=${MU300_PKG_DELAY:-300}
+SETTLE=${MU300_PKG_SETTLE:-60}
+MAX_BOOTS=5
+PROC=${MU300_PROC:-$R/proc}
+RUNDIR=${MU300_RUN:-$R/var/run}
+MOTD=${MU300_MOTD_DIR:-$R/run/motd.d}/61-mu300-packages
+if [ -e "$R/etc/openwrt_release" ]; then KIND=openwrt; else KIND=ubuntu; fi
+
+log() {
+    printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null)" "$*" >> "$LOG"
+    printf '%s\n' "$*"
+    have logger && logger -t mu300-user-packages "$*" 2>/dev/null
+    return 0
+}
+state() { cat "$D/state" 2>/dev/null || echo none; }
+set_state() { echo "$1" > "$D/state"; }
+count() { [ -s "$1" ] && awk 'NF' "$1" | wc -l | tr -d ' ' || echo 0; }
+
+# ---- the package managers --------------------------------------------------------------------------------------
+# offline is a failure: apk says so, apt-get only with --error-on=any (else it warns and returns 0)
+pm_update() {
+    # bounded: offline, a plain apt-get update waited on its connections for more than 10 minutes
+    if [ "$KIND" = openwrt ]; then apk_update
+    elif command -v timeout >/dev/null 2>&1; then
+        timeout "${MU300_PKG_APT_TIMEOUT:-300}" apt-get update -q --error-on=any -o Acquire::http::Timeout=10 -o Acquire::https::Timeout=10 -o Acquire::Retries=0
+    else apt-get update -q --error-on=any -o Acquire::http::Timeout=10 -o Acquire::https::Timeout=10 -o Acquire::Retries=0; fi
+}
+# apk_update: apk update, online when at least one of the configured feeds answered. apk fails the whole update for
+# one feed that does not (a user's own feed that is gone, "N unavailable"), and the reinstall then waited for an
+# internet that was there, boot after boot, and gave up (a U30 Air with a custom feed of example.invalid, the update
+# device test of FINDINGS 85). Offline every feed is unavailable.
+apk_update() {
+    _au=$(apk update 2>&1); _ar=$?
+    printf '%s\n' "$_au"
+    [ "$_ar" != 0 ] || return 0
+    _un=$(printf '%s\n' "$_au" | sed -n 's/^\([0-9][0-9]*\) unavailable.*/\1/p' | tail -n 1)
+    _all=$(cat "$R/etc/apk/repositories" "$R"/etc/apk/repositories.d/*.list 2>/dev/null | grep -c '^[^#[:space:]]')
+    [ -n "$_un" ] && [ "$_un" -lt "$_all" ]
+}
+pm_add() {
+    if [ "$KIND" = openwrt ]; then apk add "$@"
+    else DEBIAN_FRONTEND=noninteractive apt-get install -y -q -o Dpkg::Options::=--force-confold "$@"; fi
+}
+pm_has() {
+    if [ "$KIND" = openwrt ]; then apk info -e "$1" >/dev/null 2>&1
+    else [ "$(dpkg-query -W -f='${Status}' "$1" 2>/dev/null)" = "install ok installed" ]; fi
+}
+
+# ---- what an absent package left behind ------------------------------------------------------------------------
+# port_bound PORT: some socket is bound to that UDP port (any address)
+port_bound() {
+    _h=$(printf '%04X' "$1")
+    cat "$PROC/net/udp" "$PROC/net/udp6" 2>/dev/null |
+        awk -v h="$_h" '{ n = split($2, a, ":"); if (n > 1 && toupper(a[n]) == h) f = 1 } END { exit !f }'
+}
+# What a proxy (OpenClash and the like) left in dnsmasq: while it runs it points dnsmasq at a port of its own on the
+# loopback, and an update took that over with /etc/config/dhcp (#116). DNS privacy comes first: nothing here ever
+# sends DNS to the connection's resolvers by itself, and it acts only on a forwarder that is provably orphaned:
+#   - its port is a value in the set-aside settings of a package the update wrote down (attributable), and nothing in
+#     the project's own settings (/etc/mu300, the VPN's included) names that port;
+#   - nothing is bound to it at any of DNS_CHECKS looks, DNS_INTERVAL seconds apart;
+#   - the VPN is off (vpn.conf ENABLE, read with vpn_conf_value, never printed);
+#   - for a change at boot: the package is definitively absent (failed in the feeds, given up, or skipped) - checked
+#     after the reinstall step, never before - and another server stays in that dnsmasq section. A forwarder that is
+#     the only one is reported (status, the note at login) and left as it is: no DNS until the user decides, with
+#     mu300-user-packages repair-dns, which removes it and only then lets dnsmasq use the connection's resolvers.
+DNS_CHECKS=${MU300_DNS_CHECKS:-6}
+DNS_INTERVAL=${MU300_DNS_INTERVAL:-10}
+DNS_NOTE=$D/dns-note
+# pkg_final PKG: not installed, and the service will not install it (failed in the feeds, given up, skipped)
+pkg_final() {
+    ! pm_has "$1" || return 1
+    awk '{print $1}' "$D/failed" 2>/dev/null | grep -qxF "$1" && return 0
+    case $(state) in gave-up|skipped) upk_pending "$D" | grep -qxF "$1" ;; *) return 1 ;; esac
+}
+# port_owner PORT: the recorded package, not installed, whose set-aside settings hold PORT as a value
+port_owner() {
+    while read -r _p _f; do
+        [ -f "$ORPH/$_f" ] || continue
+        LC_ALL=C grep -Eq "^[[:space:]]*(option|list)[[:space:]]+[A-Za-z0-9_]+[[:space:]]+['\"]?$1['\"]?[[:space:]]*\$" "$ORPH/$_f" || continue
+        ! pm_has "$_p" || continue
+        echo "$_p"; return 0
+    done < "$D/files"
+    return 1
+}
+# project_names PORT: the project's own settings (the VPN's too) mention the port
+project_names() {
+    [ -n "$(find "$R/etc/mu300" -type f ! -path '*/orphaned-config/*' ! -path '*/user-packages/*' \
+        -exec grep -lw -- "$1" {} + 2>/dev/null)" ]
+}
+vpn_on() { [ "$(vpn_conf_value "$R/etc/mu300/vpn.conf" ENABLE)" = 1 ]; }
+# dns_orphans: "SECTION VALUE PKG FINAL OTHERS" for each attributable loopback forwarder nothing listens on now
+# (FINAL 1: the package is definitively absent; OTHERS 1: the section has another server)
+dns_orphans() {
+    for _s in $(uci -q show dhcp | sed -n 's/^dhcp\.\([^.=]*\)=dnsmasq$/\1/p'); do
+        _all=$(uci -q get "dhcp.$_s.server")
+        for _v in $_all; do
+            case $_v in 127.*'#'[0-9]*|'::1#'[0-9]*) ;; *) continue ;; esac
+            _port=${_v##*#}
+            case $_port in *[!0-9]*) continue ;; esac
+            ! port_bound "$_port" || continue
+            _own=$(port_owner "$_port") || continue
+            ! project_names "$_port" || continue
+            _fin=0; ! pkg_final "$_own" || _fin=1
+            _oth=0; for _w in $_all; do [ "$_w" = "$_v" ] || _oth=1; done
+            echo "$_s $_v $_own $_fin $_oth"
+        done
+    done
+}
+# dns_check [manual]: after the reinstall step (and by repair-dns: manual); see above
+dns_check() {
+    rm -f "$DNS_NOTE"
+    [ "$KIND" = openwrt ] && have uci || return 0
+    _c=$(dns_orphans)
+    [ -n "$_c" ] || return 0
+    if vpn_on; then
+        log "DNS: dnsmasq forwards to a port of a package that is not installed, and the VPN is on: nothing is changed (uci show dhcp)"
+        echo "dnsmasq forwards to a port of a package that is not installed; the VPN is on, so nothing was changed: uci show dhcp" > "$DNS_NOTE"
+        return 0
+    fi
+    # seen again over the window: one that comes up meanwhile was starting, not gone
+    _i=1
+    while [ "$_i" -lt "$DNS_CHECKS" ] && [ -n "$_c" ]; do
+        # MU300_DNS_WAIT: a program that waits instead (tests: busybox sh runs its own sleep, never one on PATH)
+        ${MU300_DNS_WAIT:-sleep} "$DNS_INTERVAL"
+        _c=$(printf '%s\n' "$_c" | while read -r _s _v _o _f _x; do port_bound "${_v##*#}" || echo "$_s $_v $_o $_f $_x"; done)
+        _i=$((_i + 1))
+    done
+    [ -n "$_c" ] || return 0
+    _changed=
+    while read -r _s _v _o _f _x; do
+        if [ "${1:-}" = manual ] || { [ "$_f" = 1 ] && [ "$_x" = 1 ]; }; then
+            [ -e "$ORPH/etc/config/dhcp.before-dns-repair" ] ||
+                { mkdir -p "$ORPH/etc/config" && cp "$R/etc/config/dhcp" "$ORPH/etc/config/dhcp.before-dns-repair"; }
+            uci -q del_list "dhcp.$_s.server=$_v"
+            log "DNS: removed the forwarder $_v of $_o (not installed, nothing listens there); the file as it was: /$UPK_ORPH/etc/config/dhcp.before-dns-repair"
+            # asked for by the user, and nothing left: the connection's resolvers (never at boot by itself)
+            if [ "${1:-}" = manual ] && [ -z "$(uci -q get "dhcp.$_s.server")" ] && [ "$(uci -q get "dhcp.$_s.noresolv")" = 1 ]; then
+                uci -q set "dhcp.$_s.noresolv=0"
+                log "DNS: no server left: dnsmasq uses the connection's resolvers now (noresolv 0)"
+            fi
+            _changed=1
+        else
+            log "DNS: dnsmasq forwards to $_v of $_o, which is not installed and has nothing listening there: no DNS through it. Left as it is; once $_o is not coming back: mu300-user-packages repair-dns (the connection's resolvers then answer)"
+            echo "DNS goes to $_v of $_o, which is not installed: no DNS. Install it again, or: mu300-user-packages repair-dns" >> "$DNS_NOTE"
+        fi
+    done <<EOF
+$_c
+EOF
+    [ -n "$_changed" ] || return 0
+    uci -q commit dhcp
+    [ ! -x "$R/etc/init.d/dnsmasq" ] || "$R/etc/init.d/dnsmasq" restart </dev/null >/dev/null 2>&1 || :
+}
+# theme_repair: LuCI themes whose files are not there are taken off the list; the default must be one that is there
+theme_repair() {
+    [ "$KIND" = openwrt ] && have uci || return 0
+    _changed=
+    for _t in $(uci -q show luci.themes | sed -n 's/^luci\.themes\.\([^.=]*\)=.*/\1/p'); do
+        _p=$(uci -q get "luci.themes.$_t")
+        case $_p in /*) ;; *) continue ;; esac
+        [ ! -d "$R/www$_p" ] || continue
+        uci -q delete "luci.themes.$_t"
+        log "LuCI: the theme $_t ($_p) is not installed; taken off the list"
+        _changed=1
+    done
+    _m=$(uci -q get luci.main.mediaurlbase)
+    if [ -n "$_m" ] && [ ! -d "$R/www$_m" ]; then
+        _new=
+        for _p in /luci-static/aurora /luci-static/bootstrap $(uci -q show luci.themes | sed -n "s/^luci\.themes\.[^=]*='\{0,1\}\([^']*\)'\{0,1\}$/\1/p"); do
+            [ -d "$R/www$_p" ] && { _new=$_p; break; }
+        done
+        if [ -n "$_new" ]; then
+            uci -q set "luci.main.mediaurlbase=$_new"
+            log "LuCI: the theme in use ($_m) is not installed; using $_new"
+            _changed=1
+        fi
+    fi
+    [ -n "$_changed" ] || return 0
+    uci -q commit luci
+    rm -rf "$R"/tmp/luci-indexcache* "$R"/tmp/luci-modulecache 2>/dev/null
+    return 0
+}
+
+# ---- putting a package's settings back -------------------------------------------------------------------------
+# restore PKG: its UCI files from orphaned-config, and its services enabled or not as they were before the update
+restore() {
+    _back=
+    while read -r _p _f; do
+        [ "$_p" = "$1" ] || continue
+        [ -f "$ORPH/$_f" ] || continue
+        mkdir -p "$R/$(dirname "$_f")" && mv -f "$ORPH/$_f" "$R/$_f" && log "$1: its settings are back (/$_f)" && _back=1
+    done < "$D/files"
+    while read -r _p _f; do
+        [ "$_p" = "$1" ] || continue
+        case $_f in etc/init.d/?*) ;; *) continue ;; esac
+        _i=${_f#etc/init.d/}
+        [ -x "$R/$_f" ] || continue
+        if grep -qx "S[0-9][0-9]$_i" "$D/rc.d" 2>/dev/null; then
+            "$R/$_f" enable </dev/null >/dev/null 2>&1
+            # it started with the package's own settings: again with the ones that are back
+            [ -z "$_back" ] || "$R/$_f" restart </dev/null >/dev/null 2>&1 || :
+        else
+            "$R/$_f" disable </dev/null >/dev/null 2>&1
+            "$R/$_f" stop </dev/null >/dev/null 2>&1 || :
+            log "$1: service $_i left disabled, as it was"
+        fi
+    done < "$D/files"
+    # Ubuntu: its systemd units as they were (apt enables a package's units by its own defaults)
+    [ -f "$D/units" ] && have systemctl || return 0
+    while read -r _p _u _s; do
+        [ "$_p" = "$1" ] || continue
+        case $_s in
+            enabled) systemctl enable "$_u" </dev/null >/dev/null 2>&1 || : ;;
+            disabled)
+                # what apt enabled; a static unit (no [Install] section) or one that is off stays as it is
+                case $(systemctl is-enabled "$_u" 2>/dev/null </dev/null) in static|disabled|masked|'') continue ;; esac
+                # (stop on its own: --now fails the whole command where systemd is not running)
+                systemctl disable "$_u" </dev/null >/dev/null 2>&1 || :
+                systemctl stop "$_u" </dev/null >/dev/null 2>&1 || :
+                log "$1: $_u left disabled, as it was" ;;
+            masked)
+                systemctl mask "$_u" </dev/null >/dev/null 2>&1 || :
+                systemctl stop "$_u" </dev/null >/dev/null 2>&1 || :
+                log "$1: $_u left masked, as it was" ;;
+        esac
+    done < "$D/units"
+    # once more for the disabled ones: two units of one package can be aliases of each other (smartmontools'
+    # smartd.service), and disabling one may leave the other's links until then
+    while read -r _p _u _s; do
+        [ "$_p" = "$1" ] && [ "$_s" = disabled ] || continue
+        case $(systemctl is-enabled "$_u" 2>/dev/null </dev/null) in static|disabled|masked|'') continue ;; esac
+        systemctl disable "$_u" </dev/null >/dev/null 2>&1 || :
+    done < "$D/units"
+    return 0
+}
+
+# Ubuntu: apt-get update failed. Is a source the update kept from before (apt-sources; a PPA of another release) the
+# reason? With them all off apt-get update works: the device is online, and each one that makes it fail on its own
+# stays off (NAME.disabled, which apt skips) with a note. With them off it fails too: offline, they all come back.
+APT_NOTE=$D/apt-note
+apt_sources_check() {
+    [ "$KIND" = ubuntu ] && [ -s "$D/apt-sources" ] || return 1
+    _k=
+    while read -r _f; do
+        case $_f in etc/apt/sources.list.d/?*) [ -f "$R/$_f" ] && _k="$_k $_f" ;; esac
+    done < "$D/apt-sources"
+    [ -n "$_k" ] || return 1
+    for _f in $_k; do mv -f "$R/$_f" "$R/$_f.disabled"; done
+    if ! pm_update >/dev/null 2>&1; then
+        for _f in $_k; do mv -f "$R/$_f.disabled" "$R/$_f"; done
+        return 1
+    fi
+    for _f in $_k; do
+        mv -f "$R/$_f.disabled" "$R/$_f"
+        pm_update >/dev/null 2>&1 && continue
+        mv -f "$R/$_f" "$R/$_f.disabled"
+        log "apt: /$_f, kept from before the update, makes apt-get update fail (its suite may not exist for this Ubuntu release): disabled as /$_f.disabled"
+        echo "apt: /$_f was disabled: apt-get update failed with it (to try it again: mv /$_f.disabled /$_f)" >> "$APT_NOTE"
+    done
+    pm_update >/dev/null 2>&1
+}
+
+# ---- the run ---------------------------------------------------------------------------------------------------
+# install PKG...: all at once, else one by one (apk and apt give up on the whole set for one they cannot find)
+install_all() {
+    _o=$(pm_add "$@" 2>&1)
+    if [ $? = 0 ]; then
+        for _p in "$@"; do echo "$_p" >> "$D/done"; log "$_p: installed again"; restore "$_p"; done
+        return 0
+    fi
+    for _p in "$@"; do
+        if _o=$(pm_add "$_p" 2>&1); then
+            echo "$_p" >> "$D/done"; log "$_p: installed again"; restore "$_p"
+        else
+            _why=$(printf '%s\n' "$_o" | grep -i 'error\|unable\|unsatisfiable\|not found\|no such\|locate' | head -n 2 | tr '\n' ' ')
+            [ -n "$_why" ] || _why=$(printf '%s\n' "$_o" | tail -n 1)
+            echo "$_p $_why" >> "$D/failed"
+            log "$_p: could not be installed again: $_why"
+            printf '%s\n' "$_o" | tail -n 20 >> "$LOG"
+        fi
+    done
+}
+
+summary() {
+    _n=$(count "$D/wanted") _ok=$(count "$D/done") _bad=$(count "$D/failed")
+    _left=$(upk_pending "$D" | awk 'NF' | wc -l | tr -d ' ')
+    case $(state) in
+        done) echo "$_ok of $_n packages installed on the device before the update are back" ;;
+        failed) echo "$_ok of $_n packages back, $_bad could not be installed again: mu300-user-packages status" ;;
+        offline) echo "$_left packages wait for the internet to be installed again: mu300-user-packages status" ;;
+        gave-up) echo "$_left packages were not installed again (no internet at five boots): mu300-user-packages retry" ;;
+        skipped) echo "$_left packages installed before the update were not installed again (skipped): mu300-user-packages retry" ;;
+        running) echo "installing $_left packages again (mu300-user-packages status)" ;;
+        pending) echo "$_left packages are installed again at the next boot (mu300-user-packages status)" ;;
+        *) echo "no packages to install again" ;;
+    esac
+}
+# the note at login: OpenWrt's profile.d shows $D/note, Ubuntu's motd the copy in /run/motd.d
+note() {
+    case $(state) in
+        failed|offline|gave-up|skipped) summary > "$D/note" ;;
+        *) rm -f "$D/note" ;;
+    esac
+    [ ! -s "$DNS_NOTE" ] || cat "$DNS_NOTE" >> "$D/note"
+    [ ! -s "$APT_NOTE" ] || cat "$APT_NOTE" >> "$D/note"
+    [ "$KIND" = ubuntu ] || return 0
+    if [ -s "$D/note" ]; then mkdir -p "${MOTD%/*}" && cp "$D/note" "$MOTD"; else rm -f "$MOTD"; fi
+    return 0
+}
+
+run() {  # run [now]: now (retry) does not wait for the system to settle and does not count as a boot
+    [ -s "$D/wanted" ] || return 0
+    mkdir -p "$RUNDIR"
+    mkdir "$RUNDIR/mu300-user-packages.lock" 2>/dev/null || { echo "mu300-user-packages is running already" >&2; return 1; }
+    trap 'rmdir "$RUNDIR/mu300-user-packages.lock" 2>/dev/null' EXIT
+    trap 'exit 130' INT TERM HUP
+    _left=$(upk_pending "$D")
+    if [ -z "$_left" ]; then
+        # nothing left: a state that still waits (an older retry left pending) is over
+        case $(state) in pending|running|offline|gave-up) set_state done ;; esac
+        finish; return 0
+    fi
+    [ -n "${1:-}" ] || sleep "$SETTLE"
+    case $(state) in
+        skipped) finish; return 0 ;;
+        gave-up) [ -n "${1:-}" ] || { finish; return 0; } ;;
+    esac
+    if [ -z "${1:-}" ]; then
+        _b=$(( $(cat "$D/boots" 2>/dev/null || echo 0) + 1 ))
+        echo "$_b" > "$D/boots"
+        if [ "$_b" -gt "$MAX_BOOTS" ]; then
+            set_state gave-up; log "no internet at $MAX_BOOTS boots: given up (mu300-user-packages retry)"
+            finish; return 0
+        fi
+    fi
+    set_state running
+    log "installing again: $(echo $_left)"
+    # some were installed by hand meanwhile
+    _todo=
+    for _p in $_left; do
+        if pm_has "$_p"; then echo "$_p" >> "$D/done"; log "$_p: installed already"; restore "$_p"; else _todo="$_todo $_p"; fi
+    done
+    if [ -n "$_todo" ]; then
+        _i=1
+        until _o=$(pm_update 2>&1) || apt_sources_check; do
+            if [ "$_i" -ge "$TRIES" ]; then
+                set_state offline
+                log "no internet (the package lists could not be fetched): tries again at the next boot, or: mu300-user-packages retry"
+                printf '%s\n' "$_o" | tail -n 5 >> "$LOG"
+                finish; return 0
+            fi
+            _i=$((_i + 1))
+            sleep "$DELAY"
+        done
+        # shellcheck disable=SC2086
+        install_all $_todo
+    fi
+    if [ -s "$D/failed" ]; then set_state failed; else set_state done; fi
+    log "$(summary)"
+    finish
+}
+# after the reinstall step, however it ended: what the packages that stay out left behind (never before: a package
+# that is still to come back may be the one a forwarder belongs to)
+finish() { dns_check; theme_repair; note; }
+
+status() {
+    if [ ! -s "$D/wanted" ]; then
+        echo "No packages to install again: the last update found none installed on the device besides the image's."
+    else
+        echo "$(summary)"
+        printf '\nwritten down by the update from %s (state: %s)\n' "$(cat "$D/from" 2>/dev/null || echo unknown)" "$(state)"
+        printf '  %s\n' "$(tr '\n' ' ' < "$D/wanted")"
+        [ ! -s "$D/done" ] || printf 'back:\n  %s\n' "$(tr '\n' ' ' < "$D/done")"
+        _left=$(upk_pending "$D")
+        [ -z "$_left" ] || printf 'not yet:\n  %s\n' "$(echo $_left)"
+        if [ -s "$D/failed" ]; then
+            echo "failed (install them yourself, from where you got them, e.g. apk add --allow-untrusted FILE.apk):"
+            sed 's/^/  /' "$D/failed"
+        fi
+    fi
+    if [ -d "$ORPH" ] && [ -n "$(cd "$ORPH" && find . -type f 2>/dev/null)" ]; then
+        printf '\nset aside in /%s (to use the settings of a package again once it is installed):\n' "$UPK_ORPH"
+        (cd "$ORPH" && find . -type f | sed 's|^\./||' | sort) | while read -r _f; do
+            case $_f in
+                *.before-dns-repair) printf '  /%s  (dhcp before the DNS repair)\n' "$_f" ;;
+                *) printf '  mv /%s/%s /%s\n' "$UPK_ORPH" "$_f" "$_f" ;;
+            esac
+        done
+    fi
+    [ ! -s "$DNS_NOTE" ] || { printf '\nDNS:\n'; sed 's/^/  /' "$DNS_NOTE"; }
+    [ ! -s "$APT_NOTE" ] || { printf '\napt sources:\n'; sed 's/^/  /' "$APT_NOTE"; }
+    [ ! -s "$D/apt-sources" ] || printf '\napt sources kept from before the update:\n%s\n' "$(sed 's|^|  /|' "$D/apt-sources")"
+    if [ -s "$D/apt-prefs" ]; then
+        printf '\napt pinning kept from before the update:\n%s\n' "$(sed 's|^|  /|' "$D/apt-prefs")"
+        [ ! -s "$APT_NOTE" ] ||
+            echo "  (a pin of a source that was turned off does nothing until the source is on again; delete it if it is not)"
+    fi
+    if [ -s "$LOG" ]; then printf '\nlog (%s):\n' "$LOG"; tail -n 15 "$LOG" | sed 's/^/  /'; fi
+}
+
+# tests/ source this file for its functions only
+[ -z "${MU300_PKG_LIB:-}" ] || return 0
+
+case ${1:-status} in
+    run|retry|skip|repair-dns) [ "$(id -u)" = 0 ] || { echo "run as root" >&2; exit 1; } ;;
+esac
+case ${1:-status} in
+    run) run ;;
+    retry)
+        [ -s "$D/wanted" ] || { echo "nothing to install again"; exit 0; }
+        # a failure is tried again too: the feed may have it now
+        : > "$D/failed"; rm -f "$D/boots"
+        # pending only with something to install: with everything back already it is done (was: pending for good)
+        if [ -n "$(upk_pending "$D")" ]; then set_state pending; else set_state done; fi
+        run now; status ;;
+    skip)
+        [ -s "$D/wanted" ] || { echo "nothing to skip"; exit 0; }
+        set_state skipped; note
+        echo "not installed again; their settings stay in /$UPK_ORPH (later: mu300-user-packages retry)" ;;
+    repair-dns)
+        [ -s "$D/wanted" ] || { echo "nothing recorded by an update: nothing to repair"; exit 0; }
+        dns_check manual; note ;;
+    dismiss) rm -f "$D/note" "$APT_NOTE" "$MOTD"; echo "the note is gone (mu300-user-packages status still shows everything)" ;;
+    status) status ;;
+    brief) summary ;;
+    -h|--help|help) sed -n '2,11s/^# \{0,1\}//p' "$0" ;;
+    *) echo "usage: mu300-user-packages status|retry|skip|repair-dns|dismiss|run|brief" >&2; exit 2 ;;
+esac

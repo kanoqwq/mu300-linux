@@ -1,0 +1,50 @@
+#!/bin/sh
+# TTL adapter: mu300-ttl for the panel's TTL page (mu300dash ttl_get, ttl_set). Every reply is one JSON object.
+#   ttl get        {"ok":1,"enabled":0|1,"value":N|null,"backend":"tc"|"nft"|"none","offload":0|1|null,"iface":[...]}
+#   ttl set N|off  {"ok":1}, or {"ok":0,"error":...}; N from 1 to 255, checked here again
+set -u
+export PATH="$PATH:/opt/mu300/bin:/usr/sbin:/sbin"
+LIB=${0%/*}/../../share/unisoc-modem/lib.sh
+[ -f "$LIB" ] || LIB=/usr/share/unisoc-modem/lib.sh
+. "$LIB"
+
+TTL_CMD=${MU300_TTL_CMD:-/opt/mu300/bin/mu300-ttl}
+
+error() { printf '{"ok":0,"error":%s}\n' "$(json_str "$1")"; exit 0; }
+num() { case $1 in ''|*[!0-9]*) return 1 ;; esac; }
+
+do_get() {
+    st=$("$TTL_CMD" state 2>/dev/null) || error 'The TTL setting could not be read'
+    v=$(printf '%s\n' "$st" | sed -n 's/^TTL=//p' | head -n1)
+    b=$(printf '%s\n' "$st" | sed -n 's/^BACKEND=//p' | head -n1)
+    o=$(printf '%s\n' "$st" | sed -n 's/^OFFLOAD=//p' | head -n1)
+    ifs=$(printf '%s\n' "$st" | sed -n 's/^IFACES=//p' | head -n1)
+    case $b in tc|nft) ;; *) b=none ;; esac
+    if num "$v" && [ "$v" -ge 1 ] && [ "$v" -le 255 ]; then en=1; else en=0; v=null; fi
+    case $o in 0|1) ;; *) o=null ;; esac
+    list= sep=
+    for i in $ifs; do
+        case $i in sipa_eth[0-9]|sipa_eth[0-9][0-9]) list="$list$sep\"$i\""; sep=, ;; esac
+    done
+    printf '{"ok":1,"enabled":%s,"value":%s,"backend":"%s","offload":%s,"iface":[%s]}\n' "$en" "$v" "$b" "$o" "$list"
+}
+
+do_set() {
+    case ${1:-} in
+        off) set -- off ;;
+        0*) error 'Invalid TTL' ;;
+        *) { num "${1:-}" && [ "${#1}" -le 3 ] && [ "$1" -ge 1 ] && [ "$1" -le 255 ]; } || error 'Invalid TTL'
+           set -- set "$1" ;;
+    esac
+    if out=$("$TTL_CMD" "$@" 2>&1 >/dev/null); then
+        echo '{"ok":1}'
+    else
+        printf '{"ok":0,"error":"The TTL could not be set","detail":%s}\n' "$(json_str "$(printf '%s\n' "$out" | tail -n1)")"
+    fi
+}
+
+case ${1:-} in
+    get) do_get ;;
+    set) do_set "${2:-}" ;;
+    *) error 'Unknown TTL operation' ;;
+esac

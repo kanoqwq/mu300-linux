@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>Ubuntu or OpenWrt? Choosing a system and kernel for the ZTE F50 / U30 Air</title>
+<meta name="description" content="Ubuntu 24.04 or 26.04, OpenWrt 25.12, or OpenWrt with the MU300 control panel, and the 5.4, 6.18, 7.2 or 7.3 kernel: what each one is good for on the ZTE F50 / MU300 and U30 Air, explained simply.">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/choose/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/choose/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/choose/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/choose/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/choose/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="Ubuntu or OpenWrt? Choosing a system and kernel for the ZTE F50 / U30 Air">
+<meta property="og:description" content="Ubuntu 24.04 or 26.04, OpenWrt 25.12, or OpenWrt with the MU300 control panel, and the 5.4, 6.18, 7.2 or 7.3 kernel: what each one is good for on the ZTE F50 / MU300 and U30 Air, explained simply.">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/choose/">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A 5G pocket hotspot with two rooms, one for Android and one for Linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ubuntu or OpenWrt? Choosing a system and kernel for the ZTE F50 / U30 Air">
+<meta name="twitter:description" content="Ubuntu 24.04 or 26.04, OpenWrt 25.12, or OpenWrt with the MU300 control panel, and the 5.4, 6.18, 7.2 or 7.3 kernel: what each one is good for on the ZTE F50 / MU300 and U30 Air, explained simply.">
+<meta name="twitter:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/site.js" defer></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [
+  {
+   "@type": "ListItem",
+   "position": 1,
+   "name": "Home",
+   "item": "https://kaandikec.com/mu300-linux/"
+  },
+  {
+   "@type": "ListItem",
+   "position": 2,
+   "name": "Choose a system",
+   "item": "https://kaandikec.com/mu300-linux/choose/"
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../install/">Install</a>
+<a href="../web-installer/">Web installer</a>
+<a href="../choose/" aria-current="page">Choose a system</a>
+<a href="../features/">Features</a>
+<a href="../updates/">Updates and safety</a>
+<a href="../troubleshooting/">Troubleshooting</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="Language"><a href="../choose/" hreflang="en" lang="en" aria-current="true">English</a><a href="../tr/choose/" hreflang="tr" lang="tr">Türkçe</a><a href="../zh/choose/" hreflang="zh-Hans" lang="zh-Hans">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="Theme|Auto|Light|Dark|follows your system|Change the colour theme"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+</div>
+</header>
+<main id="content">
+
+<header class="page-head">
+<div class="prose">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a> <span aria-hidden="true">/</span> <span aria-current="page">Choose a system</span></nav>
+<h1>Choose your system and your kernel</h1>
+<p class="lede">The installer asks two big questions: which system, and which kernel. Here is what they mean, and
+what to answer when you are not sure.</p>
+</div>
+</header>
+
+<div class="prose">
+<div class="callout linux">
+<strong>The simple version</strong>
+<p>The <strong>system</strong> is the home you live in: its tools, its menus, how you install programs. The
+<strong>kernel</strong> is the engine underneath that talks to the hardware. You pick one of each, and you can change
+both later without reinstalling.</p>
+</div>
+
+<h2 id="systems">Three systems</h2>
+<div class="cards">
+<div class="card linux">
+<h3>Ubuntu</h3>
+<p>A full Linux distribution, like on a server: <code>apt</code> for thousands of programs, systemd, users and home
+directories. No web page: you use it over SSH and the <code>mu300-toolkit</code> menu.</p>
+<p class="small muted">About 500 MiB of RAM in use. 24.04 LTS or 26.04 LTS.</p>
+</div>
+<div class="card">
+<h3>OpenWrt</h3>
+<p>A system made for routers, with the <strong>LuCI</strong> web interface: open <code>http://192.168.77.1</code> and
+set up the network, firewall and Wi-Fi in a browser. Light and fast.</p>
+<p class="small muted">About 140 MiB of RAM in use. OpenWrt 25.12.</p>
+</div>
+<div class="card">
+<h3>OpenWrt with the control panel</h3>
+<p>The same OpenWrt plus a control panel written for these devices: live signal, bands and cells, SMS, network locks,
+an AT terminal, USB modes and power settings, in the browser.</p>
+<p class="small muted">Panel by <a href="https://github.com/kanoqwq/mu300-linux">kanoqwq</a>.</p>
+</div>
+</div>
+
+<div class="table-scroll"><table>
+<thead><tr><th scope="col"></th><th scope="col">Ubuntu</th><th scope="col">OpenWrt</th><th scope="col">OpenWrt + control panel</th></tr></thead><tbody>
+<tr><th scope="row">Best for</th><td>a small server, your own programs, learning Linux</td><td>a 5G router you set up in the browser</td><td>a 5G router where you also watch the modem: signal, bands, SMS</td></tr>
+<tr><th scope="row">How you use it</th><td>SSH, <code>mu300-toolkit</code>; optionally Cockpit with an MU300 page (the <code>panel</code> extra, from v2026.10.20)</td><td>web interface (LuCI), SSH</td><td>web interface with the MU300 pages, SSH</td></tr>
+<tr><th scope="row">Installing programs</th><td><code>apt</code></td><td><code>apk</code></td><td><code>apk</code></td></tr>
+<tr><th scope="row">Log in as</th><td><code>ubuntu</code></td><td><code>root</code></td><td><code>root</code></td></tr>
+<tr><th scope="row">RAM in use (about)</th><td>500 MiB</td><td>140 MiB</td><td>not listed by the installer</td></tr>
+<tr><th scope="row">Web interface languages</th><td>no web interface</td><td>English, Turkish, Chinese; 40 more with the lang extra</td><td>English, Turkish, Chinese; the panel in 29 more with the lang extra</td></tr>
+<tr><th scope="row">Magisk zip</th><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+</tbody></table></div>
+
+<h3 id="panel">What the control panel adds</h3>
+<ul>
+<li><strong>Status dashboard:</strong> live radio readings (signal, bands, cells, temperatures), the operator's name, mobile data state and the current download and upload speed; on the U30 Air also the battery.</li>
+<li><strong>Cellular &gt; Network locks:</strong> network mode, band, cell and EN-DC locks that are kept across restarts, and "Reset all to automatic".</li>
+<li><strong>Cellular &gt; SMS</strong> and <strong>SMS forwarding:</strong> read, send and delete messages, and pass incoming ones on to a webhook, a Telegram chat or another phone.</li>
+<li><strong>Cellular &gt; Data usage:</strong> mobile data per day and per billing cycle, with a monthly cap.</li>
+<li><strong>Cellular &gt; AT terminal:</strong> guarded AT commands to the modem.</li>
+<li><strong>Cellular &gt; Device management:</strong> the USB role and the USB network mode (NCM, ECM or RNDIS).</li>
+<li><strong>VPN</strong> (from v2026.10.20, with the VPN module): Overview, Profiles, Subscriptions, Engines, Settings and Logs.</li>
+<li><strong>System &gt; Languages</strong>, <strong>System &gt; Power</strong> and <strong>System &gt; CPU</strong>: the interface language, power profiles, the charge limit (0-100 %) and the CPU profile.</li>
+<li><strong>System &gt; Terminal</strong> (from v2026.10.20): a root shell in the browser, on the LAN only, for your logged-in session.</li>
+<li><strong>System &gt; Packages after an update</strong> (from v2026.10.20): what the update did with the packages you had installed.</li>
+</ul>
+<p>The theme is <a href="https://github.com/eamonxg/luci-theme-aurora">Aurora</a> by eamonxg. The full list is in the
+<a href="https://github.com/dikeckaan/mu300-linux#openwrt-with-the-mu300-control-panel">README</a>.</p>
+
+<h3 id="both">Or both</h3>
+<p>Answer <strong>3) both</strong> and Ubuntu and OpenWrt are installed side by side on the same Linux filesystem;
+the installer then asks which one starts. Switching is one command and a restart:</p>
+<pre><code>sudo mu300-os ubuntu          <span class="c"># start Ubuntu at the next restart</span>
+sudo mu300-os openwrt         <span class="c"># plain OpenWrt</span>
+sudo mu300-os openwrt-luci    <span class="c"># OpenWrt with the control panel</span></code></pre>
+<p>How much room each choice needs (the installer checks it for you):</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">Choice</th><th scope="col">Free space needed</th></tr></thead><tbody>
+<tr><th scope="row">OpenWrt only</th><td>about 800 MiB</td></tr>
+<tr><th scope="row">Ubuntu only</th><td>about 1.6 GiB</td></tr>
+<tr><th scope="row">Both</th><td>about 2.4 GiB</td></tr>
+</tbody></table></div>
+<p>That includes room for an update, which keeps the previous version for a rollback.</p>
+
+<h2 id="ubuntu">Which Ubuntu?</h2>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col"></th><th scope="col">24.04 LTS</th><th scope="col">26.04 LTS</th></tr></thead><tbody>
+<tr><th scope="row">In the installer</th><td>"the longest tested, supported until 2029"</td><td>"the newest (systemd 259, newer packages), supported until 2031; kernel 6.18, 7.2 or 7.3"</td></tr>
+<tr><th scope="row">Kernels</th><td>5.4, 6.18, 7.2, 7.3</td><td>6.18, 7.2 or 7.3 only</td></tr>
+<tr><th scope="row">Pick it when</th><td>you want it to just work (the default)</td><td>you want the newest packages and use a mainline kernel</td></tr>
+</tbody></table></div>
+<p>Ubuntu 26.04 needs a mainline kernel because its programs use system calls that 5.4 does not have. An installed
+Ubuntu can move to the other release later, keeping settings and data:</p>
+<pre><code>sudo MU300_UBUNTU=26.04 mu300-update apply   <span class="c"># or 24.04 to go back</span></code></pre>
+
+<h2 id="kernels">Which kernel?</h2>
+<p>All four run the same systems and the same functions: hotspot, mobile data, SMS, Bluetooth, VPN, GPU, and KVM
+(<code>/dev/kvm</code>). They differ in how new they are and how long they have been tested. This is how the installer
+puts it:</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">Choice</th><th scope="col">Kernel</th><th scope="col">What it is</th></tr></thead><tbody>
+<tr><th scope="row">1</th><td>5.4</td><td>Unisoc's vendor kernel (Android 12 base): the longest tested, everything this project supports</td></tr>
+<tr><th scope="row">2</th><td>6.18</td><td>mainline Linux, the current long-term (LTS) release: newer drivers and security fixes, the same functions; no USB-C video output yet</td></tr>
+<tr><th scope="row">3</th><td>7.2</td><td>7.2 (stable): mainline Linux's stable 7.2 series, newer drivers, the same functions as 6.18; tested less than 6.18</td></tr>
+<tr><th scope="row">4</th><td>7.3</td><td>the newest mainline release: the newest drivers, the same functions as 6.18; tested less than 7.2</td></tr>
+</tbody></table></div>
+<p>7.3 comes from the next release after v2026.10.19.2 on; older releases offer the first three.</p>
+
+<h3>The differences that matter</h3>
+<ul>
+<li><strong>Ubuntu 26.04</strong> needs 6.18, 7.2 or 7.3.</li>
+<li><strong>U30 Air USB host</strong> (flash drives, keyboards, Ethernet adapters through an OTG adapter) works on the
+mainline kernels only.</li>
+<li><strong>U30 Air charging:</strong> on 5.4 the vendor charger stack charges; on 6.18, 7.2 and 7.3 the <code>bq256xx</code>
+driver does, from v2026.10.12 on. Mainline kernels of v2026.10.11 and older leave charging off, so update first. From
+v2026.10.20 the mainline kernels also read the current a Type-C port offers (up to 2 A instead of 500 mA); the charge limit (0-100 %)
+works on every kernel.</li>
+<li><strong>dae</strong>, the VPN module's eBPF engine, needs 6.18, 7.2 or 7.3 of v2026.10.20 or newer (from 6.18.56 and 7.2.10 on, which carry
+BTF and the BPF JIT); 5.4 cannot run it.</li>
+<li><strong>WireGuard VPN profiles</strong> need a mainline kernel: the 5.4 vendor kernel has no WireGuard, according to
+the <a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN module</a>. The other VPN types work on all four.</li>
+<li><strong>Modules:</strong> the mainline kernels carry about 360 extra modules: WireGuard, SQM, tunnels, USB adapters
+and modems, NTFS, exFAT, btrfs, NFS, CIFS, dm-crypt, containers.</li>
+<li><strong>6.18</strong> has a rare hang in its first seconds on some boards (the README measured about one boot in 20
+on one board); the device then falls back to Android, and <code>su -c mu300-linux</code> brings Linux back. See
+<a href="../troubleshooting/#kernel-618">troubleshooting</a>.</li>
+</ul>
+
+<div class="callout">
+<strong>Not sure?</strong>
+<p>Take the installer's default, <strong>5.4</strong>: it is the longest tested. Pick <strong>6.18</strong> for Ubuntu
+26.04, for WireGuard, or for USB host mode on the U30 Air. Changing later takes one command and a restart:</p>
+<pre><code>sudo mu300-update kernel             <span class="c"># shows the kernel you have</span>
+sudo mu300-update kernel 6.18        <span class="c"># or 5.4, 7.2 or 7.3; then restart</span>
+sudo reboot</code></pre>
+<p>If the new kernel does not start, the device falls back to Android after the usual number of failed starts,
+and <code>sudo mu300-update rollback-boot</code> puts the previous one back.</p>
+</div>
+
+<h2 id="other">Other distributions</h2>
+<p>The boot path does not care which distribution it starts: a system is a directory with an arm64 root filesystem in
+it. Debian 13, Kali Linux, Arch Linux ARM and ImmortalWrt can be built from this repository and unpacked next to the
+others (Arch Linux ARM is built but not yet booted on hardware); Fedora, Alpine and more are surveyed. That is for people who build things themselves: see
+<a href="https://github.com/dikeckaan/mu300-linux/blob/main/docs/DISTROS.md">docs/DISTROS.md</a>.</p>
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>The project</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">Source code on GitHub</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">Support the project</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">Releases (downloads)</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN module</a></li>
+</ul>
+</div>
+<div>
+<h2>Help</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki</a></li>
+<li><a href="../troubleshooting/">Troubleshooting</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">Report a problem</a></li>
+<li><a href="https://t.me/mu300project">Telegram channel (news and releases)</a></li>
+</ul>
+</div>
+<div>
+<p>A hobby project, at your own risk, with no warranty. Not endorsed by ZTE, Unisoc or any operator. Scripts and documentation: MIT; kernels: GPL-2.0.</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

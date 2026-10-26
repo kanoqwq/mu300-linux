@@ -1,0 +1,4029 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: zh_Hans\n"
+
+msgid "Status dashboard"
+msgstr "状态看板"
+
+msgid "Cellular"
+msgstr "蜂窝"
+
+msgid "Dual SIM"
+msgstr "双 SIM 卡"
+
+msgid "SIM settings"
+msgstr "SIM 卡设置"
+
+msgid "Network locks"
+msgstr "网络锁定"
+
+msgid "SMS"
+msgstr "短信"
+
+msgid "SMS forwarding"
+msgstr "短信转发"
+
+msgid "AT terminal"
+msgstr "AT 终端"
+
+msgid "Adapter settings"
+msgstr "适配设置"
+
+msgid "TTL"
+msgstr "TTL"
+
+msgid "Data usage"
+msgstr "流量统计"
+
+msgid "Device management"
+msgstr "设备管理"
+
+msgid "Update"
+msgstr "更新"
+
+msgid "Backup of settings"
+msgstr "设置备份"
+
+msgid "Languages"
+msgstr "语言"
+
+msgid "Power"
+msgstr "电源"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Terminal"
+msgstr "终端"
+
+msgid "Terminal settings"
+msgstr "终端设置"
+
+msgid "Overview"
+msgstr "概览"
+
+msgid "Profiles"
+msgstr "配置文件"
+
+msgid "Subscriptions"
+msgstr "订阅"
+
+msgid "Engines"
+msgstr "引擎"
+
+msgid "Settings"
+msgstr "设置"
+
+msgid "Logs"
+msgstr "日志"
+
+msgid "Packages after an update"
+msgstr "更新后的软件包"
+
+msgid "MU300 control center: status dashboard, network locks, AT terminal, SMS and VPN"
+msgstr "MU300 控制中心：状态仪表盘、网络锁定、AT 终端、短信和 VPN"
+
+msgid "Terminal: a root shell on the device in the browser"
+msgstr "终端：在浏览器中使用设备的 root shell"
+
+msgid "China Mobile"
+msgstr "中国移动"
+
+msgid "China Unicom"
+msgstr "中国联通"
+
+msgid "China Telecom"
+msgstr "中国电信"
+
+msgid "China Broadnet"
+msgstr "中国广电"
+
+msgid "China Tietong"
+msgstr "中国铁通"
+
+msgid "Excellent"
+msgstr "优秀"
+
+msgid "Good"
+msgstr "良好"
+
+msgid "Fair"
+msgstr "一般"
+
+msgid "Poor"
+msgstr "较差"
+
+msgid "Unknown"
+msgstr "未知"
+
+msgid "%d d %d h"
+msgstr "%d 天 %d 小时"
+
+msgid "%d h %d min"
+msgstr "%d 小时 %d 分"
+
+msgid "%d min"
+msgstr "%d 分"
+
+msgid "No neighbor-cell data"
+msgstr "暂无邻区数据"
+
+msgid "Locked"
+msgstr "已锁定"
+
+msgid "Lock"
+msgstr "锁定"
+
+msgid "Unknown error"
+msgstr "未知错误"
+
+msgid "Confirm"
+msgstr "确认"
+
+msgid "OK"
+msgstr "确定"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "%d s"
+msgstr "%d 秒"
+
+msgid "%d h"
+msgstr "%d 小时"
+
+msgid "New SMS · %s"
+msgstr "新短信 · %s"
+
+msgid "Unknown number"
+msgstr "未知号码"
+
+msgid "Select"
+msgstr "选择"
+
+msgid "never"
+msgstr "从未"
+
+msgid "just now"
+msgstr "刚刚"
+
+msgid "%s ago"
+msgstr "%s 前"
+
+msgid "Failed: %s"
+msgstr "失败：%s"
+
+msgid "Management connection lost"
+msgstr "管理连接已中断"
+
+msgid "Installing the VPN module"
+msgstr "正在安装 VPN 模块"
+
+msgid "Installing the engine"
+msgstr "正在安装引擎"
+
+msgid "Adding the subscription"
+msgstr "正在添加订阅"
+
+msgid "Refreshing the subscriptions"
+msgstr "正在刷新订阅"
+
+msgid "Testing the latency of every profile"
+msgstr "正在测试所有配置文件的延迟"
+
+msgid "Downloading the config"
+msgstr "正在下载配置"
+
+msgid "Working…"
+msgstr "处理中…"
+
+msgid "done"
+msgstr "完成"
+
+msgid "failed"
+msgstr "失败"
+
+msgid "Verify the uploaded file"
+msgstr "校验上传的文件"
+
+msgid "The uploaded file is checked against the SHA256SUMS of the VPN module's latest release, downloaded over HTTPS. When that is not possible (offline, an older release), it is installed only if you allow an unverified file: it then runs as root with no check."
+msgstr "上传的文件会与通过 HTTPS 下载的 VPN 模块最新发布的 SHA256SUMS 进行校验。如果无法校验（离线、较旧的版本），只有在您允许未校验文件时才会安装：届时它将以 root 身份运行且不经任何检查。"
+
+msgid "Install it even if it cannot be verified"
+msgstr "即使无法校验也安装"
+
+msgid "Install only a verified file"
+msgstr "仅安装已校验的文件"
+
+msgid "Upload failed: %s"
+msgstr "上传失败：%s"
+
+msgid "The VPN module is too old for this panel"
+msgstr "VPN 模块版本过旧，此面板无法使用"
+
+msgid "The VPN module is not installed"
+msgstr "未安装 VPN 模块"
+
+msgid "This page needs the VPN module with the machine-readable mu300-vpn (module v2 or newer). Updating it keeps the profiles and the settings."
+msgstr "此页面需要带机器可读 mu300-vpn 的 VPN 模块（v2 或更新版本）。更新会保留配置文件和设置。"
+
+msgid "The VPN is a module of its own: mu300-vpn with its kill switch and profiles, and one extra per engine (Xray, sing-box, mihomo, dae). It is installed with mu300-extra install vpn."
+msgstr "VPN 是一个独立模块：mu300-vpn（含断网保护和配置文件），以及每个引擎一个附加包（Xray、sing-box、mihomo、dae）。使用 mu300-extra install vpn 安装。"
+
+msgid "The download is a few MB for the module and up to tens of MB per engine: on mobile data it counts towards your plan."
+msgstr "模块下载约几 MB，每个引擎最多几十 MB：使用移动数据时会计入您的套餐流量。"
+
+msgid "Update the VPN module"
+msgstr "更新 VPN 模块"
+
+msgid "Install the VPN module"
+msgstr "安装 VPN 模块"
+
+msgid "Upload the file…"
+msgstr "上传文件…"
+
+msgid "Offline: upload mu300-linux-vpn-core.tar.gz (or the bundle mu300-linux-vpn.tar.gz) from the release page of the VPN module."
+msgstr "离线：从 VPN 模块的发布页面上传 mu300-linux-vpn-core.tar.gz（或合集包 mu300-linux-vpn.tar.gz）。"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "This is a network or frequency scan: it takes one to three minutes, holds the modem's AT channel all that time, and mobile data may pause meanwhile. It runs in the background; the reply appears here when it is done."
+msgstr "这是网络或频点扫描：需要一到三分钟，期间一直占用调制解调器的 AT 通道，移动数据可能暂停。它在后台运行，完成后回复会显示在这里。"
+
+msgid "This changes a network mode, band or cell setting the modem stores: it stays in force after a reboot, and in Android too, where a network that does not match it shows as No Service. The Locks page shows these settings and resets them."
+msgstr "这会更改调制解调器保存的网络模式、频段或小区设置：重启后仍然生效，在 Android 中也生效，与之不符的网络会显示为无服务。锁定页面可以查看并重置这些设置。"
+
+msgid "This switches the radio, the data connection or the modem itself: mobile data drops until it is restored, and this page may lose its connection for a while."
+msgstr "这会切换射频、数据连接或调制解调器本身：移动数据会中断直到恢复，本页面也可能暂时失去连接。"
+
+msgid "This changes the data profiles (APNs) stored in the modem, which mobile data and Android use."
+msgstr "这会更改调制解调器中保存的数据配置（APN），移动数据和 Android 都会使用它们。"
+
+msgid "This changes the SIM's PIN lock or enters a PIN: wrong PINs block the SIM until its PUK is entered."
+msgstr "这会更改 SIM 卡的 PIN 锁或输入 PIN：PIN 错误次数过多会锁住 SIM 卡，直到输入 PUK。"
+
+msgid "Basic"
+msgstr "基础"
+
+msgid "Registration/signal"
+msgstr "注册/信号"
+
+msgid "Bearer"
+msgstr "承载"
+
+msgid "Engineering mode"
+msgstr "工程模式"
+
+msgid "AT command (↑↓ history, Enter to send)"
+msgstr "AT 命令（↑↓ 翻历史，Enter 发送）"
+
+msgid "Send"
+msgstr "发送"
+
+msgid "Clear screen"
+msgstr "清屏"
+
+msgid "Ready."
+msgstr "就绪。"
+
+msgid "Session history (click to reuse)"
+msgstr "会话历史（点击复用）"
+
+msgid "Running in the background (at most %d s); the reply appears here when it is done…"
+msgstr "正在后台运行（最多 %d 秒）；完成后回复会显示在这里…"
+
+msgid "The modem gave no final answer in time"
+msgstr "调制解调器未在规定时间内给出最终回复"
+
+msgid "%d s in the background"
+msgstr "后台运行 %d 秒"
+
+msgid "(no output)"
+msgstr "(无输出)"
+
+msgid "This command changes the modem's state."
+msgstr "此命令会更改调制解调器的状态。"
+
+msgid "Not sent yet: waiting for confirmation"
+msgstr "尚未发送：等待确认"
+
+msgid "Send this AT command?"
+msgstr "发送此 AT 命令？"
+
+msgid "Send anyway"
+msgstr "仍然发送"
+
+msgid "Not sent"
+msgstr "未发送"
+
+msgid "Request failed"
+msgstr "调用失败"
+
+msgid "(empty)"
+msgstr "（空）"
+
+msgid "Passphrase (8 characters or more)"
+msgstr "口令（至少 8 个字符）"
+
+msgid "The passphrase again"
+msgstr "再次输入口令"
+
+msgid "Download the backup"
+msgstr "下载备份"
+
+msgid "Back up the settings"
+msgstr "备份设置"
+
+msgid "One file with the hotspot, mobile data and the APN, the network locks, the VPN profiles and settings, SMS forwarding, the LAN address, the host name, the time zone and the SSH keys. It holds passwords: with a passphrase it is encrypted, and only that passphrase opens it again."
+msgstr "一个文件包含热点、移动数据和 APN、网络锁定、VPN 配置和设置、短信转发、LAN 地址、主机名、时区和 SSH 密钥。文件中有密码：设置口令后会被加密，只有该口令才能再次打开。"
+
+msgid "Include the login password"
+msgstr "包含登录密码"
+
+msgid "Passphrase, if the file is encrypted"
+msgstr "口令（如果文件已加密）"
+
+msgid "Show what would change"
+msgstr "显示将要更改的内容"
+
+msgid "Restore"
+msgstr "恢复"
+
+msgid "The file is larger than 4 MiB"
+msgstr "文件大于 4 MiB"
+
+msgid "The settings of the file replace these. The hotspot, mobile data or the LAN may restart, and this page may lose its connection for a moment."
+msgstr "文件中的设置将替换当前设置。热点、移动数据或 LAN 可能会重启，本页面可能会暂时断开连接。"
+
+msgid "Restore from a backup"
+msgstr "从备份恢复"
+
+msgid "Every value of the file is checked first; one that is refused and nothing is changed. What is the same is left alone, and no VPN profile, subscription or SSH key of this device is removed."
+msgstr "文件中的每个值都会先经过检查；只要有一个被拒绝，就不会做任何更改。相同的设置保持不变，本设备的 VPN 配置、订阅和 SSH 密钥都不会被删除。"
+
+msgid "Keep this device's login password"
+msgstr "保留本设备的登录密码"
+
+msgid "Take a file of another device model"
+msgstr "接受其他设备型号的文件"
+
+msgid "The two passphrases differ"
+msgstr "两次输入的口令不同"
+
+msgid "The passphrase needs 8 characters or more"
+msgstr "口令至少需要 8 个字符"
+
+msgid "Saved (encrypted)"
+msgstr "已保存（已加密）"
+
+msgid "Saved. The file is not encrypted: it holds passwords, keep it safe."
+msgstr "已保存。文件未加密：其中含有密码，请妥善保管。"
+
+msgid "Choose a backup file first"
+msgstr "请先选择备份文件"
+
+msgid "Restoring…"
+msgstr "正在恢复…"
+
+msgid "Restored"
+msgstr "已恢复"
+
+msgid "The restore did not finish: see the lines above"
+msgstr "恢复未完成：请查看上面的内容"
+
+msgid "Loading…"
+msgstr "加载中…"
+
+msgid "Channel Analysis"
+msgstr "信道分析"
+
+msgid "A scan takes the Wi-Fi hotspot off its channel for a moment: connected devices drop, and some (macOS in particular) may not reconnect by themselves. This page scans as soon as it opens and again every few seconds. Reach the panel over USB or another way first if you depend on the hotspot."
+msgstr "扫描会让 Wi-Fi 热点短暂离开其信道：已连接的设备会断开，部分设备（尤其是 macOS）可能不会自动重新连接。本页面一打开就会扫描，之后每隔几秒再次扫描。如果您依赖该热点，请先通过 USB 或其他方式访问面板。"
+
+msgid "Scan anyway"
+msgstr "仍然扫描"
+
+msgid "Saved"
+msgstr "已保存"
+
+msgid "CPU profile unavailable"
+msgstr "无法获取 CPU 配置"
+
+msgid "Power saving"
+msgstr "省电"
+
+msgid "Balanced"
+msgstr "均衡"
+
+msgid "Performance"
+msgstr "性能"
+
+msgid "Cores capped at about 60 %% of their maximum (cooler, less power)."
+msgstr "核心频率限制在最高频率的约 60%%（更凉爽、更省电）。"
+
+msgid "Schedutil across the full hardware range (the stock behaviour)."
+msgstr "在整个硬件频率范围内使用 schedutil（出厂行为）。"
+
+msgid "Every cluster pinned at its hardware maximum."
+msgstr "每个集群固定在其硬件最高频率。"
+
+msgid "CPU profile"
+msgstr "CPU 配置"
+
+msgid "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+msgstr "配置会设置 CPU 调速器和每个集群的频率上下限。它只在硬件频率表范围内调整，从不改动电压，因此无法对该 SoC 超频。无论使用哪种配置，内核都会在温度上限处降频。"
+
+msgid "Saved profile: %s"
+msgstr "已保存的配置：%s"
+
+msgid "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+msgstr "当前正在进行温度降频：下方的频率低于配置上限。"
+
+msgid "Clusters"
+msgstr "集群"
+
+msgid "Cores"
+msgstr "核心"
+
+msgid "Governor"
+msgstr "调速器"
+
+msgid "Now"
+msgstr "当前"
+
+msgid "Min"
+msgstr "最低"
+
+msgid "Max"
+msgstr "最高"
+
+msgid "Hardware max"
+msgstr "硬件最高"
+
+msgid "Frequencies in MHz."
+msgstr "频率单位为 MHz。"
+
+msgid "Highlighted cores are online. A core taken offline stays offline, also after a reboot, until it is brought back. CPU0 always stays online."
+msgstr "高亮的核心处于在线状态。被关闭的核心会保持离线，重启后也是如此，直到重新开启。CPU0 始终保持在线。"
+
+msgid "Low latency: on"
+msgstr "低延迟：开"
+
+msgid "Low latency: off"
+msgstr "低延迟：关"
+
+msgid "Low latency keeps CPU0 out of its idle states, as ZTE's U30 Air firmware does: Wi-Fi delays are much shorter, and the device draws more power. Off by default."
+msgstr "低延迟模式让 CPU0 不进入空闲状态，与 ZTE U30 Air 原厂固件相同：Wi-Fi 延迟大幅缩短，设备耗电增加。默认关闭。"
+
+msgid "Thermal"
+msgstr "温控"
+
+msgid "The kernel's thermal zones, read only. A zone with trip points throttles the cooling devices bound to it at its passive trip; a cooling state of 0 is no throttling."
+msgstr "内核的温区，只读。带有触发点的温区会在其被动触发点限制与之绑定的冷却设备；冷却状态 0 表示未限频。"
+
+msgid "Zone"
+msgstr "温区"
+
+msgid "Temperature"
+msgstr "温度"
+
+msgid "Trip points"
+msgstr "触发点"
+
+msgid "Cooling devices"
+msgstr "冷却设备"
+
+msgid "Stress test started"
+msgstr "压力测试已开始"
+
+msgid "Saved: it takes effect at the next reboot"
+msgstr "已保存：将在下次重启时生效"
+
+msgid "CPU voltage offset (EXPERIMENTAL)"
+msgstr "CPU 电压偏移（实验性）"
+
+msgid "Experimental: changing the CPU voltage can make the device unstable, corrupt your data and permanently damage your device. Use it entirely at your own risk."
+msgstr "实验性功能：修改 CPU 电压可能导致设备不稳定、损坏您的数据，并可能对您的设备造成永久性损坏。风险完全由您自行承担。"
+
+msgid "CPU voltage offset unavailable"
+msgstr "CPU 电压偏移不可用"
+
+msgid "Not available with this kernel (a mainline kernel of this release or later has it)."
+msgstr "此内核不支持（本版本或更新版本的主线内核支持）。"
+
+msgid "Off: the stock voltages"
+msgstr "关闭：出厂电压"
+
+msgid "Changes at the next reboot"
+msgstr "将在下次重启时更改"
+
+msgid "Trial boot: kept once this boot has been up 10 minutes"
+msgstr "试用启动：本次启动运行满 10 分钟后保留"
+
+msgid "Kept: this offset passed its trial boot"
+msgstr "已保留：此偏移已通过试用启动"
+
+msgid "a boot with it ended without a clean shutdown"
+msgstr "使用该偏移的一次启动未正常关机就结束了"
+
+msgid "its trial boot ended before 10 minutes"
+msgstr "其试用启动在 10 分钟内结束"
+
+msgid "invalid value"
+msgstr "无效值"
+
+msgid "unknown SoC firmware"
+msgstr "未知的 SoC 固件"
+
+msgid "refused by the kernel"
+msgstr "被内核拒绝"
+
+msgid "the kernel could not start CPU scaling with it"
+msgstr "内核无法以此偏移启动 CPU 调频"
+
+msgid "Offsets in µV for the three CPU domains (cores 0-3, 4-6 and 7), in whole steps. A new offset takes effect at the next reboot, as a trial: it is kept once that boot has been up 10 minutes, and dropped (back to 0) if a boot with it ends in a crash, a watchdog reset or a power cut."
+msgstr "三个 CPU 电压域（核心 0-3、4-6 和 7）的偏移，单位 µV，须为整数步长。新的偏移在下次重启时以试用方式生效：该次启动运行满 10 分钟后保留；若使用它的启动以崩溃、看门狗复位或断电结束，则丢弃（恢复为 0）。"
+
+msgid "Running now (µV)"
+msgstr "当前运行（µV）"
+
+msgid "Saved for the next boot (µV)"
+msgstr "已保存，下次启动生效（µV）"
+
+msgid "State"
+msgstr "状态"
+
+msgid "Taken back automatically: %s µV (%s)"
+msgstr "已自动撤销：%s µV（%s）"
+
+msgid "The SoC firmware of this device is not one whose voltage encoding is known: only the stock voltages are possible."
+msgstr "此设备的 SoC 固件不在已知电压编码的版本之列：只能使用出厂电压。"
+
+msgid "Domain"
+msgstr "电压域"
+
+msgid "Offset now (µV)"
+msgstr "当前偏移（µV）"
+
+msgid "Highest step"
+msgstr "最高档位"
+
+msgid "New offset (µV)"
+msgstr "新偏移（µV）"
+
+msgid "Limits: %d to %d µV, in steps of %d µV."
+msgstr "范围：%d 至 %d µV，步长 %d µV。"
+
+msgid "Save for the next boot"
+msgstr "保存，下次启动生效"
+
+msgid "Each offset must be a multiple of %d µV between %d and %d."
+msgstr "每个偏移必须是 %d µV 的整数倍，且介于 %d 和 %d 之间。"
+
+msgid "Type %s to confirm."
+msgstr "输入 %s 以确认。"
+
+msgid "Back to the stock voltages"
+msgstr "恢复出厂电压"
+
+msgid "Type %s to confirm:"
+msgstr "输入 %s 以确认："
+
+msgid "Run a 10-minute CPU stress test"
+msgstr "运行 10 分钟 CPU 压力测试"
+
+msgid "Test a new offset under load during its trial boot. The device may crash if the voltage is too low; the next boot then runs at the stock voltages."
+msgstr "在试用启动期间于负载下测试新的偏移。电压过低时设备可能崩溃；之后的下次启动将使用出厂电压。"
+
+msgid "A stress test is running."
+msgstr "压力测试正在运行。"
+
+msgid "USB role"
+msgstr "USB 角色"
+
+msgid "Current role"
+msgstr "当前角色"
+
+msgid "Switch USB role"
+msgstr "切换 USB 角色"
+
+msgid "Device mode"
+msgstr "设备模式"
+
+msgid "Host mode"
+msgstr "主机模式"
+
+msgid "Enable host mode at boot"
+msgstr "开机自动启用主机模式"
+
+msgid "Apply role"
+msgstr "应用角色"
+
+msgid "Host mode disconnects USB networking and serial on this port. F50 has no battery; management may be lost and a USB adapter usually needs a powered hub."
+msgstr "主机模式会断开本端口的 USB 网络与串口。F50 没有电池；切换后可能失去管理连接，外接 USB 网卡通常需要自供电 Hub。"
+
+msgid "USB network mode"
+msgstr "USB 网络模式"
+
+msgid "Network protocol"
+msgstr "网络协议"
+
+msgid "Apply duration"
+msgstr "生效期限"
+
+msgid "Next reboot only"
+msgstr "仅下次重启"
+
+msgid "Permanent"
+msgstr "永久生效"
+
+msgid "Enable selected protocol"
+msgstr "启用所选协议"
+
+msgid "Save; apply after reboot"
+msgstr "保存，重启后生效"
+
+msgid "NCM is the default. Windows does not natively support ECM; RNDIS changes enumeration. With Enable selected protocol off, only your choice is saved. Next reboot only applies once, then returns to NCM."
+msgstr "NCM 为默认模式。Windows 不原生支持 ECM；RNDIS 会改变枚举方式。关闭“启用所选协议”时仅保存选择；选择“仅下次重启”则成功应用一次后恢复默认 NCM。"
+
+msgid "USB adapters"
+msgstr "USB 网卡"
+
+msgid "Refresh"
+msgstr "刷新"
+
+msgid "Available only in host mode. Refresh brings discovered USB adapters up; adding to LAN saves the bridge and reloads networking."
+msgstr "仅主机模式可用。刷新时会尝试启用发现的 USB 网卡；添加到 LAN 后将保存到网桥并重新加载网络。"
+
+msgid "Recent modem operations"
+msgstr "最近的调制解调器操作"
+
+msgid "Show"
+msgstr "显示"
+
+msgid "The control panel's recent calls, of this boot and the one before: when, which page call or AT command, how long it took and how it ended (ok, error, busy, killed). No values, replies or messages are kept. Useful when the panel was stuck."
+msgstr "控制面板在本次及上一次启动中的最近调用：时间、哪个页面调用或 AT 命令、耗时以及结果（成功、错误、忙、被终止）。不保存任何数值、回复或短信。面板卡住时可用于排查。"
+
+msgid "Unavailable"
+msgstr "不可用"
+
+msgid "USB network mode is unavailable in host mode; host auto-start also disables USB network auto-start."
+msgstr "主机模式下不可选择 USB 网络模式；主机开机自启会自动关闭 USB 网络开机自启。"
+
+msgid "Host mode immediately disconnects USB management. F50 has no battery and peripherals may need external power; make sure another management path exists."
+msgstr "切换主机模式会立即断开 USB 管理连接。F50 没有电池，外设可能需要自供电；请确认有其他管理途径。"
+
+msgid "USB networking and serial will re-enumerate in device mode."
+msgstr "切回设备模式后 USB 网络和串口会重新枚举。"
+
+msgid "Switch USB role?"
+msgstr "确认切换 USB 角色？"
+
+msgid "Apply"
+msgstr "应用"
+
+msgid "Switching USB role…"
+msgstr "正在切换 USB 角色…"
+
+msgid "Switch failed: %s"
+msgstr "切换失败：%s"
+
+msgid "Management connection lost; reconnect to confirm the USB role."
+msgstr "管理连接已中断；请重新连接后确认 USB 角色。"
+
+msgid "Switch request accepted; the USB connection may briefly disconnect."
+msgstr "切换请求已接收，USB 连接可能短暂中断。"
+
+msgid "USB role applied"
+msgstr "USB 角色已应用"
+
+msgid "Save USB network mode?"
+msgstr "保存 USB 网络模式？"
+
+msgid "The network mode applies on the next reboot; USB management may need to reconnect."
+msgstr "网络模式将在下次重启时生效，USB 管理连接可能需要重新识别。"
+
+msgid "Save the selection only; with the selected protocol disabled, the next boot still uses default NCM."
+msgstr "只保存选择；未启用所选协议，下次重启仍使用默认 NCM。"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Saving USB network settings…"
+msgstr "正在保存 USB 网络设置…"
+
+msgid "Settings saved"
+msgstr "设置已保存"
+
+msgid "Save failed: %s"
+msgstr "保存失败：%s"
+
+msgid "This boot"
+msgstr "本次启动"
+
+msgid "Previous boot"
+msgstr "上一次启动"
+
+msgid "Unable to confirm the role yet; reconnect and refresh the page."
+msgstr "暂时无法确认角色；请重新连接后刷新页面。"
+
+msgid "Switch to host mode to see USB adapters."
+msgstr "切换到主机模式后显示 USB 网卡。"
+
+msgid "Scanning USB adapters…"
+msgstr "正在扫描 USB 网卡…"
+
+msgid "No USB adapters found."
+msgstr "没有发现 USB 网卡。"
+
+msgid "Link connected"
+msgstr "链路已连接"
+
+msgid "No link; enable attempted"
+msgstr "链路未连接，已尝试启用"
+
+msgid "Added to LAN"
+msgstr "已添加到 LAN"
+
+msgid "Add to LAN"
+msgstr "添加到 LAN"
+
+msgid "Add USB adapter to LAN?"
+msgstr "添加 USB 网卡到 LAN？"
+
+msgid "This saves the bridge configuration and reloads networking; existing connections may briefly drop."
+msgstr "这会保存网桥配置并重新加载网络，现有连接可能短暂中断。"
+
+msgid "Add"
+msgstr "添加"
+
+msgid "Adding USB adapter…"
+msgstr "正在添加 USB 网卡…"
+
+msgid "Add failed: %s"
+msgstr "添加失败：%s"
+
+msgid "Leave empty to keep the saved value"
+msgstr "留空以保留已保存的值"
+
+msgid "Saved: %s"
+msgstr "已保存：%s"
+
+msgid "Remove the saved value"
+msgstr "删除已保存的值"
+
+msgid "Presets"
+msgstr "预设"
+
+msgid "Form (URL-encoded)"
+msgstr "表单（URL 编码）"
+
+msgid "Plain text"
+msgstr "纯文本"
+
+msgid "Received messages are sent on as they reach the SMS pool. A failed delivery is retried after 30 s, then after twice as long each time (an hour at most), ten times in all."
+msgstr "收到的短信进入短信池后即被转发。发送失败时 30 秒后重试，之后每次间隔加倍（最长一小时），共十次。"
+
+msgid "Forward received messages"
+msgstr "转发收到的短信"
+
+msgid "Message template"
+msgstr "消息模板"
+
+msgid "Placeholders: {sender}, {time}, {text}, {device}"
+msgstr "占位符：{sender}、{time}、{text}、{device}"
+
+msgid "Only these senders"
+msgstr "仅限这些发件人"
+
+msgid "One per line; empty: every sender. A * at the end matches the start of a sender."
+msgstr "每行一个；留空：所有发件人。末尾的 * 匹配发件人的开头。"
+
+msgid "Never these senders"
+msgstr "排除这些发件人"
+
+msgid "Only messages containing one of these words"
+msgstr "仅限包含以下任一词语的短信"
+
+msgid "One per line; empty: every message."
+msgstr "每行一个；留空：所有短信。"
+
+msgid "Webhook"
+msgstr "Webhook"
+
+msgid "Enabled"
+msgstr "已启用"
+
+msgid "Address (http:// or https://)"
+msgstr "地址（http:// 或 https://）"
+
+msgid "Body"
+msgstr "正文"
+
+msgid "Fields: sender, time, text, device, message (the template filled in)"
+msgstr "字段：sender、time、text、device、message（填好的模板）"
+
+msgid "Custom body"
+msgstr "自定义请求体"
+
+msgid "Empty: the standard fields (plain text: the message). Placeholders: {sender}, {time}, {text}, {device}, {message}. Each value is escaped for the chosen type. This body is shown again here: keep secrets in the address or a header."
+msgstr "留空：使用标准字段（纯文本：消息本身）。占位符：{sender}、{time}、{text}、{device}、{message}。每个值都会按所选类型转义。此请求体会在这里再次显示：请把密钥放在地址或请求头里。"
+
+msgid "Extra headers (one \"Name: value\" per line)"
+msgstr "附加请求头（每行一个 \"Name: value\"）"
+
+msgid "The answer must contain"
+msgstr "响应必须包含"
+
+msgid "Empty: every HTTP 2xx answer counts as delivered. With key=value (for example errcode=0), the answer must also be a JSON object that has this value under this key at its top level; otherwise the delivery fails. Only the result of the check is logged, never the answer."
+msgstr "留空：任何 HTTP 2xx 响应都算作已送达。填写 键=值（例如 errcode=0）后，响应还必须是一个 JSON 对象，并且其顶层的该键为该值；否则本次发送算作失败。日志中只记录检查结果，绝不记录响应内容。"
+
+msgid "Bot token"
+msgstr "机器人令牌"
+
+msgid "Chat ID (a number, or @channel)"
+msgstr "聊天 ID（数字或 @频道）"
+
+msgid "E-mail"
+msgstr "电子邮件"
+
+msgid "E-mail needs msmtp, which this image does not have"
+msgstr "电子邮件需要 msmtp，此镜像中没有"
+
+msgid "Mail server"
+msgstr "邮件服务器"
+
+msgid "Port"
+msgstr "端口"
+
+msgid "Security"
+msgstr "安全"
+
+msgid "None"
+msgstr "无"
+
+msgid "User name"
+msgstr "用户名"
+
+msgid "Password"
+msgstr "密码"
+
+msgid "From"
+msgstr "发件人"
+
+msgid "To"
+msgstr "收件人"
+
+msgid "SMS to another phone"
+msgstr "短信转发到另一部手机"
+
+msgid "Phone number"
+msgstr "手机号码"
+
+msgid "Sent as one SMS: a longer message is cut short."
+msgstr "作为一条短信发送：较长的消息会被截断。"
+
+msgid "Send test"
+msgstr "发送测试"
+
+msgid "Tokens, passwords and the webhook address and headers stay on the device and are never shown again."
+msgstr "令牌、密码以及 webhook 地址和请求头只保存在设备上，不会再次显示。"
+
+msgid "Delivered"
+msgstr "已送达"
+
+msgid "Will retry"
+msgstr "将重试"
+
+msgid "Failed"
+msgstr "失败"
+
+msgid "Filtered out"
+msgstr "已过滤"
+
+msgid "Dropped"
+msgstr "已丢弃"
+
+msgid "Clear"
+msgstr "清空"
+
+msgid "Test"
+msgstr "测试"
+
+msgid "Delivery log"
+msgstr "发送日志"
+
+msgid "Waiting to be delivered"
+msgstr "等待发送"
+
+msgid "Time"
+msgstr "时间"
+
+msgid "Message"
+msgstr "消息"
+
+msgid "Target"
+msgstr "目标"
+
+msgid "Result"
+msgstr "结果"
+
+msgid "Detail"
+msgstr "详情"
+
+msgid "No deliveries yet"
+msgstr "暂无发送记录"
+
+msgid "Test started with the saved settings; the result appears in the delivery log."
+msgstr "已使用保存的设置开始测试；结果会显示在发送日志中。"
+
+msgid "Automatic without 2G (152)"
+msgstr "自动，不含 2G（152）"
+
+msgid "4G only"
+msgstr "仅 4G"
+
+msgid "Network mode: %s"
+msgstr "网络模式：%s"
+
+msgid "EN-DC off"
+msgstr "EN-DC 关闭"
+
+msgid "NR band lock: %s"
+msgstr "NR 频段锁定：%s"
+
+msgid "LTE band lock: %s"
+msgstr "LTE 频段锁定：%s"
+
+msgid "Cell lock: %s"
+msgstr "小区锁定：%s"
+
+msgid "Modulation DL/UL"
+msgstr "调制方式 下/上"
+
+msgid "Estimated from current MCS"
+msgstr "按当前 MCS 估算"
+
+msgid "MCS DL/UL"
+msgstr "MCS 下/上"
+
+msgid "BLER DL/UL"
+msgstr "BLER 下/上"
+
+msgid "%s of %s"
+msgstr "%s / %s"
+
+msgid "The monthly cap is reached"
+msgstr "已达到每月流量上限"
+
+msgid "%d%% of the monthly cap is used"
+msgstr "已用每月上限的 %d%%"
+
+msgid "This billing cycle"
+msgstr "本计费周期"
+
+msgid "Link & traffic"
+msgstr "链路与流量"
+
+msgid "Download rate"
+msgstr "下行速率"
+
+msgid "Upload rate"
+msgstr "上行速率"
+
+msgid "Total received"
+msgstr "累计接收"
+
+msgid "Total sent"
+msgstr "累计发送"
+
+msgid "Used today"
+msgstr "今日已用"
+
+msgid "SIM source"
+msgstr "SIM 来源"
+
+msgid "Session duration"
+msgstr "会话时长"
+
+msgid "Registration"
+msgstr "注册状态"
+
+msgid "Data roaming"
+msgstr "数据漫游"
+
+msgid "Bandwidth"
+msgstr "频宽"
+
+msgid "AMBR DL/UL"
+msgstr "AMBR 下/上"
+
+msgid "Wi-Fi · LAN · Device · SIM"
+msgstr "无线 · 局域网 · 设备 · SIM"
+
+msgid "CPU usage"
+msgstr "CPU 占用"
+
+msgid "Memory"
+msgstr "内存"
+
+msgid "Storage"
+msgstr "存储"
+
+msgid "Battery"
+msgstr "电池"
+
+msgid "Channel"
+msgstr "信道"
+
+msgid "Encryption"
+msgstr "加密"
+
+msgid "Hidden SSID"
+msgstr "隐藏 SSID"
+
+msgid "Country"
+msgstr "国家"
+
+msgid "AP status"
+msgstr "AP 状态"
+
+msgid "USB network"
+msgstr "USB 网络"
+
+msgid "Connection tracking"
+msgstr "连接跟踪"
+
+msgid "LAN address"
+msgstr "LAN 地址"
+
+msgid "Wi-Fi clients"
+msgstr "无线客户端"
+
+msgid "DHCP leases"
+msgstr "DHCP 租约"
+
+msgid "Device model"
+msgstr "设备型号"
+
+msgid "System"
+msgstr "系统"
+
+msgid "Modem"
+msgstr "调制解调器"
+
+msgid "Carrier"
+msgstr "运营商"
+
+msgid "Own number"
+msgstr "本机号码"
+
+msgid "Module"
+msgstr "模组"
+
+msgid "Firmware"
+msgstr "固件"
+
+msgid "Show SIM identifiers"
+msgstr "显示卡号信息"
+
+msgid "Quick controls"
+msgstr "快捷控制"
+
+msgid "Data connection"
+msgstr "数据连接"
+
+msgid "Cellular radio"
+msgstr "蜂窝射频"
+
+msgid "Wi-Fi hotspot"
+msgstr "Wi-Fi 热点"
+
+msgid "Restart modem"
+msgstr "重启调制解调器"
+
+msgid "Power off or restart"
+msgstr "关机或重启"
+
+msgid "Switch to Android"
+msgstr "切换到 Android"
+
+msgid "Lock Linux"
+msgstr "锁定 Linux"
+
+msgid "Neighbor cells"
+msgstr "邻区"
+
+msgid "RAT/Band"
+msgstr "制式/频段"
+
+msgid "Frequency"
+msgstr "频点"
+
+msgid "Running %s…"
+msgstr "正在执行 %s …"
+
+msgid "Started in background: %s"
+msgstr "已后台执行：%s"
+
+msgid "Done: %s"
+msgstr "已执行：%s"
+
+msgid "Disconnecting data…"
+msgstr "正在断开数据连接…"
+
+msgid "Connecting data…"
+msgstr "正在拨号…"
+
+msgid "Turn off cellular radio"
+msgstr "关闭蜂窝射频"
+
+msgid "This SIM will have no calls, SMS or data, and its radio stays off after a reboot until you turn it on again."
+msgstr "关闭后该卡无法通话、收发短信或上网，重启后射频仍保持关闭，直到再次开启。"
+
+msgid "Turn on cellular radio"
+msgstr "打开蜂窝射频"
+
+msgid "The radio of the SIM in use comes on and stays on after a reboot (up to about 1 minute)."
+msgstr "将开启当前使用卡的射频，重启后仍保持开启（最多约 1 分钟）。"
+
+msgid "Turn data roaming off"
+msgstr "关闭数据漫游"
+
+msgid "While the SIM is registered on a roaming network, mobile data stays off; SMS, calls and the registration are not affected. Some SIMs report roaming at home (an MVNO, national roaming): there, data would stop as well."
+msgstr "当 SIM 卡注册在漫游网络上时，移动数据保持关闭；短信、通话和网络注册不受影响。部分 SIM 卡在本地也会报告漫游（虚拟运营商、国内漫游）：在那里数据同样会停止。"
+
+msgid "Allow data roaming"
+msgstr "允许数据漫游"
+
+msgid "Mobile data is used on roaming networks too, which can cost extra. Some SIMs report roaming at home (an MVNO, national roaming) and need this to have data at all."
+msgstr "移动数据也会在漫游网络上使用，可能产生额外费用。部分 SIM 卡在本地也会报告漫游（虚拟运营商、国内漫游），需要开启此项才能使用数据。"
+
+msgid "Cellular connectivity may stop for 1–2 minutes."
+msgstr "蜂窝连接会中断 1-2 分钟。"
+
+msgid "All connections will be interrupted."
+msgstr "所有连接会断开。"
+
+msgid "Power off"
+msgstr "关机"
+
+msgid "Restart"
+msgstr "重启"
+
+msgid "The next boot will enter Android and reboot now. This management page and cellular sharing will disconnect."
+msgstr "下次启动将进入 Android 并立即重启，此管理页面与蜂窝共享都会断开。"
+
+msgid "To return to OpenWrt, run mu300-next-boot linux in Android and reboot."
+msgstr "回到 OpenWrt：在 Android 上执行 mu300-next-boot linux 后重启；"
+
+msgid "Or do nothing: after five boots that do not finish, it falls back automatically."
+msgstr "或什么都不做，连续 5 次开机未完成会自动回退。"
+
+msgid "Preparing Android boot and rebooting…"
+msgstr "正在武装 Android 引导并重启…"
+
+msgid "Switch and reboot"
+msgstr "切换并重启"
+
+msgid "Not automatic: %s. The network mode and band locks are stored in the modem and stay in force in Android too; if the network does not match them, Android shows No Service."
+msgstr "非自动：%s。网络模式和频段锁定保存在调制解调器中，在 Android 中同样生效；如果网络与之不匹配，Android 会显示“无服务”。"
+
+msgid "Reset locks and switch"
+msgstr "重置锁定并切换"
+
+msgid "Unlock Linux"
+msgstr "解除 Linux 锁定"
+
+msgid "After five boots in a row that do not finish, the device falls back to Android again."
+msgstr "连续五次启动未完成后，设备将再次回退到 Android。"
+
+msgid "Unlock"
+msgstr "解除锁定"
+
+msgid "The device will never switch to Android by itself, not even after failed boots: Android only from this page (Switch to Android) or with mu300-next-boot android."
+msgstr "设备永远不会自行切换到 Android，即使启动失败也不会：只能通过本页面（切换到 Android）或 mu300-next-boot android 进入 Android。"
+
+msgid "A new kernel from an update still gets its first boots on trial, and locks again once one of them succeeds."
+msgstr "更新带来的新内核仍会先以试用方式启动，其中一次成功后会再次锁定。"
+
+msgid "If the system itself no longer starts, the device waits on USB (telnet) instead of going to Android."
+msgstr "如果系统本身无法启动，设备会通过 USB（telnet）等待，而不是进入 Android。"
+
+msgid "Hide SIM identifiers"
+msgstr "隐藏卡号信息"
+
+msgid "Lock cell %s?"
+msgstr "锁定小区 %s?"
+
+msgid "The radio stack will restart (SFUN); cellular service will stop for about 30 seconds."
+msgstr "协议栈会重启（SFUN），蜂窝断开约半分钟。"
+
+msgid "Locking %s in the background, about 30 seconds"
+msgstr "正在后台锁定 %s，约半分钟"
+
+msgid "Locked %s in the background; the status will refresh shortly"
+msgstr "已后台锁定 %s，稍后自动刷新状态"
+
+msgid "Lock failed: %s"
+msgstr "锁定失败：%s"
+
+msgid "Resetting the network locks to automatic (SFUN restart, about 30 seconds)…"
+msgstr "正在将网络锁定重置为自动（SFUN 重启，约 30 秒）…"
+
+msgid "Reset failed: %s. The saved lock settings were kept."
+msgstr "重置失败：%s。已保存的锁定设置被保留。"
+
+msgid "The lock reset was not confirmed in time; switching anyway."
+msgstr "未能及时确认锁定已重置；仍然切换。"
+
+msgid "Internal SIM selected: in use after a reboot"
+msgstr "已选择内置 SIM：重启后生效"
+
+msgid "Internal SIM selected, but not supported on this device: the external SIM is in use"
+msgstr "已选择内置 SIM，但此设备不支持：正在使用外置 SIM"
+
+msgid "Uptime %s"
+msgstr "已运行 %s"
+
+msgid "Radio off"
+msgstr "无线电已关"
+
+msgid "No response"
+msgstr "无应答"
+
+msgid "Modem busy: cellular readings from %s ago"
+msgstr "调制解调器忙：蜂窝数据读取于 %s 前"
+
+msgid "%s · Signal %s %s/10"
+msgstr "%s · 信号 %s %s 分"
+
+msgid "%s · Signal %s"
+msgstr "%s · 信号 %s"
+
+msgid "Anchor B%s"
+msgstr "锚点 B%s"
+
+msgid "No serving cell"
+msgstr "未驻留小区"
+
+msgid "Version %s is out: update"
+msgstr "%s 版本已发布：更新"
+
+msgid "Not registered"
+msgstr "未注册"
+
+msgid "Registered"
+msgstr "已注册"
+
+msgid "Searching"
+msgstr "搜索中"
+
+msgid "Registration denied"
+msgstr "注册被拒"
+
+msgid "Registered (roaming)"
+msgstr "已注册（漫游）"
+
+msgid "Emergency only"
+msgstr "仅紧急"
+
+msgid "Status %s"
+msgstr "状态 %s"
+
+msgid "Off: data held back while roaming"
+msgstr "关闭：漫游时已暂停数据"
+
+msgid "Allowed"
+msgstr "允许"
+
+msgid "Off"
+msgstr "关"
+
+msgid "LTE anchor"
+msgstr "LTE 锚点"
+
+msgid "LTE link"
+msgstr "LTE 链路"
+
+msgid "Hidden"
+msgstr "已隐藏"
+
+msgid "No"
+msgstr "否"
+
+msgid "Running"
+msgstr "运行中"
+
+msgid "Not running"
+msgstr "未运行"
+
+msgid "Connected"
+msgstr "已连接"
+
+msgid "Disconnected"
+msgstr "未连接"
+
+msgid "%s entries"
+msgstr "%s 条"
+
+msgid "%s clients"
+msgstr "%s 台"
+
+msgid "Recent DHCP leases"
+msgstr "近期 DHCP 租约"
+
+msgid "Board"
+msgstr "主板"
+
+msgid "No temperature readings"
+msgstr "无温度读数"
+
+msgid "Cluster %d"
+msgstr "簇%d"
+
+msgid "Total %s · free %s"
+msgstr "共 %s · 余 %s"
+
+msgid "charging %s W"
+msgstr "充电中 %s W"
+
+msgid "charging"
+msgstr "充电中"
+
+msgid "drawing %s W"
+msgstr "耗电 %s W"
+
+msgid "not charging"
+msgstr "未充电"
+
+msgid "on battery"
+msgstr "电池供电"
+
+msgid "full"
+msgstr "已充满"
+
+msgid "USB in %s W"
+msgstr "USB 输入 %s W"
+
+msgid "Online"
+msgstr "在线"
+
+msgid "AT adapter unavailable"
+msgstr "AT 适配器不可用"
+
+msgid "Linux locked"
+msgstr "Linux 已锁定"
+
+msgid "Installing the language pack…"
+msgstr "正在安装语言包…"
+
+msgid "The language pack is installed"
+msgstr "语言包已安装"
+
+msgid "The language pack could not be installed"
+msgstr "语言包安装失败"
+
+msgid "Language of the browser"
+msgstr "浏览器语言"
+
+msgid "Language of the web interface"
+msgstr "Web 界面语言"
+
+msgid "English, Turkish and Chinese come with the system; the language pack adds the others."
+msgstr "系统自带英语、土耳其语和中文；其他语言由语言包提供。"
+
+msgid "The same setting is in System > System > Language and Style."
+msgstr "同样的设置也在「系统 > 系统 > 语言和界面」中。"
+
+msgid "Language pack"
+msgstr "语言包"
+
+msgid "The language pack (mu300-extra-lang.tar.gz, about 2 MB) adds LuCI in about 40 more languages and this panel in 29 of them. Download it from the release of this system, or upload the file from the release page when the device has no internet."
+msgstr "语言包（mu300-extra-lang.tar.gz，约 2 MB）可为 LuCI 增加约 40 种语言，并为本面板增加其中 29 种。可从本系统的发布版本下载；设备无法联网时，也可从发布页面下载文件后上传。"
+
+msgid "Download from the release"
+msgstr "从发布版本下载"
+
+msgid "Release"
+msgstr "发布版本"
+
+msgid "Enable all"
+msgstr "全部启用"
+
+msgid "Disable all"
+msgstr "全部禁用"
+
+msgid "Remove the language pack"
+msgstr "移除语言包"
+
+msgid "Remove the language pack?"
+msgstr "移除语言包？"
+
+msgid "Its languages disappear from the list; a page in one of them switches to English."
+msgstr "其中的语言将从列表中消失；正在使用这些语言的页面会切换为英语。"
+
+msgid "Remove"
+msgstr "移除"
+
+msgid "Disable"
+msgstr "禁用"
+
+msgid "Enable"
+msgstr "启用"
+
+msgid "LuCI and this panel"
+msgstr "LuCI 和本面板"
+
+msgid "LuCI only"
+msgstr "仅 LuCI"
+
+msgid "Disabled"
+msgstr "已禁用"
+
+msgid "Language"
+msgstr "语言"
+
+msgid "Code"
+msgstr "代码"
+
+msgid "Translated"
+msgstr "翻译范围"
+
+msgid "LuCI's own translations come from OpenWrt. This panel's translations other than Turkish and Chinese are machine (AI) translations; corrections are welcome."
+msgstr "LuCI 自身的翻译来自 OpenWrt。本面板除土耳其语和中文以外的翻译均为机器（AI）翻译，欢迎指正。"
+
+msgid "Automatic"
+msgstr "自动"
+
+msgid "Serving network"
+msgstr "当前驻网"
+
+msgid "Network mode · EN-DC"
+msgstr "网络模式 · EN-DC"
+
+msgid "Refresh lock status"
+msgstr "刷新锁定状态"
+
+msgid "Apply at startup"
+msgstr "开机自动应用"
+
+msgid "Turning this off only stops replay at the next boot; saved network mode, EN-DC, band and cell settings remain."
+msgstr "关闭后只停止下次开机回放，已保存的网络模式、EN-DC、频段和小区配置不会被删除。"
+
+msgid "Band locking"
+msgstr "频段锁定"
+
+msgid "NR bands"
+msgstr "NR 频段"
+
+msgid "LTE bands"
+msgstr "LTE 频段"
+
+msgid "Apply NR bands"
+msgstr "应用 NR 频段"
+
+msgid "Apply LTE bands"
+msgstr "应用 LTE 频段"
+
+msgid "Neighbor cells and cell locking"
+msgstr "邻区与小区锁定"
+
+msgid "Lock current serving cell"
+msgstr "锁定当前服务小区"
+
+msgid "Unlock cell"
+msgstr "解除小区锁定"
+
+msgid "Enter a cell"
+msgstr "手动输入小区"
+
+msgid "Type"
+msgstr "类型"
+
+msgid "Channel number (EARFCN / NR-ARFCN)"
+msgstr "频点（EARFCN / NR-ARFCN）"
+
+msgid "Lock this cell"
+msgstr "锁定指定小区"
+
+msgid "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. A channel number, not a frequency in MHz; the cell need not be in the neighbor list."
+msgstr "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. 请输入频点编号，不是 MHz 频率；无需小区出现在邻区列表中。"
+
+msgid "Applying restarts the radio stack (SFUN) and briefly interrupts cellular service. Settings are saved and replayed by the plugin after AT is ready when Apply at startup is enabled. A platform pre-radio hook can replay without a restart. Apply with no bands selected to restore automatic mode."
+msgstr "应用后协议栈重启（SFUN），蜂窝会短暂断开；设置会持久保存，并在启用“开机自动应用”时由插件于 AT 就绪后回放。接入平台的射频前钩子时可无重启回放。频段全不选再点应用 = 恢复自动。"
+
+msgid "Back to automatic"
+msgstr "恢复自动"
+
+msgid "The network mode and band locks are stored in the modem and stay in force in Android too. If you are not sure, reset them before switching to Android."
+msgstr "网络模式和频段锁定保存在调制解调器中，在 Android 中同样生效。如不确定，请在切换到 Android 前将其重置。"
+
+msgid "Reset all to automatic"
+msgstr "全部重置为自动"
+
+msgid "Apply “%s”?"
+msgstr "应用「%s」？"
+
+msgid "Applying %s in the background…"
+msgstr "正在后台应用 %s …"
+
+msgid "Applying %s in the background… (SFUN restart and re-registration, about 30 seconds)"
+msgstr "正在后台应用 %s …（SFUN 重启 + 重新驻网，约半分钟）"
+
+msgid "Queued: another lock is being applied during SFUN restart; this will take effect afterward"
+msgstr "已排队：另一项锁定正在应用（SFUN 重启中），随后自动生效"
+
+msgid "Confirming the EN-DC status…"
+msgstr "正在确认 EN-DC 状态…"
+
+msgid "Confirming apply at startup…"
+msgstr "正在确认开机自动应用…"
+
+msgid "Started in background: %s (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "已后台执行：%s（SFUN 重启约半分钟），自动回读状态…"
+
+msgid "Disable EN-DC (NSA anchor)"
+msgstr "关闭 EN-DC（NSA 锚点）"
+
+msgid "Enable EN-DC (NSA anchor)"
+msgstr "开启 EN-DC（NSA 锚点）"
+
+msgid "Disable apply at startup"
+msgstr "关闭开机自动应用"
+
+msgid "Enable apply at startup"
+msgstr "开启开机自动应用"
+
+msgid "Reading the modem directly (a few seconds at most)…"
+msgstr "正在直读调制解调器（最多几秒）…"
+
+msgid "Refresh failed"
+msgstr "刷新失败"
+
+msgid "Refreshed"
+msgstr "已刷新"
+
+msgid "NR bands: back to automatic"
+msgstr "NR 频段：恢复自动"
+
+msgid "LTE bands: back to automatic"
+msgstr "LTE 频段：恢复自动"
+
+msgid "Network mode automatic, EN-DC on, all LTE and NR bands, no cell lock. The saved lock settings are cleared, so nothing is replayed at startup."
+msgstr "网络模式自动、EN-DC 开启、全部 LTE 和 NR 频段、无小区锁定。已保存的锁定设置将被清除，启动时不再重新应用。"
+
+msgid "Reset"
+msgstr "重置"
+
+msgid "Remove the %s cell lock"
+msgstr "解除 %s 的小区锁定"
+
+msgid "The radio stack will restart (SFUN), taking about 30 seconds."
+msgstr "协议栈会重启（SFUN），约半分钟。"
+
+msgid "Removing the %s cell lock…"
+msgstr "正在解除 %s 小区锁定…"
+
+msgid "Unlock failed: %s"
+msgstr "解锁失败：%s"
+
+msgid "Unlock started in background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "已后台解除，SFUN 重启约半分钟，自动回读状态…"
+
+msgid "Locking %s in the background…"
+msgstr "正在后台锁定 %s …"
+
+msgid "Locked %s in the background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "已后台锁定 %s（SFUN 重启约半分钟），自动回读状态…"
+
+msgid "Enter a channel number and a PCI in the ranges below"
+msgstr "请输入下列范围内的频点和 PCI"
+
+msgid "No serving-network data"
+msgstr "暂无驻网数据"
+
+msgid "NR serving cell"
+msgstr "NR 服务小区"
+
+msgid "Status confirmed"
+msgstr "状态已回读"
+
+msgid "Readback timed out; select “Refresh lock status”"
+msgstr "回读超时，请点「刷新锁定状态」"
+
+msgid "Reset verified: network mode automatic, EN-DC on, all bands, no cell lock; the saved lock settings are cleared"
+msgstr "重置已核对：网络模式自动、EN-DC 开启、全部频段、无小区锁定；已保存的锁定设置已清除"
+
+msgid "Applied (EN-DC does not require a radio-stack restart)"
+msgstr "已生效（EN-DC 不需要重启协议栈）"
+
+msgid "Apply at startup is on"
+msgstr "开机自动应用已开启"
+
+msgid "Apply at startup is off"
+msgstr "开机自动应用已关闭"
+
+msgid "EN-DC status readback timed out; use “Refresh lock status” to confirm"
+msgstr "EN-DC 状态回读超时，点「刷新锁定状态」确认"
+
+msgid "Apply-at-startup status readback timed out; use “Refresh lock status” to confirm"
+msgstr "开机自动应用状态回读超时，点「刷新锁定状态」确认"
+
+msgid "Locked cells"
+msgstr "已锁定小区"
+
+msgid "Unlock %s"
+msgstr "解锁 %s"
+
+msgid "Automatic (%d supported)"
+msgstr "自动（支持 %d 个）"
+
+msgid "%d locked: %s"
+msgstr "已锁 %d 个：%s"
+
+msgid "Repair DNS?"
+msgstr "修复 DNS？"
+
+msgid "This removes the DNS forwarder of a package that is no longer installed. If no other DNS server is left, the device then uses the DNS servers of the mobile connection: the carrier sees the names you look up, outside any proxy or VPN."
+msgstr "这会删除一个已不再安装的软件包的 DNS 转发。如果没有其他 DNS 服务器，设备将使用移动连接的 DNS 服务器：运营商会看到你查询的域名，不经过任何代理或 VPN。"
+
+msgid "Repair DNS"
+msgstr "修复 DNS"
+
+msgid "Packages installed on the device are not part of a release image. An update writes them down, and the new system installs them again at its first boot, once it is online. Until a package is back its settings are set aside."
+msgstr "设备上自行安装的软件包不属于发布镜像。更新会记录它们，新系统在首次启动并联网后会重新安装。软件包恢复之前，其设置会被暂存。"
+
+msgid "No packages to install again."
+msgstr "没有需要重新安装的软件包。"
+
+msgid "All back"
+msgstr "全部已恢复"
+
+msgid "Not installed yet"
+msgstr "尚未安装"
+
+msgid "Could not be installed again"
+msgstr "无法重新安装"
+
+msgid "Waiting for the internet"
+msgstr "正在等待网络"
+
+msgid "Given up: no internet at five boots"
+msgstr "已放弃：连续五次启动都没有网络"
+
+msgid "Skipped"
+msgstr "已跳过"
+
+msgid "Written down by the update from %s"
+msgstr "由来自 %s 的更新记录"
+
+msgid "Installed again"
+msgstr "已重新安装"
+
+msgid "Install them yourself from where you got them (a package file: apk add --allow-untrusted FILE.apk)."
+msgstr "请从原来的来源自行安装（软件包文件：apk add --allow-untrusted FILE.apk）。"
+
+msgid "Settings set aside in /etc/mu300/orphaned-config"
+msgstr "暂存在 /etc/mu300/orphaned-config 中的设置"
+
+msgid "DNS still goes to a package that is not installed: the device has no DNS through it."
+msgstr "DNS 仍指向一个未安装的软件包：设备无法通过它解析 DNS。"
+
+msgid "Try again"
+msgstr "重试"
+
+msgid "Dismiss the note"
+msgstr "关闭提示"
+
+msgid "started"
+msgstr "已启动"
+
+msgid "asleep now (asked)"
+msgstr "立即休眠（已请求）"
+
+msgid "woken: power daemon stopping"
+msgstr "已唤醒：电源守护进程停止"
+
+msgid "woken by a key"
+msgstr "按键唤醒"
+
+msgid "woken by the Wi-Fi key"
+msgstr "Wi-Fi 键唤醒"
+
+msgid "woken (mu300-power wake)"
+msgstr "已唤醒（mu300-power wake）"
+
+msgid "woken by a computer on USB"
+msgstr "USB 上的电脑唤醒"
+
+msgid "woken: plugged in"
+msgstr "已唤醒：已接通电源"
+
+msgid "woken by a Wi-Fi client"
+msgstr "Wi-Fi 客户端唤醒"
+
+msgid "charging boot (powered on by the charger)"
+msgstr "充电开机（由充电器开机）"
+
+msgid "the hotspot is down"
+msgstr "热点已关闭"
+
+msgid "the VPN is still stopped"
+msgstr "VPN 仍处于停止状态"
+
+msgid "5G (EN-DC) is still off after a failed resume"
+msgstr "恢复失败后 5G（EN-DC）仍关闭"
+
+msgid "self-check: %s"
+msgstr "自检：%s"
+
+msgid "asleep: no client for %d min (%s)"
+msgstr "休眠：%d 分钟无客户端（%s）"
+
+msgid "asleep: profile now %s"
+msgstr "休眠：配置文件现为 %s"
+
+msgid "woken by the %s key"
+msgstr "%s 键唤醒"
+
+msgid "the modem is suspended (%s)"
+msgstr "调制解调器已挂起（%s）"
+
+msgid "Enter a whole number from 0 to %d"
+msgstr "请输入 0 到 %d 之间的整数"
+
+msgid "Power status unavailable"
+msgstr "无法获取电源状态"
+
+msgid "Plugged in"
+msgstr "已接通电源"
+
+msgid "On battery"
+msgstr "电池供电"
+
+msgid "Saver"
+msgstr "省电"
+
+msgid "Asleep: hotspot off"
+msgstr "休眠：热点已关闭"
+
+msgid "Charging boot: press the Wi-Fi key to start"
+msgstr "充电开机：按 Wi-Fi 键启动"
+
+msgid "Awake"
+msgstr "已唤醒"
+
+msgid "forced"
+msgstr "强制"
+
+msgid "automatic, battery under %d %%"
+msgstr "自动，电量低于 %d %%"
+
+msgid "automatic"
+msgstr "自动"
+
+msgid "Nobody connected for %d s"
+msgstr "已有 %d 秒无人连接"
+
+msgid "Power source"
+msgstr "电源来源"
+
+msgid "Profile"
+msgstr "方案"
+
+msgid "Profile in use: %s (%s)"
+msgstr "当前方案：%s（%s）"
+
+msgid "%d %%, %s, %d mV, %d mA, %.1f °C"
+msgstr "%d %%, %s, %d mV, %d mA, %.1f °C"
+
+msgid "Charger"
+msgstr "充电器"
+
+msgid "Charger: %s, %s port"
+msgstr "充电器：%s，%s 端口"
+
+msgid "Charging paused: battery temperature"
+msgstr "充电已暂停：电池温度"
+
+msgid "Charging paused: charge limit"
+msgstr "充电已暂停：充电上限"
+
+msgid "Sleep now"
+msgstr "立即休眠"
+
+msgid "Wake"
+msgstr "唤醒"
+
+msgid "Nobody connected means no Wi-Fi client and no computer on USB. The Wi-Fi key, a computer on USB or the charger wake the device."
+msgstr "无人连接是指没有 Wi-Fi 客户端，USB 上也没有电脑。Wi-Fi 键、USB 上的电脑或充电器都会唤醒设备。"
+
+msgid "Automatic: plugged in / on battery"
+msgstr "自动：接通电源 / 电池供电"
+
+msgid "Switch to Saver under %"
+msgstr "电量低于以下值时切换到省电方案 %"
+
+msgid "Stop charging at"
+msgstr "充电上限"
+
+msgid "0 % never charges the battery (the device runs on the charger), 100 % charges it full; in between, charging stops at that level and starts again 5 points lower. Under 5 % the battery always charges."
+msgstr "0 % 表示从不给电池充电（设备由充电器供电），100 % 表示充满；介于两者之间时，充到该电量即停止，低于该值 5 个百分点后重新开始。电量低于 5 % 时始终充电。"
+
+msgid "80 % keeps the battery healthier on a device that stays plugged in."
+msgstr "80 % 可让长期接着电源的设备电池更健康。"
+
+msgid "When the charger switches the device on"
+msgstr "充电器开机时"
+
+msgid "Charge only, until a key starts it"
+msgstr "仅充电，按键后启动"
+
+msgid "Start normally"
+msgstr "正常启动"
+
+msgid "Keep as is"
+msgstr "保持不变"
+
+msgid "LTE only (5G off)"
+msgstr "仅 LTE（关闭 5G）"
+
+msgid "On"
+msgstr "开"
+
+msgid "Full"
+msgstr "全速"
+
+msgid "Eco: big core off"
+msgstr "节能：关闭大核"
+
+msgid "Hotspot off after (min, 0 = never)"
+msgstr "热点在此时间后关闭（分钟，0 = 永不）"
+
+msgid "Modem when idle"
+msgstr "空闲时的调制解调器"
+
+msgid "LEDs when idle"
+msgstr "空闲时的指示灯"
+
+msgid "Ignored lines in power.conf: %s"
+msgstr "power.conf 中被忽略的行：%s"
+
+msgid "Configure how this plugin connects to the current Unisoc OpenWrt platform. Changes do not require editing the dashboard, AT, locks or SMS pages."
+msgstr "这里定义插件与当前紫光 OpenWrt 的边界。修改后无需改动看板、AT、锁定或短信页面。"
+
+msgid "Platform adapter"
+msgstr "平台适配"
+
+msgid "AT backend"
+msgstr "AT 后端"
+
+msgid "Auto-detect"
+msgstr "自动检测"
+
+msgid "atinout + serial port"
+msgstr "atinout + 串口"
+
+msgid "Custom adapter"
+msgstr "自定义适配器"
+
+msgid "AT serial port"
+msgstr "AT 串口"
+
+msgid "Custom AT adapter"
+msgstr "自定义 AT 适配器"
+
+msgid "The executable receives a timeout in seconds and the complete AT command, in that order. It must share the serial lock with the platform dialer."
+msgstr "可执行文件依次接收超时秒数和完整 AT 命令。它必须与平台拨号程序共享串口锁。"
+
+msgid "SMS adapter"
+msgstr "短信适配器"
+
+msgid "Implement the list, show, send, delete and sync subcommands; leave blank to find mu300-sms automatically."
+msgstr "实现 list、show、send、delete、sync 子命令；留空时自动查找 mu300-sms。"
+
+msgid "SMS pool directory"
+msgstr "短信池目录"
+
+msgid "Cellular logical interface"
+msgstr "蜂窝逻辑接口"
+
+msgid "Cellular IPv6 interface"
+msgstr "蜂窝 IPv6 接口"
+
+msgid "Cellular network device"
+msgstr "蜂窝网卡"
+
+msgid "Leave blank to detect from netifd"
+msgstr "留空则从 netifd 自动获取"
+
+msgid "LAN bridge"
+msgstr "LAN 网桥"
+
+msgid "Wi-Fi device"
+msgstr "Wi-Fi 网卡"
+
+msgid "USB device"
+msgstr "USB 网卡"
+
+msgid "Maximum wait for AT readiness (seconds)"
+msgstr "等待 AT 就绪上限（秒）"
+
+msgid "Home dashboard refresh interval (seconds)"
+msgstr "主页刷新间隔（秒）"
+
+msgid "Controls only the home dashboard refresh rate; 0.5–60 seconds. Reopen Home after saving to apply."
+msgstr "仅控制主页状态看板的刷新频率；允许 0.5–60 秒，保存后重新进入主页生效。"
+
+msgid "Persistent state directory"
+msgstr "持久化状态目录"
+
+msgid "Switching SIM. Mobile data will disconnect briefly."
+msgstr "正在切换 SIM 卡，移动网络会短暂断开。"
+
+msgid "SIM switch failed; check SIM readiness and hot switching."
+msgstr "SIM 切换失败，请检查 SIM 卡状态和热切换开关。"
+
+# Dual SIM controls.
+msgid "Ready"
+msgstr "就绪"
+
+msgid "Switching SIM"
+msgstr "正在切换 SIM 卡"
+
+msgid "SIM switched; saved as boot default"
+msgstr "已切换，同时设为默认启动卡"
+
+msgid "Switch failed; previous SIM restored"
+msgstr "切换失败，已恢复原卡"
+
+msgid "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+msgstr "目标 SIM 卡未获得移动网络；已恢复原活动卡，保存的启动选择保持不变。"
+
+msgid "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+msgstr "目标 SIM 暂时没有移动数据，之前的 SIM 也没有：设备停留在目标 SIM 上。已保存的启动首选项未更改。"
+
+msgid "Radio state unknown; reboot required"
+msgstr "射频状态未知，请重启设备"
+
+msgid "Radio state unknown; the device is restarting."
+msgstr "射频状态未知；设备正在重启。"
+
+msgid "Dual SIM control is only for the U30 Air on OpenWrt."
+msgstr "双卡控制仅适用于运行 OpenWrt 的 U30 Air。"
+
+msgid "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+msgstr "上次开机时无法启动所选的 SIM 卡（无卡、需要 PIN，或调制解调器拒绝）。"
+
+msgid "No card answered in the chosen SIM position at the last boot."
+msgstr "上次启动时，所选 SIM 位置没有卡应答。"
+
+msgid "The chosen SIM is locked by its PIN."
+msgstr "所选 SIM 被 PIN 码锁定。"
+
+msgid "The chosen SIM got no mobile data within the time at its first boot."
+msgstr "所选 SIM 在首次启动时未能在规定时间内获得移动数据。"
+
+msgid "The second SIM's modem channels did not come up at the last boot."
+msgstr "上次开机时第二张 SIM 卡的调制解调器通道没有就绪。"
+
+msgid "The last dual-SIM boot never confirmed itself."
+msgstr "上一次双卡开机未能确认完成。"
+
+msgid "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+msgstr "热切换只有在目标卡获得移动网络后才将其保存为下次启动卡。没有网络时会恢复原活动卡，已保存的启动选择保持不变。每张卡使用 WAN 设置中各自的 APN/PDP 配置。"
+
+msgid "Active SIM"
+msgstr "当前使用卡"
+
+msgid "Cold-boot default"
+msgstr "冷启动默认卡"
+
+msgid "SIM control unavailable"
+msgstr "SIM 控制不可用"
+
+msgid "The device is back on SIM1 without live switching; choose again below to try once more."
+msgstr "设备已回到 SIM1 且关闭了热切换；在下方重新选择即可再试一次。"
+
+msgid "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+msgstr "正在等待 SIM2 的首次移动数据：还剩 %d 秒。没有数据时设备将回到 SIM1 并重启。"
+
+msgid "Enable hot switching"
+msgstr "启用热切换"
+
+msgid "This device supports next-boot SIM selection only; live switching is unavailable."
+msgstr "此设备仅支持选择下次启动的 SIM 卡，不支持热切换。"
+
+msgid "Reboot after enabling hot switching to prepare both SIM channels."
+msgstr "启用热切换后请重启，以准备两张 SIM 卡的通道。"
+
+msgid "Switch to SIM%d"
+msgstr "切换到卡%d"
+
+msgid "Use SIM%d at next boot"
+msgstr "下次启动使用卡%d"
+
+msgid "Built-in SIM 1"
+msgstr "内置 SIM 1"
+
+msgid "Built-in SIM 2"
+msgstr "内置 SIM 2"
+
+msgid "Built-in SIM 3"
+msgstr "内置 SIM 3"
+
+msgid "External SIM"
+msgstr "外置 SIM"
+
+msgid "SIM card"
+msgstr "SIM 卡"
+
+msgid "Built-in SIM 3 shares SIM2, the external SIM shares SIM1. The card chosen here is switched in before the modem starts, at the next boot; without a choice the cards stay as the bootloader sets them."
+msgstr "内置 SIM 3 与 SIM2 共用，外置 SIM 与 SIM1 共用。此处选择的卡会在下次开机、基带启动前切换到位；未选择时，各卡保持引导程序设置的状态。"
+
+msgid "As the bootloader sets them"
+msgstr "保持引导程序的设置"
+
+msgid "Applying the radio setting…"
+msgstr "正在应用射频设置…"
+
+msgid "SIM settings are not available"
+msgstr "SIM 卡设置不可用"
+
+msgid "Modem default"
+msgstr "模组默认"
+
+msgid "SIM%d"
+msgstr "SIM%d"
+
+msgid "in use"
+msgstr "使用中"
+
+msgid "Turn off the radio of SIM%d"
+msgstr "关闭 SIM%d 射频"
+
+msgid "Radio"
+msgstr "射频"
+
+msgid "VoLTE"
+msgstr "VoLTE"
+
+msgid "VoNR"
+msgstr "VoNR"
+
+msgid "Modem: %s"
+msgstr "模组：%s"
+
+msgid "Sent to this SIM when its radio next starts."
+msgstr "将在该卡射频下次启动时发送。"
+
+msgid "VoLTE and VoNR for each SIM, kept across reboots and sent again whenever that SIM starts. VoLTE is on unless switched off; VoNR stays as the modem has it until set."
+msgstr "每张卡的 VoLTE 和 VoNR，重启后保留，并在该卡每次启动时重新下发。VoLTE 默认开启，除非关闭；VoNR 在设置之前保持模组原状。"
+
+msgid "All radios off (airplane mode)"
+msgstr "关闭全部射频（飞行模式）"
+
+msgid "All radios on"
+msgstr "开启全部射频"
+
+msgid "No SIM will have calls, SMS or data, also after a reboot, until a radio is turned on again here or with the dashboard's radio button."
+msgstr "所有卡都将无法通话、收发短信或上网，重启后也一样，直到在此处或用看板的射频按钮重新开启射频。"
+
+msgid "Each SIM's radio stays as set here after a reboot. A SIM whose radio is off has no calls, SMS or data, and the device does not switch to it."
+msgstr "每张卡的射频在重启后保持此处的设置。射频关闭的卡无法通话、收发短信或上网，设备也不会切换到该卡。"
+
+msgid "The setting is saved, but the radio did not follow it yet."
+msgstr "设置已保存，但射频尚未生效。"
+
+msgid "Recipient: number, e.g. 10086 or +86..."
+msgstr "收件人：号码，如 10086 或 +86..."
+
+msgid "Sync from SIM"
+msgstr "从 SIM 同步"
+
+msgid "Clear local pool"
+msgstr "清空本地池"
+
+msgid "Select a conversation on the left, or enter a number below to send."
+msgstr "选择左侧会话，或直接在下方输入号码发送。"
+
+msgid "Message (Enter to send, Shift+Enter for newline)"
+msgstr "短信内容（Enter 发送，Shift+Enter 换行）"
+
+msgid "Sending uses AT+CMGS (PDU mode); retry if the channel is busy. To delete one message, use the bin icon on its bubble."
+msgstr "发送走 AT+CMGS（PDU 模式）；通道忙会提示重试。删除单条：点气泡右上角的垃圾桶图标。"
+
+msgid "Sending…"
+msgstr "发送中…"
+
+msgid "Sent; the list refreshes shortly."
+msgstr "已发送，稍后自动刷新。"
+
+msgid "Sending failed"
+msgstr "发送失败"
+
+msgid "Syncing from the SIM in the background (AT+CMGL)…"
+msgstr "正在后台从 SIM 同步（AT+CMGL）…"
+
+msgid "SIM sync started; the list refreshes in a few seconds."
+msgstr "SIM 同步已开始，几秒后自动刷新。"
+
+msgid "Clear local SMS pool"
+msgstr "清空本地短信池"
+
+msgid "Only local files will be deleted; messages on the SIM remain."
+msgstr "只删本地文件，SIM 上的不动。"
+
+msgid "Delete this SMS"
+msgstr "删除这条短信"
+
+msgid "Deletion cannot be undone."
+msgstr "删除后不可恢复。"
+
+msgid "Local only"
+msgstr "仅删本地"
+
+msgid "Local + SIM"
+msgstr "本地 + SIM"
+
+msgid "Delete failed"
+msgstr "删除失败"
+
+msgid "Deleted (local + SIM)"
+msgstr "已删除（本地 + SIM）"
+
+msgid "Deleted (local only)"
+msgstr "已删除（仅本地）"
+
+msgid "Enter both a number and a message."
+msgstr "号码和内容都要填。"
+
+msgid "· %d messages, %d unread · %d conversations"
+msgstr "· %d 条，%d 条未读 · %d 个会话"
+
+msgid "· %d messages · %d conversations"
+msgstr "· %d 条 · %d 个会话"
+
+msgid "The pool is empty. Incoming and sent messages appear here, or select “Sync from SIM”."
+msgstr "池子是空的：收到/发出的短信会出现在这里，或点「从 SIM 同步」。"
+
+msgid "Me: %s"
+msgstr "我: %s"
+
+msgid "Incomplete: %d of %d parts arrived"
+msgstr "不完整：收到 %d / %d 个分段"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "ttyd is not installed."
+msgstr "未安装 ttyd。"
+
+msgid "The terminal is turned off (/etc/config/ttyd)."
+msgstr "终端已关闭（/etc/config/ttyd）。"
+
+msgid "Too many terminals are opening at once. Try again in a minute."
+msgstr "同时打开的终端过多，请一分钟后重试。"
+
+msgid "The terminal is not available."
+msgstr "终端不可用。"
+
+msgid "This is a root shell on the device: every command runs with full rights, and a mistake can make the device unbootable."
+msgstr "这是设备上的 root shell：每条命令都以完全权限运行，一个错误就可能导致设备无法启动。"
+
+msgid "It is reachable from the LAN only (USB and the hotspot), never from mobile data, and only from this logged-in page."
+msgstr "只能从局域网（USB 和热点）并且只能从这个已登录的页面访问，移动数据一侧永远无法访问。"
+
+msgid "It closes after a minute without activity."
+msgstr "无操作 1 分钟后自动关闭。"
+
+msgid "It closes after %d minutes without activity."
+msgstr "无操作 %d 分钟后自动关闭。"
+
+msgid "Reconnect"
+msgstr "重新连接"
+
+msgid "Open in a new tab"
+msgstr "在新标签页中打开"
+
+msgid "This page was opened over HTTPS, and the terminal is served over HTTP on the LAN: it opens in a tab of its own."
+msgstr "此页面通过 HTTPS 打开，而终端在局域网上通过 HTTP 提供，因此会在单独的标签页中打开。"
+
+msgid "The data usage could not be read"
+msgstr "无法读取流量统计"
+
+msgid "Today"
+msgstr "今天"
+
+msgid "Days left in this cycle"
+msgstr "本周期剩余天数"
+
+msgid "Received"
+msgstr "下载"
+
+msgid "Sent"
+msgstr "上传"
+
+msgid "Corrected by"
+msgstr "校正"
+
+msgid "Monthly cap"
+msgstr "每月上限"
+
+msgid "%s, warning at %d%%"
+msgstr "%s，%d%% 时提醒"
+
+msgid "The monthly cap is reached: mobile data was turned off. It comes back on when the next cycle starts."
+msgstr "已达到每月流量上限：移动数据已关闭，下一个周期开始时自动恢复。"
+
+msgid "%s waits for the clock: it has not been set over the network yet. It already counts towards this cycle and goes to its day once the clock is set."
+msgstr "%s 正在等待时钟：时钟尚未通过网络校准。这部分流量已计入本周期，时钟校准后会记到对应的日期。"
+
+msgid "The interface %s is not there right now: nothing is counted until it comes back."
+msgstr "接口 %s 当前不存在：在它恢复之前不计数。"
+
+msgid "Counted on %s, both ways, as the operator counts it (a VPN's overhead included)."
+msgstr "统计 %s 的双向流量，与运营商的计算方式一致（包括 VPN 的额外开销）。"
+
+msgid "The count is kept in memory and written to the disk every 30 minutes and at shutdown: a power cut loses at most the last half hour."
+msgstr "计数保存在内存中，每 30 分钟以及关机时写入磁盘：断电最多丢失最近半小时的数据。"
+
+msgid "Counting since %s."
+msgstr "自 %s 起统计。"
+
+msgid "Per day"
+msgstr "按天"
+
+msgid "Date"
+msgstr "日期"
+
+msgid "Total"
+msgstr "合计"
+
+msgid "Per billing cycle"
+msgstr "按计费周期"
+
+msgid "Billing cycle"
+msgstr "计费周期"
+
+msgid "Enter a size in GB, for example 50 or 2.5"
+msgstr "请输入以 GB 为单位的大小，例如 50 或 2.5"
+
+msgid "Enter a percentage from 1 to 100"
+msgstr "请输入 1 到 100 之间的百分比"
+
+msgid "Turn mobile data off at the cap"
+msgstr "达到上限时关闭移动数据"
+
+msgid "When this cycle reaches the cap, mobile data is turned off: no internet through the operator until the next cycle starts, the cap is raised or this is turned off again. Turning mobile data back on by hand keeps it on until the next reboot."
+msgstr "本周期达到上限时将关闭移动数据：在下一个周期开始、提高上限或关闭此选项之前，无法通过运营商上网。手动重新打开移动数据后，它会保持开启直到下次重启。"
+
+msgid "Set"
+msgstr "设置"
+
+msgid "Clear the count"
+msgstr "清除统计"
+
+msgid "Every day and billing cycle counted so far is forgotten. Counting goes on from now."
+msgstr "迄今统计的所有日期和计费周期都将被清除，从现在起重新统计。"
+
+msgid "Billing cycle and cap"
+msgstr "计费周期与上限"
+
+msgid "A billing cycle starts on day"
+msgstr "计费周期开始于每月第几天"
+
+msgid "31: on the last day of each month"
+msgstr "31：每月最后一天"
+
+msgid "Monthly cap (GB, 0: none)"
+msgstr "每月上限（GB，0 表示无）"
+
+msgid "Warning at this percentage of the cap"
+msgstr "达到上限的此百分比时提醒"
+
+msgid "Used so far in this cycle (GB)"
+msgstr "本周期已用（GB）"
+
+msgid "What the operator shows for this cycle (for example when counting started in the middle of it); the count is corrected to it."
+msgstr "运营商显示的本周期用量（例如统计从周期中途开始时），统计将据此校正。"
+
+msgid "Current setting"
+msgstr "当前设置"
+
+msgid "Fixed at %d"
+msgstr "固定为 %d"
+
+msgid "Not changed (default)"
+msgstr "未更改（默认）"
+
+msgid "Rule in force"
+msgstr "生效的规则"
+
+msgid "Flow offloading"
+msgstr "流量分载（flow offloading）"
+
+msgid "TTL of mobile data"
+msgstr "移动数据的 TTL"
+
+msgid "Every packet that leaves through mobile data gets this TTL (IPv6: hop limit). A phone or laptop behind the hotspot sends 64 (Windows: 128) and the device forwards it with one less, which is how an operator can tell tethered traffic apart."
+msgstr "经移动数据发出的每个数据包都会使用此 TTL（IPv6：跳数限制）。热点后面的手机或笔记本电脑发送 64（Windows：128），设备转发时会减一，运营商可以借此识别共享流量。"
+
+msgid "On this kernel the firewall fast-path is off while a TTL is set"
+msgstr "在此内核上，设置 TTL 期间防火墙快速路径处于关闭状态"
+
+msgid "Set %d"
+msgstr "设为 %d"
+
+msgid "Enter a number from 1 to 255"
+msgstr "请输入 1 到 255 之间的数字"
+
+msgid "Turn off"
+msgstr "关闭"
+
+msgid "64 makes every packet leave like the device's own traffic"
+msgstr "64 使每个数据包都像设备自身的流量一样发出"
+
+msgid "Check for updates"
+msgstr "检查更新"
+
+msgid "Checking the file"
+msgstr "正在检查文件"
+
+msgid "Update from a file"
+msgstr "从文件更新"
+
+msgid "Back to the previous version"
+msgstr "回到上一个版本"
+
+msgid "Back to the previous boot image"
+msgstr "回到上一个启动镜像"
+
+msgid "Remove the previous version"
+msgstr "移除上一个版本"
+
+msgid "Kernel change"
+msgstr "更换内核"
+
+msgid "Starting…"
+msgstr "正在开始…"
+
+msgid "Downloading"
+msgstr "正在下载"
+
+msgid "All files are here and verified"
+msgstr "所有文件已就绪并通过校验"
+
+msgid "Unpacking the new system"
+msgstr "正在解包新系统"
+
+msgid "Carrying over your settings"
+msgstr "正在迁移您的设置"
+
+msgid "Writing down the packages you installed"
+msgstr "正在记录您安装的软件包"
+
+msgid "Switching to the new system"
+msgstr "正在切换到新系统"
+
+msgid "Kernel and boot image"
+msgstr "内核和启动镜像"
+
+msgid "Restart the device?"
+msgstr "重启设备？"
+
+msgid "The device restarts now. The default boot is Android, so it starts Android: switch to Linux from there to start the updated system."
+msgstr "设备现在重启。默认启动的是 Android，所以会进入 Android：请在那里切换到 Linux 以启动更新后的系统。"
+
+msgid "The device restarts now and is away for about a minute. If the new system does not start, the device goes back to Android by itself after the failed attempts."
+msgstr "设备现在重启，大约一分钟内无法访问。如果新系统无法启动，设备会在几次失败后自动回到 Android。"
+
+msgid "Restarting… open this page again in about a minute."
+msgstr "正在重启… 请在大约一分钟后重新打开此页面。"
+
+msgid "Running for %s. It goes on when this page is closed; do not switch the device off."
+msgstr "已运行 %s。关闭此页面后仍会继续；请勿关闭设备电源。"
+
+msgid "Done. Restart the device to start it."
+msgstr "已完成。重启设备即可启动。"
+
+msgid "Done. Nothing needs a restart."
+msgstr "已完成。无需重启。"
+
+msgid "It did not finish, and part of it was done: read the log before you restart."
+msgstr "未能完成，且已执行了一部分：重启前请先阅读日志。"
+
+msgid "It did not finish. Nothing was changed; the log says why."
+msgstr "未能完成。没有任何改动；原因见日志。"
+
+msgid "Log"
+msgstr "日志"
+
+msgid "Restart now"
+msgstr "立即重启"
+
+msgid "Later"
+msgstr "稍后"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "Updating is not available on this system"
+msgstr "此系统不支持更新"
+
+msgid "Another update is running on the device"
+msgstr "设备上正在运行另一个更新"
+
+msgid "It was started outside this page (a terminal, the toolkit). Nothing can be started here until it has finished."
+msgstr "它是在此页面之外启动的（终端、工具包）。在它结束之前，这里无法启动任何操作。"
+
+msgid "Restart needed"
+msgstr "需要重启"
+
+msgid "This system was updated and still runs the old version. The new one starts at the next restart."
+msgstr "此系统已更新，但仍在运行旧版本。新版本将在下次重启时启动。"
+
+msgid "Installed"
+msgstr "已安装"
+
+msgid "This system"
+msgstr "本系统"
+
+msgid "Also on this device"
+msgstr "此设备上还有"
+
+msgid "Kernel"
+msgstr "内核"
+
+msgid "choice %s"
+msgstr "选择 %s"
+
+msgid "Boot image"
+msgstr "启动镜像"
+
+msgid "from the installer"
+msgstr "来自安装程序"
+
+msgid "Default boot"
+msgstr "默认启动"
+
+msgid "Free space"
+msgstr "可用空间"
+
+msgid "Release signatures"
+msgstr "发布版本签名"
+
+msgid "checked with the project's key"
+msgstr "用项目的密钥校验"
+
+msgid "this system has no release key"
+msgstr "本系统没有发布密钥"
+
+msgid "The default boot is Android: a restart goes to Android, and Linux is started from there."
+msgstr "默认启动的是 Android：重启后进入 Android，再从那里启动 Linux。"
+
+msgid "Linux is locked as the default boot: a failed start does not send the device to Android by itself, except the first starts of a new boot image."
+msgstr "Linux 已锁定为默认启动：启动失败时设备不会自动进入 Android，新启动镜像的头几次启动除外。"
+
+msgid "If Linux fails to start %d times in a row, the device starts Android by itself."
+msgstr "如果 Linux 连续 %d 次启动失败，设备会自动启动 Android。"
+
+msgid "Report of the last update"
+msgstr "上次更新的报告"
+
+msgid "Online update"
+msgstr "在线更新"
+
+msgid "Asking GitHub…"
+msgstr "正在询问 GitHub…"
+
+msgid "Checked %s ago"
+msgstr "%s前已检查"
+
+msgid "Not checked yet"
+msgstr "尚未检查"
+
+msgid "Mirror (release files)"
+msgstr "镜像（发布文件）"
+
+msgid "Leave empty for GitHub."
+msgstr "留空即使用 GitHub。"
+
+msgid "Install the packages I added again after the update (needs the device online at the first start)"
+msgstr "更新后重新安装我添加的软件包（首次启动时设备需要联网）"
+
+msgid "Pre-release"
+msgstr "预发布版本"
+
+msgid "Newest release"
+msgstr "最新发布版本"
+
+msgid "Release notes"
+msgstr "发布说明"
+
+msgid "Download"
+msgstr "下载"
+
+msgid "Free space needed"
+msgstr "所需可用空间"
+
+msgid "not enough: remove the previous version first"
+msgstr "不足：请先移除上一个版本"
+
+msgid "A pre-release is a release still being tried: it can have faults a release does not. The previous version is kept all the same."
+msgstr "预发布版本是仍在试用中的版本：可能有正式发布版本没有的问题。上一个版本同样会保留。"
+
+msgid "This system is newer than the newest release (a test release)."
+msgstr "本系统比最新发布版本还新（测试版本）。"
+
+msgid "Up to date."
+msgstr "已是最新。"
+
+msgid "This release is not signed, and this system checks signatures: it is not installed from here. Update from its file below, which asks you to confirm."
+msgstr "此版本未签名，而本系统会检查签名：不能从这里安装。请在下方用它的文件更新，那里会请你确认。"
+
+msgid "Update to %s"
+msgstr "更新到 %s"
+
+msgid "Choose at least one system"
+msgstr "请至少选择一个系统"
+
+msgid "Update to %s?"
+msgstr "更新到 %s？"
+
+msgid "The device downloads %s, puts the new system beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "设备会下载 %s，把新系统放在当前运行的系统旁边，并在下次重启时切换过去。您的设置会迁移过去，上一个版本会保留。需要几分钟；请勿关闭设备电源。"
+
+msgid "Also offer the pre-release %s"
+msgstr "同时提供预发布版本 %s"
+
+msgid "Systems to update:"
+msgstr "要更新的系统："
+
+msgid "GitHub could not be reached: the device has no internet connection, or GitHub did not answer. Without internet, update from a file below."
+msgstr "无法连接 GitHub：设备没有互联网连接，或 GitHub 没有响应。没有网络时，请在下方从文件更新。"
+
+msgid "release"
+msgstr "发布版本"
+
+msgid "For a device without internet: download the Magisk zip of a release for this system and this kernel on another computer, from the release page on GitHub, and upload it here. For this device that is:"
+msgstr "适用于没有网络的设备：在另一台电脑上，从 GitHub 的发布页面下载对应本系统和本内核的发布版本 Magisk zip，然后在这里上传。本设备对应的文件是："
+
+msgid "Uploaded file"
+msgstr "已上传的文件"
+
+msgid "Checking the file…"
+msgstr "正在检查文件…"
+
+msgid "It says it is"
+msgstr "文件自称为"
+
+msgid "kernel %s"
+msgstr "内核 %s"
+
+msgid "Signature"
+msgstr "签名"
+
+msgid "signed with the project's release key"
+msgstr "已用项目的发布密钥签名"
+
+msgid "WRONG: it does not match the project's release key"
+msgstr "错误：与项目的发布密钥不匹配"
+
+msgid "not signed"
+msgstr "未签名"
+
+msgid "cannot be checked on this system"
+msgstr "无法在本系统上校验"
+
+msgid "Its system is not installed on this device."
+msgstr "此文件中的系统未安装在此设备上。"
+
+msgid "It is the other Ubuntu release, not the one installed."
+msgstr "这是另一个 Ubuntu 版本，不是已安装的那个。"
+
+msgid "It carries another kernel than this device uses. Take the zip for kernel %s, or change the kernel first."
+msgstr "它带的内核与此设备使用的不同。请使用内核 %s 对应的 zip，或先更换内核。"
+
+msgid "Its kernel does not run on this model."
+msgstr "它的内核无法在此型号上运行。"
+
+msgid "The file is damaged: its contents do not match their checksums."
+msgstr "文件已损坏：内容与校验和不符。"
+
+msgid "Its signature is wrong. This file does not come from the project as it is; it is never installed."
+msgstr "签名错误。此文件并非原样来自本项目；绝不会被安装。"
+
+msgid "This file cannot be used here."
+msgstr "此文件不能在这里使用。"
+
+msgid "Compare the SHA-256 with the one in SHA256SUMS-magisk on the release page: it is the only proof of where an unsigned file comes from."
+msgstr "请将 SHA-256 与发布页面上 SHA256SUMS-magisk 中的值比对：这是证明未签名文件来源的唯一依据。"
+
+msgid "This release is installed already; the update would only refresh the boot image."
+msgstr "此发布版本已经安装；更新只会刷新启动镜像。"
+
+msgid "I know this file is not signed: nothing proves that it comes from the project. I compared its SHA-256 myself and want it installed."
+msgstr "我知道此文件未签名：没有任何东西能证明它来自本项目。我已自行比对其 SHA-256，并希望安装它。"
+
+msgid "I know this is %s, older than the installed %s, and want to go back to it."
+msgstr "我知道这是 %s，比已安装的 %s 旧，并希望回到这个版本。"
+
+msgid "This is not a release file of this project: a Magisk zip of a release is expected."
+msgstr "这不是本项目的发布文件：需要的是某个发布版本的 Magisk zip。"
+
+msgid "Update from this file"
+msgstr "从此文件更新"
+
+msgid "Tick the confirmations above first"
+msgstr "请先勾选上方的确认项"
+
+msgid "The device puts the system of this file beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "设备会把此文件中的系统放在当前运行的系统旁边，并在下次重启时切换过去。您的设置会迁移过去，上一个版本会保留。需要几分钟；请勿关闭设备电源。"
+
+msgid "Check the file"
+msgstr "检查文件"
+
+msgid "Remove the file"
+msgstr "移除文件"
+
+msgid "Previous version"
+msgstr "上一个版本"
+
+msgid "No previous version is kept on this device."
+msgstr "此设备上没有保留上一个版本。"
+
+msgid "replaced %s"
+msgstr "替换于 %s"
+
+msgid "I want the previous system back; what I changed since the update stays in the version I leave."
+msgstr "我想恢复上一个系统；更新之后所做的更改会留在我离开的版本中。"
+
+msgid "Back to the previous version?"
+msgstr "回到上一个版本？"
+
+msgid "The previous system (%s) becomes the one that starts at the next restart. The version you leave is not kept; settings you changed since the update are not carried back."
+msgstr "上一个系统（%s）将成为下次重启时启动的系统。您离开的版本不会保留；更新之后更改的设置不会带回去。"
+
+msgid "Go back"
+msgstr "回退"
+
+msgid "The previous version is the one running now: restart first."
+msgstr "当前运行的就是上一个版本：请先重启。"
+
+msgid "I want the previous kernel and boot image back."
+msgstr "我想恢复上一个内核和启动镜像。"
+
+msgid "Back to the previous boot image?"
+msgstr "回到上一个启动镜像？"
+
+msgid "The previous boot image (%s) is written to the Linux slot and starts at the next restart. If it does not start, the device goes back to Android by itself."
+msgstr "上一个启动镜像（%s）会写入 Linux 槽位，并在下次重启时启动。如果无法启动，设备会自动回到 Android。"
+
+msgid "I do not need to go back: delete the previous system to free its space."
+msgstr "我不需要回退：删除上一个系统以释放空间。"
+
+msgid "Remove the previous version?"
+msgstr "移除上一个版本？"
+
+msgid "The kept copy of the previous system is deleted for good. After that there is no going back to it from this page."
+msgstr "保留的上一个系统副本将被永久删除。之后无法再从此页面回到它。"
+
+msgid "the vendor kernel"
+msgstr "厂商内核"
+
+msgid "mainline"
+msgstr "主线"
+
+msgid "not with Ubuntu 26.04"
+msgstr "不适用于 Ubuntu 26.04"
+
+msgid "Change the kernel"
+msgstr "更换内核"
+
+msgid "This kernel is the one in use"
+msgstr "当前使用的就是这个内核"
+
+msgid "Change the kernel to %s?"
+msgstr "将内核更换为 %s？"
+
+msgid "The device downloads that kernel from the newest release and writes a new boot image; it starts at the next restart. The previous boot image is kept, and if the new one does not start the device goes back to Android by itself. The device must be online."
+msgstr "设备会从最新发布版本下载该内核并写入新的启动镜像；下次重启时启动。上一个启动镜像会保留，如果新镜像无法启动，设备会自动回到 Android。设备必须联网。"
+
+msgid "Start Android at the next restart"
+msgstr "下次重启时启动 Android"
+
+msgid "Start Android at the next restart?"
+msgstr "下次重启时启动 Android？"
+
+msgid "The next restart, and the ones after it, start Android instead of Linux. Linux is started again from Android (the Magisk module's Action button, or mu300-linux)."
+msgstr "下次及之后的重启都会启动 Android 而不是 Linux。之后可从 Android 重新启动 Linux（Magisk 模块的 Action 按钮，或 mu300-linux）。"
+
+msgid "Start Android next"
+msgstr "下次启动 Android"
+
+msgid "What an update keeps"
+msgstr "更新会保留什么"
+
+msgid "An update puts the system of the new release in place and carries over what is yours: the settings, the accounts and their passwords, the device's keys and the home directories. Packages you installed yourself are written down and installed again at the first start, once the device is online. The previous version stays on the device until you remove it, so you can go back."
+msgstr "更新会装上新发布版本的系统，并迁移属于您的内容：设置、账户及其密码、设备的密钥和主目录。您自己安装的软件包会被记录下来，并在设备联网后的首次启动时重新安装。上一个版本会一直留在设备上，直到您将其移除，因此您可以回退。"
+
+msgid "The wiki's Updating page lists exactly what is kept."
+msgstr "Wiki 的「更新」页面列出了具体保留的内容。"
+
+msgid "Choose a file first"
+msgstr "请先选择文件"
+
+msgid "Uploading: %s of %s"
+msgstr "正在上传：%s / %s"
+
+msgid "running"
+msgstr "运行中"
+
+msgid "(about %s)"
+msgstr "（约 %s）"
+
+msgid "Install %s?"
+msgstr "安装 %s？"
+
+msgid "It is installed from this system's package feed."
+msgstr "将从本系统的软件包源安装。"
+
+msgid "It is downloaded from the release of the VPN module and checked against its SHA256SUMS."
+msgstr "将从 VPN 模块的发布版本下载，并用其 SHA256SUMS 校验。"
+
+msgid "An engine is tens of MB: on mobile data the download counts towards your plan."
+msgstr "一个引擎有几十 MB：使用移动数据时下载会计入您的套餐流量。"
+
+msgid "Install"
+msgstr "安装"
+
+msgid "Remove %s?"
+msgstr "移除 %s？"
+
+msgid "Profiles run on it: %s. They cannot start until it is installed again (the module refuses while the running profile needs it)."
+msgstr "使用它的配置文件：%s。在重新安装之前它们无法启动（正在运行的配置文件需要它时，模块会拒绝移除）。"
+
+msgid "No profile runs on it."
+msgstr "没有配置文件使用它。"
+
+msgid "Removed"
+msgstr "已移除"
+
+msgid "Each engine is an extra of its own: install only the ones your profiles need. Xray runs vless, vmess, trojan and ss links (with hev-socks5-tunnel), sing-box the same links and its own JSON, mihomo Clash subscriptions, dae hysteria2, tuic and the rest on newer kernels. WireGuard and OpenVPN are packages of the system."
+msgstr "每个引擎都是独立的附加包：只安装配置文件需要的引擎。Xray 运行 vless、vmess、trojan 和 ss 链接（配合 hev-socks5-tunnel），sing-box 运行同样的链接及其自身的 JSON，mihomo 运行 Clash 订阅，dae 在较新内核上运行 hysteria2、tuic 等。WireGuard 和 OpenVPN 是系统软件包。"
+
+msgid "Downloads are tens of MB per engine: on mobile data they count towards your plan. Offline, upload the engine's tarball from the release page of the VPN module."
+msgstr "每个引擎下载几十 MB：使用移动数据时会计入套餐流量。离线时，请从 VPN 模块的发布页面上传引擎的压缩包。"
+
+msgid "The available versions come from the latest release of the VPN module."
+msgstr "可用版本来自 VPN 模块的最新发布。"
+
+msgid "system package"
+msgstr "系统软件包"
+
+msgid "in the vpn bundle"
+msgstr "在 vpn 合集包中"
+
+msgid "extra %s"
+msgstr "附加包 %s"
+
+msgid "not installed"
+msgstr "未安装"
+
+msgid "cannot run here"
+msgstr "无法在此运行"
+
+msgid "update available"
+msgstr "有更新"
+
+msgid "installed"
+msgstr "已安装"
+
+msgid "Kind"
+msgstr "包类型"
+
+msgid "Version"
+msgstr "版本"
+
+msgid "Available"
+msgstr "可用"
+
+msgid "not checked"
+msgstr "未检查"
+
+msgid "Size"
+msgstr "大小"
+
+msgid "Needed by"
+msgstr "使用者"
+
+msgid "no profile"
+msgstr "无配置文件"
+
+msgid "dae needs a kernel with BTF, 5.17 or newer: not the 5.4 vendor kernel (mu300-update kernel 6.18). It can be installed anyway."
+msgstr "dae 需要带 BTF 的 5.17 或更新内核：不支持 5.4 厂商内核（mu300-update kernel 6.18）。仍然可以安装。"
+
+msgid "All engines"
+msgstr "所有引擎"
+
+msgid "Last %s lines"
+msgstr "最后 %s 行"
+
+msgid "VPN service log"
+msgstr "VPN 服务日志"
+
+msgid "Every 5 s"
+msgstr "每 5 秒"
+
+msgid "The log is empty."
+msgstr "日志为空。"
+
+msgid "The VPN is starting"
+msgstr "VPN 正在启动"
+
+msgid "The VPN is stopped"
+msgstr "VPN 已停止"
+
+msgid "The VPN is restarting"
+msgstr "VPN 正在重启"
+
+msgid "With the kill switch on, nothing leaves the device or the LAN outside the tunnel: while the VPN is down, starting or broken, every connection fails instead of going out directly. It stays up until you stop the VPN here (Stop removes it)."
+msgstr "开启断网保护后，设备和局域网的任何流量都不会绕过隧道：VPN 断开、启动中或出错时，所有连接都会失败，而不是直接出网。它会一直生效，直到您在此停止 VPN（停止会移除它）。"
+
+msgid "Without the kill switch, traffic goes out directly, unprotected, whenever the tunnel is down (while it starts, after a crash, when the engine is missing)."
+msgstr "没有断网保护时，只要隧道断开（启动中、崩溃后、引擎缺失时），流量就会不受保护地直接出网。"
+
+msgid "Turn the kill switch on?"
+msgstr "开启断网保护？"
+
+msgid "Turn the kill switch off?"
+msgstr "关闭断网保护？"
+
+msgid "Turn on"
+msgstr "开启"
+
+msgid "unknown"
+msgstr "未知"
+
+msgid "The exit address could not be found (is the tunnel up?)"
+msgstr "无法获取出口地址（隧道是否已连接？）"
+
+msgid "Connecting…"
+msgstr "正在连接…"
+
+msgid "On, but not running"
+msgstr "已开启，但未运行"
+
+msgid "Stopped"
+msgstr "已停止"
+
+msgid "Install it"
+msgstr "安装"
+
+msgid "The engine of the active profile is not installed: %s"
+msgstr "当前配置文件的引擎未安装：%s"
+
+msgid "The kill switch keeps everything closed until it is there; the service downloads it by itself when it can."
+msgstr "在引擎安装之前，断网保护会阻断所有流量；服务会在可能时自动下载它。"
+
+msgid "The VPN cannot start until it is installed."
+msgstr "安装之前 VPN 无法启动。"
+
+msgid "%s cannot run on this system"
+msgstr "%s 无法在此系统上运行"
+
+msgid "The VPN is on, but no profile is active: choose one below."
+msgstr "VPN 已开启，但没有当前配置文件：请在下方选择一个。"
+
+msgid "Profile: %s"
+msgstr "配置文件：%s"
+
+msgid "No active profile"
+msgstr "没有当前配置文件"
+
+msgid "engine %s"
+msgstr "引擎 %s"
+
+msgid "interface %s"
+msgstr "接口 %s"
+
+msgid "Kill switch active"
+msgstr "断网保护生效中"
+
+msgid "Kill switch on"
+msgstr "断网保护已开启"
+
+msgid "Kill switch off"
+msgstr "断网保护已关闭"
+
+msgid "IPv6 in the tunnel"
+msgstr "IPv6 走隧道"
+
+msgid "IPv6 blocked"
+msgstr "IPv6 已阻断"
+
+msgid "IPv6 untouched"
+msgstr "IPv6 未改动"
+
+msgid "Module %s"
+msgstr "模块 %s"
+
+msgid "Check"
+msgstr "检查"
+
+msgid "Uptime"
+msgstr "运行时间"
+
+msgid "Rate"
+msgstr "速率"
+
+msgid "Exit address"
+msgstr "出口地址"
+
+msgid "Start"
+msgstr "启动"
+
+msgid "Stop"
+msgstr "停止"
+
+msgid "Stop the VPN?"
+msgstr "停止 VPN？"
+
+msgid "Traffic then goes out directly, without the tunnel; the kill switch is taken down with it."
+msgstr "之后流量将不经隧道直接出网；断网保护也会随之移除。"
+
+msgid "The VPN is on: it starts again by itself after a reboot."
+msgstr "VPN 已开启：重启后会自动再次启动。"
+
+msgid "The VPN is off."
+msgstr "VPN 已关闭。"
+
+msgid "Kill switch"
+msgstr "断网保护"
+
+msgid "Setting"
+msgstr "设置"
+
+msgid "Active: only the tunnel can reach the internet"
+msgstr "生效中：只有隧道能访问互联网"
+
+msgid "Not active"
+msgstr "未生效"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down, so nothing ever leaves without the tunnel. If the tunnel cannot come up (a dead server, an expired account), the device stays offline until you fix the profile or stop the VPN. The panel itself stays reachable from the LAN."
+msgstr "VPN 断开时，断网保护会阻断设备和局域网的所有流量，因此任何流量都不会绕过隧道。如果隧道无法建立（服务器失效、账号过期），设备将一直离线，直到您修复配置文件或停止 VPN。面板本身仍可从局域网访问。"
+
+msgid "Choose a profile"
+msgstr "选择配置文件"
+
+msgid "No profiles yet"
+msgstr "暂无配置文件"
+
+msgid "engine not installed"
+msgstr "引擎未安装"
+
+msgid "Use"
+msgstr "使用"
+
+msgid "Switched: the VPN restarts on the new profile"
+msgstr "已切换：VPN 正在使用新配置文件重启"
+
+msgid "Active profile"
+msgstr "当前配置文件"
+
+msgid "A running VPN restarts on the profile you choose; the kill switch stays up in between."
+msgstr "正在运行的 VPN 会使用您选择的配置文件重启；期间断网保护保持生效。"
+
+msgid "Manage the profiles"
+msgstr "管理配置文件"
+
+msgid "Automatic: through the tunnel where the engine can carry it"
+msgstr "自动：引擎支持时走隧道"
+
+msgid "Ask the engine for IPv6 in the tunnel"
+msgstr "要求引擎在隧道中提供 IPv6"
+
+msgid "Never through the tunnel (blocked while the VPN is up)"
+msgstr "从不走隧道（VPN 运行时阻断）"
+
+msgid "Saved: it applies from the next start (Restart)"
+msgstr "已保存：下次启动时生效（重启）"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "The tunnel carries IPv6"
+msgstr "隧道承载 IPv6"
+
+msgid "Yes"
+msgstr "是"
+
+msgid "IPv6 guard"
+msgstr "IPv6 防护"
+
+msgid "Active: IPv6 outside the tunnel is refused"
+msgstr "生效中：拒绝隧道外的 IPv6"
+
+msgid "While the VPN is up, IPv6 never leaves beside a tunnel that does not carry it: it is refused at once, so programs and LAN clients fall back to IPv4 instead of leaking or waiting. Automatic: WireGuard and OpenVPN use the IPv6 addresses of their config; Xray, sing-box and mihomo are asked at every start whether IPv6 works through the tunnel, and carry it only then; dae stays IPv4."
+msgstr "VPN 运行时，IPv6 绝不会在不承载它的隧道之外出网：会被立即拒绝，使程序和局域网客户端回退到 IPv4，而不是泄露或等待。自动：WireGuard 和 OpenVPN 使用其配置中的 IPv6 地址；Xray、sing-box 和 mihomo 在每次启动时检测 IPv6 能否通过隧道，仅在可以时才承载 IPv6；dae 保持 IPv4。"
+
+msgid "%d ms"
+msgstr "%d ms"
+
+msgid "UDP: not testable"
+msgstr "UDP：无法测试"
+
+msgid "blocked by the kill switch"
+msgstr "被断网保护阻断"
+
+msgid "A WireGuard or OpenVPN config, a Clash/mihomo YAML, an Xray or sing-box JSON, a dae config"
+msgstr "WireGuard 或 OpenVPN 配置、Clash/mihomo YAML、Xray 或 sing-box JSON、dae 配置"
+
+msgid "After OK, choose the file: a WireGuard .conf, an OpenVPN .ovpn, a Clash/mihomo .yaml, an Xray or sing-box .json or a dae config (at most 1 MiB)."
+msgstr "点击确定后选择文件：WireGuard .conf、OpenVPN .ovpn、Clash/mihomo .yaml、Xray 或 sing-box .json，或 dae 配置（最大 1 MiB）。"
+
+msgid "From the source"
+msgstr "取自来源"
+
+msgid "Detect"
+msgstr "自动识别"
+
+msgid "The URL may hold a token: it goes to the device on its own, never into a command line or a log."
+msgstr "URL 可能包含令牌：它会单独发送到设备，绝不会出现在命令行或日志中。"
+
+msgid "Share link"
+msgstr "分享链接"
+
+msgid "Paste"
+msgstr "粘贴"
+
+msgid "File"
+msgstr "文件"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Not a share link this panel takes"
+msgstr "不是此面板支持的分享链接"
+
+msgid "The config is empty"
+msgstr "配置为空"
+
+msgid "Not an https URL"
+msgstr "不是 https URL"
+
+msgid "Invalid name: 1-64 characters, no control characters"
+msgstr "名称无效：1-64 个字符，不含控制字符"
+
+msgid "Add a profile"
+msgstr "添加配置文件"
+
+msgid "Name"
+msgstr "名称"
+
+msgid "Detect: the module tells the kind from the link or the file. Choose the type for a JSON that could be either Xray or sing-box, or for a link that should run on another engine."
+msgstr "自动识别：模块会根据链接或文件判断类型。对于既可能是 Xray 也可能是 sing-box 的 JSON，或需要在其他引擎上运行的链接，请手动选择类型。"
+
+msgid "The profile is added"
+msgstr "配置文件已添加"
+
+msgid "Rename the profile"
+msgstr "重命名配置文件"
+
+msgid "Delete the profile %s?"
+msgstr "删除配置文件 %s？"
+
+msgid "It is the active profile: with the VPN on, the module refuses; stop the VPN or choose another profile first."
+msgstr "这是当前配置文件：VPN 开启时模块会拒绝删除；请先停止 VPN 或选择其他配置文件。"
+
+msgid "Its config and credentials are deleted from the device."
+msgstr "其配置和凭据将从设备中删除。"
+
+msgid "Deleted"
+msgstr "已删除"
+
+msgid "The profile passes the check"
+msgstr "配置文件通过检查"
+
+msgid "Show the config?"
+msgstr "显示配置？"
+
+msgid "The config holds the credentials of the profile (keys, passwords, UUIDs). It is shown on this screen only; anyone who can see the screen can read it."
+msgstr "配置包含该配置文件的凭据（密钥、密码、UUID）。仅在此屏幕上显示；能看到屏幕的人都能读取。"
+
+msgid "Saving checks the config with the engine first (profile edit); a config that does not pass is not saved and the old one stays."
+msgstr "保存时会先用引擎检查配置（profile edit）；未通过检查的配置不会保存，旧配置保持不变。"
+
+msgid "This profile comes from a subscription: its next refresh replaces your changes."
+msgstr "此配置文件来自订阅：下次刷新会覆盖您的修改。"
+
+msgid "Config of %s"
+msgstr "%s 的配置"
+
+msgid "Rename"
+msgstr "重命名"
+
+msgid "Show / edit the config"
+msgstr "显示 / 编辑配置"
+
+msgid "Test the latency of all"
+msgstr "测试全部延迟"
+
+msgid "No profiles yet: add one from a share link, a config file or a subscription."
+msgstr "暂无配置文件：可通过分享链接、配置文件或订阅添加。"
+
+msgid "Active"
+msgstr "当前"
+
+msgid "This profile is the active one now"
+msgstr "此配置文件现为当前配置"
+
+msgid "More"
+msgstr "更多"
+
+msgid "active"
+msgstr "当前"
+
+msgid "subscription"
+msgstr "订阅"
+
+msgid "migrated"
+msgstr "已迁移"
+
+msgid "gone from its subscription"
+msgstr "已从订阅中移除"
+
+msgid "Server"
+msgstr "服务器"
+
+msgid "Engine"
+msgstr "引擎"
+
+msgid "Latency"
+msgstr "延迟"
+
+msgid "The latency is a TCP connection to the server, through the tunnel when the VPN is up. WireGuard and OpenVPN servers usually speak UDP and cannot be tested this way."
+msgstr "延迟为到服务器的 TCP 连接耗时，VPN 运行时经由隧道。WireGuard 和 OpenVPN 服务器通常使用 UDP，无法用此方式测试。"
+
+msgid "Enter an IPv4 or IPv6 address"
+msgstr "请输入 IPv4 或 IPv6 地址"
+
+msgid "On: nothing leaves outside the tunnel"
+msgstr "开启：任何流量都不会绕过隧道"
+
+msgid "Off: traffic goes out directly while the tunnel is down"
+msgstr "关闭：隧道断开时流量直接出网"
+
+msgid "Yes: Tailscale's own connections go through the tunnel"
+msgstr "是：Tailscale 自身的连接经由隧道"
+
+msgid "No: Tailscale connects directly"
+msgstr "否：Tailscale 直接连接"
+
+msgid "Routing"
+msgstr "路由"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down."
+msgstr "VPN 断开时，断网保护会阻断设备和局域网的所有流量。"
+
+msgid "Bypass the tunnel"
+msgstr "绕过隧道"
+
+msgid "Enter address ranges like 192.168.0.0/16, separated by commas"
+msgstr "请输入地址段，如 192.168.0.0/16，用逗号分隔"
+
+msgid "Address ranges that never go into the tunnel, besides the LAN itself (which never does). Empty: the LAN only."
+msgstr "除局域网本身（它从不走隧道）外，永不走隧道的地址段。留空：仅局域网。"
+
+msgid "Tailscale through the VPN"
+msgstr "Tailscale 经由 VPN"
+
+msgid "When Tailscale runs on the device, its WireGuard, DERP and control connections go through whichever tunnel runs (dae catches them like any other)."
+msgstr "当设备上运行 Tailscale 时，其 WireGuard、DERP 和控制连接将经由当前运行的隧道（dae 会像其他流量一样接管它们）。"
+
+msgid "DNS"
+msgstr "DNS"
+
+msgid "DNS through the tunnel"
+msgstr "经隧道的 DNS"
+
+msgid "The resolver the device's and the LAN's lookups go to, through the tunnel. Nothing goes to the carrier's resolver."
+msgstr "设备和局域网的查询经隧道发往的解析服务器。不会有任何查询发往运营商的解析服务器。"
+
+msgid "Bootstrap DNS"
+msgstr "引导 DNS"
+
+msgid "Finds the VPN server's own address before the tunnel is up (directly, on the engine's own connection)."
+msgstr "在隧道建立前解析 VPN 服务器自身的地址（直接，经由引擎自身的连接）。"
+
+msgid "Empty puts a setting back to its default."
+msgstr "留空则恢复默认值。"
+
+msgid "TUN stack"
+msgstr "TUN 协议栈"
+
+msgid "Default (gvisor)"
+msgstr "默认（gvisor）"
+
+msgid "system (not on the 5.4 kernel)"
+msgstr "system（不适用于 5.4 内核）"
+
+msgid "set (unchanged unless you type a new one)"
+msgstr "已设置（不输入新值则保持不变）"
+
+msgid "not set"
+msgstr "未设置"
+
+msgid "Upstream HTTP proxy"
+msgstr "上游 HTTP 代理"
+
+msgid "TLS certificate pin (SHA-256)"
+msgstr "TLS 证书固定（SHA-256）"
+
+msgid "Enter host:port"
+msgstr "请输入 host:port"
+
+msgid "Enter the SHA-256 in hex"
+msgstr "请输入十六进制的 SHA-256"
+
+msgid "Profile options"
+msgstr "配置文件选项"
+
+msgid "None of the profiles has options of its type."
+msgstr "没有配置文件具有其类型的选项。"
+
+msgid "mihomo's mode (rule, global, direct), the engines' log levels, dae's groups and routing are part of each profile's own config: VPN > Profiles, Show / edit the config."
+msgstr "mihomo 的模式（rule、global、direct）、各引擎的日志级别、dae 的分组和路由都属于各配置文件自身的配置：VPN > 配置文件，显示 / 编辑配置。"
+
+msgid "Delete the subscription %s?"
+msgstr "删除订阅 %s？"
+
+msgid "Its profiles can go with it or stay as profiles of their own. The active profile is never removed while the VPN is on."
+msgstr "其配置文件可以一并删除，也可以保留为独立配置文件。VPN 开启时当前配置文件永远不会被删除。"
+
+msgid "Keep the profiles"
+msgstr "保留配置文件"
+
+msgid "Delete with its profiles"
+msgstr "连同配置文件一起删除"
+
+msgid "Only by hand"
+msgstr "仅手动"
+
+msgid "Every %d h"
+msgstr "每 %d 小时"
+
+msgid "Share links: one profile per link"
+msgstr "分享链接：每个链接一个配置文件"
+
+msgid "Clash/mihomo YAML: one mihomo profile"
+msgstr "Clash/mihomo YAML：一个 mihomo 配置文件"
+
+msgid "dae: one profile with every node in one group"
+msgstr "dae：一个配置文件，所有节点在一个分组中"
+
+msgid "Add a subscription"
+msgstr "添加订阅"
+
+msgid "Format"
+msgstr "格式"
+
+msgid "The URL usually holds your account token: it is stored on the device readable by root only, and never shown again. The subscription is fetched over the device's own connection: through the tunnel when the VPN is up; with the kill switch up and the tunnel down it cannot be fetched."
+msgstr "URL 通常包含您的账号令牌：它在设备上以仅 root 可读的方式保存，且不会再次显示。订阅通过设备自身的连接获取：VPN 运行时经由隧道；断网保护生效且隧道断开时无法获取。"
+
+msgid "Refresh all"
+msgstr "全部刷新"
+
+msgid "No subscriptions yet."
+msgstr "暂无订阅。"
+
+msgid "Host"
+msgstr "主机"
+
+msgid "Updated"
+msgstr "更新于"
+
+msgid "Share links"
+msgstr "分享链接"
+
+msgid "A refresh keeps the profiles whose name is unchanged, adds the new ones and removes the ones that are gone (the active one stays while the VPN is on, marked as gone). A refresh of the active profile restarts the running VPN."
+msgstr "刷新会保留名称未变的配置文件，添加新的，并删除已消失的（VPN 开启时当前配置文件会保留并标记为已移除）。刷新当前配置文件会重启正在运行的 VPN。"
+
+msgid "Dashboard info failed"
+msgstr "获取仪表盘信息失败"
+
+msgid "The modem is restarting (network locks or a SIM switch): no live signal right now"
+msgstr "调制解调器正在重启（网络锁定或 SIM 切换）：暂时没有实时信号"
+
+msgid "Live signal read failed"
+msgstr "读取实时信号失败"
+
+msgid "Unknown op"
+msgstr "未知操作"
+
+msgid "Invalid argument for this op"
+msgstr "此操作的参数无效"
+
+msgid "The radio is busy: the dial or the watchdog is switching it, try again shortly"
+msgstr "射频正忙：拨号或看门狗正在切换它，请稍后再试"
+
+msgid "The action gave no valid reply"
+msgstr "操作没有返回有效结果"
+
+msgid "The confirm parameter must be 0 or 1"
+msgstr "confirm 参数必须为 0 或 1"
+
+msgid "An AT command is one line of printable ASCII, at most 512 characters"
+msgstr "AT 命令须为一行可打印 ASCII 字符，最多 512 个字符"
+
+msgid "Must be an AT command"
+msgstr "必须是 AT 命令"
+
+msgid "No \";\" command chaining"
+msgstr "不允许用 \";\" 串联命令"
+
+msgid "Denied: this command wedges the AT port until a reboot"
+msgstr "已拒绝：此命令会让 AT 端口卡死，直到重启"
+
+msgid "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+msgstr "已拒绝：此命令会改变 SIM 选择或数据路由；请使用 SIM 设置"
+
+msgid "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+msgstr "调制解调器正在重启（网络锁定或 SIM 切换，约半分钟），请稍后再试"
+
+msgid "A long AT command is still running in the background; try again when it has finished"
+msgstr "一条耗时较长的 AT 命令仍在后台运行；请在其完成后重试"
+
+msgid "This command needs confirmation"
+msgstr "此命令需要确认"
+
+msgid "The AT channel is busy; the command was not sent, try again"
+msgstr "AT 通道正忙，命令未发出，请重试"
+
+msgid "The modem did not answer in time; the command may still run, check before sending it again"
+msgstr "调制解调器未及时应答；命令可能仍在执行，再次发送前请先检查"
+
+msgid "The fresh parameter must be 0 or 1"
+msgstr "fresh 参数必须是 0 或 1"
+
+msgid "Reading the locks from the modem; try again in a few seconds"
+msgstr "正在从调制解调器读取锁定状态；请几秒后重试"
+
+msgid "Lock read failed"
+msgstr "读取锁定状态失败"
+
+msgid "Unknown lock kind"
+msgstr "未知的锁定类型"
+
+msgid "Invalid value for this lock kind"
+msgstr "此锁定类型的值无效"
+
+msgid "None of these bands is supported by this modem"
+msgstr "此调制解调器不支持其中任何频段"
+
+msgid "Band, mode and cell locks are not supported for SIM2 yet"
+msgstr "SIM2 暂不支持频段、模式和小区锁定"
+
+msgid "Band, mode and cell locks are not supported while dual-SIM switching manages the radio"
+msgstr "双卡切换管理射频时，不支持频段、模式和小区锁定"
+
+msgid "Invalid page"
+msgstr "页码无效"
+
+msgid "mu300-sms is not available (the SMS service is not installed or not running)"
+msgstr "mu300-sms 不可用（短信服务没装或没起来）"
+
+msgid "No output"
+msgstr "无输出"
+
+msgid "Bad ID"
+msgstr "ID 无效"
+
+msgid "Read failed"
+msgstr "读取失败"
+
+msgid "The number may only contain digits (and a leading +)"
+msgstr "号码只能是数字（可带 +）"
+
+msgid "The message is empty"
+msgstr "内容为空"
+
+msgid "The message is too long (over 480 characters)"
+msgstr "内容太长（超过 480 个字符）"
+
+msgid "The message contains a control character"
+msgstr "内容包含控制字符"
+
+msgid "The sim parameter must be 0 or 1"
+msgstr "sim 参数必须是 0 或 1"
+
+msgid "The USB adapter (device-usb) gave no valid reply"
+msgstr "USB 适配程序（device-usb）没有返回有效结果"
+
+msgid "The auto parameter must be 0 or 1"
+msgstr "auto 参数必须是 0 或 1"
+
+msgid "Invalid USB role"
+msgstr "USB 角色无效"
+
+msgid "A USB role takes no scope"
+msgstr "USB 角色不带生效范围"
+
+msgid "Invalid USB network mode"
+msgstr "USB 网络模式无效"
+
+msgid "Invalid USB network scope"
+msgstr "USB 网络生效范围无效"
+
+msgid "Unknown USB setting"
+msgstr "未知的 USB 设置"
+
+msgid "Invalid interface name"
+msgstr "接口名称无效"
+
+msgid "The power adapter gave no valid reply"
+msgstr "电源适配器没有返回有效应答"
+
+msgid "Unknown power operation"
+msgstr "未知的电源操作"
+
+msgid "Unknown power setting"
+msgstr "未知的电源设置"
+
+msgid "Invalid power value"
+msgstr "无效的电源值"
+
+msgid "Invalid power request"
+msgstr "无效的电源请求"
+
+msgid "The languages adapter gave no valid reply"
+msgstr "语言适配程序没有返回有效结果"
+
+msgid "Unknown language operation"
+msgstr "未知的语言操作"
+
+msgid "Invalid language code"
+msgstr "语言代码无效"
+
+msgid "Invalid language request"
+msgstr "语言请求无效"
+
+msgid "Unknown source"
+msgstr "未知的来源"
+
+msgid "The TTL adapter gave no valid reply"
+msgstr "TTL 适配器未返回有效回复"
+
+msgid "Invalid TTL"
+msgstr "无效的 TTL"
+
+msgid "The data usage adapter gave no valid reply"
+msgstr "流量统计适配器没有返回有效的回复"
+
+msgid "Unknown data usage setting"
+msgstr "未知的流量统计设置"
+
+msgid "Invalid value for this setting"
+msgstr "此设置的值无效"
+
+msgid "The forwarding adapter gave no valid reply"
+msgstr "转发适配器没有返回有效的回复"
+
+msgid "The CPU adapter gave no valid reply"
+msgstr "CPU 适配器未返回有效响应"
+
+msgid "Invalid CPU profile"
+msgstr "无效的 CPU 配置"
+
+msgid "Invalid CPU core"
+msgstr "无效的 CPU 核心"
+
+msgid "Unknown CPU operation"
+msgstr "未知的 CPU 操作"
+
+msgid "Unknown CPU voltage operation"
+msgstr "未知的 CPU 电压操作"
+
+msgid "Invalid CPU voltage request"
+msgstr "无效的 CPU 电压请求"
+
+msgid "Invalid CPU voltage offset"
+msgstr "无效的 CPU 电压偏移"
+
+msgid "Type the confirmation word to apply a voltage offset"
+msgstr "输入确认词以应用电压偏移"
+
+msgid "Invalid stress test length"
+msgstr "无效的压力测试时长"
+
+msgid "The packages adapter gave no valid reply"
+msgstr "软件包适配器没有返回有效回复"
+
+msgid "Invalid packages operation"
+msgstr "无效的软件包操作"
+
+msgid "The sizes parameter must be 0 or 1"
+msgstr "sizes 参数必须为 0 或 1"
+
+msgid "The update adapter gave no valid reply"
+msgstr "更新适配器未返回有效响应"
+
+msgid "Unknown update operation"
+msgstr "未知的更新操作"
+
+msgid "Invalid update request"
+msgstr "无效的更新请求"
+
+msgid "The backup tool gave no valid reply"
+msgstr "备份工具没有给出有效的回复"
+
+msgid "Mobile data integration is not provided by this platform"
+msgstr "此平台未提供移动数据集成"
+
+msgid "The SIM settings could not be read"
+msgstr "无法读取 SIM 卡设置"
+
+msgid "Radio control is not provided by this platform"
+msgstr "此平台不提供射频控制"
+
+msgid "A SIM radio change is already running"
+msgstr "已有射频设置正在执行"
+
+# Dual SIM controls.
+msgid "Invalid SIM setting"
+msgstr "SIM 设置无效"
+
+msgid "The modem did not take the setting; nothing was saved"
+msgstr "模组未接受该设置，未保存任何内容"
+
+# Dual SIM controls.
+msgid "SIM control failed"
+msgstr "SIM 控制失败"
+
+# Dual SIM controls.
+msgid "Enable hot switching; reboot if channels are unavailable or wait until idle"
+msgstr "请启用热切换；通道尚未准备好时请重启，操作进行中请等待。"
+
+msgid "Request too large"
+msgstr "请求过大"
+
+msgid "The runtime directory is not safe; nothing was run"
+msgstr "运行目录不安全；未执行任何操作"
+
+msgid "No such method"
+msgstr "没有此方法"
+
+msgid "The VPN module refused the request"
+msgstr "VPN 模块拒绝了请求"
+
+msgid "The VPN panel is busy, try again"
+msgstr "VPN 面板忙，请重试"
+
+msgid "Another VPN task is still running"
+msgstr "另一个 VPN 任务仍在运行"
+
+msgid "The exit_ip parameter must be 0 or 1"
+msgstr "exit_ip 参数必须为 0 或 1"
+
+msgid "The VPN status could not be read"
+msgstr "无法读取 VPN 状态"
+
+msgid "The profiles could not be read"
+msgstr "无法读取配置文件"
+
+msgid "The check parameter must be 0 or 1"
+msgstr "check 参数必须为 0 或 1"
+
+msgid "The engines could not be read"
+msgstr "无法读取引擎"
+
+msgid "The subscriptions could not be read"
+msgstr "无法读取订阅"
+
+msgid "The VPN settings could not be read"
+msgstr "无法读取 VPN 设置"
+
+msgid "Unknown VPN operation"
+msgstr "未知的 VPN 操作"
+
+msgid "The VPN could not be switched"
+msgstr "无法切换 VPN"
+
+msgid "The kill switch is on or off"
+msgstr "断网保护只能是开或关"
+
+msgid "The kill switch could not be changed"
+msgstr "无法更改断网保护"
+
+msgid "Invalid profile id"
+msgstr "配置文件 ID 无效"
+
+msgid "The profile could not be made the active one"
+msgstr "无法将配置文件设为当前配置"
+
+msgid "Unknown profile source"
+msgstr "未知的配置文件来源"
+
+msgid "Unknown profile type"
+msgstr "未知的配置文件类型"
+
+msgid "The config is empty, too large or holds control characters"
+msgstr "配置为空、过大或包含控制字符"
+
+msgid "Invalid profile request"
+msgstr "无效的配置文件请求"
+
+msgid "A config from a URL takes the type it says"
+msgstr "来自 URL 的配置使用其自身声明的类型"
+
+msgid "No uploaded file"
+msgstr "没有已上传的文件"
+
+msgid "The file is larger than 1 MiB"
+msgstr "文件大于 1 MiB"
+
+msgid "The profile could not be added"
+msgstr "无法添加配置文件"
+
+msgid "The profile could not be renamed"
+msgstr "无法重命名配置文件"
+
+msgid "The profile could not be removed"
+msgstr "无法删除配置文件"
+
+msgid "The profile does not pass the check"
+msgstr "配置文件未通过检查"
+
+msgid "Unknown profile option"
+msgstr "未知的配置文件选项"
+
+msgid "Invalid value for this option"
+msgstr "此选项的值无效"
+
+msgid "The option could not be set"
+msgstr "无法设置选项"
+
+msgid "The config could not be read"
+msgstr "无法读取配置"
+
+msgid "The config was not saved"
+msgstr "配置未保存"
+
+msgid "The latency test failed"
+msgstr "延迟测试失败"
+
+msgid "The refresh interval is 1 to 999 hours"
+msgstr "刷新间隔为 1 到 999 小时"
+
+msgid "Unknown subscription type"
+msgstr "未知的订阅类型"
+
+msgid "Invalid subscription id"
+msgstr "订阅 ID 无效"
+
+msgid "The keep parameter must be 0 or 1"
+msgstr "keep 参数必须为 0 或 1"
+
+msgid "The subscription could not be removed"
+msgstr "无法删除订阅"
+
+msgid "The file is too large"
+msgstr "文件过大"
+
+msgid "Unknown engine"
+msgstr "未知的引擎"
+
+msgid "The unverified parameter must be 0 or 1"
+msgstr "unverified 参数必须为 0 或 1"
+
+msgid "This engine is a system package: it has no file to upload"
+msgstr "此引擎是系统软件包：没有可上传的文件"
+
+msgid "The engine could not be removed"
+msgstr "无法移除引擎"
+
+msgid "mu300-extra is not on this system"
+msgstr "此系统上没有 mu300-extra"
+
+msgid "Unknown VPN setting"
+msgstr "未知的 VPN 设置"
+
+msgid "The setting could not be saved"
+msgstr "无法保存设置"
+
+msgid "The number of lines is 1 to 1000"
+msgstr "行数必须在 1 到 1000 之间"
+
+msgid "The log could not be read"
+msgstr "无法读取日志"
+
+msgid "The radio of this SIM is switched off in its settings"
+msgstr "该卡的射频已在设置中关闭"
+
+# Dual SIM controls.
+msgid "Use SIM control or reboot for managed dual-SIM radio"
+msgstr "请使用双 SIM 控制页或重启来操作受管理的双卡射频。"
+
+msgid "The radio did not follow its setting"
+msgstr "射频未按设置生效"
+
+msgid "The data roaming setting could not be saved"
+msgstr "无法保存数据漫游设置"
+
+msgid "Expected on or off"
+msgstr "应为 on 或 off"
+
+msgid "VPN integration is not provided by this platform"
+msgstr "此平台不提供 VPN 集成"
+
+msgid "Dual-boot integration is not provided by this platform"
+msgstr "此平台不提供双系统启动集成"
+
+msgid "mu300-next-boot failed"
+msgstr "mu300-next-boot 执行失败"
+
+msgid "AT backend did not answer (radio off, modem restarting, or adapter unavailable)"
+msgstr "AT 后端无应答（射频关闭、调制解调器重启中或适配器不可用）"
+
+msgid "The CPU profile could not be read"
+msgstr "无法读取 CPU 配置"
+
+msgid "The CPU profile could not be set"
+msgstr "无法设置 CPU 配置"
+
+msgid "The CPU core could not be switched"
+msgstr "无法切换该 CPU 核心"
+
+msgid "Invalid low latency setting"
+msgstr "无效的低延迟设置"
+
+msgid "The low latency setting could not be applied"
+msgstr "无法应用低延迟设置"
+
+msgid "The CPU voltage offset could not be read"
+msgstr "无法读取 CPU 电压偏移"
+
+msgid "The CPU voltage offset was refused"
+msgstr "CPU 电压偏移被拒绝"
+
+msgid "The CPU voltage offset could not be turned off"
+msgstr "无法关闭 CPU 电压偏移"
+
+msgid "The stress test could not be started"
+msgstr "无法启动压力测试"
+
+msgid "USB role adapter is not executable"
+msgstr "USB 角色适配程序不可执行"
+
+msgid "USB role adapter failed"
+msgstr "USB 角色适配程序执行失败"
+
+msgid "USB role switch is unavailable"
+msgstr "USB 角色切换不可用"
+
+msgid "USB role switch failed"
+msgstr "USB 角色切换失败"
+
+msgid "USB role switch was refused by platform safety checks"
+msgstr "USB 角色切换被平台安全检查拒绝"
+
+msgid "Cannot create USB boot settings directory"
+msgstr "无法创建 USB 启动设置目录"
+
+msgid "Cannot write USB boot settings"
+msgstr "无法写入 USB 启动设置"
+
+msgid "Cannot save USB boot settings"
+msgstr "无法保存 USB 启动设置"
+
+msgid "Invalid boot-auto value"
+msgstr "开机自动应用的值无效"
+
+msgid "Device is the boot default; host auto-apply is the only persistent role"
+msgstr "设备模式是开机默认；只有主机模式的开机自动应用会保留"
+
+msgid "Cannot save USB role policy"
+msgstr "无法保存 USB 角色策略"
+
+msgid "Cannot disable USB network boot policy"
+msgstr "无法关闭 USB 网络开机策略"
+
+msgid "Cannot commit USB role policy"
+msgstr "无法提交 USB 角色策略"
+
+msgid "USB network mode is unavailable in host role"
+msgstr "主机模式下不能使用 USB 网络模式"
+
+msgid "Disable host boot-auto before configuring USB network"
+msgstr "配置 USB 网络前请先关闭主机模式的开机自动应用"
+
+msgid "Cannot save USB network policy"
+msgstr "无法保存 USB 网络策略"
+
+msgid "Cannot commit USB network policy"
+msgstr "无法提交 USB 网络策略"
+
+msgid "USB host mode is required"
+msgstr "需要 USB 主机模式"
+
+msgid "Not a USB network interface"
+msgstr "不是 USB 网络接口"
+
+msgid "LAN bridge device section was not found"
+msgstr "未找到 LAN 网桥设备配置节"
+
+msgid "Cannot bring USB network interface up"
+msgstr "无法启用 USB 网络接口"
+
+msgid "Cannot add interface to LAN bridge"
+msgstr "无法把接口加入 LAN 网桥"
+
+msgid "Cannot save LAN bridge"
+msgstr "无法保存 LAN 网桥"
+
+msgid "Network reload failed"
+msgstr "网络重新加载失败"
+
+msgid "Cannot attach USB interface to LAN bridge"
+msgstr "无法把 USB 接口接入 LAN 网桥"
+
+msgid "Invalid forwarding setting"
+msgstr "无效的转发设置"
+
+msgid "The message template is too long or contains a control character"
+msgstr "消息模板过长或包含控制字符"
+
+msgid "Invalid filter list (at most 50 lines)"
+msgstr "无效的过滤列表（最多 50 行）"
+
+msgid "The webhook address must be an http:// or https:// URL"
+msgstr "webhook 地址必须是 http:// 或 https:// 开头的 URL"
+
+msgid "The webhook body is too long or contains a control character"
+msgstr "Webhook 请求体过长或包含控制字符"
+
+msgid "The answer check must be key=value, like errcode=0 or ok=true (the value a whole number or lowercase letters, 16 at most)"
+msgstr "响应检查必须是 键=值 的形式，例如 errcode=0 或 ok=true（值为整数或小写字母，最多 16 个字符）"
+
+msgid "Invalid header (one \"Name: value\" per line; Host, Content-Type, Content-Length, Transfer-Encoding and Connection are set by the device)"
+msgstr "无效的请求头（每行一个 \"Name: value\"；Host、Content-Type、Content-Length、Transfer-Encoding 和 Connection 由设备设置）"
+
+msgid "Invalid Telegram bot token"
+msgstr "无效的 Telegram 机器人令牌"
+
+msgid "Invalid Telegram chat (a number, or @channel)"
+msgstr "无效的 Telegram 聊天（数字或 @频道）"
+
+msgid "Invalid e-mail setting"
+msgstr "无效的电子邮件设置"
+
+msgid "The webhook needs an address"
+msgstr "webhook 需要一个地址"
+
+msgid "Telegram needs a bot token and a chat"
+msgstr "Telegram 需要机器人令牌和聊天"
+
+msgid "E-mail needs a server, a sender and a recipient"
+msgstr "电子邮件需要服务器、发件人和收件人"
+
+msgid "SMS forwarding needs a phone number"
+msgstr "短信转发需要一个手机号码"
+
+msgid "The forwarding settings could not be saved"
+msgstr "无法保存转发设置"
+
+msgid "SMS forwarding is not installed"
+msgstr "未安装短信转发"
+
+msgid "A test was started a moment ago; wait a few seconds"
+msgstr "刚刚已开始一次测试；请等待几秒"
+
+msgid "The delivery log could not be cleared"
+msgstr "无法清空发送日志"
+
+msgid "Unknown forwarding operation"
+msgstr "未知的转发操作"
+
+msgid "The language pack is not installed"
+msgstr "语言包未安装"
+
+msgid "No language given"
+msgstr "未指定语言"
+
+msgid "The language could not be changed"
+msgstr "无法更改语言"
+
+msgid "LuCI does not offer this language"
+msgstr "LuCI 不提供此语言"
+
+msgid "No uploaded language pack"
+msgstr "没有已上传的语言包"
+
+msgid "An installation is already running"
+msgstr "已有安装任务正在进行"
+
+msgid "The language pack could not be removed"
+msgstr "无法移除语言包"
+
+msgid "Lock cache unavailable"
+msgstr "锁定缓存不可用"
+
+msgid "The modem refused a write"
+msgstr "模组拒绝了一次写入"
+
+msgid "The saved locks could not be cleared"
+msgstr "无法清除已保存的锁定"
+
+msgid "No serving cell to lock to"
+msgstr "没有可锁定的服务小区"
+
+msgid "The modem did not answer the mode query; nothing was sent"
+msgstr "模组未回应模式查询；未发送任何设置"
+
+msgid "The read-back does not match the automatic values"
+msgstr "回读结果与自动值不一致"
+
+msgid "The read-back after the stack restart does not match the automatic values"
+msgstr "协议栈重启后的回读结果与自动值不一致"
+
+msgid "The reset was interrupted"
+msgstr "重置被中断"
+
+msgid "Reinstalling packages is not available on this system"
+msgstr "此系统不支持重新安装软件包"
+
+msgid "No packages were written down by an update"
+msgstr "没有更新记录的软件包"
+
+msgid "Reinstalling is running already"
+msgstr "重新安装已在运行"
+
+msgid "The note could not be dropped"
+msgstr "无法删除提示"
+
+msgid "Unknown packages operation"
+msgstr "未知的软件包操作"
+
+msgid "usage: power get|set KEY VALUE|wake|idle"
+msgstr "usage: power get|set KEY VALUE|wake|idle"
+
+msgid "Data usage is not available on this system"
+msgstr "此系统不支持流量统计"
+
+msgid "Unknown data usage operation"
+msgstr "未知的流量统计操作"
+
+msgid "The TTL setting could not be read"
+msgstr "无法读取 TTL 设置"
+
+msgid "The TTL could not be set"
+msgstr "无法设置 TTL"
+
+msgid "Unknown TTL operation"
+msgstr "未知的 TTL 操作"
+
+msgid "An update task is already running"
+msgstr "已有更新任务正在运行"
+
+msgid "The task could not be started"
+msgstr "无法启动任务"
+
+msgid "The updater gave no valid reply"
+msgstr "更新程序未返回有效响应"
+
+msgid "This needs confirmation"
+msgstr "此操作需要确认"
+
+msgid "Check for updates first"
+msgstr "请先检查更新"
+
+msgid "The upload directory is not safe; nothing was changed"
+msgstr "上传目录不安全；未做任何更改"
+
+msgid "Not enough memory for this upload"
+msgstr "内存不足，无法完成此次上传"
+
+msgid "Not enough free space on the Linux partition"
+msgstr "Linux 分区的可用空间不足"
+
+msgid "The file was not checked; upload it again"
+msgstr "文件未经检查；请重新上传"
+
+msgid "This file is not for this device"
+msgstr "此文件不适用于此设备"
+
+msgid "The signature of this file is wrong"
+msgstr "此文件的签名不正确"
+
+msgid "This file is not signed: that needs confirmation"
+msgstr "此文件未签名：需要确认"
+
+msgid "This file is older than what is installed: that needs confirmation"
+msgstr "此文件比已安装的版本旧：需要确认"
+
+msgid "The release source was not changed"
+msgstr "发布源未更改"

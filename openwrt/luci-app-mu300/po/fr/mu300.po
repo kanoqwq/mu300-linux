@@ -1,0 +1,4050 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: fr\n"
+
+msgid "Status dashboard"
+msgstr "Tableau de bord d'état"
+
+msgid "Cellular"
+msgstr "Cellulaire"
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM"
+msgstr "Dual SIM"
+
+msgid "SIM settings"
+msgstr "Réglages SIM"
+
+msgid "Network locks"
+msgstr "Verrouillages réseau"
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "SMS forwarding"
+msgstr "Transfert de SMS"
+
+msgid "AT terminal"
+msgstr "Terminal AT"
+
+msgid "Adapter settings"
+msgstr "Paramètres de l'adaptateur"
+
+msgid "TTL"
+msgstr "TTL"
+
+msgid "Data usage"
+msgstr "Consommation de données"
+
+msgid "Device management"
+msgstr "Gestion de l'appareil"
+
+msgid "Update"
+msgstr "Mettre à jour"
+
+msgid "Backup of settings"
+msgstr "Sauvegarde des réglages"
+
+msgid "Languages"
+msgstr "Langues"
+
+msgid "Power"
+msgstr "Alimentation"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Terminal"
+msgstr "Terminal"
+
+msgid "Terminal settings"
+msgstr "Paramètres du terminal"
+
+msgid "Overview"
+msgstr "Vue d'ensemble"
+
+msgid "Profiles"
+msgstr "Profils"
+
+msgid "Subscriptions"
+msgstr "Abonnements"
+
+msgid "Engines"
+msgstr "Moteurs"
+
+msgid "Settings"
+msgstr "Paramètres"
+
+msgid "Logs"
+msgstr "Journaux"
+
+msgid "Packages after an update"
+msgstr "Paquets après une mise à jour"
+
+msgid "MU300 control center: status dashboard, network locks, AT terminal, SMS and VPN"
+msgstr "Centre de contrôle MU300 : tableau d'état, verrous réseau, terminal AT, SMS et VPN"
+
+msgid "Terminal: a root shell on the device in the browser"
+msgstr "Terminal : un shell root de l’appareil dans le navigateur"
+
+msgid "China Mobile"
+msgstr "China Mobile"
+
+msgid "China Unicom"
+msgstr "China Unicom"
+
+msgid "China Telecom"
+msgstr "China Telecom"
+
+msgid "China Broadnet"
+msgstr "China Broadnet"
+
+msgid "China Tietong"
+msgstr "China Tietong"
+
+msgid "Excellent"
+msgstr "Excellent"
+
+msgid "Good"
+msgstr "Bon"
+
+msgid "Fair"
+msgstr "Moyen"
+
+msgid "Poor"
+msgstr "Faible"
+
+msgid "Unknown"
+msgstr "Inconnu"
+
+msgid "%d d %d h"
+msgstr "%d j %d h"
+
+msgid "%d h %d min"
+msgstr "%d h %d min"
+
+msgid "%d min"
+msgstr "%d min"
+
+msgid "No neighbor-cell data"
+msgstr "Aucune donnée de cellule voisine"
+
+msgid "Locked"
+msgstr "Verrouillée"
+
+msgid "Lock"
+msgstr "Verrouiller"
+
+msgid "Unknown error"
+msgstr "Erreur inconnue"
+
+msgid "Confirm"
+msgstr "Confirmer"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "%d s"
+msgstr "%d s"
+
+msgid "%d h"
+msgstr "%d h"
+
+msgid "New SMS · %s"
+msgstr "Nouveau SMS · %s"
+
+msgid "Unknown number"
+msgstr "Numéro inconnu"
+
+msgid "Select"
+msgstr "Sélectionner"
+
+msgid "never"
+msgstr "jamais"
+
+msgid "just now"
+msgstr "à l'instant"
+
+msgid "%s ago"
+msgstr "il y a %s"
+
+msgid "Failed: %s"
+msgstr "Échec : %s"
+
+msgid "Management connection lost"
+msgstr "Connexion de gestion perdue"
+
+msgid "Installing the VPN module"
+msgstr "Installation du module VPN"
+
+msgid "Installing the engine"
+msgstr "Installation du moteur"
+
+msgid "Adding the subscription"
+msgstr "Ajout de l'abonnement"
+
+msgid "Refreshing the subscriptions"
+msgstr "Actualisation des abonnements"
+
+msgid "Testing the latency of every profile"
+msgstr "Mesure de la latence de chaque profil"
+
+msgid "Downloading the config"
+msgstr "Téléchargement de la configuration"
+
+msgid "Working…"
+msgstr "En cours…"
+
+msgid "done"
+msgstr "terminé"
+
+msgid "failed"
+msgstr "échec"
+
+msgid "Verify the uploaded file"
+msgstr "Vérifier le fichier envoyé"
+
+msgid "The uploaded file is checked against the SHA256SUMS of the VPN module's latest release, downloaded over HTTPS. When that is not possible (offline, an older release), it is installed only if you allow an unverified file: it then runs as root with no check."
+msgstr "Le fichier envoyé est vérifié avec le SHA256SUMS de la dernière version du module VPN, téléchargé en HTTPS. Si ce n'est pas possible (hors ligne, version plus ancienne), il n'est installé que si vous autorisez un fichier non vérifié : il s'exécute alors en root sans aucun contrôle."
+
+msgid "Install it even if it cannot be verified"
+msgstr "L'installer même s'il ne peut pas être vérifié"
+
+msgid "Install only a verified file"
+msgstr "N'installer qu'un fichier vérifié"
+
+msgid "Upload failed: %s"
+msgstr "Échec de l'envoi : %s"
+
+msgid "The VPN module is too old for this panel"
+msgstr "Le module VPN est trop ancien pour ce panneau"
+
+msgid "The VPN module is not installed"
+msgstr "Le module VPN n'est pas installé"
+
+msgid "This page needs the VPN module with the machine-readable mu300-vpn (module v2 or newer). Updating it keeps the profiles and the settings."
+msgstr "Cette page nécessite le module VPN avec le mu300-vpn lisible par machine (module v2 ou plus récent). La mise à jour conserve les profils et les paramètres."
+
+msgid "The VPN is a module of its own: mu300-vpn with its kill switch and profiles, and one extra per engine (Xray, sing-box, mihomo, dae). It is installed with mu300-extra install vpn."
+msgstr "Le VPN est un module à part : mu300-vpn avec son kill switch et ses profils, et un extra par moteur (Xray, sing-box, mihomo, dae). Il s'installe avec mu300-extra install vpn."
+
+msgid "The download is a few MB for the module and up to tens of MB per engine: on mobile data it counts towards your plan."
+msgstr "Le téléchargement représente quelques MB pour le module et jusqu'à plusieurs dizaines de MB par moteur : sur données mobiles, il décompte de votre forfait."
+
+msgid "Update the VPN module"
+msgstr "Mettre à jour le module VPN"
+
+msgid "Install the VPN module"
+msgstr "Installer le module VPN"
+
+msgid "Upload the file…"
+msgstr "Envoyer le fichier…"
+
+msgid "Offline: upload mu300-linux-vpn-core.tar.gz (or the bundle mu300-linux-vpn.tar.gz) from the release page of the VPN module."
+msgstr "Hors ligne : envoyez mu300-linux-vpn-core.tar.gz (ou l'ensemble mu300-linux-vpn.tar.gz) depuis la page des versions du module VPN."
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "This is a network or frequency scan: it takes one to three minutes, holds the modem's AT channel all that time, and mobile data may pause meanwhile. It runs in the background; the reply appears here when it is done."
+msgstr "Il s'agit d'un balayage des réseaux ou des fréquences : il dure une à trois minutes, occupe le canal AT du modem pendant tout ce temps, et les données mobiles peuvent être suspendues entre-temps. Il s'exécute en arrière-plan ; la réponse s'affiche ici une fois terminé."
+
+msgid "This changes a network mode, band or cell setting the modem stores: it stays in force after a reboot, and in Android too, where a network that does not match it shows as No Service. The Locks page shows these settings and resets them."
+msgstr "Ceci modifie un mode réseau, une bande ou un réglage de cellule que le modem conserve : il reste en vigueur après un redémarrage, et aussi sous Android, où un réseau qui n'y correspond pas apparaît comme « Aucun service ». La page Verrouillages affiche ces réglages et les réinitialise."
+
+msgid "This switches the radio, the data connection or the modem itself: mobile data drops until it is restored, and this page may lose its connection for a while."
+msgstr "Ceci bascule la radio, la connexion de données ou le modem lui-même : les données mobiles sont coupées jusqu'à leur rétablissement, et cette page peut perdre sa connexion un moment."
+
+msgid "This changes the data profiles (APNs) stored in the modem, which mobile data and Android use."
+msgstr "Ceci modifie les profils de données (APN) enregistrés dans le modem, utilisés par les données mobiles et Android."
+
+msgid "This changes the SIM's PIN lock or enters a PIN: wrong PINs block the SIM until its PUK is entered."
+msgstr "Ceci modifie le verrouillage PIN de la SIM ou saisit un PIN : des PIN erronés bloquent la SIM jusqu'à la saisie de son PUK."
+
+msgid "Basic"
+msgstr "Base"
+
+msgid "Registration/signal"
+msgstr "Enregistrement/signal"
+
+msgid "Bearer"
+msgstr "Porteuse"
+
+msgid "Engineering mode"
+msgstr "Mode ingénierie"
+
+msgid "AT command (↑↓ history, Enter to send)"
+msgstr "Commande AT (↑↓ historique, Entrée pour envoyer)"
+
+msgid "Send"
+msgstr "Envoyer"
+
+msgid "Clear screen"
+msgstr "Effacer l'écran"
+
+msgid "Ready."
+msgstr "Prêt."
+
+msgid "Session history (click to reuse)"
+msgstr "Historique de la session (cliquer pour réutiliser)"
+
+msgid "Running in the background (at most %d s); the reply appears here when it is done…"
+msgstr "Exécution en arrière-plan (au plus %d s) ; la réponse s'affiche ici une fois terminé…"
+
+msgid "The modem gave no final answer in time"
+msgstr "Le modem n'a pas donné de réponse finale à temps"
+
+msgid "%d s in the background"
+msgstr "%d s en arrière-plan"
+
+msgid "(no output)"
+msgstr "(aucune sortie)"
+
+msgid "This command changes the modem's state."
+msgstr "Cette commande modifie l'état du modem."
+
+msgid "Not sent yet: waiting for confirmation"
+msgstr "Pas encore envoyée : en attente de confirmation"
+
+msgid "Send this AT command?"
+msgstr "Envoyer cette commande AT ?"
+
+msgid "Send anyway"
+msgstr "Envoyer quand même"
+
+msgid "Not sent"
+msgstr "Non envoyée"
+
+msgid "Request failed"
+msgstr "Échec de la requête"
+
+msgid "(empty)"
+msgstr "(vide)"
+
+msgid "Passphrase (8 characters or more)"
+msgstr "Phrase secrète (8 caractères ou plus)"
+
+msgid "The passphrase again"
+msgstr "La phrase secrète à nouveau"
+
+msgid "Download the backup"
+msgstr "Télécharger la sauvegarde"
+
+msgid "Back up the settings"
+msgstr "Sauvegarder les réglages"
+
+msgid "One file with the hotspot, mobile data and the APN, the network locks, the VPN profiles and settings, SMS forwarding, the LAN address, the host name, the time zone and the SSH keys. It holds passwords: with a passphrase it is encrypted, and only that passphrase opens it again."
+msgstr "Un fichier avec le point d'accès, les données mobiles et l'APN, les verrouillages réseau, les profils et réglages VPN, le transfert de SMS, l'adresse LAN, le nom d'hôte, le fuseau horaire et les clés SSH. Il contient des mots de passe : avec une phrase secrète il est chiffré, et seule cette phrase secrète l'ouvre à nouveau."
+
+msgid "Include the login password"
+msgstr "Inclure le mot de passe de connexion"
+
+msgid "Passphrase, if the file is encrypted"
+msgstr "Phrase secrète, si le fichier est chiffré"
+
+msgid "Show what would change"
+msgstr "Montrer ce qui changerait"
+
+msgid "Restore"
+msgstr "Restaurer"
+
+msgid "The file is larger than 4 MiB"
+msgstr "Le fichier dépasse 4 Mio"
+
+msgid "The settings of the file replace these. The hotspot, mobile data or the LAN may restart, and this page may lose its connection for a moment."
+msgstr "Les réglages du fichier remplacent ceux-ci. Le point d'accès, les données mobiles ou le LAN peuvent redémarrer, et cette page peut perdre sa connexion un instant."
+
+msgid "Restore from a backup"
+msgstr "Restaurer depuis une sauvegarde"
+
+msgid "Every value of the file is checked first; one that is refused and nothing is changed. What is the same is left alone, and no VPN profile, subscription or SSH key of this device is removed."
+msgstr "Chaque valeur du fichier est d'abord vérifiée ; si une seule est refusée, rien n'est modifié. Ce qui est identique reste tel quel, et aucun profil VPN, abonnement ou clé SSH de cet appareil n'est supprimé."
+
+msgid "Keep this device's login password"
+msgstr "Garder le mot de passe de connexion de cet appareil"
+
+msgid "Take a file of another device model"
+msgstr "Accepter un fichier d'un autre modèle d'appareil"
+
+msgid "The two passphrases differ"
+msgstr "Les deux phrases secrètes diffèrent"
+
+msgid "The passphrase needs 8 characters or more"
+msgstr "La phrase secrète doit avoir 8 caractères ou plus"
+
+msgid "Saved (encrypted)"
+msgstr "Enregistré (chiffré)"
+
+msgid "Saved. The file is not encrypted: it holds passwords, keep it safe."
+msgstr "Enregistré. Le fichier n'est pas chiffré : il contient des mots de passe, conservez-le en lieu sûr."
+
+msgid "Choose a backup file first"
+msgstr "Choisissez d'abord un fichier de sauvegarde"
+
+msgid "Restoring…"
+msgstr "Restauration…"
+
+msgid "Restored"
+msgstr "Restauré"
+
+msgid "The restore did not finish: see the lines above"
+msgstr "La restauration n'est pas terminée : voir les lignes ci-dessus"
+
+msgid "Loading…"
+msgstr "Chargement…"
+
+msgid "Channel Analysis"
+msgstr "Analyse des canaux"
+
+msgid "A scan takes the Wi-Fi hotspot off its channel for a moment: connected devices drop, and some (macOS in particular) may not reconnect by themselves. This page scans as soon as it opens and again every few seconds. Reach the panel over USB or another way first if you depend on the hotspot."
+msgstr "Un balayage fait quitter un instant son canal au point d'accès Wi-Fi : les appareils connectés sont déconnectés, et certains (macOS en particulier) peuvent ne pas se reconnecter d'eux-mêmes. Cette page balaie dès son ouverture puis toutes les quelques secondes. Si vous dépendez du point d'accès, accédez d'abord au panneau par USB ou un autre moyen."
+
+msgid "Scan anyway"
+msgstr "Balayer quand même"
+
+msgid "Saved"
+msgstr "Enregistré"
+
+msgid "CPU profile unavailable"
+msgstr "CPU profile unavailable"
+
+msgid "Power saving"
+msgstr "Power saving"
+
+msgid "Balanced"
+msgstr "Balanced"
+
+msgid "Performance"
+msgstr "Performance"
+
+msgid "Cores capped at about 60 %% of their maximum (cooler, less power)."
+msgstr "Cores capped at about 60 %% of their maximum (cooler, less power)."
+
+msgid "Schedutil across the full hardware range (the stock behaviour)."
+msgstr "Schedutil across the full hardware range (the stock behaviour)."
+
+msgid "Every cluster pinned at its hardware maximum."
+msgstr "Every cluster pinned at its hardware maximum."
+
+msgid "CPU profile"
+msgstr "CPU profile"
+
+msgid "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+msgstr "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+
+msgid "Saved profile: %s"
+msgstr "Saved profile: %s"
+
+msgid "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+msgstr "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+
+msgid "Clusters"
+msgstr "Clusters"
+
+msgid "Cores"
+msgstr "Cores"
+
+msgid "Governor"
+msgstr "Governor"
+
+msgid "Now"
+msgstr "Now"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Hardware max"
+msgstr "Hardware max"
+
+msgid "Frequencies in MHz."
+msgstr "Frequencies in MHz."
+
+msgid "Highlighted cores are online. A core taken offline stays offline, also after a reboot, until it is brought back. CPU0 always stays online."
+msgstr "Les cœurs en surbrillance sont en ligne. Un cœur mis hors ligne le reste, même après un redémarrage, jusqu'à ce qu'il soit réactivé. CPU0 reste toujours en ligne."
+
+msgid "Low latency: on"
+msgstr "Faible latence : activée"
+
+msgid "Low latency: off"
+msgstr "Faible latence : désactivée"
+
+msgid "Low latency keeps CPU0 out of its idle states, as ZTE's U30 Air firmware does: Wi-Fi delays are much shorter, and the device draws more power. Off by default."
+msgstr "La faible latence empêche CPU0 d'entrer dans ses états de repos, comme le firmware U30 Air de ZTE : les délais Wi-Fi sont bien plus courts et l'appareil consomme davantage. Désactivée par défaut."
+
+msgid "Thermal"
+msgstr "Thermique"
+
+msgid "The kernel's thermal zones, read only. A zone with trip points throttles the cooling devices bound to it at its passive trip; a cooling state of 0 is no throttling."
+msgstr "Les zones thermiques du noyau, en lecture seule. Une zone avec des points de déclenchement limite les dispositifs de refroidissement qui lui sont liés à son point passif ; un état de refroidissement 0 signifie aucune limitation."
+
+msgid "Zone"
+msgstr "Zone"
+
+msgid "Temperature"
+msgstr "Température"
+
+msgid "Trip points"
+msgstr "Points de déclenchement"
+
+msgid "Cooling devices"
+msgstr "Dispositifs de refroidissement"
+
+msgid "Stress test started"
+msgstr "Test de charge démarré"
+
+msgid "Saved: it takes effect at the next reboot"
+msgstr "Enregistré : prend effet au prochain redémarrage"
+
+msgid "CPU voltage offset (EXPERIMENTAL)"
+msgstr "Décalage de tension CPU (EXPÉRIMENTAL)"
+
+msgid "Experimental: changing the CPU voltage can make the device unstable, corrupt your data and permanently damage your device. Use it entirely at your own risk."
+msgstr "Expérimental : modifier la tension du CPU peut rendre l'appareil instable, corrompre vos données et endommager définitivement votre appareil. Utilisation entièrement à vos risques et périls."
+
+msgid "CPU voltage offset unavailable"
+msgstr "Décalage de tension CPU indisponible"
+
+msgid "Not available with this kernel (a mainline kernel of this release or later has it)."
+msgstr "Non disponible avec ce noyau (un noyau mainline de cette version ou d'une version ultérieure le propose)."
+
+msgid "Off: the stock voltages"
+msgstr "Désactivé : tensions d'origine"
+
+msgid "Changes at the next reboot"
+msgstr "Change au prochain redémarrage"
+
+msgid "Trial boot: kept once this boot has been up 10 minutes"
+msgstr "Démarrage d'essai : conservé une fois que ce démarrage a tourné 10 minutes"
+
+msgid "Kept: this offset passed its trial boot"
+msgstr "Conservé : ce décalage a réussi son démarrage d'essai"
+
+msgid "a boot with it ended without a clean shutdown"
+msgstr "un démarrage avec ce décalage s'est terminé sans arrêt propre"
+
+msgid "its trial boot ended before 10 minutes"
+msgstr "son démarrage d'essai s'est terminé avant 10 minutes"
+
+msgid "invalid value"
+msgstr "valeur non valide"
+
+msgid "unknown SoC firmware"
+msgstr "firmware SoC inconnu"
+
+msgid "refused by the kernel"
+msgstr "refusé par le noyau"
+
+msgid "the kernel could not start CPU scaling with it"
+msgstr "le noyau n'a pas pu lancer la gestion de fréquence du CPU avec ce décalage"
+
+msgid "Offsets in µV for the three CPU domains (cores 0-3, 4-6 and 7), in whole steps. A new offset takes effect at the next reboot, as a trial: it is kept once that boot has been up 10 minutes, and dropped (back to 0) if a boot with it ends in a crash, a watchdog reset or a power cut."
+msgstr "Décalages en µV pour les trois domaines CPU (cœurs 0-3, 4-6 et 7), par pas entiers. Un nouveau décalage prend effet au prochain redémarrage, à l'essai : il est conservé une fois que ce démarrage a tourné 10 minutes, et abandonné (retour à 0) si un démarrage avec lui se termine par un plantage, une réinitialisation par le watchdog ou une coupure de courant."
+
+msgid "Running now (µV)"
+msgstr "Actif maintenant (µV)"
+
+msgid "Saved for the next boot (µV)"
+msgstr "Enregistré pour le prochain démarrage (µV)"
+
+msgid "State"
+msgstr "État"
+
+msgid "Taken back automatically: %s µV (%s)"
+msgstr "Annulé automatiquement : %s µV (%s)"
+
+msgid "The SoC firmware of this device is not one whose voltage encoding is known: only the stock voltages are possible."
+msgstr "Le firmware SoC de cet appareil ne fait pas partie de ceux dont l'encodage de tension est connu : seules les tensions d'origine sont possibles."
+
+msgid "Domain"
+msgstr "Domaine"
+
+msgid "Offset now (µV)"
+msgstr "Décalage actuel (µV)"
+
+msgid "Highest step"
+msgstr "Palier le plus haut"
+
+msgid "New offset (µV)"
+msgstr "Nouveau décalage (µV)"
+
+msgid "Limits: %d to %d µV, in steps of %d µV."
+msgstr "Limites : %d à %d µV, par pas de %d µV."
+
+msgid "Save for the next boot"
+msgstr "Enregistrer pour le prochain démarrage"
+
+msgid "Each offset must be a multiple of %d µV between %d and %d."
+msgstr "Chaque décalage doit être un multiple de %d µV compris entre %d et %d."
+
+msgid "Type %s to confirm."
+msgstr "Saisissez %s pour confirmer."
+
+msgid "Back to the stock voltages"
+msgstr "Revenir aux tensions d'origine"
+
+msgid "Type %s to confirm:"
+msgstr "Saisissez %s pour confirmer :"
+
+msgid "Run a 10-minute CPU stress test"
+msgstr "Lancer un test de charge CPU de 10 minutes"
+
+msgid "Test a new offset under load during its trial boot. The device may crash if the voltage is too low; the next boot then runs at the stock voltages."
+msgstr "Testez un nouveau décalage sous charge pendant son démarrage d'essai. L'appareil peut planter si la tension est trop basse ; le démarrage suivant utilise alors les tensions d'origine."
+
+msgid "A stress test is running."
+msgstr "Un test de charge est en cours."
+
+msgid "USB role"
+msgstr "Rôle USB"
+
+msgid "Current role"
+msgstr "Rôle actuel"
+
+msgid "Switch USB role"
+msgstr "Changer le rôle USB"
+
+msgid "Device mode"
+msgstr "Mode périphérique"
+
+msgid "Host mode"
+msgstr "Mode hôte"
+
+msgid "Enable host mode at boot"
+msgstr "Activer le mode hôte au démarrage"
+
+msgid "Apply role"
+msgstr "Appliquer le rôle"
+
+msgid "Host mode disconnects USB networking and serial on this port. F50 has no battery; management may be lost and a USB adapter usually needs a powered hub."
+msgstr "Le mode hôte coupe le réseau USB et la liaison série sur ce port. Le F50 n'a pas de batterie ; l'accès de gestion peut être perdu et un adaptateur USB nécessite généralement un hub alimenté."
+
+msgid "USB network mode"
+msgstr "Mode réseau USB"
+
+msgid "Network protocol"
+msgstr "Protocole réseau"
+
+msgid "Apply duration"
+msgstr "Durée d'application"
+
+msgid "Next reboot only"
+msgstr "Prochain redémarrage uniquement"
+
+msgid "Permanent"
+msgstr "Permanent"
+
+msgid "Enable selected protocol"
+msgstr "Activer le protocole sélectionné"
+
+msgid "Save; apply after reboot"
+msgstr "Enregistrer ; appliquer après redémarrage"
+
+msgid "NCM is the default. Windows does not natively support ECM; RNDIS changes enumeration. With Enable selected protocol off, only your choice is saved. Next reboot only applies once, then returns to NCM."
+msgstr "NCM est la valeur par défaut. Windows ne prend pas en charge ECM nativement ; RNDIS modifie l'énumération. Si « Activer le protocole sélectionné » est désactivé, seul votre choix est enregistré. « Prochain redémarrage uniquement » s'applique une seule fois, puis revient à NCM."
+
+msgid "USB adapters"
+msgstr "Adaptateurs USB"
+
+msgid "Refresh"
+msgstr "Actualiser"
+
+msgid "Available only in host mode. Refresh brings discovered USB adapters up; adding to LAN saves the bridge and reloads networking."
+msgstr "Disponible uniquement en mode hôte. « Actualiser » active les adaptateurs USB détectés ; l'ajout au LAN enregistre le pont et recharge le réseau."
+
+msgid "Recent modem operations"
+msgstr "Opérations récentes du modem"
+
+msgid "Show"
+msgstr "Afficher"
+
+msgid "The control panel's recent calls, of this boot and the one before: when, which page call or AT command, how long it took and how it ended (ok, error, busy, killed). No values, replies or messages are kept. Useful when the panel was stuck."
+msgstr "Les appels récents du panneau de contrôle, de ce démarrage et du précédent : quand, quel appel de page ou quelle commande AT, combien de temps il a pris et comment il s'est terminé (ok, erreur, occupé, interrompu). Aucune valeur, réponse ni message n'est conservé. Utile quand le panneau s'est bloqué."
+
+msgid "Unavailable"
+msgstr "Indisponible"
+
+msgid "USB network mode is unavailable in host mode; host auto-start also disables USB network auto-start."
+msgstr "Le mode réseau USB est indisponible en mode hôte ; le démarrage automatique en mode hôte désactive aussi le démarrage automatique du réseau USB."
+
+msgid "Host mode immediately disconnects USB management. F50 has no battery and peripherals may need external power; make sure another management path exists."
+msgstr "Le mode hôte coupe immédiatement la gestion par USB. Le F50 n'a pas de batterie et les périphériques peuvent nécessiter une alimentation externe ; assurez-vous de disposer d'un autre accès de gestion."
+
+msgid "USB networking and serial will re-enumerate in device mode."
+msgstr "Le réseau USB et la liaison série seront ré-énumérés en mode périphérique."
+
+msgid "Switch USB role?"
+msgstr "Changer le rôle USB ?"
+
+msgid "Apply"
+msgstr "Appliquer"
+
+msgid "Switching USB role…"
+msgstr "Changement du rôle USB…"
+
+msgid "Switch failed: %s"
+msgstr "Échec du changement : %s"
+
+msgid "Management connection lost; reconnect to confirm the USB role."
+msgstr "Connexion de gestion perdue ; reconnectez-vous pour confirmer le rôle USB."
+
+msgid "Switch request accepted; the USB connection may briefly disconnect."
+msgstr "Demande de changement acceptée ; la connexion USB peut être brièvement interrompue."
+
+msgid "USB role applied"
+msgstr "Rôle USB appliqué"
+
+msgid "Save USB network mode?"
+msgstr "Enregistrer le mode réseau USB ?"
+
+msgid "The network mode applies on the next reboot; USB management may need to reconnect."
+msgstr "Le mode réseau s'applique au prochain redémarrage ; la gestion par USB devra peut-être se reconnecter."
+
+msgid "Save the selection only; with the selected protocol disabled, the next boot still uses default NCM."
+msgstr "Enregistrer uniquement la sélection ; le protocole sélectionné étant désactivé, le prochain démarrage utilisera toujours NCM par défaut."
+
+msgid "Save"
+msgstr "Enregistrer"
+
+msgid "Saving USB network settings…"
+msgstr "Enregistrement des paramètres réseau USB…"
+
+msgid "Settings saved"
+msgstr "Paramètres enregistrés"
+
+msgid "Save failed: %s"
+msgstr "Échec de l'enregistrement : %s"
+
+msgid "This boot"
+msgstr "Ce démarrage"
+
+msgid "Previous boot"
+msgstr "Démarrage précédent"
+
+msgid "Unable to confirm the role yet; reconnect and refresh the page."
+msgstr "Impossible de confirmer le rôle pour l'instant ; reconnectez-vous et actualisez la page."
+
+msgid "Switch to host mode to see USB adapters."
+msgstr "Passez en mode hôte pour voir les adaptateurs USB."
+
+msgid "Scanning USB adapters…"
+msgstr "Recherche des adaptateurs USB…"
+
+msgid "No USB adapters found."
+msgstr "Aucun adaptateur USB trouvé."
+
+msgid "Link connected"
+msgstr "Lien connecté"
+
+msgid "No link; enable attempted"
+msgstr "Pas de lien ; activation tentée"
+
+msgid "Added to LAN"
+msgstr "Ajouté au LAN"
+
+msgid "Add to LAN"
+msgstr "Ajouter au LAN"
+
+msgid "Add USB adapter to LAN?"
+msgstr "Ajouter l'adaptateur USB au LAN ?"
+
+msgid "This saves the bridge configuration and reloads networking; existing connections may briefly drop."
+msgstr "Cela enregistre la configuration du pont et recharge le réseau ; les connexions existantes peuvent être brièvement interrompues."
+
+msgid "Add"
+msgstr "Ajouter"
+
+msgid "Adding USB adapter…"
+msgstr "Ajout de l'adaptateur USB…"
+
+msgid "Add failed: %s"
+msgstr "Échec de l'ajout : %s"
+
+msgid "Leave empty to keep the saved value"
+msgstr "Laisser vide pour garder la valeur enregistrée"
+
+msgid "Saved: %s"
+msgstr "Enregistré : %s"
+
+msgid "Remove the saved value"
+msgstr "Supprimer la valeur enregistrée"
+
+msgid "Presets"
+msgstr "Préréglages"
+
+msgid "Form (URL-encoded)"
+msgstr "Formulaire (encodé URL)"
+
+msgid "Plain text"
+msgstr "Texte brut"
+
+msgid "Received messages are sent on as they reach the SMS pool. A failed delivery is retried after 30 s, then after twice as long each time (an hour at most), ten times in all."
+msgstr "Les messages reçus sont transférés dès qu'ils arrivent dans le pool SMS. Un envoi échoué est réessayé après 30 s, puis après un délai deux fois plus long à chaque fois (une heure au plus), dix fois en tout."
+
+msgid "Forward received messages"
+msgstr "Transférer les messages reçus"
+
+msgid "Message template"
+msgstr "Modèle de message"
+
+msgid "Placeholders: {sender}, {time}, {text}, {device}"
+msgstr "Variables : {sender}, {time}, {text}, {device}"
+
+msgid "Only these senders"
+msgstr "Seulement ces expéditeurs"
+
+msgid "One per line; empty: every sender. A * at the end matches the start of a sender."
+msgstr "Un par ligne ; vide : tous les expéditeurs. Un * à la fin correspond au début d'un expéditeur."
+
+msgid "Never these senders"
+msgstr "Jamais ces expéditeurs"
+
+msgid "Only messages containing one of these words"
+msgstr "Seulement les messages contenant l'un de ces mots"
+
+msgid "One per line; empty: every message."
+msgstr "Un par ligne ; vide : tous les messages."
+
+msgid "Webhook"
+msgstr "Webhook"
+
+msgid "Enabled"
+msgstr "Activée"
+
+msgid "Address (http:// or https://)"
+msgstr "Adresse (http:// ou https://)"
+
+msgid "Body"
+msgstr "Corps"
+
+msgid "Fields: sender, time, text, device, message (the template filled in)"
+msgstr "Champs : sender, time, text, device, message (le modèle rempli)"
+
+msgid "Custom body"
+msgstr "Corps personnalisé"
+
+msgid "Empty: the standard fields (plain text: the message). Placeholders: {sender}, {time}, {text}, {device}, {message}. Each value is escaped for the chosen type. This body is shown again here: keep secrets in the address or a header."
+msgstr "Vide : les champs standard (texte brut : le message). Variables : {sender}, {time}, {text}, {device}, {message}. Chaque valeur est échappée selon le type choisi. Ce corps est réaffiché ici : mettez les secrets dans l'adresse ou dans un en-tête."
+
+msgid "Extra headers (one \"Name: value\" per line)"
+msgstr "En-têtes supplémentaires (un \"Nom: valeur\" par ligne)"
+
+msgid "The answer must contain"
+msgstr "La réponse doit contenir"
+
+msgid "Empty: every HTTP 2xx answer counts as delivered. With key=value (for example errcode=0), the answer must also be a JSON object that has this value under this key at its top level; otherwise the delivery fails. Only the result of the check is logged, never the answer."
+msgstr "Vide : toute réponse HTTP 2xx compte comme un envoi réussi. Avec clé=valeur (par exemple errcode=0), la réponse doit en plus être un objet JSON qui porte cette valeur sous cette clé à son premier niveau ; sinon l’envoi échoue. Seul le résultat de la vérification est journalisé, jamais la réponse."
+
+msgid "Bot token"
+msgstr "Jeton du bot"
+
+msgid "Chat ID (a number, or @channel)"
+msgstr "ID du chat (un nombre ou @canal)"
+
+msgid "E-mail"
+msgstr "E-mail"
+
+msgid "E-mail needs msmtp, which this image does not have"
+msgstr "L'e-mail nécessite msmtp, absent de cette image"
+
+msgid "Mail server"
+msgstr "Serveur de messagerie"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Security"
+msgstr "Sécurité"
+
+msgid "None"
+msgstr "Aucune"
+
+msgid "User name"
+msgstr "Nom d'utilisateur"
+
+msgid "Password"
+msgstr "Mot de passe"
+
+msgid "From"
+msgstr "De"
+
+msgid "To"
+msgstr "À"
+
+msgid "SMS to another phone"
+msgstr "SMS vers un autre téléphone"
+
+msgid "Phone number"
+msgstr "Numéro de téléphone"
+
+msgid "Sent as one SMS: a longer message is cut short."
+msgstr "Envoyé en un seul SMS : un message plus long est tronqué."
+
+msgid "Send test"
+msgstr "Envoyer un test"
+
+msgid "Tokens, passwords and the webhook address and headers stay on the device and are never shown again."
+msgstr "Les jetons, les mots de passe ainsi que l'adresse et les en-têtes du webhook restent sur l'appareil et ne sont plus jamais affichés."
+
+msgid "Delivered"
+msgstr "Livré"
+
+msgid "Will retry"
+msgstr "Nouvel essai prévu"
+
+msgid "Failed"
+msgstr "Échec"
+
+msgid "Filtered out"
+msgstr "Filtré"
+
+msgid "Dropped"
+msgstr "Abandonné"
+
+msgid "Clear"
+msgstr "Vider"
+
+msgid "Test"
+msgstr "Test"
+
+msgid "Delivery log"
+msgstr "Journal des envois"
+
+msgid "Waiting to be delivered"
+msgstr "En attente d'envoi"
+
+msgid "Time"
+msgstr "Heure"
+
+msgid "Message"
+msgstr "Message"
+
+msgid "Target"
+msgstr "Cible"
+
+msgid "Result"
+msgstr "Résultat"
+
+msgid "Detail"
+msgstr "Détail"
+
+msgid "No deliveries yet"
+msgstr "Aucun envoi pour l'instant"
+
+msgid "Test started with the saved settings; the result appears in the delivery log."
+msgstr "Test lancé avec les paramètres enregistrés ; le résultat apparaît dans le journal des envois."
+
+msgid "Automatic without 2G (152)"
+msgstr "Automatique sans 2G (152)"
+
+msgid "4G only"
+msgstr "4G uniquement"
+
+msgid "Network mode: %s"
+msgstr "Mode réseau : %s"
+
+msgid "EN-DC off"
+msgstr "EN-DC désactivé"
+
+msgid "NR band lock: %s"
+msgstr "Verrouillage de bandes NR : %s"
+
+msgid "LTE band lock: %s"
+msgstr "Verrouillage de bandes LTE : %s"
+
+msgid "Cell lock: %s"
+msgstr "Verrouillage de cellule : %s"
+
+msgid "Modulation DL/UL"
+msgstr "Modulation DL/UL"
+
+msgid "Estimated from current MCS"
+msgstr "Estimée à partir du MCS actuel"
+
+msgid "MCS DL/UL"
+msgstr "MCS DL/UL"
+
+msgid "BLER DL/UL"
+msgstr "BLER DL/UL"
+
+msgid "%s of %s"
+msgstr "%s sur %s"
+
+msgid "The monthly cap is reached"
+msgstr "Le plafond mensuel est atteint"
+
+msgid "%d%% of the monthly cap is used"
+msgstr "%d%% du plafond mensuel utilisé"
+
+msgid "This billing cycle"
+msgstr "Cette période de facturation"
+
+msgid "Link & traffic"
+msgstr "Liaison et trafic"
+
+msgid "Download rate"
+msgstr "Débit descendant"
+
+msgid "Upload rate"
+msgstr "Débit montant"
+
+msgid "Total received"
+msgstr "Total reçu"
+
+msgid "Total sent"
+msgstr "Total envoyé"
+
+msgid "Used today"
+msgstr "Utilisé aujourd'hui"
+
+msgid "SIM source"
+msgstr "Source SIM"
+
+msgid "Session duration"
+msgstr "Durée de la session"
+
+msgid "Registration"
+msgstr "Enregistrement"
+
+msgid "Data roaming"
+msgstr "Itinérance des données"
+
+msgid "Bandwidth"
+msgstr "Bande passante"
+
+msgid "AMBR DL/UL"
+msgstr "AMBR DL/UL"
+
+msgid "Wi-Fi · LAN · Device · SIM"
+msgstr "Wi-Fi · LAN · Appareil · SIM"
+
+msgid "CPU usage"
+msgstr "Utilisation du CPU"
+
+msgid "Memory"
+msgstr "Mémoire"
+
+msgid "Storage"
+msgstr "Stockage"
+
+msgid "Battery"
+msgstr "Batterie"
+
+msgid "Channel"
+msgstr "Canal"
+
+msgid "Encryption"
+msgstr "Chiffrement"
+
+msgid "Hidden SSID"
+msgstr "SSID masqué"
+
+msgid "Country"
+msgstr "Pays"
+
+msgid "AP status"
+msgstr "État du point d'accès"
+
+msgid "USB network"
+msgstr "Réseau USB"
+
+msgid "Connection tracking"
+msgstr "Suivi des connexions"
+
+msgid "LAN address"
+msgstr "Adresse LAN"
+
+msgid "Wi-Fi clients"
+msgstr "Clients Wi-Fi"
+
+msgid "DHCP leases"
+msgstr "Baux DHCP"
+
+msgid "Device model"
+msgstr "Modèle de l'appareil"
+
+msgid "System"
+msgstr "Système"
+
+msgid "Modem"
+msgstr "Modem"
+
+msgid "Carrier"
+msgstr "Opérateur"
+
+msgid "Own number"
+msgstr "Numéro propre"
+
+msgid "Module"
+msgstr "Module"
+
+msgid "Firmware"
+msgstr "Micrologiciel"
+
+msgid "Show SIM identifiers"
+msgstr "Afficher les identifiants SIM"
+
+msgid "Quick controls"
+msgstr "Commandes rapides"
+
+msgid "Data connection"
+msgstr "Connexion de données"
+
+msgid "Cellular radio"
+msgstr "Radio cellulaire"
+
+msgid "Wi-Fi hotspot"
+msgstr "Point d'accès Wi-Fi"
+
+msgid "Restart modem"
+msgstr "Redémarrer le modem"
+
+msgid "Power off or restart"
+msgstr "Éteindre ou redémarrer"
+
+msgid "Switch to Android"
+msgstr "Basculer vers Android"
+
+msgid "Lock Linux"
+msgstr "Verrouiller Linux"
+
+msgid "Neighbor cells"
+msgstr "Cellules voisines"
+
+msgid "RAT/Band"
+msgstr "RAT/Bande"
+
+msgid "Frequency"
+msgstr "Fréquence"
+
+msgid "Running %s…"
+msgstr "Exécution de %s…"
+
+msgid "Started in background: %s"
+msgstr "Lancé en arrière-plan : %s"
+
+msgid "Done: %s"
+msgstr "Terminé : %s"
+
+msgid "Disconnecting data…"
+msgstr "Déconnexion des données…"
+
+msgid "Connecting data…"
+msgstr "Connexion des données…"
+
+msgid "Turn off cellular radio"
+msgstr "Désactiver la radio cellulaire"
+
+msgid "This SIM will have no calls, SMS or data, and its radio stays off after a reboot until you turn it on again."
+msgstr "Cette SIM n'aura ni appels, ni SMS, ni données, et sa radio reste éteinte après un redémarrage jusqu'à ce que vous la rallumiez."
+
+msgid "Turn on cellular radio"
+msgstr "Activer la radio cellulaire"
+
+msgid "The radio of the SIM in use comes on and stays on after a reboot (up to about 1 minute)."
+msgstr "La radio de la SIM utilisée s'allume et reste allumée après un redémarrage (jusqu'à environ 1 minute)."
+
+msgid "Turn data roaming off"
+msgstr "Désactiver l'itinérance des données"
+
+msgid "While the SIM is registered on a roaming network, mobile data stays off; SMS, calls and the registration are not affected. Some SIMs report roaming at home (an MVNO, national roaming): there, data would stop as well."
+msgstr "Tant que la SIM est enregistrée sur un réseau en itinérance, les données mobiles restent coupées ; les SMS, les appels et l'enregistrement ne sont pas affectés. Certaines SIM signalent l'itinérance même chez elles (un MVNO, l'itinérance nationale) : là aussi, les données s'arrêteraient."
+
+msgid "Allow data roaming"
+msgstr "Autoriser l'itinérance des données"
+
+msgid "Mobile data is used on roaming networks too, which can cost extra. Some SIMs report roaming at home (an MVNO, national roaming) and need this to have data at all."
+msgstr "Les données mobiles sont aussi utilisées sur les réseaux en itinérance, ce qui peut coûter plus cher. Certaines SIM signalent l'itinérance même chez elles (un MVNO, l'itinérance nationale) et en ont besoin pour avoir des données."
+
+msgid "Cellular connectivity may stop for 1–2 minutes."
+msgstr "La connectivité cellulaire peut s'interrompre pendant 1 à 2 minutes."
+
+msgid "All connections will be interrupted."
+msgstr "Toutes les connexions seront interrompues."
+
+msgid "Power off"
+msgstr "Éteindre"
+
+msgid "Restart"
+msgstr "Redémarrer"
+
+msgid "The next boot will enter Android and reboot now. This management page and cellular sharing will disconnect."
+msgstr "Le prochain démarrage se fera sous Android et l'appareil redémarre maintenant. Cette page de gestion et le partage cellulaire seront déconnectés."
+
+msgid "To return to OpenWrt, run mu300-next-boot linux in Android and reboot."
+msgstr "Pour revenir à OpenWrt, exécutez mu300-next-boot linux dans Android puis redémarrez."
+
+msgid "Or do nothing: after five boots that do not finish, it falls back automatically."
+msgstr "Ou ne faites rien : après cinq démarrages inachevés, le retour se fait automatiquement."
+
+msgid "Preparing Android boot and rebooting…"
+msgstr "Préparation du démarrage Android et redémarrage…"
+
+msgid "Switch and reboot"
+msgstr "Basculer et redémarrer"
+
+msgid "Not automatic: %s. The network mode and band locks are stored in the modem and stay in force in Android too; if the network does not match them, Android shows No Service."
+msgstr "Pas en automatique : %s. Le mode réseau et les verrouillages de bandes sont enregistrés dans le modem et restent actifs sous Android ; si le réseau ne leur correspond pas, Android affiche « Aucun service »."
+
+msgid "Reset locks and switch"
+msgstr "Réinitialiser les verrouillages et basculer"
+
+msgid "Unlock Linux"
+msgstr "Déverrouiller Linux"
+
+msgid "After five boots in a row that do not finish, the device falls back to Android again."
+msgstr "Après cinq démarrages consécutifs inachevés, l'appareil revient à nouveau sur Android."
+
+msgid "Unlock"
+msgstr "Déverrouiller"
+
+msgid "The device will never switch to Android by itself, not even after failed boots: Android only from this page (Switch to Android) or with mu300-next-boot android."
+msgstr "L'appareil ne basculera jamais de lui-même vers Android, même après des démarrages ratés : Android uniquement depuis cette page (Passer à Android) ou avec mu300-next-boot android."
+
+msgid "A new kernel from an update still gets its first boots on trial, and locks again once one of them succeeds."
+msgstr "Un nouveau noyau issu d'une mise à jour démarre d'abord à l'essai, puis se verrouille à nouveau dès qu'un démarrage réussit."
+
+msgid "If the system itself no longer starts, the device waits on USB (telnet) instead of going to Android."
+msgstr "Si le système lui-même ne démarre plus, l'appareil attend sur USB (telnet) au lieu de passer à Android."
+
+msgid "Hide SIM identifiers"
+msgstr "Masquer les identifiants SIM"
+
+msgid "Lock cell %s?"
+msgstr "Verrouiller la cellule %s ?"
+
+msgid "The radio stack will restart (SFUN); cellular service will stop for about 30 seconds."
+msgstr "La pile radio va redémarrer (SFUN) ; le service cellulaire sera interrompu pendant environ 30 secondes."
+
+msgid "Locking %s in the background, about 30 seconds"
+msgstr "Verrouillage de %s en arrière-plan, environ 30 secondes"
+
+msgid "Locked %s in the background; the status will refresh shortly"
+msgstr "%s verrouillée en arrière-plan ; l'état sera bientôt actualisé"
+
+msgid "Lock failed: %s"
+msgstr "Échec du verrouillage : %s"
+
+msgid "Resetting the network locks to automatic (SFUN restart, about 30 seconds)…"
+msgstr "Réinitialisation des verrouillages réseau en automatique (redémarrage SFUN, environ 30 secondes)…"
+
+msgid "Reset failed: %s. The saved lock settings were kept."
+msgstr "Échec de la réinitialisation : %s. Les réglages de verrouillage enregistrés ont été conservés."
+
+msgid "The lock reset was not confirmed in time; switching anyway."
+msgstr "La réinitialisation des verrouillages n'a pas été confirmée à temps ; bascule quand même."
+
+msgid "Internal SIM selected: in use after a reboot"
+msgstr "SIM interne sélectionnée : utilisée après un redémarrage"
+
+msgid "Internal SIM selected, but not supported on this device: the external SIM is in use"
+msgstr "SIM interne sélectionnée, mais non prise en charge sur cet appareil : la SIM externe est utilisée"
+
+msgid "Uptime %s"
+msgstr "Disponibilité %s"
+
+msgid "Radio off"
+msgstr "Radio désactivée"
+
+msgid "No response"
+msgstr "Pas de réponse"
+
+msgid "Modem busy: cellular readings from %s ago"
+msgstr "Modem occupé : mesures cellulaires d'il y a %s"
+
+msgid "%s · Signal %s %s/10"
+msgstr "%s · Signal %s %s/10"
+
+msgid "%s · Signal %s"
+msgstr "%s · Signal %s"
+
+msgid "Anchor B%s"
+msgstr "Ancre B%s"
+
+msgid "No serving cell"
+msgstr "Aucune cellule de service"
+
+msgid "Version %s is out: update"
+msgstr "La version %s est sortie : mettre à jour"
+
+msgid "Not registered"
+msgstr "Non enregistré"
+
+msgid "Registered"
+msgstr "Enregistré"
+
+msgid "Searching"
+msgstr "Recherche"
+
+msgid "Registration denied"
+msgstr "Enregistrement refusé"
+
+msgid "Registered (roaming)"
+msgstr "Enregistré (itinérance)"
+
+msgid "Emergency only"
+msgstr "Urgence uniquement"
+
+msgid "Status %s"
+msgstr "État %s"
+
+msgid "Off: data held back while roaming"
+msgstr "Désactivée : données suspendues en itinérance"
+
+msgid "Allowed"
+msgstr "Autorisée"
+
+msgid "Off"
+msgstr "Désactivé"
+
+msgid "LTE anchor"
+msgstr "Ancre LTE"
+
+msgid "LTE link"
+msgstr "Liaison LTE"
+
+msgid "Hidden"
+msgstr "Masqué"
+
+msgid "No"
+msgstr "Non"
+
+msgid "Running"
+msgstr "En cours d'exécution"
+
+msgid "Not running"
+msgstr "Arrêté"
+
+msgid "Connected"
+msgstr "Connecté"
+
+msgid "Disconnected"
+msgstr "Déconnecté"
+
+msgid "%s entries"
+msgstr "%s entrées"
+
+msgid "%s clients"
+msgstr "%s clients"
+
+msgid "Recent DHCP leases"
+msgstr "Baux DHCP récents"
+
+msgid "Board"
+msgstr "Carte"
+
+msgid "No temperature readings"
+msgstr "Aucune mesure de température"
+
+msgid "Cluster %d"
+msgstr "Cluster %d"
+
+msgid "Total %s · free %s"
+msgstr "Total %s · libre %s"
+
+msgid "charging %s W"
+msgstr "en charge à %s W"
+
+msgid "charging"
+msgstr "en charge"
+
+msgid "drawing %s W"
+msgstr "consomme %s W"
+
+msgid "not charging"
+msgstr "pas en charge"
+
+msgid "on battery"
+msgstr "sur batterie"
+
+msgid "full"
+msgstr "pleine"
+
+msgid "USB in %s W"
+msgstr "entrée USB %s W"
+
+msgid "Online"
+msgstr "En ligne"
+
+msgid "AT adapter unavailable"
+msgstr "Adaptateur AT indisponible"
+
+msgid "Linux locked"
+msgstr "Linux verrouillé"
+
+msgid "Installing the language pack…"
+msgstr "Installation du pack de langues…"
+
+msgid "The language pack is installed"
+msgstr "Le pack de langues est installé"
+
+msgid "The language pack could not be installed"
+msgstr "Impossible d'installer le pack de langues"
+
+msgid "Language of the browser"
+msgstr "Langue du navigateur"
+
+msgid "Language of the web interface"
+msgstr "Langue de l'interface web"
+
+msgid "English, Turkish and Chinese come with the system; the language pack adds the others."
+msgstr "L'anglais, le turc et le chinois sont fournis avec le système ; le pack de langues ajoute les autres."
+
+msgid "The same setting is in System > System > Language and Style."
+msgstr "Le même réglage se trouve dans Système > Système > Langue et apparence."
+
+msgid "Language pack"
+msgstr "Pack de langues"
+
+msgid "The language pack (mu300-extra-lang.tar.gz, about 2 MB) adds LuCI in about 40 more languages and this panel in 29 of them. Download it from the release of this system, or upload the file from the release page when the device has no internet."
+msgstr "Le pack de langues (mu300-extra-lang.tar.gz, environ 2 Mo) ajoute LuCI dans environ 40 langues supplémentaires et ce panneau dans 29 d'entre elles. Téléchargez-le depuis la version publiée de ce système, ou envoyez le fichier récupéré sur la page de la version si l'appareil n'a pas d'accès à Internet."
+
+msgid "Download from the release"
+msgstr "Télécharger depuis la version"
+
+msgid "Release"
+msgstr "Version"
+
+msgid "Enable all"
+msgstr "Tout activer"
+
+msgid "Disable all"
+msgstr "Tout désactiver"
+
+msgid "Remove the language pack"
+msgstr "Supprimer le pack de langues"
+
+msgid "Remove the language pack?"
+msgstr "Supprimer le pack de langues ?"
+
+msgid "Its languages disappear from the list; a page in one of them switches to English."
+msgstr "Ses langues disparaissent de la liste ; une page affichée dans l'une d'elles passe en anglais."
+
+msgid "Remove"
+msgstr "Supprimer"
+
+msgid "Disable"
+msgstr "Désactiver"
+
+msgid "Enable"
+msgstr "Activer"
+
+msgid "LuCI and this panel"
+msgstr "LuCI et ce panneau"
+
+msgid "LuCI only"
+msgstr "LuCI uniquement"
+
+msgid "Disabled"
+msgstr "Désactivée"
+
+msgid "Language"
+msgstr "Langue"
+
+msgid "Code"
+msgstr "Code"
+
+msgid "Translated"
+msgstr "Traduit"
+
+msgid "LuCI's own translations come from OpenWrt. This panel's translations other than Turkish and Chinese are machine (AI) translations; corrections are welcome."
+msgstr "Les traductions propres à LuCI proviennent d'OpenWrt. Les traductions de ce panneau, hors turc et chinois, sont des traductions automatiques (IA) ; les corrections sont les bienvenues."
+
+msgid "Automatic"
+msgstr "Automatique"
+
+msgid "Serving network"
+msgstr "Réseau de service"
+
+msgid "Network mode · EN-DC"
+msgstr "Mode réseau · EN-DC"
+
+msgid "Refresh lock status"
+msgstr "Actualiser l'état des verrouillages"
+
+msgid "Apply at startup"
+msgstr "Appliquer au démarrage"
+
+msgid "Turning this off only stops replay at the next boot; saved network mode, EN-DC, band and cell settings remain."
+msgstr "Désactiver cette option arrête seulement la réapplication au prochain démarrage ; les réglages enregistrés de mode réseau, EN-DC, bandes et cellules sont conservés."
+
+msgid "Band locking"
+msgstr "Verrouillage de bandes"
+
+msgid "NR bands"
+msgstr "Bandes NR"
+
+msgid "LTE bands"
+msgstr "Bandes LTE"
+
+msgid "Apply NR bands"
+msgstr "Appliquer les bandes NR"
+
+msgid "Apply LTE bands"
+msgstr "Appliquer les bandes LTE"
+
+msgid "Neighbor cells and cell locking"
+msgstr "Cellules voisines et verrouillage de cellule"
+
+msgid "Lock current serving cell"
+msgstr "Verrouiller la cellule de service actuelle"
+
+msgid "Unlock cell"
+msgstr "Déverrouiller la cellule"
+
+msgid "Enter a cell"
+msgstr "Saisir une cellule"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Channel number (EARFCN / NR-ARFCN)"
+msgstr "Numéro de canal (EARFCN / NR-ARFCN)"
+
+msgid "Lock this cell"
+msgstr "Verrouiller cette cellule"
+
+msgid "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. A channel number, not a frequency in MHz; the cell need not be in the neighbor list."
+msgstr "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. Un numéro de canal, pas une fréquence en MHz ; la cellule n’a pas besoin de figurer dans la liste des voisines."
+
+msgid "Applying restarts the radio stack (SFUN) and briefly interrupts cellular service. Settings are saved and replayed by the plugin after AT is ready when Apply at startup is enabled. A platform pre-radio hook can replay without a restart. Apply with no bands selected to restore automatic mode."
+msgstr "L'application redémarre la pile radio (SFUN) et interrompt brièvement le service cellulaire. Les réglages sont enregistrés et réappliqués par le plugin une fois AT prêt lorsque « Appliquer au démarrage » est activé. Un hook de plateforme exécuté avant la radio peut les réappliquer sans redémarrage. Appliquer sans aucune bande sélectionnée rétablit le mode automatique."
+
+msgid "Back to automatic"
+msgstr "Retour en automatique"
+
+msgid "The network mode and band locks are stored in the modem and stay in force in Android too. If you are not sure, reset them before switching to Android."
+msgstr "Le mode réseau et les verrouillages de bandes sont enregistrés dans le modem et restent actifs sous Android. En cas de doute, réinitialisez-les avant de passer à Android."
+
+msgid "Reset all to automatic"
+msgstr "Tout réinitialiser en automatique"
+
+msgid "Apply “%s”?"
+msgstr "Appliquer « %s » ?"
+
+msgid "Applying %s in the background…"
+msgstr "Application de %s en arrière-plan…"
+
+msgid "Applying %s in the background… (SFUN restart and re-registration, about 30 seconds)"
+msgstr "Application de %s en arrière-plan… (redémarrage SFUN et réenregistrement, environ 30 secondes)"
+
+msgid "Queued: another lock is being applied during SFUN restart; this will take effect afterward"
+msgstr "En file d'attente : un autre verrouillage est en cours d'application pendant le redémarrage SFUN ; celui-ci prendra effet ensuite"
+
+msgid "Confirming the EN-DC status…"
+msgstr "Confirmation de l'état EN-DC…"
+
+msgid "Confirming apply at startup…"
+msgstr "Confirmation de l'application au démarrage…"
+
+msgid "Started in background: %s (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Lancé en arrière-plan : %s (redémarrage SFUN, environ 30 secondes) ; relecture de l'état…"
+
+msgid "Disable EN-DC (NSA anchor)"
+msgstr "Désactiver EN-DC (ancre NSA)"
+
+msgid "Enable EN-DC (NSA anchor)"
+msgstr "Activer EN-DC (ancre NSA)"
+
+msgid "Disable apply at startup"
+msgstr "Désactiver l'application au démarrage"
+
+msgid "Enable apply at startup"
+msgstr "Activer l'application au démarrage"
+
+msgid "Reading the modem directly (a few seconds at most)…"
+msgstr "Lecture directe du modem (quelques secondes au maximum)…"
+
+msgid "Refresh failed"
+msgstr "Échec de l'actualisation"
+
+msgid "Refreshed"
+msgstr "Actualisé"
+
+msgid "NR bands: back to automatic"
+msgstr "Bandes NR : retour en automatique"
+
+msgid "LTE bands: back to automatic"
+msgstr "Bandes LTE : retour en automatique"
+
+msgid "Network mode automatic, EN-DC on, all LTE and NR bands, no cell lock. The saved lock settings are cleared, so nothing is replayed at startup."
+msgstr "Mode réseau automatique, EN-DC activé, toutes les bandes LTE et NR, aucun verrouillage de cellule. Les réglages enregistrés sont effacés : rien n'est réappliqué au démarrage."
+
+msgid "Reset"
+msgstr "Réinitialiser"
+
+msgid "Remove the %s cell lock"
+msgstr "Supprimer le verrouillage de cellule %s"
+
+msgid "The radio stack will restart (SFUN), taking about 30 seconds."
+msgstr "La pile radio va redémarrer (SFUN), ce qui prend environ 30 secondes."
+
+msgid "Removing the %s cell lock…"
+msgstr "Suppression du verrouillage de cellule %s…"
+
+msgid "Unlock failed: %s"
+msgstr "Échec du déverrouillage : %s"
+
+msgid "Unlock started in background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Déverrouillage lancé en arrière-plan (redémarrage SFUN, environ 30 secondes) ; relecture de l'état…"
+
+msgid "Locking %s in the background…"
+msgstr "Verrouillage de %s en arrière-plan…"
+
+msgid "Locked %s in the background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "%s verrouillée en arrière-plan (redémarrage SFUN, environ 30 secondes) ; relecture de l'état…"
+
+msgid "Enter a channel number and a PCI in the ranges below"
+msgstr "Saisissez un numéro de canal et un PCI dans les plages ci-dessous"
+
+msgid "No serving-network data"
+msgstr "Aucune donnée de réseau de service"
+
+msgid "NR serving cell"
+msgstr "Cellule de service NR"
+
+msgid "Status confirmed"
+msgstr "État confirmé"
+
+msgid "Readback timed out; select “Refresh lock status”"
+msgstr "Délai de relecture dépassé ; sélectionnez « Actualiser l'état des verrouillages »"
+
+msgid "Reset verified: network mode automatic, EN-DC on, all bands, no cell lock; the saved lock settings are cleared"
+msgstr "Réinitialisation vérifiée : mode réseau automatique, EN-DC activé, toutes les bandes, aucun verrouillage de cellule ; les réglages de verrouillage enregistrés sont effacés"
+
+msgid "Applied (EN-DC does not require a radio-stack restart)"
+msgstr "Appliqué (EN-DC ne nécessite pas de redémarrage de la pile radio)"
+
+msgid "Apply at startup is on"
+msgstr "L'application au démarrage est activée"
+
+msgid "Apply at startup is off"
+msgstr "L'application au démarrage est désactivée"
+
+msgid "EN-DC status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Délai de relecture de l'état EN-DC dépassé ; utilisez « Actualiser l'état des verrouillages » pour confirmer"
+
+msgid "Apply-at-startup status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Délai de relecture de l'application au démarrage dépassé ; utilisez « Actualiser l'état des verrouillages » pour confirmer"
+
+msgid "Locked cells"
+msgstr "Cellules verrouillées"
+
+msgid "Unlock %s"
+msgstr "Déverrouiller %s"
+
+msgid "Automatic (%d supported)"
+msgstr "Automatique (%d prises en charge)"
+
+msgid "%d locked: %s"
+msgstr "%d verrouillées : %s"
+
+msgid "Repair DNS?"
+msgstr "Réparer le DNS ?"
+
+msgid "This removes the DNS forwarder of a package that is no longer installed. If no other DNS server is left, the device then uses the DNS servers of the mobile connection: the carrier sees the names you look up, outside any proxy or VPN."
+msgstr "Cela supprime le transfert DNS d'un paquet qui n'est plus installé. S'il ne reste aucun autre serveur DNS, l'appareil utilise alors les serveurs DNS de la connexion mobile : l'opérateur voit les noms que vous consultez, hors de tout proxy ou VPN."
+
+msgid "Repair DNS"
+msgstr "Réparer le DNS"
+
+msgid "Packages installed on the device are not part of a release image. An update writes them down, and the new system installs them again at its first boot, once it is online. Until a package is back its settings are set aside."
+msgstr "Les paquets installés sur l'appareil ne font pas partie de l'image de version. Une mise à jour les note, et le nouveau système les réinstalle à son premier démarrage, une fois en ligne. Tant qu'un paquet n'est pas revenu, ses réglages sont mis de côté."
+
+msgid "No packages to install again."
+msgstr "Aucun paquet à réinstaller."
+
+msgid "All back"
+msgstr "Tous revenus"
+
+msgid "Not installed yet"
+msgstr "Pas encore installé"
+
+msgid "Could not be installed again"
+msgstr "Réinstallation impossible"
+
+msgid "Waiting for the internet"
+msgstr "En attente d'Internet"
+
+msgid "Given up: no internet at five boots"
+msgstr "Abandonné : pas d'Internet en cinq démarrages"
+
+msgid "Skipped"
+msgstr "Ignoré"
+
+msgid "Written down by the update from %s"
+msgstr "Noté par la mise à jour depuis %s"
+
+msgid "Installed again"
+msgstr "Réinstallés"
+
+msgid "Install them yourself from where you got them (a package file: apk add --allow-untrusted FILE.apk)."
+msgstr "Installez-les vous-même depuis leur source (un fichier de paquet : apk add --allow-untrusted FILE.apk)."
+
+msgid "Settings set aside in /etc/mu300/orphaned-config"
+msgstr "Réglages mis de côté dans /etc/mu300/orphaned-config"
+
+msgid "DNS still goes to a package that is not installed: the device has no DNS through it."
+msgstr "Le DNS va encore vers un paquet non installé : l'appareil n'a pas de DNS par ce biais."
+
+msgid "Try again"
+msgstr "Réessayer"
+
+msgid "Dismiss the note"
+msgstr "Masquer la note"
+
+msgid "started"
+msgstr "démarré"
+
+msgid "asleep now (asked)"
+msgstr "veille immédiate (demandée)"
+
+msgid "woken: power daemon stopping"
+msgstr "réveillé : arrêt du service d'énergie"
+
+msgid "woken by a key"
+msgstr "réveillé par une touche"
+
+msgid "woken by the Wi-Fi key"
+msgstr "réveillé par la touche Wi-Fi"
+
+msgid "woken (mu300-power wake)"
+msgstr "réveillé (mu300-power wake)"
+
+msgid "woken by a computer on USB"
+msgstr "réveillé par un ordinateur en USB"
+
+msgid "woken: plugged in"
+msgstr "réveillé : branché sur secteur"
+
+msgid "woken by a Wi-Fi client"
+msgstr "réveillé par un client Wi-Fi"
+
+msgid "charging boot (powered on by the charger)"
+msgstr "démarrage en charge (allumé par le chargeur)"
+
+msgid "the hotspot is down"
+msgstr "le point d'accès est arrêté"
+
+msgid "the VPN is still stopped"
+msgstr "le VPN est toujours arrêté"
+
+msgid "5G (EN-DC) is still off after a failed resume"
+msgstr "la 5G (EN-DC) est toujours coupée après une reprise ratée"
+
+msgid "self-check: %s"
+msgstr "auto-vérification : %s"
+
+msgid "asleep: no client for %d min (%s)"
+msgstr "en veille : aucun client depuis %d min (%s)"
+
+msgid "asleep: profile now %s"
+msgstr "en veille : profil désormais %s"
+
+msgid "woken by the %s key"
+msgstr "réveillé par la touche %s"
+
+msgid "the modem is suspended (%s)"
+msgstr "le modem est suspendu (%s)"
+
+msgid "Enter a whole number from 0 to %d"
+msgstr "Saisissez un nombre entier de 0 à %d"
+
+msgid "Power status unavailable"
+msgstr "État de l'alimentation indisponible"
+
+msgid "Plugged in"
+msgstr "Branché"
+
+msgid "On battery"
+msgstr "Sur batterie"
+
+msgid "Saver"
+msgstr "Économie"
+
+msgid "Asleep: hotspot off"
+msgstr "En veille : point d'accès éteint"
+
+msgid "Charging boot: press the Wi-Fi key to start"
+msgstr "Démarrage en charge : appuyez sur la touche Wi-Fi pour démarrer"
+
+msgid "Awake"
+msgstr "Éveillé"
+
+msgid "forced"
+msgstr "forcé"
+
+msgid "automatic, battery under %d %%"
+msgstr "automatique, batterie sous %d %%"
+
+msgid "automatic"
+msgstr "automatique"
+
+msgid "Nobody connected for %d s"
+msgstr "Personne n'est connecté depuis %d s"
+
+msgid "Power source"
+msgstr "Source d'alimentation"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Profile in use: %s (%s)"
+msgstr "Profil utilisé : %s (%s)"
+
+msgid "%d %%, %s, %d mV, %d mA, %.1f °C"
+msgstr "%d %%, %s, %d mV, %d mA, %.1f °C"
+
+msgid "Charger"
+msgstr "Chargeur"
+
+msgid "Charger: %s, %s port"
+msgstr "Chargeur : %s, port %s"
+
+msgid "Charging paused: battery temperature"
+msgstr "Charge suspendue : température de la batterie"
+
+msgid "Charging paused: charge limit"
+msgstr "Charge suspendue : limite de charge"
+
+msgid "Sleep now"
+msgstr "Mettre en veille"
+
+msgid "Wake"
+msgstr "Réveiller"
+
+msgid "Nobody connected means no Wi-Fi client and no computer on USB. The Wi-Fi key, a computer on USB or the charger wake the device."
+msgstr "Personne connecté signifie aucun client Wi-Fi et aucun ordinateur sur l'USB. La touche Wi-Fi, un ordinateur sur l'USB ou le chargeur réveillent l'appareil."
+
+msgid "Automatic: plugged in / on battery"
+msgstr "Automatique : branché / sur batterie"
+
+msgid "Switch to Saver under %"
+msgstr "Passer en économie sous %"
+
+msgid "Stop charging at"
+msgstr "Arrêter la charge à"
+
+msgid "0 % never charges the battery (the device runs on the charger), 100 % charges it full; in between, charging stops at that level and starts again 5 points lower. Under 5 % the battery always charges."
+msgstr "0 % ne charge jamais la batterie (l'appareil fonctionne sur le chargeur), 100 % la charge complètement ; entre les deux, la charge s'arrête à ce niveau et reprend 5 points plus bas. En dessous de 5 %, la batterie se charge toujours."
+
+msgid "80 % keeps the battery healthier on a device that stays plugged in."
+msgstr "80 % préservent mieux la batterie d'un appareil qui reste branché."
+
+msgid "When the charger switches the device on"
+msgstr "Quand le chargeur allume l'appareil"
+
+msgid "Charge only, until a key starts it"
+msgstr "Charge seule, jusqu'à ce qu'une touche le démarre"
+
+msgid "Start normally"
+msgstr "Démarrer normalement"
+
+msgid "Keep as is"
+msgstr "Laisser tel quel"
+
+msgid "LTE only (5G off)"
+msgstr "LTE seul (5G désactivée)"
+
+msgid "On"
+msgstr "Activé"
+
+msgid "Full"
+msgstr "Complet"
+
+msgid "Eco: big core off"
+msgstr "Éco : gros cœur désactivé"
+
+msgid "Hotspot off after (min, 0 = never)"
+msgstr "Point d'accès éteint après (min, 0 = jamais)"
+
+msgid "Modem when idle"
+msgstr "Modem au repos"
+
+msgid "LEDs when idle"
+msgstr "LED au repos"
+
+msgid "Ignored lines in power.conf: %s"
+msgstr "Lignes ignorées dans power.conf : %s"
+
+msgid "Configure how this plugin connects to the current Unisoc OpenWrt platform. Changes do not require editing the dashboard, AT, locks or SMS pages."
+msgstr "Configurer la façon dont ce plugin se connecte à la plateforme OpenWrt Unisoc actuelle. Les modifications ne nécessitent pas de modifier les pages tableau de bord, AT, verrouillages ou SMS."
+
+msgid "Platform adapter"
+msgstr "Adaptateur de plateforme"
+
+msgid "AT backend"
+msgstr "Backend AT"
+
+msgid "Auto-detect"
+msgstr "Détection automatique"
+
+msgid "atinout + serial port"
+msgstr "atinout + port série"
+
+msgid "Custom adapter"
+msgstr "Adaptateur personnalisé"
+
+msgid "AT serial port"
+msgstr "Port série AT"
+
+msgid "Custom AT adapter"
+msgstr "Adaptateur AT personnalisé"
+
+msgid "The executable receives a timeout in seconds and the complete AT command, in that order. It must share the serial lock with the platform dialer."
+msgstr "L'exécutable reçoit un délai d'attente en secondes et la commande AT complète, dans cet ordre. Il doit partager le verrou du port série avec le numéroteur de la plateforme."
+
+msgid "SMS adapter"
+msgstr "Adaptateur SMS"
+
+msgid "Implement the list, show, send, delete and sync subcommands; leave blank to find mu300-sms automatically."
+msgstr "Implémenter les sous-commandes list, show, send, delete et sync ; laisser vide pour trouver mu300-sms automatiquement."
+
+msgid "SMS pool directory"
+msgstr "Répertoire du stock SMS"
+
+msgid "Cellular logical interface"
+msgstr "Interface logique cellulaire"
+
+msgid "Cellular IPv6 interface"
+msgstr "Interface IPv6 cellulaire"
+
+msgid "Cellular network device"
+msgstr "Périphérique réseau cellulaire"
+
+msgid "Leave blank to detect from netifd"
+msgstr "Laisser vide pour détecter via netifd"
+
+msgid "LAN bridge"
+msgstr "Pont LAN"
+
+msgid "Wi-Fi device"
+msgstr "Périphérique Wi-Fi"
+
+msgid "USB device"
+msgstr "Périphérique USB"
+
+msgid "Maximum wait for AT readiness (seconds)"
+msgstr "Attente maximale de disponibilité AT (secondes)"
+
+msgid "Home dashboard refresh interval (seconds)"
+msgstr "Intervalle d'actualisation du tableau de bord d'accueil (secondes)"
+
+msgid "Controls only the home dashboard refresh rate; 0.5–60 seconds. Reopen Home after saving to apply."
+msgstr "Contrôle uniquement la fréquence d'actualisation du tableau de bord d'accueil ; 0,5 à 60 secondes. Rouvrez l'accueil après l'enregistrement pour appliquer."
+
+msgid "Persistent state directory"
+msgstr "Répertoire d'état persistant"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM. Mobile data will disconnect briefly."
+msgstr "Switching SIM. Mobile data will disconnect briefly."
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switch failed; check SIM readiness and hot switching."
+msgstr "SIM switch failed; check SIM readiness and hot switching."
+
+# Source-language fallback for untranslated new controls.
+msgid "Ready"
+msgstr "Ready"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM"
+msgstr "Switching SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switched; saved as boot default"
+msgstr "SIM switched; saved as boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch failed; previous SIM restored"
+msgstr "Switch failed; previous SIM restored"
+
+msgid "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+msgstr "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+
+msgid "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+msgstr "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+
+# Source-language fallback for untranslated new controls.
+msgid "Radio state unknown; reboot required"
+msgstr "Radio state unknown; reboot required"
+
+msgid "Radio state unknown; the device is restarting."
+msgstr "Radio state unknown; the device is restarting."
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM control is only for the U30 Air on OpenWrt."
+msgstr "Dual SIM control is only for the U30 Air on OpenWrt."
+
+# Source-language fallback for untranslated new controls.
+msgid "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+msgstr "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+
+msgid "No card answered in the chosen SIM position at the last boot."
+msgstr "No card answered in the chosen SIM position at the last boot."
+
+msgid "The chosen SIM is locked by its PIN."
+msgstr "The chosen SIM is locked by its PIN."
+
+msgid "The chosen SIM got no mobile data within the time at its first boot."
+msgstr "The chosen SIM got no mobile data within the time at its first boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The second SIM's modem channels did not come up at the last boot."
+msgstr "The second SIM's modem channels did not come up at the last boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The last dual-SIM boot never confirmed itself."
+msgstr "The last dual-SIM boot never confirmed itself."
+
+msgid "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+msgstr "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+
+# Source-language fallback for untranslated new controls.
+msgid "Active SIM"
+msgstr "Active SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "Cold-boot default"
+msgstr "Cold-boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control unavailable"
+msgstr "SIM control unavailable"
+
+# Source-language fallback for untranslated new controls.
+msgid "The device is back on SIM1 without live switching; choose again below to try once more."
+msgstr "The device is back on SIM1 without live switching; choose again below to try once more."
+
+msgid "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+msgstr "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching"
+msgstr "Enable hot switching"
+
+msgid "This device supports next-boot SIM selection only; live switching is unavailable."
+msgstr "This device supports next-boot SIM selection only; live switching is unavailable."
+
+# Source-language fallback for untranslated new controls.
+msgid "Reboot after enabling hot switching to prepare both SIM channels."
+msgstr "Reboot after enabling hot switching to prepare both SIM channels."
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch to SIM%d"
+msgstr "Switch to SIM%d"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM%d at next boot"
+msgstr "Use SIM%d at next boot"
+
+msgid "Built-in SIM 1"
+msgstr "SIM intégrée 1"
+
+msgid "Built-in SIM 2"
+msgstr "SIM intégrée 2"
+
+msgid "Built-in SIM 3"
+msgstr "SIM intégrée 3"
+
+msgid "External SIM"
+msgstr "SIM externe"
+
+msgid "SIM card"
+msgstr "Carte SIM"
+
+msgid "Built-in SIM 3 shares SIM2, the external SIM shares SIM1. The card chosen here is switched in before the modem starts, at the next boot; without a choice the cards stay as the bootloader sets them."
+msgstr "La SIM intégrée 3 partage SIM2, la SIM externe partage SIM1. La carte choisie ici est commutée avant le démarrage du modem, au prochain démarrage ; sans choix, les cartes restent telles que le chargeur d'amorçage les règle."
+
+msgid "As the bootloader sets them"
+msgstr "Telles que le chargeur d'amorçage les règle"
+
+msgid "Applying the radio setting…"
+msgstr "Application du réglage radio…"
+
+msgid "SIM settings are not available"
+msgstr "Les réglages SIM ne sont pas disponibles"
+
+msgid "Modem default"
+msgstr "Valeur du modem"
+
+msgid "SIM%d"
+msgstr "SIM%d"
+
+msgid "in use"
+msgstr "utilisée"
+
+msgid "Turn off the radio of SIM%d"
+msgstr "Éteindre la radio de la SIM%d"
+
+msgid "Radio"
+msgstr "Radio"
+
+msgid "VoLTE"
+msgstr "VoLTE"
+
+msgid "VoNR"
+msgstr "VoNR"
+
+msgid "Modem: %s"
+msgstr "Modem : %s"
+
+msgid "Sent to this SIM when its radio next starts."
+msgstr "Envoyé à cette SIM au prochain démarrage de sa radio."
+
+msgid "VoLTE and VoNR for each SIM, kept across reboots and sent again whenever that SIM starts. VoLTE is on unless switched off; VoNR stays as the modem has it until set."
+msgstr "VoLTE et VoNR pour chaque SIM, conservés après un redémarrage et renvoyés à chaque démarrage de cette SIM. VoLTE est activé sauf si on le désactive ; VoNR reste tel que le modem l'a tant qu'il n'est pas réglé."
+
+msgid "All radios off (airplane mode)"
+msgstr "Toutes les radios éteintes (mode avion)"
+
+msgid "All radios on"
+msgstr "Toutes les radios allumées"
+
+msgid "No SIM will have calls, SMS or data, also after a reboot, until a radio is turned on again here or with the dashboard's radio button."
+msgstr "Aucune SIM n'aura d'appels, de SMS ou de données, même après un redémarrage, tant qu'une radio n'est pas rallumée ici ou avec le bouton radio du tableau de bord."
+
+msgid "Each SIM's radio stays as set here after a reboot. A SIM whose radio is off has no calls, SMS or data, and the device does not switch to it."
+msgstr "La radio de chaque SIM reste telle que réglée ici après un redémarrage. Une SIM dont la radio est éteinte n'a ni appels, ni SMS, ni données, et l'appareil ne bascule pas vers elle."
+
+msgid "The setting is saved, but the radio did not follow it yet."
+msgstr "Le réglage est enregistré, mais la radio ne l'a pas encore suivi."
+
+msgid "Recipient: number, e.g. 10086 or +86..."
+msgstr "Destinataire : numéro, p. ex. 10086 ou +86..."
+
+msgid "Sync from SIM"
+msgstr "Synchroniser depuis la SIM"
+
+msgid "Clear local pool"
+msgstr "Vider le stock local"
+
+msgid "Select a conversation on the left, or enter a number below to send."
+msgstr "Sélectionnez une conversation à gauche, ou saisissez un numéro ci-dessous pour envoyer."
+
+msgid "Message (Enter to send, Shift+Enter for newline)"
+msgstr "Message (Entrée pour envoyer, Maj+Entrée pour un saut de ligne)"
+
+msgid "Sending uses AT+CMGS (PDU mode); retry if the channel is busy. To delete one message, use the bin icon on its bubble."
+msgstr "L'envoi utilise AT+CMGS (mode PDU) ; réessayez si le canal est occupé. Pour supprimer un message, utilisez l'icône de corbeille sur sa bulle."
+
+msgid "Sending…"
+msgstr "Envoi…"
+
+msgid "Sent; the list refreshes shortly."
+msgstr "Envoyé ; la liste sera bientôt actualisée."
+
+msgid "Sending failed"
+msgstr "Échec de l'envoi"
+
+msgid "Syncing from the SIM in the background (AT+CMGL)…"
+msgstr "Synchronisation depuis la SIM en arrière-plan (AT+CMGL)…"
+
+msgid "SIM sync started; the list refreshes in a few seconds."
+msgstr "Synchronisation SIM lancée ; la liste sera actualisée dans quelques secondes."
+
+msgid "Clear local SMS pool"
+msgstr "Vider le stock SMS local"
+
+msgid "Only local files will be deleted; messages on the SIM remain."
+msgstr "Seuls les fichiers locaux seront supprimés ; les messages sur la SIM sont conservés."
+
+msgid "Delete this SMS"
+msgstr "Supprimer ce SMS"
+
+msgid "Deletion cannot be undone."
+msgstr "La suppression est irréversible."
+
+msgid "Local only"
+msgstr "Local uniquement"
+
+msgid "Local + SIM"
+msgstr "Local + SIM"
+
+msgid "Delete failed"
+msgstr "Échec de la suppression"
+
+msgid "Deleted (local + SIM)"
+msgstr "Supprimé (local + SIM)"
+
+msgid "Deleted (local only)"
+msgstr "Supprimé (local uniquement)"
+
+msgid "Enter both a number and a message."
+msgstr "Saisissez un numéro et un message."
+
+msgid "· %d messages, %d unread · %d conversations"
+msgstr "· %d messages, %d non lus · %d conversations"
+
+msgid "· %d messages · %d conversations"
+msgstr "· %d messages · %d conversations"
+
+msgid "The pool is empty. Incoming and sent messages appear here, or select “Sync from SIM”."
+msgstr "Le stock est vide. Les messages reçus et envoyés apparaissent ici, ou sélectionnez « Synchroniser depuis la SIM »."
+
+msgid "Me: %s"
+msgstr "Moi : %s"
+
+msgid "Incomplete: %d of %d parts arrived"
+msgstr "Incomplet : %d parties sur %d reçues"
+
+msgid "Delete"
+msgstr "Supprimer"
+
+msgid "ttyd is not installed."
+msgstr "ttyd n’est pas installé."
+
+msgid "The terminal is turned off (/etc/config/ttyd)."
+msgstr "Le terminal est désactivé (/etc/config/ttyd)."
+
+msgid "Too many terminals are opening at once. Try again in a minute."
+msgstr "Trop de terminaux s’ouvrent en même temps. Réessayez dans une minute."
+
+msgid "The terminal is not available."
+msgstr "Le terminal n’est pas disponible."
+
+msgid "This is a root shell on the device: every command runs with full rights, and a mistake can make the device unbootable."
+msgstr "Ceci est un shell root de l’appareil : chaque commande s’exécute avec tous les droits, et une erreur peut empêcher l’appareil de démarrer."
+
+msgid "It is reachable from the LAN only (USB and the hotspot), never from mobile data, and only from this logged-in page."
+msgstr "Il n’est accessible que depuis le LAN (USB et le point d’accès), jamais depuis les données mobiles, et seulement depuis cette page connectée."
+
+msgid "It closes after a minute without activity."
+msgstr "Il se ferme après une minute d’inactivité."
+
+msgid "It closes after %d minutes without activity."
+msgstr "Il se ferme après %d minutes d’inactivité."
+
+msgid "Reconnect"
+msgstr "Se reconnecter"
+
+msgid "Open in a new tab"
+msgstr "Ouvrir dans un nouvel onglet"
+
+msgid "This page was opened over HTTPS, and the terminal is served over HTTP on the LAN: it opens in a tab of its own."
+msgstr "Cette page a été ouverte en HTTPS, et le terminal est servi en HTTP sur le LAN : il s’ouvre dans un onglet à part."
+
+msgid "The data usage could not be read"
+msgstr "La consommation de données n'a pas pu être lue"
+
+msgid "Today"
+msgstr "Aujourd'hui"
+
+msgid "Days left in this cycle"
+msgstr "Jours restants dans cette période"
+
+msgid "Received"
+msgstr "Reçu"
+
+msgid "Sent"
+msgstr "Envoyé"
+
+msgid "Corrected by"
+msgstr "Corrigé de"
+
+msgid "Monthly cap"
+msgstr "Plafond mensuel"
+
+msgid "%s, warning at %d%%"
+msgstr "%s, alerte à %d%%"
+
+msgid "The monthly cap is reached: mobile data was turned off. It comes back on when the next cycle starts."
+msgstr "Le plafond mensuel est atteint : les données mobiles ont été coupées. Elles reviennent au début de la prochaine période."
+
+msgid "%s waits for the clock: it has not been set over the network yet. It already counts towards this cycle and goes to its day once the clock is set."
+msgstr "%s attend l'horloge : elle n'a pas encore été réglée par le réseau. Cela compte déjà dans cette période et ira à son jour une fois l'horloge réglée."
+
+msgid "The interface %s is not there right now: nothing is counted until it comes back."
+msgstr "L'interface %s n'est pas présente pour le moment : rien n'est compté jusqu'à son retour."
+
+msgid "Counted on %s, both ways, as the operator counts it (a VPN's overhead included)."
+msgstr "Compté sur %s, dans les deux sens, comme l'opérateur le compte (surcoût d'un VPN inclus)."
+
+msgid "The count is kept in memory and written to the disk every 30 minutes and at shutdown: a power cut loses at most the last half hour."
+msgstr "Le compteur est gardé en mémoire et écrit sur le disque toutes les 30 minutes et à l'arrêt : une coupure de courant perd au plus la dernière demi-heure."
+
+msgid "Counting since %s."
+msgstr "Comptage depuis le %s."
+
+msgid "Per day"
+msgstr "Par jour"
+
+msgid "Date"
+msgstr "Date"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "Per billing cycle"
+msgstr "Par période de facturation"
+
+msgid "Billing cycle"
+msgstr "Période de facturation"
+
+msgid "Enter a size in GB, for example 50 or 2.5"
+msgstr "Saisissez une taille en Go, par exemple 50 ou 2.5"
+
+msgid "Enter a percentage from 1 to 100"
+msgstr "Saisissez un pourcentage de 1 à 100"
+
+msgid "Turn mobile data off at the cap"
+msgstr "Couper les données mobiles au plafond"
+
+msgid "When this cycle reaches the cap, mobile data is turned off: no internet through the operator until the next cycle starts, the cap is raised or this is turned off again. Turning mobile data back on by hand keeps it on until the next reboot."
+msgstr "Quand cette période atteint le plafond, les données mobiles sont coupées : pas d'internet via l'opérateur jusqu'au début de la prochaine période, au relèvement du plafond ou à la désactivation de cette option. Les données mobiles réactivées à la main restent actives jusqu'au prochain redémarrage."
+
+msgid "Set"
+msgstr "Définir"
+
+msgid "Clear the count"
+msgstr "Effacer le compteur"
+
+msgid "Every day and billing cycle counted so far is forgotten. Counting goes on from now."
+msgstr "Tous les jours et périodes comptés jusqu'ici sont oubliés. Le comptage continue à partir de maintenant."
+
+msgid "Billing cycle and cap"
+msgstr "Période de facturation et plafond"
+
+msgid "A billing cycle starts on day"
+msgstr "Une période de facturation commence le jour"
+
+msgid "31: on the last day of each month"
+msgstr "31 : le dernier jour de chaque mois"
+
+msgid "Monthly cap (GB, 0: none)"
+msgstr "Plafond mensuel (Go, 0 : aucun)"
+
+msgid "Warning at this percentage of the cap"
+msgstr "Alerte à ce pourcentage du plafond"
+
+msgid "Used so far in this cycle (GB)"
+msgstr "Déjà utilisé dans cette période (Go)"
+
+msgid "What the operator shows for this cycle (for example when counting started in the middle of it); the count is corrected to it."
+msgstr "Ce que l'opérateur indique pour cette période (par exemple si le comptage a commencé en cours de période) ; le compteur est corrigé en conséquence."
+
+msgid "Current setting"
+msgstr "Réglage actuel"
+
+msgid "Fixed at %d"
+msgstr "Fixé à %d"
+
+msgid "Not changed (default)"
+msgstr "Inchangé (par défaut)"
+
+msgid "Rule in force"
+msgstr "Règle en vigueur"
+
+msgid "Flow offloading"
+msgstr "Délestage des flux (flow offloading)"
+
+msgid "TTL of mobile data"
+msgstr "TTL des données mobiles"
+
+msgid "Every packet that leaves through mobile data gets this TTL (IPv6: hop limit). A phone or laptop behind the hotspot sends 64 (Windows: 128) and the device forwards it with one less, which is how an operator can tell tethered traffic apart."
+msgstr "Chaque paquet qui sort par les données mobiles reçoit ce TTL (IPv6 : hop limit). Un téléphone ou un portable derrière le point d'accès envoie 64 (Windows : 128) et l'appareil le transmet avec un de moins, ce qui permet à un opérateur de reconnaître le trafic partagé."
+
+msgid "On this kernel the firewall fast-path is off while a TTL is set"
+msgstr "Sur ce noyau, le chemin rapide du pare-feu est désactivé tant qu'un TTL est défini"
+
+msgid "Set %d"
+msgstr "Mettre %d"
+
+msgid "Enter a number from 1 to 255"
+msgstr "Saisissez un nombre de 1 à 255"
+
+msgid "Turn off"
+msgstr "Désactiver"
+
+msgid "64 makes every packet leave like the device's own traffic"
+msgstr "Avec 64, chaque paquet sort comme le trafic propre de l'appareil"
+
+msgid "Check for updates"
+msgstr "Rechercher des mises à jour"
+
+msgid "Checking the file"
+msgstr "Vérification du fichier"
+
+msgid "Update from a file"
+msgstr "Mettre à jour depuis un fichier"
+
+msgid "Back to the previous version"
+msgstr "Retour à la version précédente"
+
+msgid "Back to the previous boot image"
+msgstr "Retour à l'image de démarrage précédente"
+
+msgid "Remove the previous version"
+msgstr "Supprimer la version précédente"
+
+msgid "Kernel change"
+msgstr "Changement de noyau"
+
+msgid "Starting…"
+msgstr "Démarrage…"
+
+msgid "Downloading"
+msgstr "Téléchargement"
+
+msgid "All files are here and verified"
+msgstr "Tous les fichiers sont là et vérifiés"
+
+msgid "Unpacking the new system"
+msgstr "Décompression du nouveau système"
+
+msgid "Carrying over your settings"
+msgstr "Reprise de vos réglages"
+
+msgid "Writing down the packages you installed"
+msgstr "Relevé des paquets que vous avez installés"
+
+msgid "Switching to the new system"
+msgstr "Passage au nouveau système"
+
+msgid "Kernel and boot image"
+msgstr "Noyau et image de démarrage"
+
+msgid "Restart the device?"
+msgstr "Redémarrer l'appareil ?"
+
+msgid "The device restarts now. The default boot is Android, so it starts Android: switch to Linux from there to start the updated system."
+msgstr "L'appareil redémarre maintenant. Le démarrage par défaut est Android, il démarre donc Android : passez à Linux depuis Android pour démarrer le système mis à jour."
+
+msgid "The device restarts now and is away for about a minute. If the new system does not start, the device goes back to Android by itself after the failed attempts."
+msgstr "L'appareil redémarre maintenant et s'absente environ une minute. Si le nouveau système ne démarre pas, l'appareil revient de lui-même à Android après les tentatives échouées."
+
+msgid "Restarting… open this page again in about a minute."
+msgstr "Redémarrage… rouvrez cette page dans environ une minute."
+
+msgid "Running for %s. It goes on when this page is closed; do not switch the device off."
+msgstr "En cours depuis %s. L'opération continue quand cette page est fermée ; n'éteignez pas l'appareil."
+
+msgid "Done. Restart the device to start it."
+msgstr "Terminé. Redémarrez l'appareil pour le démarrer."
+
+msgid "Done. Nothing needs a restart."
+msgstr "Terminé. Aucun redémarrage n'est nécessaire."
+
+msgid "It did not finish, and part of it was done: read the log before you restart."
+msgstr "L'opération n'est pas allée au bout, et une partie a été faite : lisez le journal avant de redémarrer."
+
+msgid "It did not finish. Nothing was changed; the log says why."
+msgstr "L'opération n'est pas allée au bout. Rien n'a été modifié ; le journal indique pourquoi."
+
+msgid "Log"
+msgstr "Journal"
+
+msgid "Restart now"
+msgstr "Redémarrer maintenant"
+
+msgid "Later"
+msgstr "Plus tard"
+
+msgid "Close"
+msgstr "Fermer"
+
+msgid "Updating is not available on this system"
+msgstr "La mise à jour n'est pas disponible sur ce système"
+
+msgid "Another update is running on the device"
+msgstr "Une autre mise à jour est en cours sur l'appareil"
+
+msgid "It was started outside this page (a terminal, the toolkit). Nothing can be started here until it has finished."
+msgstr "L'opération a été lancée en dehors de cette page (un terminal, la boîte à outils). Rien ne peut être lancé ici tant qu'elle n'est pas terminée."
+
+msgid "Restart needed"
+msgstr "Redémarrage nécessaire"
+
+msgid "This system was updated and still runs the old version. The new one starts at the next restart."
+msgstr "Ce système a été mis à jour et fonctionne encore avec l'ancienne version. La nouvelle démarre au prochain redémarrage."
+
+msgid "Installed"
+msgstr "Installé"
+
+msgid "This system"
+msgstr "Ce système"
+
+msgid "Also on this device"
+msgstr "Aussi sur cet appareil"
+
+msgid "Kernel"
+msgstr "Noyau"
+
+msgid "choice %s"
+msgstr "choix %s"
+
+msgid "Boot image"
+msgstr "Image de démarrage"
+
+msgid "from the installer"
+msgstr "depuis l'installateur"
+
+msgid "Default boot"
+msgstr "Démarrage par défaut"
+
+msgid "Free space"
+msgstr "Espace libre"
+
+msgid "Release signatures"
+msgstr "Signatures des versions"
+
+msgid "checked with the project's key"
+msgstr "vérifiées avec la clé du projet"
+
+msgid "this system has no release key"
+msgstr "ce système n'a pas de clé de publication"
+
+msgid "The default boot is Android: a restart goes to Android, and Linux is started from there."
+msgstr "Le démarrage par défaut est Android : un redémarrage mène à Android, et Linux se lance depuis Android."
+
+msgid "Linux is locked as the default boot: a failed start does not send the device to Android by itself, except the first starts of a new boot image."
+msgstr "Linux est verrouillé comme démarrage par défaut : un démarrage échoué n'envoie pas l'appareil vers Android de lui-même, sauf aux premiers démarrages d'une nouvelle image de démarrage."
+
+msgid "If Linux fails to start %d times in a row, the device starts Android by itself."
+msgstr "Si Linux ne démarre pas %d fois de suite, l'appareil démarre Android de lui-même."
+
+msgid "Report of the last update"
+msgstr "Rapport de la dernière mise à jour"
+
+msgid "Online update"
+msgstr "Mise à jour en ligne"
+
+msgid "Asking GitHub…"
+msgstr "Interrogation de GitHub…"
+
+msgid "Checked %s ago"
+msgstr "Vérifié il y a %s"
+
+msgid "Not checked yet"
+msgstr "Pas encore vérifié"
+
+msgid "Mirror (release files)"
+msgstr "Miroir (fichiers de version)"
+
+msgid "Leave empty for GitHub."
+msgstr "Laissez vide pour GitHub."
+
+msgid "Install the packages I added again after the update (needs the device online at the first start)"
+msgstr "Réinstaller après la mise à jour les paquets que j'ai ajoutés (l'appareil doit être en ligne au premier démarrage)"
+
+msgid "Pre-release"
+msgstr "Préversion"
+
+msgid "Newest release"
+msgstr "Dernière version"
+
+msgid "Release notes"
+msgstr "Notes de version"
+
+msgid "Download"
+msgstr "Téléchargement"
+
+msgid "Free space needed"
+msgstr "Espace libre nécessaire"
+
+msgid "not enough: remove the previous version first"
+msgstr "insuffisant : supprimez d'abord la version précédente"
+
+msgid "A pre-release is a release still being tried: it can have faults a release does not. The previous version is kept all the same."
+msgstr "Une préversion est une version encore à l'essai : elle peut avoir des défauts qu'une version publiée n'a pas. La version précédente est conservée malgré tout."
+
+msgid "This system is newer than the newest release (a test release)."
+msgstr "Ce système est plus récent que la dernière version (une version de test)."
+
+msgid "Up to date."
+msgstr "À jour."
+
+msgid "This release is not signed, and this system checks signatures: it is not installed from here. Update from its file below, which asks you to confirm."
+msgstr "Cette version n'est pas signée et ce système vérifie les signatures : elle n'est pas installée d'ici. Mettez à jour depuis son fichier ci-dessous, qui vous demande de confirmer."
+
+msgid "Update to %s"
+msgstr "Mettre à jour vers %s"
+
+msgid "Choose at least one system"
+msgstr "Choisissez au moins un système"
+
+msgid "Update to %s?"
+msgstr "Mettre à jour vers %s ?"
+
+msgid "The device downloads %s, puts the new system beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "L'appareil télécharge %s, place le nouveau système à côté de celui en cours et y passe au prochain redémarrage. Vos réglages sont repris et la version précédente est conservée. Cela prend plusieurs minutes ; n'éteignez pas l'appareil."
+
+msgid "Also offer the pre-release %s"
+msgstr "Proposer aussi la préversion %s"
+
+msgid "Systems to update:"
+msgstr "Systèmes à mettre à jour :"
+
+msgid "GitHub could not be reached: the device has no internet connection, or GitHub did not answer. Without internet, update from a file below."
+msgstr "GitHub est injoignable : l'appareil n'a pas de connexion Internet, ou GitHub n'a pas répondu. Sans Internet, mettez à jour depuis un fichier ci-dessous."
+
+msgid "release"
+msgstr "version"
+
+msgid "For a device without internet: download the Magisk zip of a release for this system and this kernel on another computer, from the release page on GitHub, and upload it here. For this device that is:"
+msgstr "Pour un appareil sans Internet : téléchargez sur un autre ordinateur le zip Magisk d'une version pour ce système et ce noyau, depuis la page des versions sur GitHub, puis envoyez-le ici. Pour cet appareil, c'est :"
+
+msgid "Uploaded file"
+msgstr "Fichier envoyé"
+
+msgid "Checking the file…"
+msgstr "Vérification du fichier…"
+
+msgid "It says it is"
+msgstr "Il se présente comme"
+
+msgid "kernel %s"
+msgstr "noyau %s"
+
+msgid "Signature"
+msgstr "Signature"
+
+msgid "signed with the project's release key"
+msgstr "signé avec la clé de publication du projet"
+
+msgid "WRONG: it does not match the project's release key"
+msgstr "FAUSSE : elle ne correspond pas à la clé de publication du projet"
+
+msgid "not signed"
+msgstr "non signé"
+
+msgid "cannot be checked on this system"
+msgstr "ne peut pas être vérifiée sur ce système"
+
+msgid "Its system is not installed on this device."
+msgstr "Son système n'est pas installé sur cet appareil."
+
+msgid "It is the other Ubuntu release, not the one installed."
+msgstr "C'est l'autre version d'Ubuntu, pas celle qui est installée."
+
+msgid "It carries another kernel than this device uses. Take the zip for kernel %s, or change the kernel first."
+msgstr "Il contient un autre noyau que celui de cet appareil. Prenez le zip pour le noyau %s, ou changez d'abord de noyau."
+
+msgid "Its kernel does not run on this model."
+msgstr "Son noyau ne fonctionne pas sur ce modèle."
+
+msgid "The file is damaged: its contents do not match their checksums."
+msgstr "Le fichier est endommagé : son contenu ne correspond pas aux sommes de contrôle."
+
+msgid "Its signature is wrong. This file does not come from the project as it is; it is never installed."
+msgstr "Sa signature est fausse. Ce fichier ne vient pas tel quel du projet ; il n'est jamais installé."
+
+msgid "This file cannot be used here."
+msgstr "Ce fichier ne peut pas être utilisé ici."
+
+msgid "Compare the SHA-256 with the one in SHA256SUMS-magisk on the release page: it is the only proof of where an unsigned file comes from."
+msgstr "Comparez le SHA-256 avec celui de SHA256SUMS-magisk sur la page des versions : c'est la seule preuve de la provenance d'un fichier non signé."
+
+msgid "This release is installed already; the update would only refresh the boot image."
+msgstr "Cette version est déjà installée ; la mise à jour ne ferait que renouveler l'image de démarrage."
+
+msgid "I know this file is not signed: nothing proves that it comes from the project. I compared its SHA-256 myself and want it installed."
+msgstr "Je sais que ce fichier n'est pas signé : rien ne prouve qu'il vient du projet. J'ai comparé moi-même son SHA-256 et je veux qu'il soit installé."
+
+msgid "I know this is %s, older than the installed %s, and want to go back to it."
+msgstr "Je sais qu'il s'agit de %s, plus ancienne que la version installée %s, et je veux y revenir."
+
+msgid "This is not a release file of this project: a Magisk zip of a release is expected."
+msgstr "Ce n'est pas un fichier de version de ce projet : un zip Magisk d'une version est attendu."
+
+msgid "Update from this file"
+msgstr "Mettre à jour depuis ce fichier"
+
+msgid "Tick the confirmations above first"
+msgstr "Cochez d'abord les confirmations ci-dessus"
+
+msgid "The device puts the system of this file beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "L'appareil place le système de ce fichier à côté de celui en cours et y passe au prochain redémarrage. Vos réglages sont repris et la version précédente est conservée. Cela prend plusieurs minutes ; n'éteignez pas l'appareil."
+
+msgid "Check the file"
+msgstr "Vérifier le fichier"
+
+msgid "Remove the file"
+msgstr "Retirer le fichier"
+
+msgid "Previous version"
+msgstr "Version précédente"
+
+msgid "No previous version is kept on this device."
+msgstr "Aucune version précédente n'est conservée sur cet appareil."
+
+msgid "replaced %s"
+msgstr "remplacée le %s"
+
+msgid "I want the previous system back; what I changed since the update stays in the version I leave."
+msgstr "Je veux retrouver le système précédent ; ce que j'ai modifié depuis la mise à jour reste dans la version que je quitte."
+
+msgid "Back to the previous version?"
+msgstr "Revenir à la version précédente ?"
+
+msgid "The previous system (%s) becomes the one that starts at the next restart. The version you leave is not kept; settings you changed since the update are not carried back."
+msgstr "Le système précédent (%s) devient celui qui démarre au prochain redémarrage. La version que vous quittez n'est pas conservée ; les réglages modifiés depuis la mise à jour ne sont pas repris."
+
+msgid "Go back"
+msgstr "Revenir en arrière"
+
+msgid "The previous version is the one running now: restart first."
+msgstr "La version précédente est celle qui fonctionne en ce moment : redémarrez d'abord."
+
+msgid "I want the previous kernel and boot image back."
+msgstr "Je veux retrouver le noyau et l'image de démarrage précédents."
+
+msgid "Back to the previous boot image?"
+msgstr "Revenir à l'image de démarrage précédente ?"
+
+msgid "The previous boot image (%s) is written to the Linux slot and starts at the next restart. If it does not start, the device goes back to Android by itself."
+msgstr "L'image de démarrage précédente (%s) est écrite dans l'emplacement Linux et démarre au prochain redémarrage. Si elle ne démarre pas, l'appareil revient de lui-même à Android."
+
+msgid "I do not need to go back: delete the previous system to free its space."
+msgstr "Je n'ai pas besoin de revenir en arrière : supprimer le système précédent pour libérer son espace."
+
+msgid "Remove the previous version?"
+msgstr "Supprimer la version précédente ?"
+
+msgid "The kept copy of the previous system is deleted for good. After that there is no going back to it from this page."
+msgstr "La copie conservée du système précédent est supprimée définitivement. Ensuite, il n'est plus possible d'y revenir depuis cette page."
+
+msgid "the vendor kernel"
+msgstr "le noyau constructeur"
+
+msgid "mainline"
+msgstr "mainline"
+
+msgid "not with Ubuntu 26.04"
+msgstr "pas avec Ubuntu 26.04"
+
+msgid "Change the kernel"
+msgstr "Changer de noyau"
+
+msgid "This kernel is the one in use"
+msgstr "Ce noyau est celui qui est utilisé"
+
+msgid "Change the kernel to %s?"
+msgstr "Passer au noyau %s ?"
+
+msgid "The device downloads that kernel from the newest release and writes a new boot image; it starts at the next restart. The previous boot image is kept, and if the new one does not start the device goes back to Android by itself. The device must be online."
+msgstr "L'appareil télécharge ce noyau depuis la dernière version et écrit une nouvelle image de démarrage ; elle démarre au prochain redémarrage. L'image de démarrage précédente est conservée, et si la nouvelle ne démarre pas, l'appareil revient de lui-même à Android. L'appareil doit être en ligne."
+
+msgid "Start Android at the next restart"
+msgstr "Démarrer Android au prochain redémarrage"
+
+msgid "Start Android at the next restart?"
+msgstr "Démarrer Android au prochain redémarrage ?"
+
+msgid "The next restart, and the ones after it, start Android instead of Linux. Linux is started again from Android (the Magisk module's Action button, or mu300-linux)."
+msgstr "Le prochain redémarrage, et les suivants, démarrent Android au lieu de Linux. Linux se relance depuis Android (le bouton Action du module Magisk, ou mu300-linux)."
+
+msgid "Start Android next"
+msgstr "Démarrer Android ensuite"
+
+msgid "What an update keeps"
+msgstr "Ce qu'une mise à jour conserve"
+
+msgid "An update puts the system of the new release in place and carries over what is yours: the settings, the accounts and their passwords, the device's keys and the home directories. Packages you installed yourself are written down and installed again at the first start, once the device is online. The previous version stays on the device until you remove it, so you can go back."
+msgstr "Une mise à jour met en place le système de la nouvelle version et reprend ce qui est à vous : les réglages, les comptes et leurs mots de passe, les clés de l'appareil et les répertoires personnels. Les paquets que vous avez installés vous-même sont relevés puis réinstallés au premier démarrage, dès que l'appareil est en ligne. La version précédente reste sur l'appareil jusqu'à ce que vous la supprimiez, pour que vous puissiez revenir en arrière."
+
+msgid "The wiki's Updating page lists exactly what is kept."
+msgstr "La page Updating du wiki indique précisément ce qui est conservé."
+
+msgid "Choose a file first"
+msgstr "Choisissez d'abord un fichier"
+
+msgid "Uploading: %s of %s"
+msgstr "Envoi : %s sur %s"
+
+msgid "running"
+msgstr "en cours"
+
+msgid "(about %s)"
+msgstr "(environ %s)"
+
+msgid "Install %s?"
+msgstr "Installer %s ?"
+
+msgid "It is installed from this system's package feed."
+msgstr "Il est installé depuis le dépôt de paquets de ce système."
+
+msgid "It is downloaded from the release of the VPN module and checked against its SHA256SUMS."
+msgstr "Il est téléchargé depuis la version du module VPN et vérifié avec son SHA256SUMS."
+
+msgid "An engine is tens of MB: on mobile data the download counts towards your plan."
+msgstr "Un moteur pèse des dizaines de MB : sur données mobiles, le téléchargement décompte de votre forfait."
+
+msgid "Install"
+msgstr "Installer"
+
+msgid "Remove %s?"
+msgstr "Supprimer %s ?"
+
+msgid "Profiles run on it: %s. They cannot start until it is installed again (the module refuses while the running profile needs it)."
+msgstr "Profils qui l'utilisent : %s. Ils ne pourront pas démarrer tant qu'il n'est pas réinstallé (le module refuse tant que le profil en cours en a besoin)."
+
+msgid "No profile runs on it."
+msgstr "Aucun profil ne l'utilise."
+
+msgid "Removed"
+msgstr "Supprimé"
+
+msgid "Each engine is an extra of its own: install only the ones your profiles need. Xray runs vless, vmess, trojan and ss links (with hev-socks5-tunnel), sing-box the same links and its own JSON, mihomo Clash subscriptions, dae hysteria2, tuic and the rest on newer kernels. WireGuard and OpenVPN are packages of the system."
+msgstr "Chaque moteur est un extra à part : n'installez que ceux dont vos profils ont besoin. Xray exécute les liens vless, vmess, trojan et ss (avec hev-socks5-tunnel), sing-box les mêmes liens et son propre JSON, mihomo les abonnements Clash, dae hysteria2, tuic et le reste sur les noyaux récents. WireGuard et OpenVPN sont des paquets du système."
+
+msgid "Downloads are tens of MB per engine: on mobile data they count towards your plan. Offline, upload the engine's tarball from the release page of the VPN module."
+msgstr "Les téléchargements pèsent des dizaines de MB par moteur : sur données mobiles, ils décomptent de votre forfait. Hors ligne, envoyez l'archive tarball du moteur depuis la page des versions du module VPN."
+
+msgid "The available versions come from the latest release of the VPN module."
+msgstr "Les versions disponibles proviennent de la dernière version du module VPN."
+
+msgid "system package"
+msgstr "paquet du système"
+
+msgid "in the vpn bundle"
+msgstr "dans l'ensemble vpn"
+
+msgid "extra %s"
+msgstr "extra %s"
+
+msgid "not installed"
+msgstr "non installé"
+
+msgid "cannot run here"
+msgstr "ne peut pas s'exécuter ici"
+
+msgid "update available"
+msgstr "mise à jour disponible"
+
+msgid "installed"
+msgstr "installé"
+
+msgid "Kind"
+msgstr "Nature"
+
+msgid "Version"
+msgstr "Version"
+
+msgid "Available"
+msgstr "Disponible"
+
+msgid "not checked"
+msgstr "non vérifié"
+
+msgid "Size"
+msgstr "Taille"
+
+msgid "Needed by"
+msgstr "Utilisé par"
+
+msgid "no profile"
+msgstr "aucun profil"
+
+msgid "dae needs a kernel with BTF, 5.17 or newer: not the 5.4 vendor kernel (mu300-update kernel 6.18). It can be installed anyway."
+msgstr "dae nécessite un noyau avec BTF, 5.17 ou plus récent : pas le noyau constructeur 5.4 (mu300-update kernel 6.18). Il peut quand même être installé."
+
+msgid "All engines"
+msgstr "Tous les moteurs"
+
+msgid "Last %s lines"
+msgstr "%s dernières lignes"
+
+msgid "VPN service log"
+msgstr "Journal du service VPN"
+
+msgid "Every 5 s"
+msgstr "Toutes les 5 s"
+
+msgid "The log is empty."
+msgstr "Le journal est vide."
+
+msgid "The VPN is starting"
+msgstr "Le VPN démarre"
+
+msgid "The VPN is stopped"
+msgstr "Le VPN est arrêté"
+
+msgid "The VPN is restarting"
+msgstr "Le VPN redémarre"
+
+msgid "With the kill switch on, nothing leaves the device or the LAN outside the tunnel: while the VPN is down, starting or broken, every connection fails instead of going out directly. It stays up until you stop the VPN here (Stop removes it)."
+msgstr "Avec le kill switch activé, rien ne sort de l'appareil ni du LAN en dehors du tunnel : tant que le VPN est coupé, en cours de démarrage ou en panne, toute connexion échoue au lieu de sortir directement. Il reste en place jusqu'à ce que vous arrêtiez le VPN ici (Arrêter le retire)."
+
+msgid "Without the kill switch, traffic goes out directly, unprotected, whenever the tunnel is down (while it starts, after a crash, when the engine is missing)."
+msgstr "Sans le kill switch, le trafic sort directement, sans protection, dès que le tunnel est coupé (au démarrage, après un plantage, quand le moteur manque)."
+
+msgid "Turn the kill switch on?"
+msgstr "Activer le kill switch ?"
+
+msgid "Turn the kill switch off?"
+msgstr "Désactiver le kill switch ?"
+
+msgid "Turn on"
+msgstr "Activer"
+
+msgid "unknown"
+msgstr "inconnu"
+
+msgid "The exit address could not be found (is the tunnel up?)"
+msgstr "L'adresse de sortie est introuvable (le tunnel est-il actif ?)"
+
+msgid "Connecting…"
+msgstr "Connexion…"
+
+msgid "On, but not running"
+msgstr "Activé, mais pas en cours d'exécution"
+
+msgid "Stopped"
+msgstr "Arrêté"
+
+msgid "Install it"
+msgstr "L'installer"
+
+msgid "The engine of the active profile is not installed: %s"
+msgstr "Le moteur du profil actif n'est pas installé : %s"
+
+msgid "The kill switch keeps everything closed until it is there; the service downloads it by itself when it can."
+msgstr "Le kill switch garde tout fermé jusqu'à sa présence ; le service le télécharge de lui-même dès qu'il le peut."
+
+msgid "The VPN cannot start until it is installed."
+msgstr "Le VPN ne peut pas démarrer tant qu'il n'est pas installé."
+
+msgid "%s cannot run on this system"
+msgstr "%s ne peut pas s'exécuter sur ce système"
+
+msgid "The VPN is on, but no profile is active: choose one below."
+msgstr "Le VPN est activé, mais aucun profil n'est actif : choisissez-en un ci-dessous."
+
+msgid "Profile: %s"
+msgstr "Profil : %s"
+
+msgid "No active profile"
+msgstr "Aucun profil actif"
+
+msgid "engine %s"
+msgstr "moteur %s"
+
+msgid "interface %s"
+msgstr "interface %s"
+
+msgid "Kill switch active"
+msgstr "Kill switch actif"
+
+msgid "Kill switch on"
+msgstr "Kill switch activé"
+
+msgid "Kill switch off"
+msgstr "Kill switch désactivé"
+
+msgid "IPv6 in the tunnel"
+msgstr "IPv6 dans le tunnel"
+
+msgid "IPv6 blocked"
+msgstr "IPv6 bloqué"
+
+msgid "IPv6 untouched"
+msgstr "IPv6 non modifié"
+
+msgid "Module %s"
+msgstr "Module %s"
+
+msgid "Check"
+msgstr "Vérifier"
+
+msgid "Uptime"
+msgstr "Durée de fonctionnement"
+
+msgid "Rate"
+msgstr "Débit"
+
+msgid "Exit address"
+msgstr "Adresse de sortie"
+
+msgid "Start"
+msgstr "Démarrer"
+
+msgid "Stop"
+msgstr "Arrêter"
+
+msgid "Stop the VPN?"
+msgstr "Arrêter le VPN ?"
+
+msgid "Traffic then goes out directly, without the tunnel; the kill switch is taken down with it."
+msgstr "Le trafic sort alors directement, sans le tunnel ; le kill switch est retiré avec lui."
+
+msgid "The VPN is on: it starts again by itself after a reboot."
+msgstr "Le VPN est activé : il redémarre de lui-même après un redémarrage de l'appareil."
+
+msgid "The VPN is off."
+msgstr "Le VPN est désactivé."
+
+msgid "Kill switch"
+msgstr "Kill switch"
+
+msgid "Setting"
+msgstr "Paramètre"
+
+msgid "Active: only the tunnel can reach the internet"
+msgstr "Actif : seul le tunnel peut atteindre Internet"
+
+msgid "Not active"
+msgstr "Inactif"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down, so nothing ever leaves without the tunnel. If the tunnel cannot come up (a dead server, an expired account), the device stays offline until you fix the profile or stop the VPN. The panel itself stays reachable from the LAN."
+msgstr "Le kill switch bloque tout le trafic de l'appareil et du LAN tant que le VPN est coupé, de sorte que rien ne sort jamais sans le tunnel. Si le tunnel ne peut pas monter (serveur mort, compte expiré), l'appareil reste hors ligne jusqu'à ce que vous corrigiez le profil ou arrêtiez le VPN. Le panneau lui-même reste accessible depuis le LAN."
+
+msgid "Choose a profile"
+msgstr "Choisir un profil"
+
+msgid "No profiles yet"
+msgstr "Aucun profil pour l'instant"
+
+msgid "engine not installed"
+msgstr "moteur non installé"
+
+msgid "Use"
+msgstr "Utiliser"
+
+msgid "Switched: the VPN restarts on the new profile"
+msgstr "Changé : le VPN redémarre avec le nouveau profil"
+
+msgid "Active profile"
+msgstr "Profil actif"
+
+msgid "A running VPN restarts on the profile you choose; the kill switch stays up in between."
+msgstr "Un VPN en cours redémarre avec le profil que vous choisissez ; le kill switch reste en place entre-temps."
+
+msgid "Manage the profiles"
+msgstr "Gérer les profils"
+
+msgid "Automatic: through the tunnel where the engine can carry it"
+msgstr "Automatique : par le tunnel quand le moteur peut le transporter"
+
+msgid "Ask the engine for IPv6 in the tunnel"
+msgstr "Demander l'IPv6 au moteur dans le tunnel"
+
+msgid "Never through the tunnel (blocked while the VPN is up)"
+msgstr "Jamais par le tunnel (bloqué tant que le VPN est actif)"
+
+msgid "Saved: it applies from the next start (Restart)"
+msgstr "Enregistré : s'applique au prochain démarrage (Redémarrer)"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "The tunnel carries IPv6"
+msgstr "Le tunnel transporte l'IPv6"
+
+msgid "Yes"
+msgstr "Oui"
+
+msgid "IPv6 guard"
+msgstr "Garde IPv6"
+
+msgid "Active: IPv6 outside the tunnel is refused"
+msgstr "Actif : l'IPv6 hors du tunnel est refusé"
+
+msgid "While the VPN is up, IPv6 never leaves beside a tunnel that does not carry it: it is refused at once, so programs and LAN clients fall back to IPv4 instead of leaking or waiting. Automatic: WireGuard and OpenVPN use the IPv6 addresses of their config; Xray, sing-box and mihomo are asked at every start whether IPv6 works through the tunnel, and carry it only then; dae stays IPv4."
+msgstr "Tant que le VPN est actif, l'IPv6 ne sort jamais à côté d'un tunnel qui ne le transporte pas : il est refusé aussitôt, si bien que les programmes et les clients du LAN se rabattent sur l'IPv4 au lieu de fuir ou d'attendre. Automatique : WireGuard et OpenVPN utilisent les adresses IPv6 de leur configuration ; pour Xray, sing-box et mihomo, chaque démarrage vérifie si l'IPv6 fonctionne à travers le tunnel, et ils ne le transportent qu'alors ; dae reste en IPv4."
+
+msgid "%d ms"
+msgstr "%d ms"
+
+msgid "UDP: not testable"
+msgstr "UDP : non mesurable"
+
+msgid "blocked by the kill switch"
+msgstr "bloqué par le kill switch"
+
+msgid "A WireGuard or OpenVPN config, a Clash/mihomo YAML, an Xray or sing-box JSON, a dae config"
+msgstr "Une configuration WireGuard ou OpenVPN, un YAML Clash/mihomo, un JSON Xray ou sing-box, une configuration dae"
+
+msgid "After OK, choose the file: a WireGuard .conf, an OpenVPN .ovpn, a Clash/mihomo .yaml, an Xray or sing-box .json or a dae config (at most 1 MiB)."
+msgstr "Après OK, choisissez le fichier : un .conf WireGuard, un .ovpn OpenVPN, un .yaml Clash/mihomo, un .json Xray ou sing-box ou une configuration dae (1 MiB au plus)."
+
+msgid "From the source"
+msgstr "Depuis la source"
+
+msgid "Detect"
+msgstr "Détecter"
+
+msgid "The URL may hold a token: it goes to the device on its own, never into a command line or a log."
+msgstr "L'URL peut contenir un jeton : elle va à l'appareil séparément, jamais dans une ligne de commande ni dans un journal."
+
+msgid "Share link"
+msgstr "Lien de partage"
+
+msgid "Paste"
+msgstr "Coller"
+
+msgid "File"
+msgstr "Fichier"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Not a share link this panel takes"
+msgstr "Ce n'est pas un lien de partage accepté par ce panneau"
+
+msgid "The config is empty"
+msgstr "La configuration est vide"
+
+msgid "Not an https URL"
+msgstr "Pas une URL https"
+
+msgid "Invalid name: 1-64 characters, no control characters"
+msgstr "Nom non valide : 1 à 64 caractères, sans caractères de contrôle"
+
+msgid "Add a profile"
+msgstr "Ajouter un profil"
+
+msgid "Name"
+msgstr "Nom"
+
+msgid "Detect: the module tells the kind from the link or the file. Choose the type for a JSON that could be either Xray or sing-box, or for a link that should run on another engine."
+msgstr "Détecter : le module reconnaît la nature à partir du lien ou du fichier. Choisissez le type pour un JSON qui peut être Xray ou sing-box, ou pour un lien qui doit s'exécuter sur un autre moteur."
+
+msgid "The profile is added"
+msgstr "Le profil est ajouté"
+
+msgid "Rename the profile"
+msgstr "Renommer le profil"
+
+msgid "Delete the profile %s?"
+msgstr "Supprimer le profil %s ?"
+
+msgid "It is the active profile: with the VPN on, the module refuses; stop the VPN or choose another profile first."
+msgstr "C'est le profil actif : le VPN étant activé, le module refuse ; arrêtez d'abord le VPN ou choisissez un autre profil."
+
+msgid "Its config and credentials are deleted from the device."
+msgstr "Sa configuration et ses identifiants sont supprimés de l'appareil."
+
+msgid "Deleted"
+msgstr "Supprimé"
+
+msgid "The profile passes the check"
+msgstr "Le profil passe la vérification"
+
+msgid "Show the config?"
+msgstr "Afficher la configuration ?"
+
+msgid "The config holds the credentials of the profile (keys, passwords, UUIDs). It is shown on this screen only; anyone who can see the screen can read it."
+msgstr "La configuration contient les identifiants du profil (clés, mots de passe, UUID). Elle n'est affichée que sur cet écran ; quiconque voit l'écran peut la lire."
+
+msgid "Saving checks the config with the engine first (profile edit); a config that does not pass is not saved and the old one stays."
+msgstr "L'enregistrement vérifie d'abord la configuration avec le moteur (profile edit) ; une configuration qui ne passe pas n'est pas enregistrée et l'ancienne reste."
+
+msgid "This profile comes from a subscription: its next refresh replaces your changes."
+msgstr "Ce profil provient d'un abonnement : sa prochaine actualisation remplace vos modifications."
+
+msgid "Config of %s"
+msgstr "Configuration de %s"
+
+msgid "Rename"
+msgstr "Renommer"
+
+msgid "Show / edit the config"
+msgstr "Afficher / modifier la configuration"
+
+msgid "Test the latency of all"
+msgstr "Mesurer la latence de tous"
+
+msgid "No profiles yet: add one from a share link, a config file or a subscription."
+msgstr "Aucun profil pour l'instant : ajoutez-en un depuis un lien de partage, un fichier de configuration ou un abonnement."
+
+msgid "Active"
+msgstr "Actif"
+
+msgid "This profile is the active one now"
+msgstr "Ce profil est maintenant le profil actif"
+
+msgid "More"
+msgstr "Plus"
+
+msgid "active"
+msgstr "actif"
+
+msgid "subscription"
+msgstr "abonnement"
+
+msgid "migrated"
+msgstr "migré"
+
+msgid "gone from its subscription"
+msgstr "disparu de son abonnement"
+
+msgid "Server"
+msgstr "Serveur"
+
+msgid "Engine"
+msgstr "Moteur"
+
+msgid "Latency"
+msgstr "Latence"
+
+msgid "The latency is a TCP connection to the server, through the tunnel when the VPN is up. WireGuard and OpenVPN servers usually speak UDP and cannot be tested this way."
+msgstr "La latence est une connexion TCP vers le serveur, par le tunnel quand le VPN est actif. Les serveurs WireGuard et OpenVPN parlent en général UDP et ne peuvent pas être mesurés ainsi."
+
+msgid "Enter an IPv4 or IPv6 address"
+msgstr "Saisissez une adresse IPv4 ou IPv6"
+
+msgid "On: nothing leaves outside the tunnel"
+msgstr "Activé : rien ne sort en dehors du tunnel"
+
+msgid "Off: traffic goes out directly while the tunnel is down"
+msgstr "Désactivé : le trafic sort directement tant que le tunnel est coupé"
+
+msgid "Yes: Tailscale's own connections go through the tunnel"
+msgstr "Oui : les connexions propres de Tailscale passent par le tunnel"
+
+msgid "No: Tailscale connects directly"
+msgstr "Non : Tailscale se connecte directement"
+
+msgid "Routing"
+msgstr "Routage"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down."
+msgstr "Le kill switch bloque tout le trafic de l'appareil et du LAN tant que le VPN est coupé."
+
+msgid "Bypass the tunnel"
+msgstr "Contourner le tunnel"
+
+msgid "Enter address ranges like 192.168.0.0/16, separated by commas"
+msgstr "Saisissez des plages d'adresses comme 192.168.0.0/16, séparées par des virgules"
+
+msgid "Address ranges that never go into the tunnel, besides the LAN itself (which never does). Empty: the LAN only."
+msgstr "Plages d'adresses qui n'entrent jamais dans le tunnel, en plus du LAN lui-même (qui n'y entre jamais). Vide : le LAN seulement."
+
+msgid "Tailscale through the VPN"
+msgstr "Tailscale via le VPN"
+
+msgid "When Tailscale runs on the device, its WireGuard, DERP and control connections go through whichever tunnel runs (dae catches them like any other)."
+msgstr "Quand Tailscale tourne sur l'appareil, ses connexions WireGuard, DERP et de contrôle passent par le tunnel en cours (dae les capte comme les autres)."
+
+msgid "DNS"
+msgstr "DNS"
+
+msgid "DNS through the tunnel"
+msgstr "DNS via le tunnel"
+
+msgid "The resolver the device's and the LAN's lookups go to, through the tunnel. Nothing goes to the carrier's resolver."
+msgstr "Le résolveur auquel vont, par le tunnel, les requêtes de l'appareil et du LAN. Rien ne va au résolveur de l'opérateur."
+
+msgid "Bootstrap DNS"
+msgstr "DNS d'amorçage"
+
+msgid "Finds the VPN server's own address before the tunnel is up (directly, on the engine's own connection)."
+msgstr "Trouve l'adresse du serveur VPN lui-même avant que le tunnel ne soit actif (directement, sur la connexion propre du moteur)."
+
+msgid "Empty puts a setting back to its default."
+msgstr "Vide rétablit un paramètre à sa valeur par défaut."
+
+msgid "TUN stack"
+msgstr "Pile TUN"
+
+msgid "Default (gvisor)"
+msgstr "Par défaut (gvisor)"
+
+msgid "system (not on the 5.4 kernel)"
+msgstr "system (pas sur le noyau 5.4)"
+
+msgid "set (unchanged unless you type a new one)"
+msgstr "défini (inchangé sauf si vous en saisissez un nouveau)"
+
+msgid "not set"
+msgstr "non défini"
+
+msgid "Upstream HTTP proxy"
+msgstr "Proxy HTTP amont"
+
+msgid "TLS certificate pin (SHA-256)"
+msgstr "Épinglage de certificat TLS (SHA-256)"
+
+msgid "Enter host:port"
+msgstr "Saisissez hôte:port"
+
+msgid "Enter the SHA-256 in hex"
+msgstr "Saisissez le SHA-256 en hexadécimal"
+
+msgid "Profile options"
+msgstr "Options du profil"
+
+msgid "None of the profiles has options of its type."
+msgstr "Aucun des profils n'a d'options propres à son type."
+
+msgid "mihomo's mode (rule, global, direct), the engines' log levels, dae's groups and routing are part of each profile's own config: VPN > Profiles, Show / edit the config."
+msgstr "Le mode de mihomo (rule, global, direct), les niveaux de journalisation des moteurs, les groupes et le routage de dae font partie de la configuration propre à chaque profil : VPN > Profils, Afficher / modifier la configuration."
+
+msgid "Delete the subscription %s?"
+msgstr "Supprimer l'abonnement %s ?"
+
+msgid "Its profiles can go with it or stay as profiles of their own. The active profile is never removed while the VPN is on."
+msgstr "Ses profils peuvent partir avec lui ou rester comme profils indépendants. Le profil actif n'est jamais supprimé tant que le VPN est activé."
+
+msgid "Keep the profiles"
+msgstr "Conserver les profils"
+
+msgid "Delete with its profiles"
+msgstr "Supprimer avec ses profils"
+
+msgid "Only by hand"
+msgstr "Seulement à la main"
+
+msgid "Every %d h"
+msgstr "Toutes les %d h"
+
+msgid "Share links: one profile per link"
+msgstr "Liens de partage : un profil par lien"
+
+msgid "Clash/mihomo YAML: one mihomo profile"
+msgstr "YAML Clash/mihomo : un profil mihomo"
+
+msgid "dae: one profile with every node in one group"
+msgstr "dae : un profil avec tous les nœuds dans un groupe"
+
+msgid "Add a subscription"
+msgstr "Ajouter un abonnement"
+
+msgid "Format"
+msgstr "Format"
+
+msgid "The URL usually holds your account token: it is stored on the device readable by root only, and never shown again. The subscription is fetched over the device's own connection: through the tunnel when the VPN is up; with the kill switch up and the tunnel down it cannot be fetched."
+msgstr "L'URL contient souvent le jeton de votre compte : elle est stockée sur l'appareil, lisible par root seul, et n'est plus jamais affichée. L'abonnement est récupéré par la connexion propre de l'appareil : par le tunnel quand le VPN est actif ; avec le kill switch actif et le tunnel coupé, il ne peut pas être récupéré."
+
+msgid "Refresh all"
+msgstr "Tout actualiser"
+
+msgid "No subscriptions yet."
+msgstr "Aucun abonnement pour l'instant."
+
+msgid "Host"
+msgstr "Hôte"
+
+msgid "Updated"
+msgstr "Mis à jour"
+
+msgid "Share links"
+msgstr "Liens de partage"
+
+msgid "A refresh keeps the profiles whose name is unchanged, adds the new ones and removes the ones that are gone (the active one stays while the VPN is on, marked as gone). A refresh of the active profile restarts the running VPN."
+msgstr "Une actualisation conserve les profils dont le nom est inchangé, ajoute les nouveaux et supprime ceux qui ont disparu (le profil actif reste tant que le VPN est activé, marqué comme disparu). L'actualisation du profil actif redémarre le VPN en cours."
+
+msgid "Dashboard info failed"
+msgstr "Échec des informations du tableau de bord"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch): no live signal right now"
+msgstr "The modem is restarting (network locks or a SIM switch): no live signal right now"
+
+msgid "Live signal read failed"
+msgstr "Échec de la lecture du signal en direct"
+
+msgid "Unknown op"
+msgstr "Opération inconnue"
+
+msgid "Invalid argument for this op"
+msgstr "Argument invalide pour cette opération"
+
+msgid "The radio is busy: the dial or the watchdog is switching it, try again shortly"
+msgstr "La radio est occupée : la numérotation ou le watchdog la bascule, réessayez dans un instant"
+
+msgid "The action gave no valid reply"
+msgstr "L'action n'a renvoyé aucune réponse valide"
+
+msgid "The confirm parameter must be 0 or 1"
+msgstr "Le paramètre confirm doit valoir 0 ou 1"
+
+msgid "An AT command is one line of printable ASCII, at most 512 characters"
+msgstr "Une commande AT est une ligne d'ASCII imprimable de 512 caractères au maximum"
+
+msgid "Must be an AT command"
+msgstr "Doit être une commande AT"
+
+msgid "No \";\" command chaining"
+msgstr "Pas d'enchaînement de commandes avec « ; »"
+
+msgid "Denied: this command wedges the AT port until a reboot"
+msgstr "Refusé : cette commande bloque le port AT jusqu'au redémarrage"
+
+msgid "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+msgstr "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+msgstr "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+
+msgid "A long AT command is still running in the background; try again when it has finished"
+msgstr "Une longue commande AT s'exécute encore en arrière-plan ; réessayez quand elle sera terminée"
+
+msgid "This command needs confirmation"
+msgstr "Cette commande demande une confirmation"
+
+msgid "The AT channel is busy; the command was not sent, try again"
+msgstr "Le canal AT est occupé ; la commande n'a pas été envoyée, réessayez"
+
+msgid "The modem did not answer in time; the command may still run, check before sending it again"
+msgstr "Le modem n'a pas répondu à temps ; la commande peut encore s'exécuter, vérifiez avant de la renvoyer"
+
+msgid "The fresh parameter must be 0 or 1"
+msgstr "Le paramètre fresh doit valoir 0 ou 1"
+
+msgid "Reading the locks from the modem; try again in a few seconds"
+msgstr "Lecture des verrouillages depuis le modem ; réessayez dans quelques secondes"
+
+msgid "Lock read failed"
+msgstr "Échec de la lecture des verrouillages"
+
+msgid "Unknown lock kind"
+msgstr "Type de verrouillage inconnu"
+
+msgid "Invalid value for this lock kind"
+msgstr "Valeur invalide pour ce type de verrouillage"
+
+msgid "None of these bands is supported by this modem"
+msgstr "Ce modem ne prend en charge aucune de ces bandes"
+
+msgid "Band, mode and cell locks are not supported for SIM2 yet"
+msgstr "Les verrous de bande, de mode et de cellule ne sont pas encore pris en charge pour la SIM2"
+
+msgid "Band, mode and cell locks are not supported while dual-SIM switching manages the radio"
+msgstr "Les verrous de bande, de mode et de cellule ne sont pas pris en charge tant que la bascule double SIM gère la radio"
+
+msgid "Invalid page"
+msgstr "Page invalide"
+
+msgid "mu300-sms is not available (the SMS service is not installed or not running)"
+msgstr "mu300-sms n'est pas disponible (le service SMS n'est pas installé ou ne fonctionne pas)"
+
+msgid "No output"
+msgstr "Aucune sortie"
+
+msgid "Bad ID"
+msgstr "ID incorrect"
+
+msgid "Read failed"
+msgstr "Échec de la lecture"
+
+msgid "The number may only contain digits (and a leading +)"
+msgstr "Le numéro ne peut contenir que des chiffres (et un + initial)"
+
+msgid "The message is empty"
+msgstr "Le message est vide"
+
+msgid "The message is too long (over 480 characters)"
+msgstr "Le message est trop long (plus de 480 caractères)"
+
+msgid "The message contains a control character"
+msgstr "Le message contient un caractère de contrôle"
+
+msgid "The sim parameter must be 0 or 1"
+msgstr "Le paramètre sim doit valoir 0 ou 1"
+
+msgid "The USB adapter (device-usb) gave no valid reply"
+msgstr "L'adaptateur USB (device-usb) n'a renvoyé aucune réponse valide"
+
+msgid "The auto parameter must be 0 or 1"
+msgstr "Le paramètre auto doit valoir 0 ou 1"
+
+msgid "Invalid USB role"
+msgstr "Rôle USB invalide"
+
+msgid "A USB role takes no scope"
+msgstr "Un rôle USB ne prend pas de portée"
+
+msgid "Invalid USB network mode"
+msgstr "Mode réseau USB invalide"
+
+msgid "Invalid USB network scope"
+msgstr "Portée du réseau USB invalide"
+
+msgid "Unknown USB setting"
+msgstr "Paramètre USB inconnu"
+
+msgid "Invalid interface name"
+msgstr "Nom d'interface invalide"
+
+msgid "The power adapter gave no valid reply"
+msgstr "L'adaptateur d'alimentation n'a pas donné de réponse valide"
+
+msgid "Unknown power operation"
+msgstr "Opération d'alimentation inconnue"
+
+msgid "Unknown power setting"
+msgstr "Réglage d'alimentation inconnu"
+
+msgid "Invalid power value"
+msgstr "Valeur d'alimentation invalide"
+
+msgid "Invalid power request"
+msgstr "Requête d'alimentation invalide"
+
+msgid "The languages adapter gave no valid reply"
+msgstr "L'adaptateur de langues n'a renvoyé aucune réponse valide"
+
+msgid "Unknown language operation"
+msgstr "Opération de langue inconnue"
+
+msgid "Invalid language code"
+msgstr "Code de langue invalide"
+
+msgid "Invalid language request"
+msgstr "Requête de langue invalide"
+
+msgid "Unknown source"
+msgstr "Source inconnue"
+
+msgid "The TTL adapter gave no valid reply"
+msgstr "L'adaptateur TTL n'a pas donné de réponse valide"
+
+msgid "Invalid TTL"
+msgstr "TTL invalide"
+
+msgid "The data usage adapter gave no valid reply"
+msgstr "L'adaptateur de consommation de données n'a pas donné de réponse valide"
+
+msgid "Unknown data usage setting"
+msgstr "Réglage de consommation de données inconnu"
+
+msgid "Invalid value for this setting"
+msgstr "Valeur invalide pour ce réglage"
+
+msgid "The forwarding adapter gave no valid reply"
+msgstr "L'adaptateur de transfert n'a pas donné de réponse valide"
+
+msgid "The CPU adapter gave no valid reply"
+msgstr "The CPU adapter gave no valid reply"
+
+msgid "Invalid CPU profile"
+msgstr "Invalid CPU profile"
+
+msgid "Invalid CPU core"
+msgstr "Cœur CPU invalide"
+
+msgid "Unknown CPU operation"
+msgstr "Unknown CPU operation"
+
+msgid "Unknown CPU voltage operation"
+msgstr "Opération de tension CPU inconnue"
+
+msgid "Invalid CPU voltage request"
+msgstr "Requête de tension CPU non valide"
+
+msgid "Invalid CPU voltage offset"
+msgstr "Décalage de tension CPU non valide"
+
+msgid "Type the confirmation word to apply a voltage offset"
+msgstr "Saisissez le mot de confirmation pour appliquer un décalage de tension"
+
+msgid "Invalid stress test length"
+msgstr "Durée de test de charge non valide"
+
+msgid "The packages adapter gave no valid reply"
+msgstr "L'adaptateur des paquets n'a pas donné de réponse valide"
+
+msgid "Invalid packages operation"
+msgstr "Opération sur les paquets non valide"
+
+msgid "The sizes parameter must be 0 or 1"
+msgstr "Le paramètre sizes doit valoir 0 ou 1"
+
+msgid "The update adapter gave no valid reply"
+msgstr "L'adaptateur de mise à jour n'a pas donné de réponse valide"
+
+msgid "Unknown update operation"
+msgstr "Opération de mise à jour inconnue"
+
+msgid "Invalid update request"
+msgstr "Demande de mise à jour invalide"
+
+msgid "The backup tool gave no valid reply"
+msgstr "L'outil de sauvegarde n'a pas donné de réponse valide"
+
+msgid "Mobile data integration is not provided by this platform"
+msgstr "L'intégration des données mobiles n'est pas fournie par cette plateforme"
+
+msgid "The SIM settings could not be read"
+msgstr "Impossible de lire les réglages SIM"
+
+msgid "Radio control is not provided by this platform"
+msgstr "Cette plateforme ne fournit pas le contrôle radio"
+
+msgid "A SIM radio change is already running"
+msgstr "Un changement de radio SIM est déjà en cours"
+
+# Source-language fallback for untranslated new controls.
+msgid "Invalid SIM setting"
+msgstr "Invalid SIM setting"
+
+msgid "The modem did not take the setting; nothing was saved"
+msgstr "Le modem n'a pas pris le réglage ; rien n'a été enregistré"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control failed"
+msgstr "SIM control failed"
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching; reboot if channels are unavailable or wait until idle"
+msgstr "Enable hot switching; reboot if channels are unavailable or wait until idle"
+
+msgid "Request too large"
+msgstr "Requête trop volumineuse"
+
+msgid "The runtime directory is not safe; nothing was run"
+msgstr "Le répertoire d'exécution n'est pas sûr ; rien n'a été exécuté"
+
+msgid "No such method"
+msgstr "Méthode inexistante"
+
+msgid "The VPN module refused the request"
+msgstr "Le module VPN a refusé la requête"
+
+msgid "The VPN panel is busy, try again"
+msgstr "Le panneau VPN est occupé, réessayez"
+
+msgid "Another VPN task is still running"
+msgstr "Une autre tâche VPN est encore en cours"
+
+msgid "The exit_ip parameter must be 0 or 1"
+msgstr "Le paramètre exit_ip doit valoir 0 ou 1"
+
+msgid "The VPN status could not be read"
+msgstr "Impossible de lire l'état du VPN"
+
+msgid "The profiles could not be read"
+msgstr "Impossible de lire les profils"
+
+msgid "The check parameter must be 0 or 1"
+msgstr "Le paramètre check doit valoir 0 ou 1"
+
+msgid "The engines could not be read"
+msgstr "Impossible de lire les moteurs"
+
+msgid "The subscriptions could not be read"
+msgstr "Impossible de lire les abonnements"
+
+msgid "The VPN settings could not be read"
+msgstr "Impossible de lire les paramètres du VPN"
+
+msgid "Unknown VPN operation"
+msgstr "Opération VPN inconnue"
+
+msgid "The VPN could not be switched"
+msgstr "Impossible de basculer le VPN"
+
+msgid "The kill switch is on or off"
+msgstr "Le kill switch est activé ou désactivé"
+
+msgid "The kill switch could not be changed"
+msgstr "Impossible de modifier le kill switch"
+
+msgid "Invalid profile id"
+msgstr "Identifiant de profil non valide"
+
+msgid "The profile could not be made the active one"
+msgstr "Impossible de rendre le profil actif"
+
+msgid "Unknown profile source"
+msgstr "Source de profil inconnue"
+
+msgid "Unknown profile type"
+msgstr "Type de profil inconnu"
+
+msgid "The config is empty, too large or holds control characters"
+msgstr "La configuration est vide, trop grande ou contient des caractères de contrôle"
+
+msgid "Invalid profile request"
+msgstr "Requête de profil non valide"
+
+msgid "A config from a URL takes the type it says"
+msgstr "Une configuration issue d'une URL prend le type qu'elle indique"
+
+msgid "No uploaded file"
+msgstr "Aucun fichier envoyé"
+
+msgid "The file is larger than 1 MiB"
+msgstr "Le fichier dépasse 1 MiB"
+
+msgid "The profile could not be added"
+msgstr "Impossible d'ajouter le profil"
+
+msgid "The profile could not be renamed"
+msgstr "Impossible de renommer le profil"
+
+msgid "The profile could not be removed"
+msgstr "Impossible de supprimer le profil"
+
+msgid "The profile does not pass the check"
+msgstr "Le profil ne passe pas la vérification"
+
+msgid "Unknown profile option"
+msgstr "Option de profil inconnue"
+
+msgid "Invalid value for this option"
+msgstr "Valeur non valide pour cette option"
+
+msgid "The option could not be set"
+msgstr "Impossible de définir l'option"
+
+msgid "The config could not be read"
+msgstr "Impossible de lire la configuration"
+
+msgid "The config was not saved"
+msgstr "La configuration n'a pas été enregistrée"
+
+msgid "The latency test failed"
+msgstr "La mesure de latence a échoué"
+
+msgid "The refresh interval is 1 to 999 hours"
+msgstr "L'intervalle d'actualisation va de 1 à 999 heures"
+
+msgid "Unknown subscription type"
+msgstr "Type d'abonnement inconnu"
+
+msgid "Invalid subscription id"
+msgstr "Identifiant d'abonnement non valide"
+
+msgid "The keep parameter must be 0 or 1"
+msgstr "Le paramètre keep doit valoir 0 ou 1"
+
+msgid "The subscription could not be removed"
+msgstr "Impossible de supprimer l'abonnement"
+
+msgid "The file is too large"
+msgstr "Le fichier est trop volumineux"
+
+msgid "Unknown engine"
+msgstr "Moteur inconnu"
+
+msgid "The unverified parameter must be 0 or 1"
+msgstr "Le paramètre unverified doit valoir 0 ou 1"
+
+msgid "This engine is a system package: it has no file to upload"
+msgstr "Ce moteur est un paquet du système : il n'a pas de fichier à envoyer"
+
+msgid "The engine could not be removed"
+msgstr "Impossible de supprimer le moteur"
+
+msgid "mu300-extra is not on this system"
+msgstr "mu300-extra n'est pas présent sur ce système"
+
+msgid "Unknown VPN setting"
+msgstr "Paramètre VPN inconnu"
+
+msgid "The setting could not be saved"
+msgstr "Le réglage n'a pas pu être enregistré"
+
+msgid "The number of lines is 1 to 1000"
+msgstr "Le nombre de lignes va de 1 à 1000"
+
+msgid "The log could not be read"
+msgstr "Impossible de lire le journal"
+
+msgid "The radio of this SIM is switched off in its settings"
+msgstr "La radio de cette SIM est éteinte dans ses réglages"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM control or reboot for managed dual-SIM radio"
+msgstr "Use SIM control or reboot for managed dual-SIM radio"
+
+msgid "The radio did not follow its setting"
+msgstr "La radio n'a pas suivi son réglage"
+
+msgid "The data roaming setting could not be saved"
+msgstr "Le réglage de l'itinérance des données n'a pas pu être enregistré"
+
+msgid "Expected on or off"
+msgstr "Valeur attendue : on ou off"
+
+msgid "VPN integration is not provided by this platform"
+msgstr "L'intégration VPN n'est pas fournie par cette plateforme"
+
+msgid "Dual-boot integration is not provided by this platform"
+msgstr "L'intégration du double démarrage n'est pas fournie par cette plateforme"
+
+msgid "mu300-next-boot failed"
+msgstr "Échec de mu300-next-boot"
+
+msgid "AT backend did not answer (radio off, modem restarting, or adapter unavailable)"
+msgstr "Le backend AT n'a pas répondu (radio désactivée, modem en redémarrage ou adaptateur indisponible)"
+
+msgid "The CPU profile could not be read"
+msgstr "The CPU profile could not be read"
+
+msgid "The CPU profile could not be set"
+msgstr "The CPU profile could not be set"
+
+msgid "The CPU core could not be switched"
+msgstr "Le cœur CPU n'a pas pu être basculé"
+
+msgid "Invalid low latency setting"
+msgstr "Réglage de faible latence invalide"
+
+msgid "The low latency setting could not be applied"
+msgstr "Le réglage de faible latence n'a pas pu être appliqué"
+
+msgid "The CPU voltage offset could not be read"
+msgstr "Impossible de lire le décalage de tension CPU"
+
+msgid "The CPU voltage offset was refused"
+msgstr "Le décalage de tension CPU a été refusé"
+
+msgid "The CPU voltage offset could not be turned off"
+msgstr "Impossible de désactiver le décalage de tension CPU"
+
+msgid "The stress test could not be started"
+msgstr "Impossible de démarrer le test de charge"
+
+msgid "USB role adapter is not executable"
+msgstr "L'adaptateur de rôle USB n'est pas exécutable"
+
+msgid "USB role adapter failed"
+msgstr "Échec de l'adaptateur de rôle USB"
+
+msgid "USB role switch is unavailable"
+msgstr "Le changement de rôle USB est indisponible"
+
+msgid "USB role switch failed"
+msgstr "Échec du changement de rôle USB"
+
+msgid "USB role switch was refused by platform safety checks"
+msgstr "Le changement de rôle USB a été refusé par les contrôles de sécurité de la plateforme"
+
+msgid "Cannot create USB boot settings directory"
+msgstr "Impossible de créer le répertoire des paramètres de démarrage USB"
+
+msgid "Cannot write USB boot settings"
+msgstr "Impossible d'écrire les paramètres de démarrage USB"
+
+msgid "Cannot save USB boot settings"
+msgstr "Impossible d'enregistrer les paramètres de démarrage USB"
+
+msgid "Invalid boot-auto value"
+msgstr "Valeur boot-auto invalide"
+
+msgid "Device is the boot default; host auto-apply is the only persistent role"
+msgstr "Le mode périphérique est le rôle par défaut au démarrage ; l'application automatique du mode hôte est le seul rôle persistant"
+
+msgid "Cannot save USB role policy"
+msgstr "Impossible d'enregistrer la politique de rôle USB"
+
+msgid "Cannot disable USB network boot policy"
+msgstr "Impossible de désactiver la politique de démarrage du réseau USB"
+
+msgid "Cannot commit USB role policy"
+msgstr "Impossible de valider la politique de rôle USB"
+
+msgid "USB network mode is unavailable in host role"
+msgstr "Le mode réseau USB est indisponible en rôle hôte"
+
+msgid "Disable host boot-auto before configuring USB network"
+msgstr "Désactivez le boot-auto du mode hôte avant de configurer le réseau USB"
+
+msgid "Cannot save USB network policy"
+msgstr "Impossible d'enregistrer la politique réseau USB"
+
+msgid "Cannot commit USB network policy"
+msgstr "Impossible de valider la politique réseau USB"
+
+msgid "USB host mode is required"
+msgstr "Le mode hôte USB est requis"
+
+msgid "Not a USB network interface"
+msgstr "Ce n'est pas une interface réseau USB"
+
+msgid "LAN bridge device section was not found"
+msgstr "Section du périphérique du pont LAN introuvable"
+
+msgid "Cannot bring USB network interface up"
+msgstr "Impossible d'activer l'interface réseau USB"
+
+msgid "Cannot add interface to LAN bridge"
+msgstr "Impossible d'ajouter l'interface au pont LAN"
+
+msgid "Cannot save LAN bridge"
+msgstr "Impossible d'enregistrer le pont LAN"
+
+msgid "Network reload failed"
+msgstr "Échec du rechargement du réseau"
+
+msgid "Cannot attach USB interface to LAN bridge"
+msgstr "Impossible de rattacher l'interface USB au pont LAN"
+
+msgid "Invalid forwarding setting"
+msgstr "Paramètre de transfert invalide"
+
+msgid "The message template is too long or contains a control character"
+msgstr "Le modèle de message est trop long ou contient un caractère de contrôle"
+
+msgid "Invalid filter list (at most 50 lines)"
+msgstr "Liste de filtres invalide (50 lignes au plus)"
+
+msgid "The webhook address must be an http:// or https:// URL"
+msgstr "L'adresse du webhook doit être une URL http:// ou https://"
+
+msgid "The webhook body is too long or contains a control character"
+msgstr "Le corps du webhook est trop long ou contient un caractère de contrôle"
+
+msgid "The answer check must be key=value, like errcode=0 or ok=true (the value a whole number or lowercase letters, 16 at most)"
+msgstr "La vérification de la réponse doit être de la forme clé=valeur, comme errcode=0 ou ok=true (la valeur : un nombre entier ou des lettres minuscules, 16 au plus)"
+
+msgid "Invalid header (one \"Name: value\" per line; Host, Content-Type, Content-Length, Transfer-Encoding and Connection are set by the device)"
+msgstr "En-tête invalide (un \"Nom: valeur\" par ligne ; Host, Content-Type, Content-Length, Transfer-Encoding et Connection sont définis par l'appareil)"
+
+msgid "Invalid Telegram bot token"
+msgstr "Jeton de bot Telegram invalide"
+
+msgid "Invalid Telegram chat (a number, or @channel)"
+msgstr "Chat Telegram invalide (un nombre ou @canal)"
+
+msgid "Invalid e-mail setting"
+msgstr "Paramètre e-mail invalide"
+
+msgid "The webhook needs an address"
+msgstr "Le webhook a besoin d'une adresse"
+
+msgid "Telegram needs a bot token and a chat"
+msgstr "Telegram a besoin d'un jeton de bot et d'un chat"
+
+msgid "E-mail needs a server, a sender and a recipient"
+msgstr "L'e-mail a besoin d'un serveur, d'un expéditeur et d'un destinataire"
+
+msgid "SMS forwarding needs a phone number"
+msgstr "Le transfert par SMS a besoin d'un numéro de téléphone"
+
+msgid "The forwarding settings could not be saved"
+msgstr "Les paramètres de transfert n'ont pas pu être enregistrés"
+
+msgid "SMS forwarding is not installed"
+msgstr "Le transfert de SMS n'est pas installé"
+
+msgid "A test was started a moment ago; wait a few seconds"
+msgstr "Un test vient d’être lancé ; attendez quelques secondes"
+
+msgid "The delivery log could not be cleared"
+msgstr "Le journal des envois n’a pas pu être vidé"
+
+msgid "Unknown forwarding operation"
+msgstr "Opération de transfert inconnue"
+
+msgid "The language pack is not installed"
+msgstr "Le pack de langues n'est pas installé"
+
+msgid "No language given"
+msgstr "Aucune langue indiquée"
+
+msgid "The language could not be changed"
+msgstr "Impossible de changer la langue"
+
+msgid "LuCI does not offer this language"
+msgstr "LuCI ne propose pas cette langue"
+
+msgid "No uploaded language pack"
+msgstr "Aucun pack de langues envoyé"
+
+msgid "An installation is already running"
+msgstr "Une installation est déjà en cours"
+
+msgid "The language pack could not be removed"
+msgstr "Impossible de supprimer le pack de langues"
+
+msgid "Lock cache unavailable"
+msgstr "Cache des verrouillages indisponible"
+
+msgid "The modem refused a write"
+msgstr "Le modem a refusé une écriture"
+
+msgid "The saved locks could not be cleared"
+msgstr "Les verrouillages enregistrés n'ont pas pu être effacés"
+
+msgid "No serving cell to lock to"
+msgstr "Aucune cellule de service à verrouiller"
+
+msgid "The modem did not answer the mode query; nothing was sent"
+msgstr "Le modem n'a pas répondu à la requête de mode ; rien n'a été envoyé"
+
+msgid "The read-back does not match the automatic values"
+msgstr "La relecture ne correspond pas aux valeurs automatiques"
+
+msgid "The read-back after the stack restart does not match the automatic values"
+msgstr "La relecture après le redémarrage de la pile ne correspond pas aux valeurs automatiques"
+
+msgid "The reset was interrupted"
+msgstr "La réinitialisation a été interrompue"
+
+msgid "Reinstalling packages is not available on this system"
+msgstr "La réinstallation des paquets n'est pas disponible sur ce système"
+
+msgid "No packages were written down by an update"
+msgstr "Aucune mise à jour n'a noté de paquets"
+
+msgid "Reinstalling is running already"
+msgstr "La réinstallation est déjà en cours"
+
+msgid "The note could not be dropped"
+msgstr "La note n'a pas pu être supprimée"
+
+msgid "Unknown packages operation"
+msgstr "Opération sur les paquets inconnue"
+
+msgid "usage: power get|set KEY VALUE|wake|idle"
+msgstr "usage: power get|set KEY VALUE|wake|idle"
+
+msgid "Data usage is not available on this system"
+msgstr "La consommation de données n'est pas disponible sur ce système"
+
+msgid "Unknown data usage operation"
+msgstr "Opération de consommation de données inconnue"
+
+msgid "The TTL setting could not be read"
+msgstr "Le réglage du TTL n'a pas pu être lu"
+
+msgid "The TTL could not be set"
+msgstr "Le TTL n'a pas pu être défini"
+
+msgid "Unknown TTL operation"
+msgstr "Opération TTL inconnue"
+
+msgid "An update task is already running"
+msgstr "Une tâche de mise à jour est déjà en cours"
+
+msgid "The task could not be started"
+msgstr "La tâche n'a pas pu être lancée"
+
+msgid "The updater gave no valid reply"
+msgstr "Le programme de mise à jour n'a pas donné de réponse valide"
+
+msgid "This needs confirmation"
+msgstr "Une confirmation est nécessaire"
+
+msgid "Check for updates first"
+msgstr "Recherchez d'abord des mises à jour"
+
+msgid "The upload directory is not safe; nothing was changed"
+msgstr "Le répertoire d'envoi n'est pas sûr ; rien n'a été modifié"
+
+msgid "Not enough memory for this upload"
+msgstr "Mémoire insuffisante pour cet envoi"
+
+msgid "Not enough free space on the Linux partition"
+msgstr "Espace libre insuffisant sur la partition Linux"
+
+msgid "The file was not checked; upload it again"
+msgstr "Le fichier n'a pas été vérifié ; envoyez-le à nouveau"
+
+msgid "This file is not for this device"
+msgstr "Ce fichier n'est pas destiné à cet appareil"
+
+msgid "The signature of this file is wrong"
+msgstr "La signature de ce fichier est incorrecte"
+
+msgid "This file is not signed: that needs confirmation"
+msgstr "Ce fichier est non signé : une confirmation est nécessaire"
+
+msgid "This file is older than what is installed: that needs confirmation"
+msgstr "Ce fichier est plus ancien que la version installée : une confirmation est nécessaire"
+
+msgid "The release source was not changed"
+msgstr "La source de la version n’a pas été modifiée"

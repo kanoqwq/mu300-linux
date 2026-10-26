@@ -1,0 +1,75 @@
+#!/bin/sh
+# Vendor drivers Android loads that the initramfs does not: thermal throttling, status LEDs, SAR power
+# backoff, SIM tray detection, vibrator, DDR/CP DVFS and the Mali GPU (/dev/mali0). Loaded one by one; a failure is logged, not fatal.
+# On the mainline kernel the modem stack is not in the boot image at all: the SIPA accelerator attaches to the
+# USB gadget's usb0 as it is created, and a gadget created while those modules are already loaded transmits
+# nothing the host ever sees. So they are loaded here, once userspace is up and the gadget is long since bound.
+# sipa-dele is deliberately not in that list: it has to come after the modem, not with it (see below).
+M=/lib/modules/$(uname -r)
+if [ -f "$M/sipc-core.ko" ] && ! [ -e /dev/modem ]; then
+    for m in sprd_systimer sprd_time_sync sprd_time_sync_cp trusty trusty-pm trusty-log trusty-irq trusty-ipc \
+             trusty-virtio sprd_shm unisoc-mailbox sprd-sipc-virt-bus sprd_power_manager sipc-core spipe spool \
+             sipx seth slog_bridge sbuf_bridge sblock_bridge sprd_modem_loader sipa-sys sipa-core sipa_eth \
+             sprdbt_tty; do
+        for f in "$M/$m.ko" "$M/$(echo "$m" | tr '_' '-').ko"; do
+            [ -f "$f" ] || continue
+            insmod "$f" 2>/dev/null && echo "loaded $m" || echo "FAILED $m"
+            break
+        done
+    done
+fi
+
+# The IPA delegate (sipa-dele) is not loaded here, nor started from here (K45). It has to come after the modem
+# is attached to the packet domain and before the PDP context: loaded in the background from here it raced the
+# dial, and inserted after AT+CGACT its probe hit a reproducible CFI panic (kanoqwq's fork, cd4fb28, where only
+# OpenWrt was changed; the race is the same on Ubuntu). mobile-data loads it itself, through sipa-dele-start,
+# between the registration and AT+CGACT, on every system. See those two scripts and docs/FINDINGS.md 13f.
+
+# The PM co-processor keeps its own watchdog, and it power-cuts the device a few minutes after boot unless this
+# driver tells pm_sys to stop it (docs/FINDINGS.md 5). The 5.4 boot image has always loaded it; mainline boot
+# images built before it was ported do not, so load it here too.
+if [ -f "$M/sprd_pmic_wdt.ko" ] && ! grep -q '^sprd_pmic_wdt ' /proc/modules; then
+    insmod "$M/sprd_pmic_wdt.ko" 2>/dev/null && echo "loaded sprd_pmic_wdt" || echo "FAILED sprd_pmic_wdt"
+fi
+
+# The stock virtual thermal zone on a mainline kernel (upstream/modules/mu300_thermal, docs/FINDINGS.md 48): soc-thmzone
+# with the device tree's trips and cpufreq cooling maps, so the kernel throttles the clusters at 85 C and thermal-guard
+# hands frequency control over. The vendor 5.4 kernel has its own driver for it and no such module. modprobe needs
+# depmod's index (Ubuntu keeps the bundle's modules in extra/), so insmod by path is the fallback; a failure leaves
+# thermal-guard in charge, as before.
+# ums9620_lpintc (upstream/modules/ums9620_lpintc, docs/FINDINGS.md 218), the same way: the interrupts the kernel
+# enabled become wake sources of the CPU clusters' power-down, which TF-A left at its own short list (USB, IPA and
+# the Wi-Fi's PCIe were not on it). Mainline only; without it an interrupt waits for something else to wake the cluster.
+for m in mu300_thermal ums9620_lpintc; do
+    grep -q "^$m " /proc/modules && continue
+    for f in "$M/$m.ko" "$M/extra/$m.ko"; do
+        [ -f "$f" ] || continue
+        if modprobe "$m" 2>/dev/null || insmod "$f" 2>/dev/null; then echo "loaded $m"; else echo "FAILED $m"; fi
+        break
+    done
+done
+
+for m in sprd_soc_thm thermal-generic-adc sprd_cpu_cooling leds-sc27xx-bltc zte_sar zte_card_holder_det sc27xx-vibra sprd_cp_dvfs sprd_ddr_dvfs sprd_gpu_cooling mali_kbase; do
+    if modprobe "$m" 2>/tmp/mu300-modprobe.err; then
+        echo "loaded $m"
+    else
+        echo "FAILED $m: $(cat /tmp/mu300-modprobe.err)"
+    fi
+done
+# The virtual sound card: the board has no speaker path, so software that wants an ALSA device (a program that
+# bridges a call, for one) gets a playback/capture pair wired back to back instead - write to hw:0,0 and read it
+# back on hw:0,1. Harmless when nothing opens it. modprobe only finds it once depmod has indexed the module, so
+# fall back to insmod from the directory the rootfs build puts it in.
+if ! grep -q '^snd_aloop ' /proc/modules; then
+    if modprobe snd-aloop 2>/dev/null; then
+        echo "loaded snd-aloop"
+    else
+        for f in "$M/extra/snd-aloop.ko" "$M/snd-aloop.ko"; do
+            [ -f "$f" ] || continue
+            insmod "$f" 2>/dev/null && echo "loaded snd-aloop" || echo "FAILED snd-aloop"
+            break
+        done
+    fi
+fi
+
+true

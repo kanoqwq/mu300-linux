@@ -1,0 +1,45 @@
+#!/bin/sh
+# Non-blocking boot worker. It does not delay OpenWrt startup: it waits in its
+# own procd instance and applies saved locks as soon as the configured AT
+# adapter answers. No saved state or a disabled switch means zero AT traffic.
+
+# the shared JSON escaper and uci allow-lists (/usr/share/unisoc-modem/lib.sh)
+LIB=${0%/*}/../../share/unisoc-modem/lib.sh
+[ -f "$LIB" ] || LIB=/usr/share/unisoc-modem/lib.sh
+. "$LIB"
+cfg() { uci_get "$1"; }
+AT_BIN=${UNISOC_AT_BIN:-/usr/libexec/unisoc-modem/at}
+LOCK_BIN=${UNISOC_LOCK_BIN:-/usr/libexec/unisoc-modem/lock}
+state=$(safe_state_dir "$(cfg state_dir)" /etc/unisoc-modem/lock-state.d)
+marker=${UNISOC_REPLAY_MARKER:-/run/unisoc-modem-lock-replay-done}
+early_pending=${UNISOC_EARLY_PENDING:-/run/unisoc-modem-early-hook-pending}
+deadline=$(cfg replay_timeout); deadline=${deadline:-90}
+case $deadline in ''|*[!0-9]*) deadline=90 ;; esac
+
+[ "$(cat "$state/auto_apply" 2>/dev/null)" != off ] || exit 0
+have=0
+for k in endc mode lte nr cell; do [ -s "$state/$k" ] && have=1; done
+[ "$have" = 1 ] || exit 0
+[ -e "$marker" ] && exit 0
+
+elapsed=0
+while [ "$elapsed" -lt "$deadline" ]; do
+	[ -e "$marker" ] && exit 0
+	# A platform radio-on hook owns the first AT window (including SMMSWAP).
+	# Do not probe until it finishes; on failure, the same worker falls back.
+	if [ -e "$early_pending" ]; then
+		sleep 2
+		elapsed=$((elapsed + 2))
+		continue
+	fi
+	if "$AT_BIN" -t 1 AT 2>/dev/null | grep -qE '(^|[[:space:]])OK([[:space:]]|$)'; then
+		# A platform pre-radio hook calls `lock replay early` itself. If it did
+		# not, the generic worker must use late activation; silently doing an
+		# early replay after radio-on can leave accepted settings inactive.
+		exec "$LOCK_BIN" replay late
+	fi
+	sleep 2
+	elapsed=$((elapsed + 2))
+done
+logger -t unisoc-modem "saved lock replay skipped: AT backend not ready after ${deadline}s"
+exit 1

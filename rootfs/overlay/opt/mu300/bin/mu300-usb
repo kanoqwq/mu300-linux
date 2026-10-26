@@ -1,0 +1,370 @@
+#!/bin/sh
+# The USB-C port: its role (U30 Air; Ubuntu and OpenWrt, mainline kernels), and adb to this Linux (both devices):
+#   mu300-usb             show it, and whether adb is on and whom it lets in
+#   mu300-usb host        host: flash drives, keyboards, modems through an OTG adapter, with 5 V from the charger's
+#                         boost; or, with something powering the port (a hub or splitter with its own charger, e.g.
+#                         a USB network adapter and the charger together), host with the boost off, still charging.
+#                         The USB network to a computer is gone until "device" (it is the same port).
+#   mu300-usb device      back to the USB network / serial console to a computer (the default at every boot)
+#   mu300-usb boot        at boot (mu300-fixups, OpenWrt's mu300-hw): boost off. The charger runs on the battery,
+#                         so its registers outlive a reboot, and a boost left on would meet a computer's 5 V. Then
+#                         USB-C power delivery, when it is on.
+#   mu300-usb pd on|off|status  USB-C power delivery (U30 Air, mainline kernels; EXPERIMENTAL, off by default): the
+#                         port's roles follow what is plugged in (TCPM, the ump9620-tcpc module): a computer: device;
+#                         an OTG adapter or a USB device: host with 5 V out; a PD dock with its charger: charging, and
+#                         "mu300-usb host" asks it for the host role (a data role swap). Kept across reboots
+#                         (/etc/mu300/usb-pd). With it on, host/device ask the port controller instead.
+#   mu300-usb net [ncm|ecm|rndis [once]|default]   the USB network to a computer from the next boot on (both
+#                         devices; /etc/mu300/usb-net, which boot/init reads): NCM, the default (Windows 10 2004+/11,
+#                         macOS, Linux); ECM (macOS, Linux; no Windows driver); RNDIS (older Windows; no macOS
+#                         driver). "once": for the next boot only, then NCM again. Without an argument: the choice and
+#                         what this boot made. (openwrt-luci: its control panel's Device page keeps this.)
+#   mu300-usb adb on|off  adb over USB to this Linux (F50 and U30 Air): adbd in the USB gadget (mu300-adbd). On by
+#                         default; "off" stays off across reboots and updates (/etc/mu300/adb).
+#   mu300-usb adb auth open|keys   whom adb lets in (/etc/mu300/adb_auth). open, the default: every computer, no key
+#                         asked - anyone who can plug a cable into the device gets a root shell without a password,
+#                         whatever passwords are set. keys: only the computers whose key is authorised:
+#   mu300-usb adb key FILE   authorise a computer's ~/.android/adbkey.pub (/etc/mu300/adb_keys); "-": from stdin
+#   mu300-usb adb keys|status   the authorised keys; whether adb runs and whom it lets in
+# Without USB-C power delivery (off, the default) nothing in the kernel sees what is plugged in: the role is chosen here. The 5 V come from
+# the charger IC (SGM41511, bq2560x-compatible, I2C 0x6b): only its OTG_CONFIG bit is switched here. Without a
+# driver its watchdog puts it back to its defaults (boost off) 40 s after an I2C write unless it is kept alive, so host
+# mode turns the watchdog off and device mode back on. With the kernel's driver (bq256xx, mainline kernels since the
+# charger patch) the address is the driver's: it is reached with -f, and the watchdog stays off, as the driver set
+# it (40 s later the chip would drop the driver's charge settings); the driver reads REG01 before each write.
+# The F50 has no battery: its USB port is its power supply, so it cannot be a host.
+# With USB-C power delivery on, the kernel owns the boost (the charger's otg-vbus regulator, which refuses an outside
+# supply on VBUS) and the roles; this script then asks TCPM through /sys/class/typec and writes no charger register.
+export PATH="$PATH:/opt/mu300/bin:/usr/sbin:/sbin"
+R=${MU300_SYSROOT:-}   # (for tests/: a fake /sys)
+ADDR=0x6b
+REG_CTRL1=0x01      # bit 5 OTG_CONFIG
+REG_TIMER=0x05      # bits 5:4 WATCHDOG (00 off, 01 40 s)
+REG_STATUS=0x08     # bits 7:5 VBUS_STAT (111: OTG), bit 2 PG_STAT (an outside supply on VBUS)
+REG_PART=0x0b
+
+die() { echo "mu300-usb: $*" >&2; exit 1; }
+i2c() {  # i2c get|set ARGS: i2c-tools when there, else busybox's
+    op=$1; shift
+    if command -v "i2c$op" >/dev/null 2>&1 && [ "$(command -v "i2c$op")" != /usr/bin/busybox ]; then "i2c$op" -y $FORCE "$@"
+    elif [ -z "$R" ] && [ -x /opt/mu300/bin/busybox ]; then /opt/mu300/bin/busybox "i2c$op" -y $FORCE "$@"
+    else busybox "i2c$op" -y $FORCE "$@"; fi
+}
+FORCE=
+driver() {  # the kernel drives the charger (bq256xx): sets FORCE for i2c-dev
+    [ -e "$R/sys/bus/i2c/devices/$BUS-006b/driver" ] && FORCE=-f || :
+}
+watchdog_on() {  # back to the chip's defaults 40 s after the last write; never under the driver
+    [ -n "$FORCE" ] || setbits $REG_TIMER 0x30 0x10
+}
+bus() {  # the I2C bus of the charger: the controller at 22a0000 on the UMS9620
+    for a in "$R"/sys/bus/i2c/devices/i2c-*; do
+        case $(readlink -f "$a/of_node" 2>/dev/null) in *i2c@22a0000) echo "${a##*-}"; return 0 ;; esac
+    done
+    return 1
+}
+role_switch() { for r in "$R"/sys/class/usb_role/*; do [ -e "$r/role" ] && { echo "$r/role"; return 0; }; done; return 1; }
+reg() { i2c get "$BUS" $ADDR "$1" 2>/dev/null; }
+setbits() {  # setbits REG MASK VALUE
+    v=$(reg "$1") || die "cannot read the charger (I2C $BUS-$ADDR)"
+    i2c set "$BUS" $ADDR "$1" $(( (v & ~$2) | $3 )) || die "cannot write the charger"
+}
+
+PD_CONF=${MU300_USB_PD_CONF:-/etc/mu300/usb-pd}
+PD_MOD=ump9620_tcpc
+pd_port() {  # the Type-C port of the UMP9620's port controller, when it is bound
+    for p in "$R"/sys/class/typec/port*; do
+        [ -e "$p/data_role" ] || continue
+        case $(readlink -f "$p/device/driver" 2>/dev/null) in */ump9620-tcpc) echo "$p"; return 0 ;; esac
+    done
+    return 1
+}
+pd_wanted() { [ "$(sed -n 1p "$PD_CONF" 2>/dev/null)" = on ]; }
+chosen() { sed -n 's/.*\[\([a-z]*\)\].*/\1/p' "$1" 2>/dev/null; }   # "[host] device" -> host
+# the module of this kernel, by either spelling, in the flat directory mu300-update keeps them in
+pd_module() { [ -d "$R/sys/module/$PD_MOD" ] || find "$R/lib/modules/$(uname -r)" -name 'ump9620[-_]tcpc.ko*' 2>/dev/null | grep -q .; }
+pd_load() {  # the module with enable=1 (reloaded when it is there without), and a few seconds for it to bind
+    rmmod "$PD_MOD" 2>/dev/null
+    modprobe "$PD_MOD" enable=1 || return 1
+    # OpenWrt's modprobe (kmodloader) loads the dependencies but drops the options: the module came up with enable=N
+    # and its probe said "off". Again by its path with insmod, which passes them on (seen on the U30 Air, FINDINGS 150)
+    if [ "$(cat "$R/sys/module/$PD_MOD/parameters/enable" 2>/dev/null)" = N ]; then
+        rmmod "$PD_MOD" 2>/dev/null
+        f=$(find "$R/lib/modules/$(uname -r)" -name 'ump9620[-_]tcpc.ko*' 2>/dev/null | head -n1)
+        [ -n "$f" ] && insmod "$f" enable=1 || return 1
+    fi
+    n=0; until pd_port >/dev/null; do n=$((n + 1)); [ $n -le 10 ] || return 1; sleep 0.5 2>/dev/null || sleep 1; done
+}
+
+ADB_CONF=${MU300_ADB_CONF:-/etc/mu300/adb}
+ADB_AUTH=${MU300_ADB_AUTH_CONF:-/etc/mu300/adb_auth}
+ADB_KEYS=${MU300_ADB_KEYS:-/etc/mu300/adb_keys}
+# Write down whom adb lets in now, where nothing says so yet. Before "on", "off" or a key is written: without
+# adb_auth, "on" and a key read as a device set up when adb was keys only (mu300-adbd, auth_mode) - adding a key to
+# a device in open mode would close it to every other computer, and "off" would forget that it was such a device.
+adb_auth_keep() {
+    [ -e "$ADB_AUTH" ] || [ -L "$ADB_AUTH" ] && return 0   # (one that cannot be read is keys already: mu300-adbd)
+    _m=$(mu300-adbd auth) || return 1
+    adb_write "$ADB_AUTH" "$_m"
+}
+# adb_write FILE WORD: the whole file or the old one, never an empty one a power cut left behind (a new file next to
+# it, renamed over it), and never through a symlink (the rename replaces one; the new file is made, not opened).
+# Root's, 644: anyone may read whom adb lets in, only root says so.
+adb_write() {
+    mkdir -p "${1%/*}" || return 1
+    _t=$1.new.$$
+    rm -f "$_t"
+    ( umask 022; set -C; echo "$2" > "$_t" ) 2>/dev/null || return 1
+    mv -f "$_t" "$1" || { rm -f "$_t"; return 1; }
+}
+adb_exposure() {  # what the mode in force means, and the two commands that close it
+    if [ "$(mu300-adbd auth)" = open ]; then
+        echo "adb is open: every computer plugged into the USB port gets a root shell without a password, also after you set passwords"
+        echo "only your own computers: sudo mu300-usb adb key FILE, then sudo mu300-usb adb auth keys; not at all: sudo mu300-usb adb off"
+    else
+        echo "adb takes authorised keys only: anyone whose key is authorised gets a root shell on this device"
+        grep -q . "$ADB_KEYS" 2>/dev/null ||
+            echo "no key is authorised yet: sudo mu300-usb adb key FILE (a computer's ~/.android/adbkey.pub)"
+    fi
+}
+adb_service() {  # adb_service start|stop|restart: mu300-adbd, in the background - it rebinds the gadget, and with it
+    # the console or SSH session over USB this may run in (a command that waits for it could be cut off halfway)
+    if [ -n "${MU300_ADB_SERVICE:-}" ]; then "$MU300_ADB_SERVICE" "$1"
+    elif [ -d /run/systemd/system ] && command -v systemctl >/dev/null 2>&1; then systemctl --no-block "$1" mu300-adbd.service
+    elif [ -x /etc/init.d/mu300-adbd ]; then setsid /etc/init.d/mu300-adbd "$1" </dev/null >/dev/null 2>&1 &
+    else die "no mu300-adbd service in this system"; fi
+}
+adb_key_add() {  # adb_key_add < LINE(s): the adb public keys (adbkey.pub: "BASE64 user@host") among them, once each
+    added=0
+    while read -r k c || [ -n "$k" ]; do
+        # an RSA-2048 key in Android's format is 524 bytes: 700 base64 characters, "QAAAA" (64 words) first
+        { [ ${#k} -eq 700 ] && [ "${k%=}" != "$k" ] && case ${k%=} in QAAAA*[!A-Za-z0-9+/]*) false ;; QAAAA*) true ;; *) false ;; esac; } || {
+            [ -z "$k" ] || echo "not an adb public key, skipped: $(printf '%s' "$k" | cut -c1-16)..." >&2; continue; }
+        c=$(printf '%s' "$c" | tr -cd 'A-Za-z0-9@._:-' | cut -c1-64)
+        mkdir -p "${ADB_KEYS%/*}"
+        [ -e "$ADB_KEYS" ] || { : > "$ADB_KEYS"; chmod 600 "$ADB_KEYS"; }
+        grep -qF "$k" "$ADB_KEYS" 2>/dev/null && { echo "already authorised: ${c:-(no name)}"; continue; }
+        printf '%s %s\n' "$k" "${c:-unnamed}" >> "$ADB_KEYS"
+        added=$((added + 1)); echo "authorised: ${c:-(no name)}"
+    done
+    [ "$added" -gt 0 ] || grep -q . "$ADB_KEYS" 2>/dev/null
+}
+if [ "${1:-}" = adb ]; then
+    shift
+    case ${1:-status} in
+        on)
+            [ "$(id -u)" = 0 ] || die "run as root (sudo mu300-usb adb on)"
+            why=$(mu300-adbd usable) || die "$why"
+            adb_auth_keep || die "cannot write $ADB_AUTH"
+            adb_write "$ADB_CONF" on || die "cannot write $ADB_CONF"
+            adb_service restart
+            echo "adb on: the USB connection drops for a moment and comes back with adb (also after every reboot)"
+            adb_exposure ;;
+        off)
+            [ "$(id -u)" = 0 ] || die "run as root (sudo mu300-usb adb off)"
+            adb_auth_keep || :
+            adb_write "$ADB_CONF" off || die "cannot write $ADB_CONF"
+            adb_service stop
+            echo "adb off: the USB connection drops for a moment and comes back without adb (it stays off across reboots and updates)" ;;
+        auth)
+            case ${2:-} in
+                '') mu300-adbd auth; exit 0 ;;
+                open|keys) ;;
+                *) die "usage: mu300-usb adb auth open|keys" ;;
+            esac
+            [ "$(id -u)" = 0 ] || die "run as root (sudo mu300-usb adb auth $2)"
+            adb_write "$ADB_AUTH" "$2" || die "cannot write $ADB_AUTH"
+            # adbd reads it when it starts: only a running adb is restarted
+            if mu300-adbd status | grep -qx 'adb: on'; then
+                adb_service restart
+                echo "adb auth $2: the USB connection drops for a moment"
+            else echo "adb auth $2 (adb is off: sudo mu300-usb adb on)"; fi
+            adb_exposure ;;
+        key)
+            [ "$(id -u)" = 0 ] || die "run as root (sudo mu300-usb adb key FILE)"
+            [ -n "${2:-}" ] || die "usage: mu300-usb adb key FILE|-   (FILE: a computer's ~/.android/adbkey.pub)"
+            adb_auth_keep || die "cannot write $ADB_AUTH"
+            if [ "$2" = - ]; then adb_key_add; else [ -r "$2" ] || die "cannot read $2"; adb_key_add < "$2"; fi ||
+                die "no key added"
+            [ "$(mu300-adbd auth)" = keys ] ||
+                echo "adb is open, so every computer gets in with or without a key; keys only: sudo mu300-usb adb auth keys" ;;
+        keys)
+            [ "$(id -u)" = 0 ] || die "run as root (sudo mu300-usb adb keys)"
+            for f in "$ADB_KEYS" /root/.android/adb_keys; do
+                [ -r "$f" ] && sed -n 's/^\(QAAAA.\{8\}\)[^ ]* *\(.*\)$/  \2 (\1...)/p' "$f" | sed "s|^|$f:|"
+            done
+            echo "(remove a key: delete its line from the file)" ;;
+        status) mu300-adbd status ;;
+        *) die "usage: mu300-usb adb on|off|auth open|keys|status|key FILE|keys" ;;
+    esac
+    exit 0
+fi
+# The USB network mode (D12): the choice in USBNET_FILE, read by boot/init from the system it boots, which rebinds the
+# gadget once when it differs and says what it made in USBNET_APPLIED; USBNET_ONCE marks a choice for one boot only.
+USBNET_FILE=$R/etc/mu300/usb-net
+USBNET_ONCE=$R/etc/mu300/usb-net.once
+USBNET_APPLIED=${MU300_USBNET_APPLIED:-$R/run/mu300/usb-net-applied}
+if [ "${1:-}" = net ]; then
+    [ ! -e "$R/usr/libexec/unisoc-modem/device-usb" ] || die "the control panel's Device page keeps the USB network mode here"
+    case ${2:-} in
+        '')
+            m=$(sed -n 1p "$USBNET_FILE" 2>/dev/null)
+            case $m in ncm|ecm|rndis) ;; *) m=default ;; esac
+            [ "$m" = default ] || [ ! -e "$USBNET_ONCE" ] || m="$m once"
+            echo "USB network from the next boot: $m"
+            a=$(sed -n 1p "$USBNET_APPLIED" 2>/dev/null | tr -cd 'a-z')
+            echo "this boot: ${a:-ncm (the default)}" ;;
+        ncm|ecm|rndis|default)
+            [ "$(id -u)" = 0 ] || [ -n "$R" ] || die "run as root (sudo mu300-usb net $2)"
+            case ${3:-} in ''|once) ;; *) die "usage: mu300-usb net ncm|ecm|rndis [once] | default" ;; esac
+            if [ "$2" = default ]; then
+                rm -f "$USBNET_FILE" "$USBNET_ONCE"
+                echo "USB network: NCM (the default) from the next boot"
+            else
+                adb_write "$USBNET_FILE" "$2" || die "cannot write $USBNET_FILE"
+                if [ "${3:-}" = once ]; then : > "$USBNET_ONCE" || die "cannot write $USBNET_ONCE"; else rm -f "$USBNET_ONCE"; fi
+                echo "USB network: $(echo "$2" | tr a-z A-Z) from the next boot${3:+ (that boot only)}; the USB connection to the computer comes back with it"
+            fi ;;
+        *) die "usage: mu300-usb net [ncm|ecm|rndis [once]|default]" ;;
+    esac
+    exit 0
+fi
+if [ "${1:-}" = boot ]; then
+    # a one-boot USB network mode is used up once boot/init has made it (it says so in USBNET_APPLIED)
+    if [ -e "$USBNET_ONCE" ] && [ -s "$USBNET_APPLIED" ]; then
+        rm -f "$USBNET_FILE" "$USBNET_ONCE"
+        echo "mu300-usb: the USB network mode for one boot was used: NCM (the default) from the next boot"
+    fi
+    # quietly, on whatever kernel: the 5.4 one has its own charger driver and no I2C device node for this
+    [ "$(mu300-device)" = u30air ] || exit 0
+    # (a bound port controller owns the boost: what is on is its own source role)
+    if ! pd_port >/dev/null && BUS=$(bus); then
+        driver
+        v=$(reg $REG_CTRL1)
+        if [ -n "$v" ] && [ $(( v & 0x20 )) -ne 0 ]; then
+            i2c set "$BUS" $ADDR $REG_CTRL1 $(( v & ~0x20 )) && watchdog_on
+            echo "mu300-usb: the charger's boost was still on from before the reboot: switched off"
+        fi
+    fi
+    if pd_wanted && ! pd_port >/dev/null && pd_module; then
+        pd_load && echo "mu300-usb: USB-C power delivery on (experimental)" ||
+            echo "mu300-usb: USB-C power delivery did not start (dmesg | grep ump9620)" >&2
+    fi
+    exit 0
+fi
+if [ "${1:-}" = pd ]; then
+    case ${2:-status} in
+        on)
+            [ "$(id -u)" = 0 ] || die "run as root (sudo mu300-usb pd on)"
+            [ "$(mu300-device)" = u30air ] || die "only the U30 Air has USB-C power delivery here"
+            pd_module || die "this kernel has no ump9620-tcpc module (a mainline kernel of this release or newer: sudo mu300-update kernel 6.18)"
+            # out of the manual host mode first: its boost would be the port controller's to switch off
+            if ! pd_port >/dev/null && [ "$(cat "$(role_switch)" 2>/dev/null)" = host ]; then "$0" device >/dev/null || :; fi
+            mkdir -p "${PD_CONF%/*}" && echo on > "$PD_CONF" || die "cannot write $PD_CONF"
+            pd_port >/dev/null || pd_load || die "the port controller did not bind (dmesg | grep -e ump9620 -e tcpm); off again: sudo mu300-usb pd off"
+            echo "USB-C power delivery on (EXPERIMENTAL; also after a reboot): a computer: device; an OTG adapter or a USB device: host with 5 V out; a PD dock with its charger: charging, then \"sudo mu300-usb host\" for host"
+            echo "off again: sudo mu300-usb pd off" ;;
+        off)
+            [ "$(id -u)" = 0 ] || die "run as root (sudo mu300-usb pd off)"
+            mkdir -p "${PD_CONF%/*}" && echo off > "$PD_CONF" || die "cannot write $PD_CONF"
+            # the module puts it all back as it goes: 5 V out off, device, the Type-C block as the boot left it
+            if [ -d "$R/sys/module/$PD_MOD" ]; then rmmod "$PD_MOD" || die "cannot unload $PD_MOD"; fi
+            echo "USB-C power delivery off: device, and the manual host mode (sudo mu300-usb host)" ;;
+        status)
+            if pd_wanted; then echo "USB-C power delivery: on (experimental)"; else echo "USB-C power delivery: off"; fi
+            if p=$(pd_port); then
+                echo "port controller: bound ($(basename "$p"))"
+                echo "data role: $(chosen "$p/data_role")"
+                echo "power role: $(chosen "$p/power_role")"
+            elif pd_wanted; then echo "port controller: not bound (dmesg | grep ump9620)"; fi ;;
+        *) die "usage: mu300-usb pd on|off|status" ;;
+    esac
+    exit 0
+fi
+# adb is there on both devices; the rest of the status is the U30 Air's port role
+[ "${1:-status}" != status ] || mu300-adbd status 2>/dev/null | sed -n '/^adb: /p; /^auth: /p'
+[ "$(mu300-device)" = u30air ] || die "only the U30 Air can be a USB host: the F50 is powered through that port"
+ROLE=$(role_switch) || die "no USB role switch (this needs a mainline kernel with dual-role USB, v2026.10.03 or newer)"
+BUS=$(bus) || die "the charger's I2C bus is not there (a kernel without I2C)"
+driver
+
+boost() {
+    [ "$(id -u)" = 0 ] || { echo "(run as root to read the charger)"; return; }
+    v=$(reg $REG_CTRL1) || { echo "(cannot read the charger)"; return; }
+    [ $(( v & 0x20 )) -ne 0 ] && echo on || echo off
+}
+powered() { v=$(reg $REG_STATUS) && [ $(( v & 0x04 )) -ne 0 ] && [ $(( v & 0xe0 )) -ne 224 ]; }
+
+# With USB-C power delivery on, the roles are the port controller's: host and device ask it for a data role swap;
+# only a partner without PD on outside power (a hub with a charger) gets the role written here, as before.
+if PD=$(pd_port); then
+    case ${1:-status} in
+        status)
+            echo "USB-C power delivery: on (experimental)"
+            echo "role: $(cat "$ROLE" 2>/dev/null)"
+            echo "data role: $(chosen "$PD/data_role")"
+            echo "power role: $(chosen "$PD/power_role")"
+            echo "5 V out (OTG boost): $(boost)"
+            exit 0 ;;
+        host|device)
+            [ "$(id -u)" = 0 ] || die "run as root (sudo mu300-usb $1)"
+            [ "$(cat "$ROLE" 2>/dev/null)" != "$1" ] || { echo "USB $1 already"; exit 0; }
+            if [ "$1" = device ] && [ "$(chosen "$PD/power_role")" = source ]; then
+                die "the port powers what is plugged in (an OTG adapter or a USB device): unplug it and the port is a device again"
+            fi
+            if echo "$1" > "$PD/data_role" 2>/dev/null; then
+                sleep 1
+                echo "USB $1 (a data role swap; the power role stays $(chosen "$PD/power_role"))"
+                exit 0
+            fi
+            # no PD partner to swap with: as without power delivery, but never with the boost
+            if [ "$1" = host ] && BUS=$(bus) && driver && powered; then
+                echo host > "$ROLE" || die "could not switch the role"
+                echo "USB host on outside power (no power delivery from the partner): 5 V out stays off; back to device when unplugged"
+                exit 0
+            fi
+            if [ "$1" = device ]; then
+                echo device > "$ROLE" || die "could not switch the role"
+                echo "USB device: the USB network and serial console are back"
+                exit 0
+            fi
+            die "nothing to swap roles with: with power delivery on, an OTG adapter or a USB device makes the port a host by itself (5 V out); a dock needs its charger plugged in first. Without: sudo mu300-usb pd off" ;;
+    esac
+fi
+
+case ${1:-status} in
+    status)
+        echo "role: $(cat "$ROLE" 2>/dev/null)"
+        echo "5 V out (OTG boost): $(boost)"
+        if [ -d "$R"/sys/bus/usb/devices ]; then
+            for d in "$R"/sys/bus/usb/devices/[0-9]*; do
+                [ -e "$d/product" ] || continue
+                case ${d##*/} in *:*) continue ;; esac
+                echo "  device: $(cat "$d/manufacturer" 2>/dev/null) $(cat "$d/product") ($(cat "$d/idVendor"):$(cat "$d/idProduct"))"
+            done
+        fi ;;
+    host)
+        [ "$(id -u)" = 0 ] || die "run as root (sudo mu300-usb host)"
+        # the boost drives VBUS: never against a computer or a charger that drives it already. Something on VBUS
+        # (a hub or splitter with its own charger: a USB network adapter and the charger on one port) is a host
+        # with the boost left off; the battery keeps charging from that supply.
+        if powered; then   # (the boost is off: the chip reports no outside supply while it boosts)
+            echo host > "$ROLE" || die "could not switch the role"
+            sleep 1
+            echo "USB host on outside power (a hub or splitter with a charger): 5 V out stays off; a computer on this port loses the USB network until: sudo mu300-usb device"
+        else
+            setbits $REG_TIMER 0x30 0x00  # watchdog off, or the boost goes off by itself after 40 s
+            setbits $REG_CTRL1 0x20 0x20  # OTG boost on
+            echo host > "$ROLE" || die "could not switch the role"
+            sleep 1
+            echo "USB host: 5 V on, plug in the OTG adapter (the USB network is off until: sudo mu300-usb device)"
+        fi ;;
+    device)
+        [ "$(id -u)" = 0 ] || die "run as root (sudo mu300-usb device)"
+        echo device > "$ROLE" || die "could not switch the role"
+        setbits $REG_CTRL1 0x20 0x00      # boost off
+        watchdog_on                       # watchdog back (40 s): the chip returns to its own defaults
+        sleep 1   # the role switch works in the background
+        echo "USB device: the USB network and serial console are back" ;;
+    *) sed -n '2,28s/^# \{0,1\}//p' "$0" >&2; exit 2 ;;
+esac

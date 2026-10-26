@@ -1,0 +1,63 @@
+sprd_wlan_combo: add the DS Parameter Set element to 5 GHz AP beacons
+
+The SC2355 firmware takes the SoftAP channel from the DS Parameter Set
+element of the beacon passed with CMD_START_AP. Unisoc's Android hostapd
+always includes it (also on 5 GHz); upstream hostapd only adds it for
+2.4 GHz. Without it the firmware answers CMD_START_AP with
+SPRD_CMD_STATUS_NOT_SUPPORT_ERROR (HT/VHT) or starts without sending
+beacons (non-HT), so 5 GHz access points never appear.
+
+Insert the element after the head IEs when hostapd did not provide one.
+
+0
+--- a/common/cfg80211.c
++++ b/common/cfg80211.c
+@@ -553,6 +553,7 @@
+ 	u16 mgmt_len, index = 0, hidden_index;
+ 	int hidden_len = SPRD_AP_HIDDEN_FLAG_LEN;
+ 	u8 *data = NULL;
++	u8 ds_channel = 0;
+ 	int ret;
+ 
+ 	if (!settings->ssid) {
+@@ -575,6 +576,23 @@
+ 	if (beacon->tail)
+ 		mgmt_len += beacon->tail_len;
+ 
++	/*
++	 * The firmware takes the AP channel from the DS Parameter Set element.
++	 * Unisoc's Android hostapd always adds it; upstream hostapd omits it on
++	 * 5 GHz, and START_AP then fails with NOT_SUPPORT (or no beacons are sent).
++	 */
++	if (settings->chandef.chan &&
++	    beacon->head_len > SPRD_AP_SSID_LEN_OFFSET &&
++	    !cfg80211_find_ie(WLAN_EID_DS_PARAMS,
++			      beacon->head + SPRD_AP_SSID_LEN_OFFSET - 1,
++			      beacon->head_len - SPRD_AP_SSID_LEN_OFFSET + 1) &&
++	    !(beacon->tail &&
++	      cfg80211_find_ie(WLAN_EID_DS_PARAMS, beacon->tail, beacon->tail_len))) {
++		ds_channel = ieee80211_frequency_to_channel(
++				settings->chandef.chan->center_freq);
++		mgmt_len += 3;
++	}
++
+ 	mgmt = kmalloc(mgmt_len, GFP_KERNEL);
+ 	if (!mgmt)
+ 		return -ENOMEM;
+@@ -601,9 +619,14 @@
+ 	memcpy(data + index, beacon->head + hidden_index - 1,
+ 	       beacon->head_len + 1 - hidden_index);
+ 
++	index = beacon->head_len + hidden_len;
++	if (ds_channel) {
++		data[index++] = WLAN_EID_DS_PARAMS;
++		data[index++] = 1;
++		data[index++] = ds_channel;
++	}
+ 	if (beacon->tail)
+-		memcpy(data + beacon->head_len + hidden_len, beacon->tail,
+-		       beacon->tail_len);
++		memcpy(data + index, beacon->tail, beacon->tail_len);
+ 
+ 	ret = sprd_start_ap(vif->priv, vif, (unsigned char *)mgmt, mgmt_len, settings);
+ 	if (ret)

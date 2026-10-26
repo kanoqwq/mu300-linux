@@ -1,0 +1,104 @@
+# Modules the kernel does not load on demand (mu300-modprobe-guard; FINDINGS 163). One module name per line, as the
+# kernel writes it (- as _). The guard refuses a request when it names one of these or matches one of their aliases
+# (the alias= strings of its file), however it is spelled: net-pf-29, can, a genetlink family, an rtnl-link kind, fs-hfs...
+# Every module that depends on one of these is on the list too (make-bundle.sh checks it against the build's modules.dep), so
+# no request reaches them through a dependency either.
+# Root loads any of them deliberately with `modprobe NAME` (that runs /sbin/modprobe, not the guard), and
+# `touch /etc/mu300/autoload-allow-all` turns the guard off. The protocol families with no use here at all (RDS,
+# ATM, AX.25, X.25, AppleTalk, Phonet, RxRPC/AFS, KCM, SMC, CAIF, ISDN, QRTR, DCCP, n_gsm, n_hdlc) are not built.
+# Kept loadable on purpose: l2tp_* (L2TP VPNs, xl2tpd on OpenWrt). The VMs' vsock (vhost_vsock) is on the list: root
+# loads it with `modprobe vhost_vsock` before starting a VM that wants it.
+#
+# TIPC
+tipc
+tipc_diag
+# SCTP
+sctp
+sctp_diag
+# CAN (AF_CAN; the USB CAN adapters' drivers need only can_dev, which stays)
+can
+can_raw
+can_bcm
+can_gw
+can_isotp
+can_j1939
+# NFC (the U30 Air's tag is written over I2C by mu300-nfc, not through these) and its drivers
+nfc
+nfc_digital
+nci
+nci_uart
+hci
+fdp
+fdp_i2c
+nfcmrvl
+nfcmrvl_i2c
+nfcmrvl_spi
+nfcmrvl_uart
+nfcmrvl_usb
+nfcsim
+nxp_nci
+nxp_nci_i2c
+pn533
+pn533_i2c
+pn533_usb
+port100
+s3fwrn5
+s3fwrn5_i2c
+st95hf
+st_nci
+st_nci_i2c
+st_nci_spi
+trf7970a
+virtual_ncidev
+# AF_VSOCK (net-pf-40) and its transports; vhost_vsock depends on vsock, so it is here too
+vsock
+vsock_diag
+vsock_loopback
+vsockmon
+vmw_vsock_virtio_transport
+vmw_vsock_virtio_transport_common
+vhost_vsock
+# IEEE 802.15.4 and 6LoWPAN over it, with the radios' drivers
+ieee802154
+ieee802154_socket
+ieee802154_6lowpan
+mac802154
+mac802154_hwsim
+adf7242
+at86rf230
+atusb
+ca8210
+cc2520
+fakelb
+mcr20a
+mrf24j40
+# line disciplines (dev.tty.ldisc_autoload = 0 too): CAN over serial, SLIP, synchronous PPP, PPS
+can327
+slcan
+slip
+ppp_synctty
+pps_ldisc
+# old or rarely used filesystems (a mount attempt in a user namespace reaches the request)
+adfs
+affs
+befs
+bfs
+ceph
+coda
+cramfs
+efs
+freevxfs
+gfs2
+hfs
+hpfs
+jfs
+minix
+nilfs2
+ocfs2
+ocfs2_dlmfs
+omfs
+orangefs
+qnx4
+qnx6
+romfs
+ufs

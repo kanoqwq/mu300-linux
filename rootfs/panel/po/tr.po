@@ -1,0 +1,1848 @@
+# The MU300 page of Cockpit (rootfs/panel), tr. tools/cockpit-i18n.py update / check / build.
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: tr\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "On"
+msgstr "Açık"
+
+msgid "Off"
+msgstr "Kapalı"
+
+msgid "Yes"
+msgstr "Evet"
+
+msgid "No"
+msgstr "Hayır"
+
+msgid "Unknown error"
+msgstr "Bilinmeyen hata"
+
+msgid "This needs administrative access: turn it on at the top of Cockpit (\"Limited access\")."
+msgstr "Bunun için yönetici erişimi gerekir: Cockpit'in üst kısmından açın (\"Limited access\" / \"Sınırlı erişim\")."
+
+msgid "The VPN module is not installed."
+msgstr "VPN modülü kurulu değil."
+
+msgid "Another task is running ($0): wait until it has ended."
+msgstr "Başka bir görev çalışıyor ($0): bitmesini bekleyin."
+
+msgid "Another task is running: wait until it has ended."
+msgstr "Başka bir görev çalışıyor: bitmesini bekleyin."
+
+msgid "Not a valid value: $0"
+msgstr "Geçerli bir değer değil: $0"
+
+msgid "Missing: $0"
+msgstr "Eksik: $0"
+
+msgid "The device refused the request ($0)."
+msgstr "Cihaz isteği reddetti ($0)."
+
+msgid "Not available on this system: $0"
+msgstr "Bu sistemde kullanılamaz: $0"
+
+msgid "The device's mu300-api is older than this page: update the device."
+msgstr "Cihazın mu300-api sürümü bu sayfadan eski: cihazı güncelleyin."
+
+msgid "Failed"
+msgstr "Başarısız"
+
+msgid "The command is not on this system."
+msgstr "Bu komut bu sistemde yok."
+
+msgid "No answer from mu300-api"
+msgstr "mu300-api'den yanıt yok"
+
+msgid "Done"
+msgstr "Tamam"
+
+msgid "Loading..."
+msgstr "Yükleniyor..."
+
+msgid "Looking for updates"
+msgstr "Güncellemeler aranıyor"
+
+msgid "Installing the update"
+msgstr "Güncelleme kuruluyor"
+
+msgid "Changing the kernel"
+msgstr "Kernel değiştiriliyor"
+
+msgid "Installing an extra"
+msgstr "Bir ek kuruluyor"
+
+msgid "Removing an extra"
+msgstr "Bir ek kaldırılıyor"
+
+msgid "Installing the VPN module"
+msgstr "VPN modülü kuruluyor"
+
+msgid "Installing a VPN engine"
+msgstr "Bir VPN motoru kuruluyor"
+
+msgid "Importing VPN profiles"
+msgstr "VPN profilleri içe aktarılıyor"
+
+msgid "Adding a subscription"
+msgstr "Bir abonelik ekleniyor"
+
+msgid "Refreshing subscriptions"
+msgstr "Abonelikler yenileniyor"
+
+msgid "Joining a Wi-Fi network"
+msgstr "Bir Wi-Fi ağına katılınıyor"
+
+msgid "Leaving the Wi-Fi network"
+msgstr "Wi-Fi ağından ayrılınıyor"
+
+msgid "Restoring the settings"
+msgstr "Ayarlar geri yükleniyor"
+
+msgid "Installing the packages again"
+msgstr "Paketler yeniden kuruluyor"
+
+msgid "Running..."
+msgstr "Çalışıyor..."
+
+msgid "Finished"
+msgstr "Bitti"
+
+msgid "Ended with an error (status $0)"
+msgstr "Hatayla sona erdi (durum $0)"
+
+msgid "Interrupted (the device restarted?)"
+msgstr "Kesildi (cihaz yeniden mi başladı?)"
+
+msgid "Stop"
+msgstr "Durdur"
+
+msgid "Close"
+msgstr "Kapat"
+
+msgid "Registered (home network)"
+msgstr "Kayıtlı (ev ağı)"
+
+msgid "Registered (roaming)"
+msgstr "Kayıtlı (dolaşım)"
+
+msgid "Searching"
+msgstr "Aranıyor"
+
+msgid "Registration denied"
+msgstr "Kayıt reddedildi"
+
+msgid "Not registered"
+msgstr "Kayıtlı değil"
+
+msgid "Emergency calls only"
+msgstr "Yalnızca acil aramalar"
+
+msgid "Operator"
+msgstr "Operatör"
+
+msgid "Technology"
+msgstr "Teknoloji"
+
+msgid "Registration"
+msgstr "Kayıt"
+
+msgid "RSRP"
+msgstr "RSRP"
+
+msgid "RSRQ"
+msgstr "RSRQ"
+
+msgid "Connected"
+msgstr "Bağlı"
+
+msgid "Not connected"
+msgstr "Bağlı değil"
+
+msgid "Live rates"
+msgstr "Anlık hızlar"
+
+msgid "Mobile data"
+msgstr "Mobil veri"
+
+msgid "Mobile data (SIM 2)"
+msgstr "Mobil veri (SIM 2)"
+
+msgid "LAN"
+msgstr "LAN"
+
+msgid "Wi-Fi"
+msgstr "Wi-Fi"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "Mobile network"
+msgstr "Mobil ağ"
+
+msgid "Device"
+msgstr "Cihaz"
+
+msgid "Data usage"
+msgstr "Veri kullanımı"
+
+msgid "Wi-Fi hotspot"
+msgstr "Wi-Fi hotspot"
+
+msgid "Recovery"
+msgstr "Kurtarma"
+
+msgid "No readings from the modem."
+msgstr "Modemden okuma yok."
+
+msgid "State"
+msgstr "Durum"
+
+msgid "Interface"
+msgstr "Arayüz"
+
+msgid "Address"
+msgstr "Adres"
+
+msgid "Turn mobile data off"
+msgstr "Mobil veriyi kapat"
+
+msgid "Turn mobile data on"
+msgstr "Mobil veriyi aç"
+
+msgid "Turn mobile data off? Clients of the device lose the internet until it is on again."
+msgstr "Mobil veri kapatılsın mı? Cihaza bağlı istemciler, yeniden açılana kadar internetsiz kalır."
+
+msgid "System"
+msgstr "Sistem"
+
+msgid "Release"
+msgstr "Sürüm"
+
+msgid "Kernel"
+msgstr "Kernel"
+
+msgid "Host name"
+msgstr "Ana bilgisayar adı"
+
+msgid "Up for"
+msgstr "Çalışma süresi"
+
+msgid "Memory available"
+msgstr "Kullanılabilir bellek"
+
+msgid "Linux partition free"
+msgstr "Linux bölümünde boş alan"
+
+msgid "Battery"
+msgstr "Pil"
+
+msgid "Hottest sensor"
+msgstr "En sıcak sensör"
+
+msgid "Today"
+msgstr "Bugün"
+
+msgid "This billing cycle"
+msgstr "Bu fatura dönemi"
+
+msgid "Cycle"
+msgstr "Dönem"
+
+msgid "Monthly cap"
+msgstr "Aylık kota"
+
+msgid "No data usage count on this system."
+msgstr "Bu sistemde veri kullanım sayacı yok."
+
+msgid "Name (SSID)"
+msgstr "Ad (SSID)"
+
+msgid "LAN address"
+msgstr "LAN adresi"
+
+msgid "The VPN module is not installed: see the VPN tab."
+msgstr "VPN modülü kurulu değil: VPN sekmesine bakın."
+
+msgid "Switch"
+msgstr "Anahtar"
+
+msgid "Running"
+msgstr "Çalışıyor"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Tunnel"
+msgstr "Tünel"
+
+msgid "up"
+msgstr "açık"
+
+msgid "down"
+msgstr "kapalı"
+
+msgid "Kill switch"
+msgstr "Kill switch"
+
+msgid "active"
+msgstr "etkin"
+
+msgid "inactive"
+msgstr "etkin değil"
+
+msgid "When the connection is stuck: reconnect mobile data first (about half a minute without it); a restart of the device ends every connection for a minute or two."
+msgstr "Bağlantı takıldığında: önce mobil veriyi yeniden bağlayın (yaklaşık yarım dakika kesinti); cihazı yeniden başlatmak her bağlantıyı bir iki dakika keser."
+
+msgid "Reconnect mobile data"
+msgstr "Mobil veriyi yeniden bağla"
+
+msgid "Reconnect mobile data? Cellular connectivity stops for about half a minute."
+msgstr "Mobil veri yeniden bağlansın mı? Hücresel bağlantı yaklaşık yarım dakika kesilir."
+
+msgid "Mobile data is reconnecting."
+msgstr "Mobil veri yeniden bağlanıyor."
+
+msgid "Restart the device"
+msgstr "Cihazı yeniden başlat"
+
+msgid "Restart the device? Every connection is interrupted, this page too, for a minute or two."
+msgstr "Cihaz yeniden başlatılsın mı? Bu sayfa dahil her bağlantı bir iki dakika kesilir."
+
+msgid "The device is restarting."
+msgstr "Cihaz yeniden başlatılıyor."
+
+msgid "Network, band and cell locks"
+msgstr "Ağ, bant ve hücre kilitleri"
+
+msgid "Automatic"
+msgstr "Otomatik"
+
+msgid "Automatic without 2G (152)"
+msgstr "Otomatik, 2G olmadan (152)"
+
+msgid "4G only"
+msgstr "Yalnızca 4G"
+
+msgid "The modem's protocol stack restarts: cellular service stops for about half a minute."
+msgstr "Modemin protokol yığını yeniden başlar: hücresel hizmet yaklaşık yarım dakika kesilir."
+
+msgid "Apply: $0?"
+msgstr "Uygulansın mı: $0?"
+
+msgid "Saved"
+msgstr "Kaydedildi"
+
+msgid "Started in the background; the reading below follows when the modem is back."
+msgstr "Arka planda başladı; aşağıdaki okuma modem geri geldiğinde güncellenir."
+
+msgid "Automatic ($0 supported)"
+msgstr "Otomatik ($0 destekleniyor)"
+
+msgid "Reading the locks from the modem; try again in a few seconds."
+msgstr "Kilitler modemden okunuyor; birkaç saniye sonra yeniden deneyin."
+
+msgid "Refresh"
+msgstr "Yenile"
+
+msgid "No reading of the locks yet."
+msgstr "Henüz kilit okuması yok."
+
+msgid "Mode and band locks stay in the modem, in Android too: reset them before you switch to Android if you are not sure. Every change below restarts the modem's protocol stack (about half a minute without cellular), except EN-DC and the startup switch."
+msgstr "Mod ve bant kilitleri modemde kalır, Android'de de geçerlidir: emin değilseniz Android'e geçmeden önce sıfırlayın. Aşağıdaki her değişiklik modemin protokol yığınını yeniden başlatır (yaklaşık yarım dakika hücresel bağlantı olmaz); EN-DC ve açılış anahtarı hariç."
+
+msgid "Network mode"
+msgstr "Ağ modu"
+
+msgid "NR bands"
+msgstr "NR bantları"
+
+msgid "LTE bands"
+msgstr "LTE bantları"
+
+msgid "Cell lock"
+msgstr "Hücre kilidi"
+
+msgid "$0 ARFCN $1, PCI $2"
+msgstr "$0 ARFCN $1, PCI $2"
+
+msgid "none"
+msgstr "yok"
+
+msgid "Apply at startup"
+msgstr "Açılışta uygula"
+
+msgid "running"
+msgstr "sürüyor"
+
+msgid "done"
+msgstr "tamamlandı"
+
+msgid "failed"
+msgstr "başarısız"
+
+msgid "interrupted"
+msgstr "yarıda kaldı"
+
+msgid "Last reset to automatic"
+msgstr "Otomatiğe son sıfırlama"
+
+msgid "Read from the modem"
+msgstr "Modemden okunma"
+
+msgid "Read again from the modem"
+msgstr "Modemden yeniden oku"
+
+msgid "Apply"
+msgstr "Uygula"
+
+msgid "network mode $0"
+msgstr "ağ modu $0"
+
+msgid "Turn EN-DC off"
+msgstr "EN-DC'yi kapat"
+
+msgid "Turn EN-DC on"
+msgstr "EN-DC'yi aç"
+
+msgid "EN-DC lets a 5G NSA connection use its LTE anchor; off keeps the modem on LTE alone where it would use NSA."
+msgstr "EN-DC, 5G NSA bağlantısının LTE çapasını kullanmasını sağlar; kapalıyken modem NSA kullanacağı yerde yalnızca LTE ile kalır."
+
+msgid "Bands"
+msgstr "Bantlar"
+
+msgid "Apply NR bands"
+msgstr "NR bantlarını uygula"
+
+msgid "NR band lock $0"
+msgstr "NR bant kilidi $0"
+
+msgid "NR bands automatic"
+msgstr "NR bantları otomatik"
+
+msgid "Apply LTE bands"
+msgstr "LTE bantlarını uygula"
+
+msgid "LTE band lock $0"
+msgstr "LTE bant kilidi $0"
+
+msgid "LTE bands automatic"
+msgstr "LTE bantları otomatik"
+
+msgid "No band ticked: automatic (every band the modem supports)."
+msgstr "Hiç bant işaretli değilse: otomatik (modemin desteklediği tüm bantlar)."
+
+msgid "ARFCN (NR-ARFCN or EARFCN)"
+msgstr "ARFCN (NR-ARFCN veya EARFCN)"
+
+msgid "PCI"
+msgstr "PCI"
+
+msgid "Lock this cell"
+msgstr "Bu hücreye kilitle"
+
+msgid "The ARFCN is a number of up to 7 digits, the PCI one of up to 4."
+msgstr "ARFCN en çok 7, PCI en çok 4 basamaklı bir sayıdır."
+
+msgid "$0 cell lock: ARFCN $1, PCI $2"
+msgstr "$0 hücre kilidi: ARFCN $1, PCI $2"
+
+msgid "Lock the serving cell"
+msgstr "Hizmet veren hücreye kilitle"
+
+msgid "a lock on the serving cell"
+msgstr "hizmet veren hücreye kilit"
+
+msgid "Unlock every cell"
+msgstr "Tüm hücre kilitlerini kaldır"
+
+msgid "no cell lock"
+msgstr "hücre kilidi yok"
+
+msgid "A cell lock is not kept in the modem across a restart: with \"Apply at startup\" on, the device sends it again at every boot."
+msgstr "Hücre kilidi yeniden başlatmada modemde kalmaz: \"Açılışta uygula\" açıkken cihaz onu her açılışta yeniden gönderir."
+
+msgid "Startup and reset"
+msgstr "Açılış ve sıfırlama"
+
+msgid "Do not apply at startup"
+msgstr "Açılışta uygulama"
+
+msgid "Reset all to automatic"
+msgstr "Tümünü otomatiğe sıfırla"
+
+msgid "Network mode automatic, EN-DC on, every LTE and NR band, no cell lock; the saved locks are cleared, so nothing is applied at startup."
+msgstr "Ağ modu otomatik, EN-DC açık, tüm LTE ve NR bantları, hücre kilidi yok; kayıtlı kilitler silinir, açılışta hiçbir şey uygulanmaz."
+
+msgid "Off: nothing is sent at startup; the saved settings stay."
+msgstr "Kapalı: açılışta hiçbir şey gönderilmez; kayıtlı ayarlar kalır."
+
+msgid "Reading the locks from the modem..."
+msgstr "Kilitler modemden okunuyor..."
+
+msgid "SMS forwarding"
+msgstr "SMS yönlendirme"
+
+msgid "Delivery log"
+msgstr "Teslim günlüğü"
+
+msgid "Empty: keep the saved value"
+msgstr "Boş: kayıtlı değer korunur"
+
+msgid "Saved: $0"
+msgstr "Kayıtlı: $0"
+
+msgid "Remove the saved value"
+msgstr "Kayıtlı değeri sil"
+
+msgid "Waiting to be delivered"
+msgstr "Teslim edilmeyi bekleyen"
+
+msgid "Webhook"
+msgstr "Webhook"
+
+msgid "E-mail"
+msgstr "E-posta"
+
+msgid "SMS to another phone"
+msgstr "Başka bir telefona SMS"
+
+msgid "Delivered"
+msgstr "Teslim edildi"
+
+msgid "Will retry"
+msgstr "Yeniden denenecek"
+
+msgid "Filtered out"
+msgstr "Filtrelendi"
+
+msgid "Dropped"
+msgstr "Bırakıldı"
+
+msgid "No deliveries yet."
+msgstr "Henüz teslim yok."
+
+msgid "Time"
+msgstr "Zaman"
+
+msgid "Message"
+msgstr "Mesaj"
+
+msgid "Target"
+msgstr "Hedef"
+
+msgid "Result"
+msgstr "Sonuç"
+
+msgid "Detail"
+msgstr "Ayrıntı"
+
+msgid "Test"
+msgstr "Test"
+
+msgid "Clear the log"
+msgstr "Günlüğü temizle"
+
+msgid "Messages that reach the SIM while forwarding is on are sent on (the device looks for new ones every 20 seconds). A failed delivery is tried again after 30 s, then after twice as long each time (an hour at most), ten times in all."
+msgstr "Yönlendirme açıkken SIM'e ulaşan mesajlar iletilir (cihaz her 20 saniyede yeni mesaja bakar). Başarısız bir teslim 30 sn sonra, ardından her seferinde iki kat sonra (en çok bir saat) yeniden denenir; toplam on kez."
+
+msgid "Forward received messages"
+msgstr "Gelen mesajları yönlendir"
+
+msgid "Message template (placeholders: {sender}, {time}, {text}, {device})"
+msgstr "Mesaj şablonu (yer tutucular: {sender}, {time}, {text}, {device})"
+
+msgid "Only these senders (one per line; empty: every sender; a * at the end matches the start)"
+msgstr "Yalnızca bu gönderenler (satır başına bir; boş: tüm gönderenler; sondaki * başlangıcı eşler)"
+
+msgid "Never these senders"
+msgstr "Asla bu gönderenler"
+
+msgid "Only messages with one of these words (one per line; empty: every message)"
+msgstr "Yalnızca bu sözcüklerden birini içeren mesajlar (satır başına bir; boş: tüm mesajlar)"
+
+msgid "Address (http:// or https://)"
+msgstr "Adres (http:// veya https://)"
+
+msgid "Form (URL-encoded)"
+msgstr "Form (URL kodlu)"
+
+msgid "Plain text"
+msgstr "Düz metin"
+
+msgid "Body (fields: sender, time, text, device, message)"
+msgstr "Gövde (alanlar: sender, time, text, device, message)"
+
+msgid "Custom body (empty: the standard fields; placeholders {sender}, {time}, {text}, {device}, {message}, each escaped for the type; shown again here: keep secrets in the address or a header)"
+msgstr "Özel gövde (boş: standart alanlar; yer tutucular {sender}, {time}, {text}, {device}, {message}, her biri türe göre kaçışlanır; burada yeniden gösterilir: gizli bilgileri adreste veya bir başlıkta tutun)"
+
+msgid "Presets"
+msgstr "Hazır ayarlar"
+
+msgid "Body presets"
+msgstr "Gövde hazır ayarları"
+
+msgid "Extra headers (one \"Name: value\" per line)"
+msgstr "Ek başlıklar (satır başına bir \"Ad: değer\")"
+
+msgid "The answer must contain (key=value; empty: every HTTP 2xx answer counts)"
+msgstr "Yanıt şunu içermeli (anahtar=değer; boş: her HTTP 2xx yanıtı sayılır)"
+
+msgid "Answer presets"
+msgstr "Yanıt hazır ayarları"
+
+msgid "With key=value the answer must be a JSON object with that value under that key at its top level, or the delivery fails. Only the result of the check is logged, never the answer."
+msgstr "anahtar=değer ile yanıt, en üst düzeyinde bu anahtarın altında bu değeri taşıyan bir JSON nesnesi olmalıdır; değilse teslim başarısız olur. Günlüğe yalnızca denetimin sonucu yazılır, yanıtın kendisi asla."
+
+msgid "Bot token"
+msgstr "Bot belirteci"
+
+msgid "Chat ID (a number, or @channel)"
+msgstr "Sohbet kimliği (bir sayı veya @kanal)"
+
+msgid "E-mail needs msmtp, which this system does not have (sudo apt install msmtp)."
+msgstr "E-posta için msmtp gerekir, bu sistemde yok (sudo apt install msmtp)."
+
+msgid "Mail server"
+msgstr "Posta sunucusu"
+
+msgid "Port"
+msgstr "Bağlantı noktası"
+
+msgid "None"
+msgstr "Yok"
+
+msgid "Security"
+msgstr "Güvenlik"
+
+msgid "User name"
+msgstr "Kullanıcı adı"
+
+msgid "Password"
+msgstr "Parola"
+
+msgid "From"
+msgstr "Gönderen"
+
+msgid "To"
+msgstr "Alıcı"
+
+msgid "Phone number (sent as one SMS: a longer message is cut short)"
+msgstr "Telefon numarası (tek SMS olarak gönderilir: daha uzun mesaj kısaltılır)"
+
+msgid "Save"
+msgstr "Kaydet"
+
+msgid "Send a test"
+msgstr "Test gönder"
+
+msgid "A test with the saved settings started; its result comes in the delivery log."
+msgstr "Kayıtlı ayarlarla bir test başladı; sonucu teslim günlüğünde görünür."
+
+msgid "Tokens, passwords and the webhook address and headers stay on the device and are never shown again. A test uses the saved settings: save first."
+msgstr "Belirteçler, parolalar ve webhook adresi ile başlıkları cihazda kalır ve bir daha gösterilmez. Test kayıtlı ayarları kullanır: önce kaydedin."
+
+msgid "APN"
+msgstr "APN"
+
+msgid "SIM"
+msgstr "SIM"
+
+msgid "Data roaming"
+msgstr "Veri dolaşımı"
+
+msgid "Off: data held back while roaming"
+msgstr "Kapalı: dolaşımda veri durduruldu"
+
+msgid "Allowed"
+msgstr "İzin verildi"
+
+msgid "Turn data roaming off"
+msgstr "Veri dolaşımını kapat"
+
+msgid "Allow data roaming"
+msgstr "Veri dolaşımına izin ver"
+
+msgid "While the SIM is registered on a roaming network, mobile data stays off; SMS, calls and the registration are not affected. Some SIMs report roaming at home (an MVNO, national roaming): there, data would stop as well."
+msgstr "SIM bir dolaşım ağına kayıtlıyken mobil veri kapalı kalır; SMS, aramalar ve ağ kaydı etkilenmez. Bazı SIM'ler yurt içinde de dolaşım bildirir (bir MVNO, ulusal dolaşım): orada da veri durur."
+
+msgid "Mobile data is used on roaming networks too, which can cost extra. Some SIMs report roaming at home (an MVNO, national roaming) and need this to have data at all."
+msgstr "Mobil veri dolaşım ağlarında da kullanılır; bu ek ücrete yol açabilir. Bazı SIM'ler yurt içinde de dolaşım bildirir (bir MVNO, ulusal dolaşım) ve veri için buna ihtiyaç duyar."
+
+msgid "Empty: the network's own APN. A change reconnects mobile data."
+msgstr "Boş: ağın kendi APN'i. Bir değişiklik mobil veriyi yeniden bağlar."
+
+msgid "(unchanged)"
+msgstr "(değişmedi)"
+
+msgid "Remove the user name and password"
+msgstr "Kullanıcı adını ve parolayı kaldır"
+
+msgid "IP type"
+msgstr "IP türü"
+
+msgid "Authentication"
+msgstr "Kimlik doğrulama"
+
+msgid "The APN may hold letters, digits, dots and hyphens."
+msgstr "APN harf, rakam, nokta ve kısa çizgi içerebilir."
+
+msgid "Save the APN settings? Mobile data reconnects (about half a minute)."
+msgstr "APN ayarları kaydedilsin mi? Mobil veri yeniden bağlanır (yaklaşık yarım dakika)."
+
+msgid "Card"
+msgstr "Kart"
+
+msgid "Ready"
+msgstr "Hazır"
+
+msgid "Locked (PIN or PUK needed)"
+msgstr "Kilitli (PIN veya PUK gerekli)"
+
+msgid "No card in this slot"
+msgstr "Bu yuvada kart yok"
+
+msgid "Unknown"
+msgstr "Bilinmiyor"
+
+msgid "Card (SIM $0)"
+msgstr "Kart (SIM $0)"
+
+msgid "Ask the card"
+msgstr "Karta sor"
+
+msgid "No SIM control on this device."
+msgstr "Bu cihazda SIM denetimi yok."
+
+msgid "SIM in use"
+msgstr "Kullanılan SIM"
+
+msgid "SIM $0"
+msgstr "SIM $0"
+
+msgid "SIM at the next boot"
+msgstr "Sonraki açılıştaki SIM"
+
+msgid "Use SIM $0"
+msgstr "SIM $0 kullan"
+
+msgid "Change the SIM? Mobile data uses the other card from then on (at the next reboot where the device cannot switch live)."
+msgstr "SIM değiştirilsin mi? Mobil veri bundan sonra diğer kartı kullanır (cihazın canlı geçiş yapamadığı durumda bir sonraki yeniden başlatmada)."
+
+msgid "This device has one SIM slot in use."
+msgstr "Bu cihazda kullanılan tek bir SIM yuvası var."
+
+msgid "Built-in SIM 1"
+msgstr "Dahili SIM 1"
+
+msgid "Built-in SIM 2"
+msgstr "Dahili SIM 2"
+
+msgid "Built-in SIM 3"
+msgstr "Dahili SIM 3"
+
+msgid "External SIM"
+msgstr "Harici SIM"
+
+msgid "Card in use"
+msgstr "Kullanılan kart"
+
+msgid "Card at the next boot"
+msgstr "Sonraki açılıştaki kart"
+
+msgid "As the bootloader sets them"
+msgstr "Önyükleyicinin ayarladığı gibi"
+
+msgid "Built-in SIM 3 shares SIM2, the external SIM shares SIM1. The card chosen here is switched in before the modem starts, at the next boot; without a choice the cards stay as the bootloader sets them."
+msgstr "Dahili SIM 3, SIM2'yi; harici SIM, SIM1'i paylaşır. Burada seçilen kart bir sonraki açılışta modem başlamadan önce devreye alınır; seçim yoksa kartlar önyükleyicinin ayarladığı gibi kalır."
+
+msgid "Use this card from the next boot on?"
+msgstr "Bu kart sonraki açılıştan itibaren kullanılsın mı?"
+
+msgid "Radio per SIM"
+msgstr "SIM başına radyo"
+
+msgid "Turn off"
+msgstr "Kapat"
+
+msgid "Turn on"
+msgstr "Aç"
+
+msgid "This SIM will have no calls, SMS or data, and its radio stays off after a reboot until you turn it on again."
+msgstr "Bu SIM ile arama, SMS ve veri olmaz; radyosu yeniden başlatmadan sonra da siz yeniden açana kadar kapalı kalır."
+
+msgid "in use"
+msgstr "kullanımda"
+
+msgid "All radios off (airplane mode)"
+msgstr "Tüm radyoları kapat (uçak modu)"
+
+msgid "Turn every SIM's radio off? No calls, SMS or mobile data until you turn them on again, also after a reboot."
+msgstr "Tüm SIM radyoları kapatılsın mı? Siz yeniden açana kadar arama, SMS ve mobil veri olmaz; yeniden başlatmadan sonra da."
+
+msgid "All radios on"
+msgstr "Tüm radyoları aç"
+
+msgid "Kept across reboots: a radio that is off stays off until it is turned on here."
+msgstr "Yeniden başlatmalarda korunur: kapalı bir radyo burada açılana kadar kapalı kalır."
+
+msgid "A radio change is under way."
+msgstr "Bir radyo değişikliği sürüyor."
+
+msgid "Voice over LTE and 5G"
+msgstr "LTE ve 5G üzerinden ses"
+
+msgid "VoLTE (on by default) and VoNR (the modem's own choice until set) per SIM; the card in use takes a change at once, the other one at its next start."
+msgstr "SIM başına VoLTE (varsayılan olarak açık) ve VoNR (ayarlanana kadar modemin kendi seçimi); kullanılan kart değişikliği hemen alır, diğeri bir sonraki başlangıcında."
+
+msgid "modem default"
+msgstr "modem varsayılanı"
+
+msgid "now: $0"
+msgstr "şu an: $0"
+
+msgid "TTL"
+msgstr "TTL"
+
+msgid "Every packet that leaves through mobile data gets this TTL (IPv6: hop limit), so tethered devices look like the device itself (64)."
+msgstr "Mobil veri üzerinden çıkan her paket bu TTL değerini alır (IPv6: hop limit); böylece bağlı cihazlar cihazın kendisi gibi görünür (64)."
+
+msgid "not changed"
+msgstr "değiştirilmedi"
+
+msgid "Method"
+msgstr "Yöntem"
+
+msgid "New TTL"
+msgstr "Yeni TTL"
+
+msgid "Set"
+msgstr "Ayarla"
+
+msgid "The TTL is a whole number from 1 to 255."
+msgstr "TTL, 1 ile 255 arasında bir tam sayıdır."
+
+msgid "Leave the TTL alone"
+msgstr "TTL'ye dokunma"
+
+msgid "USSD"
+msgstr "USSD"
+
+msgid "Send"
+msgstr "Gönder"
+
+msgid "A USSD code holds digits, * and # (an answer in a menu: its number)."
+msgstr "Bir USSD kodu rakam, * ve # içerir (menüdeki bir yanıt: numarası)."
+
+msgid "Waiting for the network..."
+msgstr "Ağ bekleniyor..."
+
+msgid "End the session"
+msgstr "Oturumu sonlandır"
+
+msgid "Code, or the answer to a menu"
+msgstr "Kod veya menüye yanıt"
+
+msgid "This system has no lock program yet (an older image): update it. Mode and band locks set elsewhere stay in the modem and apply here too."
+msgstr "Bu sistemde henüz kilit programı yok (eski bir imaj): güncelleyin. Başka yerde ayarlanan mod ve bant kilitleri modemde kalır ve burada da geçerlidir."
+
+msgid "Send a message"
+msgstr "Mesaj gönder"
+
+msgid "Messages"
+msgstr "Mesajlar"
+
+msgid "Enter a phone number (digits, an optional + first)."
+msgstr "Bir telefon numarası girin (rakamlar, başta isteğe bağlı +)."
+
+msgid "The message is empty."
+msgstr "Mesaj boş."
+
+msgid "Sent"
+msgstr "Gönderilen"
+
+msgid "Number"
+msgstr "Numara"
+
+msgid "Text"
+msgstr "Metin"
+
+msgid "Reading the SIM..."
+msgstr "SIM okunuyor..."
+
+msgid "No messages."
+msgstr "Mesaj yok."
+
+msgid "Delete"
+msgstr "Sil"
+
+msgid "Delete this message from the SIM?"
+msgstr "Bu mesaj SIM'den silinsin mi?"
+
+msgid "$0 parts"
+msgstr "$0 parça"
+
+msgid "This system has no SMS forwarding yet (an older image): update it."
+msgstr "Bu sistemde henüz SMS yönlendirme yok (eski bir imaj): güncelleyin."
+
+msgid "AT terminal"
+msgstr "AT terminali"
+
+msgid "Commands go to the modem as they are: a wrong one can drop the connection or change the modem's settings for good (also for Android)."
+msgstr "Komutlar modeme olduğu gibi gider: yanlış bir komut bağlantıyı düşürebilir veya modemin ayarlarını kalıcı olarak değiştirebilir (Android için de)."
+
+msgid "An AT command starts with AT and holds printable ASCII only."
+msgstr "Bir AT komutu AT ile başlar ve yalnızca yazdırılabilir ASCII içerir."
+
+msgid "Command"
+msgstr "Komut"
+
+msgid "Wait for the answer at most"
+msgstr "Yanıt için en fazla bekle"
+
+msgid "Clear"
+msgstr "Temizle"
+
+msgid "History (this boot)"
+msgstr "Geçmiş (bu açılış)"
+
+msgid "No commands yet."
+msgstr "Henüz komut yok."
+
+msgid "Newest first; a click puts the command in the field above."
+msgstr "En yenisi önce; tıklamak komutu yukarıdaki alana koyar."
+
+msgid "Billing cycle and cap"
+msgstr "Fatura dönemi ve kota"
+
+msgid "History"
+msgstr "Geçmiş"
+
+msgid "$0 days left"
+msgstr "$0 gün kaldı"
+
+msgid "Of the cap"
+msgstr "Kotanın"
+
+msgid "The cap is reached: mobile data is off until the next cycle."
+msgstr "Kotaya ulaşıldı: mobil veri sonraki döneme kadar kapalı."
+
+msgid "Close to the monthly cap."
+msgstr "Aylık kotaya yaklaşıldı."
+
+msgid "Interface counted"
+msgstr "Sayılan arayüz"
+
+msgid "The clock is not set yet (no network time): new traffic waits to be put on its day."
+msgstr "Saat henüz ayarlanmadı (ağ saati yok): yeni trafik kendi gününe yazılmayı bekliyor."
+
+msgid "Turn mobile data off at the cap until the next cycle"
+msgstr "Kotaya ulaşınca mobil veriyi sonraki döneme kadar kapat"
+
+msgid "The day a billing cycle starts (31: the month's last day)"
+msgstr "Fatura döneminin başladığı gün (31: ayın son günü)"
+
+msgid "Monthly cap in GiB (0: none)"
+msgstr "GiB cinsinden aylık kota (0: yok)"
+
+msgid "Warn at this percentage of the cap"
+msgstr "Kotanın bu yüzdesinde uyar"
+
+msgid "Check the values: a day from 1 to 31, a cap of 0 or more, a percentage from 1 to 100."
+msgstr "Değerleri kontrol edin: 1 ile 31 arası bir gün, 0 veya daha büyük bir kota, 1 ile 100 arası bir yüzde."
+
+msgid "What the operator says this cycle has used, in GiB (corrects the count)"
+msgstr "Operatörün bu dönemde kullanıldığını söylediği miktar, GiB cinsinden (sayacı düzeltir)"
+
+msgid "Correct the count"
+msgstr "Sayacı düzelt"
+
+msgid "Enter an amount in GiB."
+msgstr "GiB cinsinden bir miktar girin."
+
+msgid "Forget every count"
+msgstr "Tüm sayaçları unut"
+
+msgid "Forget every count (days and cycles)? Counting goes on from now."
+msgstr "Tüm sayaçlar (günler ve dönemler) unutulsun mu? Sayım şu andan itibaren devam eder."
+
+msgid "Days"
+msgstr "Günler"
+
+msgid "Day"
+msgstr "Gün"
+
+msgid "Down"
+msgstr "İndirme"
+
+msgid "Up"
+msgstr "Yükleme"
+
+msgid "Total"
+msgstr "Toplam"
+
+msgid "Billing cycles"
+msgstr "Fatura dönemleri"
+
+msgid "Hotspot"
+msgstr "Hotspot"
+
+msgid "Join a Wi-Fi network"
+msgstr "Bir Wi-Fi ağına katıl"
+
+msgid "the radio is a client of another network"
+msgstr "radyo başka bir ağın istemcisi"
+
+msgid "Band"
+msgstr "Bant"
+
+msgid "Channel"
+msgstr "Kanal"
+
+msgid "now $0"
+msgstr "şu an $0"
+
+msgid "Country"
+msgstr "Ülke"
+
+msgid "Turn the hotspot off"
+msgstr "Hotspot'u kapat"
+
+msgid "Turn the hotspot on"
+msgstr "Hotspot'u aç"
+
+msgid "Turn the hotspot off? Devices on it lose the connection; if you reach this page over the hotspot, you lose it too."
+msgstr "Hotspot kapatılsın mı? Ona bağlı cihazlar bağlantıyı kaybeder; bu sayfaya hotspot üzerinden ulaşıyorsanız siz de kaybedersiniz."
+
+msgid "Hidden network (the name is not broadcast)"
+msgstr "Gizli ağ (ad yayınlanmaz)"
+
+msgid "New password (empty: unchanged)"
+msgstr "Yeni parola (boş: değişmez)"
+
+msgid "Save and restart the hotspot"
+msgstr "Kaydet ve hotspot'u yeniden başlat"
+
+msgid "The name must be 1 to 32 bytes, without a space first or last."
+msgstr "Ad 1 ile 32 bayt arasında olmalı, başında veya sonunda boşluk olmadan."
+
+msgid "The password must be 8 to 63 printable ASCII characters."
+msgstr "Parola 8 ile 63 arası yazdırılabilir ASCII karakter olmalı."
+
+msgid "Nothing changed."
+msgstr "Hiçbir şey değişmedi."
+
+msgid "Restart the hotspot? Devices on it are disconnected and must join again (with the new password, if it changed)."
+msgstr "Hotspot yeniden başlatılsın mı? Ona bağlı cihazların bağlantısı kesilir ve yeniden katılmaları gerekir (parola değiştiyse yeni parolayla)."
+
+msgid "Connected devices"
+msgstr "Bağlı cihazlar"
+
+msgid "None."
+msgstr "Yok."
+
+msgid "Name"
+msgstr "Ad"
+
+msgid "MAC"
+msgstr "MAC"
+
+msgid "The radio does one thing at a time: joining a network turns the hotspot off while it is joined. If you reach this page over the hotspot, you lose it."
+msgstr "Radyo aynı anda tek iş yapar: bir ağa katılmak, bağlı kaldığı sürece hotspot'u kapatır. Bu sayfaya hotspot üzerinden ulaşıyorsanız bağlantıyı kaybedersiniz."
+
+msgid "Join"
+msgstr "Katıl"
+
+msgid "The name must be 1 to 32 bytes."
+msgstr "Ad 1 ile 32 bayt arasında olmalı."
+
+msgid "Join this network? The hotspot is off while the device is a client of it."
+msgstr "Bu ağa katılınsın mı? Cihaz bu ağın istemcisiyken hotspot kapalı kalır."
+
+msgid "Leave and turn the hotspot back on"
+msgstr "Ayrıl ve hotspot'u yeniden aç"
+
+msgid "Look for networks"
+msgstr "Ağları ara"
+
+msgid "Looking..."
+msgstr "Aranıyor..."
+
+msgid "Network name"
+msgstr "Ağ adı"
+
+msgid "Password (empty for an open network)"
+msgstr "Parola (açık ağ için boş)"
+
+msgid "Joined a network"
+msgstr "Bir ağa katılındı"
+
+msgid "The VPN module is not installed. It brings the VPN (VLESS, VMess, Trojan, Shadowsocks, Hysteria2, TUIC, WireGuard and more) with a kill switch, profiles and subscriptions; it is downloaded from GitHub (the device must be online)."
+msgstr "VPN modülü kurulu değil. Kill switch, profiller ve aboneliklerle birlikte VPN'i (VLESS, VMess, Trojan, Shadowsocks, Hysteria2, TUIC, WireGuard ve daha fazlası) getirir; GitHub'dan indirilir (cihazın çevrimiçi olması gerekir)."
+
+msgid "Install the VPN module"
+msgstr "VPN modülünü kur"
+
+msgid "This VPN module is too old for this page: update it (Updates tab)."
+msgstr "Bu VPN modülü bu sayfa için çok eski: güncelleyin (Güncellemeler sekmesi)."
+
+msgid "Engine"
+msgstr "Motor"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "Find out"
+msgstr "Öğren"
+
+msgid "unknown"
+msgstr "bilinmiyor"
+
+msgid "Exit address"
+msgstr "Çıkış adresi"
+
+msgid "The profile needs the engine $0: install it below (Engines)."
+msgstr "Profil $0 motorunu gerektiriyor: aşağıdan kurun (Motorlar)."
+
+msgid "Turn the VPN off"
+msgstr "VPN'i kapat"
+
+msgid "Turn the VPN on"
+msgstr "VPN'i aç"
+
+msgid "Turn the VPN off? The kill switch goes with it: traffic leaves without the tunnel."
+msgstr "VPN kapatılsın mı? Kill switch de onunla kapanır: trafik tünel olmadan çıkar."
+
+msgid "Restart"
+msgstr "Yeniden başlat"
+
+msgid "Kill switch off"
+msgstr "Kill switch kapalı"
+
+msgid "Kill switch on"
+msgstr "Kill switch açık"
+
+msgid "Turn the kill switch on? While the VPN is on and its tunnel is down, nothing leaves the device (its own traffic too) until the tunnel is back."
+msgstr "Kill switch açılsın mı? VPN açıkken tüneli kapalıysa, tünel geri gelene kadar cihazdan hiçbir şey çıkmaz (kendi trafiği de)."
+
+msgid "Profiles"
+msgstr "Profiller"
+
+msgid "No profiles yet: add one below."
+msgstr "Henüz profil yok: aşağıdan bir tane ekleyin."
+
+msgid "Use"
+msgstr "Kullan"
+
+msgid "Rename"
+msgstr "Yeniden adlandır"
+
+msgid "New name:"
+msgstr "Yeni ad:"
+
+msgid "Remove"
+msgstr "Kaldır"
+
+msgid "Remove the profile $0?"
+msgstr "$0 profili kaldırılsın mı?"
+
+msgid "needs $0"
+msgstr "$0 gerekli"
+
+msgid "Add a profile"
+msgstr "Profil ekle"
+
+msgid "A share link, or a configuration pasted whole"
+msgstr "Bir paylaşım bağlantısı veya bütün olarak yapıştırılmış bir yapılandırma"
+
+msgid "Name (optional)"
+msgstr "Ad (isteğe bağlı)"
+
+msgid "Add"
+msgstr "Ekle"
+
+msgid "Paste a link or a configuration first."
+msgstr "Önce bir bağlantı veya yapılandırma yapıştırın."
+
+msgid "Profile added"
+msgstr "Profil eklendi"
+
+msgid "Import from the address"
+msgstr "Adresten içe aktar"
+
+msgid "An https:// address, please."
+msgstr "Lütfen bir https:// adresi girin."
+
+msgid "Or a configuration file at an https:// address"
+msgstr "Veya bir https:// adresindeki yapılandırma dosyası"
+
+msgid "Subscriptions"
+msgstr "Abonelikler"
+
+msgid "No subscriptions."
+msgstr "Abonelik yok."
+
+msgid "Server"
+msgstr "Sunucu"
+
+msgid "Updated"
+msgstr "Güncellendi"
+
+msgid "Every"
+msgstr "Sıklık"
+
+msgid "Remove the subscription $0 and its profiles?"
+msgstr "$0 aboneliği ve profilleri kaldırılsın mı?"
+
+msgid "$0 h"
+msgstr "$0 sa"
+
+msgid "by hand"
+msgstr "elle"
+
+msgid "Refresh all"
+msgstr "Tümünü yenile"
+
+msgid "Add a subscription"
+msgstr "Abonelik ekle"
+
+msgid "Address (https://)"
+msgstr "Adres (https://)"
+
+msgid "Refresh every (hours, 0: by hand)"
+msgstr "Yenileme sıklığı (saat, 0: elle)"
+
+msgid "Give it a name."
+msgstr "Bir ad verin."
+
+msgid "Engines"
+msgstr "Motorlar"
+
+msgid "Update the device to see the engines here."
+msgstr "Motorları burada görmek için cihazı güncelleyin."
+
+msgid "Installed"
+msgstr "Kurulu"
+
+msgid "Version"
+msgstr "Sürüm"
+
+msgid "Size"
+msgstr "Boyut"
+
+msgid "Install"
+msgstr "Kur"
+
+msgid "Settings"
+msgstr "Ayarlar"
+
+msgid "Automatic: through the tunnel when it carries IPv6, else blocked"
+msgstr "Otomatik: tünel IPv6 taşıyorsa tünel üzerinden, aksi halde engelli"
+
+msgid "Through the tunnel"
+msgstr "Tünel üzerinden"
+
+msgid "Off (blocked)"
+msgstr "Kapalı (engelli)"
+
+msgid "Log"
+msgstr "Günlük"
+
+msgid "Show the log"
+msgstr "Günlüğü göster"
+
+msgid "Update the device to see its power settings here."
+msgstr "Güç ayarlarını burada görmek için cihazı güncelleyin."
+
+msgid "Power"
+msgstr "Güç"
+
+msgid "Power profiles"
+msgstr "Güç profilleri"
+
+msgid "Plugged in"
+msgstr "Şarjda"
+
+msgid "On battery"
+msgstr "Pilde"
+
+msgid "Saver"
+msgstr "Tasarruf"
+
+msgid "Asleep: hotspot off"
+msgstr "Uykuda: hotspot kapalı"
+
+msgid "Charging boot"
+msgstr "Şarj açılışı"
+
+msgid "Awake"
+msgstr "Uyanık"
+
+msgid "Profile in use"
+msgstr "Kullanılan profil"
+
+msgid "Power source"
+msgstr "Güç kaynağı"
+
+msgid "none (powered by USB)"
+msgstr "yok (USB ile besleniyor)"
+
+msgid "Charging paused: battery temperature"
+msgstr "Şarj duraklatıldı: pil sıcaklığı"
+
+msgid "Charging paused: charge limit"
+msgstr "Şarj duraklatıldı: şarj sınırı"
+
+msgid "Automatic: plugged in / on battery"
+msgstr "Otomatik: şarjda / pilde"
+
+msgid "Use this profile"
+msgstr "Bu profili kullan"
+
+msgid "Switch to Saver under (%)"
+msgstr "Şu seviyenin altında Tasarruf'a geç (%)"
+
+msgid "Stop charging at (%)"
+msgstr "Şarjı şu seviyede durdur (%)"
+
+msgid "0 % never charges the battery (the device runs on the charger), 100 % charges it full; in between, charging stops at that level and starts again 5 points lower. Under 5 % the battery always charges. 80 % keeps the battery healthier on a device that stays plugged in."
+msgstr "%0 pili hiç şarj etmez (cihaz şarj cihazıyla çalışır), %100 tam şarj eder; arada şarj o seviyede durur ve 5 puan aşağıda yeniden başlar. %5'in altında pil her zaman şarj olur. Sürekli takılı kalan bir cihazda %80 pili daha sağlıklı tutar."
+
+msgid "Charge only, until a key starts it"
+msgstr "Yalnızca şarj, bir tuş başlatana kadar"
+
+msgid "Start normally"
+msgstr "Normal başlat"
+
+msgid "When the charger switches the device on"
+msgstr "Şarj cihazı cihazı açtığında"
+
+msgid "What each profile does while nobody is connected (no Wi-Fi client, no computer on USB): the Wi-Fi key, a computer on USB or the charger wake the device."
+msgstr "Kimse bağlı değilken (Wi-Fi istemcisi yok, USB'de bilgisayar yok) her profilin yaptığı: Wi-Fi tuşu, USB'deki bir bilgisayar veya şarj cihazı cihazı uyandırır."
+
+msgid "Keep as is"
+msgstr "Olduğu gibi bırak"
+
+msgid "LTE only (5G off)"
+msgstr "Yalnızca LTE (5G kapalı)"
+
+msgid "Full"
+msgstr "Tam"
+
+msgid "Eco: big core off"
+msgstr "Eko: büyük çekirdek kapalı"
+
+msgid "Hotspot off after (min, 0 = never)"
+msgstr "Hotspot şu süre sonra kapanır (dk, 0 = hiçbir zaman)"
+
+msgid "Modem when idle"
+msgstr "Boştayken modem"
+
+msgid "LEDs when idle"
+msgstr "Boştayken LED'ler"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "mu300-power status"
+msgstr "mu300-power durumu"
+
+msgid "LEDs"
+msgstr "LED'ler"
+
+msgid "How long the LEDs stay lit after a key press or a change; 0 keeps them on."
+msgstr "Bir tuşa basıldıktan veya bir değişiklikten sonra LED'lerin ne kadar yanık kalacağı; 0 onları açık tutar."
+
+msgid "Seconds (empty: the device's default)"
+msgstr "Saniye (boş: cihazın varsayılanı)"
+
+msgid "A whole number of seconds, 0 or more."
+msgstr "0 veya daha büyük, tam sayı olarak saniye."
+
+msgid "Light each LED in turn"
+msgstr "Her LED'i sırayla yak"
+
+msgid "Each LED lights for 2 seconds, one after the other."
+msgstr "Her LED sırayla 2 saniye yanar."
+
+msgid "Compressed swap (zram)"
+msgstr "Sıkıştırılmış takas (zram)"
+
+msgid "Swap in RAM, compressed: room for about twice as many programs before the kernel has to end one."
+msgstr "RAM'de sıkıştırılmış takas: kernel bir programı sonlandırmak zorunda kalmadan önce yaklaşık iki kat program için yer."
+
+msgid "Off now (on at the next boot)"
+msgstr "Şu an kapalı (sonraki açılışta açık)"
+
+msgid "Turn zram off"
+msgstr "zram'ı kapat"
+
+msgid "Turn zram on"
+msgstr "zram'ı aç"
+
+msgid "Power saving"
+msgstr "Güç tasarrufu"
+
+msgid "Balanced"
+msgstr "Dengeli"
+
+msgid "Performance"
+msgstr "Performans"
+
+msgid "CPU profile"
+msgstr "CPU profili"
+
+msgid "CPU voltage offset (EXPERIMENTAL)"
+msgstr "CPU voltaj ofseti (DENEYSEL)"
+
+msgid "A profile sets the CPU governor and the per-cluster frequency limits, inside the hardware frequency table; the kernel keeps throttling at its thermal limit in every profile."
+msgstr "Profil, CPU yöneticisini ve küme başına frekans sınırlarını donanımın frekans tablosu içinde ayarlar; çekirdek her profilde sıcaklık sınırında yavaşlatmaya devam eder."
+
+msgid "Thermal throttling is active right now."
+msgstr "Şu anda sıcaklık nedeniyle yavaşlatma etkin."
+
+msgid "Highlighted cores are online. A core taken offline stays offline, also after a reboot, until it is brought back. CPU0 always stays online."
+msgstr "Vurgulu çekirdekler çevrimiçidir. Çevrimdışı bırakılan bir çekirdek, geri açılana kadar yeniden başlatmadan sonra da çevrimdışı kalır. CPU0 her zaman çevrimiçi kalır."
+
+msgid "Low latency keeps CPU0 out of its idle states, as ZTE's U30 Air firmware does: Wi-Fi delays are much shorter, and the device draws more power. Off by default."
+msgstr "Düşük gecikme, ZTE'nin U30 Air yazılımında olduğu gibi CPU0'ı boşta durumlarının dışında tutar: Wi-Fi gecikmeleri çok kısalır, cihaz daha fazla güç çeker. Varsayılan olarak kapalı."
+
+msgid "Low latency: on"
+msgstr "Düşük gecikme: açık"
+
+msgid "Low latency: off"
+msgstr "Düşük gecikme: kapalı"
+
+msgid "Experimental: changing the CPU voltage can make the device unstable, corrupt your data and permanently damage your device. Use it entirely at your own risk."
+msgstr "Deneysel: Bu özellik deneyseldir ve cihazınıza kalıcı zarar verebilirsiniz. CPU voltajını değiştirmek cihazı kararsız yapabilir ve verilerinizi bozabilir. Tüm risk size aittir."
+
+msgid "Not available with this kernel (a mainline kernel of this release or later has it)."
+msgstr "Bu kernel ile kullanılamaz (bu sürümün veya daha yeni bir sürümün mainline kerneli bunu içerir)."
+
+msgid "Off: the stock voltages"
+msgstr "Kapalı: fabrika voltajları"
+
+msgid "Changes at the next reboot"
+msgstr "Sonraki yeniden başlatmada değişir"
+
+msgid "Trial boot: kept once this boot has been up 10 minutes"
+msgstr "Deneme açılışı: bu açılış 10 dakika çalışınca korunur"
+
+msgid "Kept: this offset passed its trial boot"
+msgstr "Korunuyor: bu ofset deneme açılışını geçti"
+
+msgid "a boot with it ended without a clean shutdown"
+msgstr "bu ofsetle yapılan bir açılış temiz bir kapanış olmadan sona erdi"
+
+msgid "its trial boot ended before 10 minutes"
+msgstr "deneme açılışı 10 dakikadan önce sona erdi"
+
+msgid "invalid value"
+msgstr "geçersiz değer"
+
+msgid "unknown SoC firmware"
+msgstr "bilinmeyen SoC firmware'i"
+
+msgid "refused by the kernel"
+msgstr "kernel tarafından reddedildi"
+
+msgid "the kernel could not start CPU scaling with it"
+msgstr "kernel bu ofsetle CPU ölçeklemesini başlatamadı"
+
+msgid "Offsets in µV for the three CPU domains (cores 0-3, 4-6 and 7), in whole steps. A new offset takes effect at the next reboot, as a trial: it is kept once that boot has been up 10 minutes, and dropped (back to 0) if a boot with it ends in a crash, a watchdog reset or a power cut."
+msgstr "Üç CPU alanı (çekirdek 0-3, 4-6 ve 7) için µV cinsinden ofsetler, tam adımlarla. Yeni bir ofset sonraki yeniden başlatmada deneme olarak geçerli olur: o açılış 10 dakika çalışınca korunur, bu ofsetle yapılan bir açılış çökme, watchdog sıfırlaması veya elektrik kesintisiyle biterse bırakılır (0'a döner)."
+
+msgid "Running now (µV)"
+msgstr "Şu an çalışan (µV)"
+
+msgid "Saved for the next boot (µV)"
+msgstr "Sonraki açılış için kayıtlı (µV)"
+
+msgid "Taken back automatically: $0 µV ($1)"
+msgstr "Otomatik olarak geri alındı: $0 µV ($1)"
+
+msgid "The SoC firmware of this device is not one whose voltage encoding is known: only the stock voltages are possible."
+msgstr "Bu cihazın SoC firmware'i, voltaj kodlaması bilinenlerden biri değil: yalnızca fabrika voltajları kullanılabilir."
+
+msgid "Domain $0 (cores $1), now $2 µV, highest step $3"
+msgstr "Alan $0 (çekirdek $1), şu an $2 µV, en yüksek adım $3"
+
+msgid "Limits: $0 to $1 µV, in steps of $2 µV."
+msgstr "Sınırlar: $0 ile $1 µV arası, $2 µV adımlarla."
+
+msgid "Type $0 to confirm:"
+msgstr "Onaylamak için $0 yazın:"
+
+msgid "Save for the next boot"
+msgstr "Sonraki açılış için kaydet"
+
+msgid "Each offset must be a multiple of $0 µV between $1 and $2."
+msgstr "Her ofset, $0 µV'un katı olmalı ve $1 ile $2 arasında olmalıdır."
+
+msgid "Type $0 to confirm."
+msgstr "Onaylamak için $0 yazın."
+
+msgid "Back to the stock voltages"
+msgstr "Fabrika voltajlarına dön"
+
+msgid "Run a 10-minute CPU stress test"
+msgstr "10 dakikalık CPU stres testi çalıştır"
+
+msgid "Test a new offset under load during its trial boot. The device may crash if the voltage is too low; the next boot then runs at the stock voltages."
+msgstr "Yeni bir ofseti deneme açılışı sırasında yük altında test edin. Voltaj çok düşükse cihaz çökebilir; bu durumda sonraki açılış fabrika voltajlarıyla çalışır."
+
+msgid "A stress test is running."
+msgstr "Bir stres testi çalışıyor."
+
+msgid "NCM (the default)"
+msgstr "NCM (varsayılan)"
+
+msgid "USB network now"
+msgstr "Şu anki USB ağı"
+
+msgid "USB network from the next boot"
+msgstr "Sonraki açılıştan itibaren USB ağı"
+
+msgid "that boot only"
+msgstr "yalnızca o açılış"
+
+msgid "From the next boot on"
+msgstr "Sonraki açılıştan itibaren"
+
+msgid "The next boot only, then NCM again"
+msgstr "Yalnızca sonraki açılış, sonra yine NCM"
+
+msgid "USB network protocol"
+msgstr "USB ağ protokolü"
+
+msgid "How long"
+msgstr "Ne kadar süre"
+
+msgid "Save (used at the next boot)"
+msgstr "Kaydet (sonraki açılışta kullanılır)"
+
+msgid "RNDIS is for older Windows: macOS has no driver for it, and a Mac on USB loses the connection to the device until NCM is back. Save?"
+msgstr "RNDIS eski Windows içindir: macOS'ta sürücüsü yoktur ve USB'deki bir Mac, NCM geri gelene kadar cihazla bağlantısını kaybeder. Kaydedilsin mi?"
+
+msgid "Saved: the USB connection to the computer drops for a moment at the next boot and comes back with it."
+msgstr "Kaydedildi: bilgisayarla USB bağlantısı sonraki açılışta bir an kesilir ve bu ayarla geri gelir."
+
+msgid "NCM: Windows 10 2004 and newer, macOS, Linux. ECM: macOS, Linux (Windows has no driver). RNDIS: older Windows (macOS has no driver)."
+msgstr "NCM: Windows 10 2004 ve sonrası, macOS, Linux. ECM: macOS, Linux (Windows'ta sürücü yok). RNDIS: eski Windows (macOS'ta sürücü yok)."
+
+msgid "Boot"
+msgstr "Açılış"
+
+msgid "LAN, USB and adb"
+msgstr "LAN, USB ve adb"
+
+msgid "Time on the device"
+msgstr "Cihazdaki saat"
+
+msgid "A host name holds letters, digits and hyphens (not first or last)."
+msgstr "Ana bilgisayar adı harf, rakam ve kısa çizgi içerir (kısa çizgi başta veya sonda olamaz)."
+
+msgid "Time zone (Area/City, or UTC)"
+msgstr "Saat dilimi (Bölge/Şehir veya UTC)"
+
+msgid "Change the password"
+msgstr "Parolayı değiştir"
+
+msgid "Enter the new password."
+msgstr "Yeni parolayı girin."
+
+msgid "The two passwords differ."
+msgstr "İki parola farklı."
+
+msgid "Change the password of $0? It is the one for SSH, the console and this panel."
+msgstr "$0 kullanıcısının parolası değiştirilsin mi? SSH, konsol ve bu panel için kullanılan paroladır."
+
+msgid "New password of $0"
+msgstr "$0 kullanıcısının yeni parolası"
+
+msgid "The new password again"
+msgstr "Yeni parola (tekrar)"
+
+msgid "SSH"
+msgstr "SSH"
+
+msgid "Turn SSH off"
+msgstr "SSH'yi kapat"
+
+msgid "Turn SSH on"
+msgstr "SSH'yi aç"
+
+msgid "Turn SSH off? You can still log in here and on the USB serial console."
+msgstr "SSH kapatılsın mı? Buradan ve USB seri konsolundan yine de oturum açabilirsiniz."
+
+msgid "Starts by default"
+msgstr "Varsayılan olarak başlar"
+
+msgid "Linux system"
+msgstr "Linux sistemi"
+
+msgid "Kernel in use"
+msgstr "Kullanılan kernel"
+
+msgid "Boot locked to Linux"
+msgstr "Açılış Linux'a kilitli"
+
+msgid "Start Android next time"
+msgstr "Sonraki sefer Android'i başlat"
+
+msgid "Start Android at the next boot? Linux comes back with mu300-linux from Android (or the installer)."
+msgstr "Sonraki açılışta Android başlatılsın mı? Linux, Android'den (veya yükleyiciden) mu300-linux ile geri gelir."
+
+msgid "Start Linux by default"
+msgstr "Varsayılan olarak Linux'u başlat"
+
+msgid "Unlock the boot"
+msgstr "Açılış kilidini kaldır"
+
+msgid "Lock the boot to Linux"
+msgstr "Açılışı Linux'a kilitle"
+
+msgid "Start this system next"
+msgstr "Sonra bu sistemi başlat"
+
+msgid "Start the chosen Linux system at the next boot?"
+msgstr "Seçilen Linux sistemi sonraki açılışta başlatılsın mı?"
+
+msgid "Linux system at the next boot"
+msgstr "Sonraki açılıştaki Linux sistemi"
+
+msgid "Change the LAN address to $0? This page is then at https://$0:9090, and computers on USB and the hotspot get new addresses."
+msgstr "LAN adresi $0 olarak değiştirilsin mi? Bu sayfa artık https://$0:9090 adresinde olur; USB'deki ve hotspot'taki bilgisayarlar yeni adresler alır."
+
+msgid "LAN address (x.x.x.1 of a private network; the default is $0)"
+msgstr "LAN adresi (özel bir ağın x.x.x.1 adresi; varsayılan $0)"
+
+msgid "USB-C role"
+msgstr "USB-C rolü"
+
+msgid "Host (flash drives, keyboards)"
+msgstr "Ana bilgisayar (flash bellekler, klavyeler)"
+
+msgid "Make the USB-C port a host? The USB network to a computer is gone until it is back to device."
+msgstr "USB-C bağlantı noktası ana bilgisayar yapılsın mı? Cihaz moduna dönene kadar bilgisayara USB ağı olmaz."
+
+msgid "Device (network to a computer)"
+msgstr "Cihaz (bilgisayara ağ)"
+
+msgid "adb"
+msgstr "adb"
+
+msgid "On, only for authorised computers ($0 keys)"
+msgstr "Açık, yalnızca yetkili bilgisayarlar için ($0 anahtar)"
+
+msgid "On, for every computer"
+msgstr "Açık, her bilgisayar için"
+
+msgid "With adb open, anyone who plugs a cable into the device gets a root shell without a password."
+msgstr "adb açıkken cihaza kablo takan herkes parolasız root kabuğu alır."
+
+msgid "Your computer's adb key (~/.android/adbkey.pub), to allow keys only"
+msgstr "Bilgisayarınızın adb anahtarı (~/.android/adbkey.pub), yalnızca anahtarlara izin vermek için"
+
+msgid "Allow authorised computers only"
+msgstr "Yalnızca yetkili bilgisayarlara izin ver"
+
+msgid "Let only the computers with an authorised key use adb? The key above goes in first."
+msgstr "adb'yi yalnızca yetkili anahtarı olan bilgisayarlar kullansın mı? Önce yukarıdaki anahtar eklenir."
+
+msgid "Allow every computer"
+msgstr "Her bilgisayara izin ver"
+
+msgid "Let every computer use adb, without a key?"
+msgstr "Her bilgisayar adb'yi anahtarsız kullanabilsin mi?"
+
+msgid "Docker"
+msgstr "Docker"
+
+msgid "Service"
+msgstr "Hizmet"
+
+msgid "No containers."
+msgstr "Kapsayıcı yok."
+
+msgid "Image"
+msgstr "İmaj"
+
+msgid "Status"
+msgstr "Durum"
+
+msgid "Logs"
+msgstr "Günlükler"
+
+msgid "Show the logs"
+msgstr "Günlükleri göster"
+
+msgid "The release, the kernel's messages and the system log of this boot (Cockpit's Logs page has all of them)."
+msgstr "Sürüm, kernel mesajları ve bu açılışın sistem günlüğü (Cockpit'in Günlükler sayfasında hepsi var)."
+
+msgid "Updates"
+msgstr "Güncellemeler"
+
+msgid "Mirror (release files)"
+msgstr "Yansı (sürüm dosyaları)"
+
+msgid "Extras"
+msgstr "Ekler"
+
+msgid "Check for updates"
+msgstr "Güncellemeleri denetle"
+
+msgid "Install the update"
+msgstr "Güncellemeyi kur"
+
+msgid "Install the newest release now? The systems are replaced (your settings are kept) and the new one runs after the next reboot. Keep the device powered until it is done."
+msgstr "En yeni sürüm şimdi kurulsun mu? Sistemler değiştirilir (ayarlarınız korunur) ve yenisi bir sonraki yeniden başlatmadan sonra çalışır. Bitene kadar cihazın gücünü kesmeyin."
+
+msgid "The update is installed: restart the device to run it."
+msgstr "Güncelleme kuruldu: çalıştırmak için cihazı yeniden başlatın."
+
+msgid "Kernel running"
+msgstr "Çalışan kernel"
+
+msgid "Kernel chosen"
+msgstr "Seçilen kernel"
+
+msgid "5.4 is the vendor kernel (Android's drivers); 6.18 is the mainline long-term kernel; 7.2 the stable mainline one; 7.3 the newest mainline one. A change downloads the kernel and takes effect at the next reboot."
+msgstr "5.4 üretici kernelidir (Android'in sürücüleri); 6.18 uzun süreli destekli mainline kerneldir; 7.2 kararlı mainline kerneldir; 7.3 en yeni mainline kerneldir. Bir değişiklik kerneli indirir ve sonraki yeniden başlatmada etkili olur."
+
+msgid "Change the kernel"
+msgstr "Kerneli değiştir"
+
+msgid "Install kernel $0? It runs after the next reboot."
+msgstr "Kernel $0 kurulsun mu? Sonraki yeniden başlatmadan sonra çalışır."
+
+msgid "Where the release files are downloaded from: GitHub, or a mirror of them (a server with the same files, e.g. on your network). A mirror that cannot be reached is said once, and the rest comes from GitHub."
+msgstr "Sürüm dosyalarının indirildiği yer: GitHub veya bir yansısı (aynı dosyaları barındıran bir sunucu, ör. ağınızda). Erişilemeyen bir yansı bir kez bildirilir ve geri kalanı GitHub'dan gelir."
+
+msgid "Use this mirror"
+msgstr "Bu yansıyı kullan"
+
+msgid "An http:// or https:// address, please."
+msgstr "Lütfen bir http:// veya https:// adresi girin."
+
+msgid "Back to GitHub"
+msgstr "GitHub'a dön"
+
+msgid "Mirror address"
+msgstr "Yansı adresi"
+
+msgid "VPN module"
+msgstr "VPN modülü"
+
+msgid "Languages of the OpenWrt panel"
+msgstr "OpenWrt panelinin dilleri"
+
+msgid "This web panel (Cockpit)"
+msgstr "Bu web paneli (Cockpit)"
+
+msgid "VPN engine Xray"
+msgstr "VPN motoru Xray"
+
+msgid "VPN engine sing-box"
+msgstr "VPN motoru sing-box"
+
+msgid "VPN engine mihomo"
+msgstr "VPN motoru mihomo"
+
+msgid "VPN engine dae"
+msgstr "VPN motoru dae"
+
+msgid "Extra"
+msgstr "Ek"
+
+msgid "Remove the web panel? This page goes with it."
+msgstr "Web paneli kaldırılsın mı? Bu sayfa da onunla gider."
+
+msgid "Remove $0?"
+msgstr "$0 kaldırılsın mı?"
+
+msgid "Your packages after an update"
+msgstr "Güncellemeden sonra paketleriniz"
+
+msgid "The packages you installed are installed again after an update replaced the system, at its first boot (it needs the internet)."
+msgstr "Kurduğunuz paketler, bir güncelleme sistemi değiştirdikten sonra ilk açılışta yeniden kurulur (internet gerekir)."
+
+msgid "Try again now"
+msgstr "Şimdi yeniden dene"
+
+msgid "Do not install them again"
+msgstr "Yeniden kurma"
+
+msgid "Drop the note at login"
+msgstr "Oturum açılışındaki notu kaldır"
+
+msgid "Save the settings"
+msgstr "Ayarları kaydet"
+
+msgid "One file with the device's settings: Wi-Fi, mobile data, the SIM, the VPN and its profiles, the LAN, the system, SSH keys. It holds passwords and VPN keys: give it a passphrase to seal it, and keep it safe."
+msgstr "Cihazın ayarlarını içeren tek bir dosya: Wi-Fi, mobil veri, SIM, VPN ve profilleri, LAN, sistem, SSH anahtarları. Parolaları ve VPN anahtarlarını içerir: mühürlemek için bir parola ifadesi verin ve güvende tutun."
+
+msgid "Also the login password (its hash)"
+msgstr "Oturum açma parolası da (hash'i)"
+
+msgid "Passphrase (8 characters or more; empty: not sealed)"
+msgstr "Parola ifadesi (8 karakter veya daha fazla; boş: mühürlenmez)"
+
+msgid "Download the backup"
+msgstr "Yedeği indir"
+
+msgid "The passphrase must be 8 characters or more."
+msgstr "Parola ifadesi 8 karakter veya daha fazla olmalı."
+
+msgid "Saved, sealed with the passphrase."
+msgstr "Kaydedildi, parola ifadesiyle mühürlendi."
+
+msgid "Saved (not sealed)."
+msgstr "Kaydedildi (mühürlenmedi)."
+
+msgid "Restore the settings"
+msgstr "Ayarları geri yükle"
+
+msgid "A backup of another model too"
+msgstr "Başka bir modelin yedeği de"
+
+msgid "Backup file"
+msgstr "Yedek dosyası"
+
+msgid "Passphrase (when it is sealed)"
+msgstr "Parola ifadesi (mühürlüyse)"
+
+msgid "The file could not be read."
+msgstr "Dosya okunamadı."
+
+msgid "Check the file"
+msgstr "Dosyayı denetle"
+
+msgid "The file can be restored. What would change:"
+msgstr "Dosya geri yüklenebilir. Değişecekler:"
+
+msgid "The file cannot be restored:"
+msgstr "Dosya geri yüklenemez:"
+
+msgid "Restore"
+msgstr "Geri yükle"
+
+msgid "Restore these settings? They replace the device's, and the services restart with them (Wi-Fi and mobile data drop for a moment)."
+msgstr "Bu ayarlar geri yüklensin mi? Cihazın ayarlarının yerini alırlar ve hizmetler onlarla yeniden başlar (Wi-Fi ve mobil veri bir an kesilir)."
+
+msgid "Overview"
+msgstr "Genel bakış"
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "Power and CPU"
+msgstr "Güç ve CPU"
+
+msgid "Backup"
+msgstr "Yedek"
+
+msgid "Administrative access is off: the MU300 page needs it for nearly everything (the modem, the settings). Turn it on with the \"Limited access\" button at the top of Cockpit; your password is asked once."
+msgstr "Yönetici erişimi kapalı: MU300 sayfası neredeyse her şey için buna ihtiyaç duyar (modem, ayarlar). Cockpit'in üst kısmındaki \"Limited access\" (\"Sınırlı erişim\") düğmesiyle açın; parolanız bir kez sorulur."

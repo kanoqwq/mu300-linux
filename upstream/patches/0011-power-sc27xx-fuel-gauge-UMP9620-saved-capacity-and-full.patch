@@ -1,0 +1,269 @@
+power: supply: sc27xx_fuel_gauge: UMP9620's saved capacity in Android's format, 100 % on the charger's Full
+
+The FGU's always-on user area keeps the last capacity across a reboot. Unisoc's 5.4 driver (Android on the U30 Air)
+keeps it as whole percent in bits 7:0 and tenths in bits 11:8 (sc27xx_fgu_save_last_cap()/read_last_cap() there):
+the 575 (0x23f) that the first mainline boot with a charger driver read as 575 % is 63.2 %, with Android at 65 %.
+The first version of this patch took it for 0.1 % (57.5 %) and wrote 0.1 % back, which Android reads wrongly
+(580 = 0x244 = 68.2 %). On UMP9620 now:
+
+- a saved value is read in Android's format, and written as whole percent (which is the same number in both
+  formats). A value that is a capacity in that format is taken as it is, as Unisoc's driver does; one that is not
+  is decided by the open-circuit voltage from the battery node's OCV table (FINDINGS 181: an earlier version also
+  sent a multiple of 10 with tenths to the OCV, for what the first version of this patch had written, and so
+  misread Android's own 0x244 = 68.2 % at rest)
+- the capacity is written to the user area whenever its whole percent changes, as Android does: mainline wrote it
+  at a first power-on only, so every boot restarted from the value Android had left
+- the charger's Full (from a charger driver, not 0006's guess from the current) sets the capacity to 100 % while
+  the battery current is within the battery node's fullbatt-current either way (120 mA on the U30 Air, Unisoc's
+  charger-manager's full current): the U30 Air's charger ends a charge at 4.208 V, below the top of the OCV table,
+  so mainline's calibration (OCV above the table's top) never did. After a 1.5 h charge at 1.2 A the battery
+  rested at 4.146 V with Full from bq256xx, and the capacity still said 58. No voltage condition: that 4.146 V is
+  below the node's fullbatt-voltage (4.2 V) too (FINDINGS 181; an earlier version asked for 70 % by the OCV table)
+- the reported capacity stays within 0-100: while charging nothing calibrates the coulomb count
+
+--- a/drivers/power/supply/sc27xx_fuel_gauge.c
++++ b/drivers/power/supply/sc27xx_fuel_gauge.c
+@@ -66,6 +66,15 @@
+ #define SC27XX_FGU_FIRST_POWERTON	GENMASK(3, 0)
+ #define SC27XX_FGU_DEFAULT_CAP		GENMASK(11, 0)
+ #define SC27XX_FGU_NORMAIL_POWERTON	0x5
++
++/*
++ * UMP9620: Unisoc's 5.4 driver (Android on the U30 Air) keeps the capacity in the user area as whole percent in
++ * bits 7:0 and tenths in bits 11:8: 0x23f is 63.2 %. A whole percent with no tenths is the plain number, as
++ * mainline writes it.
++ */
++#define UMP9620_FGU_CAP_INTEGER_MASK	GENMASK(7, 0)
++#define UMP9620_FGU_CAP_DECIMAL_MASK	GENMASK(11, 8)
++#define UMP9620_FGU_CAP_DECIMAL_SHIFT	8
+ 
+ #define SC27XX_FGU_CUR_BASIC_ADC	8192
+ #define SC27XX_FGU_SAMPLE_HZ		2
+@@ -151,6 +160,10 @@
+ 	int cur_1000ma_adc;
+ 	int vol_1000mv_adc;
+ 	int calib_resist;
++	/* UMP9620: the whole percent last written to the user area, -1 for none */
++	int saved_cap;
++	/* UMP9620: the battery node's fullbatt-current (uA), 0 without one */
++	u32 full_current_ua;
+ 	struct power_supply_battery_ocv_table *cap_table;
+ 	struct power_supply_resistance_temp_table *resist_table;
+ };
+@@ -160,6 +173,8 @@
+ 					    int cap, bool int_mode);
+ static void sc27xx_fgu_adjust_cap(struct sc27xx_fgu_data *data, int cap);
+ static int sc27xx_fgu_get_temp(struct sc27xx_fgu_data *data, int *temp);
++static int sc27xx_fgu_get_current(struct sc27xx_fgu_data *data, int *val);
++static int sc27xx_fgu_get_vbat_ocv(struct sc27xx_fgu_data *data, int *val);
+ 
+ static const char * const sc27xx_charger_supply_name[] = {
+ 	"sc2731_charger",
+@@ -274,6 +289,10 @@
+ 	 * successfully according to the datasheet.
+ 	 */
+ 	udelay(200);
++
++	/* UMP9620: whole percent (no tenths), which Android reads as it reads its own */
++	if (data->var == &ump9620_info)
++		cap = clamp(cap, 0, 100);
+ 
+ 	ret = regmap_update_bits(data->regmap,
+ 				 data->base + SC27XX_FGU_USER_AREA_SET,
+@@ -294,9 +313,12 @@
+ 	 * make the user area data available, otherwise we can not save the user
+ 	 * area data.
+ 	 */
+-	return regmap_update_bits(data->regmap,
+-				  data->base + SC27XX_FGU_USER_AREA_CLEAR,
+-				  SC27XX_FGU_CAP_AREA_MASK, 0);
++	ret = regmap_update_bits(data->regmap,
++				 data->base + SC27XX_FGU_USER_AREA_CLEAR,
++				 SC27XX_FGU_CAP_AREA_MASK, 0);
++	if (!ret)
++		data->saved_cap = cap;
++	return ret;
+ }
+ 
+ static int sc27xx_fgu_read_last_cap(struct sc27xx_fgu_data *data, int *cap)
+@@ -318,6 +340,49 @@
+  * calculate the battery open circuit voltage, and get current battery
+  * capacity according to the capacity table.
+  */
++/*
++ * UMP9620, not a first power-on: the capacity Android (or this driver) saved, in Android's format, as Unisoc's
++ * driver reads it (whole percent in bits 7:0, tenths in 11:8). A value that is a capacity in that format is taken
++ * as it is; one that is not is decided by the open-circuit voltage, from the battery node's OCV table.
++ */
++static int ump9620_fgu_get_boot_capacity(struct sc27xx_fgu_data *data, int *cap)
++{
++	int ret, value, whole, tenths, ocv;
++	bool valid;
++
++	ret = regmap_read(data->regmap,
++			  data->base + SC27XX_FGU_USER_AREA_STATUS, &value);
++	if (ret)
++		return ret;
++
++	value &= SC27XX_FGU_CAP_AREA_MASK;
++	whole = value & UMP9620_FGU_CAP_INTEGER_MASK;
++	tenths = (value & UMP9620_FGU_CAP_DECIMAL_MASK) >> UMP9620_FGU_CAP_DECIMAL_SHIFT;
++	valid = whole <= 100 && tenths <= 9 && !(whole == 100 && tenths);
++
++	if (valid) {
++		*cap = DIV_ROUND_CLOSEST(whole * 10 + tenths, 10);
++		data->saved_cap = *cap;
++		dev_info(data->dev, "boot capacity %d %% (saved 0x%03x)\n", *cap, value);
++		return sc27xx_fgu_save_boot_mode(data, SC27XX_FGU_NORMAIL_POWERTON);
++	}
++
++	ret = sc27xx_fgu_get_vbat_ocv(data, &ocv);
++	if (ret)
++		return ret;
++
++	data->boot_volt = ocv;
++	*cap = power_supply_ocv2cap_simple(data->cap_table, data->table_len, ocv);
++	dev_info(data->dev, "boot capacity %d %% from the OCV (%d uV), saved 0x%03x is no capacity\n", *cap, ocv,
++		 value);
++
++	ret = sc27xx_fgu_save_last_cap(data, *cap);
++	if (ret)
++		return ret;
++
++	return sc27xx_fgu_save_boot_mode(data, SC27XX_FGU_NORMAIL_POWERTON);
++}
++
+ static int sc27xx_fgu_get_boot_capacity(struct sc27xx_fgu_data *data, int *cap)
+ {
+ 	int volt, cur, oci, ocv, ret;
+@@ -328,6 +393,9 @@
+ 	 * battery capacity as the initial battery capacity. Otherwise we should
+ 	 * re-calculate the initial battery capacity.
+ 	 */
++	if (!is_first_poweron && data->var == &ump9620_info)
++		return ump9620_fgu_get_boot_capacity(data, cap);
++
+ 	if (!is_first_poweron) {
+ 		ret = sc27xx_fgu_read_last_cap(data, cap);
+ 		if (ret)
+@@ -458,7 +526,7 @@
+ 
+ static int sc27xx_fgu_get_capacity(struct sc27xx_fgu_data *data, int *cap)
+ {
+-	int ret, cur_clbcnt, delta_clbcnt, delta_cap, temp;
++	int ret, cur_clbcnt, delta_clbcnt, delta_cap, temp, init_clbcnt;
+ 
+ 	/* Get current coulomb counters firstly */
+ 	ret = sc27xx_fgu_get_clbcnt(data, &cur_clbcnt);
+@@ -482,7 +550,21 @@
+ 	*cap = delta_cap + data->init_cap;
+ 
+ 	/* Calibrate the battery capacity in a normal range. */
++	init_clbcnt = data->init_clbcnt;
+ 	sc27xx_fgu_capacity_calibration(data, *cap, false);
++
++	/*
++	 * UMP9620: a calibration counts from now (the charger's Full: 100), and the user area keeps the capacity, as
++	 * Android's does, for the next boot of either system; mainline wrote it at a first power-on only, so every boot
++	 * started from the capacity Android had left.
++	 */
++	if (data->var == &ump9620_info) {
++		if (data->init_clbcnt != init_clbcnt)
++			*cap = data->init_cap;
++		*cap = clamp(*cap, 0, 100);
++		if (*cap != data->saved_cap && sc27xx_fgu_save_last_cap(data, *cap))
++			dev_err(data->dev, "failed to save battery capacity\n");
++	}
+ 
+ 	return 0;
+ }
+@@ -702,7 +784,8 @@
+ 		if (ret)
+ 			goto error;
+ 
+-		val->intval = value;
++		/* the coulomb count can run past either end while charging, when nothing calibrates it */
++		val->intval = clamp(value, 0, 100);
+ 		break;
+ 
+ 	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
+@@ -864,6 +947,41 @@
+ 	ret = sc27xx_fgu_get_clbcnt(data, &data->init_clbcnt);
+ 	if (ret)
+ 		dev_err(data->dev, "failed to get init coulomb counter\n");
++}
++
++/* whether one of the chargers is there to give the status (0006 guesses it from the current otherwise) */
++static bool sc27xx_fgu_has_charger(void)
++{
++	struct power_supply *psy;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(sc27xx_charger_supply_name); i++) {
++		psy = power_supply_get_by_name(sc27xx_charger_supply_name[i]);
++		if (psy) {
++			power_supply_put(psy);
++			return true;
++		}
++	}
++	return false;
++}
++
++/*
++ * UMP9620: the charger's Full is its own termination: the battery at the charge voltage and the current under the
++ * termination current. That stands for 100 % while the battery current is still within the battery node's
++ * fullbatt-current either way (Unisoc's charger-manager's full current, 120 mA on the U30 Air): a Full with the
++ * battery charging or drained harder than that is not the end of a charge. No voltage condition: after the
++ * termination the voltage settles below the charge voltage (4.146 V at rest after a Full from 4.208 V, FINDINGS
++ * 33d), below the node's fullbatt-voltage too.
++ */
++static bool ump9620_fgu_full_current(struct sc27xx_fgu_data *data)
++{
++	int cur;
++
++	if (!data->full_current_ua)
++		return true;
++	if (sc27xx_fgu_get_current(data, &cur))
++		return false;
++	return abs(cur) <= (int)(data->full_current_ua / 1000);
+ }
+ 
+ static void sc27xx_fgu_capacity_calibration(struct sc27xx_fgu_data *data,
+@@ -890,6 +1008,18 @@
+ 	if (chg_sts == POWER_SUPPLY_STATUS_CHARGING)
+ 		return;
+ 
++	/*
++	 * UMP9620: the U30 Air's charger ends a charge at its 4.208 V, below the top of the battery's OCV table, so
++	 * the OCV never reaches 100 % below. The charger's Full does (not 0006's guess from the current: the status
++	 * comes from a charger driver), with the battery current within fullbatt-current.
++	 */
++	if (data->var == &ump9620_info && chg_sts == POWER_SUPPLY_STATUS_FULL && cap != 100 &&
++	    sc27xx_fgu_has_charger() && ump9620_fgu_full_current(data)) {
++		dev_info(data->dev, "charge full: capacity %d %% -> 100 %%\n", cap);
++		sc27xx_fgu_adjust_cap(data, 100);
++		return;
++	}
++
+ 	if ((ocv > data->cap_table[0].ocv && cap < 100) || cap > 100) {
+ 		/*
+ 		 * If current OCV value is larger than the max OCV value in
+@@ -1259,6 +1389,10 @@
+ 	{
+ 		struct device_node *bat = of_parse_phandle(dev->of_node, "monitored-battery", 0);
+ 		int n = bat ? of_property_count_u32_elems(bat, "voltage-temp-table") : 0;
++
++		/* UMP9620: the full current for the charger's Full (above) */
++		if (data->var == &ump9620_info && bat)
++			of_property_read_u32(bat, "fullbatt-current", &data->full_current_ua);
+ 
+ 		if (n >= 4 && !(n % 2)) {
+ 			data->vt_table = devm_kcalloc(dev, n, sizeof(u32), GFP_KERNEL);
+@@ -1298,6 +1432,7 @@
+ 	}
+ 
+ 	data->bat_present = !!ret;
++	data->saved_cap = -1;
+ 	mutex_init(&data->lock);
+ 	data->dev = dev;
+ 	platform_set_drvdata(pdev, data);

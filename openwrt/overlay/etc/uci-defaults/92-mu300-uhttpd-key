@@ -1,0 +1,73 @@
+#!/bin/sh
+# The web server's TLS key that the releases shipped (FINDINGS 132). Every OpenWrt and OpenWrt-LuCI image from
+# v2026.10.13 to v2026.10.16.1 carried /etc/uhttpd.key, one key per image and the same on every device that installed
+# it; anyone who downloads the release has that key, so LuCI over HTTPS could be impersonated. The image build no
+# longer puts one in (build-rootfs.sh). This takes a shipped key away on the devices: a key file that is byte for byte
+# one of them goes, with its certificate, and uhttpd makes the device its own pair when it starts (it does whenever
+# the pair is missing; px5g, an EC P-256 key). A key that is not on the list - one the device made, one the user put
+# there - is never touched.
+#
+# uci-defaults run at boot before uhttpd starts, and the image brings this file again with every update (mu300-update,
+# the Magisk zip, the computer's installer: each carries /etc over, and a shipped key with it where the old image is
+# not known), so the check runs on the first boot of each image; it removes itself when it ran, as uci-defaults do.
+# By hand on a running system (the file is gone after the first boot: take it from the repository):
+# "sh 92-mu300-uhttpd-key; /etc/init.d/uhttpd restart". The browser warns once about the new self-signed certificate;
+# LuCI over plain HTTP is not affected.
+#
+# The list: sha256 of etc/uhttpd.key in each published mu300-openwrt-rootfs.tar.gz and mu300-openwrt-luci-rootfs.tar.gz
+# (the releases before v2026.10.13 had none), "sha256 release image". Fingerprints only, never a key.
+shipped='
+0523f54e5501011c84224ee7167cae5032d45962f960a37332bb5b2fdf95a0ba v2026.10.16.1 openwrt-luci
+ad78a3f7bd4ac1407e5b5c70075f028c85398853df07e40597d05ceb36cb5a84 v2026.10.16.1 openwrt
+1c30ffe55dd7f8fe0f97a509f63fe6a6855066e9acd16357a5c0aa09bff74b20 v2026.10.27 openwrt-luci
+83232d512bc55a76b146958a96480cc9602d30a6afa2af050ef855bb7b76d738 v2026.10.27 openwrt
+0d4c888a25bc9b7b6d69bd0d7eb0a89a830f1f47da598eb9ab04ff4dd5d968f7 v2026.10.26 openwrt-luci
+965ff7db1242cd613bb0b152860ab706164f5a5e5f51edeaf7a04a0b23bea84a v2026.10.26 openwrt
+b5ff6d08b976ac6ef0998fd1a469c6e6e72b03cbcb859b7361ebc43251e94e13 v2026.10.25 openwrt-luci
+bde402c813981f769183d35163af944f6222c3ccd5f763ce2b3f8010c5d017a4 v2026.10.25 openwrt
+3a9d4c39f65f95ccfc39972eae50eeeabdd644f1cb90a22384bf9cf5b0b184a7 v2026.10.24 openwrt-luci
+ec44aabecb80cda658813e7a59890cbc1de84cd810a759ca20d2b8b6edadaeaf v2026.10.24 openwrt
+7ff399f8757b30d4f41dcb5990379b92c8a864bbae88f43775eefd3fe2eb8992 v2026.10.23 openwrt-luci
+7ce9056850a2af01a9ac826d081efb46081212b4733c0c72107b990099c8992b v2026.10.23 openwrt
+a7491095077fb7c88fe4b0c50fc6c20f9d0a9b880c8803a63522e2ba41da209c v2026.10.22 openwrt-luci
+b34c7bcbcff383e57e875b12f841ba2ddfb6907f38e755139add69ceb7b75d20 v2026.10.22 openwrt
+3214f5ff679de9d42dad8102d8049ca13c3a6ca7760cbdbcccd19dbfafa6d97f v2026.10.21 openwrt-luci
+0911613bc77475b8d18640001d0cdeb5b8f4841cd5d532c43761ee55ea7cadf9 v2026.10.21 openwrt
+388add2e4a19a05ac24f14a7fe4ab08c18e4ab06f7c86ef4cf2ade61a9d4fd8d v2026.10.20 openwrt-luci
+250988bd1e20d997145d9a183a5a70f1bdb5fd1bc943657f43a719caaf6ecf96 v2026.10.20 openwrt
+609e9da2e694ba030dcfa4fa024c89a755e24580a324a734996b79c4013bd13c v2026.10.19 openwrt-luci
+826829aea5733d6bdd8abd89b79b09e43a80151004a5239210b70c68f9415f92 v2026.10.19 openwrt
+f71bb0342692ae86ed4878d245bb829f35f933241f6fd254d3e9aeeff3c77deb v2026.10.18 openwrt-luci
+e676bbf12ff9044cea6d6d002cc0721dd39272d6c661fc5c76ee45caed58b1c2 v2026.10.18 openwrt
+dcf46bf77a3b137f6cd70760452f78903af3ba10aec6bc945c57ab0bb1462e78 v2026.10.17 openwrt-luci
+37f6b4d30cd104366105520aee14ad7b8ff07351fb30062eeededfc854570b29 v2026.10.17 openwrt
+1d750c8ab73247951e8a4130290db2c32b24a3585cb10609337e10a274ea57d6 v2026.10.16 openwrt-luci
+4c712ea908419f8f31ebc82172aba97c4051bd0dd3eb5e475cb602439134478d v2026.10.16 openwrt
+5ba3f0ab0a48e887e62a06595d4140f9bfd936fc312306923ce080ceb9a0f491 v2026.10.15 openwrt-luci
+33ebd4993c3c5d5e5c9b58c4fbb5a66cef5c8cf9212a89b9df80d56882ae8052 v2026.10.15 openwrt
+c570687f4698d712cd30e6dfe98358c99b11336a033f842775bb5f920a4643d4 v2026.10.14 openwrt-luci
+591c4569f59ac3832f9606ad155371d9cdb1d6ccc9aa7fa0a502ac37ca2d8c09 v2026.10.14 openwrt
+e400ea9c4efc4a0947a294e0d76890f8cfe40b795df7567c8d0abaf916ffd197 v2026.10.13 openwrt-luci
+ac8f6431ef5f178a482ecd6bd69bbda2a95f65b5f1e80a88be1b414c55066a51 v2026.10.13 openwrt
+'
+
+# KEY CERT: KEY goes, with CERT, when it is one of the shipped keys
+drop_shipped() {
+	[ -f "$1" ] || return 0
+	sum=$(sha256sum "$1" 2>/dev/null) || return 0
+	sum=${sum%% *}
+	case $sum in ''|*[!0-9a-f]*) return 0 ;; esac
+	printf '%s\n' "$shipped" | grep -q "^$sum " || return 0
+	rm -f "$1" "$2"
+	logger -t mu300 "removed the TLS key a release shipped ($1) and its certificate: uhttpd makes the device its own" 2>/dev/null
+	return 0
+}
+
+drop_shipped /etc/uhttpd.key /etc/uhttpd.crt
+# and wherever an instance of uhttpd takes its key from
+for sec in $(uci -q show uhttpd 2>/dev/null | sed -n "s/^uhttpd\.\([A-Za-z0-9_]*\)\.key=.*/\1/p"); do
+	key=$(uci -q get "uhttpd.$sec.key")
+	crt=$(uci -q get "uhttpd.$sec.cert")
+	[ -z "$key" ] || drop_shipped "$key" "${crt:-/etc/uhttpd.crt}"
+done
+exit 0

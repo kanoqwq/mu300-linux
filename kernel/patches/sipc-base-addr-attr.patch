@@ -1,0 +1,131 @@
+sipc, mailbox: drop the "base_addr" attributes that can never be read
+
+Neither show nor store, created on platform devices that are never registered: two warnings each at boot, about
+ten seconds in all on the 5.4 console (docs/FINDINGS.md 31g).
+
+diff -ru a/drivers/soc/sprd/modem/sipc/sblock.c b/drivers/soc/sprd/modem/sipc/sblock.c
+--- a/drivers/soc/sprd/modem/sipc/sblock.c	2026-09-27 16:21:13
++++ b/drivers/soc/sprd/modem/sipc/sblock.c	2026-09-27 16:21:28
+@@ -2184,7 +2184,6 @@
+ 	.release = single_release,
+ };
+ 
+-static DEVICE_ATTR(base_addr, 0440, NULL, NULL);
+ 
+ int sblock_init_debug(void)
+ {
+@@ -2218,7 +2217,8 @@
+ 	sblock_dev->sys_dev = device_create(sblock_class, NULL,
+ 				       dev_no,
+ 				       sblock_dev, "sipc_sblock");
+-	device_create_file(&sblock_dev->pdev.dev, &dev_attr_base_addr);
++	/* MU300: the vendor also created a "base_addr" attribute here: with neither show nor store, on a device that
++	 * is never registered - it could never be read, and each one warned twice (about a second of boot each) */
+ 
+ 	return 0;
+ 
+diff -ru a/drivers/soc/sprd/modem/sipc/sbuf.c b/drivers/soc/sprd/modem/sipc/sbuf.c
+--- a/drivers/soc/sprd/modem/sipc/sbuf.c	2026-09-27 16:21:13
++++ b/drivers/soc/sprd/modem/sipc/sbuf.c	2026-09-27 16:21:28
+@@ -1674,7 +1674,6 @@
+ 	.release = single_release,
+ };
+ 
+-static DEVICE_ATTR(base_addr, 0440, NULL, NULL);
+ 
+ int sbuf_init_debug(void)
+ {
+@@ -1708,7 +1707,8 @@
+ 	sbuf_dev->sys_dev = device_create(sbuf_class, NULL,
+ 				       dev_no,
+ 				       sbuf_dev, "sipc_sbuf");
+-	device_create_file(&sbuf_dev->pdev.dev, &dev_attr_base_addr);
++	/* MU300: the vendor also created a "base_addr" attribute here: with neither show nor store, on a device that
++	 * is never registered - it could never be read, and each one warned twice (about a second of boot each) */
+ 
+ 	return 0;
+ 
+diff -ru a/drivers/soc/sprd/modem/sipc/sipx.c b/drivers/soc/sprd/modem/sipc/sipx.c
+--- a/drivers/soc/sprd/modem/sipc/sipx.c	2026-09-27 16:21:13
++++ b/drivers/soc/sprd/modem/sipc/sipx.c	2026-09-27 16:21:28
+@@ -260,7 +260,6 @@
+ 	.release = single_release,
+ };
+ 
+-static DEVICE_ATTR(base_addr, 0440, NULL, NULL);
+ 
+ static int sipx_init_debug(void)
+ {
+@@ -294,7 +293,8 @@
+ 	sipx_device->sys_dev = device_create(sipx_class, NULL,
+ 				       dev_no,
+ 				       sipx_device, "sipx");
+-	device_create_file(&sipx_device->pdev.dev, &dev_attr_base_addr);
++	/* MU300: the vendor also created a "base_addr" attribute here: with neither show nor store, on a device that
++	 * is never registered - it could never be read, and each one warned twice (about a second of boot each) */
+ 
+ 	return 0;
+ 
+diff -ru a/drivers/soc/sprd/modem/sipc/smem.c b/drivers/soc/sprd/modem/sipc/smem.c
+--- a/drivers/soc/sprd/modem/sipc/smem.c	2026-09-27 16:21:13
++++ b/drivers/soc/sprd/modem/sipc/smem.c	2026-09-27 16:21:28
+@@ -537,7 +537,6 @@
+ 	.release = single_release,
+ };
+ 
+-static DEVICE_ATTR(base_addr, 0440, NULL, NULL);
+ 
+ int smem_init_debug(void)
+ {
+@@ -571,7 +570,8 @@
+ 	smem_dev->sys_dev = device_create(smem_class, NULL,
+ 				       dev_no,
+ 				       smem_dev, "sipc_smem");
+-	device_create_file(&smem_dev->pdev.dev, &dev_attr_base_addr);
++	/* MU300: the vendor also created a "base_addr" attribute here: with neither show nor store, on a device that
++	 * is never registered - it could never be read, and each one warned twice (about a second of boot each) */
+ 
+ 	return 0;
+ 
+diff -ru a/drivers/soc/sprd/modem/sipc/smsg.c b/drivers/soc/sprd/modem/sipc/smsg.c
+--- a/drivers/soc/sprd/modem/sipc/smsg.c	2026-09-27 16:21:13
++++ b/drivers/soc/sprd/modem/sipc/smsg.c	2026-09-27 16:21:28
+@@ -970,7 +970,6 @@
+ 	.release = single_release,
+ };
+ 
+-static DEVICE_ATTR(base_addr, 0440, NULL, NULL);
+ 
+ int smsg_init_debug(void)
+ {
+@@ -1004,7 +1003,8 @@
+ 	smsg_dev->sys_dev = device_create(smsg_class, NULL,
+ 				       dev_no,
+ 				       smsg_dev, "sipc_smsg");
+-	device_create_file(&smsg_dev->pdev.dev, &dev_attr_base_addr);
++	/* MU300: the vendor also created a "base_addr" attribute here: with neither show nor store, on a device that
++	 * is never registered - it could never be read, and each one warned twice (about a second of boot each) */
+ 
+ 	return 0;
+ 
+diff -ru a/drivers/unisoc_platform/mailbox/unisoc-mailbox-hal.c b/drivers/unisoc_platform/mailbox/unisoc-mailbox-hal.c
+--- a/drivers/unisoc_platform/mailbox/unisoc-mailbox-hal.c	2026-09-27 16:21:13
++++ b/drivers/unisoc_platform/mailbox/unisoc-mailbox-hal.c	2026-09-27 16:21:28
+@@ -70,7 +70,6 @@
+ 	.release = single_release,
+ };
+ 
+-static DEVICE_ATTR(base_addr, 0440, NULL, NULL);
+ 
+ static int sprd_mbox_debug(void)
+ {
+@@ -104,7 +103,8 @@
+ 	mbox_dev->sys_dev = device_create(mbox_class, NULL,
+ 				       dev_no,
+ 				       mbox_dev, "mbox");
+-	device_create_file(&mbox_dev->pdev.dev, &dev_attr_base_addr);
++	/* MU300: the vendor also created a "base_addr" attribute here: with neither show nor store, on a device that
++	 * is never registered - it could never be read, and each one warned twice (about a second of boot each) */
+ 
+ 	return 0;
+ 

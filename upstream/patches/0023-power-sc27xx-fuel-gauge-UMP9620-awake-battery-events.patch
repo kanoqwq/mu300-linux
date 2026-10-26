@@ -1,0 +1,88 @@
+power: supply: sc27xx_fuel_gauge: UMP9620 battery events while awake (U30 Air)
+
+From kanoqwq/mu300-linux 99e1316a ("restore U30 Air battery events and low-power shutdown"), adapted.
+
+Mainline arms the fuel gauge's low-voltage (LOW_OVERLOAD) and coulomb-counter delta interrupts in suspend only and
+disarms them at resume. The U30 Air does not suspend, so in normal running neither interrupt was ever on: the
+capacity calibration the low-voltage interrupt runs (sc27xx_fgu_capacity_calibration(.., true): a capacity above the
+alarm capacity at the alarm voltage is pulled down to it) never happened, and no 1 % change reached userspace as a
+power_supply uevent. Both are armed here once both IRQ handlers are registered, kept after a resume, disarmed when
+the battery is removed and armed again when it is inserted. hw_init already sets the delta to 1 %.
+
+Only the U30 Air: the UMP9620 variant on a device tree with the charger policy service (the test of patch 0016).
+The F50 and V50 probe this fuel gauge too, with made-up readings and no battery, and keep the mainline mask. No
+polling, no change to the capacity tables, the saved capacity or the charger.
+
+--- a/drivers/power/supply/sc27xx_fuel_gauge.c
++++ b/drivers/power/supply/sc27xx_fuel_gauge.c
+@@ -1139,6 +1139,36 @@
+ 	return IRQ_HANDLED;
+ }
+ 
++/*
++ * MU300 (from kanoqwq/mu300-linux 99e1316a): the UMP9620's low-voltage and 1 % coulomb-counter interrupts only while
++ * awake too. Mainline arms them in suspend alone, and these boards do not suspend: the low-voltage calibration of
++ * the capacity never ran and no capacity change reached userspace. hw_init has set the delta to 1 % already. Only
++ * the U30 Air, the board with a battery (its device tree has the charger policy service, as patch 0016 tells it);
++ * the F50 and V50 have this fuel gauge with made-up readings and keep the mainline mask. A removed battery disarms
++ * them, an inserted one arms them again.
++ */
++static bool ump9620_fgu_awake_events(struct sc27xx_fgu_data *data)
++{
++	struct device_node *np;
++
++	if (data->var != &ump9620_info)
++		return false;
++	np = of_find_node_by_path("/charger_policy_service");
++	of_node_put(np);
++	return np;
++}
++
++static int ump9620_fgu_enable_events(struct sc27xx_fgu_data *data)
++{
++	unsigned int mask = SC27XX_FGU_LOW_OVERLOAD_INT | SC27XX_FGU_CLBCNT_DELTA_INT;
++
++	if (!ump9620_fgu_awake_events(data))
++		return 0;
++
++	return regmap_update_bits(data->regmap, data->base + SC27XX_FGU_INT_EN,
++				  mask, data->bat_present ? mask : 0);
++}
++
+ static irqreturn_t sc27xx_fgu_bat_detection(int irq, void *dev_id)
+ {
+ 	struct sc27xx_fgu_data *data = dev_id;
+@@ -1154,6 +1184,8 @@
+ 	}
+ 
+ 	data->bat_present = !!state;
++	if (ump9620_fgu_enable_events(data))
++		dev_err(data->dev, "failed to update the battery event mask\n");
+ 
+ 	mutex_unlock(&data->lock);
+ 
+@@ -1502,6 +1534,13 @@
+ 		return ret;
+ 	}
+ 
++	/* both handlers are registered: the events can be armed now (UMP9620 on the U30 Air only) */
++	ret = ump9620_fgu_enable_events(data);
++	if (ret) {
++		dev_err(dev, "failed to enable the awake battery events: %d\n", ret);
++		return ret;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -1511,6 +1550,10 @@
+ 	struct sc27xx_fgu_data *data = dev_get_drvdata(dev);
+ 	int ret;
+ 
++	/* awake events stay armed (or disarmed, without a battery) after a resume */
++	if (ump9620_fgu_awake_events(data))
++		return ump9620_fgu_enable_events(data);
++
+ 	ret = regmap_update_bits(data->regmap, data->base + SC27XX_FGU_INT_EN,
+ 				 SC27XX_FGU_LOW_OVERLOAD_INT |
+ 				 SC27XX_FGU_CLBCNT_DELTA_INT, 0);

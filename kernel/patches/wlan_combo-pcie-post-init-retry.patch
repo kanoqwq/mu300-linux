@@ -1,0 +1,35 @@
+sprd_wlan_combo: restore the PCIe channel table on every power-on (from kanoqwq/mu300-linux), and unwind the channels that were set up
+
+The vendor error path clears sc2355_hif.mchn_ops. A later WCN power-on can call post_init without rerunning
+pcie_init, which passes NULL to mchn_init and leaves Wi-Fi unusable until the next reboot. The table is static;
+restore its pointer when registering the channels. The same error path deinitialised the channel that failed and
+never channel 0; it undoes chn .. 0 now.
+
+--- a/sc2355/pcie.c
++++ b/sc2355/pcie.c
+@@ -1995,6 +1995,14 @@
+ 	int ret = -EINVAL, chn = 0;
+ 
+ 	sc2355_hif.hif = (void *)hif;
++	/*
++	 * MU300 (from kanoqwq/mu300-linux): a failed/aborted earlier power cycle clears this pointer in the
++	 * error path below.  The vendor driver only restores it in pcie_init(),
++	 * but a later WCN power-on may call post_init directly.  Passing
++	 * &NULL[0] to mchn_init then makes Wi-Fi permanently fail until reboot.
++	 * The channel table is static, so make every post-init self-contained.
++	 */
++	sc2355_hif.mchn_ops = sc2355_pcie_hif_ops;
+ 	sc2355_hif.max_num =
+ 		sizeof(sc2355_pcie_hif_ops) / sizeof(struct mchn_ops_t);
+ 
+@@ -2016,7 +2024,9 @@
+ err:
+ 	pr_err("%s: unregister %d ops\n", __func__, sc2355_hif.max_num);
+ 
+-	for (; chn > 0; chn--)
++	/* MU300: undo the channels that were set up and the one that failed, chn .. 0 (the vendor loop stopped at
++	 * 1; a failed channel can be registered with half its EDMA state, and deinit skips one never registered) */
++	for (; chn >= 0; chn--)
+ 		sprdwcn_bus_chn_deinit(&sc2355_hif.mchn_ops[chn]);
+ 	sc2355_hif.mchn_ops = NULL;
+ 	sc2355_hif.max_num = 0;

@@ -1,0 +1,8 @@
+#!/bin/sh
+# The device's default LAN address, when /etc/mu300/lan.conf sets none: the kind of device decides it, so that an
+# F50, a U30 Air and a V50 on one computer do not collide (boot/init uses the same subnets before switch_root).
+case $(${MU300_BIN:-/opt/mu300/bin}/mu300-device) in
+    u30air) echo 192.168.78.1 ;;
+    v50)    echo 192.168.79.1 ;;
+    *)      echo 192.168.77.1 ;;
+esac

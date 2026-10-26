@@ -1,0 +1,273 @@
+#!/bin/sh
+# SMS forwarding adapter: the panel's Cellular > SMS forwarding page (mu300dash forward_get, forward_set, forward_test,
+# forward_log_clear) on mu300-sms-forward and its configuration. Every reply is one JSON object.
+#   forward get     the settings, with every secret masked, the queue and the delivery log
+#   forward set     the settings, as the page's JSON object on stdin (see below); {"ok":1} or {"ok":0,"error":...}
+#   forward test    a test delivery to every target that is on, in the background; its result goes to the log;
+#                   refused when one was started under 5 s ago (mu300-sms-forward test-gate)
+#   forward logclear  the delivery log emptied
+#
+# The secrets (webhook URL and headers, Telegram token, mail password) never come back: get says whether each is set,
+# with a hint where one is harmless (the URL's host, the header names, the bot's number). In set, an empty secret keeps
+# the one saved; "clear" (space-separated names) removes them. The configuration file is root's only (0600), written
+# whole (aside, then renamed), in the line format mu300-sms-forward reads.
+#
+# The webhook's own body (webhook_body, 2000 bytes at most) is a template like the message template, not a secret: it
+# comes back so that it can be edited, an empty one means the standard body, and the page says to keep secrets in the
+# address or a header. It is only ever stored and copied here; mu300-sms-forward fills it in.
+#
+# webhook_expect is what the service's answer must have for a 2xx to count as delivered: KEY=VALUE, a top-level key
+# of a JSON answer and its value (errcode=0). KEY is a name (a letter or _, then letters, digits, _; 32 at most),
+# VALUE a whole number (16 digits at most) or 1 to 16 lowercase letters; empty: any 2xx counts. Not a secret either.
+# mu300-sms-forward compares it as text and checks its form again. The form is as narrow as a status needs, because
+# whoever may set the address and this rule learns from the log whether the answer has that value.
+set -u
+export PATH="$PATH:/opt/mu300/bin:/usr/sbin:/sbin"
+LIB=${0%/*}/../../share/unisoc-modem/lib.sh
+[ -f "$LIB" ] || LIB=/usr/share/unisoc-modem/lib.sh
+. "$LIB"
+
+FWD=${MU300_FWD_BIN:-/opt/mu300/bin/mu300-sms-forward}
+CONF=${MU300_FWD_CONF:-/etc/mu300/sms-forward.conf}
+FWD_UNIT=${MU300_FWD_UNIT:-/etc/systemd/system/mu300-sms-forward.service}
+NL='
+'
+
+error() { printf '{"ok":0,"error":%s}\n' "$(json_str "$1")"; exit 0; }
+
+# ------------------------------------------------------------------ input
+INPUT=
+# inp KEY: the request's KEY in $V, exactly as sent ('' when missing or null)
+inp() {
+    V=$(printf '%s' "$INPUT" | jfilter -e "@.$1" 2>/dev/null | tr '\000' '\001'; printf x)
+    V=${V%x}; V=${V%"$NL"}
+    case $V in null) V= ;; esac
+}
+# printable ASCII on one line
+ascii_line() { [ "$(printf '%s' "$1" | LC_ALL=C tr -d ' -~'; echo x)" = x ]; }
+# ERE match of the whole value, one line of printable ASCII
+like() { ascii_line "$1" && printf '%s\n' "$1" | LC_ALL=C grep -Eqx -- "$2"; }
+# text: no control character but newline (and tab)
+text_ok() { [ "$(printf '%s' "$1" | LC_ALL=C tr -d '\011\012\040-\176\200-\377'; echo x)" = x ]; }
+bytes() { printf '%s' "$1" | wc -c | tr -d ' '; }
+flag() { inp "$1"; case $V in ''|0|false) V=0 ;; 1|true) V=1 ;; *) return 1 ;; esac; }
+
+# list KEY MAX_LEN ERE: one entry per line (or comma-separated), blanks dropped, at most 50, each matching ERE when
+# one is given; the entries in $V, newline-separated
+list() {
+    inp "$1"
+    _out=; _n=0
+    _all=$(printf '%s\n' "$V" | tr ',' '\n')
+    while IFS= read -r _e; do
+        _e=$(printf '%s' "$_e" | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
+        [ -n "$_e" ] || continue
+        text_ok "$_e" && [ "$(bytes "$_e")" -le "$2" ] || return 1
+        case $_e in *"$NL"*) return 1 ;; esac
+        [ -z "${3:-}" ] || like "$_e" "$3" || return 1
+        _n=$((_n + 1)); [ "$_n" -le 50 ] || return 1
+        _out=$_out$_e$NL
+    done <<EOF
+$_all
+EOF
+    V=$_out
+}
+
+# saved KEY: the value saved in the configuration (the first line of that key)
+saved() { sed -n "s/^$1=//p" "$CONF" 2>/dev/null | head -n 1; }
+
+# ------------------------------------------------------------------ get
+do_get() {
+    _h_url=; _url=$(saved webhook_url)
+    [ -n "$_url" ] && _h_url=$(printf '%s' "$_url" | sed -n 's#^\(https\{0,1\}://[^/?#]*\).*#\1/...#p')
+    _names=$(sed -n 's/^webhook_header=\([A-Za-z0-9-]*\):.*/\1/p' "$CONF" 2>/dev/null | tr '\n' ',' | sed 's/,$//;s/,/, /g')
+    _tok=$(saved telegram_token); _h_tok=
+    [ -n "$_tok" ] && _h_tok="${_tok%%:*}:..."
+    # the lists and the template as the page edits them: one entry per line, the template's \n as newlines
+    _allow=$(sed -n 's/^allow=//p' "$CONF" 2>/dev/null)
+    _deny=$(sed -n 's/^deny=//p' "$CONF" 2>/dev/null)
+    _kw=$(sed -n 's/^keyword=//p' "$CONF" 2>/dev/null)
+    _tpl=$(saved template | unesc_tpl)
+    _body=$(saved webhook_body | unesc_tpl)
+    _st=$("$FWD" status 2>/dev/null)
+    _q=$(printf '%s\n' "$_st" | sed -n 's/^queued //p'); _r=$(printf '%s\n' "$_st" | sed -n 's/^running //p')
+    _m=$(printf '%s\n' "$_st" | sed -n 's/^email //p')
+    printf '{"ok":1,"enabled":%s,"template":%s,"allow":%s,"deny":%s,"keywords":%s,' \
+        "$(b "$(saved enabled)")" "$(json_str "$_tpl")" "$(json_str "$_allow")" "$(json_str "$_deny")" "$(json_str "$_kw")"
+    printf '"webhook":%s,"webhook_url_set":%s,"webhook_url_hint":%s,"webhook_format":%s,"webhook_headers_set":%s,"webhook_header_names":%s,' \
+        "$(b "$(saved webhook)")" "$(set01 "$_url")" "$(json_str "$_h_url")" "$(json_str "$(saved webhook_format)")" \
+        "$(set01 "$_names")" "$(json_str "$_names")"
+    printf '"webhook_body":%s,"webhook_expect":%s,' "$(json_str "$_body")" "$(json_str "$(saved webhook_expect)")"
+    printf '"telegram":%s,"telegram_token_set":%s,"telegram_token_hint":%s,"telegram_chat":%s,' \
+        "$(b "$(saved telegram)")" "$(set01 "$_tok")" "$(json_str "$_h_tok")" "$(json_str "$(saved telegram_chat)")"
+    printf '"email_available":%s,"email":%s,"email_host":%s,"email_port":%s,"email_tls":%s,"email_user":%s,"email_password_set":%s,"email_from":%s,"email_to":%s,' \
+        "$(b "$_m")" "$(b "$(saved email)")" "$(json_str "$(saved email_host)")" "$(json_str "$(saved email_port)")" \
+        "$(json_str "$(saved email_tls)")" "$(json_str "$(saved email_user)")" "$(set01 "$(saved email_password)")" \
+        "$(json_str "$(saved email_from)")" "$(json_str "$(saved email_to)")"
+    printf '"sms":%s,"sms_number":%s,"queued":%s,"running":%s,"log":[' \
+        "$(b "$(saved sms)")" "$(json_str "$(saved sms_number)")" "$(json_num "${_q:-0}")" "$(b "$_r")"
+    # the newest first, 50 at most; each field escaped (the detail comes from the modem or a server)
+    "$FWD" log 2>/dev/null | tail -n 50 | awk -F'\t' "$JSON_ESC"'
+        { line[NR] = sprintf("{\"time\":%d,\"id\":\"%s\",\"target\":\"%s\",\"result\":\"%s\",\"detail\":\"%s\"}",
+            $1 + 0, jesc($2), jesc($3), jesc($4), jesc($5)) }
+        END { for (i = NR; i >= 1; i--) printf "%s%s", line[i], (i > 1 ? "," : "") }'
+    printf ']}\n'
+}
+# unesc_tpl: a template's one-line form on stdin, as the page edits it (\n a newline, \\ a backslash)
+unesc_tpl() {
+    awk '{
+        t = $0; u = ""
+        while ((i = index(t, "\\")) > 0) { c = substr(t, i + 1, 1); u = u substr(t, 1, i - 1) (c == "n" ? "\n" : c); t = substr(t, i + 2) }
+        printf "%s", u t }'
+}
+b() { [ "$1" = 1 ] && echo 1 || echo 0; }
+set01() { [ -n "$1" ] && echo 1 || echo 0; }
+
+# ------------------------------------------------------------------ set
+# esc_tpl TEXT: the template in the file's one-line form (a newline as \n, a backslash as \\). The backslashes are
+# doubled by hand: what "\\\\" means as a gsub replacement differs between awks (busybox awk, the device's, writes one
+# backslash, so a template's backslash - every \" and \n of a JSON body - was stored bare and read back as an escape)
+esc_tpl() {
+    printf '%s' "$1" | awk '{
+        t = $0; u = ""
+        while ((i = index(t, "\\")) > 0) { u = u substr(t, 1, i - 1) "\\\\"; t = substr(t, i + 1) }
+        out = out (NR > 1 ? "\\n" : "") u t
+    } END { printf "%s", out }'
+}
+
+do_set() {
+    INPUT=$(cat)
+    flag enabled || error 'Invalid forwarding setting'; en=$V
+    inp template; tpl=$V
+    text_ok "$tpl" && [ "$(bytes "$tpl")" -le 1000 ] || error 'The message template is too long or contains a control character'
+    list allow 32 || error 'Invalid filter list (at most 50 lines)'; allow=$V
+    list deny 32 || error 'Invalid filter list (at most 50 lines)'; deny=$V
+    list keywords 64 || error 'Invalid filter list (at most 50 lines)'; kw=$V
+
+    inp clear; clear=" $V "
+    like "${V:-x}" '[a-z_ ]+' || error 'Invalid forwarding setting'
+
+    flag webhook || error 'Invalid forwarding setting'; wh=$V
+    inp webhook_url; url=$V
+    if [ -n "$url" ]; then
+        like "$url" 'https?://[A-Za-z0-9.-]+(:[0-9]{1,5})?([/?][!-~]*)?' && [ "$(bytes "$url")" -le 1024 ] ||
+            error 'The webhook address must be an http:// or https:// URL'
+    else
+        case $clear in *" webhook_url "*) ;; *) url=$(saved webhook_url) ;; esac
+    fi
+    inp webhook_format; fmt=${V:-json}
+    like "$fmt" '(json|form|text)' || error 'Invalid forwarding setting'
+    inp webhook_body; body=$V
+    text_ok "$body" && [ "$(bytes "$body")" -le 2000 ] || error 'The webhook body is too long or contains a control character'
+    inp webhook_expect; exp=$V
+    [ -z "$exp" ] || like "$exp" '[A-Za-z_][A-Za-z0-9_]{0,31}=(-?[0-9]{1,16}|[a-z]{1,16})' ||
+        error 'The answer check must be key=value, like errcode=0 or ok=true (the value a whole number or lowercase letters, 16 at most)'
+    list webhook_headers 512 '[A-Za-z0-9-]{1,64}: ?[ -~]*' || error 'Invalid header (one "Name: value" per line; Host, Content-Type, Content-Length, Transfer-Encoding and Connection are set by the device)'
+    hdrs=$V
+    if [ -n "$hdrs" ]; then
+        printf '%s' "$hdrs" | LC_ALL=C grep -qiE '^(host|content-length|content-type|transfer-encoding|connection):' &&
+            error 'Invalid header (one "Name: value" per line; Host, Content-Type, Content-Length, Transfer-Encoding and Connection are set by the device)'
+    else
+        case $clear in *" webhook_headers "*) ;; *) hdrs=$(sed -n 's/^webhook_header=//p' "$CONF" 2>/dev/null)
+            [ -n "$hdrs" ] && hdrs=$hdrs$NL ;; esac
+    fi
+
+    flag telegram || error 'Invalid forwarding setting'; tg=$V
+    inp telegram_token; tok=$V
+    if [ -n "$tok" ]; then
+        like "$tok" '[0-9]{3,20}:[A-Za-z0-9_-]{20,80}' || error 'Invalid Telegram bot token'
+    else
+        case $clear in *" telegram_token "*) ;; *) tok=$(saved telegram_token) ;; esac
+    fi
+    inp telegram_chat; chat=$V
+    [ -z "$chat" ] || like "$chat" '(-?[0-9]{1,20}|@[A-Za-z0-9_]{4,64})' || error 'Invalid Telegram chat (a number, or @channel)'
+
+    flag email || error 'Invalid forwarding setting'; em=$V
+    inp email_host; host=$V
+    [ -z "$host" ] || like "$host" '[A-Za-z0-9]([A-Za-z0-9.-]{0,252})' || error 'Invalid e-mail setting'
+    inp email_port; port=${V:-587}
+    like "$port" '[1-9][0-9]{0,4}' && [ "$port" -le 65535 ] || error 'Invalid e-mail setting'
+    inp email_tls; etls=${V:-starttls}
+    like "$etls" '(starttls|tls|off)' || error 'Invalid forwarding setting'
+    inp email_user; user=$V
+    [ -z "$user" ] || { like "$user" '[!-~]{1,128}' || error 'Invalid e-mail setting'; }
+    inp email_password; pw=$V
+    if [ -n "$pw" ]; then
+        like "$pw" '[ -~]{1,128}' || error 'Invalid e-mail setting'
+    else
+        case $clear in *" email_password "*) ;; *) pw=$(saved email_password) ;; esac
+    fi
+    inp email_from; from=$V
+    [ -z "$from" ] || like "$from" '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+' || error 'Invalid e-mail setting'
+    inp email_to; to=$V
+    [ -z "$to" ] || like "$to" '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+' || error 'Invalid e-mail setting'
+
+    flag sms || error 'Invalid forwarding setting'; sm=$V
+    inp sms_number; num=$V
+    [ -z "$num" ] || like "$num" '\+?[0-9]{3,20}' || error 'The number may only contain digits (and a leading +)'
+
+    # a target that is on needs what it sends with
+    [ "$wh" = 0 ] || [ -n "$url" ] || error 'The webhook needs an address'
+    [ "$tg" = 0 ] || { [ -n "$tok" ] && [ -n "$chat" ]; } || error 'Telegram needs a bot token and a chat'
+    if [ "$em" = 1 ]; then
+        "$FWD" status 2>/dev/null | grep -qx 'email 1' || error 'E-mail needs msmtp, which this image does not have'
+        [ -n "$host" ] && [ -n "$from" ] && [ -n "$to" ] || error 'E-mail needs a server, a sender and a recipient'
+    fi
+    [ "$sm" = 0 ] || [ -n "$num" ] || error 'SMS forwarding needs a phone number'
+
+    # MU300_FWD_CHECK=1: every field checked as above, nothing written (mu300-backup checks a restore first, FINDINGS 155)
+    [ -z "${MU300_FWD_CHECK:-}" ] || { echo '{"ok":1,"checked":1}'; exit 0; }
+    was=$(saved enabled)
+    dir=${CONF%/*}
+    mkdir -p "$dir" 2>/dev/null
+    (
+        umask 077
+        {
+            printf 'enabled=%s\ntemplate=%s\n' "$en" "$(esc_tpl "$tpl")"
+            printf '%s' "$allow" | sed 's/^/allow=/'
+            printf '%s' "$deny" | sed 's/^/deny=/'
+            printf '%s' "$kw" | sed 's/^/keyword=/'
+            printf 'webhook=%s\nwebhook_url=%s\nwebhook_format=%s\n' "$wh" "$url" "$fmt"
+            printf 'webhook_body=%s\n' "$(esc_tpl "$body")"
+            printf 'webhook_expect=%s\n' "$exp"
+            printf '%s' "$hdrs" | sed 's/^/webhook_header=/'
+            printf 'telegram=%s\ntelegram_token=%s\ntelegram_chat=%s\n' "$tg" "$tok" "$chat"
+            printf 'email=%s\nemail_host=%s\nemail_port=%s\nemail_tls=%s\nemail_user=%s\nemail_password=%s\n' \
+                "$em" "$host" "$port" "$etls" "$user" "$pw"
+            printf 'email_from=%s\nemail_to=%s\nsms=%s\nsms_number=%s\n' "$from" "$to" "$sm" "$num"
+        } > "$CONF.part" && chmod 600 "$CONF.part" && mv "$CONF.part" "$CONF"
+    ) || error 'The forwarding settings could not be saved'
+    # turned off: what still waited is not sent later
+    [ "$was" = 1 ] && [ "$en" = 0 ] && "$FWD" clear >/dev/null 2>&1
+    # Ubuntu: the service that reads new messages from the SIM for this (sms watch, forward-feed) runs only while
+    # forwarding is on; OpenWrt's pool hands its messages over by itself
+    if [ -f "$FWD_UNIT" ] && command -v systemctl >/dev/null 2>&1; then
+        if [ "$en" = 1 ]; then systemctl --no-block start mu300-sms-forward.service >/dev/null 2>&1
+        else systemctl --no-block stop mu300-sms-forward.service >/dev/null 2>&1; fi
+    fi
+    echo '{"ok":1}'
+}
+
+do_test() {
+    [ -x "$FWD" ] || error 'SMS forwarding is not installed'
+    "$FWD" test-gate >/dev/null 2>&1 || error 'A test was started a moment ago; wait a few seconds'
+    if command -v setsid >/dev/null 2>&1; then
+        setsid "$FWD" test </dev/null >/dev/null 2>&1 &
+    else
+        "$FWD" test </dev/null >/dev/null 2>&1 &
+    fi
+    echo '{"ok":1,"started":1}'
+}
+
+do_logclear() {
+    [ -x "$FWD" ] || error 'SMS forwarding is not installed'
+    "$FWD" log-clear >/dev/null 2>&1 || error 'The delivery log could not be cleared'
+    echo '{"ok":1}'
+}
+
+case ${1:-} in
+    get) do_get ;;
+    set) do_set ;;
+    test) do_test ;;
+    logclear) do_logclear ;;
+    *) error 'Unknown forwarding operation' ;;
+esac

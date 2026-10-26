@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>Features: 5G data, Wi-Fi hotspot, SMS, VPN and more on the ZTE F50 / U30 Air with Linux</title>
+<meta name="description" content="What Linux does on the ZTE F50 / MU300 and U30 Air: 5G and LTE mobile data, APN and TTL, Wi-Fi hotspot and client, USB network, SMS and USSD, VPN, battery, LEDs and the toolkit, with the commands.">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/features/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/features/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/features/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/features/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/features/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="Features: 5G data, Wi-Fi hotspot, SMS, VPN and more on the ZTE F50 / U30 Air with Linux">
+<meta property="og:description" content="What Linux does on the ZTE F50 / MU300 and U30 Air: 5G and LTE mobile data, APN and TTL, Wi-Fi hotspot and client, USB network, SMS and USSD, VPN, battery, LEDs and the toolkit, with the commands.">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/features/">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A 5G pocket hotspot with two rooms, one for Android and one for Linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Features: 5G data, Wi-Fi hotspot, SMS, VPN and more on the ZTE F50 / U30 Air with Linux">
+<meta name="twitter:description" content="What Linux does on the ZTE F50 / MU300 and U30 Air: 5G and LTE mobile data, APN and TTL, Wi-Fi hotspot and client, USB network, SMS and USSD, VPN, battery, LEDs and the toolkit, with the commands.">
+<meta name="twitter:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/site.js" defer></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [
+  {
+   "@type": "ListItem",
+   "position": 1,
+   "name": "Home",
+   "item": "https://kaandikec.com/mu300-linux/"
+  },
+  {
+   "@type": "ListItem",
+   "position": 2,
+   "name": "Features",
+   "item": "https://kaandikec.com/mu300-linux/features/"
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the content</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../install/">Install</a>
+<a href="../web-installer/">Web installer</a>
+<a href="../choose/">Choose a system</a>
+<a href="../features/" aria-current="page">Features</a>
+<a href="../updates/">Updates and safety</a>
+<a href="../troubleshooting/">Troubleshooting</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="Language"><a href="../features/" hreflang="en" lang="en" aria-current="true">English</a><a href="../tr/features/" hreflang="tr" lang="tr">Türkçe</a><a href="../zh/features/" hreflang="zh-Hans" lang="zh-Hans">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="Theme|Auto|Light|Dark|follows your system|Change the colour theme"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+</div>
+</header>
+<main id="content">
+
+<header class="page-head">
+<div class="prose">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a> <span aria-hidden="true">/</span> <span aria-current="page">Features</span></nav>
+<h1>What it does, and how to use it</h1>
+<p class="lede">Every feature in plain words first, then the command. On OpenWrt you are already root, so leave out
+<code>sudo</code>.</p>
+</div>
+</header>
+
+<div class="prose">
+<nav class="toc" aria-labelledby="toc-h">
+<h2 id="toc-h">Features</h2>
+<ol>
+<li><a href="#mobile-data">Mobile data, APN and data usage</a></li>
+<li><a href="#hotspot">Wi-Fi hotspot</a></li>
+<li><a href="#wifi-client">Wi-Fi client</a></li>
+<li><a href="#usb">USB network and console</a></li>
+<li><a href="#sms">SMS and USSD</a></li>
+<li><a href="#vpn">VPN</a></li>
+<li><a href="#toolkit">The toolkit menu</a></li>
+<li><a href="#battery">Battery, power and LEDs</a></li>
+<li><a href="#u30air">U30 Air extras</a></li>
+<li><a href="#panels">Web panels, a terminal in the browser, adb</a></li>
+<li><a href="#docker">Docker</a></li>
+<li><a href="#more">Bluetooth, GPU, KVM, languages</a></li>
+<li><a href="#limits">What does not work</a></li>
+</ol>
+</nav>
+
+<section id="mobile-data">
+<h2>Mobile data and APN</h2>
+<p>Put a SIM card with a data plan in the device and Linux connects to 5G (NSA) or LTE by itself, then shares the
+connection with everything on the hotspot and the USB cable. If the modem resets, it reconnects by itself.</p>
+<pre><code>sudo mobile-data status        <span class="c"># is the connection up? which address?</span></code></pre>
+<p>The <strong>APN</strong> is the name of your operator's data gateway. Most operators need nothing: leave it empty
+and the device uses what the SIM card says.</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">System</th><th scope="col">Where to set the APN</th></tr></thead><tbody>
+<tr><th scope="row">Ubuntu</th><td><code>/etc/mu300/mobile-data.conf</code>: <code>MU300_APN</code> and <code>MU300_PDP_TYPE</code></td></tr>
+<tr><th scope="row">OpenWrt</th><td>LuCI: Network &gt; Interfaces &gt; wan, or with <code>uci</code> (below)</td></tr>
+</tbody></table></div>
+<pre><code>uci set network.wan.apn='your.apn'; uci commit network; ifup wan</code></pre>
+<p>An F50 with an internal SIM can use that card instead of the one in the slot: <code>mu300-sim select internal</code> (or <strong>SIM source</strong> on the wan interface in LuCI, with that card's own APN), then restart; <code>external</code> goes back, and the external card stays the default.</p>
+<h3 id="data-usage">How much data you used</h3>
+<p>The device counts its mobile data per day and per billing cycle, in both directions, the way the operator counts
+it. You can set the day the cycle starts and a monthly cap with a warning; turning mobile data off at the cap is
+optional, and it comes back on by itself when the next cycle starts. The count survives restarts and switching between
+systems, and nothing is counted twice. On OpenWrt with the control panel this is the Cellular &gt; Data usage page, and
+the dashboard shows the current download and upload speed every second.</p>
+<pre><code>mu300-traffic                       <span class="c"># today, this billing cycle and the cap</span>
+sudo mu300-traffic set reset-day 1  <span class="c"># the day a billing cycle starts</span>
+sudo mu300-traffic set cap 50G      <span class="c"># a monthly cap; warns at 90 %</span>
+sudo mu300-traffic set cut on       <span class="c"># optional: data off at the cap</span>
+mu300-traffic days                  <span class="c"># the last days with traffic</span></code></pre>
+<h3 id="ttl">A fixed TTL</h3>
+<p>Every packet carries a small counter called TTL. Some operators look at it to tell hotspot traffic from the
+device's own. You can set a fixed value:</p>
+<pre><code>sudo mu300-ttl set 64          <span class="c"># a fixed TTL for mobile data</span>
+sudo mu300-ttl off             <span class="c"># back to the default</span></code></pre>
+<p>Also in <code>mu300-toolkit</code> (Network &gt; TTL) and the control panel. On the mainline kernels the rule is in
+tc and flow offloading stays on; on 5.4 it is in nftables and offloading is off while a TTL is set. Check your
+operator's terms and your local law first.</p>
+</section>
+
+<section id="hotspot">
+<h2>Wi-Fi hotspot</h2>
+<p>The device broadcasts its own Wi-Fi network, on 5 GHz (802.11ac) or 2.4 GHz, one at a time. Unless you chose
+otherwise at install, it has the same name and password as under Android, so your phones join it as before.</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">System</th><th scope="col">Change the name or password</th></tr></thead><tbody>
+<tr><th scope="row">Ubuntu</th><td>edit <code>/etc/mu300/hotspot.conf</code>, then restart the service (below)</td></tr>
+<tr><th scope="row">OpenWrt</th><td>LuCI: Network &gt; Wireless (the file is read only once, at the first start)</td></tr>
+</tbody></table></div>
+<pre><code>sudo nano /etc/mu300/hotspot.conf        <span class="c"># SSID=, PSK=, BAND=5 or 2.4, CHANNEL=auto, COUNTRY=</span>
+sudo systemctl restart mu300-hotspot</code></pre>
+<p>On 5 GHz the hotspot uses channels 36-48 or 149-165, never a DFS channel (52-144): the Wi-Fi driver cannot detect
+radar, so a DFS channel chosen in the file or in LuCI is replaced by channel 36 (149 where 36-48 are not allowed) and
+the log says why (from v2026.10.20; releases before it failed to start the hotspot on such a channel).</p>
+<p>The hotspot is <strong>WPA2-PSK (CCMP) only</strong>, on every device. WPA3 (SAE) is disabled on this Wi-Fi chip for security: its firmware does the WPA3 exchange itself, and the way it hands the key back could let a client in without the password (<a href="https://github.com/dikeckaan/mu300-linux/blob/main/docs/U30AIR-SAE.md">why</a>). A hotspot that was set to WPA3 is switched to WPA2 with the same password at the next boot (switched off instead, never left open, if it has no usable password), and LuCI shows a notice; choosing WPA3 in LuCI leaves that access point down.</p>
+<p>If the Wi-Fi chip's firmware crashes, the driver resets the chip and the Wi-Fi comes back by itself, as a hotspot
+or as a client of another network: in the tests within 15 to 20 seconds, on 6.18 and 7.2. If the chip cannot be reset
+within 70 seconds, the device restarts cleanly instead of hanging.</p>
+</section>
+
+<section id="wifi-client">
+<h2>Wi-Fi client</h2>
+<p>Instead of being a hotspot, the Wi-Fi can join another network, like a hotel's or your home's. The device then uses
+that network for itself and shares it with its USB clients. It is one or the other: the Wi-Fi chip does one at a
+time.</p>
+<pre><code>sudo wifi-client scan                    <span class="c"># the networks in range</span>
+sudo wifi-client connect "NAME"          <span class="c"># asks for the password; nothing shows as you type</span>
+sudo wifi-client status
+sudo wifi-client disconnect              <span class="c"># the hotspot comes back, and stays after a restart</span></code></pre>
+<ul>
+<li>Or with the menu: <code>sudo mu300-toolkit</code> &gt; Network &gt; Wi-Fi &gt; "Join a network".</li>
+<li><strong>Give the password when asked,</strong> not on the command line: <code>sudo</code> writes the command line
+to the system journal.</li>
+<li>Whether the radio is a client or a hotspot is decided at start-up. While it is the hotspot, <code>connect</code>
+saves the network and asks for a restart.</li>
+<li><strong>WPA2 and WPA2/WPA3 mixed networks work; WPA3-only networks do not</strong> (this Wi-Fi driver has no SAE).
+Set the router to mixed mode to join it.</li>
+<li>USB clients reach only the internet through that network, not its other devices or its router, and the device's
+own services (SSH included) are closed to it. Reach the device over USB.</li>
+<li>With both Wi-Fi and mobile data up, the Wi-Fi is used and the SIM stays idle.</li>
+</ul>
+</section>
+
+<section id="usb">
+<h2>USB network and serial console</h2>
+<p>Plugged into a computer, the device shows up as a network adapter, and the computer gets an address from it. The
+device itself is <code>192.168.77.1</code> on the F50 and <code>192.168.78.1</code> on the U30 Air, so one of each can
+be plugged into the same computer. Two of the same kind need <code>/etc/mu300/lan.conf</code> to tell them apart.</p>
+<p>The USB network mode is NCM (with ECM as the fallback); the control panel can switch it to RNDIS, applied at the next
+start. The same cable also carries a serial console (<code>ttyGS0</code>), a login that works even when networking does
+not: <code>screen /dev/cu.usbmodem* 115200</code> on a Mac. SSH and telnet are on.</p>
+</section>
+
+<section id="sms">
+<h2>SMS and USSD</h2>
+<p>Read, send and delete text messages on the SIM, and send USSD codes such as the one that shows your balance or your
+own number.</p>
+<pre><code>sudo sms list
+sudo sms send NUMBER TEXT...
+sudo sms delete INDEX
+sudo mu300-ussd '*101#'                  <span class="c"># a USSD code, for example your balance</span></code></pre>
+<p>On OpenWrt with the control panel, SMS are under Cellular &gt; SMS. That system syncs the SIM every 30 seconds,
+which marks unread messages on the SIM as read; the panel keeps its own unread state. Do not run
+<code>sms delete read</code> there. A message leaves the SIM only after its copy is safely on the disk, so a power cut
+loses none, and a long message whose other parts never arrive is shown after an hour, marked incomplete. On Ubuntu with
+the web panel extra, the MU300 page in Cockpit reads, sends and deletes messages too. <code>sms delete</code> accepts
+only an index, <code>read</code> or <code>all</code>; anything else is refused before it reaches the modem.</p>
+<h3 id="sms-forwarding">SMS forwarding</h3>
+<p>On OpenWrt with the control panel, Cellular &gt; SMS forwarding sends incoming messages on: to a webhook (JSON or a
+form), a Telegram chat, or another phone by SMS. It is off until you turn it on. Each target has a template
+(<code>{sender}</code>, <code>{time}</code>, <code>{text}</code>, <code>{device}</code>) and can filter by sender
+and keyword. There is a "Send test" button and a delivery log; failed deliveries are retried with a growing wait.
+Tokens, passwords and the webhook's address stay in <code>/etc/mu300/sms-forward.conf</code>, readable only by root,
+and never appear in a log. E-mail forwarding needs <code>msmtp</code>, which the image does not include, so that target
+stays off.</p>
+</section>
+
+<section id="vpn">
+<h2>VPN</h2>
+<p>A VPN sends traffic through a server of your choice, in an encrypted tunnel. Here it covers the device's own
+traffic <strong>and</strong> everything from its Wi-Fi and USB clients, with a <strong>kill switch</strong>: when the
+tunnel is down, nothing leaves the device.</p>
+<p>It is an optional module, <a href="https://github.com/dikeckaan/mu300-linux-vpn">mu300-linux-vpn</a>, installed on
+the device (or by the installer's question) and kept across updates. It keeps profiles of many kinds:</p>
+<ul>
+<li>a WireGuard <code>.conf</code> (needs a mainline kernel), an OpenVPN <code>.ovpn</code>,</li>
+<li>a VLESS, VMess, Trojan or Shadowsocks share link,</li>
+<li>a Clash/mihomo YAML (add <code>vpn-mihomo</code>), or a raw Xray or sing-box JSON,</li>
+<li>a hysteria2 or TUIC link, or a dae config, for <a href="https://github.com/daeuniverse/dae">dae</a> (add <code>vpn-dae</code>; kernel 6.18, 7.2 or 7.3 of v2026.10.20 or newer).</li>
+</ul>
+<pre><code>sudo mu300-extra install vpn                         <span class="c"># the module's latest release, checked against its SHA256SUMS; the core and Xray</span>
+sudo mu300-vpn engine install sing-box               <span class="c"># each engine is an extra: xray, sing-box, mihomo, dae</span>
+sudo mu300-vpn profile import ~/office.conf Office   <span class="c"># a WireGuard .conf, an .ovpn, a YAML or JSON file</span>
+sudo mu300-vpn profile import 'vless://...'          <span class="c"># or a share link</span>
+sudo mu300-vpn on
+mu300-vpn status</code></pre>
+<p>Tailscale's traffic goes through the tunnel too. A device whose VPN is on with the kill switch fails closed when
+the module is missing: mobile data and the Wi-Fi client stay down until it is installed again or the VPN is turned
+off. Profiles, settings and the security model are in the
+<a href="https://github.com/dikeckaan/mu300-linux-vpn#readme">module's README</a>. Some carriers drop UDP and block
+OpenVPN.</p>
+<p>Module <strong>v2.0.0</strong> (with v2026.10.20) splits it into a core and engine extras that updates bring along as one set, adds
+<strong>subscriptions</strong> (a URL from your provider that yields profiles, refreshed on a schedule) and an <strong>IPv6 guard</strong>: when
+the tunnel carries no IPv6, IPv6 is blocked beside it instead of leaking past the kill switch. On OpenWrt with the control panel all of
+it is in the panel's <strong>VPN</strong> menu: Overview, Profiles, Subscriptions, Engines, Settings and Logs. The panels
+and the toolkit show their VPN section only once the module is installed.</p>
+</section>
+
+<section id="toolkit">
+<h2>The toolkit menu</h2>
+<p><code>mu300-toolkit</code> is a menu like a Raspberry Pi's <code>raspi-config</code>: temperatures, CPU and RAM use,
+network speeds, performance profiles, stress tests, Wi-Fi, VPN, services and software updates, without remembering
+any command.</p>
+<pre><code>sudo mu300-toolkit                       <span class="c"># the menu</span>
+mu300-toolkit top                        <span class="c"># temperatures, CPU, RAM, network speed</span>
+sudo mu300-toolkit profile performance   <span class="c"># also eco, balanced</span>
+sudo mu300-toolkit stress all 10         <span class="c"># a stability test under load</span>
+mu300-zram                               <span class="c"># compressed swap in RAM: status (sudo mu300-zram off|on)</span></code></pre>
+<p>Optional parts are called extras:</p>
+<pre><code>mu300-extra list
+sudo mu300-extra install lang            <span class="c"># more web interface languages (OpenWrt)</span>
+sudo mu300-extra remove vpn</code></pre>
+</section>
+
+<section id="battery">
+<h2>Battery, power and LEDs</h2>
+<p>The status LEDs mean what they mean under ZTE's firmware:</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">LED</th><th scope="col">F50 / MU300</th><th scope="col">U30 Air</th></tr></thead><tbody>
+<tr><th scope="row">Network</th><td>blue: 4G, white: 5G, red: no service</td><td>the SIM in use: white: the nano-SIM, blue: the eSIM (blinking while switching to it); red: no service</td></tr>
+<tr><th scope="row">Wi-Fi</th><td>on while the hotspot is up</td><td>white: 5 GHz, blue: 2.4 GHz</td></tr>
+<tr><th scope="row">Battery</th><td>-</td><td>as ZTE's firmware: white from 60 %, blue from 10 %, red below; breathing while it charges; on the charger the LEDs stay on</td></tr>
+<tr><th scope="row">Heat alarm</th><td>the network LED flashes red, white, blue in turn: the chip is at 85 °C</td><td>the battery LED flashes red, white, blue in turn: the chip at 85 °C or the battery at 50 °C</td></tr>
+</tbody></table></div>
+<pre><code>sudo mu300-led test            <span class="c"># find out which LED is which</span></code></pre>
+<p>On the U30 Air, <code>mu300-power</code> saves the battery: profiles (<code>plugged</code>, <code>battery</code>,
+<code>saver</code>, or <code>auto</code>), radios that go idle when nobody is connected, and a charge limit of 0 to 100 %
+(from v2026.10.20; 80 % before): charging stops at the limit and resumes 5 points below it, and the battery is never held under 5 %. On
+the mainline kernels the charger now also reads the current a Type-C port offers, so a 1.5 or 3 A port charges at up to 2 A instead of
+500 mA. On OpenWrt with the control panel this is the System &gt; Power page.</p>
+<pre><code>mu300-power status
+sudo mu300-power charge-limit 80         <span class="c"># 0-100; 100 = no limit</span>
+sudo mu300-power profile battery         <span class="c"># plugged, battery, saver or auto</span>
+sudo mu300-power set battery.WIFI_IDLE 10</code></pre>
+<h3 id="cpu">CPU profiles</h3>
+<p>Three profiles decide how fast the processor may run: <strong>saving</strong> (cores capped at about 60 % of their
+maximum: cooler, less power), <strong>balanced</strong> (the default, the stock behaviour) and
+<strong>performance</strong> (every core cluster at its maximum). They never touch the voltage, and the thermal
+protection stays in charge in every profile. On the control panel: System &gt; CPU.</p>
+<pre><code>mu300-cpu status
+sudo mu300-cpu profile saving            <span class="c"># or balanced (the default), performance</span></code></pre>
+<h3 id="cpu-voltage">CPU voltage offset (experimental)</h3>
+<div class="callout warn">
+<strong>Experimental: it can damage your device for good</strong>
+<p>This feature is experimental and can permanently damage your device. Use it at your own risk.</p>
+</div>
+<p>On the mainline kernels (6.18, 7.2 and 7.3; on 7.3 not yet tried on a device) the CPU voltage can be moved a little, per core cluster (CPUs 0-3, 4-6 and
+7): from 25 mV lower to 12.5 mV higher, in steps of 3.125 mV. Off (0) by default. A new value applies at the next
+reboot as one trial boot; it is kept once that boot has been up 10 minutes, and dropped (back to 0) by any boot that
+ends in a crash, a watchdog reset or a power cut. It is refused on SoC firmware whose encoding is not known (only the
+F50's for now). Every place that sets it asks you to type <code>EXPERIMENTAL</code> first: the control panel's
+System &gt; CPU, the Ubuntu panel's Power page, <code>mu300-toolkit</code> and the command line. The firmware
+encoding was worked out by <a href="https://github.com/kanoqwq">kano</a>.</p>
+<pre><code>sudo mu300-cpu voltage status
+sudo mu300-cpu voltage set -6250,-3125,0 --confirm EXPERIMENTAL   <span class="c"># uV for CPUs 0-3, 4-6, 7</span>
+sudo mu300-cpu voltage stress 10                                  <span class="c"># test it during the trial boot</span>
+sudo mu300-cpu voltage off                                        <span class="c"># back to stock at the next boot</span></code></pre>
+<p>A start that began because a charger was plugged in stays a charging start (LED blinking, hotspot and modem down)
+until you press the Wi-Fi key.</p>
+</section>
+
+<section id="u30air">
+<h2>U30 Air extras</h2>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col"></th><th scope="col">What it does</th></tr></thead><tbody>
+<tr><th scope="row">Battery</th><td>level, voltage, current, temperature and charging state in <code>mu300-toolkit</code>, the control panel and <code>/sys/class/power_supply</code>, on every kernel. Charging: on 5.4 by the vendor charger stack, on 6.18, 7.2 and 7.3 by the <code>bq256xx</code> driver from v2026.10.12 on; a charge limit of 0-100 % and the Type-C charging current from v2026.10.20</td></tr>
+<tr><th scope="row">Buttons</th><td>power: a short press wakes the LEDs (they go dark after 60 s), held 3 s shuts down. Wi-Fi key: switches the hotspot between 2.4 and 5 GHz, held 3 s turns it off or on</td></tr>
+<tr><th scope="row">NFC</th><td>a phone held to the device joins the hotspot, as under ZTE's firmware</td></tr>
+<tr><th scope="row">USB host</th><td>with an OTG adapter on the mainline kernels: flash drives (FAT, exFAT), keyboards and mice, USB modems and Ethernet adapters</td></tr>
+</tbody></table></div>
+<pre><code>sudo mu300-nfc                 <span class="c"># shows the tag</span>
+sudo mu300-nfc wifi            <span class="c"># writes the hotspot's name and password</span></code></pre>
+<pre><code>sudo mu300-usb host            <span class="c"># U30 Air, mainline kernels: an OTG adapter, 5 V from the battery</span>
+sudo mu300-usb device          <span class="c"># back to the computer (the default at every start)</span>
+sudo mu300-usb pd on           <span class="c"># EXPERIMENTAL, off by default: USB-C power delivery picks the roles</span></code></pre>
+<p>With USB-C power delivery on (U30 Air, mainline kernels, not yet tested on a device), an OTG adapter makes the port a
+host by itself, and a PD dock with its own charger charges the U30 Air while <code>sudo mu300-usb host</code> asks the
+dock for the host role, so its USB ports and Ethernet work. 5 V only; <code>sudo mu300-usb pd off</code> goes back.</p>
+<p>On the F50 the USB port is its power supply, so it has no USB host mode; holding its power button 3 s shuts it
+down.</p>
+</section>
+
+<section id="panels">
+<h2>Web panels, a terminal in the browser, adb</h2>
+<p><strong>OpenWrt with the control panel</strong> (<code>openwrt-luci</code>) has the MU300 pages: a status dashboard
+(signal, bands, cells, temperatures, the Wi-Fi clients with their speeds, the battery), network locks, SMS and SMS
+forwarding, data usage, an AT terminal, TTL and USB modes, and from v2026.10.20 a <strong>VPN</strong> menu (Overview,
+Profiles, Subscriptions, Engines, Settings, Logs), <strong>System &gt; Terminal</strong> (a root shell in the browser,
+on the LAN only, opened only for your logged-in panel session, closed after 15 idle minutes) and <strong>System &gt;
+Packages after an update</strong>. The panel also no longer freezes when an AT command gets stuck, and on OpenWrt an AT
+command now takes 0.13 s instead of a second. See <a href="../choose/#panel">what the panel adds</a>.</p>
+<p><strong>Ubuntu</strong> can have a web panel too, from v2026.10.20: <a href="https://cockpit-project.org/">Cockpit</a>,
+Ubuntu's own web console (terminal, logs, services, networking, storage, accounts), with an <strong>MU300</strong> page
+for the mobile network, mobile data and usage, SMS, the VPN, power and CPU, the hotspot and the Wi-Fi client, and
+updates. It is the <code>panel</code> extra, not part of the image, on the LAN only, at
+<code>https://192.168.77.1:9090</code> (U30 Air: <code>.78.1</code>); log in as <code>ubuntu</code>. The installer asks
+about it when Ubuntu is chosen.</p>
+<pre><code>sudo mu300-extra install panel                                           <span class="c"># Cockpit from Ubuntu's archive (about 12 MB)</span>
+sudo mu300-extra install panel --from mu300-extra-panel-offline.tar.gz   <span class="c"># offline, with the release's file</span></code></pre>
+<p><strong>adb to Linux.</strong> From v2026.10.20 Linux can offer <code>adb shell</code>, <code>push</code>,
+<code>pull</code> and <code>forward</code> over the USB cable, as Android does. It is <strong>off by default</strong>,
+and only a computer whose key you authorised gets in; anyone with an authorised key gets a root shell, so authorise only
+your own computers. The installer asks whether to turn it on for the computer it runs on.</p>
+<pre><code>sudo mu300-usb adb key adbkey.pub       <span class="c"># the computer's ~/.android/adbkey.pub, copied to the device</span>
+sudo mu300-usb adb on                   <span class="c"># and off: sudo mu300-usb adb off</span></code></pre>
+</section>
+
+<section id="docker">
+<h2>Docker</h2>
+<p><strong>Ubuntu</strong> (24.04 and 26.04) comes with Docker 29 and compose (Ubuntu's <code>docker.io</code> and
+<code>docker-compose-v2</code>); the user <code>ubuntu</code> is in the <code>docker</code> group. The engine starts on
+the first <code>docker</code> command, not at boot (it takes some 165 MB of RAM); <code>sudo systemctl enable docker</code>
+starts it at every boot. The <code>docker</code> group is as good as root: keep only trusted accounts in it.</p>
+<p><strong>OpenWrt</strong> has Docker ready, not installed: <code>apk add dockerd docker docker-compose</code> (and
+<code>luci-app-dockerman</code> on the control panel system), then <code>/etc/init.d/dockerd start</code>. The 190 MB
+would not leave room for an update in the smallest region OpenWrt is installed in.</p>
+<p>Images and containers live beside the systems, in <code>/mnt/mu300-disk/docker/&lt;system&gt;</code>: updates and
+rollbacks neither copy nor lose them. Docker uses its nftables backend; containers reach the internet, published ports
+are reachable from the hotspot and USB clients, not from the mobile network, and containers cannot open the
+device's own services (SSH, the web panels). Works on all four kernels.</p>
+<pre><code>docker run --rm hello-world
+docker compose up -d</code></pre>
+</section>
+
+<section id="more">
+<h2>Bluetooth, GPU, KVM, languages</h2>
+<ul>
+<li><strong>Bluetooth:</strong> BlueZ; scanning works.</li>
+<li><strong>GPU:</strong> the Mali-G57 runs OpenCL 3.0, with no screen.</li>
+<li><strong>KVM:</strong> <code>/dev/kvm</code> on all four kernels, for virtual machines.</li>
+<li><strong>Memory:</strong> about 1.4 GB usable, plus compressed swap in RAM (zram, on by default: half the RAM, lz4;
+<code>sudo mu300-zram off</code> turns it off, <code>/etc/mu300/zram.conf</code> sets size and compressor).</li>
+<li><strong>Web interface languages (OpenWrt):</strong> English, Turkish and Simplified Chinese out of the box; 40
+more for LuCI and 29 more for the control panel with the <code>lang</code> extra. Switch under System &gt; System &gt;
+Language and Style, or System &gt; Languages on the control panel. The panel's other translations are machine
+translations, and <a href="https://github.com/dikeckaan/mu300-linux#languages">corrections are welcome</a>.</li>
+</ul>
+</section>
+
+<section id="limits">
+<h2>What does not work</h2>
+<ul class="dots">
+<li class="r"><strong>Screen output</strong>HDMI over USB-C: the USB-C power chip never answers.</li>
+<li class="r"><strong>Sound</strong>No speaker or microphone on the board; voice calls are not supported.</li>
+<li class="r"><strong>WPA3-only Wi-Fi</strong>The Wi-Fi driver has no SAE; mixed WPA2/WPA3 works.</li>
+<li class="r"><strong>Hotspot and client at once</strong>The Wi-Fi does one at a time.</li>
+<li class="r"><strong>Monitor mode</strong>The Wi-Fi chip offers station and access-point mode only.</li>
+<li class="r"><strong>GPS</strong>The device has none, so websites guess your location from the IP address.</li>
+</ul>
+<p>The complete table is in the README under <a href="https://github.com/dikeckaan/mu300-linux#what-works-and-what-does-not">what works and what does
+not</a>.</p>
+</section>
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>The project</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">Source code on GitHub</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">Support the project</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">Releases (downloads)</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN module</a></li>
+</ul>
+</div>
+<div>
+<h2>Help</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki</a></li>
+<li><a href="../troubleshooting/">Troubleshooting</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">Report a problem</a></li>
+<li><a href="https://t.me/mu300project">Telegram channel (news and releases)</a></li>
+</ul>
+</div>
+<div>
+<p>A hobby project, at your own risk, with no warranty. Not endorsed by ZTE, Unisoc or any operator. Scripts and documentation: MIT; kernels: GPL-2.0.</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

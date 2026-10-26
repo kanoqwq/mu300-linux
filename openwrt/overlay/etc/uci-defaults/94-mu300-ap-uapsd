@@ -1,0 +1,28 @@
+#!/bin/sh
+# U-APSD off on every access point (kanoqwq 2d3f7438, FINDINGS 203): a kept configuration gets option uapsd '0'
+# (openwrt-wifi-config writes it for a new one). Station interfaces and every other wireless option are left alone.
+# On kanoqwq's U30 Air the firmware's beacon still announced U-APSD afterwards: a configuration policy, not proof
+# that the firmware stopped it.
+. /lib/functions.sh
+changed=0
+failed=0
+disable_ap_uapsd() {
+	local section="$1" mode value
+	config_get mode "$section" mode
+	[ "$mode" = ap ] || return 0
+	config_get value "$section" uapsd
+	[ "$value" = 0 ] && return 0
+	if uci -q set "wireless.$section.uapsd=0"; then
+		changed=1
+	else
+		failed=1
+	fi
+}
+[ -f /etc/config/wireless ] || exit 0
+config_load wireless || exit 1
+config_foreach disable_ap_uapsd wifi-iface
+[ "$failed" = 0 ] || exit 1
+if [ "$changed" = 1 ]; then
+	uci commit wireless || exit 1
+fi
+exit 0

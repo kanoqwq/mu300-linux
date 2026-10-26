@@ -1,0 +1,7 @@
+[Unit]
+Description=MU300 look for a newer release (a note at login and in mu300-toolkit; nothing is installed)
+
+[Service]
+Type=oneshot
+# offline is no failure: the timer asks again
+ExecStart=-/opt/mu300/bin/mu300-update notice

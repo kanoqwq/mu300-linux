@@ -1,0 +1,237 @@
+#!/bin/sh
+# The U30 Air's NFC tag (Ubuntu and OpenWrt): a phone held against the device reads what is written there.
+#   mu300-nfc                 what the tag holds (for Wi-Fi only the network name, never the password)
+#   mu300-nfc wifi            the hotspot's name and password: a phone joins the Wi-Fi with a tap
+#   mu300-nfc url URL         a link the phone opens (https://..., tel:..., mailto:..., geo:...)
+#   mu300-nfc text TEXT       plain text
+#   mu300-nfc clear           empty
+#   mu300-nfc on|off          phones read the tag / get nothing (the switch in ZTE's web interface)
+#   mu300-nfc sync            at hotspot start: "wifi" again if the tag holds Wi-Fi (or nothing), and only if the
+#                             name or password changed; a URL or text written here stays
+# The tag is a Fudan FM11NT08 (NTAG-like dual interface EEPROM): the phone reads it over RF by itself, Linux writes it
+# over I2C bus 2 at 0x57. It answers I2C only while GPIO 190 (ZTE's "ntag reset") is low, so each access holds that
+# line low and lets it go afterwards. Memory: 16 bytes of UID, lock bits and capability container, then the NDEF
+# TLV from 0x10 (the container's size byte: 0x6d, 872 bytes). ZTE's firmware writes the same Wi-Fi record (WSC,
+# WPA2-PSK). Anyone holding a phone to the device can read what is on it - which is what it is for.
+# ZTE's NFC switch is bit 5 of the chip's configuration byte 0x3bf (set: the RF side stays silent, though the
+# field-detect interrupt still counts every tap), found by reading the chip with the switch on and off; this
+# changes that one byte and nothing else there (the same block holds the tag's I2C address).
+# (MU300_SYSROOT, MU300_BIN, MU300_HOTSPOT_CONF are for tests/)
+export PATH="$PATH:/opt/mu300/bin:/usr/sbin:/sbin"
+# nap SECONDS: a fraction of a second where a sleep takes one. OpenWrt's /bin/sleep refuses "0.2": a bare "sleep 0.2" did
+# not wait at all there, and "sleep 0.02 || sleep 1" waited a whole second; the static busybox next to us takes it.
+nap() { "${MU300_BUSYBOX:-/opt/mu300/bin/busybox}" sleep "$1" 2>/dev/null || sleep "$1" 2>/dev/null || sleep 1; }
+R=${MU300_SYSROOT:-}
+CONF=${MU300_HOTSPOT_CONF:-/etc/mu300/hotspot.conf}
+BUS=2 ADDR=0x57 LINE=190 START=16 CFG=0x3bf RF_OFF=0x20
+
+die() { echo "mu300-nfc: $*" >&2; exit 1; }
+i2ct() {  # i2ctransfer ARGS: i2c-tools when there, else busybox's
+    if command -v i2ctransfer >/dev/null 2>&1 && [ "$(command -v i2ctransfer)" != /usr/bin/busybox ]; then i2ctransfer -y "$@"
+    elif [ -z "$R" ] && [ -x /opt/mu300/bin/busybox ]; then /opt/mu300/bin/busybox i2ctransfer -y "$@"
+    else busybox i2ctransfer -y "$@"; fi
+}
+
+# --- the enable line -------------------------------------------------------------------------------------------
+HOLD=
+enable() {
+    # 5.4: ZTE's fm11tag driver owns the line and offers it in /proc
+    for f in "$R"/proc/ntag_gpios/*reset*; do
+        [ -e "$f" ] && { echo 0 > "$f" && HOLD=proc:$f; trap disable EXIT INT TERM; nap 0.2; return; }
+    done
+    chip=
+    for c in "$R"/sys/bus/gpio/devices/gpiochip*; do
+        case $(readlink -f "$c" 2>/dev/null) in */64170000.gpio/*) chip=${c##*/}; break ;; esac
+    done
+    [ -n "$chip" ] || die "the AP GPIO controller is not there"
+    command -v gpioset >/dev/null 2>&1 || die "gpioset is missing (Ubuntu: apt install gpiod, OpenWrt: apk add gpiod-tools)"
+    # libgpiod 2 holds the line while it runs; 1.x needs --mode=signal for that
+    if gpioset --help 2>&1 | grep -q -- '--chip'; then gpioset -c "$chip" "$LINE=0" </dev/null >/dev/null 2>&1 &
+    else gpioset --mode=signal "$chip" "$LINE=0" </dev/null >/dev/null 2>&1 & fi
+    HOLD=$!
+    trap disable EXIT INT TERM
+    nap 0.3
+}
+disable() {
+    case $HOLD in
+        proc:*) echo 1 > "${HOLD#proc:}" 2>/dev/null ;;
+        ?*) kill "$HOLD" 2>/dev/null; wait "$HOLD" 2>/dev/null ;;
+    esac
+    HOLD=
+}
+
+# --- memory -----------------------------------------------------------------------------------------------------
+read16() {  # read16 OFFSET: 16 bytes as hex words
+    i2ct "$BUS" "w2@$ADDR" $(printf '0x%02x 0x%02x' $(($1 >> 8)) $(($1 & 255))) r16 | sed 's/0x//g'
+}
+capacity() {  # the NDEF area's size in bytes, from the capability container
+    cc=$(read16 0) || die "no answer from the tag (I2C $BUS-$ADDR)"
+    set -- $cc
+    [ "${13}" = e1 ] || die "no NFC Forum capability container on the tag"
+    echo $(( 0x${15} * 8 ))
+}
+read_ndef() {  # the NDEF message TLV (its header says how long; a 0xfe inside the data is data)
+    size=$(capacity) || exit 1
+    first=$(read16 $START) || die "cannot read the tag"
+    set -- $first
+    skip=0; while [ "${1:-}" = 00 ]; do shift; skip=$((skip + 1)); done   # NULL TLVs
+    case ${1:-} in
+        03) if [ "$2" = ff ]; then len=$((skip + 4 + 0x$3$4)); else len=$((skip + 2 + 0x$2)); fi ;;
+        *) len=16 ;;
+    esac
+    [ $len -le "$size" ] || len=$size
+    o=$START
+    while [ $o -lt $((START + len + 1)) ]; do
+        read16 $o || die "cannot read the tag"
+        o=$((o + 16))
+    done | tr -s ' \n' '  '
+}
+write_ndef() {  # write_ndef HEX...: from START, 16 bytes per write, each page only if it differs
+    size=$(capacity) || exit 1
+    [ $# -le "$size" ] || die "too long for the tag: $# bytes, it holds $size"
+    o=$START
+    while [ $# -gt 0 ]; do
+        page= n=0
+        while [ $# -gt 0 ] && [ $n -lt 16 ]; do page="$page $1"; shift; n=$((n + 1)); done
+        have=$(read16 $o | awk -v n=$n '{ for (i = 1; i <= n; i++) printf " %s", $i }')
+        if [ "$have" != "$page" ]; then
+            i2ct "$BUS" "w$((n + 2))@$ADDR" $(printf '0x%02x 0x%02x' $((o >> 8)) $((o & 255))) \
+                $(for x in $page; do printf ' 0x%s' "$x"; done) || die "cannot write the tag"
+            nap 0.02   # the EEPROM's write cycle
+            [ "$(read16 $o | awk -v n=$n '{ for (i = 1; i <= n; i++) printf " %s", $i }')" = "$page" ] \
+                || die "the tag did not keep what was written (write-protected?)"
+        fi
+        o=$((o + 16))
+    done
+}
+
+rf() {  # rf [on|off]: the RF side's switch, shown or set
+    v=$(i2ct "$BUS" "w2@$ADDR" 0x03 0xbf r1) || die "cannot read the tag's configuration"
+    v=$((v))
+    case ${1:-} in
+        on) n=$((v & ~RF_OFF)) ;;
+        off) n=$((v | RF_OFF)) ;;
+        *) [ $((v & RF_OFF)) -eq 0 ] && echo on || echo off; return ;;
+    esac
+    [ "$n" = "$v" ] && return
+    i2ct "$BUS" "w3@$ADDR" 0x03 0xbf "$(printf 0x%02x "$n")" || die "cannot write the tag's configuration"
+    nap 0.02
+    [ $(( $(i2ct "$BUS" "w2@$ADDR" 0x03 0xbf r1) )) = "$n" ] || die "the tag did not keep its new configuration"
+}
+
+# --- NDEF -------------------------------------------------------------------------------------------------------
+hex() { printf %s "$1" | od -An -v -tx1 | tr -s ' \n' '  '; }
+count() { set -- $1; echo $#; }
+be16() { printf '%02x %02x' $(($1 >> 8)) $(($1 & 255)); }
+tlv() {  # tlv RECORD-HEX: the NDEF message TLV with its terminator
+    n=$(count "$1")
+    if [ "$n" -lt 255 ]; then echo "03 $(printf %02x "$n") $1 fe"; else echo "03 ff $(be16 "$n") $1 fe"; fi
+}
+record() {  # record TNF TYPE-HEX PAYLOAD-HEX: one record (MB, ME), short when it fits
+    tl=$(count "$2") pl=$(count "$3")
+    if [ "$pl" -lt 256 ]; then echo "$(printf %02x $((0xd0 | $1))) $(printf %02x "$tl") $(printf %02x "$pl") $2 $3"
+    else echo "$(printf %02x $((0xc0 | $1))) $(printf %02x "$tl") 00 00 $(be16 "$pl") $2 $3"; fi
+}
+uri_record() {
+    u=$1 code=00
+    for p in 'http://www.:01' 'https://www.:02' 'http://:03' 'https://:04' 'tel::05' 'mailto::06'; do
+        pre=${p%:*}
+        case $u in "$pre"*) code=$(printf %02x "${p##*:}"); u=${u#"$pre"}; break ;; esac
+    done
+    record 1 55 "$code $(hex "$u")"
+}
+text_record() { record 1 54 "02 $(hex en) $(hex "$1")"; }
+wifi_record() {  # wifi_record SSID PSK: WSC credential as ZTE writes it (open network without a PSK)
+    if [ -n "$2" ]; then auth='00 20' enc='00 08'; else auth='00 01' enc='00 01'; fi
+    ssid=$(hex "$1") key=$(hex "$2")
+    cred="10 45 $(be16 "$(count "$ssid")") $ssid 10 03 00 02 $auth 10 0f 00 02 $enc 10 27 $(be16 "$(count "$key")") $key"
+    cred="$cred 10 20 00 06 00 00 00 00 00 00 10 49 00 06 00 37 2a 00 01 20"
+    record 2 "$(hex application/vnd.wfa.wsc)" "10 0e $(be16 "$(count "$cred")") $cred"
+}
+hotspot() {  # SSID and PSK of the hotspot, one per line
+    if [ -e /etc/openwrt_release ] && [ -z "${MU300_HOTSPOT_CONF:-}" ]; then
+        s=$(uci -q show wireless | sed -n "s/^wireless\.\([^.=]*\)\.mode='ap'$/\1/p" | head -n1)
+        [ -n "$s" ] || die "no access point in /etc/config/wireless"
+        uci -q get "wireless.$s.ssid"
+        case $(uci -q get "wireless.$s.encryption") in none|'') echo ;; *) uci -q get "wireless.$s.key" ;; esac
+    else
+        [ -r "$CONF" ] || die "cannot read $CONF (run as root)"
+        sed -n 's/^SSID=//p' "$CONF" | head -n1
+        sed -n 's/^PSK=//p' "$CONF" | head -n1
+    fi
+}
+describe() {  # describe HEX: the NDEF message in words (hex on stdin as words)
+    echo "$1" | LC_ALL=C awk '
+    function h(x) { return index("0123456789abcdef", substr(x, 1, 1)) * 16 + index("0123456789abcdef", substr(x, 2, 1)) - 17 }
+    function str(from, n,   s, i) { s = ""; for (i = 0; i < n; i++) s = s sprintf("%c", b[from + i]); return s }
+    { for (i = 1; i <= NF; i++) b[n++] = h($i) }
+    END {
+        p = 0
+        while (p < n && b[p] == 0) p++
+        if (p >= n || b[p] == 254) { print "empty"; exit }
+        if (b[p] != 3) { print "no NDEF message"; exit }
+        len = b[p + 1]; p += 2
+        if (len == 255) { len = b[p] * 256 + b[p + 1]; p += 2 }
+        if (len == 0) { print "empty"; exit }
+        f = b[p]; tl = b[p + 1]; p += 2
+        if (f % 32 >= 16) { pl = b[p]; p++ } else { pl = ((b[p] * 256 + b[p + 1]) * 256 + b[p + 2]) * 256 + b[p + 3]; p += 4 }
+        il = 0; if (int(f / 8) % 2) { il = b[p]; p++ }
+        type = str(p, tl); p += tl + il
+        if (type == "U") {
+            split(",http://www.,https://www.,http://,https://,tel:,mailto:", pre, ",")
+            print "url: " pre[b[p] + 1] str(p + 1, pl - 1)
+        } else if (type == "T") {
+            print "text: " str(p + 1 + b[p] % 64, pl - 1 - b[p] % 64)
+        } else if (type == "application/vnd.wfa.wsc") {
+            e = p + pl; ssid = ""; key = 0
+            while (p + 4 <= e) {
+                id = b[p] * 256 + b[p + 1]; l = b[p + 2] * 256 + b[p + 3]; p += 4
+                if (id == 4110) continue             # the credential: its attributes follow
+                if (id == 4165) ssid = str(p, l)
+                if (id == 4135) key = l
+                p += l
+            }
+            print "wifi: " ssid (key ? " (with its password)" : " (open)")
+        } else print "other: " type
+    }'
+}
+
+# --- main -------------------------------------------------------------------------------------------------------
+# the V50 has a tag of the same kind on another reset line (kano: I2C2 0x57, GPIO189; the U30 Air's is GPIO190): not
+# driven here yet (FINDINGS 95)
+case $(${MU300_BIN:-/opt/mu300/bin}/mu300-device) in
+    u30air) ;;
+    v50) die "the V50's NFC tag is not supported yet (docs/FINDINGS.md 95)" ;;
+    *) die "only the U30 Air has an NFC tag" ;;
+esac
+case ${1:-show} in
+    show|status|wifi|url|text|clear|sync|on|off) ;;
+    *) sed -n '2,10s/^# \{0,1\}//p' "$0" >&2; exit 2 ;;
+esac
+[ -n "$R" ] || [ "$(id -u)" = 0 ] || die "run as root (sudo mu300-nfc ...)"
+case ${1:-show} in
+    url)  [ -n "${2:-}" ] || die "which URL?"; new=$(tlv "$(uri_record "$2")") ;;
+    text) [ -n "${2:-}" ] || die "which text?"; new=$(tlv "$(text_record "$2")") ;;
+    clear) new="03 00 fe" ;;
+    wifi|sync)
+        { IFS= read -r ssid; IFS= read -r psk; } <<EOF
+$(hotspot)
+EOF
+        [ -n "$ssid" ] || die "the hotspot has no name"
+        new=$(tlv "$(wifi_record "$ssid" "$psk")") ;;
+esac
+enable
+case ${1:-show} in on|off) rf "$1"; echo "NFC $(rf)"; exit 0 ;; esac
+now=$(describe "$(read_ndef)")
+case ${1:-show} in
+    show|status)
+        echo "$now"
+        [ "$(rf)" = on ] || echo "NFC is off: phones get nothing (sudo mu300-nfc on)" ;;
+    sync)
+        case $now in wifi:*|empty) ;; *) echo "the tag holds something else, left as it is: $now"; exit 0 ;; esac
+        write_ndef $new
+        echo "$(describe "$(read_ndef)")" ;;
+    *)
+        write_ndef $new
+        echo "$(describe "$(read_ndef)")" ;;
+esac

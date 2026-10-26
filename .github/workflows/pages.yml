@@ -1,0 +1,45 @@
+name: Website
+
+# Publishes site/ (plain HTML, CSS, JavaScript and SVG; nothing is built) to GitHub Pages:
+# https://kaandikec.com/mu300-linux/ Needs Settings > Pages > Source: "GitHub Actions". site/tools/ (the scripts that
+# draw the diagrams and stage the site) stays out. site/tools/stage.sh copies site/ and, for the web installer, the
+# device scripts it pushes to a device (from tools/ and android/magisk, with their checksums): a change to one of
+# those publishes the site again.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'tools/android-web.sh'
+      - 'tools/storage.sh'
+      - 'tools/android-boot-image.sh'
+      - 'tools/android-mount-mu300root.sh'
+      - 'android/magisk/mu300-linux-switch/switch.sh'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: stage the site
+        run: sh site/tools/stage.sh _site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,38 @@
+#!/bin/sh /etc/rc.common
+# The control panel's own AT channels (K19): mu300-atd on nr6 and nr7, kept open for the life of the boot.
+# openwrt-luci only. nr1 (general) and nr2 (mobile-data) belong to mu300-atd; while mobile-data dials, AT+CGDATA
+# blocks nr2 for 10-20 s and the dashboard's refresh must not queue on nr1 behind the panel's other commands
+# ("mu300-at: busy"). The panel's collector (unisoc-modem/cell) claims one of /run/mu300-at6 and /run/mu300-at7
+# without waiting and falls back to /run/mu300-at (nr1) when neither command fifo exists. nr3-nr5 are slot 1's.
+# No URC channel here: nr1's daemon reads the URCs.
+#
+# START=19 like mu300-atd: a collector that runs before its daemon exists would open the tty itself.
+START=19
+USE_PROCD=1
+export PATH="$PATH:/opt/mu300/busybox-bin"
+
+# Same wait as mu300-atd's (bounded 240 s, inside the procd command, procd respawns and retries).
+wait_and_exec() {
+	# $1 = tty node, $2.. = the daemon (its environment is set by procd_set_param env)
+	local dev=$1; shift
+	echo "n=0; while [ ! -c $dev ]; do n=\$((n+1)); if [ \"\$n\" -gt 240 ]; then echo 'mu300-atd-dash: $dev never appeared' >&2; exit 1; fi; sleep 1; done; exec $*"
+}
+
+start_service() {
+	# Hot switching keeps exactly the four main/data owners; optional SIM1 pool must not reopen while inactive.
+	[ ! -e /run/mu300/sim-managed ] || return 0
+	# SIM2's collector uses the already-owned nr4 channel; nr6/nr7 belong to the SIM1 pool.
+	local slot=0
+	[ ! -x /opt/mu300/bin/mu300-sim ] || slot=$(/opt/mu300/bin/mu300-sim active) || return 1
+	[ "$slot" = 0 ] || return 0
+	local n
+	for n in 6 7; do
+		procd_open_instance atd$n
+		procd_set_param command /bin/sh -c "$(wait_and_exec /dev/stty_nr$n /opt/mu300/bin/mu300-atd)"
+		procd_set_param env MU300_AT_DEV=/dev/stty_nr$n MU300_AT_DIR=/run/mu300-at$n MU300_AT_URC_CHANNELS=
+		procd_set_param respawn 3600 10 0
+		procd_set_param stdout 1
+		procd_set_param stderr 1
+		procd_close_instance
+	done
+}

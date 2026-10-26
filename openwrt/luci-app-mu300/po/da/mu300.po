@@ -1,0 +1,4050 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: da\n"
+
+msgid "Status dashboard"
+msgstr "Statusoversigt"
+
+msgid "Cellular"
+msgstr "Mobilnet"
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM"
+msgstr "Dual SIM"
+
+msgid "SIM settings"
+msgstr "SIM-indstillinger"
+
+msgid "Network locks"
+msgstr "Netværkslåse"
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "SMS forwarding"
+msgstr "Videresendelse af SMS"
+
+msgid "AT terminal"
+msgstr "AT-terminal"
+
+msgid "Adapter settings"
+msgstr "Adapterindstillinger"
+
+msgid "TTL"
+msgstr "TTL"
+
+msgid "Data usage"
+msgstr "Dataforbrug"
+
+msgid "Device management"
+msgstr "Enhedsstyring"
+
+msgid "Update"
+msgstr "Opdater"
+
+msgid "Backup of settings"
+msgstr "Sikkerhedskopi af indstillinger"
+
+msgid "Languages"
+msgstr "Sprog"
+
+msgid "Power"
+msgstr "Strøm"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Terminal"
+msgstr "Terminal"
+
+msgid "Terminal settings"
+msgstr "Terminalindstillinger"
+
+msgid "Overview"
+msgstr "Oversigt"
+
+msgid "Profiles"
+msgstr "Profiler"
+
+msgid "Subscriptions"
+msgstr "Abonnementer"
+
+msgid "Engines"
+msgstr "Motorer"
+
+msgid "Settings"
+msgstr "Indstillinger"
+
+msgid "Logs"
+msgstr "Logge"
+
+msgid "Packages after an update"
+msgstr "Pakker efter en opdatering"
+
+msgid "MU300 control center: status dashboard, network locks, AT terminal, SMS and VPN"
+msgstr "MU300-kontrolcenter: statusoversigt, netlåse, AT-terminal, SMS og VPN"
+
+msgid "Terminal: a root shell on the device in the browser"
+msgstr "Terminal: en root-shell på enheden i browseren"
+
+msgid "China Mobile"
+msgstr "China Mobile"
+
+msgid "China Unicom"
+msgstr "China Unicom"
+
+msgid "China Telecom"
+msgstr "China Telecom"
+
+msgid "China Broadnet"
+msgstr "China Broadnet"
+
+msgid "China Tietong"
+msgstr "China Tietong"
+
+msgid "Excellent"
+msgstr "Fremragende"
+
+msgid "Good"
+msgstr "God"
+
+msgid "Fair"
+msgstr "Middel"
+
+msgid "Poor"
+msgstr "Dårlig"
+
+msgid "Unknown"
+msgstr "Ukendt"
+
+msgid "%d d %d h"
+msgstr "%d d %d t"
+
+msgid "%d h %d min"
+msgstr "%d t %d min"
+
+msgid "%d min"
+msgstr "%d min"
+
+msgid "No neighbor-cell data"
+msgstr "Ingen data om naboceller"
+
+msgid "Locked"
+msgstr "Låst"
+
+msgid "Lock"
+msgstr "Lås"
+
+msgid "Unknown error"
+msgstr "Ukendt fejl"
+
+msgid "Confirm"
+msgstr "Bekræft"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Annuller"
+
+msgid "%d s"
+msgstr "%d s"
+
+msgid "%d h"
+msgstr "%d t"
+
+msgid "New SMS · %s"
+msgstr "Ny SMS · %s"
+
+msgid "Unknown number"
+msgstr "Ukendt nummer"
+
+msgid "Select"
+msgstr "Vælg"
+
+msgid "never"
+msgstr "aldrig"
+
+msgid "just now"
+msgstr "lige nu"
+
+msgid "%s ago"
+msgstr "%s siden"
+
+msgid "Failed: %s"
+msgstr "Mislykkedes: %s"
+
+msgid "Management connection lost"
+msgstr "Administrationsforbindelsen blev afbrudt"
+
+msgid "Installing the VPN module"
+msgstr "VPN-modulet installeres"
+
+msgid "Installing the engine"
+msgstr "Motoren installeres"
+
+msgid "Adding the subscription"
+msgstr "Abonnementet tilføjes"
+
+msgid "Refreshing the subscriptions"
+msgstr "Abonnementerne opdateres"
+
+msgid "Testing the latency of every profile"
+msgstr "Latenstiden for alle profiler måles"
+
+msgid "Downloading the config"
+msgstr "Konfigurationen downloades"
+
+msgid "Working…"
+msgstr "Arbejder…"
+
+msgid "done"
+msgstr "færdig"
+
+msgid "failed"
+msgstr "mislykkedes"
+
+msgid "Verify the uploaded file"
+msgstr "Kontrollér den uploadede fil"
+
+msgid "The uploaded file is checked against the SHA256SUMS of the VPN module's latest release, downloaded over HTTPS. When that is not possible (offline, an older release), it is installed only if you allow an unverified file: it then runs as root with no check."
+msgstr "Den uploadede fil kontrolleres mod SHA256SUMS fra VPN-modulets seneste udgivelse, hentet over HTTPS. Hvis det ikke er muligt (offline, en ældre udgivelse), installeres den kun, hvis du tillader en ukontrolleret fil: den kører så som root uden nogen kontrol."
+
+msgid "Install it even if it cannot be verified"
+msgstr "Installér den, selv om den ikke kan kontrolleres"
+
+msgid "Install only a verified file"
+msgstr "Installér kun en kontrolleret fil"
+
+msgid "Upload failed: %s"
+msgstr "Upload mislykkedes: %s"
+
+msgid "The VPN module is too old for this panel"
+msgstr "VPN-modulet er for gammelt til dette panel"
+
+msgid "The VPN module is not installed"
+msgstr "VPN-modulet er ikke installeret"
+
+msgid "This page needs the VPN module with the machine-readable mu300-vpn (module v2 or newer). Updating it keeps the profiles and the settings."
+msgstr "Denne side kræver VPN-modulet med den maskinlæsbare mu300-vpn (modul v2 eller nyere). En opdatering bevarer profiler og indstillinger."
+
+msgid "The VPN is a module of its own: mu300-vpn with its kill switch and profiles, and one extra per engine (Xray, sing-box, mihomo, dae). It is installed with mu300-extra install vpn."
+msgstr "VPN er et modul for sig: mu300-vpn med sin kill switch og sine profiler, og en ekstra pakke pr. motor (Xray, sing-box, mihomo, dae). Det installeres med mu300-extra install vpn."
+
+msgid "The download is a few MB for the module and up to tens of MB per engine: on mobile data it counts towards your plan."
+msgstr "Downloaden er nogle få MB for modulet og op til flere titusinder MB pr. motor: på mobildata tæller den med i dit abonnement."
+
+msgid "Update the VPN module"
+msgstr "Opdater VPN-modulet"
+
+msgid "Install the VPN module"
+msgstr "Installer VPN-modulet"
+
+msgid "Upload the file…"
+msgstr "Upload filen…"
+
+msgid "Offline: upload mu300-linux-vpn-core.tar.gz (or the bundle mu300-linux-vpn.tar.gz) from the release page of the VPN module."
+msgstr "Offline: upload mu300-linux-vpn-core.tar.gz (eller pakken mu300-linux-vpn.tar.gz) fra VPN-modulets udgivelsesside."
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "This is a network or frequency scan: it takes one to three minutes, holds the modem's AT channel all that time, and mobile data may pause meanwhile. It runs in the background; the reply appears here when it is done."
+msgstr "Dette er en netværks- eller frekvensscanning: den tager et til tre minutter, holder modemets AT-kanal optaget hele tiden, og mobildata kan holde pause imens. Den kører i baggrunden; svaret vises her, når den er færdig."
+
+msgid "This changes a network mode, band or cell setting the modem stores: it stays in force after a reboot, and in Android too, where a network that does not match it shows as No Service. The Locks page shows these settings and resets them."
+msgstr "Dette ændrer en netværkstilstand, et bånd eller en celleindstilling, som modemet gemmer: den gælder også efter en genstart, og i Android også, hvor et netværk, der ikke passer, vises som Ingen tjeneste. Siden Låse viser disse indstillinger og nulstiller dem."
+
+msgid "This switches the radio, the data connection or the modem itself: mobile data drops until it is restored, and this page may lose its connection for a while."
+msgstr "Dette skifter radioen, dataforbindelsen eller selve modemet: mobildata falder ud, indtil den er genoprettet, og denne side kan miste forbindelsen et stykke tid."
+
+msgid "This changes the data profiles (APNs) stored in the modem, which mobile data and Android use."
+msgstr "Dette ændrer de dataprofiler (APN'er), der er gemt i modemet, og som mobildata og Android bruger."
+
+msgid "This changes the SIM's PIN lock or enters a PIN: wrong PINs block the SIM until its PUK is entered."
+msgstr "Dette ændrer SIM-kortets PIN-lås eller indtaster en PIN-kode: forkerte PIN-koder spærrer SIM-kortet, indtil dets PUK indtastes."
+
+msgid "Basic"
+msgstr "Grundlæggende"
+
+msgid "Registration/signal"
+msgstr "Registrering/signal"
+
+msgid "Bearer"
+msgstr "Bærer"
+
+msgid "Engineering mode"
+msgstr "Ingeniørtilstand"
+
+msgid "AT command (↑↓ history, Enter to send)"
+msgstr "AT-kommando (↑↓ historik, Enter for at sende)"
+
+msgid "Send"
+msgstr "Send"
+
+msgid "Clear screen"
+msgstr "Ryd skærm"
+
+msgid "Ready."
+msgstr "Klar."
+
+msgid "Session history (click to reuse)"
+msgstr "Sessionshistorik (klik for at genbruge)"
+
+msgid "Running in the background (at most %d s); the reply appears here when it is done…"
+msgstr "Kører i baggrunden (højst %d s); svaret vises her, når den er færdig…"
+
+msgid "The modem gave no final answer in time"
+msgstr "Modemet gav ikke et endeligt svar i tide"
+
+msgid "%d s in the background"
+msgstr "%d s i baggrunden"
+
+msgid "(no output)"
+msgstr "(intet output)"
+
+msgid "This command changes the modem's state."
+msgstr "Denne kommando ændrer modemets tilstand."
+
+msgid "Not sent yet: waiting for confirmation"
+msgstr "Ikke sendt endnu: venter på bekræftelse"
+
+msgid "Send this AT command?"
+msgstr "Send denne AT-kommando?"
+
+msgid "Send anyway"
+msgstr "Send alligevel"
+
+msgid "Not sent"
+msgstr "Ikke sendt"
+
+msgid "Request failed"
+msgstr "Anmodning mislykkedes"
+
+msgid "(empty)"
+msgstr "(tom)"
+
+msgid "Passphrase (8 characters or more)"
+msgstr "Adgangssætning (mindst 8 tegn)"
+
+msgid "The passphrase again"
+msgstr "Adgangssætningen igen"
+
+msgid "Download the backup"
+msgstr "Hent sikkerhedskopien"
+
+msgid "Back up the settings"
+msgstr "Sikkerhedskopiér indstillingerne"
+
+msgid "One file with the hotspot, mobile data and the APN, the network locks, the VPN profiles and settings, SMS forwarding, the LAN address, the host name, the time zone and the SSH keys. It holds passwords: with a passphrase it is encrypted, and only that passphrase opens it again."
+msgstr "Én fil med hotspot, mobildata og APN, netværkslåse, VPN-profiler og -indstillinger, SMS-videresendelse, LAN-adresse, værtsnavn, tidszone og SSH-nøgler. Den indeholder adgangskoder: med en adgangssætning krypteres den, og kun den adgangssætning åbner den igen."
+
+msgid "Include the login password"
+msgstr "Medtag login-adgangskoden"
+
+msgid "Passphrase, if the file is encrypted"
+msgstr "Adgangssætning, hvis filen er krypteret"
+
+msgid "Show what would change"
+msgstr "Vis hvad der ville ændres"
+
+msgid "Restore"
+msgstr "Gendan"
+
+msgid "The file is larger than 4 MiB"
+msgstr "Filen er større end 4 MiB"
+
+msgid "The settings of the file replace these. The hotspot, mobile data or the LAN may restart, and this page may lose its connection for a moment."
+msgstr "Filens indstillinger erstatter disse. Hotspot, mobildata eller LAN kan genstarte, og siden kan miste forbindelsen et øjeblik."
+
+msgid "Restore from a backup"
+msgstr "Gendan fra en sikkerhedskopi"
+
+msgid "Every value of the file is checked first; one that is refused and nothing is changed. What is the same is left alone, and no VPN profile, subscription or SSH key of this device is removed."
+msgstr "Hver værdi i filen kontrolleres først; afvises én, ændres intet. Det, der er ens, bliver ikke rørt, og ingen VPN-profil, abonnement eller SSH-nøgle på enheden fjernes."
+
+msgid "Keep this device's login password"
+msgstr "Behold enhedens login-adgangskode"
+
+msgid "Take a file of another device model"
+msgstr "Accepter en fil fra en anden enhedsmodel"
+
+msgid "The two passphrases differ"
+msgstr "De to adgangssætninger er forskellige"
+
+msgid "The passphrase needs 8 characters or more"
+msgstr "Adgangssætningen skal have mindst 8 tegn"
+
+msgid "Saved (encrypted)"
+msgstr "Gemt (krypteret)"
+
+msgid "Saved. The file is not encrypted: it holds passwords, keep it safe."
+msgstr "Gemt. Filen er ikke krypteret: den indeholder adgangskoder, opbevar den sikkert."
+
+msgid "Choose a backup file first"
+msgstr "Vælg først en sikkerhedskopi"
+
+msgid "Restoring…"
+msgstr "Gendanner…"
+
+msgid "Restored"
+msgstr "Gendannet"
+
+msgid "The restore did not finish: see the lines above"
+msgstr "Gendannelsen blev ikke færdig: se linjerne ovenfor"
+
+msgid "Loading…"
+msgstr "Indlæser…"
+
+msgid "Channel Analysis"
+msgstr "Kanalanalyse"
+
+msgid "A scan takes the Wi-Fi hotspot off its channel for a moment: connected devices drop, and some (macOS in particular) may not reconnect by themselves. This page scans as soon as it opens and again every few seconds. Reach the panel over USB or another way first if you depend on the hotspot."
+msgstr "En scanning tager et øjeblik Wi-Fi-hotspottet væk fra sin kanal: tilsluttede enheder mister forbindelsen, og nogle (især macOS) genopretter den måske ikke af sig selv. Denne side scanner, så snart den åbnes, og derefter med få sekunders mellemrum. Hvis du er afhængig af hotspottet, så nå panelet via USB eller på anden vis først."
+
+msgid "Scan anyway"
+msgstr "Scan alligevel"
+
+msgid "Saved"
+msgstr "Gemt"
+
+msgid "CPU profile unavailable"
+msgstr "CPU profile unavailable"
+
+msgid "Power saving"
+msgstr "Power saving"
+
+msgid "Balanced"
+msgstr "Balanced"
+
+msgid "Performance"
+msgstr "Performance"
+
+msgid "Cores capped at about 60 %% of their maximum (cooler, less power)."
+msgstr "Cores capped at about 60 %% of their maximum (cooler, less power)."
+
+msgid "Schedutil across the full hardware range (the stock behaviour)."
+msgstr "Schedutil across the full hardware range (the stock behaviour)."
+
+msgid "Every cluster pinned at its hardware maximum."
+msgstr "Every cluster pinned at its hardware maximum."
+
+msgid "CPU profile"
+msgstr "CPU profile"
+
+msgid "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+msgstr "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+
+msgid "Saved profile: %s"
+msgstr "Saved profile: %s"
+
+msgid "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+msgstr "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+
+msgid "Clusters"
+msgstr "Clusters"
+
+msgid "Cores"
+msgstr "Cores"
+
+msgid "Governor"
+msgstr "Governor"
+
+msgid "Now"
+msgstr "Now"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Hardware max"
+msgstr "Hardware max"
+
+msgid "Frequencies in MHz."
+msgstr "Frequencies in MHz."
+
+msgid "Highlighted cores are online. A core taken offline stays offline, also after a reboot, until it is brought back. CPU0 always stays online."
+msgstr "Fremhævede kerner er online. En kerne, der er slået fra, forbliver offline, også efter en genstart, indtil den slås til igen. CPU0 forbliver altid online."
+
+msgid "Low latency: on"
+msgstr "Lav latenstid: til"
+
+msgid "Low latency: off"
+msgstr "Lav latenstid: fra"
+
+msgid "Low latency keeps CPU0 out of its idle states, as ZTE's U30 Air firmware does: Wi-Fi delays are much shorter, and the device draws more power. Off by default."
+msgstr "Lav latenstid holder CPU0 ude af dens hviletilstande, ligesom ZTE's U30 Air-firmware: Wi-Fi-forsinkelser bliver meget kortere, og enheden bruger mere strøm. Fra som standard."
+
+msgid "Thermal"
+msgstr "Termisk"
+
+msgid "The kernel's thermal zones, read only. A zone with trip points throttles the cooling devices bound to it at its passive trip; a cooling state of 0 is no throttling."
+msgstr "Kernens termiske zoner, skrivebeskyttet. En zone med tærskelpunkter drosler de køleenheder, der er bundet til den, ved sit passive tærskelpunkt; køletilstand 0 betyder ingen drosling."
+
+msgid "Zone"
+msgstr "Zone"
+
+msgid "Temperature"
+msgstr "Temperatur"
+
+msgid "Trip points"
+msgstr "Tærskelpunkter"
+
+msgid "Cooling devices"
+msgstr "Køleenheder"
+
+msgid "Stress test started"
+msgstr "Stresstest startet"
+
+msgid "Saved: it takes effect at the next reboot"
+msgstr "Gemt: træder i kraft ved næste genstart"
+
+msgid "CPU voltage offset (EXPERIMENTAL)"
+msgstr "CPU-spændingsoffset (EKSPERIMENTEL)"
+
+msgid "Experimental: changing the CPU voltage can make the device unstable, corrupt your data and permanently damage your device. Use it entirely at your own risk."
+msgstr "Eksperimentel: ændring af CPU-spændingen kan gøre enheden ustabil, ødelægge dine data og beskadige din enhed permanent. Brug sker helt på egen risiko."
+
+msgid "CPU voltage offset unavailable"
+msgstr "CPU-spændingsoffset er ikke tilgængelig"
+
+msgid "Not available with this kernel (a mainline kernel of this release or later has it)."
+msgstr "Ikke tilgængelig med denne kerne (en mainline-kerne fra denne udgivelse eller senere har det)."
+
+msgid "Off: the stock voltages"
+msgstr "Fra: fabriksspændingerne"
+
+msgid "Changes at the next reboot"
+msgstr "Ændres ved næste genstart"
+
+msgid "Trial boot: kept once this boot has been up 10 minutes"
+msgstr "Prøveopstart: beholdes, når denne opstart har kørt i 10 minutter"
+
+msgid "Kept: this offset passed its trial boot"
+msgstr "Beholdt: denne offset bestod sin prøveopstart"
+
+msgid "a boot with it ended without a clean shutdown"
+msgstr "en opstart med den sluttede uden en ren nedlukning"
+
+msgid "its trial boot ended before 10 minutes"
+msgstr "dens prøveopstart sluttede før 10 minutter"
+
+msgid "invalid value"
+msgstr "ugyldig værdi"
+
+msgid "unknown SoC firmware"
+msgstr "ukendt SoC-firmware"
+
+msgid "refused by the kernel"
+msgstr "afvist af kernen"
+
+msgid "the kernel could not start CPU scaling with it"
+msgstr "kernen kunne ikke starte CPU-frekvensskaleringen med den"
+
+msgid "Offsets in µV for the three CPU domains (cores 0-3, 4-6 and 7), in whole steps. A new offset takes effect at the next reboot, as a trial: it is kept once that boot has been up 10 minutes, and dropped (back to 0) if a boot with it ends in a crash, a watchdog reset or a power cut."
+msgstr "Offsets i µV for de tre CPU-domæner (CPU-kerner 0-3, 4-6 og 7), i hele trin. En ny offset træder i kraft ved næste genstart, på prøve: den beholdes, når den opstart har kørt i 10 minutter, og droppes (tilbage til 0), hvis en opstart med den ender med et nedbrud, en watchdog-nulstilling eller en strømafbrydelse."
+
+msgid "Running now (µV)"
+msgstr "Kører nu (µV)"
+
+msgid "Saved for the next boot (µV)"
+msgstr "Gemt til næste opstart (µV)"
+
+msgid "State"
+msgstr "Tilstand"
+
+msgid "Taken back automatically: %s µV (%s)"
+msgstr "Automatisk trukket tilbage: %s µV (%s)"
+
+msgid "The SoC firmware of this device is not one whose voltage encoding is known: only the stock voltages are possible."
+msgstr "Enhedens SoC-firmware er ikke en, hvis spændingskodning er kendt: kun fabriksspændingerne er mulige."
+
+msgid "Domain"
+msgstr "Domæne"
+
+msgid "Offset now (µV)"
+msgstr "Offset nu (µV)"
+
+msgid "Highest step"
+msgstr "Højeste trin"
+
+msgid "New offset (µV)"
+msgstr "Ny offset (µV)"
+
+msgid "Limits: %d to %d µV, in steps of %d µV."
+msgstr "Grænser: %d til %d µV, i trin på %d µV."
+
+msgid "Save for the next boot"
+msgstr "Gem til næste opstart"
+
+msgid "Each offset must be a multiple of %d µV between %d and %d."
+msgstr "Hver offset skal være et multiplum af %d µV mellem %d og %d."
+
+msgid "Type %s to confirm."
+msgstr "Skriv %s for at bekræfte."
+
+msgid "Back to the stock voltages"
+msgstr "Tilbage til fabriksspændingerne"
+
+msgid "Type %s to confirm:"
+msgstr "Skriv %s for at bekræfte:"
+
+msgid "Run a 10-minute CPU stress test"
+msgstr "Kør en 10-minutters CPU-stresstest"
+
+msgid "Test a new offset under load during its trial boot. The device may crash if the voltage is too low; the next boot then runs at the stock voltages."
+msgstr "Test en ny offset under belastning under dens prøveopstart. Enheden kan gå ned, hvis spændingen er for lav; næste opstart kører så med fabriksspændingerne."
+
+msgid "A stress test is running."
+msgstr "En stresstest kører."
+
+msgid "USB role"
+msgstr "USB-rolle"
+
+msgid "Current role"
+msgstr "Aktuel rolle"
+
+msgid "Switch USB role"
+msgstr "Skift USB-rolle"
+
+msgid "Device mode"
+msgstr "Enhedstilstand"
+
+msgid "Host mode"
+msgstr "Værtstilstand"
+
+msgid "Enable host mode at boot"
+msgstr "Aktivér værtstilstand ved opstart"
+
+msgid "Apply role"
+msgstr "Anvend rolle"
+
+msgid "Host mode disconnects USB networking and serial on this port. F50 has no battery; management may be lost and a USB adapter usually needs a powered hub."
+msgstr "Værtstilstand afbryder USB-netværk og seriel forbindelse på denne port. F50 har intet batteri; administrationsadgangen kan gå tabt, og en USB-adapter kræver normalt en hub med egen strømforsyning."
+
+msgid "USB network mode"
+msgstr "USB-netværkstilstand"
+
+msgid "Network protocol"
+msgstr "Netværksprotokol"
+
+msgid "Apply duration"
+msgstr "Varighed"
+
+msgid "Next reboot only"
+msgstr "Kun næste genstart"
+
+msgid "Permanent"
+msgstr "Permanent"
+
+msgid "Enable selected protocol"
+msgstr "Aktivér valgt protokol"
+
+msgid "Save; apply after reboot"
+msgstr "Gem; anvend efter genstart"
+
+msgid "NCM is the default. Windows does not natively support ECM; RNDIS changes enumeration. With Enable selected protocol off, only your choice is saved. Next reboot only applies once, then returns to NCM."
+msgstr "NCM er standard. Windows understøtter ikke ECM indbygget; RNDIS ændrer enumereringen. Når Aktivér valgt protokol er slået fra, gemmes kun dit valg. Kun næste genstart anvendes én gang og vender derefter tilbage til NCM."
+
+msgid "USB adapters"
+msgstr "USB-adaptere"
+
+msgid "Refresh"
+msgstr "Opdater"
+
+msgid "Available only in host mode. Refresh brings discovered USB adapters up; adding to LAN saves the bridge and reloads networking."
+msgstr "Kun tilgængelig i værtstilstand. Opdater aktiverer fundne USB-adaptere; tilføjelse til LAN gemmer broen og genindlæser netværket."
+
+msgid "Recent modem operations"
+msgstr "Seneste modemhandlinger"
+
+msgid "Show"
+msgstr "Vis"
+
+msgid "The control panel's recent calls, of this boot and the one before: when, which page call or AT command, how long it took and how it ended (ok, error, busy, killed). No values, replies or messages are kept. Useful when the panel was stuck."
+msgstr "Kontrolpanelets seneste kald fra denne og den forrige opstart: hvornår, hvilket sidekald eller hvilken AT-kommando, hvor lang tid det tog, og hvordan det endte (ok, fejl, optaget, afbrudt). Der gemmes ingen værdier, svar eller beskeder. Nyttigt, når panelet hang."
+
+msgid "Unavailable"
+msgstr "Utilgængelig"
+
+msgid "USB network mode is unavailable in host mode; host auto-start also disables USB network auto-start."
+msgstr "USB-netværkstilstand er ikke tilgængelig i værtstilstand; automatisk start af værtstilstand deaktiverer også automatisk start af USB-netværk."
+
+msgid "Host mode immediately disconnects USB management. F50 has no battery and peripherals may need external power; make sure another management path exists."
+msgstr "Værtstilstand afbryder straks USB-administrationen. F50 har intet batteri, og eksterne enheder kan kræve ekstern strøm; sørg for, at der findes en anden administrationsadgang."
+
+msgid "USB networking and serial will re-enumerate in device mode."
+msgstr "USB-netværk og seriel forbindelse enumereres igen i enhedstilstand."
+
+msgid "Switch USB role?"
+msgstr "Skift USB-rolle?"
+
+msgid "Apply"
+msgstr "Anvend"
+
+msgid "Switching USB role…"
+msgstr "Skifter USB-rolle…"
+
+msgid "Switch failed: %s"
+msgstr "Skift mislykkedes: %s"
+
+msgid "Management connection lost; reconnect to confirm the USB role."
+msgstr "Administrationsforbindelsen blev afbrudt; genopret forbindelsen for at bekræfte USB-rollen."
+
+msgid "Switch request accepted; the USB connection may briefly disconnect."
+msgstr "Anmodningen om skift er modtaget; USB-forbindelsen kan blive afbrudt kortvarigt."
+
+msgid "USB role applied"
+msgstr "USB-rolle anvendt"
+
+msgid "Save USB network mode?"
+msgstr "Gem USB-netværkstilstand?"
+
+msgid "The network mode applies on the next reboot; USB management may need to reconnect."
+msgstr "Netværkstilstanden anvendes ved næste genstart; USB-administrationen skal muligvis genoprette forbindelsen."
+
+msgid "Save the selection only; with the selected protocol disabled, the next boot still uses default NCM."
+msgstr "Gem kun valget; når den valgte protokol er deaktiveret, bruger næste opstart stadig standard-NCM."
+
+msgid "Save"
+msgstr "Gem"
+
+msgid "Saving USB network settings…"
+msgstr "Gemmer USB-netværksindstillinger…"
+
+msgid "Settings saved"
+msgstr "Indstillinger gemt"
+
+msgid "Save failed: %s"
+msgstr "Gem mislykkedes: %s"
+
+msgid "This boot"
+msgstr "Denne opstart"
+
+msgid "Previous boot"
+msgstr "Forrige opstart"
+
+msgid "Unable to confirm the role yet; reconnect and refresh the page."
+msgstr "Rollen kan ikke bekræftes endnu; genopret forbindelsen, og opdater siden."
+
+msgid "Switch to host mode to see USB adapters."
+msgstr "Skift til værtstilstand for at se USB-adaptere."
+
+msgid "Scanning USB adapters…"
+msgstr "Søger efter USB-adaptere…"
+
+msgid "No USB adapters found."
+msgstr "Ingen USB-adaptere fundet."
+
+msgid "Link connected"
+msgstr "Link forbundet"
+
+msgid "No link; enable attempted"
+msgstr "Intet link; aktivering forsøgt"
+
+msgid "Added to LAN"
+msgstr "Tilføjet til LAN"
+
+msgid "Add to LAN"
+msgstr "Tilføj til LAN"
+
+msgid "Add USB adapter to LAN?"
+msgstr "Tilføj USB-adapter til LAN?"
+
+msgid "This saves the bridge configuration and reloads networking; existing connections may briefly drop."
+msgstr "Dette gemmer brokonfigurationen og genindlæser netværket; eksisterende forbindelser kan blive afbrudt kortvarigt."
+
+msgid "Add"
+msgstr "Tilføj"
+
+msgid "Adding USB adapter…"
+msgstr "Tilføjer USB-adapter…"
+
+msgid "Add failed: %s"
+msgstr "Tilføjelse mislykkedes: %s"
+
+msgid "Leave empty to keep the saved value"
+msgstr "Lad feltet stå tomt for at beholde den gemte værdi"
+
+msgid "Saved: %s"
+msgstr "Gemt: %s"
+
+msgid "Remove the saved value"
+msgstr "Fjern den gemte værdi"
+
+msgid "Presets"
+msgstr "Forudindstillinger"
+
+msgid "Form (URL-encoded)"
+msgstr "Formular (URL-kodet)"
+
+msgid "Plain text"
+msgstr "Almindelig tekst"
+
+msgid "Received messages are sent on as they reach the SMS pool. A failed delivery is retried after 30 s, then after twice as long each time (an hour at most), ten times in all."
+msgstr "Modtagne beskeder videresendes, så snart de når SMS-puljen. En mislykket levering forsøges igen efter 30 s og derefter hver gang efter dobbelt så lang tid (højst en time), ti gange i alt."
+
+msgid "Forward received messages"
+msgstr "Videresend modtagne beskeder"
+
+msgid "Message template"
+msgstr "Beskedskabelon"
+
+msgid "Placeholders: {sender}, {time}, {text}, {device}"
+msgstr "Pladsholdere: {sender}, {time}, {text}, {device}"
+
+msgid "Only these senders"
+msgstr "Kun disse afsendere"
+
+msgid "One per line; empty: every sender. A * at the end matches the start of a sender."
+msgstr "Én pr. linje; tom: alle afsendere. En * til sidst matcher begyndelsen af en afsender."
+
+msgid "Never these senders"
+msgstr "Aldrig disse afsendere"
+
+msgid "Only messages containing one of these words"
+msgstr "Kun beskeder, der indeholder et af disse ord"
+
+msgid "One per line; empty: every message."
+msgstr "Ét pr. linje; tom: alle beskeder."
+
+msgid "Webhook"
+msgstr "Webhook"
+
+msgid "Enabled"
+msgstr "Aktiveret"
+
+msgid "Address (http:// or https://)"
+msgstr "Adresse (http:// eller https://)"
+
+msgid "Body"
+msgstr "Indhold"
+
+msgid "Fields: sender, time, text, device, message (the template filled in)"
+msgstr "Felter: sender, time, text, device, message (den udfyldte skabelon)"
+
+msgid "Custom body"
+msgstr "Brugerdefineret indhold"
+
+msgid "Empty: the standard fields (plain text: the message). Placeholders: {sender}, {time}, {text}, {device}, {message}. Each value is escaped for the chosen type. This body is shown again here: keep secrets in the address or a header."
+msgstr "Tom: standardfelterne (almindelig tekst: beskeden). Pladsholdere: {sender}, {time}, {text}, {device}, {message}. Hver værdi escapes efter den valgte type. Dette indhold vises her igen: læg hemmeligheder i adressen eller i en header."
+
+msgid "Extra headers (one \"Name: value\" per line)"
+msgstr "Ekstra headere (én \"Navn: værdi\" pr. linje)"
+
+msgid "The answer must contain"
+msgstr "Svaret skal indeholde"
+
+msgid "Empty: every HTTP 2xx answer counts as delivered. With key=value (for example errcode=0), the answer must also be a JSON object that has this value under this key at its top level; otherwise the delivery fails. Only the result of the check is logged, never the answer."
+msgstr "Tom: ethvert HTTP 2xx-svar tæller som leveret. Med nøgle=værdi (for eksempel errcode=0) skal svaret desuden være et JSON-objekt, der har denne værdi under denne nøgle på øverste niveau; ellers mislykkes leveringen. Kun resultatet af kontrollen logges, aldrig svaret."
+
+msgid "Bot token"
+msgstr "Bot-token"
+
+msgid "Chat ID (a number, or @channel)"
+msgstr "Chat-ID (et tal eller @kanal)"
+
+msgid "E-mail"
+msgstr "E-mail"
+
+msgid "E-mail needs msmtp, which this image does not have"
+msgstr "E-mail kræver msmtp, som dette image ikke har"
+
+msgid "Mail server"
+msgstr "Mailserver"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Security"
+msgstr "Sikkerhed"
+
+msgid "None"
+msgstr "Ingen"
+
+msgid "User name"
+msgstr "Brugernavn"
+
+msgid "Password"
+msgstr "Adgangskode"
+
+msgid "From"
+msgstr "Fra"
+
+msgid "To"
+msgstr "Til"
+
+msgid "SMS to another phone"
+msgstr "SMS til en anden telefon"
+
+msgid "Phone number"
+msgstr "Telefonnummer"
+
+msgid "Sent as one SMS: a longer message is cut short."
+msgstr "Sendes som én SMS: en længere besked forkortes."
+
+msgid "Send test"
+msgstr "Send test"
+
+msgid "Tokens, passwords and the webhook address and headers stay on the device and are never shown again."
+msgstr "Tokens, adgangskoder samt webhookens adresse og headere bliver på enheden og vises aldrig igen."
+
+msgid "Delivered"
+msgstr "Leveret"
+
+msgid "Will retry"
+msgstr "Forsøges igen"
+
+msgid "Failed"
+msgstr "Mislykkedes"
+
+msgid "Filtered out"
+msgstr "Frafiltreret"
+
+msgid "Dropped"
+msgstr "Kasseret"
+
+msgid "Clear"
+msgstr "Ryd"
+
+msgid "Test"
+msgstr "Test"
+
+msgid "Delivery log"
+msgstr "Leveringslog"
+
+msgid "Waiting to be delivered"
+msgstr "Venter på levering"
+
+msgid "Time"
+msgstr "Tid"
+
+msgid "Message"
+msgstr "Besked"
+
+msgid "Target"
+msgstr "Mål"
+
+msgid "Result"
+msgstr "Resultat"
+
+msgid "Detail"
+msgstr "Detalje"
+
+msgid "No deliveries yet"
+msgstr "Ingen leveringer endnu"
+
+msgid "Test started with the saved settings; the result appears in the delivery log."
+msgstr "Testen er startet med de gemte indstillinger; resultatet vises i leveringsloggen."
+
+msgid "Automatic without 2G (152)"
+msgstr "Automatisk uden 2G (152)"
+
+msgid "4G only"
+msgstr "Kun 4G"
+
+msgid "Network mode: %s"
+msgstr "Netværkstilstand: %s"
+
+msgid "EN-DC off"
+msgstr "EN-DC fra"
+
+msgid "NR band lock: %s"
+msgstr "NR-båndlås: %s"
+
+msgid "LTE band lock: %s"
+msgstr "LTE-båndlås: %s"
+
+msgid "Cell lock: %s"
+msgstr "Cellelås: %s"
+
+msgid "Modulation DL/UL"
+msgstr "Modulation DL/UL"
+
+msgid "Estimated from current MCS"
+msgstr "Anslået ud fra aktuel MCS"
+
+msgid "MCS DL/UL"
+msgstr "MCS DL/UL"
+
+msgid "BLER DL/UL"
+msgstr "BLER DL/UL"
+
+msgid "%s of %s"
+msgstr "%s af %s"
+
+msgid "The monthly cap is reached"
+msgstr "Månedsgrænsen er nået"
+
+msgid "%d%% of the monthly cap is used"
+msgstr "%d%% af månedsgrænsen brugt"
+
+msgid "This billing cycle"
+msgstr "Denne faktureringsperiode"
+
+msgid "Link & traffic"
+msgstr "Link og trafik"
+
+msgid "Download rate"
+msgstr "Downloadhastighed"
+
+msgid "Upload rate"
+msgstr "Uploadhastighed"
+
+msgid "Total received"
+msgstr "Modtaget i alt"
+
+msgid "Total sent"
+msgstr "Sendt i alt"
+
+msgid "Used today"
+msgstr "Brugt i dag"
+
+msgid "SIM source"
+msgstr "SIM-kilde"
+
+msgid "Session duration"
+msgstr "Sessionsvarighed"
+
+msgid "Registration"
+msgstr "Registrering"
+
+msgid "Data roaming"
+msgstr "Dataroaming"
+
+msgid "Bandwidth"
+msgstr "Båndbredde"
+
+msgid "AMBR DL/UL"
+msgstr "AMBR DL/UL"
+
+msgid "Wi-Fi · LAN · Device · SIM"
+msgstr "Wi-Fi · LAN · Enhed · SIM"
+
+msgid "CPU usage"
+msgstr "CPU-forbrug"
+
+msgid "Memory"
+msgstr "Hukommelse"
+
+msgid "Storage"
+msgstr "Lager"
+
+msgid "Battery"
+msgstr "Batteri"
+
+msgid "Channel"
+msgstr "Kanal"
+
+msgid "Encryption"
+msgstr "Kryptering"
+
+msgid "Hidden SSID"
+msgstr "Skjult SSID"
+
+msgid "Country"
+msgstr "Land"
+
+msgid "AP status"
+msgstr "AP-status"
+
+msgid "USB network"
+msgstr "USB-netværk"
+
+msgid "Connection tracking"
+msgstr "Forbindelsessporing"
+
+msgid "LAN address"
+msgstr "LAN-adresse"
+
+msgid "Wi-Fi clients"
+msgstr "Wi-Fi-klienter"
+
+msgid "DHCP leases"
+msgstr "DHCP-lejemål"
+
+msgid "Device model"
+msgstr "Enhedsmodel"
+
+msgid "System"
+msgstr "System"
+
+msgid "Modem"
+msgstr "Modem"
+
+msgid "Carrier"
+msgstr "Operatør"
+
+msgid "Own number"
+msgstr "Eget nummer"
+
+msgid "Module"
+msgstr "Modul"
+
+msgid "Firmware"
+msgstr "Firmware"
+
+msgid "Show SIM identifiers"
+msgstr "Vis SIM-identifikatorer"
+
+msgid "Quick controls"
+msgstr "Hurtigkontroller"
+
+msgid "Data connection"
+msgstr "Dataforbindelse"
+
+msgid "Cellular radio"
+msgstr "Mobilradio"
+
+msgid "Wi-Fi hotspot"
+msgstr "Wi-Fi-hotspot"
+
+msgid "Restart modem"
+msgstr "Genstart modem"
+
+msgid "Power off or restart"
+msgstr "Sluk eller genstart"
+
+msgid "Switch to Android"
+msgstr "Skift til Android"
+
+msgid "Lock Linux"
+msgstr "Lås Linux"
+
+msgid "Neighbor cells"
+msgstr "Naboceller"
+
+msgid "RAT/Band"
+msgstr "RAT/bånd"
+
+msgid "Frequency"
+msgstr "Frekvens"
+
+msgid "Running %s…"
+msgstr "Kører %s…"
+
+msgid "Started in background: %s"
+msgstr "Startet i baggrunden: %s"
+
+msgid "Done: %s"
+msgstr "Udført: %s"
+
+msgid "Disconnecting data…"
+msgstr "Afbryder dataforbindelse…"
+
+msgid "Connecting data…"
+msgstr "Opretter dataforbindelse…"
+
+msgid "Turn off cellular radio"
+msgstr "Slå mobilradio fra"
+
+msgid "This SIM will have no calls, SMS or data, and its radio stays off after a reboot until you turn it on again."
+msgstr "Dette SIM får ingen opkald, SMS eller data, og dets radio forbliver slukket efter genstart, indtil du tænder den igen."
+
+msgid "Turn on cellular radio"
+msgstr "Slå mobilradio til"
+
+msgid "The radio of the SIM in use comes on and stays on after a reboot (up to about 1 minute)."
+msgstr "Radioen i det SIM, der bruges, tændes og forbliver tændt efter genstart (op til ca. 1 minut)."
+
+msgid "Turn data roaming off"
+msgstr "Slå dataroaming fra"
+
+msgid "While the SIM is registered on a roaming network, mobile data stays off; SMS, calls and the registration are not affected. Some SIMs report roaming at home (an MVNO, national roaming): there, data would stop as well."
+msgstr "Så længe SIM-kortet er registreret på et roamingnetværk, forbliver mobildata slået fra; SMS, opkald og registreringen påvirkes ikke. Nogle SIM-kort melder roaming selv derhjemme (en MVNO, national roaming): der ville data også stoppe."
+
+msgid "Allow data roaming"
+msgstr "Tillad dataroaming"
+
+msgid "Mobile data is used on roaming networks too, which can cost extra. Some SIMs report roaming at home (an MVNO, national roaming) and need this to have data at all."
+msgstr "Mobildata bruges også på roamingnetværk, hvilket kan koste ekstra. Nogle SIM-kort melder roaming selv derhjemme (en MVNO, national roaming) og har brug for dette for overhovedet at få data."
+
+msgid "Cellular connectivity may stop for 1–2 minutes."
+msgstr "Mobilforbindelsen kan stoppe i 1–2 minutter."
+
+msgid "All connections will be interrupted."
+msgstr "Alle forbindelser vil blive afbrudt."
+
+msgid "Power off"
+msgstr "Sluk"
+
+msgid "Restart"
+msgstr "Genstart"
+
+msgid "The next boot will enter Android and reboot now. This management page and cellular sharing will disconnect."
+msgstr "Næste opstart går til Android, og enheden genstarter nu. Denne administrationsside og mobildelingen afbrydes."
+
+msgid "To return to OpenWrt, run mu300-next-boot linux in Android and reboot."
+msgstr "For at vende tilbage til OpenWrt skal du køre mu300-next-boot linux i Android og genstarte."
+
+msgid "Or do nothing: after five boots that do not finish, it falls back automatically."
+msgstr "Eller gør ingenting: efter fem opstarter, der ikke fuldføres, skiftes der automatisk tilbage."
+
+msgid "Preparing Android boot and rebooting…"
+msgstr "Forbereder Android-opstart og genstarter…"
+
+msgid "Switch and reboot"
+msgstr "Skift og genstart"
+
+msgid "Not automatic: %s. The network mode and band locks are stored in the modem and stay in force in Android too; if the network does not match them, Android shows No Service."
+msgstr "Ikke automatisk: %s. Netværkstilstand og båndlåse gemmes i modemmet og gælder også i Android; passer netværket ikke til dem, viser Android \"Ingen tjeneste\"."
+
+msgid "Reset locks and switch"
+msgstr "Nulstil låse og skift"
+
+msgid "Unlock Linux"
+msgstr "Lås Linux op"
+
+msgid "After five boots in a row that do not finish, the device falls back to Android again."
+msgstr "Efter fem ufuldførte opstarter i træk falder enheden tilbage til Android igen."
+
+msgid "Unlock"
+msgstr "Lås op"
+
+msgid "The device will never switch to Android by itself, not even after failed boots: Android only from this page (Switch to Android) or with mu300-next-boot android."
+msgstr "Enheden skifter aldrig selv til Android, heller ikke efter mislykkede opstarter: Android kun fra denne side (Skift til Android) eller med mu300-next-boot android."
+
+msgid "A new kernel from an update still gets its first boots on trial, and locks again once one of them succeeds."
+msgstr "En ny kerne fra en opdatering starter stadig først på prøve og låses igen, så snart en opstart lykkes."
+
+msgid "If the system itself no longer starts, the device waits on USB (telnet) instead of going to Android."
+msgstr "Hvis selve systemet ikke længere starter, venter enheden via USB (telnet) i stedet for at gå til Android."
+
+msgid "Hide SIM identifiers"
+msgstr "Skjul SIM-identifikatorer"
+
+msgid "Lock cell %s?"
+msgstr "Lås celle %s?"
+
+msgid "The radio stack will restart (SFUN); cellular service will stop for about 30 seconds."
+msgstr "Radiostakken genstartes (SFUN); mobiltjenesten stopper i ca. 30 sekunder."
+
+msgid "Locking %s in the background, about 30 seconds"
+msgstr "Låser %s i baggrunden, ca. 30 sekunder"
+
+msgid "Locked %s in the background; the status will refresh shortly"
+msgstr "%s låst i baggrunden; status opdateres om lidt"
+
+msgid "Lock failed: %s"
+msgstr "Låsning mislykkedes: %s"
+
+msgid "Resetting the network locks to automatic (SFUN restart, about 30 seconds)…"
+msgstr "Netværkslåsene nulstilles til automatisk (SFUN-genstart, cirka 30 sekunder)…"
+
+msgid "Reset failed: %s. The saved lock settings were kept."
+msgstr "Nulstilling mislykkedes: %s. De gemte låseindstillinger blev beholdt."
+
+msgid "The lock reset was not confirmed in time; switching anyway."
+msgstr "Nulstillingen af låsene blev ikke bekræftet i tide; skifter alligevel."
+
+msgid "Internal SIM selected: in use after a reboot"
+msgstr "Intern SIM valgt: bruges efter en genstart"
+
+msgid "Internal SIM selected, but not supported on this device: the external SIM is in use"
+msgstr "Intern SIM valgt, men understøttes ikke på denne enhed: den eksterne SIM er i brug"
+
+msgid "Uptime %s"
+msgstr "Oppetid %s"
+
+msgid "Radio off"
+msgstr "Radio slukket"
+
+msgid "No response"
+msgstr "Intet svar"
+
+msgid "Modem busy: cellular readings from %s ago"
+msgstr "Modemet er optaget: mobilmålinger fra for %s siden"
+
+msgid "%s · Signal %s %s/10"
+msgstr "%s · Signal %s %s/10"
+
+msgid "%s · Signal %s"
+msgstr "%s · Signal %s"
+
+msgid "Anchor B%s"
+msgstr "Anker B%s"
+
+msgid "No serving cell"
+msgstr "Ingen betjenende celle"
+
+msgid "Version %s is out: update"
+msgstr "Version %s er ude: opdater"
+
+msgid "Not registered"
+msgstr "Ikke registreret"
+
+msgid "Registered"
+msgstr "Registreret"
+
+msgid "Searching"
+msgstr "Søger"
+
+msgid "Registration denied"
+msgstr "Registrering afvist"
+
+msgid "Registered (roaming)"
+msgstr "Registreret (roaming)"
+
+msgid "Emergency only"
+msgstr "Kun nødopkald"
+
+msgid "Status %s"
+msgstr "Status %s"
+
+msgid "Off: data held back while roaming"
+msgstr "Fra: data holdt tilbage under roaming"
+
+msgid "Allowed"
+msgstr "Tilladt"
+
+msgid "Off"
+msgstr "Fra"
+
+msgid "LTE anchor"
+msgstr "LTE-anker"
+
+msgid "LTE link"
+msgstr "LTE-link"
+
+msgid "Hidden"
+msgstr "Skjult"
+
+msgid "No"
+msgstr "Nej"
+
+msgid "Running"
+msgstr "Kører"
+
+msgid "Not running"
+msgstr "Kører ikke"
+
+msgid "Connected"
+msgstr "Forbundet"
+
+msgid "Disconnected"
+msgstr "Afbrudt"
+
+msgid "%s entries"
+msgstr "%s poster"
+
+msgid "%s clients"
+msgstr "%s klienter"
+
+msgid "Recent DHCP leases"
+msgstr "Seneste DHCP-lejemål"
+
+msgid "Board"
+msgstr "Bundkort"
+
+msgid "No temperature readings"
+msgstr "Ingen temperaturmålinger"
+
+msgid "Cluster %d"
+msgstr "Klynge %d"
+
+msgid "Total %s · free %s"
+msgstr "I alt %s · ledigt %s"
+
+msgid "charging %s W"
+msgstr "oplader med %s W"
+
+msgid "charging"
+msgstr "oplader"
+
+msgid "drawing %s W"
+msgstr "bruger %s W"
+
+msgid "not charging"
+msgstr "oplader ikke"
+
+msgid "on battery"
+msgstr "kører på batteri"
+
+msgid "full"
+msgstr "fuld"
+
+msgid "USB in %s W"
+msgstr "USB-indgang %s W"
+
+msgid "Online"
+msgstr "Online"
+
+msgid "AT adapter unavailable"
+msgstr "AT-adapter utilgængelig"
+
+msgid "Linux locked"
+msgstr "Linux låst"
+
+msgid "Installing the language pack…"
+msgstr "Installerer sprogpakken…"
+
+msgid "The language pack is installed"
+msgstr "Sprogpakken er installeret"
+
+msgid "The language pack could not be installed"
+msgstr "Sprogpakken kunne ikke installeres"
+
+msgid "Language of the browser"
+msgstr "Browserens sprog"
+
+msgid "Language of the web interface"
+msgstr "Webgrænsefladens sprog"
+
+msgid "English, Turkish and Chinese come with the system; the language pack adds the others."
+msgstr "Engelsk, tyrkisk og kinesisk følger med systemet; sprogpakken tilføjer de øvrige."
+
+msgid "The same setting is in System > System > Language and Style."
+msgstr "Den samme indstilling findes under System > System > Sprog og stil."
+
+msgid "Language pack"
+msgstr "Sprogpakke"
+
+msgid "The language pack (mu300-extra-lang.tar.gz, about 2 MB) adds LuCI in about 40 more languages and this panel in 29 of them. Download it from the release of this system, or upload the file from the release page when the device has no internet."
+msgstr "Sprogpakken (mu300-extra-lang.tar.gz, ca. 2 MB) tilføjer LuCI på ca. 40 flere sprog og dette panel på 29 af dem. Download den fra dette systems udgivelse, eller upload filen fra udgivelsessiden, hvis enheden ikke har internet."
+
+msgid "Download from the release"
+msgstr "Download fra udgivelsen"
+
+msgid "Release"
+msgstr "Udgivelse"
+
+msgid "Enable all"
+msgstr "Aktivér alle"
+
+msgid "Disable all"
+msgstr "Deaktiver alle"
+
+msgid "Remove the language pack"
+msgstr "Fjern sprogpakken"
+
+msgid "Remove the language pack?"
+msgstr "Fjern sprogpakken?"
+
+msgid "Its languages disappear from the list; a page in one of them switches to English."
+msgstr "Dens sprog forsvinder fra listen; en side på et af dem skifter til engelsk."
+
+msgid "Remove"
+msgstr "Fjern"
+
+msgid "Disable"
+msgstr "Deaktiver"
+
+msgid "Enable"
+msgstr "Aktivér"
+
+msgid "LuCI and this panel"
+msgstr "LuCI og dette panel"
+
+msgid "LuCI only"
+msgstr "Kun LuCI"
+
+msgid "Disabled"
+msgstr "Deaktiveret"
+
+msgid "Language"
+msgstr "Sprog"
+
+msgid "Code"
+msgstr "Kode"
+
+msgid "Translated"
+msgstr "Oversat"
+
+msgid "LuCI's own translations come from OpenWrt. This panel's translations other than Turkish and Chinese are machine (AI) translations; corrections are welcome."
+msgstr "LuCI's egne oversættelser kommer fra OpenWrt. Dette panels oversættelser ud over tyrkisk og kinesisk er maskinoversættelser (AI); rettelser er velkomne."
+
+msgid "Automatic"
+msgstr "Automatisk"
+
+msgid "Serving network"
+msgstr "Betjenende netværk"
+
+msgid "Network mode · EN-DC"
+msgstr "Netværkstilstand · EN-DC"
+
+msgid "Refresh lock status"
+msgstr "Opdater låsestatus"
+
+msgid "Apply at startup"
+msgstr "Anvend ved opstart"
+
+msgid "Turning this off only stops replay at the next boot; saved network mode, EN-DC, band and cell settings remain."
+msgstr "Slås dette fra, stopper det kun genanvendelsen ved næste opstart; gemte indstillinger for netværkstilstand, EN-DC, bånd og celler bevares."
+
+msgid "Band locking"
+msgstr "Båndlåsning"
+
+msgid "NR bands"
+msgstr "NR-bånd"
+
+msgid "LTE bands"
+msgstr "LTE-bånd"
+
+msgid "Apply NR bands"
+msgstr "Anvend NR-bånd"
+
+msgid "Apply LTE bands"
+msgstr "Anvend LTE-bånd"
+
+msgid "Neighbor cells and cell locking"
+msgstr "Naboceller og cellelåsning"
+
+msgid "Lock current serving cell"
+msgstr "Lås aktuel betjenende celle"
+
+msgid "Unlock cell"
+msgstr "Lås celle op"
+
+msgid "Enter a cell"
+msgstr "Angiv en celle"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Channel number (EARFCN / NR-ARFCN)"
+msgstr "Kanalnummer (EARFCN / NR-ARFCN)"
+
+msgid "Lock this cell"
+msgstr "Lås denne celle"
+
+msgid "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. A channel number, not a frequency in MHz; the cell need not be in the neighbor list."
+msgstr "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. Et kanalnummer, ikke en frekvens i MHz; cellen behøver ikke at være på listen over naboceller."
+
+msgid "Applying restarts the radio stack (SFUN) and briefly interrupts cellular service. Settings are saved and replayed by the plugin after AT is ready when Apply at startup is enabled. A platform pre-radio hook can replay without a restart. Apply with no bands selected to restore automatic mode."
+msgstr "Anvendelse genstarter radiostakken (SFUN) og afbryder mobiltjenesten kortvarigt. Indstillingerne gemmes og genanvendes af pluginet, når AT er klar, hvis Anvend ved opstart er aktiveret. En platform-hook før radioen kan genanvende uden genstart. Anvend uden valgte bånd for at gendanne automatisk tilstand."
+
+msgid "Back to automatic"
+msgstr "Tilbage til automatisk"
+
+msgid "The network mode and band locks are stored in the modem and stay in force in Android too. If you are not sure, reset them before switching to Android."
+msgstr "Netværkstilstand og båndlåse gemmes i modemmet og gælder også i Android. Er du i tvivl, så nulstil dem, før du skifter til Android."
+
+msgid "Reset all to automatic"
+msgstr "Nulstil alt til automatisk"
+
+msgid "Apply “%s”?"
+msgstr "Anvend “%s”?"
+
+msgid "Applying %s in the background…"
+msgstr "Anvender %s i baggrunden…"
+
+msgid "Applying %s in the background… (SFUN restart and re-registration, about 30 seconds)"
+msgstr "Anvender %s i baggrunden… (SFUN-genstart og ny registrering, ca. 30 sekunder)"
+
+msgid "Queued: another lock is being applied during SFUN restart; this will take effect afterward"
+msgstr "I kø: en anden lås anvendes under SFUN-genstarten; denne træder i kraft bagefter"
+
+msgid "Confirming the EN-DC status…"
+msgstr "Bekræfter EN-DC-status…"
+
+msgid "Confirming apply at startup…"
+msgstr "Bekræfter Anvend ved opstart…"
+
+msgid "Started in background: %s (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Startet i baggrunden: %s (SFUN-genstart, ca. 30 sekunder); læser status tilbage…"
+
+msgid "Disable EN-DC (NSA anchor)"
+msgstr "Deaktiver EN-DC (NSA-anker)"
+
+msgid "Enable EN-DC (NSA anchor)"
+msgstr "Aktivér EN-DC (NSA-anker)"
+
+msgid "Disable apply at startup"
+msgstr "Deaktiver Anvend ved opstart"
+
+msgid "Enable apply at startup"
+msgstr "Aktivér Anvend ved opstart"
+
+msgid "Reading the modem directly (a few seconds at most)…"
+msgstr "Læser modemmet direkte (højst et par sekunder)…"
+
+msgid "Refresh failed"
+msgstr "Opdatering mislykkedes"
+
+msgid "Refreshed"
+msgstr "Opdateret"
+
+msgid "NR bands: back to automatic"
+msgstr "NR-bånd: tilbage til automatisk"
+
+msgid "LTE bands: back to automatic"
+msgstr "LTE-bånd: tilbage til automatisk"
+
+msgid "Network mode automatic, EN-DC on, all LTE and NR bands, no cell lock. The saved lock settings are cleared, so nothing is replayed at startup."
+msgstr "Netværkstilstand automatisk, EN-DC til, alle LTE- og NR-bånd, ingen cellelås. De gemte låseindstillinger slettes, så intet anvendes igen ved opstart."
+
+msgid "Reset"
+msgstr "Nulstil"
+
+msgid "Remove the %s cell lock"
+msgstr "Fjern %s-cellelåsen"
+
+msgid "The radio stack will restart (SFUN), taking about 30 seconds."
+msgstr "Radiostakken genstartes (SFUN), hvilket tager ca. 30 sekunder."
+
+msgid "Removing the %s cell lock…"
+msgstr "Fjerner %s-cellelåsen…"
+
+msgid "Unlock failed: %s"
+msgstr "Oplåsning mislykkedes: %s"
+
+msgid "Unlock started in background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Oplåsning startet i baggrunden (SFUN-genstart, ca. 30 sekunder); læser status tilbage…"
+
+msgid "Locking %s in the background…"
+msgstr "Låser %s i baggrunden…"
+
+msgid "Locked %s in the background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "%s låst i baggrunden (SFUN-genstart, ca. 30 sekunder); læser status tilbage…"
+
+msgid "Enter a channel number and a PCI in the ranges below"
+msgstr "Angiv et kanalnummer og en PCI inden for intervallerne nedenfor"
+
+msgid "No serving-network data"
+msgstr "Ingen data om betjenende netværk"
+
+msgid "NR serving cell"
+msgstr "Betjenende NR-celle"
+
+msgid "Status confirmed"
+msgstr "Status bekræftet"
+
+msgid "Readback timed out; select “Refresh lock status”"
+msgstr "Tilbagelæsning fik timeout; vælg “Opdater låsestatus”"
+
+msgid "Reset verified: network mode automatic, EN-DC on, all bands, no cell lock; the saved lock settings are cleared"
+msgstr "Nulstilling bekræftet: netværkstilstand automatisk, EN-DC til, alle bånd, ingen cellelås; de gemte låseindstillinger er ryddet"
+
+msgid "Applied (EN-DC does not require a radio-stack restart)"
+msgstr "Anvendt (EN-DC kræver ikke genstart af radiostakken)"
+
+msgid "Apply at startup is on"
+msgstr "Anvend ved opstart er slået til"
+
+msgid "Apply at startup is off"
+msgstr "Anvend ved opstart er slået fra"
+
+msgid "EN-DC status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Tilbagelæsning af EN-DC-status fik timeout; brug “Opdater låsestatus” for at bekræfte"
+
+msgid "Apply-at-startup status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Tilbagelæsning af status for Anvend ved opstart fik timeout; brug “Opdater låsestatus” for at bekræfte"
+
+msgid "Locked cells"
+msgstr "Låste celler"
+
+msgid "Unlock %s"
+msgstr "Lås %s op"
+
+msgid "Automatic (%d supported)"
+msgstr "Automatisk (%d understøttet)"
+
+msgid "%d locked: %s"
+msgstr "%d låst: %s"
+
+msgid "Repair DNS?"
+msgstr "Reparér DNS?"
+
+msgid "This removes the DNS forwarder of a package that is no longer installed. If no other DNS server is left, the device then uses the DNS servers of the mobile connection: the carrier sees the names you look up, outside any proxy or VPN."
+msgstr "Dette fjerner DNS-videresendelsen for en pakke, der ikke længere er installeret. Er der ingen anden DNS-server tilbage, bruger enheden mobilforbindelsens DNS-servere: operatøren ser de navne, du slår op, uden om enhver proxy eller VPN."
+
+msgid "Repair DNS"
+msgstr "Reparér DNS"
+
+msgid "Packages installed on the device are not part of a release image. An update writes them down, and the new system installs them again at its first boot, once it is online. Until a package is back its settings are set aside."
+msgstr "Pakker installeret på enheden er ikke en del af udgivelsens billede. En opdatering noterer dem, og det nye system installerer dem igen ved første opstart, så snart det er online. Indtil en pakke er tilbage, lægges dens indstillinger til side."
+
+msgid "No packages to install again."
+msgstr "Ingen pakker at installere igen."
+
+msgid "All back"
+msgstr "Alle tilbage"
+
+msgid "Not installed yet"
+msgstr "Ikke installeret endnu"
+
+msgid "Could not be installed again"
+msgstr "Kunne ikke installeres igen"
+
+msgid "Waiting for the internet"
+msgstr "Venter på internet"
+
+msgid "Given up: no internet at five boots"
+msgstr "Opgivet: intet internet ved fem opstarter"
+
+msgid "Skipped"
+msgstr "Sprunget over"
+
+msgid "Written down by the update from %s"
+msgstr "Noteret af opdateringen fra %s"
+
+msgid "Installed again"
+msgstr "Installeret igen"
+
+msgid "Install them yourself from where you got them (a package file: apk add --allow-untrusted FILE.apk)."
+msgstr "Installér dem selv fra der, hvor du fik dem (en pakkefil: apk add --allow-untrusted FILE.apk)."
+
+msgid "Settings set aside in /etc/mu300/orphaned-config"
+msgstr "Indstillinger lagt til side i /etc/mu300/orphaned-config"
+
+msgid "DNS still goes to a package that is not installed: the device has no DNS through it."
+msgstr "DNS går stadig til en pakke, der ikke er installeret: enheden har ingen DNS gennem den."
+
+msgid "Try again"
+msgstr "Prøv igen"
+
+msgid "Dismiss the note"
+msgstr "Luk beskeden"
+
+msgid "started"
+msgstr "startet"
+
+msgid "asleep now (asked)"
+msgstr "dvale nu (anmodet)"
+
+msgid "woken: power daemon stopping"
+msgstr "vækket: strømtjenesten stopper"
+
+msgid "woken by a key"
+msgstr "vækket af en knap"
+
+msgid "woken by the Wi-Fi key"
+msgstr "vækket af Wi-Fi-knappen"
+
+msgid "woken (mu300-power wake)"
+msgstr "vækket (mu300-power wake)"
+
+msgid "woken by a computer on USB"
+msgstr "vækket af en computer via USB"
+
+msgid "woken: plugged in"
+msgstr "vækket: oplader tilsluttet"
+
+msgid "woken by a Wi-Fi client"
+msgstr "vækket af en Wi-Fi-klient"
+
+msgid "charging boot (powered on by the charger)"
+msgstr "opladerstart (tændt af opladeren)"
+
+msgid "the hotspot is down"
+msgstr "hotspottet er slukket"
+
+msgid "the VPN is still stopped"
+msgstr "VPN er stadig stoppet"
+
+msgid "5G (EN-DC) is still off after a failed resume"
+msgstr "5G (EN-DC) er stadig slukket efter en mislykket genoptagelse"
+
+msgid "self-check: %s"
+msgstr "selvtest: %s"
+
+msgid "asleep: no client for %d min (%s)"
+msgstr "dvale: ingen klient i %d min (%s)"
+
+msgid "asleep: profile now %s"
+msgstr "dvale: profil nu %s"
+
+msgid "woken by the %s key"
+msgstr "vækket af %s-knappen"
+
+msgid "the modem is suspended (%s)"
+msgstr "modemmet er sat på pause (%s)"
+
+msgid "Enter a whole number from 0 to %d"
+msgstr "Angiv et helt tal fra 0 til %d"
+
+msgid "Power status unavailable"
+msgstr "Strømstatus ikke tilgængelig"
+
+msgid "Plugged in"
+msgstr "Tilsluttet"
+
+msgid "On battery"
+msgstr "På batteri"
+
+msgid "Saver"
+msgstr "Spar"
+
+msgid "Asleep: hotspot off"
+msgstr "Dvale: hotspot slukket"
+
+msgid "Charging boot: press the Wi-Fi key to start"
+msgstr "Opladningsstart: tryk på Wi-Fi-tasten for at starte"
+
+msgid "Awake"
+msgstr "Vågen"
+
+msgid "forced"
+msgstr "gennemtvunget"
+
+msgid "automatic, battery under %d %%"
+msgstr "automatisk, batteri under %d %%"
+
+msgid "automatic"
+msgstr "automatisk"
+
+msgid "Nobody connected for %d s"
+msgstr "Ingen har været tilsluttet i %d s"
+
+msgid "Power source"
+msgstr "Strømkilde"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Profile in use: %s (%s)"
+msgstr "Profil i brug: %s (%s)"
+
+msgid "%d %%, %s, %d mV, %d mA, %.1f °C"
+msgstr "%d %%, %s, %d mV, %d mA, %.1f °C"
+
+msgid "Charger"
+msgstr "Oplader"
+
+msgid "Charger: %s, %s port"
+msgstr "Oplader: %s, %s-port"
+
+msgid "Charging paused: battery temperature"
+msgstr "Opladning sat på pause: batteritemperatur"
+
+msgid "Charging paused: charge limit"
+msgstr "Opladning sat på pause: opladningsgrænse"
+
+msgid "Sleep now"
+msgstr "Sov nu"
+
+msgid "Wake"
+msgstr "Væk"
+
+msgid "Nobody connected means no Wi-Fi client and no computer on USB. The Wi-Fi key, a computer on USB or the charger wake the device."
+msgstr "Ingen tilsluttet betyder ingen Wi-Fi-klient og ingen computer på USB. Wi-Fi-tasten, en computer på USB eller opladeren vækker enheden."
+
+msgid "Automatic: plugged in / on battery"
+msgstr "Automatisk: tilsluttet / på batteri"
+
+msgid "Switch to Saver under %"
+msgstr "Skift til Spar under %"
+
+msgid "Stop charging at"
+msgstr "Stop opladning ved"
+
+msgid "0 % never charges the battery (the device runs on the charger), 100 % charges it full; in between, charging stops at that level and starts again 5 points lower. Under 5 % the battery always charges."
+msgstr "0 % oplader aldrig batteriet (enheden kører på opladeren), 100 % lader det helt op; ind imellem stopper opladningen ved det niveau og starter igen 5 point lavere. Under 5 % oplades batteriet altid."
+
+msgid "80 % keeps the battery healthier on a device that stays plugged in."
+msgstr "80 % skåner batteriet i en enhed, der bliver siddende i stikket."
+
+msgid "When the charger switches the device on"
+msgstr "Når opladeren tænder enheden"
+
+msgid "Charge only, until a key starts it"
+msgstr "Kun opladning, indtil en tast starter den"
+
+msgid "Start normally"
+msgstr "Start normalt"
+
+msgid "Keep as is"
+msgstr "Lad være som det er"
+
+msgid "LTE only (5G off)"
+msgstr "Kun LTE (5G fra)"
+
+msgid "On"
+msgstr "Til"
+
+msgid "Full"
+msgstr "Fuld"
+
+msgid "Eco: big core off"
+msgstr "Øko: stor kerne fra"
+
+msgid "Hotspot off after (min, 0 = never)"
+msgstr "Hotspot slukkes efter (min, 0 = aldrig)"
+
+msgid "Modem when idle"
+msgstr "Modem i hvile"
+
+msgid "LEDs when idle"
+msgstr "LED'er i hvile"
+
+msgid "Ignored lines in power.conf: %s"
+msgstr "Ignorerede linjer i power.conf: %s"
+
+msgid "Configure how this plugin connects to the current Unisoc OpenWrt platform. Changes do not require editing the dashboard, AT, locks or SMS pages."
+msgstr "Konfigurer, hvordan dette plugin forbindes til den aktuelle Unisoc OpenWrt-platform. Ændringer kræver ikke redigering af siderne for oversigt, AT, låse eller SMS."
+
+msgid "Platform adapter"
+msgstr "Platformadapter"
+
+msgid "AT backend"
+msgstr "AT-backend"
+
+msgid "Auto-detect"
+msgstr "Automatisk registrering"
+
+msgid "atinout + serial port"
+msgstr "atinout + seriel port"
+
+msgid "Custom adapter"
+msgstr "Brugerdefineret adapter"
+
+msgid "AT serial port"
+msgstr "AT-seriel port"
+
+msgid "Custom AT adapter"
+msgstr "Brugerdefineret AT-adapter"
+
+msgid "The executable receives a timeout in seconds and the complete AT command, in that order. It must share the serial lock with the platform dialer."
+msgstr "Programmet modtager en timeout i sekunder og den komplette AT-kommando, i den rækkefølge. Det skal dele den serielle lås med platformens opkaldsprogram."
+
+msgid "SMS adapter"
+msgstr "SMS-adapter"
+
+msgid "Implement the list, show, send, delete and sync subcommands; leave blank to find mu300-sms automatically."
+msgstr "Implementer underkommandoerne list, show, send, delete og sync; lad feltet stå tomt for at finde mu300-sms automatisk."
+
+msgid "SMS pool directory"
+msgstr "Mappe til SMS-pulje"
+
+msgid "Cellular logical interface"
+msgstr "Logisk mobilgrænseflade"
+
+msgid "Cellular IPv6 interface"
+msgstr "IPv6-mobilgrænseflade"
+
+msgid "Cellular network device"
+msgstr "Mobilnetværksenhed"
+
+msgid "Leave blank to detect from netifd"
+msgstr "Lad stå tomt for at registrere fra netifd"
+
+msgid "LAN bridge"
+msgstr "LAN-bro"
+
+msgid "Wi-Fi device"
+msgstr "Wi-Fi-enhed"
+
+msgid "USB device"
+msgstr "USB-enhed"
+
+msgid "Maximum wait for AT readiness (seconds)"
+msgstr "Maks. ventetid på, at AT er klar (sekunder)"
+
+msgid "Home dashboard refresh interval (seconds)"
+msgstr "Opdateringsinterval for startsiden (sekunder)"
+
+msgid "Controls only the home dashboard refresh rate; 0.5–60 seconds. Reopen Home after saving to apply."
+msgstr "Styrer kun startsidens opdateringshastighed; 0,5–60 sekunder. Åbn startsiden igen efter at have gemt for at anvende ændringen."
+
+msgid "Persistent state directory"
+msgstr "Mappe til vedvarende tilstand"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM. Mobile data will disconnect briefly."
+msgstr "Switching SIM. Mobile data will disconnect briefly."
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switch failed; check SIM readiness and hot switching."
+msgstr "SIM switch failed; check SIM readiness and hot switching."
+
+# Source-language fallback for untranslated new controls.
+msgid "Ready"
+msgstr "Ready"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM"
+msgstr "Switching SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switched; saved as boot default"
+msgstr "SIM switched; saved as boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch failed; previous SIM restored"
+msgstr "Switch failed; previous SIM restored"
+
+msgid "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+msgstr "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+
+msgid "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+msgstr "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+
+# Source-language fallback for untranslated new controls.
+msgid "Radio state unknown; reboot required"
+msgstr "Radio state unknown; reboot required"
+
+msgid "Radio state unknown; the device is restarting."
+msgstr "Radio state unknown; the device is restarting."
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM control is only for the U30 Air on OpenWrt."
+msgstr "Dual SIM control is only for the U30 Air on OpenWrt."
+
+# Source-language fallback for untranslated new controls.
+msgid "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+msgstr "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+
+msgid "No card answered in the chosen SIM position at the last boot."
+msgstr "No card answered in the chosen SIM position at the last boot."
+
+msgid "The chosen SIM is locked by its PIN."
+msgstr "The chosen SIM is locked by its PIN."
+
+msgid "The chosen SIM got no mobile data within the time at its first boot."
+msgstr "The chosen SIM got no mobile data within the time at its first boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The second SIM's modem channels did not come up at the last boot."
+msgstr "The second SIM's modem channels did not come up at the last boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The last dual-SIM boot never confirmed itself."
+msgstr "The last dual-SIM boot never confirmed itself."
+
+msgid "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+msgstr "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+
+# Source-language fallback for untranslated new controls.
+msgid "Active SIM"
+msgstr "Active SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "Cold-boot default"
+msgstr "Cold-boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control unavailable"
+msgstr "SIM control unavailable"
+
+# Source-language fallback for untranslated new controls.
+msgid "The device is back on SIM1 without live switching; choose again below to try once more."
+msgstr "The device is back on SIM1 without live switching; choose again below to try once more."
+
+msgid "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+msgstr "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching"
+msgstr "Enable hot switching"
+
+msgid "This device supports next-boot SIM selection only; live switching is unavailable."
+msgstr "This device supports next-boot SIM selection only; live switching is unavailable."
+
+# Source-language fallback for untranslated new controls.
+msgid "Reboot after enabling hot switching to prepare both SIM channels."
+msgstr "Reboot after enabling hot switching to prepare both SIM channels."
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch to SIM%d"
+msgstr "Switch to SIM%d"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM%d at next boot"
+msgstr "Use SIM%d at next boot"
+
+msgid "Built-in SIM 1"
+msgstr "Indbygget SIM 1"
+
+msgid "Built-in SIM 2"
+msgstr "Indbygget SIM 2"
+
+msgid "Built-in SIM 3"
+msgstr "Indbygget SIM 3"
+
+msgid "External SIM"
+msgstr "Eksternt SIM"
+
+msgid "SIM card"
+msgstr "SIM-kort"
+
+msgid "Built-in SIM 3 shares SIM2, the external SIM shares SIM1. The card chosen here is switched in before the modem starts, at the next boot; without a choice the cards stay as the bootloader sets them."
+msgstr "Indbygget SIM 3 deler SIM2, det eksterne SIM deler SIM1. Kortet, der vælges her, skiftes ind, før modemmet starter, ved næste opstart; uden et valg forbliver kortene, som bootloaderen sætter dem."
+
+msgid "As the bootloader sets them"
+msgstr "Som bootloaderen sætter dem"
+
+msgid "Applying the radio setting…"
+msgstr "Anvender radioindstillingen…"
+
+msgid "SIM settings are not available"
+msgstr "SIM-indstillingerne er ikke tilgængelige"
+
+msgid "Modem default"
+msgstr "Modemets standard"
+
+msgid "SIM%d"
+msgstr "SIM%d"
+
+msgid "in use"
+msgstr "i brug"
+
+msgid "Turn off the radio of SIM%d"
+msgstr "Sluk radioen i SIM%d"
+
+msgid "Radio"
+msgstr "Radio"
+
+msgid "VoLTE"
+msgstr "VoLTE"
+
+msgid "VoNR"
+msgstr "VoNR"
+
+msgid "Modem: %s"
+msgstr "Modem: %s"
+
+msgid "Sent to this SIM when its radio next starts."
+msgstr "Sendes til dette SIM, næste gang dets radio starter."
+
+msgid "VoLTE and VoNR for each SIM, kept across reboots and sent again whenever that SIM starts. VoLTE is on unless switched off; VoNR stays as the modem has it until set."
+msgstr "VoLTE og VoNR for hvert SIM, bevares ved genstart og sendes igen, hver gang det SIM starter. VoLTE er slået til, medmindre det slås fra; VoNR forbliver som i modemet, indtil det indstilles."
+
+msgid "All radios off (airplane mode)"
+msgstr "Alle radioer slukket (flytilstand)"
+
+msgid "All radios on"
+msgstr "Alle radioer tændt"
+
+msgid "No SIM will have calls, SMS or data, also after a reboot, until a radio is turned on again here or with the dashboard's radio button."
+msgstr "Intet SIM får opkald, SMS eller data, heller ikke efter genstart, før en radio tændes igen her eller med radioknappen på oversigten."
+
+msgid "Each SIM's radio stays as set here after a reboot. A SIM whose radio is off has no calls, SMS or data, and the device does not switch to it."
+msgstr "Hvert SIM's radio forbliver som indstillet her efter genstart. Et SIM med slukket radio har ingen opkald, SMS eller data, og enheden skifter ikke til det."
+
+msgid "The setting is saved, but the radio did not follow it yet."
+msgstr "Indstillingen er gemt, men radioen har ikke fulgt den endnu."
+
+msgid "Recipient: number, e.g. 10086 or +86..."
+msgstr "Modtager: nummer, f.eks. 10086 eller +86..."
+
+msgid "Sync from SIM"
+msgstr "Synkroniser fra SIM"
+
+msgid "Clear local pool"
+msgstr "Ryd lokal pulje"
+
+msgid "Select a conversation on the left, or enter a number below to send."
+msgstr "Vælg en samtale til venstre, eller indtast et nummer nedenfor for at sende."
+
+msgid "Message (Enter to send, Shift+Enter for newline)"
+msgstr "Besked (Enter for at sende, Shift+Enter for ny linje)"
+
+msgid "Sending uses AT+CMGS (PDU mode); retry if the channel is busy. To delete one message, use the bin icon on its bubble."
+msgstr "Afsendelse bruger AT+CMGS (PDU-tilstand); prøv igen, hvis kanalen er optaget. Brug skraldespandsikonet på en beskedboble for at slette beskeden."
+
+msgid "Sending…"
+msgstr "Sender…"
+
+msgid "Sent; the list refreshes shortly."
+msgstr "Sendt; listen opdateres om lidt."
+
+msgid "Sending failed"
+msgstr "Afsendelse mislykkedes"
+
+msgid "Syncing from the SIM in the background (AT+CMGL)…"
+msgstr "Synkroniserer fra SIM i baggrunden (AT+CMGL)…"
+
+msgid "SIM sync started; the list refreshes in a few seconds."
+msgstr "SIM-synkronisering startet; listen opdateres om få sekunder."
+
+msgid "Clear local SMS pool"
+msgstr "Ryd lokal SMS-pulje"
+
+msgid "Only local files will be deleted; messages on the SIM remain."
+msgstr "Kun lokale filer slettes; beskeder på SIM-kortet bevares."
+
+msgid "Delete this SMS"
+msgstr "Slet denne SMS"
+
+msgid "Deletion cannot be undone."
+msgstr "Sletning kan ikke fortrydes."
+
+msgid "Local only"
+msgstr "Kun lokalt"
+
+msgid "Local + SIM"
+msgstr "Lokalt + SIM"
+
+msgid "Delete failed"
+msgstr "Sletning mislykkedes"
+
+msgid "Deleted (local + SIM)"
+msgstr "Slettet (lokalt + SIM)"
+
+msgid "Deleted (local only)"
+msgstr "Slettet (kun lokalt)"
+
+msgid "Enter both a number and a message."
+msgstr "Indtast både et nummer og en besked."
+
+msgid "· %d messages, %d unread · %d conversations"
+msgstr "· %d beskeder, %d ulæste · %d samtaler"
+
+msgid "· %d messages · %d conversations"
+msgstr "· %d beskeder · %d samtaler"
+
+msgid "The pool is empty. Incoming and sent messages appear here, or select “Sync from SIM”."
+msgstr "Puljen er tom. Modtagne og sendte beskeder vises her, eller vælg “Synkroniser fra SIM”."
+
+msgid "Me: %s"
+msgstr "Mig: %s"
+
+msgid "Incomplete: %d of %d parts arrived"
+msgstr "Ufuldstændig: %d af %d dele ankom"
+
+msgid "Delete"
+msgstr "Slet"
+
+msgid "ttyd is not installed."
+msgstr "ttyd er ikke installeret."
+
+msgid "The terminal is turned off (/etc/config/ttyd)."
+msgstr "Terminalen er slået fra (/etc/config/ttyd)."
+
+msgid "Too many terminals are opening at once. Try again in a minute."
+msgstr "For mange terminaler åbnes på én gang. Prøv igen om et minut."
+
+msgid "The terminal is not available."
+msgstr "Terminalen er ikke tilgængelig."
+
+msgid "This is a root shell on the device: every command runs with full rights, and a mistake can make the device unbootable."
+msgstr "Dette er en root-shell på enheden: hver kommando kører med fulde rettigheder, og en fejl kan gøre enheden ude af stand til at starte."
+
+msgid "It is reachable from the LAN only (USB and the hotspot), never from mobile data, and only from this logged-in page."
+msgstr "Den kan kun nås fra LAN (USB og hotspot), aldrig fra mobildata, og kun fra denne side, hvor du er logget ind."
+
+msgid "It closes after a minute without activity."
+msgstr "Den lukkes efter et minut uden aktivitet."
+
+msgid "It closes after %d minutes without activity."
+msgstr "Den lukkes efter %d minutter uden aktivitet."
+
+msgid "Reconnect"
+msgstr "Forbind igen"
+
+msgid "Open in a new tab"
+msgstr "Åbn i en ny fane"
+
+msgid "This page was opened over HTTPS, and the terminal is served over HTTP on the LAN: it opens in a tab of its own."
+msgstr "Denne side blev åbnet via HTTPS, og terminalen leveres via HTTP på LAN: den åbnes i sin egen fane."
+
+msgid "The data usage could not be read"
+msgstr "Dataforbruget kunne ikke læses"
+
+msgid "Today"
+msgstr "I dag"
+
+msgid "Days left in this cycle"
+msgstr "Dage tilbage i perioden"
+
+msgid "Received"
+msgstr "Modtaget"
+
+msgid "Sent"
+msgstr "Sendt"
+
+msgid "Corrected by"
+msgstr "Korrigeret med"
+
+msgid "Monthly cap"
+msgstr "Månedsgrænse"
+
+msgid "%s, warning at %d%%"
+msgstr "%s, advarsel ved %d%%"
+
+msgid "The monthly cap is reached: mobile data was turned off. It comes back on when the next cycle starts."
+msgstr "Månedsgrænsen er nået: mobildata blev slået fra. Det tændes igen, når næste periode begynder."
+
+msgid "%s waits for the clock: it has not been set over the network yet. It already counts towards this cycle and goes to its day once the clock is set."
+msgstr "%s venter på uret: det er endnu ikke stillet via netværket. Det tæller allerede med i denne periode og kommer på sin dag, når uret er stillet."
+
+msgid "The interface %s is not there right now: nothing is counted until it comes back."
+msgstr "Grænsefladen %s findes ikke lige nu: intet tælles, før den kommer tilbage."
+
+msgid "Counted on %s, both ways, as the operator counts it (a VPN's overhead included)."
+msgstr "Talt på %s, i begge retninger, som operatøren tæller (en VPN's overhead medregnet)."
+
+msgid "The count is kept in memory and written to the disk every 30 minutes and at shutdown: a power cut loses at most the last half hour."
+msgstr "Optællingen holdes i hukommelsen og skrives til disken hvert 30. minut og ved nedlukning: et strømsvigt mister højst den sidste halve time."
+
+msgid "Counting since %s."
+msgstr "Talt siden %s."
+
+msgid "Per day"
+msgstr "Pr. dag"
+
+msgid "Date"
+msgstr "Dato"
+
+msgid "Total"
+msgstr "I alt"
+
+msgid "Per billing cycle"
+msgstr "Pr. faktureringsperiode"
+
+msgid "Billing cycle"
+msgstr "Faktureringsperiode"
+
+msgid "Enter a size in GB, for example 50 or 2.5"
+msgstr "Angiv en størrelse i GB, for eksempel 50 eller 2.5"
+
+msgid "Enter a percentage from 1 to 100"
+msgstr "Angiv en procentdel fra 1 til 100"
+
+msgid "Turn mobile data off at the cap"
+msgstr "Slå mobildata fra ved grænsen"
+
+msgid "When this cycle reaches the cap, mobile data is turned off: no internet through the operator until the next cycle starts, the cap is raised or this is turned off again. Turning mobile data back on by hand keeps it on until the next reboot."
+msgstr "Når denne periode når grænsen, slås mobildata fra: intet internet via operatøren, før næste periode begynder, grænsen hæves, eller dette slås fra igen. Mobildata, der tændes igen i hånden, forbliver tændt til næste genstart."
+
+msgid "Set"
+msgstr "Sæt"
+
+msgid "Clear the count"
+msgstr "Nulstil optællingen"
+
+msgid "Every day and billing cycle counted so far is forgotten. Counting goes on from now."
+msgstr "Alle dage og faktureringsperioder talt indtil nu glemmes. Optællingen fortsætter fra nu."
+
+msgid "Billing cycle and cap"
+msgstr "Faktureringsperiode og grænse"
+
+msgid "A billing cycle starts on day"
+msgstr "En faktureringsperiode begynder dag"
+
+msgid "31: on the last day of each month"
+msgstr "31: på den sidste dag i hver måned"
+
+msgid "Monthly cap (GB, 0: none)"
+msgstr "Månedsgrænse (GB, 0: ingen)"
+
+msgid "Warning at this percentage of the cap"
+msgstr "Advar ved denne procentdel af grænsen"
+
+msgid "Used so far in this cycle (GB)"
+msgstr "Brugt indtil nu i denne periode (GB)"
+
+msgid "What the operator shows for this cycle (for example when counting started in the middle of it); the count is corrected to it."
+msgstr "Det operatøren viser for denne periode (for eksempel hvis optællingen begyndte midt i den); optællingen rettes til det."
+
+msgid "Current setting"
+msgstr "Aktuel indstilling"
+
+msgid "Fixed at %d"
+msgstr "Fast på %d"
+
+msgid "Not changed (default)"
+msgstr "Ikke ændret (standard)"
+
+msgid "Rule in force"
+msgstr "Aktiv regel"
+
+msgid "Flow offloading"
+msgstr "Flow-offloading"
+
+msgid "TTL of mobile data"
+msgstr "TTL for mobildata"
+
+msgid "Every packet that leaves through mobile data gets this TTL (IPv6: hop limit). A phone or laptop behind the hotspot sends 64 (Windows: 128) and the device forwards it with one less, which is how an operator can tell tethered traffic apart."
+msgstr "Hver pakke, der forlader enheden via mobildata, får denne TTL (IPv6: hop limit). En telefon eller bærbar bag hotspottet sender 64 (Windows: 128), og enheden videresender den med én mindre, og sådan kan en operatør kende delt trafik."
+
+msgid "On this kernel the firewall fast-path is off while a TTL is set"
+msgstr "På denne kerne er firewallens hurtige vej slået fra, mens en TTL er sat"
+
+msgid "Set %d"
+msgstr "Sæt %d"
+
+msgid "Enter a number from 1 to 255"
+msgstr "Indtast et tal fra 1 til 255"
+
+msgid "Turn off"
+msgstr "Slå fra"
+
+msgid "64 makes every packet leave like the device's own traffic"
+msgstr "Med 64 forlader hver pakke enheden som dens egen trafik"
+
+msgid "Check for updates"
+msgstr "Søg efter opdateringer"
+
+msgid "Checking the file"
+msgstr "Kontrollerer filen"
+
+msgid "Update from a file"
+msgstr "Opdater fra en fil"
+
+msgid "Back to the previous version"
+msgstr "Tilbage til den forrige version"
+
+msgid "Back to the previous boot image"
+msgstr "Tilbage til det forrige boot-image"
+
+msgid "Remove the previous version"
+msgstr "Fjern den forrige version"
+
+msgid "Kernel change"
+msgstr "Skift af kerne"
+
+msgid "Starting…"
+msgstr "Starter…"
+
+msgid "Downloading"
+msgstr "Henter"
+
+msgid "All files are here and verified"
+msgstr "Alle filer er her og kontrolleret"
+
+msgid "Unpacking the new system"
+msgstr "Pakker det nye system ud"
+
+msgid "Carrying over your settings"
+msgstr "Overfører dine indstillinger"
+
+msgid "Writing down the packages you installed"
+msgstr "Noterer de pakker, du har installeret"
+
+msgid "Switching to the new system"
+msgstr "Skifter til det nye system"
+
+msgid "Kernel and boot image"
+msgstr "Kerne og boot-image"
+
+msgid "Restart the device?"
+msgstr "Genstart enheden?"
+
+msgid "The device restarts now. The default boot is Android, so it starts Android: switch to Linux from there to start the updated system."
+msgstr "Enheden genstarter nu. Standardopstarten er Android, så den starter Android: skift til Linux derfra for at starte det opdaterede system."
+
+msgid "The device restarts now and is away for about a minute. If the new system does not start, the device goes back to Android by itself after the failed attempts."
+msgstr "Enheden genstarter nu og er væk i cirka et minut. Hvis det nye system ikke starter, går enheden selv tilbage til Android efter de mislykkede forsøg."
+
+msgid "Restarting… open this page again in about a minute."
+msgstr "Genstarter… åbn denne side igen om cirka et minut."
+
+msgid "Running for %s. It goes on when this page is closed; do not switch the device off."
+msgstr "Har kørt i %s. Det fortsætter, når denne side lukkes; sluk ikke enheden."
+
+msgid "Done. Restart the device to start it."
+msgstr "Færdig. Genstart enheden for at starte det."
+
+msgid "Done. Nothing needs a restart."
+msgstr "Færdig. Intet kræver en genstart."
+
+msgid "It did not finish, and part of it was done: read the log before you restart."
+msgstr "Det blev ikke færdigt, og en del af det blev udført: læs loggen, før du genstarter."
+
+msgid "It did not finish. Nothing was changed; the log says why."
+msgstr "Det blev ikke færdigt. Intet blev ændret; loggen fortæller hvorfor."
+
+msgid "Log"
+msgstr "Log"
+
+msgid "Restart now"
+msgstr "Genstart nu"
+
+msgid "Later"
+msgstr "Senere"
+
+msgid "Close"
+msgstr "Luk"
+
+msgid "Updating is not available on this system"
+msgstr "Opdatering er ikke tilgængelig på dette system"
+
+msgid "Another update is running on the device"
+msgstr "En anden opdatering kører på enheden"
+
+msgid "It was started outside this page (a terminal, the toolkit). Nothing can be started here until it has finished."
+msgstr "Det blev startet uden for denne side (en terminal, værktøjskassen). Intet kan startes her, før det er færdigt."
+
+msgid "Restart needed"
+msgstr "Genstart påkrævet"
+
+msgid "This system was updated and still runs the old version. The new one starts at the next restart."
+msgstr "Dette system er opdateret og kører stadig den gamle version. Den nye starter ved næste genstart."
+
+msgid "Installed"
+msgstr "Installeret"
+
+msgid "This system"
+msgstr "Dette system"
+
+msgid "Also on this device"
+msgstr "Også på denne enhed"
+
+msgid "Kernel"
+msgstr "Kerne"
+
+msgid "choice %s"
+msgstr "valg %s"
+
+msgid "Boot image"
+msgstr "Boot-image"
+
+msgid "from the installer"
+msgstr "fra installationsprogrammet"
+
+msgid "Default boot"
+msgstr "Standardopstart"
+
+msgid "Free space"
+msgstr "Ledig plads"
+
+msgid "Release signatures"
+msgstr "Udgivelsessignaturer"
+
+msgid "checked with the project's key"
+msgstr "kontrolleres med projektets nøgle"
+
+msgid "this system has no release key"
+msgstr "dette system har ingen udgivelsesnøgle"
+
+msgid "The default boot is Android: a restart goes to Android, and Linux is started from there."
+msgstr "Standardopstarten er Android: en genstart går til Android, og Linux startes derfra."
+
+msgid "Linux is locked as the default boot: a failed start does not send the device to Android by itself, except the first starts of a new boot image."
+msgstr "Linux er låst som standardopstart: en mislykket start sender ikke enheden til Android af sig selv, undtagen ved de første starter af et nyt boot-image."
+
+msgid "If Linux fails to start %d times in a row, the device starts Android by itself."
+msgstr "Hvis Linux ikke starter %d gange i træk, starter enheden Android af sig selv."
+
+msgid "Report of the last update"
+msgstr "Rapport fra den seneste opdatering"
+
+msgid "Online update"
+msgstr "Onlineopdatering"
+
+msgid "Asking GitHub…"
+msgstr "Spørger GitHub…"
+
+msgid "Checked %s ago"
+msgstr "Kontrolleret for %s siden"
+
+msgid "Not checked yet"
+msgstr "Ikke kontrolleret endnu"
+
+msgid "Mirror (release files)"
+msgstr "Spejl (udgivelsesfiler)"
+
+msgid "Leave empty for GitHub."
+msgstr "Tom for GitHub."
+
+msgid "Install the packages I added again after the update (needs the device online at the first start)"
+msgstr "Installer de pakker, jeg har tilføjet, igen efter opdateringen (enheden skal være online ved første start)"
+
+msgid "Pre-release"
+msgstr "Forhåndsudgivelse"
+
+msgid "Newest release"
+msgstr "Nyeste udgivelse"
+
+msgid "Release notes"
+msgstr "Udgivelsesnoter"
+
+msgid "Download"
+msgstr "Hentning"
+
+msgid "Free space needed"
+msgstr "Nødvendig ledig plads"
+
+msgid "not enough: remove the previous version first"
+msgstr "ikke nok: fjern den forrige version først"
+
+msgid "A pre-release is a release still being tried: it can have faults a release does not. The previous version is kept all the same."
+msgstr "En forhåndsudgivelse er en udgivelse, der stadig afprøves: den kan have fejl, som en udgivelse ikke har. Den forrige version bevares alligevel."
+
+msgid "This system is newer than the newest release (a test release)."
+msgstr "Dette system er nyere end den nyeste udgivelse (en testudgivelse)."
+
+msgid "Up to date."
+msgstr "Opdateret."
+
+msgid "This release is not signed, and this system checks signatures: it is not installed from here. Update from its file below, which asks you to confirm."
+msgstr "Denne udgivelse er ikke signeret, og dette system kontrollerer signaturer: den installeres ikke herfra. Opdater fra dens fil nedenfor, som beder dig bekræfte."
+
+msgid "Update to %s"
+msgstr "Opdater til %s"
+
+msgid "Choose at least one system"
+msgstr "Vælg mindst ét system"
+
+msgid "Update to %s?"
+msgstr "Opdater til %s?"
+
+msgid "The device downloads %s, puts the new system beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Enheden henter %s, lægger det nye system ved siden af det kørende og skifter til det ved næste genstart. Dine indstillinger overføres, og den forrige version bevares. Det tager flere minutter; sluk ikke enheden."
+
+msgid "Also offer the pre-release %s"
+msgstr "Tilbyd også forhåndsudgivelsen %s"
+
+msgid "Systems to update:"
+msgstr "Systemer, der skal opdateres:"
+
+msgid "GitHub could not be reached: the device has no internet connection, or GitHub did not answer. Without internet, update from a file below."
+msgstr "GitHub kunne ikke nås: enheden har ingen internetforbindelse, eller GitHub svarede ikke. Uden internet kan du opdatere fra en fil nedenfor."
+
+msgid "release"
+msgstr "udgivelse"
+
+msgid "For a device without internet: download the Magisk zip of a release for this system and this kernel on another computer, from the release page on GitHub, and upload it here. For this device that is:"
+msgstr "Til en enhed uden internet: hent Magisk-zip-filen fra en udgivelse til dette system og denne kerne på en anden computer, fra udgivelsessiden på GitHub, og upload den her. For denne enhed er det:"
+
+msgid "Uploaded file"
+msgstr "Uploadet fil"
+
+msgid "Checking the file…"
+msgstr "Kontrollerer filen…"
+
+msgid "It says it is"
+msgstr "Den angiver at være"
+
+msgid "kernel %s"
+msgstr "kerne %s"
+
+msgid "Signature"
+msgstr "Signatur"
+
+msgid "signed with the project's release key"
+msgstr "signeret med projektets udgivelsesnøgle"
+
+msgid "WRONG: it does not match the project's release key"
+msgstr "FORKERT: den passer ikke til projektets udgivelsesnøgle"
+
+msgid "not signed"
+msgstr "ikke signeret"
+
+msgid "cannot be checked on this system"
+msgstr "kan ikke kontrolleres på dette system"
+
+msgid "Its system is not installed on this device."
+msgstr "Filens system er ikke installeret på denne enhed."
+
+msgid "It is the other Ubuntu release, not the one installed."
+msgstr "Det er den anden Ubuntu-udgivelse, ikke den installerede."
+
+msgid "It carries another kernel than this device uses. Take the zip for kernel %s, or change the kernel first."
+msgstr "Den indeholder en anden kerne, end denne enhed bruger. Tag zip-filen til kerne %s, eller skift kerne først."
+
+msgid "Its kernel does not run on this model."
+msgstr "Filens kerne kører ikke på denne model."
+
+msgid "The file is damaged: its contents do not match their checksums."
+msgstr "Filen er beskadiget: indholdet passer ikke til kontrolsummerne."
+
+msgid "Its signature is wrong. This file does not come from the project as it is; it is never installed."
+msgstr "Signaturen er forkert. Denne fil kommer ikke fra projektet, som den er; den bliver aldrig installeret."
+
+msgid "This file cannot be used here."
+msgstr "Denne fil kan ikke bruges her."
+
+msgid "Compare the SHA-256 with the one in SHA256SUMS-magisk on the release page: it is the only proof of where an unsigned file comes from."
+msgstr "Sammenlign SHA-256 med den i SHA256SUMS-magisk på udgivelsessiden: det er det eneste bevis for, hvor en usigneret fil kommer fra."
+
+msgid "This release is installed already; the update would only refresh the boot image."
+msgstr "Denne udgivelse er allerede installeret; opdateringen ville kun forny boot-imaget."
+
+msgid "I know this file is not signed: nothing proves that it comes from the project. I compared its SHA-256 myself and want it installed."
+msgstr "Jeg ved, at denne fil ikke er signeret: intet beviser, at den kommer fra projektet. Jeg har selv sammenlignet dens SHA-256 og vil have den installeret."
+
+msgid "I know this is %s, older than the installed %s, and want to go back to it."
+msgstr "Jeg ved, at dette er %s, ældre end den installerede %s, og vil gå tilbage til den."
+
+msgid "This is not a release file of this project: a Magisk zip of a release is expected."
+msgstr "Dette er ikke en udgivelsesfil fra dette projekt: der forventes en Magisk-zip-fil fra en udgivelse."
+
+msgid "Update from this file"
+msgstr "Opdater fra denne fil"
+
+msgid "Tick the confirmations above first"
+msgstr "Sæt først kryds ved bekræftelserne ovenfor"
+
+msgid "The device puts the system of this file beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Enheden lægger filens system ved siden af det kørende og skifter til det ved næste genstart. Dine indstillinger overføres, og den forrige version bevares. Det tager flere minutter; sluk ikke enheden."
+
+msgid "Check the file"
+msgstr "Kontrollér filen"
+
+msgid "Remove the file"
+msgstr "Fjern filen"
+
+msgid "Previous version"
+msgstr "Forrige version"
+
+msgid "No previous version is kept on this device."
+msgstr "Der er ikke gemt nogen forrige version på denne enhed."
+
+msgid "replaced %s"
+msgstr "erstattet %s"
+
+msgid "I want the previous system back; what I changed since the update stays in the version I leave."
+msgstr "Jeg vil have det forrige system tilbage; det, jeg har ændret siden opdateringen, bliver i den version, jeg forlader."
+
+msgid "Back to the previous version?"
+msgstr "Tilbage til den forrige version?"
+
+msgid "The previous system (%s) becomes the one that starts at the next restart. The version you leave is not kept; settings you changed since the update are not carried back."
+msgstr "Det forrige system (%s) bliver det, der starter ved næste genstart. Den version, du forlader, bevares ikke; indstillinger, du har ændret siden opdateringen, føres ikke med tilbage."
+
+msgid "Go back"
+msgstr "Gå tilbage"
+
+msgid "The previous version is the one running now: restart first."
+msgstr "Den forrige version er den, der kører nu: genstart først."
+
+msgid "I want the previous kernel and boot image back."
+msgstr "Jeg vil have den forrige kerne og det forrige boot-image tilbage."
+
+msgid "Back to the previous boot image?"
+msgstr "Tilbage til det forrige boot-image?"
+
+msgid "The previous boot image (%s) is written to the Linux slot and starts at the next restart. If it does not start, the device goes back to Android by itself."
+msgstr "Det forrige boot-image (%s) skrives til Linux-pladsen og starter ved næste genstart. Hvis det ikke starter, går enheden selv tilbage til Android."
+
+msgid "I do not need to go back: delete the previous system to free its space."
+msgstr "Jeg behøver ikke at gå tilbage: slet det forrige system for at frigøre dets plads."
+
+msgid "Remove the previous version?"
+msgstr "Fjern den forrige version?"
+
+msgid "The kept copy of the previous system is deleted for good. After that there is no going back to it from this page."
+msgstr "Den gemte kopi af det forrige system slettes for altid. Derefter kan du ikke gå tilbage til det fra denne side."
+
+msgid "the vendor kernel"
+msgstr "leverandørkernen"
+
+msgid "mainline"
+msgstr "mainline"
+
+msgid "not with Ubuntu 26.04"
+msgstr "ikke med Ubuntu 26.04"
+
+msgid "Change the kernel"
+msgstr "Skift kerne"
+
+msgid "This kernel is the one in use"
+msgstr "Denne kerne er den, der er i brug"
+
+msgid "Change the kernel to %s?"
+msgstr "Skift kerne til %s?"
+
+msgid "The device downloads that kernel from the newest release and writes a new boot image; it starts at the next restart. The previous boot image is kept, and if the new one does not start the device goes back to Android by itself. The device must be online."
+msgstr "Enheden henter den kerne fra den nyeste udgivelse og skriver et nyt boot-image; det starter ved næste genstart. Det forrige boot-image bevares, og hvis det nye ikke starter, går enheden selv tilbage til Android. Enheden skal være online."
+
+msgid "Start Android at the next restart"
+msgstr "Start Android ved næste genstart"
+
+msgid "Start Android at the next restart?"
+msgstr "Start Android ved næste genstart?"
+
+msgid "The next restart, and the ones after it, start Android instead of Linux. Linux is started again from Android (the Magisk module's Action button, or mu300-linux)."
+msgstr "Den næste genstart, og dem derefter, starter Android i stedet for Linux. Linux startes igen fra Android (Magisk-modulets Action-knap eller mu300-linux)."
+
+msgid "Start Android next"
+msgstr "Start Android næste gang"
+
+msgid "What an update keeps"
+msgstr "Hvad en opdatering beholder"
+
+msgid "An update puts the system of the new release in place and carries over what is yours: the settings, the accounts and their passwords, the device's keys and the home directories. Packages you installed yourself are written down and installed again at the first start, once the device is online. The previous version stays on the device until you remove it, so you can go back."
+msgstr "En opdatering sætter systemet fra den nye udgivelse på plads og overfører det, der er dit: indstillingerne, kontiene og deres adgangskoder, enhedens nøgler og hjemmemapperne. Pakker, du selv har installeret, noteres og installeres igen ved første start, så snart enheden er online. Den forrige version bliver på enheden, indtil du fjerner den, så du kan gå tilbage."
+
+msgid "The wiki's Updating page lists exactly what is kept."
+msgstr "Wikisiden Updating viser præcist, hvad der bevares."
+
+msgid "Choose a file first"
+msgstr "Vælg en fil først"
+
+msgid "Uploading: %s of %s"
+msgstr "Uploader: %s af %s"
+
+msgid "running"
+msgstr "kører"
+
+msgid "(about %s)"
+msgstr "(ca. %s)"
+
+msgid "Install %s?"
+msgstr "Installer %s?"
+
+msgid "It is installed from this system's package feed."
+msgstr "Den installeres fra dette systems pakkekilde."
+
+msgid "It is downloaded from the release of the VPN module and checked against its SHA256SUMS."
+msgstr "Den downloades fra VPN-modulets udgivelse og kontrolleres mod dens SHA256SUMS."
+
+msgid "An engine is tens of MB: on mobile data the download counts towards your plan."
+msgstr "En motor fylder titusinder MB: på mobildata tæller downloaden med i dit abonnement."
+
+msgid "Install"
+msgstr "Installer"
+
+msgid "Remove %s?"
+msgstr "Fjern %s?"
+
+msgid "Profiles run on it: %s. They cannot start until it is installed again (the module refuses while the running profile needs it)."
+msgstr "Profiler, der kører på den: %s. De kan ikke starte, før den er installeret igen (modulet afviser, mens den kørende profil har brug for den)."
+
+msgid "No profile runs on it."
+msgstr "Ingen profil kører på den."
+
+msgid "Removed"
+msgstr "Fjernet"
+
+msgid "Each engine is an extra of its own: install only the ones your profiles need. Xray runs vless, vmess, trojan and ss links (with hev-socks5-tunnel), sing-box the same links and its own JSON, mihomo Clash subscriptions, dae hysteria2, tuic and the rest on newer kernels. WireGuard and OpenVPN are packages of the system."
+msgstr "Hver motor er en ekstra pakke for sig: installer kun dem, dine profiler har brug for. Xray kører vless-, vmess-, trojan- og ss-links (med hev-socks5-tunnel), sing-box de samme links og sin egen JSON, mihomo Clash-abonnementer, dae hysteria2, tuic og resten på nyere kerner. WireGuard og OpenVPN er systempakker."
+
+msgid "Downloads are tens of MB per engine: on mobile data they count towards your plan. Offline, upload the engine's tarball from the release page of the VPN module."
+msgstr "Downloads fylder titusinder MB pr. motor: på mobildata tæller de med i dit abonnement. Offline skal du uploade motorens tarball fra VPN-modulets udgivelsesside."
+
+msgid "The available versions come from the latest release of the VPN module."
+msgstr "De tilgængelige versioner kommer fra VPN-modulets seneste udgivelse."
+
+msgid "system package"
+msgstr "systempakke"
+
+msgid "in the vpn bundle"
+msgstr "i vpn-pakken"
+
+msgid "extra %s"
+msgstr "ekstra %s"
+
+msgid "not installed"
+msgstr "ikke installeret"
+
+msgid "cannot run here"
+msgstr "kan ikke køre her"
+
+msgid "update available"
+msgstr "opdatering tilgængelig"
+
+msgid "installed"
+msgstr "installeret"
+
+msgid "Kind"
+msgstr "Type"
+
+msgid "Version"
+msgstr "Version"
+
+msgid "Available"
+msgstr "Tilgængelig"
+
+msgid "not checked"
+msgstr "ikke kontrolleret"
+
+msgid "Size"
+msgstr "Størrelse"
+
+msgid "Needed by"
+msgstr "Bruges af"
+
+msgid "no profile"
+msgstr "ingen profil"
+
+msgid "dae needs a kernel with BTF, 5.17 or newer: not the 5.4 vendor kernel (mu300-update kernel 6.18). It can be installed anyway."
+msgstr "dae kræver en kerne med BTF, 5.17 eller nyere: ikke 5.4-leverandørkernen (mu300-update kernel 6.18). Den kan alligevel installeres."
+
+msgid "All engines"
+msgstr "Alle motorer"
+
+msgid "Last %s lines"
+msgstr "Seneste %s linjer"
+
+msgid "VPN service log"
+msgstr "VPN-tjenestelog"
+
+msgid "Every 5 s"
+msgstr "Hvert 5. s"
+
+msgid "The log is empty."
+msgstr "Loggen er tom."
+
+msgid "The VPN is starting"
+msgstr "VPN starter"
+
+msgid "The VPN is stopped"
+msgstr "VPN er stoppet"
+
+msgid "The VPN is restarting"
+msgstr "VPN genstarter"
+
+msgid "With the kill switch on, nothing leaves the device or the LAN outside the tunnel: while the VPN is down, starting or broken, every connection fails instead of going out directly. It stays up until you stop the VPN here (Stop removes it)."
+msgstr "Når kill switch er slået til, forlader intet enheden eller LAN uden for tunnelen: mens VPN er nede, starter eller er i stykker, mislykkes hver forbindelse i stedet for at gå direkte ud. Den forbliver aktiv, indtil du stopper VPN her (Stop fjerner den)."
+
+msgid "Without the kill switch, traffic goes out directly, unprotected, whenever the tunnel is down (while it starts, after a crash, when the engine is missing)."
+msgstr "Uden kill switch går trafikken direkte ud, ubeskyttet, hver gang tunnelen er nede (mens den starter, efter et nedbrud, når motoren mangler)."
+
+msgid "Turn the kill switch on?"
+msgstr "Slå kill switch til?"
+
+msgid "Turn the kill switch off?"
+msgstr "Slå kill switch fra?"
+
+msgid "Turn on"
+msgstr "Slå til"
+
+msgid "unknown"
+msgstr "ukendt"
+
+msgid "The exit address could not be found (is the tunnel up?)"
+msgstr "Udgangsadressen blev ikke fundet (er tunnelen oppe?)"
+
+msgid "Connecting…"
+msgstr "Forbinder…"
+
+msgid "On, but not running"
+msgstr "Slået til, men kører ikke"
+
+msgid "Stopped"
+msgstr "Stoppet"
+
+msgid "Install it"
+msgstr "Installer den"
+
+msgid "The engine of the active profile is not installed: %s"
+msgstr "Den aktive profils motor er ikke installeret: %s"
+
+msgid "The kill switch keeps everything closed until it is there; the service downloads it by itself when it can."
+msgstr "Kill switch holder alt lukket, indtil den er der; tjenesten downloader den selv, når den kan."
+
+msgid "The VPN cannot start until it is installed."
+msgstr "VPN kan ikke starte, før den er installeret."
+
+msgid "%s cannot run on this system"
+msgstr "%s kan ikke køre på dette system"
+
+msgid "The VPN is on, but no profile is active: choose one below."
+msgstr "VPN er slået til, men ingen profil er aktiv: vælg en nedenfor."
+
+msgid "Profile: %s"
+msgstr "Profil: %s"
+
+msgid "No active profile"
+msgstr "Ingen aktiv profil"
+
+msgid "engine %s"
+msgstr "motor %s"
+
+msgid "interface %s"
+msgstr "grænseflade %s"
+
+msgid "Kill switch active"
+msgstr "Kill switch aktiv"
+
+msgid "Kill switch on"
+msgstr "Kill switch til"
+
+msgid "Kill switch off"
+msgstr "Kill switch fra"
+
+msgid "IPv6 in the tunnel"
+msgstr "IPv6 i tunnelen"
+
+msgid "IPv6 blocked"
+msgstr "IPv6 blokeret"
+
+msgid "IPv6 untouched"
+msgstr "IPv6 urørt"
+
+msgid "Module %s"
+msgstr "Modul %s"
+
+msgid "Check"
+msgstr "Kontrollér"
+
+msgid "Uptime"
+msgstr "Oppetid"
+
+msgid "Rate"
+msgstr "Hastighed"
+
+msgid "Exit address"
+msgstr "Udgangsadresse"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "Stop"
+msgstr "Stop"
+
+msgid "Stop the VPN?"
+msgstr "Stop VPN?"
+
+msgid "Traffic then goes out directly, without the tunnel; the kill switch is taken down with it."
+msgstr "Trafikken går så direkte ud uden tunnel; kill switch tages ned sammen med den."
+
+msgid "The VPN is on: it starts again by itself after a reboot."
+msgstr "VPN er slået til: den starter igen af sig selv efter en genstart."
+
+msgid "The VPN is off."
+msgstr "VPN er slået fra."
+
+msgid "Kill switch"
+msgstr "Kill switch"
+
+msgid "Setting"
+msgstr "Indstilling"
+
+msgid "Active: only the tunnel can reach the internet"
+msgstr "Aktiv: kun tunnelen kan nå internettet"
+
+msgid "Not active"
+msgstr "Ikke aktiv"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down, so nothing ever leaves without the tunnel. If the tunnel cannot come up (a dead server, an expired account), the device stays offline until you fix the profile or stop the VPN. The panel itself stays reachable from the LAN."
+msgstr "Kill switch blokerer al trafik fra enheden og LAN, mens VPN er nede, så intet nogensinde forlader enheden uden tunnelen. Hvis tunnelen ikke kan komme op (en død server, en udløbet konto), forbliver enheden offline, indtil du retter profilen eller stopper VPN. Selve panelet kan stadig nås fra LAN."
+
+msgid "Choose a profile"
+msgstr "Vælg en profil"
+
+msgid "No profiles yet"
+msgstr "Ingen profiler endnu"
+
+msgid "engine not installed"
+msgstr "motor ikke installeret"
+
+msgid "Use"
+msgstr "Brug"
+
+msgid "Switched: the VPN restarts on the new profile"
+msgstr "Skiftet: VPN genstarter på den nye profil"
+
+msgid "Active profile"
+msgstr "Aktiv profil"
+
+msgid "A running VPN restarts on the profile you choose; the kill switch stays up in between."
+msgstr "En kørende VPN genstarter på den profil, du vælger; kill switch forbliver oppe imens."
+
+msgid "Manage the profiles"
+msgstr "Administrer profilerne"
+
+msgid "Automatic: through the tunnel where the engine can carry it"
+msgstr "Automatisk: gennem tunnelen, hvor motoren kan bære det"
+
+msgid "Ask the engine for IPv6 in the tunnel"
+msgstr "Bed motoren om IPv6 i tunnelen"
+
+msgid "Never through the tunnel (blocked while the VPN is up)"
+msgstr "Aldrig gennem tunnelen (blokeret, mens VPN er oppe)"
+
+msgid "Saved: it applies from the next start (Restart)"
+msgstr "Gemt: gælder fra næste start (Genstart)"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "The tunnel carries IPv6"
+msgstr "Tunnelen bærer IPv6"
+
+msgid "Yes"
+msgstr "Ja"
+
+msgid "IPv6 guard"
+msgstr "IPv6-vagt"
+
+msgid "Active: IPv6 outside the tunnel is refused"
+msgstr "Aktiv: IPv6 uden for tunnelen afvises"
+
+msgid "While the VPN is up, IPv6 never leaves beside a tunnel that does not carry it: it is refused at once, so programs and LAN clients fall back to IPv4 instead of leaking or waiting. Automatic: WireGuard and OpenVPN use the IPv6 addresses of their config; Xray, sing-box and mihomo are asked at every start whether IPv6 works through the tunnel, and carry it only then; dae stays IPv4."
+msgstr "Mens VPN er oppe, forlader IPv6 aldrig enheden ved siden af en tunnel, der ikke bærer det: det afvises med det samme, så programmer og LAN-klienter falder tilbage til IPv4 i stedet for at lække eller vente. Automatisk: WireGuard og OpenVPN bruger IPv6-adresserne i deres konfiguration; for Xray, sing-box og mihomo afprøves det ved hver start, om IPv6 virker gennem tunnelen, og kun da bærer de det; dae bliver på IPv4."
+
+msgid "%d ms"
+msgstr "%d ms"
+
+msgid "UDP: not testable"
+msgstr "UDP: kan ikke testes"
+
+msgid "blocked by the kill switch"
+msgstr "blokeret af kill switch"
+
+msgid "A WireGuard or OpenVPN config, a Clash/mihomo YAML, an Xray or sing-box JSON, a dae config"
+msgstr "En WireGuard- eller OpenVPN-konfiguration, en Clash/mihomo-YAML, en Xray- eller sing-box-JSON, en dae-konfiguration"
+
+msgid "After OK, choose the file: a WireGuard .conf, an OpenVPN .ovpn, a Clash/mihomo .yaml, an Xray or sing-box .json or a dae config (at most 1 MiB)."
+msgstr "Efter OK vælger du filen: en WireGuard .conf, en OpenVPN .ovpn, en Clash/mihomo .yaml, en Xray- eller sing-box .json eller en dae-konfiguration (højst 1 MiB)."
+
+msgid "From the source"
+msgstr "Fra kilden"
+
+msgid "Detect"
+msgstr "Registrer"
+
+msgid "The URL may hold a token: it goes to the device on its own, never into a command line or a log."
+msgstr "URL'en kan indeholde et token: det sendes til enheden for sig selv, aldrig ind i en kommandolinje eller en log."
+
+msgid "Share link"
+msgstr "Delingslink"
+
+msgid "Paste"
+msgstr "Indsæt"
+
+msgid "File"
+msgstr "Fil"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Not a share link this panel takes"
+msgstr "Ikke et delingslink, som dette panel accepterer"
+
+msgid "The config is empty"
+msgstr "Konfigurationen er tom"
+
+msgid "Not an https URL"
+msgstr "Ikke en https-URL"
+
+msgid "Invalid name: 1-64 characters, no control characters"
+msgstr "Ugyldigt navn: 1-64 tegn, ingen kontroltegn"
+
+msgid "Add a profile"
+msgstr "Tilføj en profil"
+
+msgid "Name"
+msgstr "Navn"
+
+msgid "Detect: the module tells the kind from the link or the file. Choose the type for a JSON that could be either Xray or sing-box, or for a link that should run on another engine."
+msgstr "Registrer: modulet genkender typen ud fra linket eller filen. Vælg typen for en JSON, der kan være både Xray og sing-box, eller for et link, der skal køre på en anden motor."
+
+msgid "The profile is added"
+msgstr "Profilen er tilføjet"
+
+msgid "Rename the profile"
+msgstr "Omdøb profilen"
+
+msgid "Delete the profile %s?"
+msgstr "Slet profilen %s?"
+
+msgid "It is the active profile: with the VPN on, the module refuses; stop the VPN or choose another profile first."
+msgstr "Det er den aktive profil: med VPN slået til afviser modulet; stop VPN eller vælg en anden profil først."
+
+msgid "Its config and credentials are deleted from the device."
+msgstr "Dens konfiguration og legitimationsoplysninger slettes fra enheden."
+
+msgid "Deleted"
+msgstr "Slettet"
+
+msgid "The profile passes the check"
+msgstr "Profilen består kontrollen"
+
+msgid "Show the config?"
+msgstr "Vis konfigurationen?"
+
+msgid "The config holds the credentials of the profile (keys, passwords, UUIDs). It is shown on this screen only; anyone who can see the screen can read it."
+msgstr "Konfigurationen indeholder profilens legitimationsoplysninger (nøgler, adgangskoder, UUID'er). Den vises kun på denne skærm; enhver, der kan se skærmen, kan læse den."
+
+msgid "Saving checks the config with the engine first (profile edit); a config that does not pass is not saved and the old one stays."
+msgstr "Ved gemning kontrolleres konfigurationen først med motoren (profile edit); en konfiguration, der ikke består, gemmes ikke, og den gamle bliver."
+
+msgid "This profile comes from a subscription: its next refresh replaces your changes."
+msgstr "Denne profil stammer fra et abonnement: dens næste opdatering erstatter dine ændringer."
+
+msgid "Config of %s"
+msgstr "Konfiguration af %s"
+
+msgid "Rename"
+msgstr "Omdøb"
+
+msgid "Show / edit the config"
+msgstr "Vis / rediger konfigurationen"
+
+msgid "Test the latency of all"
+msgstr "Mål latenstiden for alle"
+
+msgid "No profiles yet: add one from a share link, a config file or a subscription."
+msgstr "Ingen profiler endnu: tilføj en fra et delingslink, en konfigurationsfil eller et abonnement."
+
+msgid "Active"
+msgstr "Aktiv"
+
+msgid "This profile is the active one now"
+msgstr "Denne profil er nu den aktive"
+
+msgid "More"
+msgstr "Mere"
+
+msgid "active"
+msgstr "aktiv"
+
+msgid "subscription"
+msgstr "abonnement"
+
+msgid "migrated"
+msgstr "migreret"
+
+msgid "gone from its subscription"
+msgstr "forsvundet fra sit abonnement"
+
+msgid "Server"
+msgstr "Server"
+
+msgid "Engine"
+msgstr "Motor"
+
+msgid "Latency"
+msgstr "Latenstid"
+
+msgid "The latency is a TCP connection to the server, through the tunnel when the VPN is up. WireGuard and OpenVPN servers usually speak UDP and cannot be tested this way."
+msgstr "Latenstiden er en TCP-forbindelse til serveren, gennem tunnelen, når VPN er oppe. WireGuard- og OpenVPN-servere taler normalt UDP og kan ikke testes på denne måde."
+
+msgid "Enter an IPv4 or IPv6 address"
+msgstr "Angiv en IPv4- eller IPv6-adresse"
+
+msgid "On: nothing leaves outside the tunnel"
+msgstr "Til: intet forlader tunnelen"
+
+msgid "Off: traffic goes out directly while the tunnel is down"
+msgstr "Fra: trafikken går direkte ud, mens tunnelen er nede"
+
+msgid "Yes: Tailscale's own connections go through the tunnel"
+msgstr "Ja: Tailscales egne forbindelser går gennem tunnelen"
+
+msgid "No: Tailscale connects directly"
+msgstr "Nej: Tailscale forbinder direkte"
+
+msgid "Routing"
+msgstr "Routing"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down."
+msgstr "Kill switch blokerer al trafik fra enheden og LAN, mens VPN er nede."
+
+msgid "Bypass the tunnel"
+msgstr "Omgå tunnelen"
+
+msgid "Enter address ranges like 192.168.0.0/16, separated by commas"
+msgstr "Angiv adresseintervaller som 192.168.0.0/16, adskilt af kommaer"
+
+msgid "Address ranges that never go into the tunnel, besides the LAN itself (which never does). Empty: the LAN only."
+msgstr "Adresseintervaller, der aldrig går ind i tunnelen, ud over selve LAN (som aldrig gør det). Tom: kun LAN."
+
+msgid "Tailscale through the VPN"
+msgstr "Tailscale gennem VPN"
+
+msgid "When Tailscale runs on the device, its WireGuard, DERP and control connections go through whichever tunnel runs (dae catches them like any other)."
+msgstr "Når Tailscale kører på enheden, går dets WireGuard-, DERP- og kontrolforbindelser gennem den tunnel, der kører (dae fanger dem som alle andre)."
+
+msgid "DNS"
+msgstr "DNS"
+
+msgid "DNS through the tunnel"
+msgstr "DNS gennem tunnelen"
+
+msgid "The resolver the device's and the LAN's lookups go to, through the tunnel. Nothing goes to the carrier's resolver."
+msgstr "Den resolver, som enhedens og LAN's opslag sendes til gennem tunnelen. Intet går til operatørens resolver."
+
+msgid "Bootstrap DNS"
+msgstr "Bootstrap-DNS"
+
+msgid "Finds the VPN server's own address before the tunnel is up (directly, on the engine's own connection)."
+msgstr "Finder VPN-serverens egen adresse, før tunnelen er oppe (direkte, på motorens egen forbindelse)."
+
+msgid "Empty puts a setting back to its default."
+msgstr "Tom sætter en indstilling tilbage til standarden."
+
+msgid "TUN stack"
+msgstr "TUN-stack"
+
+msgid "Default (gvisor)"
+msgstr "Standard (gvisor)"
+
+msgid "system (not on the 5.4 kernel)"
+msgstr "system (ikke på 5.4-kernen)"
+
+msgid "set (unchanged unless you type a new one)"
+msgstr "sat (uændret, medmindre du skriver en ny)"
+
+msgid "not set"
+msgstr "ikke sat"
+
+msgid "Upstream HTTP proxy"
+msgstr "Upstream HTTP-proxy"
+
+msgid "TLS certificate pin (SHA-256)"
+msgstr "TLS-certifikatpinning (SHA-256)"
+
+msgid "Enter host:port"
+msgstr "Angiv host:port"
+
+msgid "Enter the SHA-256 in hex"
+msgstr "Angiv SHA-256 som hex"
+
+msgid "Profile options"
+msgstr "Profilindstillinger"
+
+msgid "None of the profiles has options of its type."
+msgstr "Ingen af profilerne har indstillinger for deres type."
+
+msgid "mihomo's mode (rule, global, direct), the engines' log levels, dae's groups and routing are part of each profile's own config: VPN > Profiles, Show / edit the config."
+msgstr "mihomos tilstand (rule, global, direct), motorernes logniveauer samt daes grupper og routing er en del af hver profils egen konfiguration: VPN > Profiler, Vis / rediger konfigurationen."
+
+msgid "Delete the subscription %s?"
+msgstr "Slet abonnementet %s?"
+
+msgid "Its profiles can go with it or stay as profiles of their own. The active profile is never removed while the VPN is on."
+msgstr "Dets profiler kan følge med eller blive som egne profiler. Den aktive profil fjernes aldrig, mens VPN er slået til."
+
+msgid "Keep the profiles"
+msgstr "Behold profilerne"
+
+msgid "Delete with its profiles"
+msgstr "Slet med dets profiler"
+
+msgid "Only by hand"
+msgstr "Kun manuelt"
+
+msgid "Every %d h"
+msgstr "Hver %d. time"
+
+msgid "Share links: one profile per link"
+msgstr "Delingslinks: én profil pr. link"
+
+msgid "Clash/mihomo YAML: one mihomo profile"
+msgstr "Clash/mihomo-YAML: én mihomo-profil"
+
+msgid "dae: one profile with every node in one group"
+msgstr "dae: én profil med alle noder i én gruppe"
+
+msgid "Add a subscription"
+msgstr "Tilføj et abonnement"
+
+msgid "Format"
+msgstr "Format"
+
+msgid "The URL usually holds your account token: it is stored on the device readable by root only, and never shown again. The subscription is fetched over the device's own connection: through the tunnel when the VPN is up; with the kill switch up and the tunnel down it cannot be fetched."
+msgstr "URL'en indeholder som regel dit kontotoken: det gemmes på enheden, så kun root kan læse det, og vises aldrig igen. Abonnementet hentes over enhedens egen forbindelse: gennem tunnelen, når VPN er oppe; med kill switch oppe og tunnelen nede kan det ikke hentes."
+
+msgid "Refresh all"
+msgstr "Opdater alle"
+
+msgid "No subscriptions yet."
+msgstr "Ingen abonnementer endnu."
+
+msgid "Host"
+msgstr "Vært"
+
+msgid "Updated"
+msgstr "Opdateret"
+
+msgid "Share links"
+msgstr "Delingslinks"
+
+msgid "A refresh keeps the profiles whose name is unchanged, adds the new ones and removes the ones that are gone (the active one stays while the VPN is on, marked as gone). A refresh of the active profile restarts the running VPN."
+msgstr "En opdatering beholder profilerne med uændret navn, tilføjer de nye og fjerner dem, der er væk (den aktive bliver, mens VPN er slået til, markeret som væk). Opdatering af den aktive profil genstarter den kørende VPN."
+
+msgid "Dashboard info failed"
+msgstr "Kunne ikke hente oversigtsdata"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch): no live signal right now"
+msgstr "The modem is restarting (network locks or a SIM switch): no live signal right now"
+
+msgid "Live signal read failed"
+msgstr "Læsning af live-signal mislykkedes"
+
+msgid "Unknown op"
+msgstr "Ukendt handling"
+
+msgid "Invalid argument for this op"
+msgstr "Ugyldigt argument for denne handling"
+
+msgid "The radio is busy: the dial or the watchdog is switching it, try again shortly"
+msgstr "Radioen er optaget: opkaldet eller watchdog skifter den; prøv igen om lidt"
+
+msgid "The action gave no valid reply"
+msgstr "Handlingen gav intet gyldigt svar"
+
+msgid "The confirm parameter must be 0 or 1"
+msgstr "Parameteren confirm skal være 0 eller 1"
+
+msgid "An AT command is one line of printable ASCII, at most 512 characters"
+msgstr "En AT-kommando er én linje udskrivbar ASCII på højst 512 tegn"
+
+msgid "Must be an AT command"
+msgstr "Skal være en AT-kommando"
+
+msgid "No \";\" command chaining"
+msgstr "Ingen kædning af kommandoer med \";\""
+
+msgid "Denied: this command wedges the AT port until a reboot"
+msgstr "Afvist: denne kommando låser AT-porten fast indtil genstart"
+
+msgid "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+msgstr "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+msgstr "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+
+msgid "A long AT command is still running in the background; try again when it has finished"
+msgstr "En lang AT-kommando kører stadig i baggrunden; prøv igen, når den er færdig"
+
+msgid "This command needs confirmation"
+msgstr "Denne kommando kræver bekræftelse"
+
+msgid "The AT channel is busy; the command was not sent, try again"
+msgstr "AT-kanalen er optaget; kommandoen blev ikke sendt, prøv igen"
+
+msgid "The modem did not answer in time; the command may still run, check before sending it again"
+msgstr "Modemmet svarede ikke i tide; kommandoen kører muligvis stadig, kontrollér, før du sender den igen"
+
+msgid "The fresh parameter must be 0 or 1"
+msgstr "Parameteren fresh skal være 0 eller 1"
+
+msgid "Reading the locks from the modem; try again in a few seconds"
+msgstr "Låsene læses fra modemet; prøv igen om et par sekunder"
+
+msgid "Lock read failed"
+msgstr "Læsning af låse mislykkedes"
+
+msgid "Unknown lock kind"
+msgstr "Ukendt låsetype"
+
+msgid "Invalid value for this lock kind"
+msgstr "Ugyldig værdi for denne låsetype"
+
+msgid "None of these bands is supported by this modem"
+msgstr "Dette modem understøtter ingen af disse bånd"
+
+msgid "Band, mode and cell locks are not supported for SIM2 yet"
+msgstr "Lås af bånd, tilstand og celle understøttes endnu ikke for SIM2"
+
+msgid "Band, mode and cell locks are not supported while dual-SIM switching manages the radio"
+msgstr "Lås af bånd, tilstand og celle understøttes ikke, mens dobbelt-SIM-skift styrer radioen"
+
+msgid "Invalid page"
+msgstr "Ugyldig side"
+
+msgid "mu300-sms is not available (the SMS service is not installed or not running)"
+msgstr "mu300-sms er ikke tilgængelig (SMS-tjenesten er ikke installeret eller kører ikke)"
+
+msgid "No output"
+msgstr "Intet output"
+
+msgid "Bad ID"
+msgstr "Ugyldigt ID"
+
+msgid "Read failed"
+msgstr "Læsning mislykkedes"
+
+msgid "The number may only contain digits (and a leading +)"
+msgstr "Nummeret må kun indeholde cifre (og et indledende +)"
+
+msgid "The message is empty"
+msgstr "Beskeden er tom"
+
+msgid "The message is too long (over 480 characters)"
+msgstr "Beskeden er for lang (over 480 tegn)"
+
+msgid "The message contains a control character"
+msgstr "Beskeden indeholder et kontroltegn"
+
+msgid "The sim parameter must be 0 or 1"
+msgstr "Parameteren sim skal være 0 eller 1"
+
+msgid "The USB adapter (device-usb) gave no valid reply"
+msgstr "USB-adapteren (device-usb) gav intet gyldigt svar"
+
+msgid "The auto parameter must be 0 or 1"
+msgstr "Parameteren auto skal være 0 eller 1"
+
+msgid "Invalid USB role"
+msgstr "Ugyldig USB-rolle"
+
+msgid "A USB role takes no scope"
+msgstr "En USB-rolle har ingen varighed"
+
+msgid "Invalid USB network mode"
+msgstr "Ugyldig USB-netværkstilstand"
+
+msgid "Invalid USB network scope"
+msgstr "Ugyldig varighed for USB-netværk"
+
+msgid "Unknown USB setting"
+msgstr "Ukendt USB-indstilling"
+
+msgid "Invalid interface name"
+msgstr "Ugyldigt grænsefladenavn"
+
+msgid "The power adapter gave no valid reply"
+msgstr "Strømadapteren gav intet gyldigt svar"
+
+msgid "Unknown power operation"
+msgstr "Ukendt strømhandling"
+
+msgid "Unknown power setting"
+msgstr "Ukendt strømindstilling"
+
+msgid "Invalid power value"
+msgstr "Ugyldig strømværdi"
+
+msgid "Invalid power request"
+msgstr "Ugyldig strømanmodning"
+
+msgid "The languages adapter gave no valid reply"
+msgstr "Sprogadapteren gav intet gyldigt svar"
+
+msgid "Unknown language operation"
+msgstr "Ukendt sproghandling"
+
+msgid "Invalid language code"
+msgstr "Ugyldig sprogkode"
+
+msgid "Invalid language request"
+msgstr "Ugyldig sproganmodning"
+
+msgid "Unknown source"
+msgstr "Ukendt kilde"
+
+msgid "The TTL adapter gave no valid reply"
+msgstr "TTL-adapteren gav intet gyldigt svar"
+
+msgid "Invalid TTL"
+msgstr "Ugyldig TTL"
+
+msgid "The data usage adapter gave no valid reply"
+msgstr "Adapteren til dataforbrug gav intet gyldigt svar"
+
+msgid "Unknown data usage setting"
+msgstr "Ukendt indstilling for dataforbrug"
+
+msgid "Invalid value for this setting"
+msgstr "Ugyldig værdi for denne indstilling"
+
+msgid "The forwarding adapter gave no valid reply"
+msgstr "Videresendelsesadapteren gav intet gyldigt svar"
+
+msgid "The CPU adapter gave no valid reply"
+msgstr "The CPU adapter gave no valid reply"
+
+msgid "Invalid CPU profile"
+msgstr "Invalid CPU profile"
+
+msgid "Invalid CPU core"
+msgstr "Ugyldig CPU-kerne"
+
+msgid "Unknown CPU operation"
+msgstr "Unknown CPU operation"
+
+msgid "Unknown CPU voltage operation"
+msgstr "Ukendt CPU-spændingshandling"
+
+msgid "Invalid CPU voltage request"
+msgstr "Ugyldig CPU-spændingsanmodning"
+
+msgid "Invalid CPU voltage offset"
+msgstr "Ugyldig CPU-spændingsoffset"
+
+msgid "Type the confirmation word to apply a voltage offset"
+msgstr "Skriv bekræftelsesordet for at anvende en spændingsoffset"
+
+msgid "Invalid stress test length"
+msgstr "Ugyldig længde på stresstesten"
+
+msgid "The packages adapter gave no valid reply"
+msgstr "Pakkeadapteren gav intet gyldigt svar"
+
+msgid "Invalid packages operation"
+msgstr "Ugyldig pakkehandling"
+
+msgid "The sizes parameter must be 0 or 1"
+msgstr "Parameteren sizes skal være 0 eller 1"
+
+msgid "The update adapter gave no valid reply"
+msgstr "Opdateringsadapteren gav ikke noget gyldigt svar"
+
+msgid "Unknown update operation"
+msgstr "Ukendt opdateringshandling"
+
+msgid "Invalid update request"
+msgstr "Ugyldig opdateringsanmodning"
+
+msgid "The backup tool gave no valid reply"
+msgstr "Sikkerhedskopiværktøjet gav intet gyldigt svar"
+
+msgid "Mobile data integration is not provided by this platform"
+msgstr "Integration af mobildata findes ikke på denne platform"
+
+msgid "The SIM settings could not be read"
+msgstr "SIM-indstillingerne kunne ikke læses"
+
+msgid "Radio control is not provided by this platform"
+msgstr "Denne platform har ingen radiostyring"
+
+msgid "A SIM radio change is already running"
+msgstr "En ændring af SIM-radioen er allerede i gang"
+
+# Source-language fallback for untranslated new controls.
+msgid "Invalid SIM setting"
+msgstr "Invalid SIM setting"
+
+msgid "The modem did not take the setting; nothing was saved"
+msgstr "Modemet tog ikke imod indstillingen; intet blev gemt"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control failed"
+msgstr "SIM control failed"
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching; reboot if channels are unavailable or wait until idle"
+msgstr "Enable hot switching; reboot if channels are unavailable or wait until idle"
+
+msgid "Request too large"
+msgstr "Anmodningen er for stor"
+
+msgid "The runtime directory is not safe; nothing was run"
+msgstr "Kørselsmappen er ikke sikker; intet blev kørt"
+
+msgid "No such method"
+msgstr "Metoden findes ikke"
+
+msgid "The VPN module refused the request"
+msgstr "VPN-modulet afviste anmodningen"
+
+msgid "The VPN panel is busy, try again"
+msgstr "VPN-panelet er optaget, prøv igen"
+
+msgid "Another VPN task is still running"
+msgstr "En anden VPN-opgave kører stadig"
+
+msgid "The exit_ip parameter must be 0 or 1"
+msgstr "Parameteren exit_ip skal være 0 eller 1"
+
+msgid "The VPN status could not be read"
+msgstr "VPN-status kunne ikke læses"
+
+msgid "The profiles could not be read"
+msgstr "Profilerne kunne ikke læses"
+
+msgid "The check parameter must be 0 or 1"
+msgstr "Parameteren check skal være 0 eller 1"
+
+msgid "The engines could not be read"
+msgstr "Motorerne kunne ikke læses"
+
+msgid "The subscriptions could not be read"
+msgstr "Abonnementerne kunne ikke læses"
+
+msgid "The VPN settings could not be read"
+msgstr "VPN-indstillingerne kunne ikke læses"
+
+msgid "Unknown VPN operation"
+msgstr "Ukendt VPN-handling"
+
+msgid "The VPN could not be switched"
+msgstr "VPN kunne ikke skiftes"
+
+msgid "The kill switch is on or off"
+msgstr "Kill switch er til eller fra"
+
+msgid "The kill switch could not be changed"
+msgstr "Kill switch kunne ikke ændres"
+
+msgid "Invalid profile id"
+msgstr "Ugyldigt profil-id"
+
+msgid "The profile could not be made the active one"
+msgstr "Profilen kunne ikke gøres aktiv"
+
+msgid "Unknown profile source"
+msgstr "Ukendt profilkilde"
+
+msgid "Unknown profile type"
+msgstr "Ukendt profiltype"
+
+msgid "The config is empty, too large or holds control characters"
+msgstr "Konfigurationen er tom, for stor eller indeholder kontroltegn"
+
+msgid "Invalid profile request"
+msgstr "Ugyldig profilanmodning"
+
+msgid "A config from a URL takes the type it says"
+msgstr "En konfiguration fra en URL får den type, den selv angiver"
+
+msgid "No uploaded file"
+msgstr "Ingen uploadet fil"
+
+msgid "The file is larger than 1 MiB"
+msgstr "Filen er større end 1 MiB"
+
+msgid "The profile could not be added"
+msgstr "Profilen kunne ikke tilføjes"
+
+msgid "The profile could not be renamed"
+msgstr "Profilen kunne ikke omdøbes"
+
+msgid "The profile could not be removed"
+msgstr "Profilen kunne ikke fjernes"
+
+msgid "The profile does not pass the check"
+msgstr "Profilen består ikke kontrollen"
+
+msgid "Unknown profile option"
+msgstr "Ukendt profilindstilling"
+
+msgid "Invalid value for this option"
+msgstr "Ugyldig værdi for denne indstilling"
+
+msgid "The option could not be set"
+msgstr "Indstillingen kunne ikke sættes"
+
+msgid "The config could not be read"
+msgstr "Konfigurationen kunne ikke læses"
+
+msgid "The config was not saved"
+msgstr "Konfigurationen blev ikke gemt"
+
+msgid "The latency test failed"
+msgstr "Latenstesten mislykkedes"
+
+msgid "The refresh interval is 1 to 999 hours"
+msgstr "Opdateringsintervallet er 1 til 999 timer"
+
+msgid "Unknown subscription type"
+msgstr "Ukendt abonnementstype"
+
+msgid "Invalid subscription id"
+msgstr "Ugyldigt abonnements-id"
+
+msgid "The keep parameter must be 0 or 1"
+msgstr "Parameteren keep skal være 0 eller 1"
+
+msgid "The subscription could not be removed"
+msgstr "Abonnementet kunne ikke fjernes"
+
+msgid "The file is too large"
+msgstr "Filen er for stor"
+
+msgid "Unknown engine"
+msgstr "Ukendt motor"
+
+msgid "The unverified parameter must be 0 or 1"
+msgstr "Parameteren unverified skal være 0 eller 1"
+
+msgid "This engine is a system package: it has no file to upload"
+msgstr "Denne motor er en systempakke: den har ingen fil at uploade"
+
+msgid "The engine could not be removed"
+msgstr "Motoren kunne ikke fjernes"
+
+msgid "mu300-extra is not on this system"
+msgstr "mu300-extra findes ikke på dette system"
+
+msgid "Unknown VPN setting"
+msgstr "Ukendt VPN-indstilling"
+
+msgid "The setting could not be saved"
+msgstr "Indstillingen kunne ikke gemmes"
+
+msgid "The number of lines is 1 to 1000"
+msgstr "Antallet af linjer er 1 til 1000"
+
+msgid "The log could not be read"
+msgstr "Loggen kunne ikke læses"
+
+msgid "The radio of this SIM is switched off in its settings"
+msgstr "Radioen i dette SIM er slået fra i dets indstillinger"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM control or reboot for managed dual-SIM radio"
+msgstr "Use SIM control or reboot for managed dual-SIM radio"
+
+msgid "The radio did not follow its setting"
+msgstr "Radioen fulgte ikke sin indstilling"
+
+msgid "The data roaming setting could not be saved"
+msgstr "Indstillingen for dataroaming kunne ikke gemmes"
+
+msgid "Expected on or off"
+msgstr "Forventede on eller off"
+
+msgid "VPN integration is not provided by this platform"
+msgstr "VPN-integration leveres ikke af denne platform"
+
+msgid "Dual-boot integration is not provided by this platform"
+msgstr "Dual boot-integration leveres ikke af denne platform"
+
+msgid "mu300-next-boot failed"
+msgstr "mu300-next-boot mislykkedes"
+
+msgid "AT backend did not answer (radio off, modem restarting, or adapter unavailable)"
+msgstr "AT-backend svarede ikke (radio slukket, modem genstarter eller adapter utilgængelig)"
+
+msgid "The CPU profile could not be read"
+msgstr "The CPU profile could not be read"
+
+msgid "The CPU profile could not be set"
+msgstr "The CPU profile could not be set"
+
+msgid "The CPU core could not be switched"
+msgstr "CPU-kernen kunne ikke skiftes"
+
+msgid "Invalid low latency setting"
+msgstr "Ugyldig indstilling for lav latenstid"
+
+msgid "The low latency setting could not be applied"
+msgstr "Indstillingen for lav latenstid kunne ikke anvendes"
+
+msgid "The CPU voltage offset could not be read"
+msgstr "CPU-spændingsoffsetten kunne ikke læses"
+
+msgid "The CPU voltage offset was refused"
+msgstr "CPU-spændingsoffsetten blev afvist"
+
+msgid "The CPU voltage offset could not be turned off"
+msgstr "CPU-spændingsoffsetten kunne ikke slås fra"
+
+msgid "The stress test could not be started"
+msgstr "Stresstesten kunne ikke startes"
+
+msgid "USB role adapter is not executable"
+msgstr "USB-rolleadapteren er ikke eksekverbar"
+
+msgid "USB role adapter failed"
+msgstr "USB-rolleadapteren mislykkedes"
+
+msgid "USB role switch is unavailable"
+msgstr "Skift af USB-rolle er ikke tilgængeligt"
+
+msgid "USB role switch failed"
+msgstr "Skift af USB-rolle mislykkedes"
+
+msgid "USB role switch was refused by platform safety checks"
+msgstr "Skift af USB-rolle blev afvist af platformens sikkerhedskontroller"
+
+msgid "Cannot create USB boot settings directory"
+msgstr "Kan ikke oprette mappe til USB-opstartsindstillinger"
+
+msgid "Cannot write USB boot settings"
+msgstr "Kan ikke skrive USB-opstartsindstillinger"
+
+msgid "Cannot save USB boot settings"
+msgstr "Kan ikke gemme USB-opstartsindstillinger"
+
+msgid "Invalid boot-auto value"
+msgstr "Ugyldig værdi for boot-auto"
+
+msgid "Device is the boot default; host auto-apply is the only persistent role"
+msgstr "Enhedstilstand er standard ved opstart; automatisk anvendelse af værtstilstand er den eneste vedvarende rolle"
+
+msgid "Cannot save USB role policy"
+msgstr "Kan ikke gemme USB-rollepolitik"
+
+msgid "Cannot disable USB network boot policy"
+msgstr "Kan ikke deaktivere opstartspolitik for USB-netværk"
+
+msgid "Cannot commit USB role policy"
+msgstr "Kan ikke anvende USB-rollepolitik"
+
+msgid "USB network mode is unavailable in host role"
+msgstr "USB-netværkstilstand er ikke tilgængelig i værtsrollen"
+
+msgid "Disable host boot-auto before configuring USB network"
+msgstr "Deaktiver boot-auto for værtstilstand, før USB-netværket konfigureres"
+
+msgid "Cannot save USB network policy"
+msgstr "Kan ikke gemme USB-netværkspolitik"
+
+msgid "Cannot commit USB network policy"
+msgstr "Kan ikke anvende USB-netværkspolitik"
+
+msgid "USB host mode is required"
+msgstr "USB-værtstilstand er påkrævet"
+
+msgid "Not a USB network interface"
+msgstr "Ikke en USB-netværksgrænseflade"
+
+msgid "LAN bridge device section was not found"
+msgstr "Enhedssektionen for LAN-broen blev ikke fundet"
+
+msgid "Cannot bring USB network interface up"
+msgstr "Kan ikke aktivere USB-netværksgrænsefladen"
+
+msgid "Cannot add interface to LAN bridge"
+msgstr "Kan ikke tilføje grænsefladen til LAN-broen"
+
+msgid "Cannot save LAN bridge"
+msgstr "Kan ikke gemme LAN-broen"
+
+msgid "Network reload failed"
+msgstr "Genindlæsning af netværket mislykkedes"
+
+msgid "Cannot attach USB interface to LAN bridge"
+msgstr "Kan ikke tilknytte USB-grænsefladen til LAN-broen"
+
+msgid "Invalid forwarding setting"
+msgstr "Ugyldig indstilling for videresendelse"
+
+msgid "The message template is too long or contains a control character"
+msgstr "Beskedskabelonen er for lang eller indeholder et kontroltegn"
+
+msgid "Invalid filter list (at most 50 lines)"
+msgstr "Ugyldig filterliste (højst 50 linjer)"
+
+msgid "The webhook address must be an http:// or https:// URL"
+msgstr "Webhookens adresse skal være en http://- eller https://-URL"
+
+msgid "The webhook body is too long or contains a control character"
+msgstr "Webhookens indhold er for langt eller indeholder et kontroltegn"
+
+msgid "The answer check must be key=value, like errcode=0 or ok=true (the value a whole number or lowercase letters, 16 at most)"
+msgstr "Svarkontrollen skal være nøgle=værdi, som errcode=0 eller ok=true (værdien et heltal eller små bogstaver, højst 16)"
+
+msgid "Invalid header (one \"Name: value\" per line; Host, Content-Type, Content-Length, Transfer-Encoding and Connection are set by the device)"
+msgstr "Ugyldig header (én \"Navn: værdi\" pr. linje; Host, Content-Type, Content-Length, Transfer-Encoding og Connection sættes af enheden)"
+
+msgid "Invalid Telegram bot token"
+msgstr "Ugyldigt Telegram-bot-token"
+
+msgid "Invalid Telegram chat (a number, or @channel)"
+msgstr "Ugyldig Telegram-chat (et tal eller @kanal)"
+
+msgid "Invalid e-mail setting"
+msgstr "Ugyldig e-mailindstilling"
+
+msgid "The webhook needs an address"
+msgstr "Webhooken skal have en adresse"
+
+msgid "Telegram needs a bot token and a chat"
+msgstr "Telegram skal have et bot-token og en chat"
+
+msgid "E-mail needs a server, a sender and a recipient"
+msgstr "E-mail skal have en server, en afsender og en modtager"
+
+msgid "SMS forwarding needs a phone number"
+msgstr "Videresendelse via SMS skal have et telefonnummer"
+
+msgid "The forwarding settings could not be saved"
+msgstr "Indstillingerne for videresendelse kunne ikke gemmes"
+
+msgid "SMS forwarding is not installed"
+msgstr "Videresendelse af SMS er ikke installeret"
+
+msgid "A test was started a moment ago; wait a few seconds"
+msgstr "En test blev startet for et øjeblik siden; vent et par sekunder"
+
+msgid "The delivery log could not be cleared"
+msgstr "Leveringsloggen kunne ikke ryddes"
+
+msgid "Unknown forwarding operation"
+msgstr "Ukendt handling for videresendelse"
+
+msgid "The language pack is not installed"
+msgstr "Sprogpakken er ikke installeret"
+
+msgid "No language given"
+msgstr "Intet sprog angivet"
+
+msgid "The language could not be changed"
+msgstr "Sproget kunne ikke ændres"
+
+msgid "LuCI does not offer this language"
+msgstr "LuCI tilbyder ikke dette sprog"
+
+msgid "No uploaded language pack"
+msgstr "Ingen uploadet sprogpakke"
+
+msgid "An installation is already running"
+msgstr "En installation kører allerede"
+
+msgid "The language pack could not be removed"
+msgstr "Sprogpakken kunne ikke fjernes"
+
+msgid "Lock cache unavailable"
+msgstr "Låsecache utilgængelig"
+
+msgid "The modem refused a write"
+msgstr "Modemmet afviste en skrivning"
+
+msgid "The saved locks could not be cleared"
+msgstr "De gemte låse kunne ikke ryddes"
+
+msgid "No serving cell to lock to"
+msgstr "Ingen betjenende celle at låse til"
+
+msgid "The modem did not answer the mode query; nothing was sent"
+msgstr "Modemmet svarede ikke på tilstandsforespørgslen; intet blev sendt"
+
+msgid "The read-back does not match the automatic values"
+msgstr "Tilbagelæsningen stemmer ikke med de automatiske værdier"
+
+msgid "The read-back after the stack restart does not match the automatic values"
+msgstr "Tilbagelæsningen efter genstart af stakken stemmer ikke med de automatiske værdier"
+
+msgid "The reset was interrupted"
+msgstr "Nulstillingen blev afbrudt"
+
+msgid "Reinstalling packages is not available on this system"
+msgstr "Geninstallation af pakker er ikke tilgængelig på dette system"
+
+msgid "No packages were written down by an update"
+msgstr "Ingen opdatering har noteret pakker"
+
+msgid "Reinstalling is running already"
+msgstr "Geninstallationen kører allerede"
+
+msgid "The note could not be dropped"
+msgstr "Beskeden kunne ikke fjernes"
+
+msgid "Unknown packages operation"
+msgstr "Ukendt pakkehandling"
+
+msgid "usage: power get|set KEY VALUE|wake|idle"
+msgstr "usage: power get|set KEY VALUE|wake|idle"
+
+msgid "Data usage is not available on this system"
+msgstr "Dataforbrug er ikke tilgængeligt på dette system"
+
+msgid "Unknown data usage operation"
+msgstr "Ukendt handling for dataforbrug"
+
+msgid "The TTL setting could not be read"
+msgstr "TTL-indstillingen kunne ikke læses"
+
+msgid "The TTL could not be set"
+msgstr "TTL kunne ikke sættes"
+
+msgid "Unknown TTL operation"
+msgstr "Ukendt TTL-handling"
+
+msgid "An update task is already running"
+msgstr "En opdateringsopgave kører allerede"
+
+msgid "The task could not be started"
+msgstr "Opgaven kunne ikke startes"
+
+msgid "The updater gave no valid reply"
+msgstr "Opdateringsprogrammet gav ikke noget gyldigt svar"
+
+msgid "This needs confirmation"
+msgstr "Dette kræver bekræftelse"
+
+msgid "Check for updates first"
+msgstr "Søg efter opdateringer først"
+
+msgid "The upload directory is not safe; nothing was changed"
+msgstr "Uploadmappen er ikke sikker; intet blev ændret"
+
+msgid "Not enough memory for this upload"
+msgstr "Ikke nok hukommelse til denne upload"
+
+msgid "Not enough free space on the Linux partition"
+msgstr "Ikke nok ledig plads på Linux-partitionen"
+
+msgid "The file was not checked; upload it again"
+msgstr "Filen blev ikke kontrolleret; upload den igen"
+
+msgid "This file is not for this device"
+msgstr "Denne fil er ikke til denne enhed"
+
+msgid "The signature of this file is wrong"
+msgstr "Filens signatur er forkert"
+
+msgid "This file is not signed: that needs confirmation"
+msgstr "Denne fil er ikke signeret: det kræver bekræftelse"
+
+msgid "This file is older than what is installed: that needs confirmation"
+msgstr "Denne fil er ældre end det, der er installeret: det kræver bekræftelse"
+
+msgid "The release source was not changed"
+msgstr "Udgivelseskilden blev ikke ændret"

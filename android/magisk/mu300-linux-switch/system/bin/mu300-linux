@@ -1,0 +1,3 @@
+#!/system/bin/sh
+# "su -c mu300-linux" from a terminal or adb; see /data/adb/modules/mu300_linux_switch/switch.sh
+exec sh /data/adb/modules/mu300_linux_switch/switch.sh "$@"

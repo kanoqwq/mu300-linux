@@ -1,0 +1,24 @@
+#!/bin/sh
+# MU300, the 5.4 kernel: fw4's stale flowtable goes before the reload that 20-firewall runs on this ifup.
+#
+# fw4 replaces its ruleset in one transaction - "flush table inet fw4" (or "delete flowtable inet fw4 ft"), then
+# the table again, its flowtable ft included. The 5.4 kernel refuses a flowtable that names a device another
+# flowtable of the table has, and it counts the one the same transaction just deleted: that one leaves the table's
+# list only at the commit, and 5.4's nf_tables_newflowtable takes no notice of the pending deletion (the check
+# skips inactive entries from 5.13 on). So "flowtable ft { ... } Error: Resource busy", the transaction fails, and
+# the ruleset on the device stays the one fw4 rendered at S19 - before netifd made br-lan and the modem's
+# sipa_eth0 - with no input rules for the LAN and no masquerade (issue #67; #61 looks the same: no DHCP, no LuCI,
+# no SSH, only the serial console). The flowtable deleted here, in a transaction of its own, is simply re-created
+# by the reload, which then succeeds; the offloaded flows take the ordinary path until it is back, nothing else
+# changes. Only when the reload is coming (the same conditions as 20-firewall's), and only on 5.4: the mainline
+# kernels update a flowtable in place and need none of this.
+#
+# Not covered: a reload that is not an ifup's - the firewall saved in LuCI, "fw4 reload" by hand - still fails on
+# 5.4 while the flowtable is there (docs/FINDINGS.md 38): "nft delete flowtable inet fw4 ft; fw4 reload".
+[ "$ACTION" = ifup ] || exit 0
+case $(uname -r) in 5.4.*) ;; *) exit 0 ;; esac
+/etc/init.d/firewall enabled 2>/dev/null || exit 0
+fw4 -q network "$INTERFACE" >/dev/null 2>&1 || exit 0
+nft list flowtables inet fw4 2>/dev/null | grep -q 'flowtable ft ' || exit 0
+nft delete flowtable inet fw4 ft 2>/dev/null && logger -t mu300 "fw4 flowtable deleted before the reload (5.4 kernel, ifup $INTERFACE)"
+exit 0

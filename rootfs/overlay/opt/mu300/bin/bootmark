@@ -1,0 +1,12 @@
+#!/bin/sh
+# Boot timeline mark: appends "t=<uptime seconds> <words>" to a file on tmpfs, one short write per call.
+#   bootmark [-r] WORDS...     -r empties the file first
+# It depends on nothing but /proc/uptime (MU300_UPTIME replaces it in tests), so it works from early init, procd
+# and systemd alike, and it never fails: a mark that cannot be written must not stop the boot step that asked
+# for it. Every call is one process and one append, so concurrent marks do not tear each other's lines.
+f=${MU300_TIMELINE:-/run/mu300/boot-timeline}
+mkdir -p "${f%/*}" 2>/dev/null
+[ "${1:-}" = "-r" ] && { true > "$f" 2>/dev/null; shift; }
+[ $# -gt 0 ] || exit 0   # "bootmark -r" alone only empties the file
+printf 't=%-9s %s\n' "$(cut -d' ' -f1 "${MU300_UPTIME:-/proc/uptime}" 2>/dev/null)" "$*" >> "$f" 2>/dev/null
+exit 0

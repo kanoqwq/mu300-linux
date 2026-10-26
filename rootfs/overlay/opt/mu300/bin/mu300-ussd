@@ -1,0 +1,89 @@
+#!/bin/sh
+# Send a USSD code and print what the network answers.
+#
+#   mu300-ussd '*101#'          ask; on most Turkish networks this one is "what is my number"
+#   mu300-ussd -t 45 '*100#'    a menu that takes its time
+#   mu300-ussd 1                answer an open session (a menu that said "further action needed")
+#   mu300-ussd --cancel         drop an open session
+#
+# Three things about USSD on this modem are not what the AT specification leads you to expect, and each one
+# costs an afternoon:
+#
+#   * The code has to be hex, always. AT+CUSD=1,"*101#",15 answers +CME ERROR: 3 - and it still does after
+#     AT+CSCS="GSM", so this is not the character set doing what the character set is documented to do. Sending
+#     "2A31303123" works whatever AT+CSCS says.
+#   * The answer does not come back on the channel the command went out on. The command gets a bare OK on
+#     /dev/stty_nr1 and the +CUSD arrives seconds later on nr0, the unsolicited channel - so anything that
+#     waits for it on nr1 waits for ever. mu300-atd's drainer already logs nr0, and that log is what this reads.
+#   * The answer is hex too, and the third +CUSD field is a CBS coding scheme, not an SMS one. 15 is the GSM
+#     alphabet, 72 is UCS2 - which is what a Turkish menu comes back as.
+#
+# Waiting happens on the log file, never on the modem. Polling this with AT commands is what wedged the channel
+# the first time: each mu300-at takes the client lock, so a loop of them queues up behind whichever command is
+# still waiting for its own answer and the whole channel looks dead (docs/FINDINGS.md 26d).
+set -u
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+
+DIR=${MU300_AT_DIR:-/run/mu300-at}
+URCDIR=$DIR/urc
+AWK=${MU300_SMS_AWK:-/opt/mu300/lib/sms-pdu.awk}
+T=30
+[ "${1:-}" = -t ] && { T=$2; shift 2; }
+
+case "${1:-}" in
+--cancel)
+    mu300-at -t 10 'AT+CUSD=2'
+    exit $? ;;
+"")
+    sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'
+    exit 2 ;;
+esac
+code=$1
+
+# the unsolicited channel, which is where the answer will surface; nr1 is where the command goes
+SIM_SLOT=0
+if [ -x /opt/mu300/bin/mu300-sim ]; then
+    SIM_SLOT=$(/opt/mu300/bin/mu300-sim active) || exit 1
+fi
+CMDLOG=$URCDIR/$(basename "${MU300_AT_DEV:-/dev/stty_nr$((SIM_SLOT * 3 + 1))}").log
+URCLOG=$URCDIR/stty_nr$((SIM_SLOT * 3)).log
+
+# Remember how far each log had got, so a +CUSD from an earlier code is not read as this one's answer.
+mark() { [ -f "$1" ] && wc -l < "$1" || echo 0; }
+m_urc=$(mark "$URCLOG")
+m_cmd=$(mark "$CMDLOG")
+
+hex=$(printf '%s' "$code" | od -An -tx1 | tr -d ' \n' | tr 'a-f' 'A-F')
+[ -n "$hex" ] || { echo "mu300-ussd: empty code" >&2; exit 2; }
+
+# 15 is the GSM alphabet: the codes people dial are digits, * and #, and every network takes them that way
+reply=$(mu300-at -t 20 "AT+CUSD=1,\"$hex\",15" 2>&1)
+case "$reply" in
+*OK*) ;;
+*) echo "mu300-ussd: the modem refused the code: $(echo "$reply" | tr '\n' ' ')" >&2; exit 1 ;;
+esac
+
+# Now wait on the files. Nothing here touches the modem.
+end=$(( $(date +%s) + T + 1 ))   # at least T whole seconds (see collect in mu300-atd)
+while [ "$(date +%s)" -lt "$end" ]; do
+    line=$( { tail -n +$((m_urc + 1)) "$URCLOG" 2>/dev/null
+              tail -n +$((m_cmd + 1)) "$CMDLOG" 2>/dev/null; } | grep -m1 '^+CUSD:')
+    if [ -n "$line" ]; then
+        # +CUSD: <m>[,"<hex>",<dcs>]
+        m=$(echo "$line" | sed -n 's/^+CUSD: *\([0-9]*\).*/\1/p')
+        body=$(echo "$line" | sed -n 's/.*"\([0-9A-Fa-f]*\)".*/\1/p')
+        dcs=$(echo "$line" | sed -n 's/.*",\([0-9]*\) *$/\1/p')
+        [ -n "$body" ] && awk -v mode=ussd -v hex="$body" -v dcs="${dcs:-15}" -f "$AWK"
+        case "$m" in
+            1) echo "(the session is open - answer with: mu300-ussd <reply>, or mu300-ussd --cancel)" >&2 ;;
+            4) echo "mu300-ussd: the network does not support this code" >&2; exit 1 ;;
+            5) echo "mu300-ussd: the network timed out" >&2; exit 1 ;;
+        esac
+        exit 0
+    fi
+    sleep 1
+done
+
+echo "mu300-ussd: no answer within ${T}s" >&2
+[ -f "$URCLOG" ] || echo "mu300-ussd: no $URCLOG - mu300-atd is not draining the unsolicited channel" >&2
+exit 1

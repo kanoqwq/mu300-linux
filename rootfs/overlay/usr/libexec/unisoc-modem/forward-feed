@@ -1,0 +1,47 @@
+#!/bin/sh
+# Ubuntu's SMS forwarding feed (mu300-sms-forward.service): "sms watch" runs this for every new message it reads from
+# the SIM, with SMS_FROM, SMS_DATE and SMS_TEXT in the environment. Ubuntu has no SMS pool (openwrt-luci's mu300-sms
+# keeps one, and hands its new messages to mu300-sms-forward by their ids): this puts the message into a pool of the
+# forwarding's own, in the file format mu300-sms-forward reads (headers, an empty line, the text), and queues it
+#   pool/msg/NNNNNN      id, dir (mt), from, scts, received; then the text
+# The pool keeps the newest MU300_FWD_POOL_KEEP messages (200): a message still queued when it is dropped is logged as
+# no longer in the pool. Only root reads it (0700, 0600): it holds the messages.
+# MU300_SMS_POOL, MU300_FWD_BIN, MU300_FWD_POOL_KEEP: the service's environment and the tests.
+set -u
+umask 077
+export PATH="$PATH:/opt/mu300/bin:/usr/sbin:/sbin"
+POOL=${MU300_SMS_POOL:-/etc/mu300/sms-pool}
+FWD=${MU300_FWD_BIN:-/opt/mu300/bin/mu300-sms-forward}
+KEEP=${MU300_FWD_POOL_KEEP:-200}
+case $KEEP in ''|*[!0-9]*) KEEP=200 ;; esac
+
+from=${SMS_FROM:-}
+[ -n "$from" ] || exit 0
+mkdir -p "$POOL/msg" 2>/dev/null && chmod 700 "$POOL" "$POOL/msg" 2>/dev/null || exit 1
+# the next id, one writer at a time (the watch runs this in the background for each message)
+n=0
+while ! mkdir "$POOL/.lock" 2>/dev/null; do
+    n=$((n + 1))
+    # a holder gone for 30 s: its lock is taken over
+    [ "$n" -lt 30 ] || { rm -rf "$POOL/.lock"; continue; }
+    sleep 1
+done
+trap 'rm -rf "$POOL/.lock"' EXIT
+last=$(cat "$POOL/next" 2>/dev/null)
+case $last in ''|*[!0-9]*) last=0 ;; esac
+id=$((last % 999999 + 1))
+echo "$id" > "$POOL/next"
+f=$POOL/msg/$(printf '%06d' "$id")
+# one line each: a sender or a time with a line break in it would end the headers early
+one() { printf '%s' "$1" | tr '\r\n' '  '; }
+{
+    printf 'id: %s\ndir: mt\nfrom: %s\nscts: %s\nreceived: %s\n\n' "$id" "$(one "$from")" "$(one "${SMS_DATE:-}")" "$(date +%s)"
+    printf '%s' "${SMS_TEXT:-}"
+} > "$f.part" && mv "$f.part" "$f"
+# the oldest beyond KEEP go (by time: the ids start again after 999999)
+ls -t "$POOL/msg" 2>/dev/null | grep -E '^[0-9]{6}$' | tail -n +"$((KEEP + 1))" | while read -r old; do
+    rm -f "$POOL/msg/$old"
+done
+rm -rf "$POOL/.lock"
+trap - EXIT
+exec "$FWD" enqueue "$id"

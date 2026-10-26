@@ -1,0 +1,19 @@
+[Unit]
+Description=MU300 adb over USB (adbd in the USB gadget; on by default, a root shell for every computer: mu300-usb adb auth keys, mu300-usb adb off)
+# early: adding adb rebinds the gadget, which the computer sees as a replug; before the LAN's DHCP server it costs nothing
+After=mu300-fixups.service
+Before=mu300-lan.service
+ConditionPathExists=/opt/mu300/bin/adbd
+
+[Service]
+ExecStart=/opt/mu300/bin/mu300-adbd run
+ExecStopPost=/opt/mu300/bin/mu300-adbd stop
+# the TERM goes to the loop only, which stops adbd and puts the gadget back together without it
+KillMode=mixed
+TimeoutStopSec=20
+# the loop restarts adbd itself and gives up (status 1) when it keeps exiting: no restart for that
+Restart=on-abnormal
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

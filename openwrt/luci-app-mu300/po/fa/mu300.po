@@ -1,0 +1,4050 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: fa\n"
+
+msgid "Status dashboard"
+msgstr "داشبورد وضعیت"
+
+msgid "Cellular"
+msgstr "سلولی"
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM"
+msgstr "Dual SIM"
+
+msgid "SIM settings"
+msgstr "تنظیمات سیم‌کارت"
+
+msgid "Network locks"
+msgstr "قفل‌های شبکه"
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "SMS forwarding"
+msgstr "بازارسال پیامک"
+
+msgid "AT terminal"
+msgstr "ترمینال AT"
+
+msgid "Adapter settings"
+msgstr "تنظیمات آداپتور"
+
+msgid "TTL"
+msgstr "TTL"
+
+msgid "Data usage"
+msgstr "مصرف داده"
+
+msgid "Device management"
+msgstr "مدیریت دستگاه"
+
+msgid "Update"
+msgstr "به‌روزرسانی"
+
+msgid "Backup of settings"
+msgstr "پشتیبان تنظیمات"
+
+msgid "Languages"
+msgstr "زبان‌ها"
+
+msgid "Power"
+msgstr "توان"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Terminal"
+msgstr "ترمینال"
+
+msgid "Terminal settings"
+msgstr "تنظیمات ترمینال"
+
+msgid "Overview"
+msgstr "نمای کلی"
+
+msgid "Profiles"
+msgstr "پروفایل‌ها"
+
+msgid "Subscriptions"
+msgstr "اشتراک‌ها"
+
+msgid "Engines"
+msgstr "موتورها"
+
+msgid "Settings"
+msgstr "تنظیمات"
+
+msgid "Logs"
+msgstr "گزارش‌ها"
+
+msgid "Packages after an update"
+msgstr "بسته‌ها پس از به‌روزرسانی"
+
+msgid "MU300 control center: status dashboard, network locks, AT terminal, SMS and VPN"
+msgstr "مرکز کنترل MU300: داشبورد وضعیت، قفل‌های شبکه، ترمینال AT، پیامک و VPN"
+
+msgid "Terminal: a root shell on the device in the browser"
+msgstr "ترمینال: یک پوسته root روی دستگاه در مرورگر"
+
+msgid "China Mobile"
+msgstr "China Mobile"
+
+msgid "China Unicom"
+msgstr "China Unicom"
+
+msgid "China Telecom"
+msgstr "China Telecom"
+
+msgid "China Broadnet"
+msgstr "China Broadnet"
+
+msgid "China Tietong"
+msgstr "China Tietong"
+
+msgid "Excellent"
+msgstr "عالی"
+
+msgid "Good"
+msgstr "خوب"
+
+msgid "Fair"
+msgstr "متوسط"
+
+msgid "Poor"
+msgstr "ضعیف"
+
+msgid "Unknown"
+msgstr "نامشخص"
+
+msgid "%d d %d h"
+msgstr "%d روز %d ساعت"
+
+msgid "%d h %d min"
+msgstr "%d ساعت %d دقیقه"
+
+msgid "%d min"
+msgstr "%d دقیقه"
+
+msgid "No neighbor-cell data"
+msgstr "داده‌ای از سلول‌های همسایه نیست"
+
+msgid "Locked"
+msgstr "قفل‌شده"
+
+msgid "Lock"
+msgstr "قفل"
+
+msgid "Unknown error"
+msgstr "خطای نامشخص"
+
+msgid "Confirm"
+msgstr "تأیید"
+
+msgid "OK"
+msgstr "باشه"
+
+msgid "Cancel"
+msgstr "لغو"
+
+msgid "%d s"
+msgstr "%d ث"
+
+msgid "%d h"
+msgstr "%d ساعت"
+
+msgid "New SMS · %s"
+msgstr "SMS جدید · %s"
+
+msgid "Unknown number"
+msgstr "شمارهٔ نامشخص"
+
+msgid "Select"
+msgstr "انتخاب"
+
+msgid "never"
+msgstr "هرگز"
+
+msgid "just now"
+msgstr "همین الان"
+
+msgid "%s ago"
+msgstr "%s پیش"
+
+msgid "Failed: %s"
+msgstr "ناموفق: %s"
+
+msgid "Management connection lost"
+msgstr "اتصال مدیریت قطع شد"
+
+msgid "Installing the VPN module"
+msgstr "در حال نصب ماژول VPN"
+
+msgid "Installing the engine"
+msgstr "در حال نصب موتور"
+
+msgid "Adding the subscription"
+msgstr "در حال افزودن اشتراک"
+
+msgid "Refreshing the subscriptions"
+msgstr "در حال به‌روزرسانی اشتراک‌ها"
+
+msgid "Testing the latency of every profile"
+msgstr "در حال سنجش تأخیر همه پروفایل‌ها"
+
+msgid "Downloading the config"
+msgstr "در حال دریافت پیکربندی"
+
+msgid "Working…"
+msgstr "در حال کار…"
+
+msgid "done"
+msgstr "انجام شد"
+
+msgid "failed"
+msgstr "ناموفق"
+
+msgid "Verify the uploaded file"
+msgstr "تأیید فایل بارگذاری‌شده"
+
+msgid "The uploaded file is checked against the SHA256SUMS of the VPN module's latest release, downloaded over HTTPS. When that is not possible (offline, an older release), it is installed only if you allow an unverified file: it then runs as root with no check."
+msgstr "فایل بارگذاری‌شده با SHA256SUMS آخرین نسخهٔ ماژول VPN که از طریق HTTPS دریافت می‌شود بررسی می‌شود. اگر این ممکن نباشد (آفلاین، نسخهٔ قدیمی‌تر)، فقط در صورتی نصب می‌شود که اجازهٔ فایل تأییدنشده را بدهید: در این صورت بدون هیچ بررسی با دسترسی root اجرا می‌شود."
+
+msgid "Install it even if it cannot be verified"
+msgstr "نصب کن حتی اگر تأیید نشود"
+
+msgid "Install only a verified file"
+msgstr "فقط فایل تأییدشده نصب شود"
+
+msgid "Upload failed: %s"
+msgstr "بارگذاری ناموفق بود: %s"
+
+msgid "The VPN module is too old for this panel"
+msgstr "ماژول VPN برای این پنل بیش از حد قدیمی است"
+
+msgid "The VPN module is not installed"
+msgstr "ماژول VPN نصب نیست"
+
+msgid "This page needs the VPN module with the machine-readable mu300-vpn (module v2 or newer). Updating it keeps the profiles and the settings."
+msgstr "این صفحه به ماژول VPN با mu300-vpn قابل‌خواندن برای ماشین (ماژول v2 یا جدیدتر) نیاز دارد. به‌روزرسانی، پروفایل‌ها و تنظیمات را حفظ می‌کند."
+
+msgid "The VPN is a module of its own: mu300-vpn with its kill switch and profiles, and one extra per engine (Xray, sing-box, mihomo, dae). It is installed with mu300-extra install vpn."
+msgstr "VPN یک ماژول مستقل است: mu300-vpn با kill switch و پروفایل‌هایش، و یک افزونه برای هر موتور (Xray، sing-box، mihomo، dae). با mu300-extra install vpn نصب می‌شود."
+
+msgid "The download is a few MB for the module and up to tens of MB per engine: on mobile data it counts towards your plan."
+msgstr "دریافت ماژول چند MB و برای هر موتور تا ده‌ها MB است: روی داده تلفن همراه از بسته شما کسر می‌شود."
+
+msgid "Update the VPN module"
+msgstr "به‌روزرسانی ماژول VPN"
+
+msgid "Install the VPN module"
+msgstr "نصب ماژول VPN"
+
+msgid "Upload the file…"
+msgstr "بارگذاری فایل…"
+
+msgid "Offline: upload mu300-linux-vpn-core.tar.gz (or the bundle mu300-linux-vpn.tar.gz) from the release page of the VPN module."
+msgstr "آفلاین: فایل mu300-linux-vpn-core.tar.gz (یا بسته mu300-linux-vpn.tar.gz) را از صفحه انتشارهای ماژول VPN بارگذاری کنید."
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "This is a network or frequency scan: it takes one to three minutes, holds the modem's AT channel all that time, and mobile data may pause meanwhile. It runs in the background; the reply appears here when it is done."
+msgstr "این یک جست‌وجوی شبکه یا فرکانس است: یک تا سه دقیقه طول می‌کشد، در تمام این مدت کانال AT مودم را اشغال می‌کند و ممکن است داده تلفن همراه در این فاصله متوقف شود. در پس‌زمینه اجرا می‌شود؛ پاسخ پس از پایان اینجا نمایش داده می‌شود."
+
+msgid "This changes a network mode, band or cell setting the modem stores: it stays in force after a reboot, and in Android too, where a network that does not match it shows as No Service. The Locks page shows these settings and resets them."
+msgstr "این، حالت شبکه، باند یا تنظیم سلولی را که مودم ذخیره می‌کند تغییر می‌دهد: پس از راه‌اندازی دوباره هم برقرار می‌ماند، و در Android هم، جایی که شبکه‌ای که با آن جور نیست «بدون سرویس» نشان داده می‌شود. صفحه قفل‌ها این تنظیمات را نشان می‌دهد و بازنشانی می‌کند."
+
+msgid "This switches the radio, the data connection or the modem itself: mobile data drops until it is restored, and this page may lose its connection for a while."
+msgstr "این، رادیو، اتصال داده یا خود مودم را تغییر وضعیت می‌دهد: داده تلفن همراه تا بازگشت قطع می‌شود و این صفحه ممکن است مدتی اتصالش را از دست بدهد."
+
+msgid "This changes the data profiles (APNs) stored in the modem, which mobile data and Android use."
+msgstr "این، نمایه‌های داده (APN) ذخیره‌شده در مودم را که داده تلفن همراه و Android از آن‌ها استفاده می‌کنند تغییر می‌دهد."
+
+msgid "This changes the SIM's PIN lock or enters a PIN: wrong PINs block the SIM until its PUK is entered."
+msgstr "این، قفل PIN سیم‌کارت را تغییر می‌دهد یا یک PIN وارد می‌کند: PINهای نادرست سیم‌کارت را تا وارد کردن PUK آن مسدود می‌کنند."
+
+msgid "Basic"
+msgstr "پایه"
+
+msgid "Registration/signal"
+msgstr "ثبت/سیگنال"
+
+msgid "Bearer"
+msgstr "حامل"
+
+msgid "Engineering mode"
+msgstr "حالت مهندسی"
+
+msgid "AT command (↑↓ history, Enter to send)"
+msgstr "دستور AT (↑↓ تاریخچه، Enter برای ارسال)"
+
+msgid "Send"
+msgstr "ارسال"
+
+msgid "Clear screen"
+msgstr "پاک کردن صفحه"
+
+msgid "Ready."
+msgstr "آماده."
+
+msgid "Session history (click to reuse)"
+msgstr "تاریخچهٔ نشست (برای استفادهٔ دوباره کلیک کنید)"
+
+msgid "Running in the background (at most %d s); the reply appears here when it is done…"
+msgstr "در حال اجرا در پس‌زمینه (حداکثر %d ث)؛ پاسخ پس از پایان اینجا نمایش داده می‌شود…"
+
+msgid "The modem gave no final answer in time"
+msgstr "مودم به‌موقع پاسخ نهایی نداد"
+
+msgid "%d s in the background"
+msgstr "%d ث در پس‌زمینه"
+
+msgid "(no output)"
+msgstr "(بدون خروجی)"
+
+msgid "This command changes the modem's state."
+msgstr "این فرمان وضعیت مودم را تغییر می‌دهد."
+
+msgid "Not sent yet: waiting for confirmation"
+msgstr "هنوز ارسال نشده: در انتظار تأیید"
+
+msgid "Send this AT command?"
+msgstr "این فرمان AT ارسال شود؟"
+
+msgid "Send anyway"
+msgstr "به‌هر‌حال ارسال شود"
+
+msgid "Not sent"
+msgstr "ارسال نشد"
+
+msgid "Request failed"
+msgstr "درخواست ناموفق بود"
+
+msgid "(empty)"
+msgstr "(خالی)"
+
+msgid "Passphrase (8 characters or more)"
+msgstr "عبارت عبور (۸ نویسه یا بیشتر)"
+
+msgid "The passphrase again"
+msgstr "دوباره عبارت عبور"
+
+msgid "Download the backup"
+msgstr "دریافت پشتیبان"
+
+msgid "Back up the settings"
+msgstr "پشتیبان‌گیری از تنظیمات"
+
+msgid "One file with the hotspot, mobile data and the APN, the network locks, the VPN profiles and settings, SMS forwarding, the LAN address, the host name, the time zone and the SSH keys. It holds passwords: with a passphrase it is encrypted, and only that passphrase opens it again."
+msgstr "یک پرونده با هات‌اسپات، داده همراه و APN، قفل‌های شبکه، نمایه‌ها و تنظیمات VPN، بازارسال پیامک، نشانی LAN، نام میزبان، منطقه زمانی و کلیدهای SSH. گذرواژه‌ها در آن هستند: با عبارت عبور رمزگذاری می‌شود و فقط همان عبارت آن را دوباره باز می‌کند."
+
+msgid "Include the login password"
+msgstr "گذرواژه ورود هم باشد"
+
+msgid "Passphrase, if the file is encrypted"
+msgstr "عبارت عبور، اگر پرونده رمزگذاری شده است"
+
+msgid "Show what would change"
+msgstr "نمایش آنچه تغییر می‌کند"
+
+msgid "Restore"
+msgstr "بازگردانی"
+
+msgid "The file is larger than 4 MiB"
+msgstr "پرونده بزرگ‌تر از ۴ مبی‌بایت است"
+
+msgid "The settings of the file replace these. The hotspot, mobile data or the LAN may restart, and this page may lose its connection for a moment."
+msgstr "تنظیمات پرونده جای این‌ها را می‌گیرد. هات‌اسپات، داده همراه یا LAN ممکن است دوباره راه‌اندازی شوند و این صفحه ممکن است لحظه‌ای اتصال را از دست بدهد."
+
+msgid "Restore from a backup"
+msgstr "بازگردانی از پشتیبان"
+
+msgid "Every value of the file is checked first; one that is refused and nothing is changed. What is the same is left alone, and no VPN profile, subscription or SSH key of this device is removed."
+msgstr "هر مقدار پرونده نخست بررسی می‌شود؛ اگر یکی رد شود هیچ چیز تغییر نمی‌کند. آنچه یکسان است دست نمی‌خورد و هیچ نمایه VPN، اشتراک یا کلید SSH این دستگاه حذف نمی‌شود."
+
+msgid "Keep this device's login password"
+msgstr "نگه داشتن گذرواژه ورود این دستگاه"
+
+msgid "Take a file of another device model"
+msgstr "پذیرفتن پرونده مدل دیگری از دستگاه"
+
+msgid "The two passphrases differ"
+msgstr "دو عبارت عبور یکسان نیستند"
+
+msgid "The passphrase needs 8 characters or more"
+msgstr "عبارت عبور باید ۸ نویسه یا بیشتر باشد"
+
+msgid "Saved (encrypted)"
+msgstr "ذخیره شد (رمزگذاری‌شده)"
+
+msgid "Saved. The file is not encrypted: it holds passwords, keep it safe."
+msgstr "ذخیره شد. پرونده رمزگذاری نشده است: گذرواژه‌ها در آن هستند، آن را امن نگه دارید."
+
+msgid "Choose a backup file first"
+msgstr "نخست یک پرونده پشتیبان برگزینید"
+
+msgid "Restoring…"
+msgstr "در حال بازگردانی…"
+
+msgid "Restored"
+msgstr "بازگردانی شد"
+
+msgid "The restore did not finish: see the lines above"
+msgstr "بازگردانی تمام نشد: سطرهای بالا را ببینید"
+
+msgid "Loading…"
+msgstr "در حال بارگذاری…"
+
+msgid "Channel Analysis"
+msgstr "تحلیل کانال"
+
+msgid "A scan takes the Wi-Fi hotspot off its channel for a moment: connected devices drop, and some (macOS in particular) may not reconnect by themselves. This page scans as soon as it opens and again every few seconds. Reach the panel over USB or another way first if you depend on the hotspot."
+msgstr "جست‌وجو نقطه دسترسی Wi-Fi را برای لحظه‌ای از کانالش خارج می‌کند: دستگاه‌های متصل قطع می‌شوند و برخی (به‌ویژه macOS) ممکن است خودبه‌خود دوباره وصل نشوند. این صفحه به‌محض باز شدن و سپس هر چند ثانیه جست‌وجو می‌کند. اگر به نقطه دسترسی وابسته‌اید، ابتدا از راه USB یا راه دیگری به پنل دسترسی پیدا کنید."
+
+msgid "Scan anyway"
+msgstr "به‌هر‌حال جست‌وجو شود"
+
+msgid "Saved"
+msgstr "ذخیره شد"
+
+msgid "CPU profile unavailable"
+msgstr "CPU profile unavailable"
+
+msgid "Power saving"
+msgstr "Power saving"
+
+msgid "Balanced"
+msgstr "Balanced"
+
+msgid "Performance"
+msgstr "Performance"
+
+msgid "Cores capped at about 60 %% of their maximum (cooler, less power)."
+msgstr "Cores capped at about 60 %% of their maximum (cooler, less power)."
+
+msgid "Schedutil across the full hardware range (the stock behaviour)."
+msgstr "Schedutil across the full hardware range (the stock behaviour)."
+
+msgid "Every cluster pinned at its hardware maximum."
+msgstr "Every cluster pinned at its hardware maximum."
+
+msgid "CPU profile"
+msgstr "CPU profile"
+
+msgid "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+msgstr "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+
+msgid "Saved profile: %s"
+msgstr "Saved profile: %s"
+
+msgid "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+msgstr "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+
+msgid "Clusters"
+msgstr "Clusters"
+
+msgid "Cores"
+msgstr "Cores"
+
+msgid "Governor"
+msgstr "Governor"
+
+msgid "Now"
+msgstr "Now"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Hardware max"
+msgstr "Hardware max"
+
+msgid "Frequencies in MHz."
+msgstr "Frequencies in MHz."
+
+msgid "Highlighted cores are online. A core taken offline stays offline, also after a reboot, until it is brought back. CPU0 always stays online."
+msgstr "هسته‌های برجسته روشن هستند. هسته‌ای که خاموش شده، حتی پس از راه‌اندازی دوباره، خاموش می‌ماند تا دوباره روشن شود. CPU0 همیشه روشن می‌ماند."
+
+msgid "Low latency: on"
+msgstr "تأخیر کم: روشن"
+
+msgid "Low latency: off"
+msgstr "تأخیر کم: خاموش"
+
+msgid "Low latency keeps CPU0 out of its idle states, as ZTE's U30 Air firmware does: Wi-Fi delays are much shorter, and the device draws more power. Off by default."
+msgstr "حالت تأخیر کم، مانند میان‌افزار ZTE U30 Air، نمی‌گذارد CPU0 به حالت‌های بیکاری برود: تأخیر Wi-Fi بسیار کمتر می‌شود و دستگاه انرژی بیشتری مصرف می‌کند. به‌طور پیش‌فرض خاموش."
+
+msgid "Thermal"
+msgstr "حرارتی"
+
+msgid "The kernel's thermal zones, read only. A zone with trip points throttles the cooling devices bound to it at its passive trip; a cooling state of 0 is no throttling."
+msgstr "ناحیه‌های حرارتی هسته، فقط خواندنی. ناحیه‌ای که نقاط آستانه دارد، دستگاه‌های خنک‌کننده متصل به خود را در آستانه غیرفعال محدود می‌کند؛ وضعیت خنک‌کنندگی 0 یعنی بدون محدودسازی."
+
+msgid "Zone"
+msgstr "ناحیه"
+
+msgid "Temperature"
+msgstr "دما"
+
+msgid "Trip points"
+msgstr "نقاط آستانه"
+
+msgid "Cooling devices"
+msgstr "دستگاه‌های خنک‌کننده"
+
+msgid "Stress test started"
+msgstr "تست استرس شروع شد"
+
+msgid "Saved: it takes effect at the next reboot"
+msgstr "ذخیره شد: در راه‌اندازی مجدد بعدی اعمال می‌شود"
+
+msgid "CPU voltage offset (EXPERIMENTAL)"
+msgstr "جابه‌جایی ولتاژ CPU (آزمایشی)"
+
+msgid "Experimental: changing the CPU voltage can make the device unstable, corrupt your data and permanently damage your device. Use it entirely at your own risk."
+msgstr "آزمایشی: تغییر ولتاژ CPU می‌تواند دستگاه را ناپایدار کند، داده‌های شما را خراب کند و به دستگاه شما آسیب دائمی بزند. استفاده از آن تماماً با مسئولیت خود شماست."
+
+msgid "CPU voltage offset unavailable"
+msgstr "جابه‌جایی ولتاژ CPU در دسترس نیست"
+
+msgid "Not available with this kernel (a mainline kernel of this release or later has it)."
+msgstr "با این هسته در دسترس نیست (هسته‌ی mainline این نسخه یا جدیدتر آن را دارد)."
+
+msgid "Off: the stock voltages"
+msgstr "خاموش: ولتاژهای کارخانه"
+
+msgid "Changes at the next reboot"
+msgstr "در راه‌اندازی مجدد بعدی تغییر می‌کند"
+
+msgid "Trial boot: kept once this boot has been up 10 minutes"
+msgstr "راه‌اندازی آزمایشی: وقتی این راه‌اندازی 10 دقیقه کار کند حفظ می‌شود"
+
+msgid "Kept: this offset passed its trial boot"
+msgstr "حفظ شد: این جابه‌جایی راه‌اندازی آزمایشی خود را با موفقیت گذراند"
+
+msgid "a boot with it ended without a clean shutdown"
+msgstr "یک راه‌اندازی با آن بدون خاموش شدن درست پایان یافت"
+
+msgid "its trial boot ended before 10 minutes"
+msgstr "راه‌اندازی آزمایشی آن پیش از 10 دقیقه پایان یافت"
+
+msgid "invalid value"
+msgstr "مقدار نامعتبر"
+
+msgid "unknown SoC firmware"
+msgstr "میان‌افزار SoC ناشناخته"
+
+msgid "refused by the kernel"
+msgstr "هسته آن را رد کرد"
+
+msgid "the kernel could not start CPU scaling with it"
+msgstr "هسته نتوانست مقیاس‌دهی فرکانس CPU را با آن آغاز کند"
+
+msgid "Offsets in µV for the three CPU domains (cores 0-3, 4-6 and 7), in whole steps. A new offset takes effect at the next reboot, as a trial: it is kept once that boot has been up 10 minutes, and dropped (back to 0) if a boot with it ends in a crash, a watchdog reset or a power cut."
+msgstr "جابه‌جایی‌ها بر حسب µV برای سه دامنه‌ی CPU (هسته‌های پردازنده 0-3، 4-6 و 7)، در گام‌های کامل. جابه‌جایی جدید در راه‌اندازی مجدد بعدی به‌صورت آزمایشی اعمال می‌شود: وقتی آن راه‌اندازی 10 دقیقه کار کند حفظ می‌شود، و اگر راه‌اندازی با آن با خرابی، بازنشانی watchdog یا قطع برق پایان یابد کنار گذاشته می‌شود (به 0 برمی‌گردد)."
+
+msgid "Running now (µV)"
+msgstr "اکنون در حال اجرا (µV)"
+
+msgid "Saved for the next boot (µV)"
+msgstr "ذخیره‌شده برای راه‌اندازی بعدی (µV)"
+
+msgid "State"
+msgstr "وضعیت"
+
+msgid "Taken back automatically: %s µV (%s)"
+msgstr "به‌طور خودکار پس گرفته شد: %s µV (%s)"
+
+msgid "The SoC firmware of this device is not one whose voltage encoding is known: only the stock voltages are possible."
+msgstr "میان‌افزار SoC این دستگاه از آن‌هایی نیست که رمزگذاری ولتاژشان شناخته شده است: فقط ولتاژهای کارخانه ممکن است."
+
+msgid "Domain"
+msgstr "دامنه"
+
+msgid "Offset now (µV)"
+msgstr "جابه‌جایی کنونی (µV)"
+
+msgid "Highest step"
+msgstr "بالاترین پله"
+
+msgid "New offset (µV)"
+msgstr "جابه‌جایی جدید (µV)"
+
+msgid "Limits: %d to %d µV, in steps of %d µV."
+msgstr "محدوده: %d تا %d µV، با گام‌های %d µV."
+
+msgid "Save for the next boot"
+msgstr "ذخیره برای راه‌اندازی بعدی"
+
+msgid "Each offset must be a multiple of %d µV between %d and %d."
+msgstr "هر جابه‌جایی باید مضربی از %d µV بین %d و %d باشد."
+
+msgid "Type %s to confirm."
+msgstr "برای تأیید %s را تایپ کنید."
+
+msgid "Back to the stock voltages"
+msgstr "بازگشت به ولتاژهای کارخانه"
+
+msgid "Type %s to confirm:"
+msgstr "برای تأیید %s را تایپ کنید:"
+
+msgid "Run a 10-minute CPU stress test"
+msgstr "اجرای تست استرس 10 دقیقه‌ای CPU"
+
+msgid "Test a new offset under load during its trial boot. The device may crash if the voltage is too low; the next boot then runs at the stock voltages."
+msgstr "جابه‌جایی جدید را در طول راه‌اندازی آزمایشی‌اش زیر بار آزمایش کنید. اگر ولتاژ خیلی پایین باشد ممکن است دستگاه از کار بیفتد؛ در آن صورت راه‌اندازی بعدی با ولتاژهای کارخانه اجرا می‌شود."
+
+msgid "A stress test is running."
+msgstr "یک تست استرس در حال اجراست."
+
+msgid "USB role"
+msgstr "نقش USB"
+
+msgid "Current role"
+msgstr "نقش فعلی"
+
+msgid "Switch USB role"
+msgstr "تغییر نقش USB"
+
+msgid "Device mode"
+msgstr "حالت دستگاه"
+
+msgid "Host mode"
+msgstr "حالت میزبان"
+
+msgid "Enable host mode at boot"
+msgstr "فعال‌سازی حالت میزبان هنگام راه‌اندازی"
+
+msgid "Apply role"
+msgstr "اعمال نقش"
+
+msgid "Host mode disconnects USB networking and serial on this port. F50 has no battery; management may be lost and a USB adapter usually needs a powered hub."
+msgstr "حالت میزبان، شبکهٔ USB و پورت سریال این درگاه را قطع می‌کند. F50 باتری ندارد؛ ممکن است دسترسی مدیریت از دست برود و آداپتور USB معمولاً به هاب برق‌دار نیاز دارد."
+
+msgid "USB network mode"
+msgstr "حالت شبکهٔ USB"
+
+msgid "Network protocol"
+msgstr "پروتکل شبکه"
+
+msgid "Apply duration"
+msgstr "مدت اعمال"
+
+msgid "Next reboot only"
+msgstr "فقط راه‌اندازی مجدد بعدی"
+
+msgid "Permanent"
+msgstr "دائمی"
+
+msgid "Enable selected protocol"
+msgstr "فعال‌سازی پروتکل انتخاب‌شده"
+
+msgid "Save; apply after reboot"
+msgstr "ذخیره؛ اعمال پس از راه‌اندازی مجدد"
+
+msgid "NCM is the default. Windows does not natively support ECM; RNDIS changes enumeration. With Enable selected protocol off, only your choice is saved. Next reboot only applies once, then returns to NCM."
+msgstr "NCM پیش‌فرض است. Windows به‌طور بومی از ECM پشتیبانی نمی‌کند؛ RNDIS نحوهٔ شناسایی دستگاه را تغییر می‌دهد. اگر «فعال‌سازی پروتکل انتخاب‌شده» خاموش باشد، فقط انتخاب شما ذخیره می‌شود. «فقط راه‌اندازی مجدد بعدی» یک بار اعمال می‌شود و سپس به NCM بازمی‌گردد."
+
+msgid "USB adapters"
+msgstr "آداپتورهای USB"
+
+msgid "Refresh"
+msgstr "تازه‌سازی"
+
+msgid "Available only in host mode. Refresh brings discovered USB adapters up; adding to LAN saves the bridge and reloads networking."
+msgstr "فقط در حالت میزبان در دسترس است. «تازه‌سازی» آداپتورهای USB شناسایی‌شده را فعال می‌کند؛ افزودن به LAN پل را ذخیره و شبکه را دوباره بارگذاری می‌کند."
+
+msgid "Recent modem operations"
+msgstr "عملیات اخیر مودم"
+
+msgid "Show"
+msgstr "نمایش"
+
+msgid "The control panel's recent calls, of this boot and the one before: when, which page call or AT command, how long it took and how it ended (ok, error, busy, killed). No values, replies or messages are kept. Useful when the panel was stuck."
+msgstr "فراخوانی‌های اخیر پنل کنترل، در این راه‌اندازی و راه‌اندازی قبلی: چه زمانی، کدام فراخوانی صفحه یا فرمان AT، چقدر طول کشید و چگونه پایان یافت (ok، خطا، مشغول، متوقف‌شده). هیچ مقدار، پاسخ یا پیامی نگه داشته نمی‌شود. وقتی پنل گیر کرده بود سودمند است."
+
+msgid "Unavailable"
+msgstr "در دسترس نیست"
+
+msgid "USB network mode is unavailable in host mode; host auto-start also disables USB network auto-start."
+msgstr "حالت شبکهٔ USB در حالت میزبان در دسترس نیست؛ راه‌اندازی خودکار میزبان، راه‌اندازی خودکار شبکهٔ USB را هم غیرفعال می‌کند."
+
+msgid "Host mode immediately disconnects USB management. F50 has no battery and peripherals may need external power; make sure another management path exists."
+msgstr "حالت میزبان مدیریت از طریق USB را فوراً قطع می‌کند. F50 باتری ندارد و ممکن است دستگاه‌های جانبی به برق خارجی نیاز داشته باشند؛ مطمئن شوید راه مدیریتی دیگری وجود دارد."
+
+msgid "USB networking and serial will re-enumerate in device mode."
+msgstr "شبکهٔ USB و پورت سریال در حالت دستگاه دوباره شناسایی می‌شوند."
+
+msgid "Switch USB role?"
+msgstr "نقش USB تغییر کند؟"
+
+msgid "Apply"
+msgstr "اعمال"
+
+msgid "Switching USB role…"
+msgstr "در حال تغییر نقش USB…"
+
+msgid "Switch failed: %s"
+msgstr "تغییر ناموفق بود: %s"
+
+msgid "Management connection lost; reconnect to confirm the USB role."
+msgstr "اتصال مدیریت قطع شد؛ برای تأیید نقش USB دوباره وصل شوید."
+
+msgid "Switch request accepted; the USB connection may briefly disconnect."
+msgstr "درخواست تغییر پذیرفته شد؛ ممکن است اتصال USB برای مدت کوتاهی قطع شود."
+
+msgid "USB role applied"
+msgstr "نقش USB اعمال شد"
+
+msgid "Save USB network mode?"
+msgstr "حالت شبکهٔ USB ذخیره شود؟"
+
+msgid "The network mode applies on the next reboot; USB management may need to reconnect."
+msgstr "حالت شبکه در راه‌اندازی مجدد بعدی اعمال می‌شود؛ ممکن است لازم باشد مدیریت USB دوباره وصل شود."
+
+msgid "Save the selection only; with the selected protocol disabled, the next boot still uses default NCM."
+msgstr "فقط انتخاب ذخیره می‌شود؛ با غیرفعال بودن پروتکل انتخاب‌شده، راه‌اندازی بعدی همچنان از NCM پیش‌فرض استفاده می‌کند."
+
+msgid "Save"
+msgstr "ذخیره"
+
+msgid "Saving USB network settings…"
+msgstr "در حال ذخیرهٔ تنظیمات شبکهٔ USB…"
+
+msgid "Settings saved"
+msgstr "تنظیمات ذخیره شد"
+
+msgid "Save failed: %s"
+msgstr "ذخیره ناموفق بود: %s"
+
+msgid "This boot"
+msgstr "این راه‌اندازی"
+
+msgid "Previous boot"
+msgstr "راه‌اندازی قبلی"
+
+msgid "Unable to confirm the role yet; reconnect and refresh the page."
+msgstr "هنوز امکان تأیید نقش نیست؛ دوباره وصل شوید و صفحه را تازه کنید."
+
+msgid "Switch to host mode to see USB adapters."
+msgstr "برای دیدن آداپتورهای USB به حالت میزبان بروید."
+
+msgid "Scanning USB adapters…"
+msgstr "در حال جست‌وجوی آداپتورهای USB…"
+
+msgid "No USB adapters found."
+msgstr "هیچ آداپتور USB یافت نشد."
+
+msgid "Link connected"
+msgstr "لینک وصل است"
+
+msgid "No link; enable attempted"
+msgstr "لینک نیست؛ تلاش برای فعال‌سازی انجام شد"
+
+msgid "Added to LAN"
+msgstr "به LAN افزوده شد"
+
+msgid "Add to LAN"
+msgstr "افزودن به LAN"
+
+msgid "Add USB adapter to LAN?"
+msgstr "آداپتور USB به LAN افزوده شود؟"
+
+msgid "This saves the bridge configuration and reloads networking; existing connections may briefly drop."
+msgstr "این کار پیکربندی پل را ذخیره و شبکه را دوباره بارگذاری می‌کند؛ ممکن است اتصال‌های موجود برای مدت کوتاهی قطع شوند."
+
+msgid "Add"
+msgstr "افزودن"
+
+msgid "Adding USB adapter…"
+msgstr "در حال افزودن آداپتور USB…"
+
+msgid "Add failed: %s"
+msgstr "افزودن ناموفق بود: %s"
+
+msgid "Leave empty to keep the saved value"
+msgstr "برای نگه داشتن مقدار ذخیره‌شده خالی بگذارید"
+
+msgid "Saved: %s"
+msgstr "ذخیره‌شده: %s"
+
+msgid "Remove the saved value"
+msgstr "حذف مقدار ذخیره‌شده"
+
+msgid "Presets"
+msgstr "پیش‌تنظیم‌ها"
+
+msgid "Form (URL-encoded)"
+msgstr "فرم (کدگذاری URL)"
+
+msgid "Plain text"
+msgstr "متن ساده"
+
+msgid "Received messages are sent on as they reach the SMS pool. A failed delivery is retried after 30 s, then after twice as long each time (an hour at most), ten times in all."
+msgstr "پیام‌های دریافتی به‌محض رسیدن به مخزن پیامک بازارسال می‌شوند. ارسال ناموفق پس از ۳۰ ثانیه و سپس هر بار پس از دو برابر زمان قبل (حداکثر یک ساعت) دوباره تلاش می‌شود، در مجموع ده بار."
+
+msgid "Forward received messages"
+msgstr "بازارسال پیام‌های دریافتی"
+
+msgid "Message template"
+msgstr "الگوی پیام"
+
+msgid "Placeholders: {sender}, {time}, {text}, {device}"
+msgstr "جای‌نگهدارها: {sender}، {time}، {text}، {device}"
+
+msgid "Only these senders"
+msgstr "فقط این فرستندگان"
+
+msgid "One per line; empty: every sender. A * at the end matches the start of a sender."
+msgstr "هر سطر یکی؛ خالی: همه فرستندگان. * در پایان با ابتدای نام فرستنده مطابقت دارد."
+
+msgid "Never these senders"
+msgstr "هرگز این فرستندگان"
+
+msgid "Only messages containing one of these words"
+msgstr "فقط پیام‌هایی که یکی از این واژه‌ها را دارند"
+
+msgid "One per line; empty: every message."
+msgstr "هر سطر یکی؛ خالی: همه پیام‌ها."
+
+msgid "Webhook"
+msgstr "Webhook"
+
+msgid "Enabled"
+msgstr "فعال"
+
+msgid "Address (http:// or https://)"
+msgstr "نشانی (http:// یا https://)"
+
+msgid "Body"
+msgstr "بدنه"
+
+msgid "Fields: sender, time, text, device, message (the template filled in)"
+msgstr "فیلدها: sender، time، text، device، message (الگوی پرشده)"
+
+msgid "Custom body"
+msgstr "بدنهٔ سفارشی"
+
+msgid "Empty: the standard fields (plain text: the message). Placeholders: {sender}, {time}, {text}, {device}, {message}. Each value is escaped for the chosen type. This body is shown again here: keep secrets in the address or a header."
+msgstr "خالی: فیلدهای استاندارد (متن ساده: پیام). جای‌نگهدارها: {sender}، {time}، {text}، {device}، {message}. هر مقدار متناسب با نوع انتخاب‌شده escape می‌شود. این بدنه دوباره اینجا نمایش داده می‌شود: اطلاعات محرمانه را در نشانی یا یک سرآیند بگذارید."
+
+msgid "Extra headers (one \"Name: value\" per line)"
+msgstr "سرآیندهای اضافی (هر سطر یک \"Name: value\")"
+
+msgid "The answer must contain"
+msgstr "پاسخ باید شامل این باشد"
+
+msgid "Empty: every HTTP 2xx answer counts as delivered. With key=value (for example errcode=0), the answer must also be a JSON object that has this value under this key at its top level; otherwise the delivery fails. Only the result of the check is logged, never the answer."
+msgstr "خالی: هر پاسخ HTTP 2xx تحویل‌شده به شمار می‌آید. با کلید=مقدار (برای نمونه errcode=0) پاسخ باید افزون بر آن یک شیء JSON باشد که در بالاترین سطح خود زیر این کلید همین مقدار را دارد؛ وگرنه تحویل ناموفق است. تنها نتیجهٔ بررسی در گزارش ثبت می‌شود، خودِ پاسخ هرگز."
+
+msgid "Bot token"
+msgstr "توکن ربات"
+
+msgid "Chat ID (a number, or @channel)"
+msgstr "شناسه گفتگو (عدد یا @کانال)"
+
+msgid "E-mail"
+msgstr "ایمیل"
+
+msgid "E-mail needs msmtp, which this image does not have"
+msgstr "ایمیل به msmtp نیاز دارد که این ایمیج ندارد"
+
+msgid "Mail server"
+msgstr "سرور ایمیل"
+
+msgid "Port"
+msgstr "درگاه"
+
+msgid "Security"
+msgstr "امنیت"
+
+msgid "None"
+msgstr "هیچ"
+
+msgid "User name"
+msgstr "نام کاربری"
+
+msgid "Password"
+msgstr "گذرواژه"
+
+msgid "From"
+msgstr "از"
+
+msgid "To"
+msgstr "به"
+
+msgid "SMS to another phone"
+msgstr "پیامک به تلفن دیگر"
+
+msgid "Phone number"
+msgstr "شماره تلفن"
+
+msgid "Sent as one SMS: a longer message is cut short."
+msgstr "به‌صورت یک پیامک فرستاده می‌شود: پیام بلندتر کوتاه می‌شود."
+
+msgid "Send test"
+msgstr "ارسال آزمایشی"
+
+msgid "Tokens, passwords and the webhook address and headers stay on the device and are never shown again."
+msgstr "توکن‌ها، گذرواژه‌ها و نشانی و سرآیندهای webhook روی دستگاه می‌مانند و دیگر هرگز نمایش داده نمی‌شوند."
+
+msgid "Delivered"
+msgstr "تحویل شد"
+
+msgid "Will retry"
+msgstr "دوباره تلاش می‌شود"
+
+msgid "Failed"
+msgstr "ناموفق"
+
+msgid "Filtered out"
+msgstr "فیلتر شد"
+
+msgid "Dropped"
+msgstr "کنار گذاشته شد"
+
+msgid "Clear"
+msgstr "پاک کردن"
+
+msgid "Test"
+msgstr "آزمایش"
+
+msgid "Delivery log"
+msgstr "گزارش تحویل"
+
+msgid "Waiting to be delivered"
+msgstr "در انتظار تحویل"
+
+msgid "Time"
+msgstr "زمان"
+
+msgid "Message"
+msgstr "پیام"
+
+msgid "Target"
+msgstr "مقصد"
+
+msgid "Result"
+msgstr "نتیجه"
+
+msgid "Detail"
+msgstr "جزئیات"
+
+msgid "No deliveries yet"
+msgstr "هنوز تحویلی نیست"
+
+msgid "Test started with the saved settings; the result appears in the delivery log."
+msgstr "آزمایش با تنظیمات ذخیره‌شده آغاز شد؛ نتیجه در گزارش تحویل نمایش داده می‌شود."
+
+msgid "Automatic without 2G (152)"
+msgstr "خودکار بدون 2G (152)"
+
+msgid "4G only"
+msgstr "فقط 4G"
+
+msgid "Network mode: %s"
+msgstr "حالت شبکه: %s"
+
+msgid "EN-DC off"
+msgstr "EN-DC خاموش"
+
+msgid "NR band lock: %s"
+msgstr "قفل باند NR: %s"
+
+msgid "LTE band lock: %s"
+msgstr "قفل باند LTE: %s"
+
+msgid "Cell lock: %s"
+msgstr "قفل سلول: %s"
+
+msgid "Modulation DL/UL"
+msgstr "مدولاسیون DL/UL"
+
+msgid "Estimated from current MCS"
+msgstr "برآورد از MCS فعلی"
+
+msgid "MCS DL/UL"
+msgstr "MCS DL/UL"
+
+msgid "BLER DL/UL"
+msgstr "BLER DL/UL"
+
+msgid "%s of %s"
+msgstr "%s از %s"
+
+msgid "The monthly cap is reached"
+msgstr "سقف ماهانه پر شد"
+
+msgid "%d%% of the monthly cap is used"
+msgstr "%d%% از سقف ماهانه مصرف شده"
+
+msgid "This billing cycle"
+msgstr "دوره صورتحساب فعلی"
+
+msgid "Link & traffic"
+msgstr "لینک و ترافیک"
+
+msgid "Download rate"
+msgstr "سرعت دانلود"
+
+msgid "Upload rate"
+msgstr "سرعت آپلود"
+
+msgid "Total received"
+msgstr "کل دریافتی"
+
+msgid "Total sent"
+msgstr "کل ارسالی"
+
+msgid "Used today"
+msgstr "مصرف امروز"
+
+msgid "SIM source"
+msgstr "منبع سیم‌کارت"
+
+msgid "Session duration"
+msgstr "مدت نشست"
+
+msgid "Registration"
+msgstr "ثبت"
+
+msgid "Data roaming"
+msgstr "رومینگ داده"
+
+msgid "Bandwidth"
+msgstr "پهنای باند"
+
+msgid "AMBR DL/UL"
+msgstr "AMBR DL/UL"
+
+msgid "Wi-Fi · LAN · Device · SIM"
+msgstr "Wi-Fi · LAN · دستگاه · SIM"
+
+msgid "CPU usage"
+msgstr "مصرف CPU"
+
+msgid "Memory"
+msgstr "حافظه"
+
+msgid "Storage"
+msgstr "فضای ذخیره‌سازی"
+
+msgid "Battery"
+msgstr "باتری"
+
+msgid "Channel"
+msgstr "کانال"
+
+msgid "Encryption"
+msgstr "رمزگذاری"
+
+msgid "Hidden SSID"
+msgstr "SSID پنهان"
+
+msgid "Country"
+msgstr "کشور"
+
+msgid "AP status"
+msgstr "وضعیت AP"
+
+msgid "USB network"
+msgstr "شبکهٔ USB"
+
+msgid "Connection tracking"
+msgstr "ردیابی اتصال‌ها"
+
+msgid "LAN address"
+msgstr "نشانی LAN"
+
+msgid "Wi-Fi clients"
+msgstr "کلاینت‌های Wi-Fi"
+
+msgid "DHCP leases"
+msgstr "اجاره‌های DHCP"
+
+msgid "Device model"
+msgstr "مدل دستگاه"
+
+msgid "System"
+msgstr "سیستم"
+
+msgid "Modem"
+msgstr "مودم"
+
+msgid "Carrier"
+msgstr "اپراتور"
+
+msgid "Own number"
+msgstr "شماره خود"
+
+msgid "Module"
+msgstr "ماژول"
+
+msgid "Firmware"
+msgstr "فرم‌ویر"
+
+msgid "Show SIM identifiers"
+msgstr "نمایش شناسه‌های SIM"
+
+msgid "Quick controls"
+msgstr "کنترل‌های سریع"
+
+msgid "Data connection"
+msgstr "اتصال داده"
+
+msgid "Cellular radio"
+msgstr "رادیوی سلولی"
+
+msgid "Wi-Fi hotspot"
+msgstr "هات‌اسپات Wi-Fi"
+
+msgid "Restart modem"
+msgstr "راه‌اندازی مجدد مودم"
+
+msgid "Power off or restart"
+msgstr "خاموش کردن یا راه‌اندازی مجدد"
+
+msgid "Switch to Android"
+msgstr "رفتن به Android"
+
+msgid "Lock Linux"
+msgstr "قفل کردن Linux"
+
+msgid "Neighbor cells"
+msgstr "سلول‌های همسایه"
+
+msgid "RAT/Band"
+msgstr "RAT/باند"
+
+msgid "Frequency"
+msgstr "فرکانس"
+
+msgid "Running %s…"
+msgstr "در حال اجرای %s…"
+
+msgid "Started in background: %s"
+msgstr "در پس‌زمینه آغاز شد: %s"
+
+msgid "Done: %s"
+msgstr "انجام شد: %s"
+
+msgid "Disconnecting data…"
+msgstr "در حال قطع داده…"
+
+msgid "Connecting data…"
+msgstr "در حال اتصال داده…"
+
+msgid "Turn off cellular radio"
+msgstr "خاموش کردن رادیوی سلولی"
+
+msgid "This SIM will have no calls, SMS or data, and its radio stays off after a reboot until you turn it on again."
+msgstr "این سیم‌کارت تماس، پیامک یا داده نخواهد داشت و رادیوی آن پس از راه‌اندازی مجدد هم خاموش می‌ماند تا دوباره روشنش کنید."
+
+msgid "Turn on cellular radio"
+msgstr "روشن کردن رادیوی سلولی"
+
+msgid "The radio of the SIM in use comes on and stays on after a reboot (up to about 1 minute)."
+msgstr "رادیوی سیم‌کارت در حال استفاده روشن می‌شود و پس از راه‌اندازی مجدد روشن می‌ماند (تا حدود ۱ دقیقه)."
+
+msgid "Turn data roaming off"
+msgstr "خاموش کردن رومینگ داده"
+
+msgid "While the SIM is registered on a roaming network, mobile data stays off; SMS, calls and the registration are not affected. Some SIMs report roaming at home (an MVNO, national roaming): there, data would stop as well."
+msgstr "تا زمانی که سیم‌کارت در یک شبکه رومینگ ثبت شده است، داده همراه خاموش می‌ماند؛ پیامک، تماس‌ها و ثبت در شبکه تحت تأثیر قرار نمی‌گیرند. برخی سیم‌کارت‌ها حتی در کشور خود رومینگ گزارش می‌کنند (یک MVNO، رومینگ ملی): آنجا هم داده متوقف می‌شود."
+
+msgid "Allow data roaming"
+msgstr "اجازه رومینگ داده"
+
+msgid "Mobile data is used on roaming networks too, which can cost extra. Some SIMs report roaming at home (an MVNO, national roaming) and need this to have data at all."
+msgstr "داده همراه در شبکه‌های رومینگ نیز استفاده می‌شود که ممکن است هزینه اضافی داشته باشد. برخی سیم‌کارت‌ها حتی در کشور خود رومینگ گزارش می‌کنند (یک MVNO، رومینگ ملی) و برای داشتن داده به این نیاز دارند."
+
+msgid "Cellular connectivity may stop for 1–2 minutes."
+msgstr "ممکن است اتصال سلولی 1–2 دقیقه متوقف شود."
+
+msgid "All connections will be interrupted."
+msgstr "همهٔ اتصال‌ها قطع خواهند شد."
+
+msgid "Power off"
+msgstr "خاموش کردن"
+
+msgid "Restart"
+msgstr "راه‌اندازی مجدد"
+
+msgid "The next boot will enter Android and reboot now. This management page and cellular sharing will disconnect."
+msgstr "راه‌اندازی بعدی وارد Android می‌شود و دستگاه اکنون راه‌اندازی مجدد می‌شود. این صفحهٔ مدیریت و اشتراک‌گذاری اینترنت سلولی قطع می‌شوند."
+
+msgid "To return to OpenWrt, run mu300-next-boot linux in Android and reboot."
+msgstr "برای بازگشت به OpenWrt، در Android دستور mu300-next-boot linux را اجرا و دستگاه را راه‌اندازی مجدد کنید."
+
+msgid "Or do nothing: after five boots that do not finish, it falls back automatically."
+msgstr "یا کاری نکنید: پس از پنج راه‌اندازی ناتمام، به‌طور خودکار بازمی‌گردد."
+
+msgid "Preparing Android boot and rebooting…"
+msgstr "در حال آماده‌سازی راه‌اندازی Android و راه‌اندازی مجدد…"
+
+msgid "Switch and reboot"
+msgstr "تغییر و راه‌اندازی مجدد"
+
+msgid "Not automatic: %s. The network mode and band locks are stored in the modem and stay in force in Android too; if the network does not match them, Android shows No Service."
+msgstr "خودکار نیست: %s. حالت شبکه و قفل باندها در مودم ذخیره می‌شوند و در Android هم برقرار می‌مانند؛ اگر شبکه با آن‌ها جور نباشد، Android «بدون سرویس» نشان می‌دهد."
+
+msgid "Reset locks and switch"
+msgstr "بازنشانی قفل‌ها و تغییر"
+
+msgid "Unlock Linux"
+msgstr "باز کردن قفل Linux"
+
+msgid "After five boots in a row that do not finish, the device falls back to Android again."
+msgstr "پس از پنج راه‌اندازی ناتمام پشت سر هم، دستگاه دوباره به Android برمی‌گردد."
+
+msgid "Unlock"
+msgstr "باز کردن قفل"
+
+msgid "The device will never switch to Android by itself, not even after failed boots: Android only from this page (Switch to Android) or with mu300-next-boot android."
+msgstr "دستگاه هرگز خودبه‌خود به Android نمی‌رود، حتی پس از راه‌اندازی‌های ناموفق: رفتن به Android فقط از همین صفحه (رفتن به Android) یا با mu300-next-boot android."
+
+msgid "A new kernel from an update still gets its first boots on trial, and locks again once one of them succeeds."
+msgstr "هسته‌ی جدیدی که با به‌روزرسانی می‌آید همچنان ابتدا آزمایشی راه‌اندازی می‌شود و پس از موفقیت یکی از آن‌ها دوباره قفل می‌شود."
+
+msgid "If the system itself no longer starts, the device waits on USB (telnet) instead of going to Android."
+msgstr "اگر خود سیستم دیگر راه‌اندازی نشود، دستگاه به‌جای رفتن به Android از طریق USB (telnet) منتظر می‌ماند."
+
+msgid "Hide SIM identifiers"
+msgstr "پنهان کردن شناسه‌های SIM"
+
+msgid "Lock cell %s?"
+msgstr "سلول %s قفل شود؟"
+
+msgid "The radio stack will restart (SFUN); cellular service will stop for about 30 seconds."
+msgstr "پشتهٔ رادیو دوباره راه‌اندازی می‌شود (SFUN)؛ سرویس سلولی حدود 30 ثانیه متوقف می‌شود."
+
+msgid "Locking %s in the background, about 30 seconds"
+msgstr "در حال قفل کردن %s در پس‌زمینه، حدود 30 ثانیه"
+
+msgid "Locked %s in the background; the status will refresh shortly"
+msgstr "%s در پس‌زمینه قفل شد؛ وضعیت به‌زودی تازه می‌شود"
+
+msgid "Lock failed: %s"
+msgstr "قفل ناموفق بود: %s"
+
+msgid "Resetting the network locks to automatic (SFUN restart, about 30 seconds)…"
+msgstr "در حال بازگرداندن قفل‌های شبکه به خودکار (راه‌اندازی مجدد SFUN، حدود ۳۰ ثانیه)…"
+
+msgid "Reset failed: %s. The saved lock settings were kept."
+msgstr "بازنشانی ناموفق بود: %s. تنظیمات قفل ذخیره‌شده نگه داشته شدند."
+
+msgid "The lock reset was not confirmed in time; switching anyway."
+msgstr "بازنشانی قفل‌ها به‌موقع تأیید نشد؛ به هر حال تغییر انجام می‌شود."
+
+msgid "Internal SIM selected: in use after a reboot"
+msgstr "سیم‌کارت داخلی انتخاب شده است: پس از راه‌اندازی مجدد استفاده می‌شود"
+
+msgid "Internal SIM selected, but not supported on this device: the external SIM is in use"
+msgstr "سیم‌کارت داخلی انتخاب شده اما در این دستگاه پشتیبانی نمی‌شود: سیم‌کارت خارجی در حال استفاده است"
+
+msgid "Uptime %s"
+msgstr "زمان کارکرد %s"
+
+msgid "Radio off"
+msgstr "رادیو خاموش"
+
+msgid "No response"
+msgstr "بدون پاسخ"
+
+msgid "Modem busy: cellular readings from %s ago"
+msgstr "مودم مشغول است: داده‌های شبکه همراه مربوط به %s پیش"
+
+msgid "%s · Signal %s %s/10"
+msgstr "%s · سیگنال %s %s/10"
+
+msgid "%s · Signal %s"
+msgstr "%s · سیگنال %s"
+
+msgid "Anchor B%s"
+msgstr "لنگر B%s"
+
+msgid "No serving cell"
+msgstr "سلول سرویس‌دهنده‌ای نیست"
+
+msgid "Version %s is out: update"
+msgstr "نسخهٔ %s منتشر شده است: به‌روزرسانی کنید"
+
+msgid "Not registered"
+msgstr "ثبت نشده"
+
+msgid "Registered"
+msgstr "ثبت شده"
+
+msgid "Searching"
+msgstr "در حال جست‌وجو"
+
+msgid "Registration denied"
+msgstr "ثبت رد شد"
+
+msgid "Registered (roaming)"
+msgstr "ثبت شده (رومینگ)"
+
+msgid "Emergency only"
+msgstr "فقط اضطراری"
+
+msgid "Status %s"
+msgstr "وضعیت %s"
+
+msgid "Off: data held back while roaming"
+msgstr "خاموش: داده در رومینگ متوقف شده است"
+
+msgid "Allowed"
+msgstr "مجاز"
+
+msgid "Off"
+msgstr "خاموش"
+
+msgid "LTE anchor"
+msgstr "لنگر LTE"
+
+msgid "LTE link"
+msgstr "لینک LTE"
+
+msgid "Hidden"
+msgstr "پنهان"
+
+msgid "No"
+msgstr "خیر"
+
+msgid "Running"
+msgstr "در حال اجرا"
+
+msgid "Not running"
+msgstr "در حال اجرا نیست"
+
+msgid "Connected"
+msgstr "متصل"
+
+msgid "Disconnected"
+msgstr "قطع"
+
+msgid "%s entries"
+msgstr "%s مورد"
+
+msgid "%s clients"
+msgstr "%s کلاینت"
+
+msgid "Recent DHCP leases"
+msgstr "اجاره‌های اخیر DHCP"
+
+msgid "Board"
+msgstr "برد"
+
+msgid "No temperature readings"
+msgstr "دمایی خوانده نشد"
+
+msgid "Cluster %d"
+msgstr "خوشهٔ %d"
+
+msgid "Total %s · free %s"
+msgstr "کل %s · آزاد %s"
+
+msgid "charging %s W"
+msgstr "در حال شارژ با %s وات"
+
+msgid "charging"
+msgstr "در حال شارژ"
+
+msgid "drawing %s W"
+msgstr "مصرف %s وات"
+
+msgid "not charging"
+msgstr "شارژ نمی‌شود"
+
+msgid "on battery"
+msgstr "با باتری"
+
+msgid "full"
+msgstr "پر"
+
+msgid "USB in %s W"
+msgstr "ورودی USB %s وات"
+
+msgid "Online"
+msgstr "آنلاین"
+
+msgid "AT adapter unavailable"
+msgstr "آداپتور AT در دسترس نیست"
+
+msgid "Linux locked"
+msgstr "Linux قفل است"
+
+msgid "Installing the language pack…"
+msgstr "در حال نصب بستهٔ زبان…"
+
+msgid "The language pack is installed"
+msgstr "بستهٔ زبان نصب شد"
+
+msgid "The language pack could not be installed"
+msgstr "نصب بستهٔ زبان ممکن نشد"
+
+msgid "Language of the browser"
+msgstr "زبان مرورگر"
+
+msgid "Language of the web interface"
+msgstr "زبان رابط وب"
+
+msgid "English, Turkish and Chinese come with the system; the language pack adds the others."
+msgstr "انگلیسی، ترکی و چینی همراه سیستم هستند؛ بستهٔ زبان بقیه را اضافه می‌کند."
+
+msgid "The same setting is in System > System > Language and Style."
+msgstr "همین تنظیم در سامانه > سامانه > زبان و سبک نیز وجود دارد."
+
+msgid "Language pack"
+msgstr "بستهٔ زبان"
+
+msgid "The language pack (mu300-extra-lang.tar.gz, about 2 MB) adds LuCI in about 40 more languages and this panel in 29 of them. Download it from the release of this system, or upload the file from the release page when the device has no internet."
+msgstr "بستهٔ زبان (mu300-extra-lang.tar.gz، حدود 2 MB) حدود 40 زبان دیگر به LuCI و 29 زبان از آن‌ها را به این پنل اضافه می‌کند. آن را از نسخهٔ انتشار این سیستم دانلود کنید، یا اگر دستگاه اینترنت ندارد، فایل را از صفحهٔ انتشار بارگذاری کنید."
+
+msgid "Download from the release"
+msgstr "دانلود از نسخهٔ انتشار"
+
+msgid "Release"
+msgstr "نسخهٔ انتشار"
+
+msgid "Enable all"
+msgstr "فعال‌سازی همه"
+
+msgid "Disable all"
+msgstr "غیرفعال‌سازی همه"
+
+msgid "Remove the language pack"
+msgstr "حذف بستهٔ زبان"
+
+msgid "Remove the language pack?"
+msgstr "بستهٔ زبان حذف شود؟"
+
+msgid "Its languages disappear from the list; a page in one of them switches to English."
+msgstr "زبان‌های آن از فهرست حذف می‌شوند؛ صفحه‌ای که به یکی از آن‌ها باشد به انگلیسی تغییر می‌کند."
+
+msgid "Remove"
+msgstr "حذف"
+
+msgid "Disable"
+msgstr "غیرفعال‌سازی"
+
+msgid "Enable"
+msgstr "فعال‌سازی"
+
+msgid "LuCI and this panel"
+msgstr "LuCI و این پنل"
+
+msgid "LuCI only"
+msgstr "فقط LuCI"
+
+msgid "Disabled"
+msgstr "غیرفعال"
+
+msgid "Language"
+msgstr "زبان"
+
+msgid "Code"
+msgstr "کد"
+
+msgid "Translated"
+msgstr "ترجمه‌شده"
+
+msgid "LuCI's own translations come from OpenWrt. This panel's translations other than Turkish and Chinese are machine (AI) translations; corrections are welcome."
+msgstr "ترجمه‌های خود LuCI از OpenWrt می‌آیند. ترجمه‌های این پنل به‌جز ترکی و چینی، ترجمهٔ ماشینی (هوش مصنوعی) هستند؛ از اصلاحات استقبال می‌شود."
+
+msgid "Automatic"
+msgstr "خودکار"
+
+msgid "Serving network"
+msgstr "شبکهٔ سرویس‌دهنده"
+
+msgid "Network mode · EN-DC"
+msgstr "حالت شبکه · EN-DC"
+
+msgid "Refresh lock status"
+msgstr "تازه‌سازی وضعیت قفل"
+
+msgid "Apply at startup"
+msgstr "اعمال هنگام راه‌اندازی"
+
+msgid "Turning this off only stops replay at the next boot; saved network mode, EN-DC, band and cell settings remain."
+msgstr "خاموش کردن این گزینه فقط اعمال دوباره در راه‌اندازی بعدی را متوقف می‌کند؛ تنظیمات ذخیره‌شدهٔ حالت شبکه، EN-DC، باند و سلول باقی می‌مانند."
+
+msgid "Band locking"
+msgstr "قفل باند"
+
+msgid "NR bands"
+msgstr "باندهای NR"
+
+msgid "LTE bands"
+msgstr "باندهای LTE"
+
+msgid "Apply NR bands"
+msgstr "اعمال باندهای NR"
+
+msgid "Apply LTE bands"
+msgstr "اعمال باندهای LTE"
+
+msgid "Neighbor cells and cell locking"
+msgstr "سلول‌های همسایه و قفل سلول"
+
+msgid "Lock current serving cell"
+msgstr "قفل سلول سرویس‌دهندهٔ فعلی"
+
+msgid "Unlock cell"
+msgstr "باز کردن قفل سلول"
+
+msgid "Enter a cell"
+msgstr "وارد کردن سلول"
+
+msgid "Type"
+msgstr "نوع"
+
+msgid "Channel number (EARFCN / NR-ARFCN)"
+msgstr "شماره کانال (EARFCN / NR-ARFCN)"
+
+msgid "Lock this cell"
+msgstr "قفل کردن این سلول"
+
+msgid "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. A channel number, not a frequency in MHz; the cell need not be in the neighbor list."
+msgstr "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. شماره کانال، نه فرکانس بر حسب مگاهرتز؛ لازم نیست سلول در فهرست سلول‌های همسایه باشد."
+
+msgid "Applying restarts the radio stack (SFUN) and briefly interrupts cellular service. Settings are saved and replayed by the plugin after AT is ready when Apply at startup is enabled. A platform pre-radio hook can replay without a restart. Apply with no bands selected to restore automatic mode."
+msgstr "اعمال، پشتهٔ رادیو را دوباره راه‌اندازی می‌کند (SFUN) و سرویس سلولی را برای مدت کوتاهی قطع می‌کند. وقتی «اعمال هنگام راه‌اندازی» فعال باشد، تنظیمات ذخیره می‌شوند و افزونه پس از آماده شدن AT آن‌ها را دوباره اعمال می‌کند. یک هوک پیش از رادیوی پلتفرم می‌تواند بدون راه‌اندازی مجدد آن‌ها را اعمال کند. برای بازگشت به حالت خودکار، بدون انتخاب هیچ باندی اعمال کنید."
+
+msgid "Back to automatic"
+msgstr "بازگشت به خودکار"
+
+msgid "The network mode and band locks are stored in the modem and stay in force in Android too. If you are not sure, reset them before switching to Android."
+msgstr "حالت شبکه و قفل باندها در مودم ذخیره می‌شوند و در Android هم برقرار می‌مانند. اگر مطمئن نیستید، پیش از رفتن به Android آن‌ها را بازنشانی کنید."
+
+msgid "Reset all to automatic"
+msgstr "بازنشانی همه به خودکار"
+
+msgid "Apply “%s”?"
+msgstr "«%s» اعمال شود؟"
+
+msgid "Applying %s in the background…"
+msgstr "در حال اعمال %s در پس‌زمینه…"
+
+msgid "Applying %s in the background… (SFUN restart and re-registration, about 30 seconds)"
+msgstr "در حال اعمال %s در پس‌زمینه… (راه‌اندازی مجدد SFUN و ثبت دوباره، حدود 30 ثانیه)"
+
+msgid "Queued: another lock is being applied during SFUN restart; this will take effect afterward"
+msgstr "در صف: قفل دیگری در حین راه‌اندازی مجدد SFUN در حال اعمال است؛ این مورد پس از آن اعمال می‌شود"
+
+msgid "Confirming the EN-DC status…"
+msgstr "در حال تأیید وضعیت EN-DC…"
+
+msgid "Confirming apply at startup…"
+msgstr "در حال تأیید اعمال هنگام راه‌اندازی…"
+
+msgid "Started in background: %s (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "در پس‌زمینه آغاز شد: %s (راه‌اندازی مجدد SFUN، حدود 30 ثانیه)؛ در حال خواندن دوبارهٔ وضعیت…"
+
+msgid "Disable EN-DC (NSA anchor)"
+msgstr "غیرفعال‌سازی EN-DC (لنگر NSA)"
+
+msgid "Enable EN-DC (NSA anchor)"
+msgstr "فعال‌سازی EN-DC (لنگر NSA)"
+
+msgid "Disable apply at startup"
+msgstr "غیرفعال‌سازی اعمال هنگام راه‌اندازی"
+
+msgid "Enable apply at startup"
+msgstr "فعال‌سازی اعمال هنگام راه‌اندازی"
+
+msgid "Reading the modem directly (a few seconds at most)…"
+msgstr "در حال خواندن مستقیم از مودم (حداکثر چند ثانیه)…"
+
+msgid "Refresh failed"
+msgstr "تازه‌سازی ناموفق بود"
+
+msgid "Refreshed"
+msgstr "تازه شد"
+
+msgid "NR bands: back to automatic"
+msgstr "باندهای NR: بازگشت به خودکار"
+
+msgid "LTE bands: back to automatic"
+msgstr "باندهای LTE: بازگشت به خودکار"
+
+msgid "Network mode automatic, EN-DC on, all LTE and NR bands, no cell lock. The saved lock settings are cleared, so nothing is replayed at startup."
+msgstr "حالت شبکه خودکار، EN-DC روشن، همه باندهای LTE و NR، بدون قفل سلول. تنظیمات ذخیره‌شده پاک می‌شوند و هنگام راه‌اندازی چیزی دوباره اعمال نمی‌شود."
+
+msgid "Reset"
+msgstr "بازنشانی"
+
+msgid "Remove the %s cell lock"
+msgstr "حذف قفل سلول %s"
+
+msgid "The radio stack will restart (SFUN), taking about 30 seconds."
+msgstr "پشتهٔ رادیو دوباره راه‌اندازی می‌شود (SFUN) و حدود 30 ثانیه طول می‌کشد."
+
+msgid "Removing the %s cell lock…"
+msgstr "در حال حذف قفل سلول %s…"
+
+msgid "Unlock failed: %s"
+msgstr "باز کردن قفل ناموفق بود: %s"
+
+msgid "Unlock started in background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "باز کردن قفل در پس‌زمینه آغاز شد (راه‌اندازی مجدد SFUN، حدود 30 ثانیه)؛ در حال خواندن دوبارهٔ وضعیت…"
+
+msgid "Locking %s in the background…"
+msgstr "در حال قفل کردن %s در پس‌زمینه…"
+
+msgid "Locked %s in the background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "%s در پس‌زمینه قفل شد (راه‌اندازی مجدد SFUN، حدود 30 ثانیه)؛ در حال خواندن دوبارهٔ وضعیت…"
+
+msgid "Enter a channel number and a PCI in the ranges below"
+msgstr "شماره کانال و PCI را در محدوده‌های زیر وارد کنید"
+
+msgid "No serving-network data"
+msgstr "داده‌ای از شبکهٔ سرویس‌دهنده نیست"
+
+msgid "NR serving cell"
+msgstr "سلول سرویس‌دهندهٔ NR"
+
+msgid "Status confirmed"
+msgstr "وضعیت تأیید شد"
+
+msgid "Readback timed out; select “Refresh lock status”"
+msgstr "مهلت خواندن دوباره تمام شد؛ «تازه‌سازی وضعیت قفل» را انتخاب کنید"
+
+msgid "Reset verified: network mode automatic, EN-DC on, all bands, no cell lock; the saved lock settings are cleared"
+msgstr "بازنشانی تأیید شد: حالت شبکه خودکار، EN-DC روشن، همه باندها، بدون قفل سلول؛ تنظیمات قفل ذخیره‌شده پاک شدند"
+
+msgid "Applied (EN-DC does not require a radio-stack restart)"
+msgstr "اعمال شد (EN-DC نیازی به راه‌اندازی مجدد پشتهٔ رادیو ندارد)"
+
+msgid "Apply at startup is on"
+msgstr "اعمال هنگام راه‌اندازی روشن است"
+
+msgid "Apply at startup is off"
+msgstr "اعمال هنگام راه‌اندازی خاموش است"
+
+msgid "EN-DC status readback timed out; use “Refresh lock status” to confirm"
+msgstr "مهلت خواندن وضعیت EN-DC تمام شد؛ برای تأیید از «تازه‌سازی وضعیت قفل» استفاده کنید"
+
+msgid "Apply-at-startup status readback timed out; use “Refresh lock status” to confirm"
+msgstr "مهلت خواندن وضعیت اعمال هنگام راه‌اندازی تمام شد؛ برای تأیید از «تازه‌سازی وضعیت قفل» استفاده کنید"
+
+msgid "Locked cells"
+msgstr "سلول‌های قفل‌شده"
+
+msgid "Unlock %s"
+msgstr "باز کردن قفل %s"
+
+msgid "Automatic (%d supported)"
+msgstr "خودکار (%d پشتیبانی‌شده)"
+
+msgid "%d locked: %s"
+msgstr "%d قفل‌شده: %s"
+
+msgid "Repair DNS?"
+msgstr "DNS ترمیم شود؟"
+
+msgid "This removes the DNS forwarder of a package that is no longer installed. If no other DNS server is left, the device then uses the DNS servers of the mobile connection: the carrier sees the names you look up, outside any proxy or VPN."
+msgstr "این کار ارسال DNS بسته‌ای را که دیگر نصب نیست حذف می‌کند. اگر سرور DNS دیگری نماند، دستگاه از سرورهای DNS اتصال همراه استفاده می‌کند: اپراتور نام‌هایی را که جستجو می‌کنید، بیرون از هر پراکسی یا VPN، می‌بیند."
+
+msgid "Repair DNS"
+msgstr "ترمیم DNS"
+
+msgid "Packages installed on the device are not part of a release image. An update writes them down, and the new system installs them again at its first boot, once it is online. Until a package is back its settings are set aside."
+msgstr "بسته‌هایی که روی دستگاه نصب شده‌اند بخشی از ایمیج نسخه نیستند. به‌روزرسانی آن‌ها را ثبت می‌کند و سیستم جدید در اولین راه‌اندازی، به محض آنلاین شدن، دوباره نصبشان می‌کند. تا بازگشت بسته، تنظیماتش کنار گذاشته می‌شود."
+
+msgid "No packages to install again."
+msgstr "بسته‌ای برای نصب دوباره نیست."
+
+msgid "All back"
+msgstr "همه برگشتند"
+
+msgid "Not installed yet"
+msgstr "هنوز نصب نشده"
+
+msgid "Could not be installed again"
+msgstr "نصب دوباره ممکن نشد"
+
+msgid "Waiting for the internet"
+msgstr "در انتظار اینترنت"
+
+msgid "Given up: no internet at five boots"
+msgstr "رها شد: در پنج راه‌اندازی اینترنت نبود"
+
+msgid "Skipped"
+msgstr "رد شد"
+
+msgid "Written down by the update from %s"
+msgstr "ثبت‌شده توسط به‌روزرسانی از %s"
+
+msgid "Installed again"
+msgstr "دوباره نصب شدند"
+
+msgid "Install them yourself from where you got them (a package file: apk add --allow-untrusted FILE.apk)."
+msgstr "خودتان آن‌ها را از جایی که گرفته‌اید نصب کنید (یک فایل بسته: apk add --allow-untrusted FILE.apk)."
+
+msgid "Settings set aside in /etc/mu300/orphaned-config"
+msgstr "تنظیمات کنار گذاشته در /etc/mu300/orphaned-config"
+
+msgid "DNS still goes to a package that is not installed: the device has no DNS through it."
+msgstr "DNS هنوز به بسته‌ای می‌رود که نصب نیست: دستگاه از طریق آن DNS ندارد."
+
+msgid "Try again"
+msgstr "تلاش دوباره"
+
+msgid "Dismiss the note"
+msgstr "بستن یادداشت"
+
+msgid "started"
+msgstr "آغاز شد"
+
+msgid "asleep now (asked)"
+msgstr "خواب اکنون (درخواستی)"
+
+msgid "woken: power daemon stopping"
+msgstr "بیدار شد: سرویس انرژی در حال توقف"
+
+msgid "woken by a key"
+msgstr "با یک کلید بیدار شد"
+
+msgid "woken by the Wi-Fi key"
+msgstr "با کلید Wi-Fi بیدار شد"
+
+msgid "woken (mu300-power wake)"
+msgstr "بیدار شد (mu300-power wake)"
+
+msgid "woken by a computer on USB"
+msgstr "با رایانه از طریق USB بیدار شد"
+
+msgid "woken: plugged in"
+msgstr "بیدار شد: به برق وصل شد"
+
+msgid "woken by a Wi-Fi client"
+msgstr "با یک کلاینت Wi-Fi بیدار شد"
+
+msgid "charging boot (powered on by the charger)"
+msgstr "راه‌اندازی شارژ (با شارژر روشن شد)"
+
+msgid "the hotspot is down"
+msgstr "هات‌اسپات خاموش است"
+
+msgid "the VPN is still stopped"
+msgstr "VPN هنوز متوقف است"
+
+msgid "5G (EN-DC) is still off after a failed resume"
+msgstr "5G (EN-DC) پس از ازسرگیری ناموفق هنوز خاموش است"
+
+msgid "self-check: %s"
+msgstr "خودآزمایی: %s"
+
+msgid "asleep: no client for %d min (%s)"
+msgstr "خواب: %d دقیقه بدون کلاینت (%s)"
+
+msgid "asleep: profile now %s"
+msgstr "خواب: پروفایل اکنون %s"
+
+msgid "woken by the %s key"
+msgstr "با کلید %s بیدار شد"
+
+msgid "the modem is suspended (%s)"
+msgstr "مودم معلق است (%s)"
+
+msgid "Enter a whole number from 0 to %d"
+msgstr "یک عدد صحیح از 0 تا %d وارد کنید"
+
+msgid "Power status unavailable"
+msgstr "وضعیت توان در دسترس نیست"
+
+msgid "Plugged in"
+msgstr "به برق وصل است"
+
+msgid "On battery"
+msgstr "روی باتری"
+
+msgid "Saver"
+msgstr "صرفه‌جویی"
+
+msgid "Asleep: hotspot off"
+msgstr "خواب: هات‌اسپات خاموش است"
+
+msgid "Charging boot: press the Wi-Fi key to start"
+msgstr "راه‌اندازی در حال شارژ: برای شروع کلید Wi-Fi را بزنید"
+
+msgid "Awake"
+msgstr "بیدار"
+
+msgid "forced"
+msgstr "اجباری"
+
+msgid "automatic, battery under %d %%"
+msgstr "خودکار، باتری زیر %d %%"
+
+msgid "automatic"
+msgstr "خودکار"
+
+msgid "Nobody connected for %d s"
+msgstr "%d ثانیه است که کسی متصل نیست"
+
+msgid "Power source"
+msgstr "منبع تغذیه"
+
+msgid "Profile"
+msgstr "نمایه"
+
+msgid "Profile in use: %s (%s)"
+msgstr "نمایه در حال استفاده: %s (%s)"
+
+msgid "%d %%, %s, %d mV, %d mA, %.1f °C"
+msgstr "%d %%, %s, %d mV, %d mA, %.1f °C"
+
+msgid "Charger"
+msgstr "شارژر"
+
+msgid "Charger: %s, %s port"
+msgstr "شارژر: %s، درگاه %s"
+
+msgid "Charging paused: battery temperature"
+msgstr "شارژ متوقف شد: دمای باتری"
+
+msgid "Charging paused: charge limit"
+msgstr "شارژ متوقف شد: حد شارژ"
+
+msgid "Sleep now"
+msgstr "اکنون بخواب"
+
+msgid "Wake"
+msgstr "بیدار کن"
+
+msgid "Nobody connected means no Wi-Fi client and no computer on USB. The Wi-Fi key, a computer on USB or the charger wake the device."
+msgstr "کسی متصل نیست یعنی نه کلاینت Wi-Fi هست و نه رایانه‌ای روی USB. کلید Wi-Fi، رایانه‌ای روی USB یا شارژر دستگاه را بیدار می‌کند."
+
+msgid "Automatic: plugged in / on battery"
+msgstr "خودکار: به برق وصل / روی باتری"
+
+msgid "Switch to Saver under %"
+msgstr "رفتن به صرفه‌جویی زیر %"
+
+msgid "Stop charging at"
+msgstr "توقف شارژ در"
+
+msgid "0 % never charges the battery (the device runs on the charger), 100 % charges it full; in between, charging stops at that level and starts again 5 points lower. Under 5 % the battery always charges."
+msgstr "0 % هرگز باتری را شارژ نمی‌کند (دستگاه با شارژر کار می‌کند)، 100 % آن را کامل شارژ می‌کند؛ در میانه، شارژ در همان سطح متوقف می‌شود و 5 واحد پایین‌تر دوباره شروع می‌شود. زیر 5 % باتری همیشه شارژ می‌شود."
+
+msgid "80 % keeps the battery healthier on a device that stays plugged in."
+msgstr "80 % سلامت باتری را در دستگاهی که همیشه به برق وصل است بهتر حفظ می‌کند."
+
+msgid "When the charger switches the device on"
+msgstr "وقتی شارژر دستگاه را روشن می‌کند"
+
+msgid "Charge only, until a key starts it"
+msgstr "فقط شارژ، تا زمانی که یک کلید آن را راه‌اندازی کند"
+
+msgid "Start normally"
+msgstr "راه‌اندازی عادی"
+
+msgid "Keep as is"
+msgstr "بدون تغییر"
+
+msgid "LTE only (5G off)"
+msgstr "فقط LTE (5G خاموش)"
+
+msgid "On"
+msgstr "روشن"
+
+msgid "Full"
+msgstr "کامل"
+
+msgid "Eco: big core off"
+msgstr "اقتصادی: هسته بزرگ خاموش"
+
+msgid "Hotspot off after (min, 0 = never)"
+msgstr "خاموش شدن هات‌اسپات پس از (دقیقه، 0 = هرگز)"
+
+msgid "Modem when idle"
+msgstr "مودم در حالت بیکاری"
+
+msgid "LEDs when idle"
+msgstr "ال‌ای‌دی‌ها در حالت بیکاری"
+
+msgid "Ignored lines in power.conf: %s"
+msgstr "خطوط نادیده‌گرفته‌شده در power.conf: %s"
+
+msgid "Configure how this plugin connects to the current Unisoc OpenWrt platform. Changes do not require editing the dashboard, AT, locks or SMS pages."
+msgstr "نحوهٔ اتصال این افزونه به پلتفرم Unisoc OpenWrt فعلی را پیکربندی کنید. تغییرات نیازی به ویرایش صفحه‌های داشبورد، AT، قفل‌ها یا SMS ندارند."
+
+msgid "Platform adapter"
+msgstr "آداپتور پلتفرم"
+
+msgid "AT backend"
+msgstr "بک‌اند AT"
+
+msgid "Auto-detect"
+msgstr "تشخیص خودکار"
+
+msgid "atinout + serial port"
+msgstr "atinout + پورت سریال"
+
+msgid "Custom adapter"
+msgstr "آداپتور سفارشی"
+
+msgid "AT serial port"
+msgstr "پورت سریال AT"
+
+msgid "Custom AT adapter"
+msgstr "آداپتور AT سفارشی"
+
+msgid "The executable receives a timeout in seconds and the complete AT command, in that order. It must share the serial lock with the platform dialer."
+msgstr "فایل اجرایی یک مهلت زمانی به ثانیه و دستور کامل AT را به همین ترتیب دریافت می‌کند. باید قفل پورت سریال را با شماره‌گیر پلتفرم به اشتراک بگذارد."
+
+msgid "SMS adapter"
+msgstr "آداپتور SMS"
+
+msgid "Implement the list, show, send, delete and sync subcommands; leave blank to find mu300-sms automatically."
+msgstr "زیرفرمان‌های list، show، send، delete و sync را پیاده‌سازی کنید؛ برای یافتن خودکار mu300-sms خالی بگذارید."
+
+msgid "SMS pool directory"
+msgstr "پوشهٔ مخزن SMS"
+
+msgid "Cellular logical interface"
+msgstr "رابط منطقی سلولی"
+
+msgid "Cellular IPv6 interface"
+msgstr "رابط IPv6 سلولی"
+
+msgid "Cellular network device"
+msgstr "دستگاه شبکهٔ سلولی"
+
+msgid "Leave blank to detect from netifd"
+msgstr "برای تشخیص از netifd خالی بگذارید"
+
+msgid "LAN bridge"
+msgstr "پل LAN"
+
+msgid "Wi-Fi device"
+msgstr "دستگاه Wi-Fi"
+
+msgid "USB device"
+msgstr "دستگاه USB"
+
+msgid "Maximum wait for AT readiness (seconds)"
+msgstr "حداکثر انتظار برای آمادگی AT (ثانیه)"
+
+msgid "Home dashboard refresh interval (seconds)"
+msgstr "فاصلهٔ تازه‌سازی داشبورد خانه (ثانیه)"
+
+msgid "Controls only the home dashboard refresh rate; 0.5–60 seconds. Reopen Home after saving to apply."
+msgstr "فقط سرعت تازه‌سازی داشبورد خانه را کنترل می‌کند؛ 0.5–60 ثانیه. برای اعمال، پس از ذخیره صفحهٔ خانه را دوباره باز کنید."
+
+msgid "Persistent state directory"
+msgstr "پوشهٔ وضعیت ماندگار"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM. Mobile data will disconnect briefly."
+msgstr "Switching SIM. Mobile data will disconnect briefly."
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switch failed; check SIM readiness and hot switching."
+msgstr "SIM switch failed; check SIM readiness and hot switching."
+
+# Source-language fallback for untranslated new controls.
+msgid "Ready"
+msgstr "Ready"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM"
+msgstr "Switching SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switched; saved as boot default"
+msgstr "SIM switched; saved as boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch failed; previous SIM restored"
+msgstr "Switch failed; previous SIM restored"
+
+msgid "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+msgstr "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+
+msgid "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+msgstr "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+
+# Source-language fallback for untranslated new controls.
+msgid "Radio state unknown; reboot required"
+msgstr "Radio state unknown; reboot required"
+
+msgid "Radio state unknown; the device is restarting."
+msgstr "Radio state unknown; the device is restarting."
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM control is only for the U30 Air on OpenWrt."
+msgstr "Dual SIM control is only for the U30 Air on OpenWrt."
+
+# Source-language fallback for untranslated new controls.
+msgid "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+msgstr "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+
+msgid "No card answered in the chosen SIM position at the last boot."
+msgstr "No card answered in the chosen SIM position at the last boot."
+
+msgid "The chosen SIM is locked by its PIN."
+msgstr "The chosen SIM is locked by its PIN."
+
+msgid "The chosen SIM got no mobile data within the time at its first boot."
+msgstr "The chosen SIM got no mobile data within the time at its first boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The second SIM's modem channels did not come up at the last boot."
+msgstr "The second SIM's modem channels did not come up at the last boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The last dual-SIM boot never confirmed itself."
+msgstr "The last dual-SIM boot never confirmed itself."
+
+msgid "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+msgstr "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+
+# Source-language fallback for untranslated new controls.
+msgid "Active SIM"
+msgstr "Active SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "Cold-boot default"
+msgstr "Cold-boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control unavailable"
+msgstr "SIM control unavailable"
+
+# Source-language fallback for untranslated new controls.
+msgid "The device is back on SIM1 without live switching; choose again below to try once more."
+msgstr "The device is back on SIM1 without live switching; choose again below to try once more."
+
+msgid "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+msgstr "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching"
+msgstr "Enable hot switching"
+
+msgid "This device supports next-boot SIM selection only; live switching is unavailable."
+msgstr "This device supports next-boot SIM selection only; live switching is unavailable."
+
+# Source-language fallback for untranslated new controls.
+msgid "Reboot after enabling hot switching to prepare both SIM channels."
+msgstr "Reboot after enabling hot switching to prepare both SIM channels."
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch to SIM%d"
+msgstr "Switch to SIM%d"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM%d at next boot"
+msgstr "Use SIM%d at next boot"
+
+msgid "Built-in SIM 1"
+msgstr "سیم‌کارت داخلی ۱"
+
+msgid "Built-in SIM 2"
+msgstr "سیم‌کارت داخلی ۲"
+
+msgid "Built-in SIM 3"
+msgstr "سیم‌کارت داخلی ۳"
+
+msgid "External SIM"
+msgstr "سیم‌کارت خارجی"
+
+msgid "SIM card"
+msgstr "سیم‌کارت"
+
+msgid "Built-in SIM 3 shares SIM2, the external SIM shares SIM1. The card chosen here is switched in before the modem starts, at the next boot; without a choice the cards stay as the bootloader sets them."
+msgstr "سیم‌کارت داخلی ۳ با SIM2 و سیم‌کارت خارجی با SIM1 مشترک است. کارتی که اینجا انتخاب شود در راه‌اندازی بعدی، پیش از روشن شدن مودم، وصل می‌شود؛ بدون انتخاب، کارت‌ها همان‌طور می‌مانند که بوت‌لودر تنظیم می‌کند."
+
+msgid "As the bootloader sets them"
+msgstr "همان‌طور که بوت‌لودر تنظیم می‌کند"
+
+msgid "Applying the radio setting…"
+msgstr "در حال اعمال تنظیم رادیو…"
+
+msgid "SIM settings are not available"
+msgstr "تنظیمات سیم‌کارت در دسترس نیست"
+
+msgid "Modem default"
+msgstr "پیش‌فرض مودم"
+
+msgid "SIM%d"
+msgstr "SIM%d"
+
+msgid "in use"
+msgstr "در حال استفاده"
+
+msgid "Turn off the radio of SIM%d"
+msgstr "خاموش کردن رادیوی SIM%d"
+
+msgid "Radio"
+msgstr "رادیو"
+
+msgid "VoLTE"
+msgstr "VoLTE"
+
+msgid "VoNR"
+msgstr "VoNR"
+
+msgid "Modem: %s"
+msgstr "مودم: %s"
+
+msgid "Sent to this SIM when its radio next starts."
+msgstr "دفعه بعد که رادیوی این سیم‌کارت روشن شود، برای آن فرستاده می‌شود."
+
+msgid "VoLTE and VoNR for each SIM, kept across reboots and sent again whenever that SIM starts. VoLTE is on unless switched off; VoNR stays as the modem has it until set."
+msgstr "VoLTE و VoNR برای هر سیم‌کارت؛ پس از راه‌اندازی مجدد حفظ می‌شوند و هر بار که آن سیم‌کارت شروع به کار کند دوباره فرستاده می‌شوند. VoLTE روشن است مگر خاموش شود؛ VoNR تا وقتی تنظیم نشود همان حالت مودم را دارد."
+
+msgid "All radios off (airplane mode)"
+msgstr "همه رادیوها خاموش (حالت هواپیما)"
+
+msgid "All radios on"
+msgstr "همه رادیوها روشن"
+
+msgid "No SIM will have calls, SMS or data, also after a reboot, until a radio is turned on again here or with the dashboard's radio button."
+msgstr "هیچ سیم‌کارتی تماس، پیامک یا داده نخواهد داشت، حتی پس از راه‌اندازی مجدد، تا وقتی رادیویی دوباره اینجا یا با دکمه رادیو در داشبورد روشن شود."
+
+msgid "Each SIM's radio stays as set here after a reboot. A SIM whose radio is off has no calls, SMS or data, and the device does not switch to it."
+msgstr "رادیوی هر سیم‌کارت پس از راه‌اندازی مجدد همان‌طور که اینجا تنظیم شده می‌ماند. سیم‌کارتی که رادیویش خاموش است تماس، پیامک یا داده ندارد و دستگاه به آن تغییر نمی‌کند."
+
+msgid "The setting is saved, but the radio did not follow it yet."
+msgstr "تنظیم ذخیره شد، اما رادیو هنوز از آن پیروی نکرده است."
+
+msgid "Recipient: number, e.g. 10086 or +86..."
+msgstr "گیرنده: شماره، مثلاً 10086 یا +86..."
+
+msgid "Sync from SIM"
+msgstr "همگام‌سازی از SIM"
+
+msgid "Clear local pool"
+msgstr "پاک کردن مخزن محلی"
+
+msgid "Select a conversation on the left, or enter a number below to send."
+msgstr "گفت‌وگویی را از فهرست انتخاب کنید یا برای ارسال، شماره‌ای را در پایین وارد کنید."
+
+msgid "Message (Enter to send, Shift+Enter for newline)"
+msgstr "پیام (Enter برای ارسال، Shift+Enter برای خط جدید)"
+
+msgid "Sending uses AT+CMGS (PDU mode); retry if the channel is busy. To delete one message, use the bin icon on its bubble."
+msgstr "ارسال از AT+CMGS (حالت PDU) استفاده می‌کند؛ اگر کانال مشغول است دوباره تلاش کنید. برای حذف یک پیام، از نماد سطل زباله روی حباب آن استفاده کنید."
+
+msgid "Sending…"
+msgstr "در حال ارسال…"
+
+msgid "Sent; the list refreshes shortly."
+msgstr "ارسال شد؛ فهرست به‌زودی تازه می‌شود."
+
+msgid "Sending failed"
+msgstr "ارسال ناموفق بود"
+
+msgid "Syncing from the SIM in the background (AT+CMGL)…"
+msgstr "در حال همگام‌سازی از SIM در پس‌زمینه (AT+CMGL)…"
+
+msgid "SIM sync started; the list refreshes in a few seconds."
+msgstr "همگام‌سازی SIM آغاز شد؛ فهرست تا چند ثانیهٔ دیگر تازه می‌شود."
+
+msgid "Clear local SMS pool"
+msgstr "پاک کردن مخزن محلی SMS"
+
+msgid "Only local files will be deleted; messages on the SIM remain."
+msgstr "فقط فایل‌های محلی حذف می‌شوند؛ پیام‌های روی SIM باقی می‌مانند."
+
+msgid "Delete this SMS"
+msgstr "حذف این SMS"
+
+msgid "Deletion cannot be undone."
+msgstr "حذف قابل بازگشت نیست."
+
+msgid "Local only"
+msgstr "فقط محلی"
+
+msgid "Local + SIM"
+msgstr "محلی + SIM"
+
+msgid "Delete failed"
+msgstr "حذف ناموفق بود"
+
+msgid "Deleted (local + SIM)"
+msgstr "حذف شد (محلی + SIM)"
+
+msgid "Deleted (local only)"
+msgstr "حذف شد (فقط محلی)"
+
+msgid "Enter both a number and a message."
+msgstr "هم شماره و هم پیام را وارد کنید."
+
+msgid "· %d messages, %d unread · %d conversations"
+msgstr "· %d پیام، %d خوانده‌نشده · %d گفت‌وگو"
+
+msgid "· %d messages · %d conversations"
+msgstr "· %d پیام · %d گفت‌وگو"
+
+msgid "The pool is empty. Incoming and sent messages appear here, or select “Sync from SIM”."
+msgstr "مخزن خالی است. پیام‌های دریافتی و ارسالی اینجا نمایش داده می‌شوند، یا «همگام‌سازی از SIM» را انتخاب کنید."
+
+msgid "Me: %s"
+msgstr "من: %s"
+
+msgid "Incomplete: %d of %d parts arrived"
+msgstr "ناقص: %d از %d بخش رسید"
+
+msgid "Delete"
+msgstr "حذف"
+
+msgid "ttyd is not installed."
+msgstr "ttyd نصب نیست."
+
+msgid "The terminal is turned off (/etc/config/ttyd)."
+msgstr "ترمینال خاموش است (/etc/config/ttyd)."
+
+msgid "Too many terminals are opening at once. Try again in a minute."
+msgstr "ترمینال‌های زیادی هم‌زمان باز می‌شوند. یک دقیقه دیگر دوباره امتحان کنید."
+
+msgid "The terminal is not available."
+msgstr "ترمینال در دسترس نیست."
+
+msgid "This is a root shell on the device: every command runs with full rights, and a mistake can make the device unbootable."
+msgstr "این یک پوسته root روی دستگاه است: هر فرمان با دسترسی کامل اجرا می‌شود و یک اشتباه می‌تواند دستگاه را از راه‌اندازی بازدارد."
+
+msgid "It is reachable from the LAN only (USB and the hotspot), never from mobile data, and only from this logged-in page."
+msgstr "فقط از LAN (USB و هات‌اسپات) در دسترس است، هرگز از داده همراه، و فقط از همین صفحه‌ای که با آن وارد شده‌اید."
+
+msgid "It closes after a minute without activity."
+msgstr "پس از یک دقیقه بدون فعالیت بسته می‌شود."
+
+msgid "It closes after %d minutes without activity."
+msgstr "پس از %d دقیقه بدون فعالیت بسته می‌شود."
+
+msgid "Reconnect"
+msgstr "اتصال دوباره"
+
+msgid "Open in a new tab"
+msgstr "باز کردن در زبانه جدید"
+
+msgid "This page was opened over HTTPS, and the terminal is served over HTTP on the LAN: it opens in a tab of its own."
+msgstr "این صفحه با HTTPS باز شده و ترمینال روی LAN با HTTP ارائه می‌شود: در زبانه جداگانه‌ای باز می‌شود."
+
+msgid "The data usage could not be read"
+msgstr "مصرف داده خوانده نشد"
+
+msgid "Today"
+msgstr "امروز"
+
+msgid "Days left in this cycle"
+msgstr "روزهای باقی‌مانده دوره"
+
+msgid "Received"
+msgstr "دریافتی"
+
+msgid "Sent"
+msgstr "ارسالی"
+
+msgid "Corrected by"
+msgstr "اصلاح به میزان"
+
+msgid "Monthly cap"
+msgstr "سقف ماهانه"
+
+msgid "%s, warning at %d%%"
+msgstr "%s، هشدار در %d%%"
+
+msgid "The monthly cap is reached: mobile data was turned off. It comes back on when the next cycle starts."
+msgstr "سقف ماهانه پر شد: داده همراه خاموش شد. با شروع دوره بعد دوباره روشن می‌شود."
+
+msgid "%s waits for the clock: it has not been set over the network yet. It already counts towards this cycle and goes to its day once the clock is set."
+msgstr "%s منتظر ساعت است: ساعت هنوز از شبکه تنظیم نشده. این مقدار از هم‌اکنون در این دوره حساب می‌شود و پس از تنظیم ساعت به روز خودش می‌رود."
+
+msgid "The interface %s is not there right now: nothing is counted until it comes back."
+msgstr "رابط %s اکنون وجود ندارد: تا برگردد چیزی شمرده نمی‌شود."
+
+msgid "Counted on %s, both ways, as the operator counts it (a VPN's overhead included)."
+msgstr "روی %s، در هر دو جهت، همان‌طور که اپراتور می‌شمارد (با سربار VPN)."
+
+msgid "The count is kept in memory and written to the disk every 30 minutes and at shutdown: a power cut loses at most the last half hour."
+msgstr "شمارش در حافظه نگه داشته می‌شود و هر ۳۰ دقیقه و هنگام خاموشی روی دیسک نوشته می‌شود: قطع برق حداکثر نیم ساعت آخر را از دست می‌دهد."
+
+msgid "Counting since %s."
+msgstr "شمارش از %s."
+
+msgid "Per day"
+msgstr "روزانه"
+
+msgid "Date"
+msgstr "تاریخ"
+
+msgid "Total"
+msgstr "مجموع"
+
+msgid "Per billing cycle"
+msgstr "بر اساس دوره صورتحساب"
+
+msgid "Billing cycle"
+msgstr "دوره صورتحساب"
+
+msgid "Enter a size in GB, for example 50 or 2.5"
+msgstr "اندازه را به گیگابایت وارد کنید، مثلاً 50 یا 2.5"
+
+msgid "Enter a percentage from 1 to 100"
+msgstr "درصدی از 1 تا 100 وارد کنید"
+
+msgid "Turn mobile data off at the cap"
+msgstr "خاموش کردن داده همراه در سقف"
+
+msgid "When this cycle reaches the cap, mobile data is turned off: no internet through the operator until the next cycle starts, the cap is raised or this is turned off again. Turning mobile data back on by hand keeps it on until the next reboot."
+msgstr "وقتی این دوره به سقف برسد، داده همراه خاموش می‌شود: تا شروع دوره بعد، بالا بردن سقف یا خاموش کردن دوباره این گزینه، اینترنتی از طریق اپراتور نیست. اگر داده همراه را دستی دوباره روشن کنید، تا راه‌اندازی مجدد بعدی روشن می‌ماند."
+
+msgid "Set"
+msgstr "تنظیم"
+
+msgid "Clear the count"
+msgstr "پاک کردن شمارش"
+
+msgid "Every day and billing cycle counted so far is forgotten. Counting goes on from now."
+msgstr "همه روزها و دوره‌های صورتحساب شمرده‌شده تا کنون فراموش می‌شوند. شمارش از همین حالا ادامه می‌یابد."
+
+msgid "Billing cycle and cap"
+msgstr "دوره صورتحساب و سقف"
+
+msgid "A billing cycle starts on day"
+msgstr "دوره صورتحساب از این روز شروع می‌شود"
+
+msgid "31: on the last day of each month"
+msgstr "31: در آخرین روز هر ماه"
+
+msgid "Monthly cap (GB, 0: none)"
+msgstr "سقف ماهانه (گیگابایت، 0: هیچ)"
+
+msgid "Warning at this percentage of the cap"
+msgstr "هشدار در این درصد از سقف"
+
+msgid "Used so far in this cycle (GB)"
+msgstr "مصرف تا کنون در این دوره (گیگابایت)"
+
+msgid "What the operator shows for this cycle (for example when counting started in the middle of it); the count is corrected to it."
+msgstr "آنچه اپراتور برای این دوره نشان می‌دهد (مثلاً اگر شمارش از وسط دوره شروع شده)؛ شمارش با آن اصلاح می‌شود."
+
+msgid "Current setting"
+msgstr "تنظیم فعلی"
+
+msgid "Fixed at %d"
+msgstr "ثابت روی %d"
+
+msgid "Not changed (default)"
+msgstr "تغییر نکرده (پیش‌فرض)"
+
+msgid "Rule in force"
+msgstr "قانون فعال"
+
+msgid "Flow offloading"
+msgstr "تخلیه جریان‌ها (flow offloading)"
+
+msgid "TTL of mobile data"
+msgstr "TTL داده تلفن همراه"
+
+msgid "Every packet that leaves through mobile data gets this TTL (IPv6: hop limit). A phone or laptop behind the hotspot sends 64 (Windows: 128) and the device forwards it with one less, which is how an operator can tell tethered traffic apart."
+msgstr "هر بسته‌ای که از طریق داده تلفن همراه خارج می‌شود این TTL را می‌گیرد (IPv6: hop limit). تلفن یا لپ‌تاپ پشت هات‌اسپات 64 (Windows: 128) می‌فرستد و دستگاه آن را با یکی کمتر ارسال می‌کند؛ اپراتور از همین راه ترافیک اشتراکی را تشخیص می‌دهد."
+
+msgid "On this kernel the firewall fast-path is off while a TTL is set"
+msgstr "در این کرنل تا وقتی TTL تنظیم شده است مسیر سریع دیوار آتش خاموش است"
+
+msgid "Set %d"
+msgstr "تنظیم روی %d"
+
+msgid "Enter a number from 1 to 255"
+msgstr "عددی از 1 تا 255 وارد کنید"
+
+msgid "Turn off"
+msgstr "خاموش کردن"
+
+msgid "64 makes every packet leave like the device's own traffic"
+msgstr "با 64 هر بسته مانند ترافیک خود دستگاه خارج می‌شود"
+
+msgid "Check for updates"
+msgstr "بررسی به‌روزرسانی‌ها"
+
+msgid "Checking the file"
+msgstr "در حال بررسی فایل"
+
+msgid "Update from a file"
+msgstr "به‌روزرسانی از فایل"
+
+msgid "Back to the previous version"
+msgstr "بازگشت به نسخهٔ قبلی"
+
+msgid "Back to the previous boot image"
+msgstr "بازگشت به ایمیج راه‌اندازی قبلی"
+
+msgid "Remove the previous version"
+msgstr "حذف نسخهٔ قبلی"
+
+msgid "Kernel change"
+msgstr "تغییر هسته"
+
+msgid "Starting…"
+msgstr "در حال شروع…"
+
+msgid "Downloading"
+msgstr "در حال دانلود"
+
+msgid "All files are here and verified"
+msgstr "همهٔ فایل‌ها موجودند و تأیید شده‌اند"
+
+msgid "Unpacking the new system"
+msgstr "در حال باز کردن سیستم جدید"
+
+msgid "Carrying over your settings"
+msgstr "در حال انتقال تنظیمات شما"
+
+msgid "Writing down the packages you installed"
+msgstr "در حال یادداشت بسته‌هایی که نصب کرده‌اید"
+
+msgid "Switching to the new system"
+msgstr "در حال رفتن به سیستم جدید"
+
+msgid "Kernel and boot image"
+msgstr "هسته و ایمیج راه‌اندازی"
+
+msgid "Restart the device?"
+msgstr "دستگاه دوباره راه‌اندازی شود؟"
+
+msgid "The device restarts now. The default boot is Android, so it starts Android: switch to Linux from there to start the updated system."
+msgstr "دستگاه اکنون دوباره راه‌اندازی می‌شود. راه‌اندازی پیش‌فرض Android است، پس Android بالا می‌آید: برای شروع سیستم به‌روزشده از همان‌جا به Linux بروید."
+
+msgid "The device restarts now and is away for about a minute. If the new system does not start, the device goes back to Android by itself after the failed attempts."
+msgstr "دستگاه اکنون دوباره راه‌اندازی می‌شود و حدود یک دقیقه در دسترس نیست. اگر سیستم جدید بالا نیاید، دستگاه پس از تلاش‌های ناموفق خودش به Android برمی‌گردد."
+
+msgid "Restarting… open this page again in about a minute."
+msgstr "در حال راه‌اندازی مجدد… حدود یک دقیقهٔ دیگر این صفحه را دوباره باز کنید."
+
+msgid "Running for %s. It goes on when this page is closed; do not switch the device off."
+msgstr "%s است که در حال اجراست. با بستن این صفحه هم ادامه پیدا می‌کند؛ دستگاه را خاموش نکنید."
+
+msgid "Done. Restart the device to start it."
+msgstr "انجام شد. برای اعمال تغییرات دستگاه را دوباره راه‌اندازی کنید."
+
+msgid "Done. Nothing needs a restart."
+msgstr "انجام شد. نیازی به راه‌اندازی مجدد نیست."
+
+msgid "It did not finish, and part of it was done: read the log before you restart."
+msgstr "تمام نشد و بخشی از آن انجام شده است: پیش از راه‌اندازی مجدد گزارش را بخوانید."
+
+msgid "It did not finish. Nothing was changed; the log says why."
+msgstr "تمام نشد. چیزی تغییر نکرده است؛ علت در گزارش آمده است."
+
+msgid "Log"
+msgstr "گزارش"
+
+msgid "Restart now"
+msgstr "اکنون راه‌اندازی مجدد شود"
+
+msgid "Later"
+msgstr "بعداً"
+
+msgid "Close"
+msgstr "بستن"
+
+msgid "Updating is not available on this system"
+msgstr "به‌روزرسانی در این سیستم در دسترس نیست"
+
+msgid "Another update is running on the device"
+msgstr "به‌روزرسانی دیگری روی دستگاه در حال اجراست"
+
+msgid "It was started outside this page (a terminal, the toolkit). Nothing can be started here until it has finished."
+msgstr "بیرون از این صفحه شروع شده است (از ترمینال یا جعبه‌ابزار). تا تمام نشود، این‌جا نمی‌توان چیزی را شروع کرد."
+
+msgid "Restart needed"
+msgstr "راه‌اندازی مجدد لازم است"
+
+msgid "This system was updated and still runs the old version. The new one starts at the next restart."
+msgstr "این سیستم به‌روزرسانی شده و هنوز نسخهٔ قدیمی را اجرا می‌کند. نسخهٔ جدید در راه‌اندازی مجدد بعدی شروع می‌شود."
+
+msgid "Installed"
+msgstr "نصب‌شده"
+
+msgid "This system"
+msgstr "این سیستم"
+
+msgid "Also on this device"
+msgstr "همچنین روی این دستگاه"
+
+msgid "Kernel"
+msgstr "هسته"
+
+msgid "choice %s"
+msgstr "انتخاب %s"
+
+msgid "Boot image"
+msgstr "ایمیج راه‌اندازی"
+
+msgid "from the installer"
+msgstr "از نصب‌کننده"
+
+msgid "Default boot"
+msgstr "راه‌اندازی پیش‌فرض"
+
+msgid "Free space"
+msgstr "فضای خالی"
+
+msgid "Release signatures"
+msgstr "امضای نسخه‌های انتشار"
+
+msgid "checked with the project's key"
+msgstr "با کلید پروژه بررسی می‌شود"
+
+msgid "this system has no release key"
+msgstr "این سیستم کلید انتشار ندارد"
+
+msgid "The default boot is Android: a restart goes to Android, and Linux is started from there."
+msgstr "راه‌اندازی پیش‌فرض Android است: راه‌اندازی مجدد به Android می‌رود و Linux از آن‌جا شروع می‌شود."
+
+msgid "Linux is locked as the default boot: a failed start does not send the device to Android by itself, except the first starts of a new boot image."
+msgstr "Linux به‌عنوان راه‌اندازی پیش‌فرض قفل شده است: شروع ناموفق دستگاه را خودبه‌خود به Android نمی‌فرستد، مگر در نخستین شروع‌های یک ایمیج راه‌اندازی جدید."
+
+msgid "If Linux fails to start %d times in a row, the device starts Android by itself."
+msgstr "اگر Linux %d بار پیاپی بالا نیاید، دستگاه خودش Android را شروع می‌کند."
+
+msgid "Report of the last update"
+msgstr "گزارش آخرین به‌روزرسانی"
+
+msgid "Online update"
+msgstr "به‌روزرسانی آنلاین"
+
+msgid "Asking GitHub…"
+msgstr "در حال پرسیدن از GitHub…"
+
+msgid "Checked %s ago"
+msgstr "%s پیش بررسی شد"
+
+msgid "Not checked yet"
+msgstr "هنوز بررسی نشده"
+
+msgid "Mirror (release files)"
+msgstr "آینه (فایل‌های انتشار)"
+
+msgid "Leave empty for GitHub."
+msgstr "برای GitHub خالی بگذارید."
+
+msgid "Install the packages I added again after the update (needs the device online at the first start)"
+msgstr "بسته‌هایی که افزوده‌ام پس از به‌روزرسانی دوباره نصب شوند (دستگاه در نخستین شروع باید آنلاین باشد)"
+
+msgid "Pre-release"
+msgstr "نسخهٔ پیش‌انتشار"
+
+msgid "Newest release"
+msgstr "جدیدترین نسخهٔ انتشار"
+
+msgid "Release notes"
+msgstr "یادداشت‌های انتشار"
+
+msgid "Download"
+msgstr "دانلود"
+
+msgid "Free space needed"
+msgstr "فضای خالی لازم"
+
+msgid "not enough: remove the previous version first"
+msgstr "کافی نیست: ابتدا نسخهٔ قبلی را حذف کنید"
+
+msgid "A pre-release is a release still being tried: it can have faults a release does not. The previous version is kept all the same."
+msgstr "نسخهٔ پیش‌انتشار نسخه‌ای است که هنوز در حال آزمایش است: ممکن است ایرادهایی داشته باشد که نسخهٔ انتشار ندارد. نسخهٔ قبلی در هر حال نگه داشته می‌شود."
+
+msgid "This system is newer than the newest release (a test release)."
+msgstr "این سیستم از جدیدترین نسخهٔ انتشار جدیدتر است (نسخهٔ آزمایشی)."
+
+msgid "Up to date."
+msgstr "به‌روز است."
+
+msgid "This release is not signed, and this system checks signatures: it is not installed from here. Update from its file below, which asks you to confirm."
+msgstr "این نسخه امضا نشده است و این سیستم امضاها را بررسی می‌کند: از اینجا نصب نمی‌شود. از فایل آن در پایین به‌روزرسانی کنید که از شما تأیید می‌خواهد."
+
+msgid "Update to %s"
+msgstr "به‌روزرسانی به %s"
+
+msgid "Choose at least one system"
+msgstr "دست‌کم یک سیستم را انتخاب کنید"
+
+msgid "Update to %s?"
+msgstr "به %s به‌روزرسانی شود؟"
+
+msgid "The device downloads %s, puts the new system beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "دستگاه %s را دانلود می‌کند، سیستم جدید را کنار سیستم در حال اجرا می‌گذارد و در راه‌اندازی مجدد بعدی به آن می‌رود. تنظیمات شما منتقل می‌شود و نسخهٔ قبلی نگه داشته می‌شود. چند دقیقه طول می‌کشد؛ دستگاه را خاموش نکنید."
+
+msgid "Also offer the pre-release %s"
+msgstr "نسخهٔ پیش‌انتشار %s هم پیشنهاد شود"
+
+msgid "Systems to update:"
+msgstr "سیستم‌هایی که به‌روزرسانی می‌شوند:"
+
+msgid "GitHub could not be reached: the device has no internet connection, or GitHub did not answer. Without internet, update from a file below."
+msgstr "دسترسی به GitHub ممکن نشد: دستگاه به اینترنت وصل نیست یا GitHub پاسخ نداد. بدون اینترنت، در پایین از فایل به‌روزرسانی کنید."
+
+msgid "release"
+msgstr "انتشار"
+
+msgid "For a device without internet: download the Magisk zip of a release for this system and this kernel on another computer, from the release page on GitHub, and upload it here. For this device that is:"
+msgstr "برای دستگاه بدون اینترنت: در رایانه‌ای دیگر، فایل zip مربوط به Magisk از یک نسخهٔ انتشار برای این سیستم و این هسته را از صفحهٔ انتشار در GitHub دانلود و این‌جا بارگذاری کنید. برای این دستگاه چنین است:"
+
+msgid "Uploaded file"
+msgstr "فایل بارگذاری‌شده"
+
+msgid "Checking the file…"
+msgstr "در حال بررسی فایل…"
+
+msgid "It says it is"
+msgstr "خودش می‌گوید"
+
+msgid "kernel %s"
+msgstr "هسته %s"
+
+msgid "Signature"
+msgstr "امضا"
+
+msgid "signed with the project's release key"
+msgstr "با کلید انتشار پروژه امضا شده"
+
+msgid "WRONG: it does not match the project's release key"
+msgstr "نادرست: با کلید انتشار پروژه مطابقت ندارد"
+
+msgid "not signed"
+msgstr "امضا نشده"
+
+msgid "cannot be checked on this system"
+msgstr "در این سیستم قابل بررسی نیست"
+
+msgid "Its system is not installed on this device."
+msgstr "سیستم آن روی این دستگاه نصب نیست."
+
+msgid "It is the other Ubuntu release, not the one installed."
+msgstr "این نسخهٔ دیگر Ubuntu است، نه نسخه‌ای که نصب است."
+
+msgid "It carries another kernel than this device uses. Take the zip for kernel %s, or change the kernel first."
+msgstr "هسته‌ای غیر از هستهٔ این دستگاه دارد. فایل zip هستهٔ %s را بگیرید یا ابتدا هسته را تغییر دهید."
+
+msgid "Its kernel does not run on this model."
+msgstr "هستهٔ آن روی این مدل اجرا نمی‌شود."
+
+msgid "The file is damaged: its contents do not match their checksums."
+msgstr "فایل خراب است: محتوای آن با چک‌سام‌ها مطابقت ندارد."
+
+msgid "Its signature is wrong. This file does not come from the project as it is; it is never installed."
+msgstr "امضای آن نادرست است. این فایل به این شکل از پروژه نیامده است؛ هرگز نصب نمی‌شود."
+
+msgid "This file cannot be used here."
+msgstr "این فایل را این‌جا نمی‌توان به کار برد."
+
+msgid "Compare the SHA-256 with the one in SHA256SUMS-magisk on the release page: it is the only proof of where an unsigned file comes from."
+msgstr "مقدار SHA-256 را با مقدار موجود در SHA256SUMS-magisk در صفحهٔ انتشار مقایسه کنید: این تنها گواهِ منشأ یک فایل امضانشده است."
+
+msgid "This release is installed already; the update would only refresh the boot image."
+msgstr "این نسخهٔ انتشار از قبل نصب است؛ به‌روزرسانی فقط ایمیج راه‌اندازی را تازه می‌کند."
+
+msgid "I know this file is not signed: nothing proves that it comes from the project. I compared its SHA-256 myself and want it installed."
+msgstr "می‌دانم این فایل امضا نشده است: هیچ‌چیز ثابت نمی‌کند که از پروژه آمده باشد. SHA-256 آن را خودم مقایسه کرده‌ام و می‌خواهم نصب شود."
+
+msgid "I know this is %s, older than the installed %s, and want to go back to it."
+msgstr "می‌دانم این %s است و از نسخهٔ نصب‌شدهٔ %s قدیمی‌تر است و می‌خواهم به آن برگردم."
+
+msgid "This is not a release file of this project: a Magisk zip of a release is expected."
+msgstr "این فایلِ انتشار این پروژه نیست: فایل zip مربوط به Magisk از یک نسخهٔ انتشار لازم است."
+
+msgid "Update from this file"
+msgstr "به‌روزرسانی از این فایل"
+
+msgid "Tick the confirmations above first"
+msgstr "ابتدا تأییدهای بالا را تیک بزنید"
+
+msgid "The device puts the system of this file beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "دستگاه سیستم این فایل را کنار سیستم در حال اجرا می‌گذارد و در راه‌اندازی مجدد بعدی به آن می‌رود. تنظیمات شما منتقل می‌شود و نسخهٔ قبلی نگه داشته می‌شود. چند دقیقه طول می‌کشد؛ دستگاه را خاموش نکنید."
+
+msgid "Check the file"
+msgstr "بررسی فایل"
+
+msgid "Remove the file"
+msgstr "حذف فایل"
+
+msgid "Previous version"
+msgstr "نسخهٔ قبلی"
+
+msgid "No previous version is kept on this device."
+msgstr "هیچ نسخهٔ قبلی‌ای روی این دستگاه نگه داشته نشده است."
+
+msgid "replaced %s"
+msgstr "جایگزین‌شده در %s"
+
+msgid "I want the previous system back; what I changed since the update stays in the version I leave."
+msgstr "سیستم قبلی را می‌خواهم؛ آنچه پس از به‌روزرسانی تغییر داده‌ام در نسخه‌ای که ترک می‌کنم می‌ماند."
+
+msgid "Back to the previous version?"
+msgstr "به نسخهٔ قبلی برگردید؟"
+
+msgid "The previous system (%s) becomes the one that starts at the next restart. The version you leave is not kept; settings you changed since the update are not carried back."
+msgstr "سیستم قبلی (%s) همان سیستمی می‌شود که در راه‌اندازی مجدد بعدی شروع می‌شود. نسخه‌ای که ترک می‌کنید نگه داشته نمی‌شود؛ تنظیماتی که پس از به‌روزرسانی تغییر داده‌اید برگردانده نمی‌شود."
+
+msgid "Go back"
+msgstr "بازگشت"
+
+msgid "The previous version is the one running now: restart first."
+msgstr "نسخهٔ قبلی همین حالا در حال اجراست: ابتدا راه‌اندازی مجدد کنید."
+
+msgid "I want the previous kernel and boot image back."
+msgstr "هسته و ایمیج راه‌اندازی قبلی را می‌خواهم."
+
+msgid "Back to the previous boot image?"
+msgstr "به ایمیج راه‌اندازی قبلی برگردید؟"
+
+msgid "The previous boot image (%s) is written to the Linux slot and starts at the next restart. If it does not start, the device goes back to Android by itself."
+msgstr "ایمیج راه‌اندازی قبلی (%s) در اسلات Linux نوشته می‌شود و در راه‌اندازی مجدد بعدی شروع می‌شود. اگر بالا نیاید، دستگاه خودش به Android برمی‌گردد."
+
+msgid "I do not need to go back: delete the previous system to free its space."
+msgstr "نیازی به بازگشت ندارم: سیستم قبلی حذف شود تا فضای آن آزاد شود."
+
+msgid "Remove the previous version?"
+msgstr "نسخهٔ قبلی حذف شود؟"
+
+msgid "The kept copy of the previous system is deleted for good. After that there is no going back to it from this page."
+msgstr "نسخهٔ نگه‌داشته‌شدهٔ سیستم قبلی برای همیشه حذف می‌شود. پس از آن دیگر نمی‌توان از این صفحه به آن برگشت."
+
+msgid "the vendor kernel"
+msgstr "هستهٔ سازنده"
+
+msgid "mainline"
+msgstr "mainline"
+
+msgid "not with Ubuntu 26.04"
+msgstr "نه با Ubuntu 26.04"
+
+msgid "Change the kernel"
+msgstr "تغییر هسته"
+
+msgid "This kernel is the one in use"
+msgstr "همین هسته در حال استفاده است"
+
+msgid "Change the kernel to %s?"
+msgstr "هسته به %s تغییر کند؟"
+
+msgid "The device downloads that kernel from the newest release and writes a new boot image; it starts at the next restart. The previous boot image is kept, and if the new one does not start the device goes back to Android by itself. The device must be online."
+msgstr "دستگاه آن هسته را از جدیدترین نسخهٔ انتشار دانلود می‌کند و یک ایمیج راه‌اندازی جدید می‌نویسد؛ این ایمیج در راه‌اندازی مجدد بعدی شروع می‌شود. ایمیج راه‌اندازی قبلی نگه داشته می‌شود و اگر ایمیج جدید بالا نیاید، دستگاه خودش به Android برمی‌گردد. دستگاه باید آنلاین باشد."
+
+msgid "Start Android at the next restart"
+msgstr "شروع Android در راه‌اندازی مجدد بعدی"
+
+msgid "Start Android at the next restart?"
+msgstr "در راه‌اندازی مجدد بعدی Android شروع شود؟"
+
+msgid "The next restart, and the ones after it, start Android instead of Linux. Linux is started again from Android (the Magisk module's Action button, or mu300-linux)."
+msgstr "راه‌اندازی مجدد بعدی و پس از آن، به‌جای Linux، Android را شروع می‌کند. Linux دوباره از داخل Android شروع می‌شود (دکمهٔ «Action» ماژول Magisk یا mu300-linux)."
+
+msgid "Start Android next"
+msgstr "دفعهٔ بعد Android شروع شود"
+
+msgid "What an update keeps"
+msgstr "به‌روزرسانی چه چیزهایی را نگه می‌دارد"
+
+msgid "An update puts the system of the new release in place and carries over what is yours: the settings, the accounts and their passwords, the device's keys and the home directories. Packages you installed yourself are written down and installed again at the first start, once the device is online. The previous version stays on the device until you remove it, so you can go back."
+msgstr "به‌روزرسانی سیستم نسخهٔ انتشار جدید را جایگزین می‌کند و آنچه مال شماست را منتقل می‌کند: تنظیمات، حساب‌ها و گذرواژه‌هایشان، کلیدهای دستگاه و پوشه‌های خانگی. بسته‌هایی که خودتان نصب کرده‌اید یادداشت می‌شوند و در نخستین شروع، همین که دستگاه آنلاین شد، دوباره نصب می‌شوند. نسخهٔ قبلی تا وقتی حذفش نکنید روی دستگاه می‌ماند تا بتوانید برگردید."
+
+msgid "The wiki's Updating page lists exactly what is kept."
+msgstr "صفحهٔ «به‌روزرسانی» در ویکی دقیقاً فهرست می‌کند چه چیزهایی نگه داشته می‌شود."
+
+msgid "Choose a file first"
+msgstr "ابتدا یک فایل انتخاب کنید"
+
+msgid "Uploading: %s of %s"
+msgstr "در حال بارگذاری: %s از %s"
+
+msgid "running"
+msgstr "در حال اجرا"
+
+msgid "(about %s)"
+msgstr "(حدود %s)"
+
+msgid "Install %s?"
+msgstr "%s نصب شود؟"
+
+msgid "It is installed from this system's package feed."
+msgstr "از مخزن بسته‌های همین سیستم نصب می‌شود."
+
+msgid "It is downloaded from the release of the VPN module and checked against its SHA256SUMS."
+msgstr "از انتشار ماژول VPN دریافت و با SHA256SUMS آن بررسی می‌شود."
+
+msgid "An engine is tens of MB: on mobile data the download counts towards your plan."
+msgstr "هر موتور ده‌ها MB حجم دارد: روی داده تلفن همراه دریافت آن از بسته شما کسر می‌شود."
+
+msgid "Install"
+msgstr "نصب"
+
+msgid "Remove %s?"
+msgstr "%s حذف شود؟"
+
+msgid "Profiles run on it: %s. They cannot start until it is installed again (the module refuses while the running profile needs it)."
+msgstr "پروفایل‌هایی که از آن استفاده می‌کنند: %s. تا نصب دوباره نمی‌توانند شروع شوند (تا وقتی پروفایل در حال اجرا به آن نیاز دارد، ماژول حذف را نمی‌پذیرد)."
+
+msgid "No profile runs on it."
+msgstr "هیچ پروفایلی از آن استفاده نمی‌کند."
+
+msgid "Removed"
+msgstr "حذف شد"
+
+msgid "Each engine is an extra of its own: install only the ones your profiles need. Xray runs vless, vmess, trojan and ss links (with hev-socks5-tunnel), sing-box the same links and its own JSON, mihomo Clash subscriptions, dae hysteria2, tuic and the rest on newer kernels. WireGuard and OpenVPN are packages of the system."
+msgstr "هر موتور یک افزونه مستقل است: فقط آنچه پروفایل‌هایتان لازم دارند نصب کنید. Xray پیوندهای vless، vmess، trojan و ss را اجرا می‌کند (با hev-socks5-tunnel)، sing-box همان پیوندها و JSON خودش را، mihomo اشتراک‌های Clash را، و dae پروتکل‌های hysteria2، tuic و بقیه را روی هسته‌های جدیدتر. WireGuard و OpenVPN بسته‌های سیستم هستند."
+
+msgid "Downloads are tens of MB per engine: on mobile data they count towards your plan. Offline, upload the engine's tarball from the release page of the VPN module."
+msgstr "دریافت‌ها برای هر موتور ده‌ها MB است: روی داده تلفن همراه از بسته شما کسر می‌شود. آفلاین، فایل tarball موتور را از صفحه انتشارهای ماژول VPN بارگذاری کنید."
+
+msgid "The available versions come from the latest release of the VPN module."
+msgstr "نسخه‌های موجود از آخرین انتشار ماژول VPN می‌آیند."
+
+msgid "system package"
+msgstr "بسته سیستم"
+
+msgid "in the vpn bundle"
+msgstr "در بسته vpn"
+
+msgid "extra %s"
+msgstr "افزونه %s"
+
+msgid "not installed"
+msgstr "نصب نشده"
+
+msgid "cannot run here"
+msgstr "اینجا قابل اجرا نیست"
+
+msgid "update available"
+msgstr "به‌روزرسانی موجود است"
+
+msgid "installed"
+msgstr "نصب شده"
+
+msgid "Kind"
+msgstr "نوع"
+
+msgid "Version"
+msgstr "نسخه"
+
+msgid "Available"
+msgstr "موجود"
+
+msgid "not checked"
+msgstr "بررسی نشده"
+
+msgid "Size"
+msgstr "اندازه"
+
+msgid "Needed by"
+msgstr "مورد استفاده"
+
+msgid "no profile"
+msgstr "بدون پروفایل"
+
+msgid "dae needs a kernel with BTF, 5.17 or newer: not the 5.4 vendor kernel (mu300-update kernel 6.18). It can be installed anyway."
+msgstr "dae به هسته‌ای با BTF و نسخه 5.17 یا جدیدتر نیاز دارد: نه هسته 5.4 سازنده (mu300-update kernel 6.18). با این حال می‌توان آن را نصب کرد."
+
+msgid "All engines"
+msgstr "همه موتورها"
+
+msgid "Last %s lines"
+msgstr "%s خط آخر"
+
+msgid "VPN service log"
+msgstr "گزارش سرویس VPN"
+
+msgid "Every 5 s"
+msgstr "هر 5 ثانیه"
+
+msgid "The log is empty."
+msgstr "گزارش خالی است."
+
+msgid "The VPN is starting"
+msgstr "VPN در حال شروع است"
+
+msgid "The VPN is stopped"
+msgstr "VPN متوقف است"
+
+msgid "The VPN is restarting"
+msgstr "VPN در حال راه‌اندازی مجدد است"
+
+msgid "With the kill switch on, nothing leaves the device or the LAN outside the tunnel: while the VPN is down, starting or broken, every connection fails instead of going out directly. It stays up until you stop the VPN here (Stop removes it)."
+msgstr "با روشن بودن kill switch، هیچ چیز خارج از تونل از دستگاه یا LAN بیرون نمی‌رود: تا وقتی VPN قطع است، در حال شروع است یا خراب است، هر اتصال به‌جای خروج مستقیم ناموفق می‌شود. تا زمانی که VPN را از اینجا متوقف نکنید فعال می‌ماند (توقف آن را برمی‌دارد)."
+
+msgid "Without the kill switch, traffic goes out directly, unprotected, whenever the tunnel is down (while it starts, after a crash, when the engine is missing)."
+msgstr "بدون kill switch، هرگاه تونل قطع باشد (هنگام شروع، پس از خرابی، وقتی موتور نیست) ترافیک مستقیم و بدون محافظت بیرون می‌رود."
+
+msgid "Turn the kill switch on?"
+msgstr "kill switch روشن شود؟"
+
+msgid "Turn the kill switch off?"
+msgstr "kill switch خاموش شود؟"
+
+msgid "Turn on"
+msgstr "روشن کردن"
+
+msgid "unknown"
+msgstr "نامشخص"
+
+msgid "The exit address could not be found (is the tunnel up?)"
+msgstr "نشانی خروجی پیدا نشد (آیا تونل برقرار است؟)"
+
+msgid "Connecting…"
+msgstr "در حال اتصال…"
+
+msgid "On, but not running"
+msgstr "روشن، اما در حال اجرا نیست"
+
+msgid "Stopped"
+msgstr "متوقف شد"
+
+msgid "Install it"
+msgstr "نصب آن"
+
+msgid "The engine of the active profile is not installed: %s"
+msgstr "موتور پروفایل فعال نصب نیست: %s"
+
+msgid "The kill switch keeps everything closed until it is there; the service downloads it by itself when it can."
+msgstr "kill switch تا زمان وجود آن همه‌چیز را بسته نگه می‌دارد؛ سرویس هر وقت بتواند خودش آن را دریافت می‌کند."
+
+msgid "The VPN cannot start until it is installed."
+msgstr "VPN تا نصب نشدن آن نمی‌تواند شروع شود."
+
+msgid "%s cannot run on this system"
+msgstr "%s نمی‌تواند روی این سیستم اجرا شود"
+
+msgid "The VPN is on, but no profile is active: choose one below."
+msgstr "VPN روشن است، اما هیچ پروفایلی فعال نیست: یکی را در زیر انتخاب کنید."
+
+msgid "Profile: %s"
+msgstr "پروفایل: %s"
+
+msgid "No active profile"
+msgstr "بدون پروفایل فعال"
+
+msgid "engine %s"
+msgstr "موتور %s"
+
+msgid "interface %s"
+msgstr "رابط %s"
+
+msgid "Kill switch active"
+msgstr "kill switch فعال"
+
+msgid "Kill switch on"
+msgstr "kill switch روشن"
+
+msgid "Kill switch off"
+msgstr "kill switch خاموش"
+
+msgid "IPv6 in the tunnel"
+msgstr "IPv6 در تونل"
+
+msgid "IPv6 blocked"
+msgstr "IPv6 مسدود"
+
+msgid "IPv6 untouched"
+msgstr "IPv6 دست‌نخورده"
+
+msgid "Module %s"
+msgstr "ماژول %s"
+
+msgid "Check"
+msgstr "بررسی"
+
+msgid "Uptime"
+msgstr "مدت روشن بودن"
+
+msgid "Rate"
+msgstr "نرخ"
+
+msgid "Exit address"
+msgstr "نشانی خروجی"
+
+msgid "Start"
+msgstr "شروع"
+
+msgid "Stop"
+msgstr "توقف"
+
+msgid "Stop the VPN?"
+msgstr "VPN متوقف شود؟"
+
+msgid "Traffic then goes out directly, without the tunnel; the kill switch is taken down with it."
+msgstr "ترافیک از آن پس بدون تونل و مستقیم بیرون می‌رود؛ kill switch هم همراه آن برداشته می‌شود."
+
+msgid "The VPN is on: it starts again by itself after a reboot."
+msgstr "VPN روشن است: پس از راه‌اندازی مجدد خودش دوباره شروع می‌شود."
+
+msgid "The VPN is off."
+msgstr "VPN خاموش است."
+
+msgid "Kill switch"
+msgstr "kill switch"
+
+msgid "Setting"
+msgstr "تنظیم"
+
+msgid "Active: only the tunnel can reach the internet"
+msgstr "فعال: فقط تونل می‌تواند به اینترنت برسد"
+
+msgid "Not active"
+msgstr "غیرفعال"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down, so nothing ever leaves without the tunnel. If the tunnel cannot come up (a dead server, an expired account), the device stays offline until you fix the profile or stop the VPN. The panel itself stays reachable from the LAN."
+msgstr "kill switch تا وقتی VPN قطع است همه ترافیک دستگاه و LAN را مسدود می‌کند، پس هیچ چیز هرگز بدون تونل بیرون نمی‌رود. اگر تونل بالا نیاید (سرور از کار افتاده، حساب منقضی‌شده)، دستگاه تا وقتی پروفایل را درست نکنید یا VPN را متوقف نکنید آفلاین می‌ماند. خود پنل از LAN در دسترس می‌ماند."
+
+msgid "Choose a profile"
+msgstr "یک پروفایل انتخاب کنید"
+
+msgid "No profiles yet"
+msgstr "هنوز پروفایلی نیست"
+
+msgid "engine not installed"
+msgstr "موتور نصب نیست"
+
+msgid "Use"
+msgstr "استفاده"
+
+msgid "Switched: the VPN restarts on the new profile"
+msgstr "تغییر کرد: VPN با پروفایل جدید دوباره راه می‌افتد"
+
+msgid "Active profile"
+msgstr "پروفایل فعال"
+
+msgid "A running VPN restarts on the profile you choose; the kill switch stays up in between."
+msgstr "VPN در حال اجرا با پروفایلی که انتخاب می‌کنید دوباره راه می‌افتد؛ kill switch در این فاصله فعال می‌ماند."
+
+msgid "Manage the profiles"
+msgstr "مدیریت پروفایل‌ها"
+
+msgid "Automatic: through the tunnel where the engine can carry it"
+msgstr "خودکار: از طریق تونل هرجا موتور بتواند آن را حمل کند"
+
+msgid "Ask the engine for IPv6 in the tunnel"
+msgstr "از موتور IPv6 در تونل بخواه"
+
+msgid "Never through the tunnel (blocked while the VPN is up)"
+msgstr "هرگز از طریق تونل نه (تا وقتی VPN روشن است مسدود می‌شود)"
+
+msgid "Saved: it applies from the next start (Restart)"
+msgstr "ذخیره شد: از شروع بعدی اعمال می‌شود (راه‌اندازی مجدد)"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "The tunnel carries IPv6"
+msgstr "تونل IPv6 را حمل می‌کند"
+
+msgid "Yes"
+msgstr "بله"
+
+msgid "IPv6 guard"
+msgstr "محافظ IPv6"
+
+msgid "Active: IPv6 outside the tunnel is refused"
+msgstr "فعال: IPv6 بیرون از تونل رد می‌شود"
+
+msgid "While the VPN is up, IPv6 never leaves beside a tunnel that does not carry it: it is refused at once, so programs and LAN clients fall back to IPv4 instead of leaking or waiting. Automatic: WireGuard and OpenVPN use the IPv6 addresses of their config; Xray, sing-box and mihomo are asked at every start whether IPv6 works through the tunnel, and carry it only then; dae stays IPv4."
+msgstr "تا وقتی VPN روشن است، IPv6 هرگز در کنار تونلی که آن را حمل نمی‌کند بیرون نمی‌رود: بلافاصله رد می‌شود، پس برنامه‌ها و کلاینت‌های LAN به‌جای نشت یا انتظار به IPv4 برمی‌گردند. خودکار: WireGuard و OpenVPN از نشانی‌های IPv6 پیکربندی خود استفاده می‌کنند؛ برای Xray، sing-box و mihomo در هر شروع بررسی می‌شود که آیا IPv6 از درون تونل کار می‌کند و فقط در آن صورت آن را حمل می‌کنند؛ dae روی IPv4 می‌ماند."
+
+msgid "%d ms"
+msgstr "%d ms"
+
+msgid "UDP: not testable"
+msgstr "UDP: قابل سنجش نیست"
+
+msgid "blocked by the kill switch"
+msgstr "توسط kill switch مسدود شد"
+
+msgid "A WireGuard or OpenVPN config, a Clash/mihomo YAML, an Xray or sing-box JSON, a dae config"
+msgstr "یک پیکربندی WireGuard یا OpenVPN، یک YAML از Clash/mihomo، یک JSON از Xray یا sing-box، یک پیکربندی dae"
+
+msgid "After OK, choose the file: a WireGuard .conf, an OpenVPN .ovpn, a Clash/mihomo .yaml, an Xray or sing-box .json or a dae config (at most 1 MiB)."
+msgstr "پس از تأیید، فایل را انتخاب کنید: یک .conf از WireGuard، یک .ovpn از OpenVPN، یک .yaml از Clash/mihomo، یک .json از Xray یا sing-box یا یک پیکربندی dae (حداکثر 1 MiB)."
+
+msgid "From the source"
+msgstr "از منبع"
+
+msgid "Detect"
+msgstr "تشخیص"
+
+msgid "The URL may hold a token: it goes to the device on its own, never into a command line or a log."
+msgstr "URL ممکن است توکن داشته باشد: جداگانه به دستگاه می‌رسد و هرگز در خط فرمان یا گزارش نمی‌آید."
+
+msgid "Share link"
+msgstr "پیوند اشتراک‌گذاری"
+
+msgid "Paste"
+msgstr "چسباندن"
+
+msgid "File"
+msgstr "فایل"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Not a share link this panel takes"
+msgstr "پیوند اشتراک‌گذاری‌ای نیست که این پنل بپذیرد"
+
+msgid "The config is empty"
+msgstr "پیکربندی خالی است"
+
+msgid "Not an https URL"
+msgstr "یک URL از نوع https نیست"
+
+msgid "Invalid name: 1-64 characters, no control characters"
+msgstr "نام نامعتبر: 1 تا 64 نویسه، بدون نویسه کنترلی"
+
+msgid "Add a profile"
+msgstr "افزودن پروفایل"
+
+msgid "Name"
+msgstr "نام"
+
+msgid "Detect: the module tells the kind from the link or the file. Choose the type for a JSON that could be either Xray or sing-box, or for a link that should run on another engine."
+msgstr "تشخیص: ماژول نوع را از پیوند یا فایل می‌فهمد. برای JSON که می‌تواند Xray یا sing-box باشد، یا برای پیوندی که باید روی موتور دیگری اجرا شود، نوع را انتخاب کنید."
+
+msgid "The profile is added"
+msgstr "پروفایل افزوده شد"
+
+msgid "Rename the profile"
+msgstr "تغییر نام پروفایل"
+
+msgid "Delete the profile %s?"
+msgstr "پروفایل %s حذف شود؟"
+
+msgid "It is the active profile: with the VPN on, the module refuses; stop the VPN or choose another profile first."
+msgstr "این پروفایل فعال است: با روشن بودن VPN ماژول نمی‌پذیرد؛ ابتدا VPN را متوقف کنید یا پروفایل دیگری انتخاب کنید."
+
+msgid "Its config and credentials are deleted from the device."
+msgstr "پیکربندی و اعتبارنامه‌های آن از دستگاه حذف می‌شود."
+
+msgid "Deleted"
+msgstr "حذف شد"
+
+msgid "The profile passes the check"
+msgstr "پروفایل از بررسی عبور می‌کند"
+
+msgid "Show the config?"
+msgstr "پیکربندی نمایش داده شود؟"
+
+msgid "The config holds the credentials of the profile (keys, passwords, UUIDs). It is shown on this screen only; anyone who can see the screen can read it."
+msgstr "پیکربندی شامل اعتبارنامه‌های پروفایل (کلیدها، گذرواژه‌ها، UUID) است. فقط روی همین صفحه نمایش داده می‌شود؛ هر کسی که صفحه را ببیند می‌تواند آن را بخواند."
+
+msgid "Saving checks the config with the engine first (profile edit); a config that does not pass is not saved and the old one stays."
+msgstr "ذخیره ابتدا پیکربندی را با موتور بررسی می‌کند (profile edit)؛ پیکربندی‌ای که از بررسی عبور نکند ذخیره نمی‌شود و قبلی می‌ماند."
+
+msgid "This profile comes from a subscription: its next refresh replaces your changes."
+msgstr "این پروفایل از یک اشتراک آمده است: تازه‌سازی بعدی آن تغییرات شما را جایگزین می‌کند."
+
+msgid "Config of %s"
+msgstr "پیکربندی %s"
+
+msgid "Rename"
+msgstr "تغییر نام"
+
+msgid "Show / edit the config"
+msgstr "نمایش / ویرایش پیکربندی"
+
+msgid "Test the latency of all"
+msgstr "سنجش تأخیر همه"
+
+msgid "No profiles yet: add one from a share link, a config file or a subscription."
+msgstr "هنوز پروفایلی نیست: یکی را از پیوند اشتراک‌گذاری، فایل پیکربندی یا اشتراک اضافه کنید."
+
+msgid "Active"
+msgstr "فعال"
+
+msgid "This profile is the active one now"
+msgstr "این پروفایل اکنون فعال است"
+
+msgid "More"
+msgstr "بیشتر"
+
+msgid "active"
+msgstr "فعال"
+
+msgid "subscription"
+msgstr "اشتراک"
+
+msgid "migrated"
+msgstr "منتقل‌شده"
+
+msgid "gone from its subscription"
+msgstr "از اشتراکش حذف شده"
+
+msgid "Server"
+msgstr "سرور"
+
+msgid "Engine"
+msgstr "موتور"
+
+msgid "Latency"
+msgstr "تأخیر"
+
+msgid "The latency is a TCP connection to the server, through the tunnel when the VPN is up. WireGuard and OpenVPN servers usually speak UDP and cannot be tested this way."
+msgstr "تأخیر یک اتصال TCP به سرور است، در صورت روشن بودن VPN از طریق تونل. سرورهای WireGuard و OpenVPN معمولاً UDP به کار می‌برند و این‌گونه قابل سنجش نیستند."
+
+msgid "Enter an IPv4 or IPv6 address"
+msgstr "یک نشانی IPv4 یا IPv6 وارد کنید"
+
+msgid "On: nothing leaves outside the tunnel"
+msgstr "روشن: هیچ چیز بیرون از تونل نمی‌رود"
+
+msgid "Off: traffic goes out directly while the tunnel is down"
+msgstr "خاموش: تا وقتی تونل قطع است ترافیک مستقیم بیرون می‌رود"
+
+msgid "Yes: Tailscale's own connections go through the tunnel"
+msgstr "بله: اتصال‌های خود Tailscale از تونل می‌گذرند"
+
+msgid "No: Tailscale connects directly"
+msgstr "خیر: Tailscale مستقیم وصل می‌شود"
+
+msgid "Routing"
+msgstr "مسیریابی"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down."
+msgstr "kill switch تا وقتی VPN قطع است همه ترافیک دستگاه و LAN را مسدود می‌کند."
+
+msgid "Bypass the tunnel"
+msgstr "دور زدن تونل"
+
+msgid "Enter address ranges like 192.168.0.0/16, separated by commas"
+msgstr "بازه‌های نشانی مانند 192.168.0.0/16 را با ویرگول جدا کنید"
+
+msgid "Address ranges that never go into the tunnel, besides the LAN itself (which never does). Empty: the LAN only."
+msgstr "بازه‌های نشانی که هرگز وارد تونل نمی‌شوند، علاوه بر خود LAN (که هرگز نمی‌شود). خالی: فقط LAN."
+
+msgid "Tailscale through the VPN"
+msgstr "Tailscale از طریق VPN"
+
+msgid "When Tailscale runs on the device, its WireGuard, DERP and control connections go through whichever tunnel runs (dae catches them like any other)."
+msgstr "وقتی Tailscale روی دستگاه اجرا می‌شود، اتصال‌های WireGuard، DERP و کنترل آن از هر تونلی که در حال اجراست می‌گذرد (dae آن‌ها را مثل بقیه می‌گیرد)."
+
+msgid "DNS"
+msgstr "DNS"
+
+msgid "DNS through the tunnel"
+msgstr "DNS از طریق تونل"
+
+msgid "The resolver the device's and the LAN's lookups go to, through the tunnel. Nothing goes to the carrier's resolver."
+msgstr "تحلیلگری که پرس‌وجوهای دستگاه و LAN از طریق تونل به آن می‌روند. هیچ چیز به تحلیلگر اپراتور نمی‌رود."
+
+msgid "Bootstrap DNS"
+msgstr "DNS راه‌اندازی اولیه"
+
+msgid "Finds the VPN server's own address before the tunnel is up (directly, on the engine's own connection)."
+msgstr "نشانی خود سرور VPN را پیش از برقراری تونل پیدا می‌کند (مستقیم، با اتصال خود موتور)."
+
+msgid "Empty puts a setting back to its default."
+msgstr "خالی گذاشتن، تنظیم را به پیش‌فرض برمی‌گرداند."
+
+msgid "TUN stack"
+msgstr "پشته TUN"
+
+msgid "Default (gvisor)"
+msgstr "پیش‌فرض (gvisor)"
+
+msgid "system (not on the 5.4 kernel)"
+msgstr "system (روی هسته 5.4 نیست)"
+
+msgid "set (unchanged unless you type a new one)"
+msgstr "تنظیم شده (بدون تغییر مگر مقدار جدیدی بنویسید)"
+
+msgid "not set"
+msgstr "تنظیم نشده"
+
+msgid "Upstream HTTP proxy"
+msgstr "پراکسی HTTP بالادستی"
+
+msgid "TLS certificate pin (SHA-256)"
+msgstr "پین گواهی TLS (SHA-256)"
+
+msgid "Enter host:port"
+msgstr "host:port را وارد کنید"
+
+msgid "Enter the SHA-256 in hex"
+msgstr "SHA-256 را به صورت هگزادسیمال وارد کنید"
+
+msgid "Profile options"
+msgstr "گزینه‌های پروفایل"
+
+msgid "None of the profiles has options of its type."
+msgstr "هیچ‌یک از پروفایل‌ها گزینه‌ای مخصوص نوع خود ندارند."
+
+msgid "mihomo's mode (rule, global, direct), the engines' log levels, dae's groups and routing are part of each profile's own config: VPN > Profiles, Show / edit the config."
+msgstr "حالت mihomo (rule، global، direct)، سطح‌های گزارش موتورها، گروه‌ها و مسیریابی dae بخشی از پیکربندی خود هر پروفایل هستند: VPN > پروفایل‌ها، نمایش / ویرایش پیکربندی."
+
+msgid "Delete the subscription %s?"
+msgstr "اشتراک %s حذف شود؟"
+
+msgid "Its profiles can go with it or stay as profiles of their own. The active profile is never removed while the VPN is on."
+msgstr "پروفایل‌های آن می‌توانند همراه آن حذف شوند یا به صورت پروفایل مستقل بمانند. تا وقتی VPN روشن است، پروفایل فعال هرگز حذف نمی‌شود."
+
+msgid "Keep the profiles"
+msgstr "نگه داشتن پروفایل‌ها"
+
+msgid "Delete with its profiles"
+msgstr "حذف همراه پروفایل‌ها"
+
+msgid "Only by hand"
+msgstr "فقط دستی"
+
+msgid "Every %d h"
+msgstr "هر %d ساعت"
+
+msgid "Share links: one profile per link"
+msgstr "پیوندهای اشتراک‌گذاری: یک پروفایل برای هر پیوند"
+
+msgid "Clash/mihomo YAML: one mihomo profile"
+msgstr "YAML از Clash/mihomo: یک پروفایل mihomo"
+
+msgid "dae: one profile with every node in one group"
+msgstr "dae: یک پروفایل با همه گره‌ها در یک گروه"
+
+msgid "Add a subscription"
+msgstr "افزودن اشتراک"
+
+msgid "Format"
+msgstr "قالب"
+
+msgid "The URL usually holds your account token: it is stored on the device readable by root only, and never shown again. The subscription is fetched over the device's own connection: through the tunnel when the VPN is up; with the kill switch up and the tunnel down it cannot be fetched."
+msgstr "URL معمولاً توکن حساب شما را دارد: روی دستگاه فقط با دسترسی خواندن برای root ذخیره می‌شود و دیگر نشان داده نمی‌شود. اشتراک با اتصال خود دستگاه دریافت می‌شود: وقتی VPN روشن است از طریق تونل؛ با kill switch فعال و تونل قطع، دریافت نمی‌شود."
+
+msgid "Refresh all"
+msgstr "تازه‌سازی همه"
+
+msgid "No subscriptions yet."
+msgstr "هنوز اشتراکی نیست."
+
+msgid "Host"
+msgstr "میزبان"
+
+msgid "Updated"
+msgstr "به‌روزرسانی شد"
+
+msgid "Share links"
+msgstr "پیوندهای اشتراک‌گذاری"
+
+msgid "A refresh keeps the profiles whose name is unchanged, adds the new ones and removes the ones that are gone (the active one stays while the VPN is on, marked as gone). A refresh of the active profile restarts the running VPN."
+msgstr "تازه‌سازی پروفایل‌هایی را که نامشان تغییر نکرده نگه می‌دارد، جدیدها را اضافه و رفته‌ها را حذف می‌کند (پروفایل فعال تا وقتی VPN روشن است می‌ماند و به‌عنوان رفته علامت می‌خورد). تازه‌سازی پروفایل فعال، VPN در حال اجرا را دوباره راه‌اندازی می‌کند."
+
+msgid "Dashboard info failed"
+msgstr "دریافت اطلاعات داشبورد ناموفق بود"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch): no live signal right now"
+msgstr "The modem is restarting (network locks or a SIM switch): no live signal right now"
+
+msgid "Live signal read failed"
+msgstr "خواندن سیگنال زنده ناموفق بود"
+
+msgid "Unknown op"
+msgstr "عملیات نامشخص"
+
+msgid "Invalid argument for this op"
+msgstr "آرگومان نامعتبر برای این عملیات"
+
+msgid "The radio is busy: the dial or the watchdog is switching it, try again shortly"
+msgstr "رادیو مشغول است: شماره‌گیر یا watchdog در حال تغییر وضعیت آن است، کمی بعد دوباره تلاش کنید"
+
+msgid "The action gave no valid reply"
+msgstr "عملیات پاسخ معتبری نداد"
+
+msgid "The confirm parameter must be 0 or 1"
+msgstr "پارامتر confirm باید 0 یا 1 باشد"
+
+msgid "An AT command is one line of printable ASCII, at most 512 characters"
+msgstr "دستور AT یک خط از نویسه‌های چاپی ASCII است، حداکثر 512 نویسه"
+
+msgid "Must be an AT command"
+msgstr "باید دستور AT باشد"
+
+msgid "No \";\" command chaining"
+msgstr "زنجیره کردن دستورها با \";\" مجاز نیست"
+
+msgid "Denied: this command wedges the AT port until a reboot"
+msgstr "رد شد: این دستور پورت AT را تا راه‌اندازی مجدد قفل می‌کند"
+
+msgid "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+msgstr "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+msgstr "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+
+msgid "A long AT command is still running in the background; try again when it has finished"
+msgstr "یک فرمان AT طولانی هنوز در پس‌زمینه در حال اجراست؛ پس از پایان آن دوباره تلاش کنید"
+
+msgid "This command needs confirmation"
+msgstr "این فرمان به تأیید نیاز دارد"
+
+msgid "The AT channel is busy; the command was not sent, try again"
+msgstr "کانال AT مشغول است؛ دستور ارسال نشد، دوباره تلاش کنید"
+
+msgid "The modem did not answer in time; the command may still run, check before sending it again"
+msgstr "مودم به‌موقع پاسخ نداد؛ ممکن است دستور هنوز در حال اجرا باشد، پیش از ارسال دوباره بررسی کنید"
+
+msgid "The fresh parameter must be 0 or 1"
+msgstr "پارامتر fresh باید 0 یا 1 باشد"
+
+msgid "Reading the locks from the modem; try again in a few seconds"
+msgstr "قفل‌ها از مودم خوانده می‌شوند؛ چند ثانیه دیگر دوباره تلاش کنید"
+
+msgid "Lock read failed"
+msgstr "خواندن قفل ناموفق بود"
+
+msgid "Unknown lock kind"
+msgstr "نوع قفل نامشخص"
+
+msgid "Invalid value for this lock kind"
+msgstr "مقدار نامعتبر برای این نوع قفل"
+
+msgid "None of these bands is supported by this modem"
+msgstr "این مودم هیچ‌یک از این باندها را پشتیبانی نمی‌کند"
+
+msgid "Band, mode and cell locks are not supported for SIM2 yet"
+msgstr "قفل باند، حالت و سلول هنوز برای SIM2 پشتیبانی نمی‌شود"
+
+msgid "Band, mode and cell locks are not supported while dual-SIM switching manages the radio"
+msgstr "قفل باند، حالت و سلول تا وقتی جابه‌جایی دو سیم‌کارت رادیو را مدیریت می‌کند پشتیبانی نمی‌شود"
+
+msgid "Invalid page"
+msgstr "صفحهٔ نامعتبر"
+
+msgid "mu300-sms is not available (the SMS service is not installed or not running)"
+msgstr "mu300-sms در دسترس نیست (سرویس SMS نصب نشده یا در حال اجرا نیست)"
+
+msgid "No output"
+msgstr "بدون خروجی"
+
+msgid "Bad ID"
+msgstr "شناسهٔ نامعتبر"
+
+msgid "Read failed"
+msgstr "خواندن ناموفق بود"
+
+msgid "The number may only contain digits (and a leading +)"
+msgstr "شماره فقط می‌تواند شامل رقم باشد (و یک + در ابتدا)"
+
+msgid "The message is empty"
+msgstr "پیام خالی است"
+
+msgid "The message is too long (over 480 characters)"
+msgstr "پیام بیش از حد طولانی است (بیش از 480 نویسه)"
+
+msgid "The message contains a control character"
+msgstr "پیام شامل یک نویسهٔ کنترلی است"
+
+msgid "The sim parameter must be 0 or 1"
+msgstr "پارامتر sim باید 0 یا 1 باشد"
+
+msgid "The USB adapter (device-usb) gave no valid reply"
+msgstr "آداپتور USB (device-usb) پاسخ معتبری نداد"
+
+msgid "The auto parameter must be 0 or 1"
+msgstr "پارامتر auto باید 0 یا 1 باشد"
+
+msgid "Invalid USB role"
+msgstr "نقش USB نامعتبر"
+
+msgid "A USB role takes no scope"
+msgstr "نقش USB دامنهٔ اعمال نمی‌پذیرد"
+
+msgid "Invalid USB network mode"
+msgstr "حالت شبکهٔ USB نامعتبر"
+
+msgid "Invalid USB network scope"
+msgstr "دامنهٔ اعمال شبکهٔ USB نامعتبر"
+
+msgid "Unknown USB setting"
+msgstr "تنظیم USB نامشخص"
+
+msgid "Invalid interface name"
+msgstr "نام رابط نامعتبر"
+
+msgid "The power adapter gave no valid reply"
+msgstr "مبدل توان پاسخ معتبری نداد"
+
+msgid "Unknown power operation"
+msgstr "عملیات توان ناشناخته"
+
+msgid "Unknown power setting"
+msgstr "تنظیم توان ناشناخته"
+
+msgid "Invalid power value"
+msgstr "مقدار توان نامعتبر"
+
+msgid "Invalid power request"
+msgstr "درخواست توان نامعتبر"
+
+msgid "The languages adapter gave no valid reply"
+msgstr "آداپتور زبان‌ها پاسخ معتبری نداد"
+
+msgid "Unknown language operation"
+msgstr "عملیات زبان نامشخص"
+
+msgid "Invalid language code"
+msgstr "کد زبان نامعتبر"
+
+msgid "Invalid language request"
+msgstr "درخواست زبان نامعتبر"
+
+msgid "Unknown source"
+msgstr "منبع نامشخص"
+
+msgid "The TTL adapter gave no valid reply"
+msgstr "آداپتور TTL پاسخ معتبری نداد"
+
+msgid "Invalid TTL"
+msgstr "TTL نامعتبر"
+
+msgid "The data usage adapter gave no valid reply"
+msgstr "آداپتور مصرف داده پاسخ معتبری نداد"
+
+msgid "Unknown data usage setting"
+msgstr "تنظیم ناشناخته مصرف داده"
+
+msgid "Invalid value for this setting"
+msgstr "مقدار نامعتبر برای این تنظیم"
+
+msgid "The forwarding adapter gave no valid reply"
+msgstr "آداپتور بازارسال پاسخ معتبری نداد"
+
+msgid "The CPU adapter gave no valid reply"
+msgstr "The CPU adapter gave no valid reply"
+
+msgid "Invalid CPU profile"
+msgstr "Invalid CPU profile"
+
+msgid "Invalid CPU core"
+msgstr "هسته پردازنده نامعتبر"
+
+msgid "Unknown CPU operation"
+msgstr "Unknown CPU operation"
+
+msgid "Unknown CPU voltage operation"
+msgstr "عملیات ولتاژ CPU ناشناخته"
+
+msgid "Invalid CPU voltage request"
+msgstr "درخواست ولتاژ CPU نامعتبر"
+
+msgid "Invalid CPU voltage offset"
+msgstr "جابه‌جایی ولتاژ CPU نامعتبر"
+
+msgid "Type the confirmation word to apply a voltage offset"
+msgstr "برای اعمال جابه‌جایی ولتاژ، واژه‌ی تأیید را تایپ کنید"
+
+msgid "Invalid stress test length"
+msgstr "مدت تست استرس نامعتبر"
+
+msgid "The packages adapter gave no valid reply"
+msgstr "آداپتور بسته‌ها پاسخ معتبری نداد"
+
+msgid "Invalid packages operation"
+msgstr "عملیات بسته نامعتبر"
+
+msgid "The sizes parameter must be 0 or 1"
+msgstr "پارامتر sizes باید 0 یا 1 باشد"
+
+msgid "The update adapter gave no valid reply"
+msgstr "آداپتور به‌روزرسانی پاسخ معتبری نداد"
+
+msgid "Unknown update operation"
+msgstr "عملیات به‌روزرسانی ناشناخته"
+
+msgid "Invalid update request"
+msgstr "درخواست به‌روزرسانی نامعتبر"
+
+msgid "The backup tool gave no valid reply"
+msgstr "ابزار پشتیبان پاسخ معتبری نداد"
+
+msgid "Mobile data integration is not provided by this platform"
+msgstr "یکپارچه‌سازی داده همراه در این پلتفرم فراهم نیست"
+
+msgid "The SIM settings could not be read"
+msgstr "تنظیمات سیم‌کارت خوانده نشد"
+
+msgid "Radio control is not provided by this platform"
+msgstr "این بستر کنترل رادیو را فراهم نمی‌کند"
+
+msgid "A SIM radio change is already running"
+msgstr "تغییر رادیوی سیم‌کارت از قبل در حال اجراست"
+
+# Source-language fallback for untranslated new controls.
+msgid "Invalid SIM setting"
+msgstr "Invalid SIM setting"
+
+msgid "The modem did not take the setting; nothing was saved"
+msgstr "مودم تنظیم را نپذیرفت؛ چیزی ذخیره نشد"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control failed"
+msgstr "SIM control failed"
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching; reboot if channels are unavailable or wait until idle"
+msgstr "Enable hot switching; reboot if channels are unavailable or wait until idle"
+
+msgid "Request too large"
+msgstr "درخواست بیش از حد بزرگ است"
+
+msgid "The runtime directory is not safe; nothing was run"
+msgstr "پوشهٔ زمان اجرا امن نیست؛ چیزی اجرا نشد"
+
+msgid "No such method"
+msgstr "چنین متدی وجود ندارد"
+
+msgid "The VPN module refused the request"
+msgstr "ماژول VPN درخواست را رد کرد"
+
+msgid "The VPN panel is busy, try again"
+msgstr "پنل VPN مشغول است، دوباره تلاش کنید"
+
+msgid "Another VPN task is still running"
+msgstr "وظیفه VPN دیگری هنوز در حال اجراست"
+
+msgid "The exit_ip parameter must be 0 or 1"
+msgstr "پارامتر exit_ip باید 0 یا 1 باشد"
+
+msgid "The VPN status could not be read"
+msgstr "وضعیت VPN خوانده نشد"
+
+msgid "The profiles could not be read"
+msgstr "پروفایل‌ها خوانده نشدند"
+
+msgid "The check parameter must be 0 or 1"
+msgstr "پارامتر check باید 0 یا 1 باشد"
+
+msgid "The engines could not be read"
+msgstr "موتورها خوانده نشدند"
+
+msgid "The subscriptions could not be read"
+msgstr "اشتراک‌ها خوانده نشدند"
+
+msgid "The VPN settings could not be read"
+msgstr "تنظیمات VPN خوانده نشد"
+
+msgid "Unknown VPN operation"
+msgstr "عملیات VPN ناشناخته"
+
+msgid "The VPN could not be switched"
+msgstr "VPN تغییر نکرد"
+
+msgid "The kill switch is on or off"
+msgstr "kill switch روشن یا خاموش است"
+
+msgid "The kill switch could not be changed"
+msgstr "kill switch تغییر نکرد"
+
+msgid "Invalid profile id"
+msgstr "شناسه پروفایل نامعتبر"
+
+msgid "The profile could not be made the active one"
+msgstr "پروفایل فعال نشد"
+
+msgid "Unknown profile source"
+msgstr "منبع پروفایل ناشناخته"
+
+msgid "Unknown profile type"
+msgstr "نوع پروفایل ناشناخته"
+
+msgid "The config is empty, too large or holds control characters"
+msgstr "پیکربندی خالی است، بیش از حد بزرگ است یا نویسه کنترلی دارد"
+
+msgid "Invalid profile request"
+msgstr "درخواست پروفایل نامعتبر"
+
+msgid "A config from a URL takes the type it says"
+msgstr "پیکربندی‌ای که از URL می‌آید همان نوعی را می‌گیرد که خودش اعلام می‌کند"
+
+msgid "No uploaded file"
+msgstr "فایلی بارگذاری نشده"
+
+msgid "The file is larger than 1 MiB"
+msgstr "فایل بزرگ‌تر از 1 MiB است"
+
+msgid "The profile could not be added"
+msgstr "پروفایل افزوده نشد"
+
+msgid "The profile could not be renamed"
+msgstr "نام پروفایل تغییر نکرد"
+
+msgid "The profile could not be removed"
+msgstr "پروفایل حذف نشد"
+
+msgid "The profile does not pass the check"
+msgstr "پروفایل از بررسی عبور نمی‌کند"
+
+msgid "Unknown profile option"
+msgstr "گزینه پروفایل ناشناخته"
+
+msgid "Invalid value for this option"
+msgstr "مقدار نامعتبر برای این گزینه"
+
+msgid "The option could not be set"
+msgstr "گزینه تنظیم نشد"
+
+msgid "The config could not be read"
+msgstr "پیکربندی خوانده نشد"
+
+msgid "The config was not saved"
+msgstr "پیکربندی ذخیره نشد"
+
+msgid "The latency test failed"
+msgstr "سنجش تأخیر ناموفق بود"
+
+msgid "The refresh interval is 1 to 999 hours"
+msgstr "فاصلهٔ به‌روزرسانی ۱ تا ۹۹۹ ساعت است"
+
+msgid "Unknown subscription type"
+msgstr "نوع اشتراک ناشناخته"
+
+msgid "Invalid subscription id"
+msgstr "شناسه اشتراک نامعتبر"
+
+msgid "The keep parameter must be 0 or 1"
+msgstr "پارامتر keep باید 0 یا 1 باشد"
+
+msgid "The subscription could not be removed"
+msgstr "اشتراک حذف نشد"
+
+msgid "The file is too large"
+msgstr "فایل خیلی بزرگ است"
+
+msgid "Unknown engine"
+msgstr "موتور ناشناخته"
+
+msgid "The unverified parameter must be 0 or 1"
+msgstr "پارامتر unverified باید 0 یا 1 باشد"
+
+msgid "This engine is a system package: it has no file to upload"
+msgstr "این موتور یک بسته سیستم است: فایلی برای بارگذاری ندارد"
+
+msgid "The engine could not be removed"
+msgstr "موتور حذف نشد"
+
+msgid "mu300-extra is not on this system"
+msgstr "mu300-extra روی این سیستم نیست"
+
+msgid "Unknown VPN setting"
+msgstr "تنظیم VPN ناشناخته"
+
+msgid "The setting could not be saved"
+msgstr "تنظیم ذخیره نشد"
+
+msgid "The number of lines is 1 to 1000"
+msgstr "تعداد خطوط از 1 تا 1000 است"
+
+msgid "The log could not be read"
+msgstr "گزارش خوانده نشد"
+
+msgid "The radio of this SIM is switched off in its settings"
+msgstr "رادیوی این سیم‌کارت در تنظیماتش خاموش است"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM control or reboot for managed dual-SIM radio"
+msgstr "Use SIM control or reboot for managed dual-SIM radio"
+
+msgid "The radio did not follow its setting"
+msgstr "رادیو از تنظیم خود پیروی نکرد"
+
+msgid "The data roaming setting could not be saved"
+msgstr "تنظیم رومینگ داده ذخیره نشد"
+
+msgid "Expected on or off"
+msgstr "on یا off مورد انتظار است"
+
+msgid "VPN integration is not provided by this platform"
+msgstr "یکپارچه‌سازی VPN در این پلتفرم ارائه نشده است"
+
+msgid "Dual-boot integration is not provided by this platform"
+msgstr "یکپارچه‌سازی راه‌اندازی دوگانه در این پلتفرم ارائه نشده است"
+
+msgid "mu300-next-boot failed"
+msgstr "mu300-next-boot ناموفق بود"
+
+msgid "AT backend did not answer (radio off, modem restarting, or adapter unavailable)"
+msgstr "بک‌اند AT پاسخ نداد (رادیو خاموش است، مودم در حال راه‌اندازی مجدد است یا آداپتور در دسترس نیست)"
+
+msgid "The CPU profile could not be read"
+msgstr "The CPU profile could not be read"
+
+msgid "The CPU profile could not be set"
+msgstr "The CPU profile could not be set"
+
+msgid "The CPU core could not be switched"
+msgstr "تغییر وضعیت هسته پردازنده ممکن نشد"
+
+msgid "Invalid low latency setting"
+msgstr "تنظیم تأخیر کم نامعتبر"
+
+msgid "The low latency setting could not be applied"
+msgstr "اعمال تنظیم تأخیر کم ممکن نشد"
+
+msgid "The CPU voltage offset could not be read"
+msgstr "جابه‌جایی ولتاژ CPU خوانده نشد"
+
+msgid "The CPU voltage offset was refused"
+msgstr "جابه‌جایی ولتاژ CPU رد شد"
+
+msgid "The CPU voltage offset could not be turned off"
+msgstr "جابه‌جایی ولتاژ CPU خاموش نشد"
+
+msgid "The stress test could not be started"
+msgstr "تست استرس آغاز نشد"
+
+msgid "USB role adapter is not executable"
+msgstr "آداپتور نقش USB قابل اجرا نیست"
+
+msgid "USB role adapter failed"
+msgstr "آداپتور نقش USB ناموفق بود"
+
+msgid "USB role switch is unavailable"
+msgstr "تغییر نقش USB در دسترس نیست"
+
+msgid "USB role switch failed"
+msgstr "تغییر نقش USB ناموفق بود"
+
+msgid "USB role switch was refused by platform safety checks"
+msgstr "تغییر نقش USB توسط بررسی‌های ایمنی پلتفرم رد شد"
+
+msgid "Cannot create USB boot settings directory"
+msgstr "ایجاد پوشهٔ تنظیمات راه‌اندازی USB ممکن نیست"
+
+msgid "Cannot write USB boot settings"
+msgstr "نوشتن تنظیمات راه‌اندازی USB ممکن نیست"
+
+msgid "Cannot save USB boot settings"
+msgstr "ذخیرهٔ تنظیمات راه‌اندازی USB ممکن نیست"
+
+msgid "Invalid boot-auto value"
+msgstr "مقدار boot-auto نامعتبر"
+
+msgid "Device is the boot default; host auto-apply is the only persistent role"
+msgstr "حالت دستگاه پیش‌فرض راه‌اندازی است؛ اعمال خودکار میزبان تنها نقش ماندگار است"
+
+msgid "Cannot save USB role policy"
+msgstr "ذخیرهٔ سیاست نقش USB ممکن نیست"
+
+msgid "Cannot disable USB network boot policy"
+msgstr "غیرفعال‌سازی سیاست راه‌اندازی شبکهٔ USB ممکن نیست"
+
+msgid "Cannot commit USB role policy"
+msgstr "ثبت سیاست نقش USB ممکن نیست"
+
+msgid "USB network mode is unavailable in host role"
+msgstr "حالت شبکهٔ USB در نقش میزبان در دسترس نیست"
+
+msgid "Disable host boot-auto before configuring USB network"
+msgstr "پیش از پیکربندی شبکهٔ USB، boot-auto میزبان را غیرفعال کنید"
+
+msgid "Cannot save USB network policy"
+msgstr "ذخیرهٔ سیاست شبکهٔ USB ممکن نیست"
+
+msgid "Cannot commit USB network policy"
+msgstr "ثبت سیاست شبکهٔ USB ممکن نیست"
+
+msgid "USB host mode is required"
+msgstr "حالت میزبان USB لازم است"
+
+msgid "Not a USB network interface"
+msgstr "رابط شبکهٔ USB نیست"
+
+msgid "LAN bridge device section was not found"
+msgstr "بخش دستگاه پل LAN یافت نشد"
+
+msgid "Cannot bring USB network interface up"
+msgstr "فعال کردن رابط شبکهٔ USB ممکن نیست"
+
+msgid "Cannot add interface to LAN bridge"
+msgstr "افزودن رابط به پل LAN ممکن نیست"
+
+msgid "Cannot save LAN bridge"
+msgstr "ذخیرهٔ پل LAN ممکن نیست"
+
+msgid "Network reload failed"
+msgstr "بارگذاری دوبارهٔ شبکه ناموفق بود"
+
+msgid "Cannot attach USB interface to LAN bridge"
+msgstr "اتصال رابط USB به پل LAN ممکن نیست"
+
+msgid "Invalid forwarding setting"
+msgstr "تنظیم بازارسال نامعتبر"
+
+msgid "The message template is too long or contains a control character"
+msgstr "الگوی پیام خیلی بلند است یا نویسه کنترلی دارد"
+
+msgid "Invalid filter list (at most 50 lines)"
+msgstr "فهرست فیلتر نامعتبر (حداکثر ۵۰ سطر)"
+
+msgid "The webhook address must be an http:// or https:// URL"
+msgstr "نشانی webhook باید یک URL با http:// یا https:// باشد"
+
+msgid "The webhook body is too long or contains a control character"
+msgstr "بدنهٔ webhook بیش از حد طولانی است یا نویسهٔ کنترلی دارد"
+
+msgid "The answer check must be key=value, like errcode=0 or ok=true (the value a whole number or lowercase letters, 16 at most)"
+msgstr "بررسی پاسخ باید به شکل کلید=مقدار باشد، مانند errcode=0 یا ok=true (مقدار یک عدد صحیح یا حروف کوچک، حداکثر ۱۶)"
+
+msgid "Invalid header (one \"Name: value\" per line; Host, Content-Type, Content-Length, Transfer-Encoding and Connection are set by the device)"
+msgstr "سرآیند نامعتبر (هر سطر یک \"Name: value\"؛ Host، Content-Type، Content-Length، Transfer-Encoding و Connection را دستگاه تنظیم می‌کند)"
+
+msgid "Invalid Telegram bot token"
+msgstr "توکن ربات تلگرام نامعتبر"
+
+msgid "Invalid Telegram chat (a number, or @channel)"
+msgstr "گفتگوی تلگرام نامعتبر (عدد یا @کانال)"
+
+msgid "Invalid e-mail setting"
+msgstr "تنظیم ایمیل نامعتبر"
+
+msgid "The webhook needs an address"
+msgstr "webhook به یک نشانی نیاز دارد"
+
+msgid "Telegram needs a bot token and a chat"
+msgstr "تلگرام به توکن ربات و یک گفتگو نیاز دارد"
+
+msgid "E-mail needs a server, a sender and a recipient"
+msgstr "ایمیل به سرور، فرستنده و گیرنده نیاز دارد"
+
+msgid "SMS forwarding needs a phone number"
+msgstr "بازارسال با پیامک به شماره تلفن نیاز دارد"
+
+msgid "The forwarding settings could not be saved"
+msgstr "تنظیمات بازارسال ذخیره نشد"
+
+msgid "SMS forwarding is not installed"
+msgstr "بازارسال پیامک نصب نشده است"
+
+msgid "A test was started a moment ago; wait a few seconds"
+msgstr "لحظه‌ای پیش یک آزمایش آغاز شد؛ چند ثانیه صبر کنید"
+
+msgid "The delivery log could not be cleared"
+msgstr "گزارش تحویل پاک نشد"
+
+msgid "Unknown forwarding operation"
+msgstr "عملیات بازارسال ناشناخته"
+
+msgid "The language pack is not installed"
+msgstr "بستهٔ زبان نصب نشده است"
+
+msgid "No language given"
+msgstr "زبانی مشخص نشده است"
+
+msgid "The language could not be changed"
+msgstr "تغییر زبان ممکن نشد"
+
+msgid "LuCI does not offer this language"
+msgstr "LuCI این زبان را ارائه نمی‌کند"
+
+msgid "No uploaded language pack"
+msgstr "بستهٔ زبانی بارگذاری نشده است"
+
+msgid "An installation is already running"
+msgstr "یک نصب از قبل در حال اجراست"
+
+msgid "The language pack could not be removed"
+msgstr "حذف بستهٔ زبان ممکن نشد"
+
+msgid "Lock cache unavailable"
+msgstr "حافظهٔ نهان قفل در دسترس نیست"
+
+msgid "The modem refused a write"
+msgstr "مودم یک نوشتن را رد کرد"
+
+msgid "The saved locks could not be cleared"
+msgstr "قفل‌های ذخیره‌شده پاک نشدند"
+
+msgid "No serving cell to lock to"
+msgstr "سلول سرویس‌دهنده‌ای برای قفل کردن نیست"
+
+msgid "The modem did not answer the mode query; nothing was sent"
+msgstr "مودم به پرس‌وجوی حالت پاسخ نداد؛ چیزی ارسال نشد"
+
+msgid "The read-back does not match the automatic values"
+msgstr "بازخوانی با مقادیر خودکار مطابقت ندارد"
+
+msgid "The read-back after the stack restart does not match the automatic values"
+msgstr "بازخوانی پس از راه‌اندازی مجدد پشته با مقادیر خودکار مطابقت ندارد"
+
+msgid "The reset was interrupted"
+msgstr "بازنشانی قطع شد"
+
+msgid "Reinstalling packages is not available on this system"
+msgstr "نصب دوباره بسته‌ها روی این سیستم در دسترس نیست"
+
+msgid "No packages were written down by an update"
+msgstr "هیچ به‌روزرسانی‌ای بسته‌ای ثبت نکرده است"
+
+msgid "Reinstalling is running already"
+msgstr "نصب دوباره در حال اجراست"
+
+msgid "The note could not be dropped"
+msgstr "یادداشت حذف نشد"
+
+msgid "Unknown packages operation"
+msgstr "عملیات بسته ناشناخته"
+
+msgid "usage: power get|set KEY VALUE|wake|idle"
+msgstr "usage: power get|set KEY VALUE|wake|idle"
+
+msgid "Data usage is not available on this system"
+msgstr "مصرف داده در این سیستم در دسترس نیست"
+
+msgid "Unknown data usage operation"
+msgstr "عملیات ناشناخته مصرف داده"
+
+msgid "The TTL setting could not be read"
+msgstr "تنظیم TTL خوانده نشد"
+
+msgid "The TTL could not be set"
+msgstr "TTL تنظیم نشد"
+
+msgid "Unknown TTL operation"
+msgstr "عملیات TTL ناشناخته"
+
+msgid "An update task is already running"
+msgstr "یک وظیفهٔ به‌روزرسانی هم‌اکنون در حال اجراست"
+
+msgid "The task could not be started"
+msgstr "وظیفه شروع نشد"
+
+msgid "The updater gave no valid reply"
+msgstr "برنامهٔ به‌روزرسانی پاسخ معتبری نداد"
+
+msgid "This needs confirmation"
+msgstr "این کار به تأیید نیاز دارد"
+
+msgid "Check for updates first"
+msgstr "ابتدا به‌روزرسانی‌ها را بررسی کنید"
+
+msgid "The upload directory is not safe; nothing was changed"
+msgstr "پوشهٔ بارگذاری امن نیست؛ چیزی تغییر نکرد"
+
+msgid "Not enough memory for this upload"
+msgstr "حافظهٔ کافی برای این بارگذاری نیست"
+
+msgid "Not enough free space on the Linux partition"
+msgstr "فضای خالی کافی روی پارتیشن Linux نیست"
+
+msgid "The file was not checked; upload it again"
+msgstr "فایل بررسی نشده است؛ دوباره آن را بارگذاری کنید"
+
+msgid "This file is not for this device"
+msgstr "این فایل برای این دستگاه نیست"
+
+msgid "The signature of this file is wrong"
+msgstr "امضای این فایل نادرست است"
+
+msgid "This file is not signed: that needs confirmation"
+msgstr "این فایل امضا نشده است: این به تأیید نیاز دارد"
+
+msgid "This file is older than what is installed: that needs confirmation"
+msgstr "این فایل از نسخهٔ نصب‌شده قدیمی‌تر است: این به تأیید نیاز دارد"
+
+msgid "The release source was not changed"
+msgstr "منبع انتشار تغییر نکرد"

@@ -1,0 +1,13 @@
+[Unit]
+Description=MU300 modem log channel drain (see /opt/mu300/bin/modem-log-drain)
+ConditionPathExists=|/dev/stty_nr1
+After=mu300-vendor.service
+Wants=mu300-vendor.service
+
+[Service]
+ExecStart=/opt/mu300/bin/modem-log-drain
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

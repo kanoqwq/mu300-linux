@@ -1,0 +1,66 @@
+wlan_combo: mgmt_tx without a channel, and the station event's bounds (docs/FINDINGS.md 80, 195)
+
+The two robustness fixes mainline carries since PR #282 (from oswaldxdd's #237), for the 5.4 driver too:
+sprd_cfg80211_mgmt_tx() dereferenced params->chan, which nl80211 may leave out for an access point's on-channel
+frame - now the AP's own channel, and -EINVAL for an off-channel or non-AP request without one;
+cmdevt_report_new_station_evt() trusted ie_len - now bounded by the event's own length (le16), and a leave event
+needs only the flag and the address. kanoqwq's clean-tf-7.2 c21b0045 carries the same for its kernels.
+
+--- a/common/cfg80211.c
++++ b/common/cfg80211.c
+@@ -1200,6 +1200,26 @@
+ 	static u64 mgmt_index;
+ 	int ret = 0;
+ 
++	/* MU300 (from PR #237, oswaldxdd): nl80211 lets an access point send a management frame on its own channel
++	 * without naming a frequency, and the vendor code dereferenced params->chan regardless (an oops at
++	 * mgmt_tx+0x60). Without a channel: the access point's own, never an off-channel one.
++	 */
++	if (!chan) {
++		if (params->offchan ||
++		    (wdev->iftype != NL80211_IFTYPE_AP && wdev->iftype != NL80211_IFTYPE_P2P_GO))
++			return -EINVAL;
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
++		/* one non-MLO link on this chip */
++		if (wdev->valid_links || params->link_id > 0)
++			return -EINVAL;
++		chan = wdev->links[0].ap.chandef.chan;
++#else
++		chan = wdev->chandef.chan;
++#endif
++		if (!chan)
++			return -ENODATA;
++	}
++
+ 	*cookie = ++mgmt_index;
+ 	netdev_info(wdev->netdev, "%s cookie %lld\n", __func__, *cookie);
+ 
+--- a/sc2355/cmdevt.c
++++ b/sc2355/cmdevt.c
+@@ -3363,9 +3363,24 @@
+ static void cmdevt_report_new_station_evt(struct sprd_vif *vif, u8 *data, u16 len)
+ {
+ 	struct evt_new_station *sta = (struct evt_new_station *)data;
++	u16 ie_len;
+ 
+-	sprd_report_softap(vif, sta->is_connect, sta->mac, sta->ie,
+-			   sta->ie_len);
++	/* MU300 (from PR #237, oswaldxdd): the event's own length bounds what is read. A station that left needs
++	 * only the flag and the address (its ie_len is not used); a new one hands cfg80211 at most the bytes the
++	 * event carries, never what ie_len claims beyond them.
++	 */
++	if (len < sizeof(sta->is_connect) + sizeof(sta->mac))
++		return;
++	if (!sta->is_connect) {
++		sprd_report_softap(vif, 0, sta->mac, NULL, 0);
++		return;
++	}
++	if (len < sizeof(*sta))
++		return;
++	ie_len = le16_to_cpu(sta->ie_len);
++	if (ie_len > len - sizeof(*sta))
++		return;
++	sprd_report_softap(vif, sta->is_connect, sta->mac, sta->ie, ie_len);
+ }
+ 
+ /* @flag: 1 for data, 0 for event */

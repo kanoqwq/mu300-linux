@@ -1,0 +1,8 @@
+# MU300: record dmesg and procd/service state into the Linux boot partition's persistent log area for the first minutes,
+# so tools/collect-logs.sh can show from Android why a boot did not complete.
+mu300_early_recorder() {
+	[ -x /opt/mu300/bin/early-recorder ] || return 0
+	PATH="$PATH:/opt/mu300/busybox-bin" /opt/mu300/bin/early-recorder 420 </dev/null >/dev/null 2>&1 &
+}
+
+boot_hook_add preinit_essential mu300_early_recorder

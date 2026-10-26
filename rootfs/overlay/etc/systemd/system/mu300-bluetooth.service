@@ -1,0 +1,15 @@
+[Unit]
+Description=MU300 Bluetooth controller (SC2355/Marlin3 H4 over PCIe)
+After=mu300-wifi.service
+Requires=mu300-wifi.service
+Before=bluetooth.service
+
+[Service]
+Type=simple
+ExecStart=/opt/mu300/bin/bluetooth-start
+ExecStopPost=-/usr/sbin/rfkill block bluetooth
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

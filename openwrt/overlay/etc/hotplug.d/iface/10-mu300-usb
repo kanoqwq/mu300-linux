@@ -1,0 +1,73 @@
+#!/bin/sh
+# MU300: the LAN is up - the hand-over from the early DHCP server, then the macOS re-enumeration.
+[ "$ACTION" = ifup ] && [ "$INTERFACE" = lan ] || exit 0
+
+# K9 (ported from the kanoqwq fork, cd4fb28 and 4e70d02): dnsmasq serves the LAN now, so the early server of
+# preinit (06_mu300_early_usb) goes. Then the address boot/init and preinit put on the gadget's netdev: netifd can leave it
+# there after enslaving the netdev to br-lan, which makes two equal routes for the LAN subnet; replies then leave
+# through the wrong device and the host cannot even ping br-lan. It is taken off a bridge port only when it is the
+# bridge's own, after netifd has put that on br-lan. And rndis0: an installed system's bridge section may predate a
+# switch to RNDIS, so it is put back into br-lan on every LAN ifup (a network reload too).
+#
+# The gadget's netdev joins the bridge before anything is taken off it: the loop below can only take the address
+# off a port that already is one. The other way round (until 2026-10-07), rndis0 - which an install that switched
+# to RNDIS later does not have in its bridge section - was not a port yet when the loop ran, kept the address
+# while br-lan held the same one, and neither the Wi-Fi clients nor the USB host could use the LAN (issue #45,
+# measured on a user's F50; the serial console was the only way in).
+if [ -e /sys/class/net/rndis0 ]; then
+	ip link set rndis0 master br-lan 2>/dev/null
+	ip link set rndis0 up 2>/dev/null
+fi
+pid=$(cat /run/mu300-early-udhcpd.pid 2>/dev/null)
+[ -n "$pid" ] && kill "$pid" 2>/dev/null
+rm -f /run/mu300-early-udhcpd.pid
+bridge_ip=$(ip -4 -o addr show dev br-lan 2>/dev/null | awk 'NR == 1 { print $4 }')
+if [ -n "$bridge_ip" ]; then
+	for nic in usb0 rndis0; do
+		ip -o link show dev "$nic" 2>/dev/null | grep -q 'master br-lan' || continue
+		# the bridge's address with whatever prefix the port has (preinit's mask can differ from netifd's)
+		nic_ip=$(ip -4 -o addr show dev "$nic" 2>/dev/null |
+			awk -v a="${bridge_ip%/*}" '{ split($4, p, "/"); if (p[1] == a) { print $4; exit } }')
+		[ -n "$nic_ip" ] || continue
+		ip addr del "$nic_ip" dev "$nic" 2>/dev/null || true
+	done
+fi
+
+# A caller that just rebound the gadget needs the LAN handoff above, not another rebind.
+# Otherwise adbd/usb-reset and this hook keep disconnecting each other.
+[ "${MU300_USB_SKIP_REBIND:-0}" = 1 ] && exit 0
+
+# The ECM gadget was bound in the initramfs; macOS keeps the link inactive after netifd reconfigures usb0
+# (at boot and on every network restart). Re-enumerate the gadget whenever the LAN comes up, at most every 20 s,
+# so the host starts DHCP on a fresh link. (Kept, K10: the fork replaces it with one rebind in mu300-post, K12,
+# which waits for its gate on macOS.)
+stamp=/tmp/mu300-usb-rebound
+now=$(cut -d. -f1 /proc/uptime)
+[ -e $stamp ] && [ $((now - $(cat $stamp))) -lt 20 ] && exit 0
+echo "$now" > $stamp
+C=/sys/kernel/config
+grep -q " $C configfs" /proc/mounts || mount -t configfs configfs $C 2>/dev/null
+g=$C/usb_gadget/linux
+[ -e $g/UDC ] || exit 0
+udc=$(cat $g/UDC)
+[ -n "$udc" ] || udc=$(ls /sys/class/udc | head -1)
+# The gadget netdevs that are bridge ports now: after the rebind they are made ports again, should the rebind have
+# left one bare (a netdev with no server, the early one being gone, and no LAN for the USB host; netifd puts back a
+# port that is in its configuration, usb0, never one it never had, rndis0 - issue #45). A netdev that is not a port
+# stays out: a user who took usb0 out of br-lan for an interface of its own keeps it that way.
+ports=
+for nic in usb0 rndis0; do
+	ip -o link show dev "$nic" 2>/dev/null | grep -q 'master br-lan' && ports="$ports $nic"
+done
+(
+	sleep 2
+	echo "" > $g/UDC 2>/dev/null
+	sleep 1
+	echo "$udc" > $g/UDC && logger -t mu300 "usb gadget re-enumerated on $udc"
+	sleep 1
+	for nic in $ports; do
+		[ -e /sys/class/net/$nic ] || continue
+		ip link set "$nic" master br-lan 2>/dev/null
+		ip link set "$nic" up 2>/dev/null
+	done
+) &

@@ -1,0 +1,172 @@
+wlan_combo (5.4): routine per-packet, per-poll and per-peer events are not errors (issue #140)
+
+The same change as the mainline module (upstream/modules/sprd_wlan_combo); only printk levels change. The rest of
+dump_survey (every poll of cfg80211's survey prints the data at KERN_ERR, after wlan_combo-logspam-quiet took the
+idx/time/count lines), the per-mode default of find_lut_index for multicast frames, the short-frame copy path of
+mm_normal_data_process, the defrag cache sweep on a peer's departure, EAPOL frames sent by command, reordering
+drops of retransmissions the window moved past, DELBA for a session the host no longer has, and duplicate TCP
+ACKs skipped by the ACK filter. The BAR-for-unknown-session twin of the DELBA line and the "too short"/"alloc skb
+fail" lines of mm.c stay errors. Applies after wlan_combo-logspam-quiet (alphabetical: "r" > "l").
+
+--- a/sc2355/acs.c
++++ b/sc2355/acs.c
+@@ -37,7 +37,7 @@
+ 	}
+ 	if (fw_ver == 1) {
+ 		if (vif->mode != SPRD_MODE_AP) {
+-			netdev_err(vif->ndev, "Not AP mode, exit %s!\n",
++			netdev_dbg(vif->ndev, "Not AP mode, exit %s!\n",
+ 				   __func__);
+ 			err = -ENOENT;
+ 			goto out;
+@@ -100,7 +100,7 @@
+ 					    (SURVEY_INFO_NOISE_DBM |
+ 					     SURVEY_INFO_TIME |
+ 					     SURVEY_INFO_TIME_BUSY);
+-					netdev_err(vif->ndev,
++					netdev_dbg(vif->ndev,
+ 						   "%s, noise:%d, time:%llu, time_busy:%llu, center_freq:%d\n",
+ 						   __func__,
+ 						   s_info->noise,
+@@ -110,7 +110,7 @@
+ 				} else {
+ 					s_info->filled =
+ 					    SURVEY_INFO_NOISE_DBM;
+-					netdev_err(vif->ndev,
++					netdev_dbg(vif->ndev,
+ 						   "%s, noise:%d,center_freq:%d\n",
+ 						   __func__,
+ 						   s_info->noise,
+--- a/sc2355/pcie.c
++++ b/sc2355/pcie.c
+@@ -1070,18 +1070,18 @@
+ out:
+ 	if (vif->mode == SPRD_MODE_STATION ||
+ 	    vif->mode == SPRD_MODE_P2P_CLIENT) {
+-		pr_err("%s,%d,bssid not found, multicast?\n"
+-		       "default of STA/GC = 0,\n", __func__, vif->ctx_id);
++		pr_debug("%s,%d,bssid not found, multicast?\n"
++			 "default of STA/GC = 0,\n", __func__, vif->ctx_id);
+ 		return 0;
+ 	}
+ 	if (vif->mode == SPRD_MODE_AP) {
+-		pr_err("%s,%d,bssid not found, multicast?\n"
+-		       "default of AP = 4\n", __func__, vif->ctx_id);
++		pr_debug("%s,%d,bssid not found, multicast?\n"
++			 "default of AP = 4\n", __func__, vif->ctx_id);
+ 		return 4;
+ 	}
+ 	if (vif->mode == SPRD_MODE_P2P_GO) {
+-		pr_err("%s,%d,bssid not found, multicast?\n"
+-		       "default of GO = 5\n", __func__, vif->ctx_id);
++		pr_debug("%s,%d,bssid not found, multicast?\n"
++			 "default of GO = 5\n", __func__, vif->ctx_id);
+ 		return 5;
+ 	}
+ 	return 0;
+--- a/sc2355/sdio.c
++++ b/sc2355/sdio.c
+@@ -754,18 +754,18 @@
+ 	if (vif->mode == SPRD_MODE_STATION ||
+ 		vif->mode == SPRD_MODE_STATION_SECOND ||
+ 		vif->mode == SPRD_MODE_P2P_CLIENT) {
+-		pr_err("%s,%d,bssid not found, multicast?\n"
+-		       "default of STA/GC = 0,\n", __func__, vif->ctx_id);
++		pr_debug("%s,%d,bssid not found, multicast?\n"
++			 "default of STA/GC = 0,\n", __func__, vif->ctx_id);
+ 		return 0;
+ 	}
+ 	if (vif->mode == SPRD_MODE_AP) {
+-		pr_err("%s,%d,bssid not found, multicast?\n"
+-		       "default of AP = 4\n", __func__, vif->ctx_id);
++		pr_debug("%s,%d,bssid not found, multicast?\n"
++			 "default of AP = 4\n", __func__, vif->ctx_id);
+ 		return 4;
+ 	}
+ 	if (vif->mode == SPRD_MODE_P2P_GO) {
+-		pr_err("%s,%d,bssid not found, multicast?\n"
+-		       "default of GO = 5\n", __func__, vif->ctx_id);
++		pr_debug("%s,%d,bssid not found, multicast?\n"
++			 "default of GO = 5\n", __func__, vif->ctx_id);
+ 		return 5;
+ 	}
+ 	return 0;
+--- a/sc2355/mm.c
++++ b/sc2355/mm.c
+@@ -450,8 +450,8 @@
+ 			skb = mm_build_skb(data, skb_len, buffer_type);
+ 		else {
+ 			/* Should not happen */
+-			pr_err("%s: data len is %d, skb need %d\n",
+-			       __func__, len, skb_len);
++			pr_debug_ratelimited("%s: data len is %d, skb need %d\n",
++					     __func__, len, skb_len);
+ 			skb = mm_data2skb_process(mm_entry, data,
+ 						  SKB_WITH_OVERHEAD(skb_len));
+ 			free_data = true;
+--- a/sc2355/defrag.c
++++ b/sc2355/defrag.c
+@@ -282,8 +282,8 @@
+ 		if ((lut_index == node->desc.sta_lut_index) &&
+ 		    (!skb_queue_empty(&node->skb_list))) {
+ 			skb_queue_purge(&node->skb_list);
+-			pr_err("%s:defrag clear cache\n", __func__);
++			pr_debug("%s:defrag clear cache\n", __func__);
+ 		}
+-		pr_err("%s:msdu len %d\n", __func__, node->msdu_len);
++		pr_debug("%s:msdu len %d\n", __func__, node->msdu_len);
+ 	}
+ }
+--- a/sc2355/tx.c
++++ b/sc2355/tx.c
+@@ -2286,7 +2286,7 @@
+ 
+ 	if (skb->protocol == cpu_to_be16(ETH_P_PAE) ||
+ 		skb->protocol == cpu_to_be16(WAPI_TYPE)) {
+-		pr_err("send %s frame by CMD_TX_DATA\n",
++		pr_debug("send %s frame by CMD_TX_DATA\n",
+ 		skb->protocol == cpu_to_be16(ETH_P_PAE) ? "802.1X" : "WAI");
+ 		if (sprd_xmit_data2cmd_wq(skb, ndev) == -EAGAIN)
+ 			return NETDEV_TX_BUSY;
+--- a/sc2355/reorder.c
++++ b/sc2355/reorder.c
+@@ -358,12 +358,12 @@
+ 		if (!ret && seqno_geq(seq_num, ba_node_desc->win_tail))
+ 			ba_node_desc->win_tail = seq_num;
+ 	} else {
+-		pr_err("%s: seq_num: %d is less than win_start: %d\n",
+-		       __func__, seq_num, ba_node_desc->win_start);
++		pr_debug_ratelimited("%s: seq_num: %d is less than win_start: %d\n",
++				     __func__, seq_num, ba_node_desc->win_start);
+ 	}
+ 
+ 	if (ret && skb) {
+-		pr_err("%s: kfree skb %d", __func__, ret);
++		pr_debug_ratelimited("%s: kfree skb %d", __func__, ret);
+ 		dev_kfree_skb(skb);
+ 	}
+ 
+@@ -555,8 +555,8 @@
+ 	ba_node = reorder_find_ba_node(ba_entry,
+ 				       ba_event->sta_lut_index, ba_event->tid);
+ 	if (!ba_node) {
+-		pr_err("%s: NOT FOUND sta_lut_index: %d, tid: %d\n",
+-		       __func__, ba_event->sta_lut_index, ba_event->tid);
++		pr_debug("%s: NOT FOUND sta_lut_index: %d, tid: %d\n",
++			 __func__, ba_event->sta_lut_index, ba_event->tid);
+ 		return;
+ 	}
+ 
+--- a/sc2355/tcp_ack.c
++++ b/sc2355/tcp_ack.c
+@@ -300,8 +300,8 @@
+ 			ack_info->in_send_msg = NULL;
+ 			ack_info->drop_cnt = atomic_read(&ack_m->max_drop_cnt);
+ 		} else {
+-			pr_err("%s before abnormal ack: %d, %d\n",
+-			       __func__, ack->seq, ack_msg->seq);
++			pr_debug_ratelimited("%s before abnormal ack: %d, %d\n",
++					     __func__, ack->seq, ack_msg->seq);
+ 			drop_msg = new_msg;
+ 			ret = 1;
+ 		}

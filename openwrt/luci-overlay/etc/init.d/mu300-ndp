@@ -1,0 +1,16 @@
+#!/bin/sh /etc/rc.common
+# The carrier's /64 routed to the LAN in mu300cell's relay mode (see /opt/mu300/bin/ndp-learn). K37, spec D9;
+# openwrt-luci only, ported from kanoqwq/clean-tf-7.2 (cd4fb28).
+# Does nothing unless network.wan.ipv6 is relay: with the RFC 7278 design (ipv6 'extend' or unset) the /64 is on
+# br-lan already and this loop would only flip accept_ra on a bearer that should not take RAs. A changed option
+# takes effect when this service restarts (the next boot).
+START=99
+USE_PROCD=1
+
+start_service() {
+	[ "$(uci -q get network.wan.ipv6)" = relay ] || return 0
+	procd_open_instance
+	procd_set_param command /bin/sh /opt/mu300/bin/ndp-learn
+	procd_set_param respawn 3600 10 0
+	procd_close_instance
+}

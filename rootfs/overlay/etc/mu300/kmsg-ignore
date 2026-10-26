@@ -1,0 +1,18 @@
+# Kernel messages that are NOT written to the journal (they still appear in dmesg).
+# One extended regular expression per line; lines starting with # are ignored.
+# These are harmless vendor driver messages that repeat forever on this device and would otherwise write
+# hundreds of KiB per hour to the eMMC.
+
+# charger-manager looks for a battery thermistor this device does not have
+charger-manager: Can not to get board tempperature
+# the fuel gauge prints its state on every poll (no battery here either)
+sc27xx-fgu: test\.\.
+# the vendor watchdog driver logs its own reload interval
+sprd wdt load value timeout
+# Wi-Fi firmware housekeeping
+sprd-wlan: sc[0-9]+_rx_mh_addr_process: out of time
+sprd-wlan: \[[0-9]+\]ctx_id [0-9]+ send\[CMD_
+# modem debug channel rate limiting
+mdbg_log_cb: [0-9]+ callbacks suppressed
+# PCIe link state polling while the Wi-Fi chip is idle
+sprd-pcie [0-9a-f:.]+pcie: link status don't ready

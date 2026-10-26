@@ -1,0 +1,70 @@
+#!/bin/sh
+# Choose which system on the Linux disk area boots next. Any directory with an /etc and an init counts, so
+# ubuntu, openwrt, openwrt-luci, immortalwrt, arch, debian, kali ... all work the same way.
+#   mu300-os             show installed systems and the current choice
+#   mu300-os <name>      boot that system from now on (reboot to apply)
+# OpenWrt: od/timeout come from the static busybox in /opt/mu300/busybox-bin
+export PATH="$PATH:/opt/mu300/busybox-bin"
+set -e
+# MU300_DISK / MU300_SYSROOT: a directory standing in for the disk area and for / (tests)
+if mountpoint -q "${MU300_DISK:-/mnt/mu300-disk}" 2>/dev/null; then
+    DISK=${MU300_DISK:-/mnt/mu300-disk}
+elif [ -x /lib/systemd/systemd ] && [ ! -d /ubuntu ] && [ -f /etc/os-release ] && grep -q '^ID=ubuntu' /etc/os-release; then
+    DISK=/            # first-install layout: Ubuntu lives in the filesystem root
+else
+    echo "cannot find the MU300 disk area (/mnt/mu300-disk)" >&2; exit 1
+fi
+
+# a system is any top-level directory that has /etc and something to run as init
+is_system() {
+    d=$DISK/$1
+    [ -d "$d/etc" ] || return 1
+    [ -x "$d/sbin/init" ] || [ -L "$d/sbin/init" ] || [ -x "$d/usr/lib/systemd/systemd" ] || \
+    [ -x "$d/lib/systemd/systemd" ] || [ -x "$d/bin/busybox" ]
+}
+systems() {
+    for d in "$DISK"/*/; do
+        n=${d%/}; n=${n##*/}
+        case $n in lost+found|.*|*.old|*.new|*.broken) continue ;; esac
+        is_system "$n" && printf '%s ' "$n"
+    done
+}
+
+list() {
+    found=$(systems)
+    if [ -n "$found" ]; then
+        for n in $found; do
+            printf '%s: installed (%s)' "$n" "$DISK/$n"
+            [ -r "$DISK/$n/etc/mu300/image-version" ] && printf ' %s' "$(cat "$DISK/$n/etc/mu300/image-version")"
+            printf '\n'
+        done
+    elif [ "$DISK" = / ]; then
+        echo "ubuntu: installed (/)"
+    else
+        echo "no systems found in $DISK"
+    fi
+    echo "boot-os: $(cat "$DISK/.mu300/boot-os" 2>/dev/null || echo 'ubuntu (default)')"
+}
+
+case "${1:-}" in
+    "") list ;;
+    -h|--help) sed -n '2,6s/^# \{0,1\}//p' "$0" ;;
+    *)
+        # a kept copy (openwrt.old ...) is not a system: init would not boot it either
+        case $1 in *.*|*/*) echo "$1 is not a system name (available: $(systems))" >&2; exit 1 ;; esac
+        if ! is_system "$1" && ! { [ "$1" = ubuntu ] && [ -x "$DISK/lib/systemd/systemd" ]; }; then
+            echo "$1 is not installed (available: $(systems))" >&2; exit 1
+        fi
+        mkdir -p "$DISK/.mu300"
+        # Whether Linux is the default boot is written per system (the initramfs reads it from the one it
+        # boots), but it is a choice about the device. Carry it over, or switching from a system where it is on
+        # to one where it never was makes the first reboot there land in Android.
+        if [ "$DISK" != / ] && [ -d "$DISK/$1/etc" ]; then
+            mkdir -p "$DISK/$1/etc/mu300"
+            if [ "$(cat "${MU300_SYSROOT:-}/etc/mu300/default-boot" 2>/dev/null)" = linux ]; then echo linux > "$DISK/$1/etc/mu300/default-boot"
+            else rm -f "$DISK/$1/etc/mu300/default-boot"; fi
+        fi
+        echo "$1" > "$DISK/.mu300/boot-os.tmp" && mv "$DISK/.mu300/boot-os.tmp" "$DISK/.mu300/boot-os"
+        sync
+        echo "next Linux boot: $1 (reboot to apply)" ;;
+esac

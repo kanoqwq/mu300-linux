@@ -1,0 +1,20 @@
+[Unit]
+Description=MU300 CPU voltage offset (EXPERIMENTAL): a clean shutdown keeps the offset for the next boot
+# Started at boot, stopped at shutdown: ExecStop removes .mu300/cpu-voltage-armed, and only when the system is
+# stopping (a "systemctl stop" is not a shutdown). A boot that ends any other way - a crash, a watchdog reset, a power
+# cut - leaves the mark, and the initramfs then drops the offset (boot/init, cpu-voltage). The disk mount stays until
+# this has stopped.
+DefaultDependencies=no
+RequiresMountsFor=/mnt/mu300-disk
+After=local-fs.target
+Before=shutdown.target
+Conflicts=shutdown.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/true
+ExecStop=/opt/mu300/bin/mu300-cpu voltage shutdown
+
+[Install]
+WantedBy=multi-user.target

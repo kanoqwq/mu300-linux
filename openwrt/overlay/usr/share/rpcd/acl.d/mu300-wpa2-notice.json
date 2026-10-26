@@ -1,0 +1,21 @@
+{
+	"mu300-wpa2-notice": {
+		"description": "MU300: the notice that WPA3 on the hotspot was disabled (read it, dismiss it)",
+		"read": {
+			"file": {
+				"/etc/mu300/wpa3-disabled": [ "read" ]
+			},
+			"ubus": {
+				"file": [ "read" ]
+			}
+		},
+		"write": {
+			"file": {
+				"/etc/mu300/wpa3-disabled": [ "write" ]
+			},
+			"ubus": {
+				"file": [ "remove" ]
+			}
+		}
+	}
+}

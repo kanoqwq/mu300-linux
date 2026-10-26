@@ -1,0 +1,17 @@
+#!/bin/bash
+# mu300-at [-d DEV] CMD... : send AT commands to the modem tty (default /dev/stty_nr1) and print the responses
+DEV=/dev/stty_nr1
+[ "$1" = -d ] && { DEV=$2; shift 2; }
+stty -F "$DEV" raw -echo 2>/dev/null || true
+exec 3<>"$DEV"
+for c in "$@"; do
+    while IFS= read -r -t 0.2 l <&3; do :; done
+    printf '%s\r' "$c" >&3
+    end=$((SECONDS+5))
+    while [ $SECONDS -lt $end ]; do
+        IFS= read -r -t 1 l <&3 || continue
+        l=${l%$'\r'}; [ -z "$l" ] && continue
+        echo "$l"
+        case "$l" in OK|ERROR*|+CME*) break ;; esac
+    done
+done

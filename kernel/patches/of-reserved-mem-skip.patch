@@ -1,0 +1,77 @@
+of: reserved_mem: allow skipping /reserved-memory nodes Linux does not need
+
+The F50 device tree reserves a 9 MiB boot logo buffer (the device has no
+display) and a 16 MiB bootloader sysdump area. CONFIG_OF_RESERVED_MEM_SKIP
+(or reserved_mem_skip= on the command line) lists node names that are left
+as normal RAM. The 464 MiB modem and 24 MiB Trusty regions must stay.
+
+diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
+index d91618641..f36e17ded 100644
+--- a/drivers/of/Kconfig
++++ b/drivers/of/Kconfig
+@@ -81,6 +81,15 @@ config OF_MDIO
+ 	help
+ 	  OpenFirmware MDIO bus (Ethernet PHY) accessors
+ 
++config OF_RESERVED_MEM_SKIP
++	string "Reserved memory nodes to ignore"
++	depends on OF_RESERVED_MEM
++	default ""
++	help
++	  Comma separated /reserved-memory node names (without @unit) that
++	  are not reserved, so the memory stays available to Linux. Can be
++	  overridden with reserved_mem_skip= on the command line.
++
+ config OF_RESERVED_MEM
+ 	bool
+ 	depends on OF_EARLY_FLATTREE
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index 109619c1f..a26685669 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -539,6 +539,33 @@ static int __init __reserved_mem_check_root(unsigned long node)
+ 	return 0;
+ }
+ 
++static char reserved_mem_skip[256] __initdata = CONFIG_OF_RESERVED_MEM_SKIP;
++
++static int __init reserved_mem_skip_setup(char *str)
++{
++	strlcpy(reserved_mem_skip, str, sizeof(reserved_mem_skip));
++	return 0;
++}
++early_param("reserved_mem_skip", reserved_mem_skip_setup);
++
++/* true if the node name (without @unit) is in the comma separated skip list */
++static bool __init reserved_mem_skipped(const char *uname)
++{
++	size_t len = strcspn(uname, "@");
++	const char *p = reserved_mem_skip;
++
++	while (*p) {
++		size_t n = strcspn(p, ",");
++
++		if (n == len && !strncmp(p, uname, len))
++			return true;
++		p += n;
++		if (*p == ',')
++			p++;
++	}
++	return false;
++}
++
+ /**
+  * fdt_scan_reserved_mem() - scan a single FDT node for reserved memory
+  */
+@@ -568,6 +595,11 @@ static int __init __fdt_scan_reserved_mem(unsigned long node, const char *uname,
+ 	if (!of_fdt_device_is_available(initial_boot_params, node))
+ 		return 0;
+ 
++	if (reserved_mem_skipped(uname)) {
++		pr_info("Reserved memory: skipping %s (reserved_mem_skip)\n", uname);
++		return 0;
++	}
++
+ 	err = __reserved_mem_reserve_reg(node, uname);
+ 	if (err == -ENOENT && of_get_flat_dt_prop(node, "size", NULL))
+ 		fdt_reserved_mem_save_node(node, uname, 0, 0);

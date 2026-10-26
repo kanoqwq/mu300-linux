@@ -1,0 +1,5 @@
+#!/bin/sh
+# A LAN reload can recreate br-lan after the NIC has already enumerated.
+[ "$ACTION" = ifup ] && [ "$INTERFACE" = lan ] || exit 0
+[ -x /usr/libexec/unisoc-modem/device-usb ] || exit 0
+/usr/libexec/unisoc-modem/device-usb net-sync >/dev/null 2>&1

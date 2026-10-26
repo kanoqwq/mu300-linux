@@ -1,0 +1,63 @@
+From: kanoqwq <kanoqwq@qq.com>
+Subject: [PATCH] power: supply: bq256xx: the U30 Air's battery CV and the stock safety-timer policy
+
+Ported from kanoqwq/mu300-linux c031a58a (his upstream/patches/0023, docs/U30AIR-CHARGING-EARLY-FULL-20261022).
+
+The vendor node used a 4.208 V cap copied from an Android register snapshot,
+not its battery configuration (4.3 V on the tested SSV board). Honor the
+battery CV at probe and bound it to the chip capability; generic boards
+keep their existing default initialization. Leave current budgets unchanged.
+
+Stock sqc_bq2560x.ko SHA256 ce42c87c42f9ed7e5b5aba8277d4245c03c2c41a569e8ca24d749f07bc3a0efc
+clears REG05 bit 3 at probe+0xdd8 (0x1b08), as the matching source's
+bq2560x_charger_set_safety_timer(..., DISABLE) does. Do the same only for
+the battery-isolated vendor node. EN_TERM and TS/NTC remain intact.
+No SOC rewrite, forced restart/recharge, new polling, or input-current change.
+
+Verified by kanoqwq on a U30 Air (7.2.8): REG04 0x68 (4.272 V, the 4.3 V CV in
+32 mV steps), REG05 0x87 (termination on, safety timer off).
+
+--- a/drivers/power/supply/bq256xx_charger.c
++++ b/drivers/power/supply/bq256xx_charger.c
+@@ -162,7 +162,7 @@
+ #define BQ256XX_IINDET_EN		BIT(7)	/* CHARGER_CONTROL_3: force input detection, clears when done */
+ #define BQ256XX_VBUS_STAT_NONSTD	(BIT(7) | BIT(6))
+ #define BQ2560X_CHG_ICHG_MAX_uA		1980000	/* what Android charges the U30 Air's 4050 mAh cell with */
+-#define BQ2560X_CHG_VBATREG_MAX_uV	4208000	/* Android's VREG; the battery node says 4.3 V */
++#define BQ2560X_CHG_EN_TIMER		BIT(3)	/* REG05: stock driver disables the hardware safety timer */
+ 
+ /*
+  * The SGM41513 that ZTE's driver (sqc_bq2560x.c) looks for when nothing answers at the node's address: the same
+@@ -2023,9 +2023,19 @@
+ 
+ 	if (bq->bq2560x_chg) {
+ 		bq->init_data.ichg_max = min_t(u32, bq->init_data.ichg_max, BQ2560X_CHG_ICHG_MAX_uA);
+-		bq->init_data.vbatreg_max = min_t(u32, bq->init_data.vbatreg_max,
+-						  BQ2560X_CHG_VBATREG_MAX_uV);
+-		ret = regmap_update_bits(bq->regmap, BQ256XX_CHARGER_CONTROL_1, BQ256XX_EN_TERM,
++		/* A boot-time register snapshot is not the stock charging policy.
++		 * Use this battery's declared CV, bounded by the charger capability;
++		 * fall back to the chip default only when no valid value was supplied.
++		 */
++		bq->init_data.vbatreg_max = bat_info->constant_charge_voltage_max_uv > 0 ?
++			min_t(u32, bat_info->constant_charge_voltage_max_uv,
++			      bq->chip_info->bq256xx_max_vbatreg) :
++			bq->chip_info->bq256xx_def_vbatreg;
++		/* Stock sqc_bq2560x probe clears REG05 EN_TIMER (0x1b08).
++		 * Keep termination enabled; this does not disable TS/NTC protection.
++		 */
++		ret = regmap_update_bits(bq->regmap, BQ256XX_CHARGER_CONTROL_1,
++					 BQ256XX_EN_TERM | BQ2560X_CHG_EN_TIMER,
+ 					 BQ256XX_EN_TERM);
+ 		if (ret)
+ 			return ret;
+@@ -2050,7 +2060,8 @@
+ 		return ret;
+ 
+ 	ret = bq->chip_info->bq256xx_set_vbatreg(bq,
+-				bq->chip_info->bq256xx_def_vbatreg);
++			bq->bq2560x_chg ? bq->init_data.vbatreg_max :
++			bq->chip_info->bq256xx_def_vbatreg);
+ 	if (ret)
+ 		return ret;
+ 

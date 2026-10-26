@@ -1,0 +1,95 @@
+#!/bin/sh
+# OpenWrt only: create /etc/config/wireless once, from /etc/mu300/hotspot.conf (imported from Android by the installer)
+# or with a random passphrase. Afterwards the Wi-Fi is managed normally with uci/LuCI.
+# 5 GHz: never a DFS channel (the driver has no radar detection, hostapd's start_dfs_cac fails): a DFS channel in
+# hotspot.conf, or one the country does not allow, becomes the country's default, and so does "auto"; the radio's
+# channel list (used when LuCI sets the channel to auto) is the country's channels without DFS (lib/wifi-channels.sh).
+# (MU300_SYSROOT and MU300_WIFI_CHANNELS are for tests/)
+R=${MU300_SYSROOT:-}
+WIFI_CHANNELS=${MU300_WIFI_CHANNELS:-/opt/mu300/lib/wifi-channels.sh}
+[ -r "$WIFI_CHANNELS" ] || WIFI_CHANNELS=$(dirname "$0")/../lib/wifi-channels.sh
+. "$WIFI_CHANNELS"
+[ -f "$R/etc/openwrt_release" ] || exit 0
+# Configured before (at every boot from then on): a DFS channel set in LuCI or by hand becomes the country's default,
+# with a line that says so. (wifi-scripts would replace it at every start anyway, see openwrt/patches/
+# wifi-scripts-no-dfs.patch; this makes LuCI show the channel the hotspot really uses.)
+if [ -e "$R/etc/mu300/wifi-configured" ]; then
+	radio=$(uci -q show wireless | sed -n "s/^wireless\.\([^.=]*\)=wifi-device$/\1/p" | head -1)
+	[ -n "$radio" ] || exit 0
+	ch=$(uci -q get "wireless.$radio.channel")
+	[ "$(uci -q get "wireless.$radio.band")" = 5g ] && wifi_ap5_dfs "$ch" || exit 0
+	cc=$(uci -q get "wireless.$radio.country"); cc=${cc:-TR}
+	note=$(wifi_ap5_resolve "$cc" "$ch" 2>&1 >/dev/null)
+	echo "$note" >&2; logger -t mu300-wifi "$note" 2>/dev/null || true
+	ch=$(wifi_ap5_default "$cc")
+	[ -n "$ch" ] || exit 0
+	ht=$(uci -q get "wireless.$radio.htmode"); w=$(wifi_ap5_width "$cc" "$ch")
+	case $ht in
+		NOHT|'') ;;
+		HT*) [ "$w" = 80 ] && w=40; ht=HT$w ;;
+		*) ht=${ht%%[0-9]*}$w ;;
+	esac
+	uci -q batch <<UCI
+set wireless.$radio.channel='$ch'
+set wireless.$radio.htmode='$ht'
+set wireless.$radio.channels='$(wifi_ap5_channels "$cc")'
+set wireless.$radio.acs_exclude_dfs='1'
+UCI
+	uci commit wireless
+	exit 0
+fi
+# wifi-scripts may already have generated an open "OpenWrt" network; replace it once with our settings
+for n in $(seq 1 30); do [ -e "$R/sys/class/ieee80211/phy0" ] && break; sleep 1; done
+CONF=$R/etc/mu300/hotspot.conf
+conf() { sed -n "s/^$1=//p" "$CONF" 2>/dev/null | head -1; }
+SSID=$(conf SSID); PSK=$(conf PSK); BAND=$(conf BAND); CHANNEL=$(conf CHANNEL); COUNTRY=$(conf COUNTRY)
+COUNTRY=${COUNTRY:-TR}
+[ -n "$SSID" ] || SSID="MU300-$(tr -d : < "$R/sys/class/net/wlan0/address" 2>/dev/null | tail -c 5 | tr a-f A-F)"
+[ ${#PSK} -ge 8 ] || PSK=$(tr -dc 'A-HJ-NP-Za-km-z2-9' </dev/urandom | head -c 12)
+CHANNELS=
+case "${BAND:-5}" in
+	2.4) band=2g; htmode=HT20; [ "$CHANNEL" = auto ] || [ -z "$CHANNEL" ] && CHANNEL=6 ;;
+	*)
+		band=5g
+		CHANNEL=$(wifi_ap5_resolve "$COUNTRY" "$CHANNEL")
+		if [ -n "$CHANNEL" ]; then
+			htmode=VHT$(wifi_ap5_width "$COUNTRY" "$CHANNEL")
+			CHANNELS=$(wifi_ap5_channels "$COUNTRY")
+		else
+			echo "no 5 GHz channel without DFS in country $COUNTRY: the hotspot uses 2.4 GHz" >&2
+			band=2g; htmode=HT20; CHANNEL=6
+		fi ;;
+esac
+wifi config >/dev/null 2>&1
+touch "$R/etc/config/wireless"
+radio=$(uci -q show wireless | sed -n "s/^wireless\.\([^.=]*\)=wifi-device$/\1/p" | head -1)
+[ -n "$radio" ] || { radio=radio0; uci set wireless.radio0=wifi-device; uci set wireless.radio0.type=mac80211; uci set wireless.radio0.phy=phy0; }
+if [ -n "$CHANNELS" ]; then
+	ch_lines="set wireless.$radio.channels='$CHANNELS'
+set wireless.$radio.acs_exclude_dfs='1'"
+else
+	ch_lines="delete wireless.$radio.channels
+delete wireless.$radio.acs_exclude_dfs"
+fi
+uci -q batch <<UCI
+set wireless.$radio.band='$band'
+set wireless.$radio.channel='$CHANNEL'
+set wireless.$radio.htmode='$htmode'
+$ch_lines
+set wireless.$radio.country='$COUNTRY'
+set wireless.$radio.disabled='0'
+delete wireless.default_$radio
+delete wireless.$radio.disabled
+set wireless.ap0=wifi-iface
+set wireless.ap0.device='$radio'
+set wireless.ap0.network='lan'
+set wireless.ap0.mode='ap'
+set wireless.ap0.uapsd='0'
+set wireless.ap0.ifname='wlan0'
+set wireless.ap0.ssid='$SSID'
+set wireless.ap0.encryption='psk2'
+set wireless.ap0.key='$PSK'
+UCI
+uci commit wireless
+touch "$R/etc/mu300/wifi-configured"
+echo "wireless configured: $band channel $CHANNEL"

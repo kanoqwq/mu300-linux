@@ -1,0 +1,113 @@
+power: supply: bq256xx: the U30 Air takes a Type-C source's Rp current
+
+A hub or splitter with a charger behind it (a USB network adapter and the charger on the U30 Air's one port)
+answers BC1.2 as an SDP, so the input stayed at 500 mA. The UMP9620's Type-C block (typec@380, no driver under
+mainline) runs its state machine by itself: attached as a sink, STATUS bits 7:6 hold the source's Rp (1.5 A,
+3 A); while it still debounces an attach (state 1, seen right after a USB role change) the read waits up to
+1.5 s for it. The input current is now the larger of BC1.2's and the Rp's, 3 A taken as 2 A (the DCP value here). The
+raw status is in the "usb_type ... input current" line of dmesg.
+Register layout from Unisoc's sc27xx_pd.c, which a community contribution (the u30air charge2 build) brought in
+whole with its TCPM stack; only this one status read is used here.
+
+--- a/drivers/power/supply/bq256xx_charger.c
++++ b/drivers/power/supply/bq256xx_charger.c
+@@ -16,6 +16,7 @@
+ #include <linux/moduleparam.h>
+ #include <linux/slab.h>
+ #include <linux/acpi.h>
++#include <linux/bitfield.h>
+ #include <linux/devm-helpers.h>
+ #include <linux/extcon.h>
+ #include <linux/mfd/sc27xx-pmic.h>
+@@ -1629,7 +1630,59 @@
+ #endif
+ 	return POWER_SUPPLY_USB_TYPE_UNKNOWN;
+ }
++
++/*
++ * The input current a Type-C source offers with its Rp (USB Type-C Current: 1.5 A or 3 A), from the UMP9620's own
++ * Type-C block ("sprd,sc27xx-typec", typec@380 under the PMIC). It has no driver here, but its state machine runs by
++ * itself: STATUS bits 4:0 are the state (2: attached as a sink), bits 7:6 the source's Rp (0 default, 1 1.5 A,
++ * 2 3 A), as Unisoc's sc27xx_pd reads them. A hub or splitter with a charger behind it answers BC1.2 as an SDP
++ * (500 mA) but offers more through its Rp. 3 A is taken as 2 A, what a DCP gets here. 0 when there is no answer.
++ * One register read through the PMIC's regmap, as sprd_pmic_detect_charger_type() does.
++ */
++#define UMP9620_TYPEC_STATUS		0x1c
++#define UMP9620_TYPEC_STATE		GENMASK(4, 0)
++#define UMP9620_TYPEC_ATTACHWAIT_SNK	1
++#define UMP9620_TYPEC_ATTACHED_SNK	2
++#define UMP9620_TYPEC_RP		GENMASK(7, 6)
++
++static int bq2560x_chg_typec_iindpm(struct bq256xx_device *bq, unsigned int *stat)
++{
++	struct device_node *np;
++	struct regmap *pmic;
++	u32 base;
++	int ret;
+ 
++	*stat = 0;
++	if (!bq->pmic)
++		return 0;
++	pmic = dev_get_regmap(bq->pmic, NULL);
++	np = of_get_compatible_child(bq->pmic->of_node, "sprd,sc27xx-typec");
++	if (!pmic || !np) {
++		of_node_put(np);
++		return 0;
++	}
++	ret = of_property_read_u32(np, "reg", &base);
++	of_node_put(np);
++	if (ret || regmap_read(pmic, base + UMP9620_TYPEC_STATUS, stat))
++		return 0;
++	/* still debouncing the attach (seen after a USB role change): give it up to 1.5 s */
++	if (FIELD_GET(UMP9620_TYPEC_STATE, *stat) == UMP9620_TYPEC_ATTACHWAIT_SNK &&
++	    regmap_read_poll_timeout(pmic, base + UMP9620_TYPEC_STATUS, *stat,
++				     FIELD_GET(UMP9620_TYPEC_STATE, *stat) != UMP9620_TYPEC_ATTACHWAIT_SNK,
++				     50000, 1500000))
++		return 0;
++	if (FIELD_GET(UMP9620_TYPEC_STATE, *stat) != UMP9620_TYPEC_ATTACHED_SNK)
++		return 0;
++	switch (FIELD_GET(UMP9620_TYPEC_RP, *stat)) {
++	case 1:
++		return 1500000;
++	case 2:
++		return 2000000;
++	default:
++		return 0;
++	}
++}
++
+ static void bq2560x_chg_put_pmic(void *data)
+ {
+ 	struct bq256xx_device *bq = data;
+@@ -1645,9 +1698,9 @@
+  */
+ static void bq2560x_chg_detect(struct bq256xx_device *bq)
+ {
+-	unsigned int ctrl0 = 0, stat = 0, ctrl3;
++	unsigned int ctrl0 = 0, stat = 0, ctrl3, typec;
+ 	bool off = READ_ONCE(bq->chg_off);
+-	int ret, iindpm, type = POWER_SUPPLY_USB_TYPE_UNKNOWN;
++	int ret, iindpm, rp, type = POWER_SUPPLY_USB_TYPE_UNKNOWN;
+ 	const char *src = "PMIC";
+ 
+ 	mutex_lock(&bq->lock);
+@@ -1691,11 +1744,17 @@
+ 			dev_warn(bq->dev, "input detection did not finish: %d\n", ret);
+ 		iindpm = ret ? 500000 : bq2560x_chg_iindpm(stat & BQ256XX_VBUS_STAT_MASK);
+ 		break;
++	}
++	/* a Type-C source's Rp says what it offers whatever BC1.2 found (a hub with a charger behind it: SDP) */
++	rp = bq2560x_chg_typec_iindpm(bq, &typec);
++	if (rp > iindpm) {
++		iindpm = rp;
++		src = type == POWER_SUPPLY_USB_TYPE_UNKNOWN ? "Type-C" : "PMIC + Type-C";
+ 	}
+ 	ret = bq->chip_info->bq256xx_set_iindpm(bq, iindpm);
+ 	if (!ret)
+-		dev_info(bq->dev, "%s: usb_type %d, input current %d mA, charging %s\n", src, type,
+-			 iindpm / 1000, off ? "off (userspace)" : "on");
++		dev_info(bq->dev, "%s: usb_type %d, Type-C 0x%x, input current %d mA, charging %s\n", src, type,
++			 typec, iindpm / 1000, off ? "off (userspace)" : "on");
+ out:
+ 	WRITE_ONCE(bq->usb_type, type);
+ 	mutex_unlock(&bq->lock);

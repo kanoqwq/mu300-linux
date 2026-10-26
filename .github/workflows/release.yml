@@ -1,0 +1,214 @@
+name: Release
+
+# The whole release on a GitHub arm64 runner: the vendor 5.4 kernel (kernel/build-all.sh), the mainline 6.18, 7.2 and 7.3
+# kernels with their modules (upstream/build.sh, build-modules.sh), then tools/make-release.sh, which builds the root
+# filesystems and the extras, audits every asset and publishes the release. Actions > Release > Run workflow on main,
+# with the tag left empty (the next one of today: vYYYY.MM.DD.N, tools/make-release.sh --next-tag, docs/FINDINGS.md
+# 125) or given (then it must be of today, in that form): a prerelease by default, which the installers and mu300-update do not offer until the maintainer has
+# tried it on a device and promoted it on GitHub (gh release edit TAG --prerelease=false --latest). The release's commit
+# is the main commit the workflow ran on, and nothing else: the job refuses another ref, and a tag or release that
+# already exists. The Magisk zips follow by the Magisk installers workflow, started at the end (a release made with the
+# workflow's own token does not start it by itself). A release published by hand with tools/make-release.sh does not
+# start this workflow: it only ever runs when asked.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag: empty for the next one of today (vYYYY.MM.DD.N), or that tag of today'
+        required: false
+        default: ''
+      prerelease:
+        description: 'Publish as a prerelease'
+        type: boolean
+        default: true
+      kv618:
+        description: 'The 6.18 kernel to build (empty: the newest 6.18 longterm on kernel.org)'
+        required: false
+      kv72:
+        description: 'The 7.2 kernel to build (empty: the newest 7.2 on kernel.org)'
+        required: false
+      kv73:
+        description: 'The 7.3 kernel to build (empty: the newest 7.3 on kernel.org: 7.3, then 7.3.1, ...)'
+        required: false
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 340
+    permissions:
+      contents: write   # the release and its assets
+      actions: write    # the Magisk installers dispatch at the end
+    env:
+      INPUT_TAG: ${{ inputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+      MU300_REPO: ${{ github.repository }}
+    steps:
+      - name: Ref
+        run: '[ "$GITHUB_REF_NAME" = main ] || { echo "releases come from main, not $GITHUB_REF_NAME"; exit 1; }'
+      - uses: actions/checkout@v5
+      # the tag: the next one of today when none was given; a given one must be vYYYY.MM.DD.N of today. Checked here,
+      # at the start: the build takes hours, and make-release.sh is told below that its day may have passed by then
+      - name: Tag
+        run: |
+          TAG=$INPUT_TAG
+          [ -n "$TAG" ] || TAG=$(sh tools/make-release.sh --next-tag)
+          sh tools/make-release.sh --check-tag "$TAG"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          echo "release $TAG from $GITHUB_REF_NAME@$GITHUB_SHA"
+      # make-release.sh adds to a release that exists (its retry path for a hand run); the workflow must never build
+      # over one, nor tag a second commit with a name a tag has
+      - name: Not yet released
+        run: |
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "release $TAG exists"; exit 1; fi
+          [ -z "$(git ls-remote --tags origin "refs/tags/$TAG")" ] || { echo "tag $TAG exists"; exit 1; }
+      # Everything that uses docker runs as root: on a Linux docker the containers write their outputs as root, the
+      # scripts' own cleanups (rm -rf of a directory a container filled) fail for anyone else, and a docker client
+      # run as root once leaves its buildx lock behind for the user's next one. The maintainer's Docker Desktop
+      # hands the files to the user, which is why the scripts never needed to care.
+      - name: Tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lz4 cpio zip unzip >/dev/null
+          sudo python3 -m pip install -q lz4 || sudo python3 -m pip install -q --break-system-packages lz4
+          sudo git config --system --add safe.directory "$GITHUB_WORKSPACE"
+          docker version --format 'docker {{.Server.Version}} {{.Server.Arch}}'
+          df -h / | tail -1
+      - name: Kernel versions
+        id: kv
+        env:
+          KV618: ${{ inputs.kv618 }}
+          KV72: ${{ inputs.kv72 }}
+          KV73: ${{ inputs.kv73 }}
+        run: |
+          curl -fsSL https://www.kernel.org/releases.json | KV618="$KV618" KV72="$KV72" KV73="$KV73" python3 -c '
+          import json, os, re, sys
+          # a mainline release is X.Y (its tarball linux-7.3.tar.xz, its kernel release 7.3.0) until its first stable
+          # update X.Y.1; release candidates (7.4-rc1) are not on the CDN and never match
+          vs = [x["version"] for x in json.load(sys.stdin)["releases"] if re.fullmatch(r"[0-9]+\.[0-9]+(\.[0-9]+)?", x["version"])]
+          def newest(series):
+              got = sorted((v for v in vs if v == series or v.startswith(series + ".")), key=lambda v: [int(p) for p in v.split(".")])
+              return got[-1] if got else sys.exit("no %s kernel on kernel.org" % series)
+          for name, series in (("kv618", "6.18"), ("kv72", "7.2"), ("kv73", "7.3")):
+              v = os.environ[name.upper()] or newest(series)
+              if not re.fullmatch(series.replace(".", r"\.") + r"(\.[0-9]+)?", v): sys.exit("not a %s kernel: %s" % (series, v))
+              print(name + "=" + v)
+          ' | tee -a "$GITHUB_OUTPUT"
+          # what each kernel is built from: the git tree of its directory (the same inputs give the same outputs)
+          echo "tree54=$(git rev-parse HEAD:kernel)" >> "$GITHUB_OUTPUT"
+          echo "treeup=$(git rev-parse HEAD:upstream)" >> "$GITHUB_OUTPUT"
+      # The kernel outputs are kept in the Actions cache by the tree they were built from: a release whose kernel
+      # inputs did not change (most of them) skips the builds, and a run that fails later does not redo them.
+      - name: Vendor 5.4 kernel outputs from the cache
+        id: c54
+        uses: actions/cache/restore@v4
+        with:
+          path: out
+          key: kernel-5.4-${{ steps.kv.outputs.tree54 }}
+      - name: Vendor 5.4 kernel and modules
+        if: steps.c54.outputs.cache-hit != 'true'
+        env:
+          # the config merge logs and the rejected fragment options, which build-all.sh otherwise removes with its
+          # scratch copy of kernel/ (the compiler's errors are on stdout above)
+          MU300_KBUILD_LOGS: ${{ runner.temp }}/kernel-5.4-logs
+        run: sudo -E sh kernel/build-all.sh
+      - name: Vendor 5.4 kernel logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-5.4-logs
+          path: ${{ runner.temp }}/kernel-5.4-logs
+          if-no-files-found: ignore
+      - if: steps.c54.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: out
+          key: kernel-5.4-${{ steps.kv.outputs.tree54 }}
+      - name: Mainline 6.18 outputs from the cache
+        id: c618
+        uses: actions/cache/restore@v4
+        with:
+          path: upstream/out
+          key: kernel-${{ steps.kv.outputs.kv618 }}-${{ steps.kv.outputs.treeup }}
+      - name: Mainline 7.2 outputs from the cache
+        id: c72
+        uses: actions/cache/restore@v4
+        with:
+          path: upstream/out-7.2
+          key: kernel-${{ steps.kv.outputs.kv72 }}-${{ steps.kv.outputs.treeup }}
+      - name: Mainline 7.3 outputs from the cache
+        id: c73
+        uses: actions/cache/restore@v4
+        with:
+          path: upstream/out-7.3
+          key: kernel-${{ steps.kv.outputs.kv73 }}-${{ steps.kv.outputs.treeup }}
+      - name: Mainline build environment
+        if: steps.c618.outputs.cache-hit != 'true' || steps.c72.outputs.cache-hit != 'true' || steps.c73.outputs.cache-hit != 'true'
+        run: |
+          sudo -E docker build -t mu300-mainline-build upstream/
+          sudo -E docker volume create mu300-mainline
+      - name: Mainline 6.18
+        if: steps.c618.outputs.cache-hit != 'true'
+        env:
+          KV: ${{ steps.kv.outputs.kv618 }}
+        run: |
+          sudo -E docker run --rm -e KV="$KV" -v mu300-mainline:/src -v "$PWD/upstream":/work mu300-mainline-build bash /work/build.sh
+          sudo -E docker run --rm -e KV="$KV" -v mu300-mainline:/src -v "$PWD/upstream":/work mu300-mainline-build bash /work/build-modules.sh > /dev/null
+          ls upstream/out/modules/*.ko | wc -l
+      - if: steps.c618.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: upstream/out
+          key: kernel-${{ steps.kv.outputs.kv618 }}-${{ steps.kv.outputs.treeup }}
+      - name: Mainline 7.2
+        if: steps.c72.outputs.cache-hit != 'true'
+        env:
+          KV: ${{ steps.kv.outputs.kv72 }}
+        run: |
+          sudo -E docker run --rm -e KV="$KV" -e OUTDIR=out-7.2 -v mu300-mainline:/src -v "$PWD/upstream":/work mu300-mainline-build bash /work/build.sh
+          sudo -E docker run --rm -e KV="$KV" -e OUTDIR=out-7.2 -v mu300-mainline:/src -v "$PWD/upstream":/work mu300-mainline-build bash /work/build-modules.sh > /dev/null
+          ls upstream/out-7.2/modules/*.ko | wc -l
+      - if: steps.c72.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: upstream/out-7.2
+          key: kernel-${{ steps.kv.outputs.kv72 }}-${{ steps.kv.outputs.treeup }}
+      - name: Mainline 7.3
+        if: steps.c73.outputs.cache-hit != 'true'
+        env:
+          KV: ${{ steps.kv.outputs.kv73 }}
+        run: |
+          sudo -E docker run --rm -e KV="$KV" -e OUTDIR=out-7.3 -v mu300-mainline:/src -v "$PWD/upstream":/work mu300-mainline-build bash /work/build.sh
+          sudo -E docker run --rm -e KV="$KV" -e OUTDIR=out-7.3 -v mu300-mainline:/src -v "$PWD/upstream":/work mu300-mainline-build bash /work/build-modules.sh > /dev/null
+          ls upstream/out-7.3/modules/*.ko | wc -l
+      - if: steps.c73.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: upstream/out-7.3
+          key: kernel-${{ steps.kv.outputs.kv73 }}-${{ steps.kv.outputs.treeup }}
+      # the three mainline trees with every module (FINDINGS 163) share one volume, ~21 GB; the runner had ~108 GB free
+      - name: Disk after the kernels
+        if: always()
+        run: |
+          df -h / | tail -1
+          sudo du -sh /var/lib/docker/volumes/mu300-mainline 2>/dev/null || true
+      - name: Build logs
+        if: failure()
+        run: tail -n 60 upstream/out/modules/*.log upstream/out-7.2/modules/*.log upstream/out-7.3/modules/*.log 2>/dev/null || true
+      # MU300_RELEASE_KEY: the release key (a usign secret key, see tools/sign-release.sh). With it make-release.sh
+      # signs SHA256SUMS and publishes SHA256SUMS.sig; without it the release is as it always was - unless the tree
+      # has the public key (rootfs/overlay/opt/mu300/lib/release.pub), and then nothing is published unsigned.
+      - name: Root filesystems, extras, audit, sign, publish
+        env:
+          INPUT_PRERELEASE: ${{ inputs.prerelease }}
+          MU300_RELEASE_KEY: ${{ secrets.MU300_RELEASE_KEY }}
+        run: |
+          pre=; [ "$INPUT_PRERELEASE" != true ] || pre=--prerelease
+          # the build outputs are ignored by git, so the tree is still the commit the release says it is
+          sudo -E git status --porcelain
+          sudo -E sh tools/make-release.sh "$TAG" --publish --any-date $pre
+      - name: Magisk installers
+        run: gh workflow run magisk.yml -R "$GITHUB_REPOSITORY" --ref main -f tag="$TAG"

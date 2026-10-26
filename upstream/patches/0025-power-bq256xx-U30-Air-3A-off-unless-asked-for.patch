@@ -1,0 +1,83 @@
+From: kanoqwq <kanoqwq@qq.com>
+Subject: [PATCH] power: supply: bq256xx: the U30 Air at up to 3 A, off unless asked for
+
+Ported from kanoqwq/mu300-linux 627cacea (his upstream/patches/0024, docs/U30AIR-3A-20261022).
+
+With bq256xx_charger.u30air_3a=1, the isolated vendor battery path takes the
+fast-charge current from the battery node (3 A on the U30 Air), bounded by
+3 A and the chip; without a valid node it keeps 1.98 A. The initial ICHG is
+that value too. A Type-C source advertising 3 A (Rp) then supplies 3 A of
+input instead of 2 A. BC1.2 SDP/CDP/DCP budgets, CV, termination, timer and
+thermal bits are unchanged. No boost, SOC, NV, polling or recharge changes.
+
+Off by default (the parameter, 0444): kanoqwq read the registers back on a
+U30 Air (ICHG 3 A, REG02 0xb2, on a computer's 500 mA port) but did not
+measure 3 A into the battery or 3 A from a 3 A source. Without it, the
+driver does what it did before this patch.
+
+--- a/drivers/power/supply/bq256xx_charger.c
++++ b/drivers/power/supply/bq256xx_charger.c
+@@ -161,7 +161,19 @@
+ #define BQ256XX_IINDET_EN		BIT(7)	/* CHARGER_CONTROL_3: force input detection, clears when done */
+ #define BQ256XX_VBUS_STAT_NONSTD	(BIT(7) | BIT(6))
+ #define BQ2560X_CHG_ICHG_MAX_uA		1980000	/* what Android charges the U30 Air's 4050 mAh cell with */
++#define BQ2560X_CHG_ICHG_3A_uA		3000000	/* u30air_3a: still bounded by the battery node and the chip */
+ #define BQ2560X_CHG_EN_TIMER		BIT(3)	/* REG05: stock driver disables the hardware safety timer */
++
++/*
++ * The U30 Air at up to 3 A (kanoqwq's 627cacea): the fast-charge current from the battery node (its 3 A), not the
++ * 1.98 A of an Android register snapshot, and a Type-C source's 3 A Rp taken as 3 A of input, not 2 A. Off by
++ * default: his test read the registers back (ICHG 3 A) but did not measure 3 A into the battery or from a 3 A
++ * source. Built in, so it is a kernel command-line option (bq256xx_charger.u30air_3a=1), read at probe and at
++ * every input detection.
++ */
++static bool u30air_3a;
++module_param(u30air_3a, bool, 0444);
++MODULE_PARM_DESC(u30air_3a, "ZTE U30 Air: charge at up to the battery's 3 A and take a Type-C 3 A source at 3 A (default off)");
+ 
+ /*
+  * The SGM41513 that ZTE's driver (sqc_bq2560x.c) looks for when nothing answers at the node's address: the same
+@@ -1784,7 +1796,8 @@
+  * Type-C block ("sprd,sc27xx-typec", typec@380 under the PMIC). It has no driver here, but its state machine runs by
+  * itself: STATUS bits 4:0 are the state (2: attached as a sink), bits 7:6 the source's Rp (0 default, 1 1.5 A,
+  * 2 3 A), as Unisoc's sc27xx_pd reads them. A hub or splitter with a charger behind it answers BC1.2 as an SDP
+- * (500 mA) but offers more through its Rp. 3 A is taken as 2 A, what a DCP gets here. 0 when there is no answer.
++ * (500 mA) but offers more through its Rp. 3 A is taken as 2 A, what a DCP gets here (3 A with u30air_3a). 0 when
++ * there is no answer.
+  * One register read through the PMIC's regmap, as sprd_pmic_detect_charger_type() does.
+  */
+ #define UMP9620_TYPEC_STATUS		0x1c
+@@ -1825,7 +1838,7 @@
+ 	case 1:
+ 		return 1500000;
+ 	case 2:
+-		return 2000000;
++		return u30air_3a ? 3000000 : 2000000;
+ 	default:
+ 		return 0;
+ 	}
+@@ -2036,7 +2049,15 @@
+ 	}
+ 
+ 	if (bq->bq2560x_chg) {
+-		bq->init_data.ichg_max = min_t(u32, bq->init_data.ichg_max, BQ2560X_CHG_ICHG_MAX_uA);
++		if (u30air_3a)
++			/* the battery node's current (1.98 A without one), at most 3 A and the chip's maximum */
++			bq->init_data.ichg_max = min_t(u32,
++				(ret || bat_info->constant_charge_current_max_ua <= 0) ?
++				BQ2560X_CHG_ICHG_MAX_uA :
++				bat_info->constant_charge_current_max_ua,
++				min_t(u32, BQ2560X_CHG_ICHG_3A_uA, bq->chip_info->bq256xx_max_ichg));
++		else
++			bq->init_data.ichg_max = min_t(u32, bq->init_data.ichg_max, BQ2560X_CHG_ICHG_MAX_uA);
+ 		/* A boot-time register snapshot is not the stock charging policy.
+ 		 * Use this battery's declared CV, bounded by the charger capability;
+ 		 * fall back to the chip default only when no valid value was supplied.
+@@ -2064,6 +2085,7 @@
+ 		return ret;
+ 
+ 	ret = bq->chip_info->bq256xx_set_ichg(bq,
++				bq->bq2560x_chg && u30air_3a ? bq->init_data.ichg_max :
+ 				bq->chip_info->bq256xx_def_ichg);
+ 	if (ret)
+ 		return ret;

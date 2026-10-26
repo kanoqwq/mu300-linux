@@ -1,0 +1,149 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * ZTE F50 / MU300 (Unisoc UMS9620 / T760) - minimal device tree for mainline Linux.
+ * Only generic ARM blocks and memory layout; SoC peripherals (clocks, pinctrl, USB, PCIe) have no mainline drivers.
+ * sprd,sc-id is what the Unisoc LK bootloader uses to pick this DTB out of vendor_boot.
+ */
+/dts-v1/;
+
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
+/ {
+	model = "ZTE F50 (MU300, Unisoc UMS9620)";
+	compatible = "zte,mu300", "sprd,ums9620";
+	sprd,sc-id = "ums9620 1000 1000";
+	interrupt-parent = <&gic>;
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+		serial1 = &uart1;
+	};
+
+	chosen {
+		stdout-path = "serial1:115200n8";
+	};
+
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x0 0x80000000 0x0 0x7ffff000>;
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		/* names matter: LK fixes up sysdump-uboot, sml-mem and tos-mem by name */
+		ddrbist-mem@80000000 { reg = <0x0 0x80000000 0x0 0x1000>; no-map; };
+		sysdumpinfo-mem@80001000 { reg = <0x0 0x80001000 0x0 0x1000>; no-map; };
+		sipc-mem@87800000 { reg = <0x0 0x87800000 0x0 0x800000>; no-map; };
+		cp-modem@88000000 { reg = <0x0 0x88000000 0x0 0x1d000000>; no-map; };
+		ch_ddr@ae600000 { reg = <0x0 0xae600000 0x0 0x300000>; no-map; };
+		logobuffer@b0000000 { reg = <0x0 0xb0000000 0x0 0x9e4000>; no-map; };
+		sysdump-uboot@b5000000 { reg = <0x0 0xb5000000 0x0 0x1000000>; no-map; };
+		uboot_log-mem@bbe80000 { reg = <0x0 0xbbe80000 0x0 0x80000>; no-map; };
+		sml-mem@bd000000 { reg = <0x0 0xbd000000 0x0 0x40000>; no-map; };
+		tos-mem@bd020000 { reg = <0x0 0xbd060000 0x0 0x18a0000>; no-map; };
+		sh-mem@c3000000 { reg = <0x0 0xc3000000 0x0 0x100000>; no-map; };
+		rebootescrow@fff70000 { reg = <0x0 0xfff70000 0x0 0x10000>; no-map; };
+
+		/* same layout as Android's, so the previous boot's console log can be read from Android */
+		ramoops@fff80000 {
+			compatible = "ramoops";
+			reg = <0x0 0xfff80000 0x0 0x40000>;
+			record-size = <0x8000>;
+			console-size = <0x8000>;
+			pmsg-size = <0x8000>;
+		};
+	};
+
+	psci {
+		compatible = "arm,psci-0.2";
+		method = "smc";
+	};
+
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+
+		cpu-map {
+			cluster0 {
+				core0 { cpu = <&cpu0>; };
+				core1 { cpu = <&cpu1>; };
+				core2 { cpu = <&cpu2>; };
+				core3 { cpu = <&cpu3>; };
+			};
+			cluster1 {
+				core0 { cpu = <&cpu4>; };
+				core1 { cpu = <&cpu5>; };
+				core2 { cpu = <&cpu6>; };
+			};
+			cluster2 {
+				core0 { cpu = <&cpu7>; };
+			};
+		};
+
+		cpu0: cpu@0 { device_type = "cpu"; compatible = "arm,cortex-a55"; reg = <0x0 0x0>; enable-method = "psci"; capacity-dmips-mhz = <417>; };
+		cpu1: cpu@100 { device_type = "cpu"; compatible = "arm,cortex-a55"; reg = <0x0 0x100>; enable-method = "psci"; capacity-dmips-mhz = <417>; };
+		cpu2: cpu@200 { device_type = "cpu"; compatible = "arm,cortex-a55"; reg = <0x0 0x200>; enable-method = "psci"; capacity-dmips-mhz = <417>; };
+		cpu3: cpu@300 { device_type = "cpu"; compatible = "arm,cortex-a55"; reg = <0x0 0x300>; enable-method = "psci"; capacity-dmips-mhz = <417>; };
+		cpu4: cpu@400 { device_type = "cpu"; compatible = "arm,cortex-a76"; reg = <0x0 0x400>; enable-method = "psci"; capacity-dmips-mhz = <1024>; };
+		cpu5: cpu@500 { device_type = "cpu"; compatible = "arm,cortex-a76"; reg = <0x0 0x500>; enable-method = "psci"; capacity-dmips-mhz = <1024>; };
+		cpu6: cpu@600 { device_type = "cpu"; compatible = "arm,cortex-a76"; reg = <0x0 0x600>; enable-method = "psci"; capacity-dmips-mhz = <1024>; };
+		cpu7: cpu@700 { device_type = "cpu"; compatible = "arm,cortex-a76"; reg = <0x0 0x700>; enable-method = "psci"; capacity-dmips-mhz = <1024>; };
+	};
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupts = <GIC_PPI 13 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_PPI 14 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_PPI 11 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_PPI 10 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	ext_26m: clk-26m {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <26000000>;
+		clock-output-names = "ext-26m";
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		gic: interrupt-controller@12000000 {
+			compatible = "arm,gic-v3";
+			#interrupt-cells = <3>;
+			#address-cells = <2>;
+			#size-cells = <2>;
+			ranges;
+			interrupt-controller;
+			redistributor-stride = <0x0 0x20000>;
+			reg = <0x0 0x12000000 0x0 0x20000>,	/* GICD */
+			      <0x0 0x12040000 0x0 0x100000>;	/* GICR, 8 cores */
+			interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
+		};
+
+		/* ADI: SPI bridge to the UMP9620 PMIC; its restart handler is the only working reset path */
+		adi: spi@64400000 {
+			compatible = "sprd,ums9620-adi";
+			reg = <0x0 0x64400000 0x0 0x100000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			sprd,hw-channels = <0x02 0x20cc 0x09 0x2074 0x0b 0x2054 0x0d 0xa180 0x0f 0xa054 0x11 0xa1a0 0x13 0xa044 0x15 0xa0e8 0x17 0x244c 0x19 0xa074 0x1b 0x2044 0x1e 0x2020 0x20 0x217c 0x21 0x2188 0x22 0x21b8 0x23 0x21ac>;
+		};
+
+		uart1: serial@20210000 {
+			compatible = "sprd,ums9620-uart", "sprd,sc9836-uart";
+			reg = <0x0 0x20210000 0x0 0x100>;
+			interrupts = <GIC_SPI 195 IRQ_TYPE_LEVEL_HIGH>;
+			clock-names = "enable", "uart", "source";
+			clocks = <&ext_26m>, <&ext_26m>, <&ext_26m>;
+			status = "okay";
+		};
+	};
+};

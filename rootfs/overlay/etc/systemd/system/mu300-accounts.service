@@ -1,0 +1,13 @@
+[Unit]
+Description=MU300 carry the accounts over from the system an older mu300-update replaced
+DefaultDependencies=no
+After=local-fs.target
+Before=sysinit.target systemd-tmpfiles-setup.service systemd-sysusers.service dbus.service ssh.socket ssh.service systemd-user-sessions.service
+ConditionPathExists=/etc/.mu300-accounts-from-image
+
+[Service]
+Type=oneshot
+ExecStart=/opt/mu300/bin/mu300-update accounts
+
+[Install]
+WantedBy=sysinit.target

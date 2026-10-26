@@ -1,0 +1,12 @@
+[Unit]
+Description=MU300 LAN bridge br-lan (USB + Wi-Fi, 192.168.77.1/24 on an F50, 192.168.78.1/24 on a U30 Air and 192.168.79.1/24 on a V50 by default, see /etc/mu300/lan.conf, DHCP/DNS)
+After=network-pre.target
+Wants=network-pre.target
+
+[Service]
+ExecStart=/opt/mu300/bin/lan-start
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

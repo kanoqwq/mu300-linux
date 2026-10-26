@@ -1,0 +1,21 @@
+[Unit]
+# the vendor modem loader exists only in the 5.4 kernel
+# the modem driver, not its device node: the driver is loaded in the initramfs on both kernels, but the node
+# appears later on mainline (+18 s, after sysinit), and a condition checked before that dropped these units
+ConditionPathExists=|/sys/module/sprd_modem_loader
+ConditionPathExists=|/dev/modem
+ConditionPathExists=|/dev/pmsys
+Description=MU300 mobile data watchdog (reconnect after modem resets)
+After=mu300-mobile-data.service
+Wants=mu300-mobile-data.service
+
+[Service]
+Type=simple
+# APN and PDP type, if the carrier needs them set; absent is fine (the leading - makes it optional)
+EnvironmentFile=-/etc/mu300/mobile-data.conf
+ExecStart=/opt/mu300/bin/mobile-data watch
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

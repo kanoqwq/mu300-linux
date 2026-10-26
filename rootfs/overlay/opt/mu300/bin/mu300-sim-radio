@@ -1,0 +1,125 @@
+#!/bin/sh
+# Each SIM's radio on or off, kept across reboots (Ubuntu and OpenWrt; F50, U30 Air). docs/FINDINGS.md 185; after
+# kanoqwq's mu300-sim-radio and mu300-radio-allowed (his fork's unpublished image), rewritten for this tree.
+#
+#   mu300-sim-radio status [--json]        the setting of both cards, the card in use, whether a change is running
+#   mu300-sim-radio allowed [SLOT]         exit 0 when SLOT's radio may be on (the card in use without SLOT), else 1
+#   mu300-sim-radio set SLOT|all on|off    save the setting; when it concerns the card in use, the radio and mobile
+#                                          data follow at once (mobile-data rf-apply). "all off" is the persistent
+#                                          airplane mode: no card's radio comes on, at boot or later, until "on".
+#
+# The setting is /etc/mu300/sim-radio, one line "<slot 0> <slot 1>", 1 on and 0 off. No file is "1 1": both on, as
+# every release before. A line that is not one of the four is read as "1 1" and said so on stderr: a broken file must
+# not take the device off the network for good (bootability over lockdown; it is the user's own file).
+#
+# Only the card in use has a live protocol stack here (the F50 picks its card at boot; the U30 Air switches one at a
+# time): the other card's radio is off anyway, and its setting is what decides whether it may come on - at its boot,
+# its cold start, or a live switch to it, which is refused while it is off. Every program that brings a radio up asks
+# `allowed` first: mobile-data (the dial, the early warm-up, the watchdog, mu300-power's resume, the modem reset), the
+# U30 Air's cold start and live switch, the panel's lock apply. Off is AT+SFUN=5 on that card's own channel, as the
+# vendor RIL does (the SIM stays powered; CFUN reads 0 or 2; FINDINGS 202); a radio that never came on at this boot is
+# left at its cold CFUN 0.
+# MU300_SIM_RADIO (the file), MU300_SIM_BIN, MU300_MOBILE_DATA, MU300_RUN: the tests.
+set -u
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+POLICY=${MU300_SIM_RADIO:-/etc/mu300/sim-radio}
+SIMBIN=${MU300_SIM_BIN:-/opt/mu300/bin/mu300-sim}
+MD=${MU300_MOBILE_DATA:-/opt/mu300/bin/mobile-data}
+RUN=${MU300_RUN:-/run/mu300}
+LOCK=$RUN/sim-radio.lock
+RESULT=$RUN/sim-radio.result
+
+flags() {  # the two bits, "S0 S1"
+    local f
+    [ -e "$POLICY" ] || { echo '1 1'; return; }
+    f=$(head -c 16 "$POLICY" 2>/dev/null | tr -d '\r' | head -n 1)
+    case $f in
+        '0 0'|'0 1'|'1 0'|'1 1') echo "$f" ;;
+        *) echo "mu300-sim-radio: $POLICY is not \"<0|1> <0|1>\"; both radios count as on" >&2; echo '1 1' ;;
+    esac
+}
+bit() { local f; f=$(flags); if [ "$1" = 0 ]; then echo "${f% *}"; else echo "${f#* }"; fi; }
+active() {
+    local s
+    if [ -n "${MU300_SIM_SLOT:-}" ]; then s=$MU300_SIM_SLOT
+    elif [ -x "$SIMBIN" ]; then s=$("$SIMBIN" active 2>/dev/null) || s=
+    else s=0; fi
+    case $s in 0|1) echo "$s" ;; *) return 1 ;; esac
+}
+slot1_supported() {
+    [ -x "$SIMBIN" ] || return 1
+    "$SIMBIN" status --json 2>/dev/null | grep -q '"slot1_supported": *1'
+}
+alive() { [ -n "$1" ] && kill -0 "$1" 2>/dev/null; }
+busy() { [ -d "$LOCK" ] && alive "$(cat "$LOCK/pid" 2>/dev/null)"; }
+lock() {
+    mkdir -p "$RUN" 2>/dev/null
+    until mkdir "$LOCK" 2>/dev/null; do
+        busy && return 1
+        rm -rf "$LOCK"   # its holder is gone
+    done
+    echo $$ > "$LOCK/pid"
+    trap 'rm -rf "$LOCK"' EXIT
+    trap 'exit 143' INT TERM
+}
+tf() { if [ "$1" = 1 ]; then echo true; else echo false; fi; }
+
+status_json() {
+    local f a s1=0 b=false r=null
+    f=$(flags 2>/dev/null)
+    a=$(active) || a=null
+    slot1_supported && s1=1
+    busy && b=true
+    [ ! -s "$RESULT" ] || r="\"$(head -c 24 "$RESULT" | tr -cd 'a-z_')\""
+    printf '{"ok":1,"enabled":[%s,%s],"all_off":%s,"active":%s,"slot1_supported":%d,"busy":%s,"result":%s}\n' \
+        "$(tf "${f% *}")" "$(tf "${f#* }")" "$(if [ "$f" = '0 0' ]; then echo true; else echo false; fi)" \
+        "$a" "$s1" "$b" "$r"
+}
+
+case ${1:-status} in
+    status)
+        if [ "${2:-}" = --json ]; then status_json; exit 0; fi
+        f=$(flags)
+        printf 'SIM1 radio  %s\nSIM2 radio  %s\n' "$([ "${f% *}" = 1 ] && echo on || echo off)" \
+            "$([ "${f#* }" = 1 ] && echo on || echo off)"
+        a=$(active) && printf 'in use      SIM%d\n' "$((a + 1))"
+        exit 0 ;;
+    allowed)
+        s=${2:-}
+        [ -n "$s" ] || s=$(active) || s=0
+        case $s in 0|1) ;; *) echo "usage: $0 allowed [0|1]" >&2; exit 2 ;; esac
+        [ "$(bit "$s")" = 1 ] ;;
+    set)
+        case ${2:-}:${3:-} in 0:on|0:off|1:on|1:off|all:on|all:off) ;;
+            *) echo "usage: $0 set 0|1|all on|off" >&2; exit 2 ;; esac
+        v=0; [ "$3" = on ] && v=1
+        [ ! -e "$RUN/sim-switching" ] || { echo "mu300-sim-radio: a SIM switch is running; try again when it is over" >&2; exit 75; }
+        lock || { echo "mu300-sim-radio: a radio change is already running" >&2; exit 75; }
+        f=$(flags 2>/dev/null)
+        case $2 in all) new="$v $v" ;; 0) new="$v ${f#* }" ;; 1) new="${f% *} $v" ;; esac
+        mkdir -p "${POLICY%/*}" || exit 1
+        t=$(umask 022; mktemp "${POLICY%/*}/.sim-radio.XXXXXX") || exit 1
+        if ! { printf '%s\n' "$new" > "$t" && chmod 644 "$t" && mv -f "$t" "$POLICY"; }; then
+            rm -f "$t"; echo "mu300-sim-radio: the setting could not be saved" >&2; exit 1
+        fi
+        sync 2>/dev/null || true
+        a=$(active) || a=
+        if [ -z "$a" ]; then
+            echo 'saved; the card in use is unknown (a SIM switch did not finish): it takes effect at the next start'
+            exit 0
+        fi
+        case $2 in all|"$a") ;; *)
+            echo "saved for SIM$(( $2 + 1 )), not the card in use: it takes effect when that card next starts"
+            exit 0 ;;
+        esac
+        echo applying > "$RESULT"
+        if [ -x "$MD" ] && "$MD" rf-apply; then
+            echo done > "$RESULT"
+            echo "SIM$((a + 1)) radio $3 (saved)"
+            exit 0
+        fi
+        echo failed > "$RESULT"
+        echo "mu300-sim-radio: saved, but the radio of SIM$((a + 1)) did not follow yet (see /run/mu300/radio.log)" >&2
+        exit 1 ;;
+    *) echo "usage: $0 status [--json] | allowed [SLOT] | set 0|1|all on|off" >&2; exit 2 ;;
+esac

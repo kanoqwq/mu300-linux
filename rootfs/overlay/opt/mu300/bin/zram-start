@@ -1,0 +1,3 @@
+#!/bin/sh
+# The boot's zram swap under its old name (OpenWrt's mu300-hw calls it): mu300-zram does the work.
+exec /opt/mu300/bin/mu300-zram start

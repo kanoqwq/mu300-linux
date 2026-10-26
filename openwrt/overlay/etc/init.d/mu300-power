@@ -1,0 +1,18 @@
+#!/bin/sh /etc/rc.common
+# power profiles: the hotspot, the modem and the LEDs go off when nobody is connected, the charging boot, the
+# charge guard (see /opt/mu300/bin/mu300-power)
+START=97
+USE_PROCD=1
+export PATH="$PATH:/opt/mu300/busybox-bin"
+
+start_service() {
+	[ -x /opt/mu300/bin/mu300-power ] || return 0
+	procd_open_instance power
+	procd_set_param command /opt/mu300/bin/mu300-power daemon
+	# mobile-data suspend/resume through netifd (ifdown/ifup wan), as the watcher in mu300-post does
+	procd_set_param env MU300_NETIFD=1
+	procd_set_param respawn 3600 10 0
+	# stopped while idle, the TERM trap brings the radios back without a dial (the radio lock takes up to ~120 s)
+	procd_set_param term_timeout 150
+	procd_close_instance
+}

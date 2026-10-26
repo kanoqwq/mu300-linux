@@ -1,0 +1,14 @@
+#!/bin/sh
+# The MU300's LAN port is the USB gadget's usb0 (Wi-Fi joins the LAN through the wireless config; 90-mu300 bridges
+# usb0, and rndis0 when init made RNDIS). Without this, armsr's 99-default_network (which only fills a board.json
+# without a network) names eth0, which the MU300 does not have: LuCI's Status > Overview showed a "Port status" for
+# eth0 with no link, and its ubus status call failed. board_detect runs this when /etc/board.json is missing: a
+# first boot, and the first boot after every update (mu300-update does not keep /etc/board.json).
+
+. /lib/functions/uci-defaults.sh
+
+board_config_update
+ucidef_set_interface_lan 'usb0'
+board_config_flush
+
+exit 0

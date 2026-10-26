@@ -1,0 +1,62 @@
+mmc: sdhci-sprd: the ZTE V50's eMMC host kept awake (FINDINGS 95)
+
+On a ZTE V50 (MU3351, the F50's platform) under mainline, kano (kanoqwq, his line of this project, 2026-10-14) saw
+ext4 report "deleted inode referenced": directory entries of inodes already deleted, after normal reboots, back again
+after an offline fsck. What he changed and measured on his V50: the non-removable eMMC host's runtime PM forbidden
+at probe, before its first autosuspend (kernel 7.2.8 "#17": power/control "on", runtime_status "active"); a marker,
+the configuration and the scripts then survived a sync and a normal reboot with their SHA-256, and ext4's
+errors_count was 0. In his words an improvement, not proof that runtime PM alone caused it. Writing power/control
+"on" from the initramfs instead was tried and hung the boot before the mount, so it is the driver's to do.
+
+Only on the V50: it is told by its AW9523B LED controller ("awinic,aw9523b"), which neither the F50's nor the U30
+Air's device tree has (both read: no such node), so on those this is a lookup that finds nothing. The V50 has no
+battery; the cost is the host's idle power. The card slot is never affected.
+
+A separate patch: the trees prepared with 0001-0016 take it as it is.
+
+--- a/drivers/mmc/host/sdhci-sprd.c
++++ b/drivers/mmc/host/sdhci-sprd.c
+@@ -747,6 +747,23 @@
+ 	return false;
+ }
+ 
++/*
++ * MU300: the ZTE V50's eMMC host is never runtime-suspended. On a V50 under mainline, ext4 found directory entries
++ * of deleted inodes after reboots, again after an fsck; with its host kept awake from probe on (before the first
++ * autosuspend) the data survived a reboot (kano, 2026-10-14; FINDINGS 95). The V50 is told by its AW9523B LED
++ * controller, which no F50's or U30 Air's device tree has: on those nothing changes. It has no battery to save.
++ */
++static bool sdhci_sprd_keep_awake(struct sdhci_host *host)
++{
++	struct device_node *np;
++
++	if (mmc_card_is_removable(host->mmc))
++		return false;
++	np = of_find_compatible_node(NULL, NULL, "awinic,aw9523b");
++	of_node_put(np);
++	return np;
++}
++
+ static int sdhci_sprd_probe(struct platform_device *pdev)
+ {
+ 	struct sdhci_host *host;
+@@ -865,6 +882,10 @@
+ 	pm_runtime_set_autosuspend_delay(&pdev->dev, 50);
+ 	pm_runtime_use_autosuspend(&pdev->dev);
+ 	pm_suspend_ignore_children(&pdev->dev, 1);
++	if (sdhci_sprd_keep_awake(host)) {
++		pm_runtime_forbid(&pdev->dev);
++		dev_info(&pdev->dev, "MU300: ZTE V50, eMMC host kept awake\n");
++	}
+ 
+ 	sdhci_enable_v4_mode(host);
+ 
+@@ -911,6 +932,8 @@
+ 	sdhci_cleanup_host(host);
+ 
+ pm_runtime_disable:
++	if (sdhci_sprd_keep_awake(host))
++		pm_runtime_allow(&pdev->dev);
+ 	pm_runtime_put_noidle(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+ 	pm_runtime_set_suspended(&pdev->dev);

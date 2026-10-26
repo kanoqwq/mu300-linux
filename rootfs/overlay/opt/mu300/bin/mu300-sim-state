@@ -1,0 +1,120 @@
+#!/bin/sh
+# What the SIM in use says of itself - ready, locked (a PIN or PUK) or absent - kept for this boot, so that a slot with
+# no card is not dialled over and over (docs/FINDINGS.md 186; after kanoqwq's SIM-state events, f59a296 and ab26e79).
+#
+#   mu300-sim-state check [SLOT]      ask the card (AT+CPIN?, one command) and keep the answer; print it
+#   mu300-sim-state get [SLOT]        the kept answer (absent, ready, locked), nothing when there is none
+#   mu300-sim-state event SLOT URC    an unsolicited line from the card's event channel (mu300-atd's drainer): a
+#                                     SIM-status change (+ECIND: 3,...) starts a check in the background
+#
+# SLOT is the card in use when it is left out; another card is never asked (its position may have its SIM power off,
+# and then it answers "+CME ERROR: 10" whatever is in it). The answer is kept in /run/mu300/sim<slot>.state.
+#
+# Who reads it: mobile-data's dial asks `check` once its radio is on, and with no card it stops there (netifd:
+# SIM_MISSING, no retry; Ubuntu: the service stays up) and leaves /run/mu300/sim-missing-held; a card that comes back
+# (its +ECIND, or the watchdog's look every five minutes) is dialled again from here. mu300-smsd asks nothing of an
+# absent card. +ECIND: 3 is only a hint - the stock RIL reads CPIN after it too: SIM errors and PIN changes send it as
+# well - so it is never taken for a removal itself.
+# MU300_RUN, MU300_AT_BIN, MU300_MOBILE_DATA, MU300_SIM_BIN: the tests.
+set -u
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+RUN=${MU300_RUN:-/run/mu300}
+AT=${MU300_AT_BIN:-/opt/mu300/bin/mu300-at}
+MD=${MU300_MOBILE_DATA:-/opt/mu300/bin/mobile-data}
+SIMBIN=${MU300_SIM_BIN:-/opt/mu300/bin/mu300-sim}
+HELD=$RUN/sim-missing-held
+
+active() {
+    local s=0
+    if [ -n "${MU300_SIM_SLOT:-}" ]; then s=$MU300_SIM_SLOT
+    elif [ -x "$SIMBIN" ]; then s=$("$SIMBIN" active 2>/dev/null) || return 1; fi
+    case $s in 0|1) echo "$s" ;; *) return 1 ;; esac
+}
+slot_arg() {
+    local a
+    a=$(active) || return 1
+    case ${1:-$a} in "$a") echo "$a" ;; *) return 1 ;; esac
+}
+state_file() { echo "$RUN/sim$1.state"; }
+get() { local v; v=$(head -c 16 "$(state_file "$1")" 2>/dev/null | tr -cd 'a-z'); case $v in absent|ready|locked) echo "$v" ;; esac; }
+
+# classify: the answer of AT+CPIN? on stdin -> absent, ready, locked, or nothing (busy, no answer, an error that says
+# nothing about the card: the kept state stays)
+classify() {
+    tr -d '\r' | awk '
+        /^\+CPIN: *READY$/ { s = "ready" }
+        /^\+CPIN: *(SIM PIN|SIM PUK|SIM PIN2|SIM PUK2|PH-)/ { s = "locked" }
+        /^\+CPIN: *(NOT INSERTED|SIM NOT INSERTED)$/ { s = "absent" }
+        /^\+CME ERROR: *(10|SIM not inserted)$/ { s = "absent" }
+        END { print s }'
+}
+
+check() {
+    local slot=$1 out new old lock=$RUN/sim-state.lock.$1 f
+    mkdir -p "$RUN" 2>/dev/null
+    # one check at a time per card; a burst of events is one check
+    mkdir "$lock" 2>/dev/null || { kill -0 "$(cat "$lock/pid" 2>/dev/null)" 2>/dev/null && { get "$slot"; return 0; }
+                                   rm -rf "$lock"; mkdir "$lock" 2>/dev/null || return 0; }
+    echo $$ > "$lock/pid"
+    out=$(MU300_AT_LOCK_WAIT=${MU300_AT_LOCK_WAIT:-10} "$AT" -t 4 'AT+CPIN?' 2>/dev/null) || out=
+    new=$(printf '%s\n' "$out" | classify)
+    old=$(get "$slot")
+    if [ -n "$new" ] && [ "$new" != "$old" ]; then
+        f=$(state_file "$slot")
+        printf '%s\n' "$new" > "$f.$$" && mv -f "$f.$$" "$f"
+        logger -t mu300-sim-state "SIM$((slot + 1)): ${old:-unknown} -> $new" 2>/dev/null || true
+    fi
+    rm -rf "$lock"
+    # a card back where the dial stopped for its absence: the dial again. OpenWrt: the WAN mu300cell made unavailable
+    # is made available, and netifd starts it unless somebody took it down (ifdown); Ubuntu: the service's dial.
+    if [ -n "$new" ] && [ "$new" != absent ] && { [ -e "$HELD" ] || [ "$old" = absent ]; }; then
+        rm -f "$HELD"
+        if [ -e "${MU300_SYSROOT:-}/etc/openwrt_release" ]; then
+            case $(ubus call "network.interface.${MU300_WAN:-wan}" status 2>/dev/null | tr -d ' \n\t') in
+                *'"available":false'*)
+                    ubus call "network.interface.${MU300_WAN:-wan}" notify_proto '{"action":5,"available":true}' \
+                        </dev/null >/dev/null 2>&1 || true ;;
+            esac
+        elif [ ! -e /run/mu300-mobile-data-down ]; then
+            ( setsid "$MD" up </dev/null >/dev/null 2>&1 & ) || true
+        fi
+    fi
+    echo "${new:-$old}"
+}
+
+# the filter of the stock RIL's onSimStatusChanged (as kanoqwq read it): +ECIND: 3,<value>[,<cause>[,<number>...]].
+# The RIL ignores numbers after the cause: a card coming up reports 3,100 (CPIN still busy) and then 3,0,0,1, which an
+# earlier filter dropped (kanoqwq's b8d4f222, seen on an E5-family board). Every field a decimal number of at most
+# 10 digits and 32 bits; an empty field, a sign or anything else and it is not one.
+sim_event() {
+    local body type value cause extra field
+    case $1 in '+ECIND: 3,'*|'+ECIND:3,'*) ;; *) return 1 ;; esac
+    body=$(printf '%s' "${1#*:}" | tr -d ' \r\t')
+    case $body in ''|,*|*,|*,,*|*[!0-9,]*) return 1 ;; esac
+    for field in $(printf '%s' "$body" | tr ',' ' '); do
+        [ "${#field}" -le 10 ] && [ "$field" -le 4294967295 ] 2>/dev/null || return 1
+    done
+    IFS=, read -r type value cause extra <<EOF
+$body
+EOF
+    [ "$type" = 3 ] || return 1
+    case $value:$cause in
+        0:|2:|4:|100:|0:[0-9]*|2:[0-9]*|4:[0-9]*|100:[0-9]*|1:1|1:2|1:7|1:25|1:34) ;;
+        *) return 1 ;;
+    esac
+    case $cause in *[!0-9]*) return 1 ;; esac
+}
+
+case ${1:-}:${2:-} in check:|check:[01]|get:|get:[01]|event:*) ;; *) echo "usage: $0 check [SLOT] | get [SLOT] | event SLOT URC" >&2; exit 2 ;; esac
+case ${1:-} in
+    check) s=$(slot_arg "${2:-}") || exit 0; check "$s" ;;
+    get) s=$(slot_arg "${2:-}") || exit 0; get "$s" ;;
+    event)
+        case ${2:-} in 0|1) ;; *) exit 2 ;; esac
+        sim_event "${3:-}" || exit 0
+        s=$(slot_arg "$2") || exit 0
+        # the card needs a moment after its event; never inside the caller (the drainer reads on)
+        ( sleep 2; check "$s" >/dev/null ) </dev/null >/dev/null 2>&1 &
+        ;;
+    *) echo "usage: $0 check [SLOT] | get [SLOT] | event SLOT URC" >&2; exit 2 ;;
+esac

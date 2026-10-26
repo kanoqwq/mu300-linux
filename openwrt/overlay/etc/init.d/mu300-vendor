@@ -1,0 +1,44 @@
+#!/bin/sh /etc/rc.common
+# Android vendor services in a chroot: modem_control (PM watchdog + modem boot), cp_diskserver (modem NV), refnotify
+#
+# START=09, not 11. This service has one job on the boot path: release the CP so it can start booting. The CP
+# then needs about fifteen seconds before its AT channel answers, so every second this starts earlier is a
+# second off "the modem is on the network". Everything it touches is there once preinit is done (/dev, /proc,
+# /sys, /opt, /run), and it waits for /dev/modem or /dev/pmsys for up to 90 s by itself, so running earlier
+# cannot make it wrong (mu300-hw at 12 loads the modem stack; this does not need it yet).
+# Keep the leading zero: rc.common embeds START verbatim in the rc.d link. S9 sorts after S19 lexically and
+# delayed CP bring-up by about 31 seconds; S09 runs before the AT daemons and the network as intended.
+START=09
+USE_PROCD=1
+export PATH="$PATH:/opt/mu300/busybox-bin"
+
+start_service() {
+	# The modem stack may not be there yet: on the mainline kernel extra-modules loads it from userspace,
+	# because loading it before the USB gadget exists kills the gadget's transmit path. The instances below
+	# wait for it themselves (android-vendor-start waits for /dev/modem, android-run for the chroot).
+	[ -f /lib/modules/$(uname -r)/sipc-core.ko ] || [ -e /dev/modem ] || [ -e /dev/pmsys ] || {
+		logger -t mu300-vendor "no modem stack in $(uname -r)"; return 0; }
+	# the NV server first: the modem asks for its data while it boots, and a modem that does not get it
+	# stalls with "wait modem alive timeout" (this is what kept the mainline kernel without a modem)
+	procd_open_instance cp_diskserver
+	procd_set_param command /opt/mu300/bin/android-run cp_diskserver
+	procd_set_param env PATH="$PATH"
+	procd_set_param respawn 3600 10 0
+	procd_close_instance
+
+	procd_open_instance modem_control
+	# android-vendor-start already waits on the actual modem nodes: no fixed delay before it
+	procd_set_param command /opt/mu300/bin/android-vendor-start
+	procd_set_param env PATH="$PATH"
+	procd_set_param respawn 3600 10 0
+	procd_set_param stdout 1
+	procd_set_param stderr 1
+	procd_close_instance
+	for d in refnotify; do
+		procd_open_instance "$d"
+		procd_set_param command /bin/sh -c "sleep 12; exec /opt/mu300/bin/android-run $d"
+		procd_set_param env PATH="$PATH"
+		procd_set_param respawn 3600 10 0
+		procd_close_instance
+	done
+}

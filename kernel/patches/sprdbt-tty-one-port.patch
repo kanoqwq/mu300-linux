@@ -1,0 +1,14 @@
+tty-pcie: do not link the unused second port past the end of a one-line tty driver
+
+--- a/tty-pcie/tty.c	2026-09-27 13:31:28
++++ b/tty-pcie/tty.c	2026-09-27 13:31:28
+@@ -609,7 +609,8 @@
+     /* initialize the tty driver */
+     tty_set_operations(driver, &mtty_ops);
+     tty_port_link_device(device->port0, driver, 0);
+-    tty_port_link_device(device->port1, driver, 1);
++    /* the driver has MTTY_DEV_MAX_NR (1) line: linking port1 at index 1 wrote past driver->ports[]. port1
++     * never carries data. */
+     ret = tty_register_driver(driver);
+     if (ret) {
+         #if(LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0))

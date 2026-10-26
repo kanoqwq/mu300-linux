@@ -1,0 +1,64 @@
+#!/bin/sh
+# Put one message the modem delivered directly (an unsolicited "+CMT: ..." line and the PDU line after it, PDU mode)
+# on the disk, for mu300-smsd to pool and acknowledge. mu300-atd runs this for every +CMT frame it reads, with the
+# two lines on stdin: the message is never an argument (argv is public), and never left in the URC log (world
+# readable, and emptied when it grows).
+#
+# The PDU goes into the pool's spool, $POOL/incoming/cmt-<epoch>.<random>.ready, as one line; the file is written
+# under another name and renamed, and the file and the directory entry are fsynced (busybox fsync, coreutils
+# "sync FILE"; never a global sync, which flushes the whole card). Only then does this exit 0 - which is what lets
+# mu300-smsd acknowledge the message to the network (AT+CNMA=1) once "mu300-sms import-pdu" has pooled it: a power
+# cut after the acknowledgement must not lose the only copy.
+#
+# Anything that is not a +CMT header followed by an even number of hexadecimal digits (at most 1024: a PDU with its
+# SMSC is under 180 octets) is refused with exit 1 and nothing written. The pool is the one mu300-sms uses
+# (MU300_SMS_POOL, /etc/mu300/sms-pool), root only: this runs as root, so the pool and the spool must be directories
+# of ours and no symbolic links (own_dir), the file is made by mktemp inside the spool and renamed into place, and
+# nothing here follows a name somebody else may have planted.
+set -u
+umask 077
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+POOL=${MU300_SMS_POOL:-/etc/mu300/sms-pool}
+SPOOL=$POOL/incoming
+CR=$(printf '\r')
+
+# own_dir DIR: DIR is a directory of ours, mode 700, and no symbolic link (made so when it is missing); else false.
+# The same rule as mu300-update's lock directory.
+own_dir() {
+    [ ! -L "$1" ] || return 1
+    [ -e "$1" ] || mkdir "$1" 2>/dev/null || [ -d "$1" ] || return 1
+    [ ! -L "$1" ] && [ -d "$1" ] || return 1
+    _ls=$(ls -ldn "$1" 2>/dev/null)
+    [ "$(printf '%s\n' "$_ls" | awk '{print $3}')" = "$(id -u)" ] || return 1
+    case $_ls in drwx------*) ;; *) chmod 700 "$1" 2>/dev/null || return 1 ;; esac
+}
+
+# durable FILE...: FILE on the disk (its data, or a directory's entries) before going on - the same as mu300-sms's
+durable() {
+    if command -v fsync >/dev/null 2>&1; then
+        fsync "$@" 2>/dev/null && return 0
+    fi
+    if sync --help 2>&1 | grep -q 'FILE'; then
+        sync -- "$@" 2>/dev/null && return 0
+    fi
+    command sync 2>/dev/null || true
+}
+
+IFS= read -r header || exit 1
+IFS= read -r pdu || exit 1
+header=${header%"$CR"}; pdu=${pdu%"$CR"}
+case $header in '+CMT:'*) ;; *) echo "mu300-cmt-spool: not a +CMT frame" >&2; exit 1 ;; esac
+case $pdu in ''|*[!0-9A-Fa-f]*) echo "mu300-cmt-spool: the PDU is not hexadecimal" >&2; exit 1 ;; esac
+[ $(( ${#pdu} % 2 )) -eq 0 ] && [ ${#pdu} -le 1024 ] || { echo "mu300-cmt-spool: the PDU has an odd length, or is too long" >&2; exit 1; }
+
+own_dir "$POOL" || { echo "mu300-cmt-spool: $POOL is not a directory of ours (or a symbolic link)" >&2; exit 1; }
+own_dir "$SPOOL" || { echo "mu300-cmt-spool: $SPOOL is not a directory of ours (or a symbolic link)" >&2; exit 1; }
+# the name sorts by arrival (mu300-smsd takes the oldest first); the random part keeps two frames in one second apart
+part=$(mktemp "$SPOOL/cmt-$(date +%s).XXXXXX") || { echo "mu300-cmt-spool: cannot write into $SPOOL" >&2; exit 1; }
+# the final name is the random one with .ready: nobody can have planted it, and a link there is refused all the same
+if printf '%s\n' "$pdu" > "$part" && durable "$part" && [ ! -L "$part.ready" ] && mv "$part" "$part.ready" && durable "$SPOOL"; then
+    exit 0
+fi
+rm -f "$part" "$part.ready"
+echo "mu300-cmt-spool: could not put the message on the disk" >&2
+exit 1

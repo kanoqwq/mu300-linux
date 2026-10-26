@@ -1,0 +1,33 @@
+# Mobile data settings for the MU300 (Ubuntu). To use it:
+#   sudo install -m 600 /etc/mu300/mobile-data.conf.example /etc/mu300/mobile-data.conf
+# and edit that (root's alone from the start: it may hold an APN password).
+# The OpenWrt build does not read this - there the same settings live in /etc/config/network on the
+# 'wan' interface (option apn / option pdptype) and are editable in LuCI under Network -> Interfaces.
+
+# Access point name. Leave empty unless your carrier needs a specific one: empty means the modem keeps the
+# context the SIM already defines, which is what most SIMs expect and what this device has been using.
+#MU300_APN=internet
+
+# PDP type. IP (IPv4 only) is what Android asks this modem for and what has been measured working here;
+# IPV4V6 asks for both, for a carrier that requires it.
+#MU300_PDP_TYPE=IP
+
+# Only for an APN that asks for a user name and a password (a private APN, some MVNOs); they need MU300_APN.
+# Printable ASCII, at most 64 characters each, no quote and no backslash. This file then holds a password and
+# must be root's alone (chmod 600): mobile-data makes it so, and does not dial when it cannot.
+# MU300_APN_AUTH: none, pap, chap, or both (the network picks). Left out with a user name: both.
+#MU300_APN_USER=
+#MU300_APN_PASSWORD=
+#MU300_APN_AUTH=both
+
+# Data roaming: 1 (the default, as before) uses mobile data on any network the SIM registers on; 0 keeps mobile data
+# down while the SIM is registered as roaming (SMS and calls are not affected), and brings it back at home. Some SIMs
+# report roaming at home (an MVNO, national roaming): those need 1. `sudo mobile-data roaming on|off` writes this line;
+# the dial and its watchdog read it again within half a minute (docs/FINDINGS.md 120).
+#MU300_DATA_ROAMING=1
+
+# A downlink that stays dead under a working data context (docs/FINDINGS.md 176): the watchdog takes the context down
+# and dials again, and when nothing at all has come back on the interface in the whole boot it reboots the device,
+# at most 3 times in a row until a boot has a downlink again. 0 keeps the reboot out (the other steps still run).
+# (OpenWrt: uci set network.wan.dl_reboot=0; uci commit network)
+#MU300_DL_REBOOT=1

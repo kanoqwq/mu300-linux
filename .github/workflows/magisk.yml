@@ -1,0 +1,118 @@
+name: Magisk installers
+
+# The Magisk zips of a release (tools/make-magisk-zips.sh): built from the release's own published assets as soon as
+# it is published (a prerelease too, which is how a release is tried first), tested, and attached to it. For an
+# existing release: Actions > Magisk installers > Run workflow, with its tag. The zips are checked out from the tag,
+# so the installer always matches the init and mu300-update of the release it installs.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag, e.g. v2026.10.06'
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: magisk-${{ github.event.release.tag_name || github.event.inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  zips:
+    # only the project's releases (vYYYY.MM.DD.N; up to v2026.10.27 vYYYY.MM.DD - docs/FINDINGS.md 125): a test build
+    # for an issue, published as a pre-release under another tag (test-issue-102), is neither announced nor given
+    # Magisk zips
+    if: startsWith(github.event.release.tag_name || github.event.inputs.tag, 'v')
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || github.event.inputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Tag
+        run: |
+          tag_ok=1
+          case "$TAG" in v[0-9]*) ;; *) tag_ok= ;; esac
+          case "$TAG" in *[!0-9A-Za-z._-]*|*..*) tag_ok= ;; esac
+          [ -n "$tag_ok" ] || { echo "not a release tag: $TAG"; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - name: Tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq zip unzip cpio dash busybox lz4 >/dev/null
+          python3 -m pip install -q lz4 || python3 -m pip install -q --break-system-packages lz4
+      - name: Release assets
+        run: |
+          mkdir -p "release/$TAG"
+          # (SHA256SUMS.sig: a signed release's signature goes into every zip beside SHA256SUMS; none: nothing)
+          # (mu300-*.manifest.gz: from v2026.10.16.1 on, the images' manifests are in SHA256SUMS too - #224)
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -D "release/$TAG" \
+            -p SHA256SUMS -p SHA256SUMS.sig -p 'mu300-*.tar.gz' -p 'mu300-*.manifest.gz' -p mu300-update -p mu300-release
+          (cd "release/$TAG" && sha256sum -c SHA256SUMS)
+      - name: Build
+        run: sh tools/make-magisk-zips.sh "release/$TAG" out "$TAG"
+      - name: Test the zips
+        run: cd tests && MU300_MAGISK_ZIPS="$GITHUB_WORKSPACE/out" python3 -m unittest test_magisk_zip -v
+      - name: Attach to the release
+        run: gh release upload "$TAG" -R "$GITHUB_REPOSITORY" --clobber out/*.zip out/SHA256SUMS-magisk
+      # the channel hears that the zips are there (tools/telegram-announce.sh; the release itself is announced by
+      # telegram.yml). The announce script of main, not of the tag: the message is not part of the release.
+      # (the secrets context is not available in a step's "if": the shell checks it - an "if" there makes the whole
+      # workflow file invalid, and GitHub then fails every run of it)
+      - name: Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          [ -n "$TELEGRAM_BOT_TOKEN" ] || { echo "no TELEGRAM_BOT_TOKEN secret: not announced"; exit 0; }
+          gh api "repos/$GITHUB_REPOSITORY/contents/tools/telegram-announce.sh" -H 'Accept: application/vnd.github.raw' > /tmp/announce.sh
+          sh /tmp/announce.sh zips "$TAG"
+      # The release's mirror for the web installer: the zips in parts of at most 45 MiB and a manifest, as the branch
+      # <tag> of another repository, where raw.githubusercontent.com lets a page read them (a release's own files
+      # cannot be read by a page, FINDINGS 72). Only when this repository names a mirror: the variable MIRROR_REPO
+      # (owner/name of a public repository) and the secret MIRROR_DEPLOY_KEY (the private half of a deploy key of
+      # that repository with write access: it can push there and nowhere else). Without them nothing happens, and
+      # the web installer has the device download the zip, or takes a file. The push goes over ssh with that key
+      # alone, to a host whose keys are the ones GitHub publishes (api.github.com/meta), never ones learned from
+      # the connection itself. The branches of the newest release and of the newest prerelease are kept; older
+      # ones are deleted (a release is ~900 MB). Last, and after the announcement: a mirror that cannot be written
+      # fails this job visibly, with the zips attached all the same. The script of main, not of the tag: older
+      # tags do not have it. The key is never printed, and its file goes when the step ends.
+      - name: Mirror for the web installer
+        env:
+          MIRROR_REPO: ${{ vars.MIRROR_REPO }}
+          MIRROR_DEPLOY_KEY: ${{ secrets.MIRROR_DEPLOY_KEY }}
+        run: |
+          [ -n "$MIRROR_REPO" ] && [ -n "$MIRROR_DEPLOY_KEY" ] || { echo "no MIRROR_REPO variable or MIRROR_DEPLOY_KEY secret: no mirror"; exit 0; }
+          case "$MIRROR_REPO" in *[!0-9A-Za-z._/-]*|*..*|/*|*/|*/*/*) echo "MIRROR_REPO is not owner/name"; exit 1 ;; esac
+          case "$MIRROR_REPO" in */*) ;; *) echo "MIRROR_REPO is not owner/name"; exit 1 ;; esac
+          key=$RUNNER_TEMP/mirror-key; hosts=$RUNNER_TEMP/mirror-known-hosts
+          trap 'rm -f "$key"' EXIT
+          ( umask 077; printf '%s\n' "$MIRROR_DEPLOY_KEY" > "$key" )
+          chmod 600 "$key"
+          gh api meta --jq '.ssh_keys[]' | sed 's/^/github.com /' > "$hosts"
+          [ -s "$hosts" ] || { echo "GitHub's host keys could not be read"; exit 1; }
+          export GIT_SSH_COMMAND="ssh -i $key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$hosts"
+          remote=git@github.com:$MIRROR_REPO.git
+          gh api "repos/$GITHUB_REPOSITORY/contents/tools/make-release-mirror.sh" -H 'Accept: application/vnd.github.raw' > /tmp/make-release-mirror.sh
+          sh /tmp/make-release-mirror.sh out /tmp/mirror "$TAG"
+          cd /tmp/mirror
+          git init -q -b "$TAG"
+          git add -A
+          git -c user.name='mu300-linux release' -c user.email='noreply@github.com' commit -q -m "Mirror of $GITHUB_REPOSITORY $TAG"
+          git push -q --force "$remote" "HEAD:refs/heads/$TAG"
+          echo "pushed: https://raw.githubusercontent.com/$MIRROR_REPO/$TAG/manifest.json"
+          keep=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=30" --jq '[.[] | select(.draft | not) | select(.tag_name | startswith("v"))] | [(map(select(.prerelease | not)) | .[0].tag_name), (map(select(.prerelease)) | .[0].tag_name)] | .[] | select(. != null)')
+          # the mirror's default branch cannot be deleted (GitHub refuses, and the step failed on it)
+          default=$(git ls-remote --symref "$remote" HEAD | awk '$1 == "ref:" { sub("^refs/heads/", "", $2); print $2 }')
+          for b in $(git ls-remote --heads "$remote" | awk '{ sub("^refs/heads/", "", $2); print $2 }'); do
+            case "$b" in v[0-9]*) ;; *) continue ;; esac
+            case "$b" in *[!0-9A-Za-z._-]*) continue ;; esac
+            [ "$b" != "$TAG" ] && [ "$b" != "$default" ] || continue
+            echo "$keep" | grep -qxF "$b" && continue
+            git push -q "$remote" --delete "$b" && echo "removed the mirror of $b" || echo "could not remove the mirror of $b"
+          done

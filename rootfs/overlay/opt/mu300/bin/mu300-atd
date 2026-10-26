@@ -1,0 +1,393 @@
+#!/bin/sh
+# Keep the modem's AT channel open and hand it out one command at a time.
+#
+# /dev/stty_nr* are SIPC channels, not real serial ports, and only one reader gets the data: while this daemon
+# holds the channel, a second process that opens the device reads nothing. Android's RIL keeps its port open for
+# the lifetime of the system, and so does this daemon, so that AT commands cost one open instead of one per call.
+#
+# The one case where the descriptor has to be replaced is a modem restart (AT+SFUN=4, or a CP crash): the old
+# descriptor then refers to a channel that no longer exists and stays silent for ever, while still occupying the
+# device. Reopening is also the way to break a perfectly good channel, though, so the loop below only does it
+# once the modem has stopped talking on nr0 as well - see the comment there.
+#
+#   mu300-atd            run in the foreground (used by the service)
+#   mu300-at "AT+CSQ"    ask the daemon (see mu300-at)
+#
+# Reading this tty needs a shell with "read -t":
+#   * dash (which is /bin/sh on Ubuntu and Debian) has no -t at all. Every read fails instantly with "Illegal
+#     option", the reply loop spins through its timeout and the command comes back empty.
+#   * The tty's own timer cannot replace it: "stty min 0 time 5" is ignored by this driver, which blocks in
+#     sbuf_read until the modem says something - possibly for ever.
+# bash and busybox ash both implement -t with poll(), which this driver does support, so run under one of them.
+set -u
+# OpenWrt keeps the applets this needs (timeout, dd) in the static busybox next to us
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+if [ -n "$(read -t 1 _probe </dev/null 2>&1)" ]; then
+    for sh in /bin/bash /usr/bin/bash /bin/busybox; do
+        [ -x "$sh" ] || continue
+        case $sh in */busybox) exec "$sh" ash "$0" "$@" ;; *) exec "$sh" "$0" "$@" ;; esac
+    done
+    echo "mu300-atd: need bash or busybox ash (this shell has no 'read -t')" >&2; exit 1
+fi
+# ...and with a fraction of a second: every command first drains the channel until it has been quiet for a tenth of
+# a second (QUICK below). OpenWrt's /bin/sh (its busybox ash) takes whole seconds only ("read: invalid timeout"), and
+# there each drain waited a full second, so every AT command took a second and the panel's collector round seven
+# (measured on the U30 Air). The static busybox next to us and bash both take fractions: run under one of them. Once
+# only (MU300_ATD_SHELL), and the pid stays the same, so the owner lock and the cmdline checks still see mu300-atd.
+if [ -z "${MU300_ATD_SHELL:-}" ] && [ -n "$(read -t 0.1 _probe </dev/null 2>&1)" ]; then
+    export MU300_ATD_SHELL=1
+    for sh in "${MU300_BUSYBOX:-/opt/mu300/bin/busybox}" /bin/bash /usr/bin/bash; do
+        [ -x "$sh" ] || continue
+        case $sh in
+            *busybox) [ -z "$("$sh" ash -c 'read -t 0.1 _p </dev/null' 2>&1)" ] && exec "$sh" ash "$0" "$@" ;;
+            *) [ -z "$("$sh" -c 'read -t 0.1 _p </dev/null' 2>&1)" ] && exec "$sh" "$0" "$@" ;;
+        esac
+    done
+fi
+# The command channel follows the SIM slot pinned for this boot (mu300-sim active): slot 0 is nr1 (nr2 for the data
+# role), slot 1 - the F50's internal card - is nr4 (nr5), with its URCs on nr3 instead of nr0.
+SIM_SLOT=0
+if [ -x /opt/mu300/bin/mu300-sim ]; then
+    SIM_SLOT=$(/opt/mu300/bin/mu300-sim active) || exit 1
+fi
+channel=$((SIM_SLOT * 3 + 1))
+[ "${MU300_AT_ROLE:-}" != data ] || channel=$((channel + 1))
+DEV=${MU300_AT_DEV:-/dev/stty_nr$channel}
+DIR=${MU300_AT_DIR:-/run/mu300-at}
+CMD=$DIR/cmd
+CR=$(printf '\r')
+LF='
+'
+SUB=$(printf '\032')
+# one_request CMD: true when CMD is exactly one modem command - no line feed, and a CR only in the PDU send
+# "AT+CMGS=<length><CR><hex PDU><Ctrl-Z>" (or CMGW). Keep it identical to the copy in mu300-at.
+one_request() {
+    case $1 in *"$LF"*) return 1 ;; *"$CR"*) ;; *) return 0 ;; esac
+    _h=${1%%"$CR"*}; _b=${1#*"$CR"}; _p=${_b%"$SUB"}
+    case $_h in AT+CMG[SW]=[0-9]|AT+CMG[SW]=[0-9][0-9]|AT+CMG[SW]=[0-9][0-9][0-9]) ;; *) return 1 ;; esac
+    [ "$_p" != "$_b" ] || return 1
+    case $_p in ''|*[!0-9A-Fa-f]*) return 1 ;; esac
+}
+
+[ -c "$DEV" ] || { echo "mu300-atd: $DEV is not a character device" >&2; exit 1; }
+# $DIR is ours alone, or it is made so: /run takes files from every user on these images, and in a directory
+# somebody else made first (or behind his symlink) the command fifo would be his to write - AT commands, to the
+# modem, as us - and every answer his to read. Recovered from, not refused: without this daemon there is no
+# modem at all. The shared helper (lib/run-dir.sh); the owner asked for is whoever runs this (root).
+RUN_DIR_LIB=${MU300_RUN_DIR_LIB:-/opt/mu300/lib/run-dir.sh}
+if [ -r "$RUN_DIR_LIB" ]; then
+    # shellcheck disable=SC1090
+    . "$RUN_DIR_LIB"
+    case $DIR in */*) mkdir -p "${DIR%/*}" 2>/dev/null ;; esac
+    run_dir_take "$DIR" "$(id -u)" mu300-atd || exit 1
+    chmod 755 "$DIR"
+else
+    echo "mu300-atd: $RUN_DIR_LIB is missing; $DIR is not checked" >&2
+    mkdir -p "$DIR"
+fi
+
+# Exactly one daemon, or the modem looks dead to the whole device. Two of them read the same SIPC channel and
+# each gets a random half of every reply, and the newcomer replaces the command fifo under the one already
+# running - which is how "the modem stopped answering after a few minutes" kept happening. A second instance
+# (procd respawning, a service started twice) waits here instead of exiting, so that whoever holds the channel
+# keeps it and the spare takes over the moment that process is gone.
+# $DIR/owner, and deliberately not $DIR/lock: that one is the per-command mutex clients take and release around
+# every single command, and it used to be this one as well. The two have opposite lifetimes, so sharing a name
+# meant whichever ran second won - a client deleted the daemon's directory on its way out, and after a daemon
+# restart every client instead waited out its 90 s and printed "mu300-at: busy" over a completely idle channel.
+LOCK=$DIR/owner
+alive() {  # alive PID -> is that pid still a running mu300-atd?
+    [ -n "$1" ] && [ -d "/proc/$1" ] && { tr '\0' ' ' < "/proc/$1/cmdline"; } 2>/dev/null | grep -q mu300-atd
+}
+while :; do
+    if mkdir "$LOCK" 2>/dev/null; then break; fi
+    owner=$(cat "$LOCK/pid" 2>/dev/null || true)
+    if alive "$owner"; then
+        [ "${waited:-0}" = 0 ] && echo "mu300-atd: pid $owner already owns $DEV, waiting" >&2
+        waited=1
+        sleep 10
+        continue
+    fi
+    rm -rf "$LOCK"   # the owner is gone (killed, or the device rebooted with /run on disk)
+done
+echo $$ > "$LOCK/pid"
+# Only on a signal, never on EXIT: ash and dash run an EXIT trap when a *subshell* exits too, and this script
+# runs one per command (reply=$(collect ...)), so an EXIT trap here deletes the lock a second after taking it -
+# which is how the second daemon got in in the first place. A daemon that dies without being signalled leaves
+# the directory behind; the next one sees the owner is gone and takes over.
+# $drainers is filled in below, once the other channels are open; killing them here keeps them from holding
+# those channels after the daemon that started them is gone.
+drainers=
+trap 'kill $drainers 2>/dev/null; rm -f "$CMD"; [ "$(cat "$LOCK/pid" 2>/dev/null)" = $$ ] && rm -rf "$LOCK"; exit 0' INT TERM
+
+rm -f "$CMD"
+mkfifo -m 600 "$CMD"
+
+# the one open that everything else borrows
+open_tty() {
+    # the redirection is scoped to this one close: on a bare `exec` it would send every later log line to /dev/null
+    { exec 3<&-; } 2>/dev/null || true
+    # `command exec`: a failed redirection on a bare `exec` (a special built-in) ends a POSIX shell - dash and ash
+    # exited right here, and the `|| return 1` never ran (#226: "can't create /dev/stty_nr2: No such device", and
+    # the daemon gone). Through `command` it is an ordinary failure the caller can act on.
+    command exec 3<>"$DEV" || return 1
+    # on fd 3, not "stty -F $DEV": the -F form opens and closes the tty a second time
+    stty raw -echo <&3 2>/dev/null || true
+}
+# The node is there before the channel works: until the modem has started (its sbuf ready) the open fails with ENODEV
+# - at a cold boot for longer than the init scripts wait for the node (#226), and for good when the modem never
+# starts. So the first open is tried again, every 0.2 s for up to MU300_AT_OPEN_WAIT seconds (240), with one line when
+# the wait starts and one when it ends (every 2 s, as it was, cost a cold boot up to 2 s of the dial's critical path:
+# the channel comes up while the dial waits for it); meanwhile the command fifo exists, so clients queue here and never take the
+# direct path to the tty. A failed open was never seen to harm a channel (the releases before this one opened every
+# 10 s under procd's respawn, #170, and the modem answered once it was up); closing an open one is what loses it.
+# Given up: the supervisor starts this daemon again (procd's respawn, systemd's Restart=always), one line per round.
+OPEN_WAIT=${MU300_AT_OPEN_WAIT:-240}
+case $OPEN_WAIT in ''|*[!0-9]*) OPEN_WAIT=240 ;; esac
+# a fraction of a second where the static busybox can sleep one (the image's /bin/sleep takes whole seconds only)
+nap() { "${MU300_BUSYBOX:-/opt/mu300/bin/busybox}" sleep "$1" 2>/dev/null || sleep 1; }
+open_waited=0   # 1 once the wait has started
+open_start=$(date +%s)
+until open_tty 2>/dev/null; do
+    [ "$open_waited" = 0 ] && echo "mu300-atd: $DEV is not ready (the modem has not started its AT channels); waiting up to ${OPEN_WAIT} s" >&2
+    open_waited=1
+    if [ $(($(date +%s) - open_start)) -ge "$OPEN_WAIT" ]; then
+        echo "mu300-atd: $DEV did not become ready in ${OPEN_WAIT} s: the modem has not started (see dmesg and /run/mu300/radio.log)" >&2
+        rm -f "$CMD"; [ "$(cat "$LOCK/pid" 2>/dev/null)" = $$ ] && rm -rf "$LOCK"
+        exit 1
+    fi
+    nap 0.2
+done
+[ "$open_waited" = 0 ] || echo "mu300-atd: $DEV ready after $(($(date +%s) - open_start)) s" >&2
+
+# Keep the other AT channels drained, the way Android's RIL does - it holds nr0-nr5 open and reads all six.
+# /dev/stty_nr0 carries the modem's unsolicited output (+SIND, +ECIND, +SPERRLOG, ...), and each stty_nr<n> is
+# one sbuf ring in the memory shared with the modem: the modem writes into it whether or not anyone reads, so an
+# unread channel sits on a backlog (measured: half an hour unread, and the first read returns 1.8 KB at once).
+# Draining it is not a cure for a channel that has gone silent - that was tried, and it is not - but the URCs are
+# worth having: registration and PDP changes are announced there and nowhere else, and the reopen rule below is
+# built on this log. One capped log per channel, in RAM.
+#
+# Only nr0 by default. A drainer owns its channel as completely as this daemon owns nr1, so draining nr2-nr5 as
+# well (MU300_AT_URC_CHANNELS="0 2 3 4 5") would shut out anything that later wants a second command channel of
+# its own - and measured, those four say nothing at all. A drainer that reaches end of file stays gone on
+# purpose: reopening a SIPC channel is the one operation that can lose it.
+URCDIR=$DIR/urc
+URCMAX=${MU300_AT_URC_MAX:-65536}
+mkdir -p "$URCDIR"
+# root's alone: with caller id on (AT+CLIP=1, an AT client) every ring writes the caller's number here, and
+# +CUSD answers and +CMTI were always in it. Every reader is root (mobile-data, mu300-ussd, the panel).
+chmod 700 "$URCDIR"
+# A message the modem delivers directly (mu300-smsd asks for that with AT+CNMI mt=2, openwrt-luci only) is a two-line
+# frame: "+CMT: <alpha>,<length>" and the PDU on the next line, on whichever channel the modem's unsolicited output
+# goes (nr0 here, where +CMTI comes too), or on the command channel between or inside replies. The two lines go to
+# mu300-cmt-spool on its stdin, which puts the PDU on the disk for mu300-smsd to pool and acknowledge. Neither line
+# is logged (the log is world readable, and emptied when it grows): in text mode - which nothing here asks for, but
+# another tool might - the header carries the sender and the second line the text; the log gets one fixed word
+# either way, and the spooler takes nothing but hexadecimal. A reply never carries the frame either (a client parsing
+# a listing would take the PDU line for one of its own). Never an argument: argv is public.
+CMT_SPOOL=${MU300_CMT_SPOOL_BIN:-/opt/mu300/bin/mu300-cmt-spool}
+SIM_STATE=${MU300_SIM_STATE_BIN:-/opt/mu300/bin/mu300-sim-state}
+cmt_frame() {  # cmt_frame HEADER FD LOG: the line after a +CMT header, from FD, with the header to the spooler
+    _pdu=
+    # the PDU is the next line, written with the header; an empty line (the frame's own CRLF) is skipped once
+    for _try in 1 2; do
+        IFS= read -r -t 2 _pdu <&"$2" || { _pdu=; break; }
+        _pdu=${_pdu%"$CR"}
+        [ -n "$_pdu" ] && break
+    done
+    if [ -x "$CMT_SPOOL" ] && printf '%s\n%s\n' "$1" "$_pdu" | "$CMT_SPOOL"; then
+        printf '%s\n' "+CMT (PDU spooled)" >> "$3" 2>/dev/null
+    else
+        echo "mu300-atd: a message delivered directly (+CMT) could not be spooled; it stays unacknowledged" >&2
+        printf '%s\n' "+CMT (not spooled)" >> "$3" 2>/dev/null
+    fi
+}
+# '-' and not ':-': a value that is set but empty means this daemon opens no URC channel at all. With ':-' a
+# second daemon (another command channel) fell back to nr0 as well, and several readers split that stream.
+for n in ${MU300_AT_URC_CHANNELS-$((SIM_SLOT * 3))}; do
+    other=${DEV%[0-9]}$n
+    [ "$other" = "$DEV" ] && continue
+    [ -c "$other" ] || continue
+    (
+        exec 3<&-   # the command channel belongs to the parent, not to a drainer
+        log=$URCDIR/$(basename "$other").log
+        : > "$log"
+        while IFS= read -r urc; do
+            urc=${urc%"$CR"}
+            case $urc in '+CMT:'*) cmt_frame "$urc" 0 "$log"; continue ;; esac
+            printf '%s\n' "$urc" >> "$log"
+            # a SIM-status change on the card's event channel (nr0 slot 0, nr3 slot 1): mu300-sim-state asks the card
+            # in the background whether one is there (FINDINGS 186); every other line costs nothing more
+            case $urc in
+                '+ECIND: 3,'*|'+ECIND:3,'*)
+                    [ ! -x "$SIM_STATE" ] || "$SIM_STATE" event "$((n / 3))" "$urc" </dev/null >/dev/null 2>&1 ;;
+            esac
+            # cheap cap: start over rather than grow without end, /run is RAM
+            [ "$(wc -c < "$log" 2>/dev/null || echo 0)" -gt "$URCMAX" ] && : > "$log"
+        done < "$other"
+    ) &
+    drainers="$drainers $!"
+done
+echo "mu300-atd: $DEV is ours, draining $(echo $drainers | wc -w) other channel(s) into $URCDIR" >&2
+
+trap "" PIPE   # a client that gave up waiting must not kill the daemon
+silent=0       # consecutive commands the modem did not answer
+clean=0        # the last reply ended in a final result code (the first drain, below, is the slow one)
+last_reopen=0  # when the device was last reopened (see the reopen rule in the loop)
+
+now() { date +%s; }
+
+# Has the modem said anything at all lately? The drainers above append every unsolicited line to a log, so a log
+# that has been written to in the last few minutes means the modem is running, whatever it thinks of our
+# commands. With no drainer (a single-channel device) there is nothing to go on, and this answers "no".
+URCLOG=${MU300_AT_LIVE_URC_LOG:-$URCDIR/$(basename "${DEV%[0-9]}0").log}
+modem_alive() {
+    [ -f "$URCLOG" ] || return 1
+    [ "$(( $(now) - $(date -r "$URCLOG" +%s 2>/dev/null || echo 0) ))" -lt "${MU300_AT_URC_QUIET:-240}" ]
+}
+
+# The wait that ends a drain after a clean reply: a tenth of a second where "read -t" takes fractions (bash 4 and
+# later, busybox ash). bash 3.2 takes whole seconds only, and there every drain waits the full second.
+QUICK=0.1
+if [ -n "$(read -t 0.1 _probe </dev/null 2>&1)" ]; then
+    QUICK=1
+    echo "mu300-atd: this shell's read -t takes whole seconds; every command waits 1 s for stray lines first" >&2
+fi
+
+drain() {  # drain WAIT: throw away what the modem sent while nobody was asking (URCs), so replies are not mixed up
+    # Before every command, never skipped: a line that arrives while the channel is idle - a URC, an unsolicited
+    # NO CARRIER, an OK that came after its command's reply was taken - would otherwise be read as the next
+    # command's reply, and the daemon would stay one answer behind for ever, every shifted reply still ending
+    # in a final result code.
+    #
+    # It stops once the channel has been quiet for WAIT seconds, and after DRAIN_MAX seconds at most. After a
+    # clean reply (one that ended in a final result code) WAIT is short: nothing is known to be on its way, so
+    # only what is already there is taken, and the round trip does not pay a second for nothing. Otherwise it
+    # is a second, and after a command that timed out the budget is larger: the late answer is still coming.
+    # This modem makes that easy to hit - AT+CGACT and AT+CGDATA answer "^ORIG: <cid>,<n>" first and OK or
+    # CONNECT ten to twenty seconds later (docs/FINDINGS.md 13f).
+    end=$(( $(now) + ${DRAIN_MAX:-3} ))
+    while [ "$(now)" -lt "$end" ]; do
+        junk=
+        IFS= read -r -t "$1" junk <&3
+        rc=$?
+        # Thrown away for the purpose of the next command, but not lost: answers that arrive after their OK
+        # land here, and some of them matter. +CUSD is the plain case - the network's reply to *101# comes
+        # seconds after the modem has already said OK - and +CMTI, announcing a new SMS, is another.
+        junk=${junk%"$CR"}
+        case $junk in '+CMT:'*) cmt_frame "$junk" 3 "$URCDIR/$(basename "$DEV").log"; continue ;; esac
+        # The modem's echo of a command is no announcement, and a command can carry a secret (an APN password in
+        # AT+CGPCO, a PIN in AT+CPIN): it is thrown away and never reaches the log, which outlives the command.
+        case $junk in [Aa][Tt]*) junk= ;; esac
+        [ -n "$junk" ] && printf '%s\n' "$junk" >> "$URCDIR/$(basename "$DEV").log" 2>/dev/null
+        [ "$rc" = 0 ] || break   # nothing for WAIT seconds (a partial line was kept above): quiet again
+    done
+}
+
+collect() {  # collect TIMEOUT -> the reply lines, up to the final result code; fails if none came in time
+    # At least TIMEOUT whole seconds, never less: now() counts whole seconds, so "now + TIMEOUT" ends at a second
+    # boundary anywhere from TIMEOUT - 1 to TIMEOUT seconds away. With TIMEOUT 1, a command written at .995 had
+    # 5 ms - the reply was cut off before its first line (an empty answer) or after it (no final code, and the
+    # OK that was still coming landed in the log as a stray line).
+    end=$(( $(now) + $1 + 1 ))
+    while [ "$(now)" -lt "$end" ]; do
+        l=
+        IFS= read -r -t 2 l <&3 || continue
+        l=${l%"$CR"}
+        [ -n "$l" ] || continue
+        # a message delivered while a reply was being collected: spooled, and kept out of the reply
+        case $l in '+CMT:'*) cmt_frame "$l" 3 "$URCDIR/$(basename "$DEV").log"; continue ;; esac
+        echo "$l"
+        case $l in
+            OK|ERROR|+CME\ ERROR*|+CMS\ ERROR*|CONNECT*|NO\ CARRIER) return 0 ;;
+        esac
+    done
+    return 1
+}
+
+# The slow drain (quiet for a whole second) once here, as soon as the channel is ours, instead of before the first
+# command: at a cold boot that second used to come on top of each channel's first command - three of them in the
+# U30 Air's SIM2 cold start, ~3 s of the dial's critical path. A client that queued meanwhile waits for the rest of it.
+DRAIN_MAX=3 drain 1
+clean=1
+
+while :; do
+    line=
+    # blocks until a client sends something
+    read -r line < "$CMD" || continue
+    [ -n "$line" ] || continue
+    # "SECONDS /path/to/answer AT+COMMAND": the answer goes into a file of the client's choosing. A fifo needs
+    # both ends at once, and a client that gave up (or was killed) left the daemon or a leftover writer blocked
+    # on it for ever, which wedged every later command.
+    # Parsed strictly, the way mu300-at writes it, and nothing else: a line that does not fit used to fall back to
+    # "the whole line is the command", so a timeout the client accepted and this case did not ("120 /run/... AT")
+    # reached the modem as one long command, with no answer for the waiting client.
+    t=${line%% *}; rest=${line#* }
+    answer=${rest%% *}; cmd=${rest#* }
+    case $t in [1-9]|[1-9][0-9]) ;; *) echo "mu300-atd: malformed request (timeout), dropped" >&2; continue ;; esac
+    # the answer file is one of the clients' own, $DIR/answer.<pid>: never a path of the writer's choosing
+    case ${answer#"$DIR"/answer.} in
+        "$answer"|''|*[!0-9]*) echo "mu300-atd: malformed request (answer file), dropped" >&2; continue ;;
+    esac
+    [ "$cmd" != "$rest" ] && [ -n "$cmd" ] || { echo "mu300-atd: malformed request (no command), dropped" >&2; continue; }
+    # the same one-command test as mu300-at's, so both paths put exactly the same bytes on the channel
+    one_request "$cmd" || {
+        echo "mu300-atd: a request with more than one command, refused" >&2
+        ( umask 077; printf '%s\n' "mu300-atd: refused" > "$answer.part" ) 2>/dev/null && mv "$answer.part" "$answer" 2>/dev/null
+        continue
+    }
+    # after a timeout, give the late reply time to show up and throw it away before asking anything new
+    DRAIN_MAX=$([ "$silent" -gt 0 ] && echo 25 || echo 3)
+    export DRAIN_MAX
+    drain "$([ "$clean" = 1 ] && echo "$QUICK" || echo 1)"
+    # A PDU send ("AT+CMGS=N<CR>PDU<Ctrl-Z>") goes out as one write too: the modem's "> " prompt between the
+    # header and the PDU has no newline, so the line reads here never see it, and it is collected with the reply.
+    # Waiting for it before the PDU would need a byte-wise read whose timeout behaviour differs between bash and
+    # busybox ash, in the one process that owns the channel; measured sends work as is (docs/FINDINGS.md 46).
+    printf '%s\r' "$cmd" >&3
+    # clean: the reply ended in a final result code, by collect's own exact test of its last line
+    clean=0
+    reply=$(collect "$t") && clean=1
+    # When the modem restarts (AT+SFUN=4 during a bring-up, or a CP crash) this descriptor is left attached to a
+    # channel that no longer exists: it reads nothing for ever, and because it still holds the channel, nobody
+    # else can talk to the modem either. Reopening is the only cure for that case - but it is also the way to
+    # *cause* it. Measured on the device: with the modem alive and answering, closing this descriptor and opening
+    # it again leaves the channel silent for good. Nothing brings it back - not another reopen, not draining the
+    # other channels, not restarting modem_control (which re-attaches without reloading the modem). Only a
+    # reboot does. So "three unanswered commands" is nowhere near enough to justify it: a busy device that makes
+    # this shell miss three replies would trade a working modem for a dead one.
+    #
+    # $URCDIR/$(basename nr0).log tells the two cases apart. The modem's unsolicited output goes to nr0 and never
+    # stops while it is running, so a growing log means the modem is alive and this descriptor is fine - whatever
+    # else is wrong, closing it can only make things worse. Only when nr0 has gone quiet too has the modem really
+    # gone away, and then there is nothing left to lose.
+    if [ -z "$reply" ]; then
+        silent=$((silent + 1))
+        if [ "${MU300_AT_DISABLE_REOPEN:-0}" != 1 ] && [ "$silent" -ge 5 ] && [ $(( $(now) - last_reopen )) -ge 300 ] && ! modem_alive; then
+            echo "mu300-atd: no reply and no URCs either, the modem looks gone; reopening $DEV" >&2
+            last_reopen=$(now)
+            if open_tty; then
+                silent=0
+                drain 1
+                printf '%s\r' "$cmd" >&3
+                reply=$(collect "$t") && clean=1
+            else
+                # as it always ended (the bare exec took the shell with it): the supervisor starts a new daemon,
+                # whose first open waits for the channel. This client gets its empty answer first.
+                echo "mu300-atd: cannot reopen $DEV; exiting for a fresh start" >&2
+                [ -z "$answer" ] || { ( umask 077; : > "$answer.part" ) 2>/dev/null && mv "$answer.part" "$answer" 2>/dev/null; }
+                kill $drainers 2>/dev/null; rm -f "$CMD"; [ "$(cat "$LOCK/pid" 2>/dev/null)" = $$ ] && rm -rf "$LOCK"
+                exit 1
+            fi
+        fi
+    else
+        silent=0
+    fi
+    if [ -n "$answer" ]; then
+        # write it complete, then move it into place, so the client never reads half an answer. Root's alone
+        # (every client is root's): a reply can hold what the command held, when the modem echoes it, and one
+        # whose client gave up stays behind.
+        ( umask 077; printf '%s\n' "$reply" > "$answer.part" ) 2>/dev/null && mv "$answer.part" "$answer" 2>/dev/null
+    fi
+done

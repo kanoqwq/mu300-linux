@@ -1,0 +1,25 @@
+[Unit]
+# SMS forwarding on Ubuntu (Cockpit's SMS page, mu300-api sms.forward_set): new messages on the SIM go to
+# mu300-sms-forward, through a pool of the forwarding's own (unisoc-modem/forward-feed). It runs only while
+# forwarding is on: the page starts and stops it (unisoc-modem/forward set), and at boot it starts only then.
+Description=MU300 SMS forwarding (new SIM messages to the webhook, Telegram, e-mail or another phone)
+After=mu300-atd.service mu300-mobile-data.service
+ConditionPathExists=/etc/mu300/sms-forward.conf
+
+[Service]
+ExecCondition=/bin/grep -qsx enabled=1 /etc/mu300/sms-forward.conf
+# what the SIM holds when it starts is seen already: only messages that come while forwarding is on go out
+Environment=MU300_SMS_STATE=/etc/mu300/sms-forward.d/watch MU300_SMS_WATCH_FROM_NOW=1 MU300_SMS_POOL=/etc/mu300/sms-pool
+# what was still queued before a reboot goes out now
+ExecStartPre=-/opt/mu300/bin/mu300-sms-forward kick
+ExecStart=/opt/mu300/bin/sms watch /usr/libexec/unisoc-modem/forward-feed
+# sms watch prints every message it sees: never into the journal (the forwarding's log names no sender, no text)
+StandardOutput=null
+StandardError=journal
+# what it writes (the pool, the watch's list of seen messages: senders and times) is root's alone
+UMask=0077
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,10 @@
+[Unit]
+Description=MU300 temporary PD/DP dock test logger
+After=mu300-display.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/mu300-pd-log
+
+[Install]
+WantedBy=multi-user.target

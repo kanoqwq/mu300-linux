@@ -1,0 +1,26 @@
+#!/bin/sh
+# Bring up the SC2355 (Marlin3) Wi-Fi: PCIe host, WCN platform driver, then the WLAN driver.
+# Firmware (wcnmodem.bin, wifi_board_config*.ini) comes from Android's /odm/firmware -> /usr/lib/firmware.
+# 5.4 vendor kernel: all four are modules. Mainline: the PCIe host is built in, wcn_bsp/sprd_wlan_combo are
+# out-of-tree modules in /lib/modules/<release>.
+set -e
+command -v depmod >/dev/null && depmod -a
+[ -e /sys/class/net/wlan0 ] && exit 0   # the WCN drivers cannot be reloaded; never load them twice
+for m in pcie-sprd-misc pcie-sprd; do
+    modprobe "$m" 2>/dev/null || [ -d /sys/bus/platform/drivers/sprd-pcie ]
+done
+# modprobe needs modules.dep, which not every rootfs ships; the modules sit flat in /lib/modules/<release>
+# (under extra/ on Ubuntu), so when modprobe cannot load one, insmod the file directly
+K=${MU300_KMOD:-/lib/modules/$(uname -r)}
+for m in wcn_bsp sprd_wlan_combo; do
+    grep -q "^$m " /proc/modules && continue
+    modprobe "$m" 2>/dev/null && continue
+    f=$K/$m.ko
+    [ -f "$f" ] || f=$K/extra/$m.ko
+    [ -f "$f" ] || { echo "missing $m.ko" >&2; exit 1; }
+    insmod "$f"
+done
+for n in $(seq 1 30); do [ -e /sys/class/net/wlan0 ] && break; sleep 1; done
+# wcn_bsp turns the Marlin3 firmware (ARM) log on at boot; every firmware log packet is printed to the kernel log
+[ -w /proc/mdbg/at_cmd ] && printf 'at+armlog=0\r' > /proc/mdbg/at_cmd 2>/dev/null || true
+ls /sys/class/net

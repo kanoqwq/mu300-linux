@@ -1,0 +1,18 @@
+[Unit]
+Description=MU300 join the saved Wi-Fi network (station mode; stops the hotspot while connected)
+ConditionPathExists=/etc/mu300/wifi-client.conf
+After=mu300-wifi.service mu300-lan.service
+Wants=mu300-wifi.service
+Before=mu300-hotspot.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/mu300/bin/wifi-client up
+# A stop or restart would otherwise kill the supplicant and its helpers (the service's cgroup) and leave the rules,
+# the address and the route behind. "release" takes the client down and nothing else: not "disconnect", which
+# would also clear the scan-mode flag that the coming boot is meant to use, and start the hotspot.
+ExecStop=/opt/mu300/bin/wifi-client release
+
+[Install]
+WantedBy=multi-user.target

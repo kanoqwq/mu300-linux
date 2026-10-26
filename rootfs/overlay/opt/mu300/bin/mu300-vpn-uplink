@@ -1,0 +1,61 @@
+#!/bin/sh
+# mu300-vpn-uplink [IFACE]: the bearer has just come up (OpenWrt: its ifup hotplug; Ubuntu: `mobile-data up`). A VPN
+# whose current run started before that moment is started again (docs/FINDINGS.md 176).
+#
+# Measured on the U30 Air (openwrt-luci, the owner's sing-box profile, the kill switch on, kernels 6.18.56 and 6.18.57
+# alike): the VPN service starts at boot before the bearer, finds no uplink, and its service manager starts it again
+# every few seconds. When one of those runs reaches its engine a second or two before netifd has finished with the
+# bearer (sing-box at 42-43 s, the address at 44-45 s), the tunnel never comes up: sipa_eth0 sends and receives
+# nothing at all, the modem never even asks to deliver, for as long as the boot lasts (ten minutes watched). Neither
+# the data context again, nor the radio off and on, nor the modem restarted brings one packet back; `mu300-vpn
+# restart` does, at once, every time (eight boots out of eight). An `ifup wan` did not, because nothing restarted the
+# VPN after it - this does.
+#
+# The kill switch is not touched: `mu300-vpn restart` replaces it in one transaction, so nothing leaves beside the
+# tunnel meanwhile. Nothing is done without a VPN that is on, nor for a run that started after the bearer was up.
+set -u
+export PATH="$PATH:/opt/mu300/busybox-bin:/usr/sbin:/sbin:/usr/bin:/bin"
+VPN=${MU300_VPN_CMD:-/opt/mu300/bin/mu300-vpn}
+RUN=${MU300_VPN_RUN:-/run/mu300-vpn}
+STATE=${MU300_UPLINK_DIR:-/run/mu300}
+SETTLE=${MU300_UPLINK_SETTLE:-3}     # seconds for netifd (or mobile-data) to finish with the interface
+WAIT=${MU300_UPLINK_RUN_WAIT:-60}    # seconds a run that is starting gets to reach its engine
+IFACE=${1:-the bearer}
+
+say() { logger -t mu300-vpn-uplink "$*" 2>/dev/null || true; echo "mu300-vpn-uplink: $*" >&2; }
+
+up=$(date +%s)
+mkdir -p "$STATE" 2>/dev/null || true
+echo "$up" > "$STATE/uplink-up" 2>/dev/null || true
+command -v "$VPN" >/dev/null 2>&1 || exit 0
+[ "$("$VPN" enabled 2>/dev/null)" = 1 ] || exit 0
+
+# one at a time: a second ifup while the first waits only moves the time forward (the file above)
+lock=$STATE/vpn-uplink.lock
+if ! mkdir "$lock" 2>/dev/null; then
+    p=$(cat "$lock/pid" 2>/dev/null || true)
+    if [ -n "$p" ] && kill -0 "$p" 2>/dev/null; then exit 0; fi
+    rm -rf "$lock"; mkdir "$lock" 2>/dev/null || exit 0
+fi
+echo $$ > "$lock/pid"
+trap 'rm -rf "$lock"' EXIT INT TERM
+
+sleep "$SETTLE"
+up=$(cat "$STATE/uplink-up" 2>/dev/null || echo "$up")
+# a run that is still starting writes $RUN/since just before it starts its engine
+i=0
+while [ ! -s "$RUN/since" ] && [ "$i" -lt "$WAIT" ]; do sleep 1; i=$((i + 1)); done
+since=$(cat "$RUN/since" 2>/dev/null || true)
+case $since in ''|*[!0-9]*) exit 0 ;; esac   # no run to start again: the service manager retries by itself
+# When the run began: $RUN/engine is written at its start, before it looks for a resolver over the uplink (a run that
+# asked while the bearer was half up goes on with one that does not answer, and its engine never finds its server).
+# since, written just before the engine starts, when that file says nothing.
+began=$(date -r "$RUN/engine" +%s 2>/dev/null || true)
+case $began in ''|*[!0-9]*) began=$since ;; esac
+[ "$began" -le "$since" ] || began=$since
+# began after the uplink was up: nothing to do. The same second counts as before (a restart costs seconds; a tunnel
+# that never comes up costs the boot).
+[ "$began" -le "$up" ] || exit 0
+say "the VPN started before $IFACE was up ($((up - began)) s): restarting it"
+"$VPN" restart >/dev/null 2>&1 || say "mu300-vpn restart failed"
+exit 0

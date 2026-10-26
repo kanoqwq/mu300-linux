@@ -1,0 +1,79 @@
+# The release tags and how they compare: one table for every language that compares them - sh (tools/releases.sh,
+# and its copy in mu300-update), Python (tools/release_pick.py), JavaScript (the web installer's version.js, and its
+# copy in the panel's update.js), PowerShell (install.ps1). docs/FINDINGS.md 125.
+#   vYYYY.MM.DD      the releases up to v2026.10.27, where the "day" was a counter
+#   vYYYY.MM.DD.N    from then on: the real (UTC) day the release was built, N = 1..99 for the releases of that day;
+#                    newer than every three-field tag whatever its date; compared by the date, then N, as numbers
+# Lines (fields separated by one tab):
+#   ok TAG        a release tag
+#   bad TAG       not one (an empty TAG too)
+#   cmp A R B     R is > (A is newer), < (B is newer), = (the same release) or ! (one of them is no release tag:
+#                 neither counts as newer than the other)
+ok	v2026.09.28
+ok	v2026.10.10
+ok	v2026.10.27
+ok	v2026.10.16.1
+ok	v2026.10.16.9
+ok	v2026.10.16.10
+ok	v2026.10.16.99
+ok	v2026.12.31.1
+ok	v2027.01.01.1
+ok	v2026.10.01.1
+bad	
+bad	v2026.10.16.0
+bad	v2026.10.16.01
+bad	v2026.10.16.100
+bad	v2026.13.01.1
+bad	v2026.00.01.1
+bad	v2026.10.00.1
+bad	v2026.10.32.1
+bad	v2026.10.16.1x
+bad	v2026.10.16.1-rc
+bad	v2026.10.16.
+bad	v2026.10.16.1.2
+bad	v2026.10.27a
+bad	v2026.10.27-fix1
+bad	v2026.10.6
+bad	v26.10.16.1
+bad	2026.10.16.1
+bad	V2026.10.16.1
+bad	test-issue-102
+bad	v
+bad	dev
+bad	unknown
+bad	v2026.10.16.1 
+bad	 v2026.10.16.1
+bad	v2026-10-16.1
+bad	v2026.10.16.+1
+bad	v2026.10.16.-1
+cmp	v2026.10.16.1	>	v2026.10.27
+cmp	v2026.10.27	<	v2026.10.16.1
+cmp	v2026.10.15.1	>	v2026.10.27
+cmp	v2026.10.01.1	>	v2026.10.27
+cmp	v2026.10.16.2	>	v2026.10.16.1
+cmp	v2026.10.16.1	<	v2026.10.16.2
+cmp	v2026.10.17.1	>	v2026.10.16.9
+cmp	v2026.10.16.10	>	v2026.10.16.9
+cmp	v2026.10.16.9	<	v2026.10.16.10
+cmp	v2026.10.16.99	>	v2026.10.16.10
+cmp	v2026.11.01.1	>	v2026.10.31.99
+cmp	v2027.01.01.1	>	v2026.12.31.5
+cmp	v2026.10.27.1	>	v2026.10.27
+cmp	v2026.10.28.1	>	v2026.10.27.3
+cmp	v2026.10.27	>	v2026.10.26
+cmp	v2026.10.10	>	v2026.09.28
+cmp	v2026.09.28	<	v2026.10.10
+cmp	v2026.10.16.1	=	v2026.10.16.1
+cmp	v2026.10.27	=	v2026.10.27
+cmp	v2026.10.16.1	!	test-issue-102
+cmp	test-issue-102	!	v2026.10.16.1
+cmp	v2026.10.27	!	dev
+cmp	v2026.10.16.0	!	v2026.10.16.1
+cmp	v2026.10.16.1	!	v2026.10.16.01
+cmp	v2026.13.01.1	!	v2026.10.27
+cmp	v2026.10.16.1x	!	v2026.10.16.1
+cmp		!	v2026.10.27
+cmp	v2026.10.27	!	
+cmp		!	
+cmp	v2026.10.27-fix1	!	v2026.10.26
+cmp	test-issue-102	!	test-issue-102

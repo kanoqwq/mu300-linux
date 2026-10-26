@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>Sorun giderme: ZTE F50 / MU300 ve U30 Air'de MU300 Linux</title>
+<meta name="description" content="ZTE F50 / MU300 ve U30 Air'de Linux sorunlarına çözümler: kurulum, USB adresi yok, internet yok, Android'e dönüş, 5.4'te OpenWrt, yavaş indirme.">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/tr/troubleshooting/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/troubleshooting/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/troubleshooting/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/troubleshooting/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/troubleshooting/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="Sorun giderme: ZTE F50 / MU300 ve U30 Air'de MU300 Linux">
+<meta property="og:description" content="ZTE F50 / MU300 ve U30 Air'de Linux sorunlarına çözümler: kurulum, USB adresi yok, internet yok, Android'e dönüş, 5.4'te OpenWrt, yavaş indirme.">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/tr/troubleshooting/">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="İki odalı bir 5G cep hotspot'u: biri Android'e, biri Linux'a ait">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Sorun giderme: ZTE F50 / MU300 ve U30 Air'de MU300 Linux">
+<meta name="twitter:description" content="ZTE F50 / MU300 ve U30 Air'de Linux sorunlarına çözümler: kurulum, USB adresi yok, internet yok, Android'e dönüş, 5.4'te OpenWrt, yavaş indirme.">
+<meta name="twitter:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;display=swap">
+<link rel="stylesheet" href="../../assets/style.css">
+<script src="../../assets/site.js" defer></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [
+  {
+   "@type": "ListItem",
+   "position": 1,
+   "name": "Ana sayfa",
+   "item": "https://kaandikec.com/mu300-linux/tr/"
+  },
+  {
+   "@type": "ListItem",
+   "position": 2,
+   "name": "Sorun giderme",
+   "item": "https://kaandikec.com/mu300-linux/tr/troubleshooting/"
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">İçeriğe geç</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../../tr/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../../tr/install/">Kurulum</a>
+<a href="../../tr/web-installer/">Web kurucu</a>
+<a href="../../tr/choose/">Sistem seçimi</a>
+<a href="../../tr/features/">Özellikler</a>
+<a href="../../tr/updates/">Güncelleme ve güvenlik</a>
+<a href="../../tr/troubleshooting/" aria-current="page">Sorun giderme</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="Dil"><a href="../../troubleshooting/" hreflang="en" lang="en">English</a><a href="../../tr/troubleshooting/" hreflang="tr" lang="tr" aria-current="true">Türkçe</a><a href="../../zh/troubleshooting/" hreflang="zh-Hans" lang="zh-Hans">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="Tema|Otomatik|Açık|Koyu|sisteminizi izler|Renk temasını değiştir"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menü</button>
+</div>
+</header>
+<main id="content">
+
+<header class="page-head">
+<div class="prose">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../../tr/">Ana sayfa</a> <span aria-hidden="true">/</span> <span aria-current="page">Sorun giderme</span></nav>
+<h1>Sorun giderme</h1>
+<p class="lede">İnsanların gerçekten karşılaştığı sorunlar ve ne yapılacağı. Buradakilerin hiçbiri uymuyorsa günlükleri
+toplayın ve bir issue açın.</p>
+</div>
+</header>
+
+<div class="prose">
+<div class="callout android">
+<strong>Önce sakinleştiren kısım</strong>
+<p>Linux'u açamayan bir cihaz, seçtiğiniz sayıda başarısız açılıştan sonra (varsayılan 5) kendiliğinden Android'e
+döner; Linux kilitli değilse. Beklemek ve kabloyu çıkarıp takmak sandığınızdan çok şeyi çözer.</p>
+</div>
+
+<h2 id="installing">Kurulum sırasında</h2>
+
+<section id="no-device">
+<h3>Kurulum programı cihazı bulamıyor</h3>
+<p>Bilgisayarın cihazı gördüğünü ve root'un çalıştığını denetleyin:</p><pre><code>adb devices
+adb shell su -c id</code></pre><p>Cihaz <code>device</code> olarak listelenmeli (<code>unauthorized</code> değil: cihazdaki USB hata ayıklama onayını kabul edin), ikinci komut da <code>uid=0(root)</code> yazmalı. Kurulum programı root'lu, kilidi açık bir cihaz ister: bkz. <a href="../install/#before">başlamadan önce</a>.</p>
+</section>
+
+<section id="no-space">
+<h3>Denetim hiç boş alan bulamıyor</h3>
+<p>Bu 32 GB sürümdür; <code>userdata</code> diskin tamamını kaplar. Bir SD kart kullanın (F50) ya da kurulum programının <code>userdata</code>'yı küçültmesine izin verin; bu Android'in verilerini siler: bkz. <a href="../install/#variant-32gb">32 GB sürüm</a>. Sayılar ne 64 GB'lık ne de 32 GB'lık cihaza benziyorsa, <code>--check</code>'in yazdıklarıyla <a href="https://github.com/dikeckaan/mu300-linux/issues">bir issue açın</a>.</p>
+</section>
+
+<section id="not-empty">
+<h3>"UYARI: bölümlenmemiş alan boş değil"</h3>
+<p>Kurulum programının boş alandan okuduğu örneklerin bazılarında veri var; bu yazılımda o alanı bir şey kullanıyor olabilir. Kurulum üzerine yazar ve kurulum programı sizden <code>overwrite</code> yazmanızı ister. Oraya neyin yazdığından emin değilseniz durun ve denetimin çıktısıyla bir issue'da sorun.</p>
+</section>
+
+<section id="stuck-installer">
+<h3>Kurulum programı dakikalarca hiçbir şey yazmıyor, cihaz ısınıyor</h3>
+<p>Bölüm tablosu diskin sonunda biten cihazlarda (32 GB sürüm ve <code>userdata</code>'nın arkasında boşluk olmayan bir F50) dahili depolamanın sonunu aşan bir okuma hiç geri dönmüyordu. v2026.10.13'ten beri düzeltildi. Takılan okumaları bitirmek için cihazı yeniden başlatın, sonra güncel kurulum programını kullanın.</p>
+</section>
+
+<section id="slow-downloads">
+<h3>İndirmeler yavaş</h3>
+<p>GitHub'ın indirme sunucuları bazı bölgelerde tek bağlantıları yavaşlatır. Kurulum programı zaten 8 paralel parça halinde indirir; bunu <code>MU300_FETCH_JOBS</code> ile değiştirin ya da <code>MU300_RELEASE_URL</code>'i sürüm dosyalarının kendi aynanıza yönlendirin.</p>
+</section>
+
+<h2 id="after">Kurulumdan sonra</h2>
+
+<section id="no-return">
+<h3>Kurulumdan sonra cihaz geri gelmiyor</h3>
+<p>İki dakika bekleyin. Hâlâ bir şey yoksa kabloyu çıkarıp yeniden takın. Bitmeyen her açılış sayılır; arka arkaya 5 tanesinden (ya da seçtiğiniz sayıdan) sonra cihaz Android'i açar. Sonra günlükleri toplayın:</p><pre><code>tools/collect-logs.sh            <span class="c"># bilgisayarınızdan, cihaz Android'deyken</span></code></pre>
+</section>
+
+<section id="no-address">
+<h3>Bilgisayar cihazı görüyor ama adres alamıyor (macOS)</h3>
+<p>macOS, ekran kilitliyken daha önce hiç görmediği bir ağ arayüzünü kurmaz. Her cihazın kendi USB MAC adresi vardır; bu yüzden bir cihaz ilk kez takıldığında (ya da bu adresleri getiren bir güncellemeden sonra) Mac'in kilidini açın, arayüz görünür. Bir F50 ve bir U30 Air takılıyken adresleri <code>192.168.77.1</code> ve <code>192.168.78.1</code>'dir; aynı türden ikisini ayırmak için <code>/etc/mu300/lan.conf</code> gerekir. Seri konsol (<code>screen /dev/cu.usbmodem* 115200</code>) ağ olmadan da çalışır.</p>
+</section>
+
+<section id="no-internet">
+<h3>İnternet yok</h3>
+<p>SIM'de veri paketi olduğunu denetleyin, sonra <code>sudo mobile-data status</code> çalıştırın. Paket olmaması, sürekli kopan bir bağlantı gibi görünür. Çoğu operatör APN istemez; sizinki istiyorsa bkz. <a href="../features/#mobile-data">mobil veri ve APN</a>.</p>
+</section>
+
+<section id="kernel-618">
+<h3>6.18 çekirdeğinde, istemeden Android'e döndü</h3>
+<p>Bazı kartlarda 6.18 arada bir ilk saniyelerinde donar (README bir kartta yaklaşık 20 açılışta bir ölçmüş; son sürüm notları bir kartta 50'de 2, bir diğerinde 100'de hiç, 7.2'de de 100'de hiç görmüş). Cihaz o zaman Android'e döner; Linux kilitliyse Linux'u yeniden açar. Linux'u <code>su -c mu300-linux</code> ya da Magisk modülünün Action düğmesiyle yeniden başlatın veya 7.2 ya da 5.4'e geçin. Ayrıntılar: <a href="https://github.com/dikeckaan/mu300-linux/blob/main/docs/FINDINGS.md" hreflang="en">FINDINGS 31m</a> (İngilizce).</p>
+</section>
+
+<section id="android-after-update">
+<h3>Güncellemeden sonra Android'e döndü</h3>
+<p>Eski açılış imajlarında (v2026.09.27 ve öncesi) Linux'un tek bir çökmesi ya da sıfırlanması cihazı Android'e döndürür ve orada bırakır. Linux'u <code>su -c mu300-linux</code> ile yeniden başlatın, sonra <a href="../updates/#update">güncelleme</a>'de anlatıldığı gibi güncelleyin. Linux artık hiç açılmıyorsa kurulum programını bir bilgisayardan yeniden çalıştırın ve <code>update</code>'i seçin: yeni bir açılış imajı yazar, ayarlarınızı ve verilerinizi korur.</p>
+</section>
+
+<section id="openwrt-54">
+<h3>5.4 çekirdeğinde OpenWrt: adres yok, web arayüzü yok, hotspot'a kimse bağlanamıyor</h3>
+<p>v2026.10.13'ten önceki sürümlerde güvenlik duvarının açılış kurallarında LAN için hiçbir şey yoktu, ve 5.4'te onları eklemesi gereken yeniden yükleme hep başarısız oluyordu. v2026.10.13'ten beri düzeltildi; güncelleyin. Etkilenen bir sürümde USB seri konsoldan (<code>ttyGS0</code>, bir root kabuğu) girin ve şunu çalıştırın:</p><pre><code>nft delete flowtable inet fw4 ft; fw4 reload</code></pre><p>v2026.10.17'den beri 5.4'te <code>fw4 reload</code> ya da <code>restart</code> tek başına çalışır.</p>
+</section>
+
+<section id="dfs">
+<h3>Hotspot 52-144 arası bir 5 GHz kanalında başlamıyor</h3>
+<p>hostapd <code>start_dfs_cac() failed</code> diyerek durur (v2026.10.18'e kadarki sürümler). Bunlar DFS kanallarıdır ve Wi-Fi sürücüsü radar algılayamaz. v2026.10.20'den beri düzeltildi: böyle bir kanalın yerine 36 (ya da 149) kullanılır, günlüğe bir satır yazılır. Eski bir sürümde 36-48 ya da 149-165 seçin, Ubuntu'da <code>auto</code> da olur.</p>
+</section>
+
+<section id="panel-stuck">
+<h3>Bir AT komutu takılınca kontrol paneli bomboş kaldı</h3>
+<p>Kontrol panelli OpenWrt'de, v2026.10.18'e kadar, takılan tek bir AT komutu bütün sayfaları dakikalarca boş bırakabiliyordu, pil kutusunu bile, yeniden başlattıktan sonra da. v2026.10.20'den beri düzeltildi: sayfalar son değerlerini gösterip kaç saniyelik olduklarını söyler, OpenWrt'de bir AT komutu bir saniye yerine 0.13 s sürer. Eski bir sürümde bekleyin ya da <code>rpcd</code> ile <code>mu300-atd</code>'yi yeniden başlatın.</p>
+</section>
+
+<section id="sms-600">
+<h3>SMS gönderimi <code>SMS FAILED: CODE:600</code> ile başarısız oluyor ya da panelin günlüğü <code>sms_send - killed</code> diyor</h3>
+<p>v2026.10.21'e kadar bazı şebekelerde (China Broadnet, sorun #176) modemin IMS yığını her gönderimi reddediyordu (URC günlüğünde <code>+SPIMSREASON: 1,512,"SMS FAILED: CODE:600 REASON:Busy Everywhere"</code>), gelen mesajlar ise ulaşıyordu; ayrıca kontrol panelli OpenWrt'de 30 saniyeden uzun süren bir gönderim panelin isteğiyle birlikte öldürülüyor, geriye işlem günlüğünde <code>sms_send - killed</code> kalıyor ve mesajın gidip gitmediği belli olmuyordu. v2026.10.22'den beri düzeltildi: bir gönderim tek bir AT işlemidir (kanal hazırlıktan gönderime kadar tutulur, araya başka bir istemci giremez) ve her gönderimden önce modemin bildirdiği SMSC ona olduğu gibi geri yazılır; OpenWrt'de <code>mu300-sms</code> ile panelde, Ubuntu'da <code>sms</code>'de. Panel gönderimi arka planda başlatıp izler, sayfa yenilense de. Eski bir sürümde SMSC'yi kendiniz geri yazın (<code>mu300-at 'AT+CSCA?'</code>, sonra <code>mu300-at 'AT+CSCA="&lt;gösterdiği değer&gt;",&lt;tür&gt;'</code>; Ubuntu'da <code>sudo</code> ile) ve panel boştayken kabuktan gönderin (OpenWrt'de <code>mu300-sms send NUMARA METİN</code>, Ubuntu'da <code>sudo sms send NUMARA METİN</code>).</p>
+</section>
+
+<section id="netns-panic">
+<h3>5.4 çekirdeğinde bir konteyner durunca cihaz yeniden başlıyor</h3>
+<p>v2026.10.20'ye kadar, 5.4 çekirdeğinde, aynı anda iki ağ ad alanı (network namespace) varken biri kapanınca (Docker konteynerleri, bir sandbox, <code>unshare -n</code>) çekirdek onu temizlerken çökebiliyordu (izde <code>xfrm_sysctl_fini</code>; sorun #103); cihaz yeniden başlar, bu birkaç kez tekrarlanınca da Android'e döner. v2026.10.21'den beri düzeltildi; güncelleyin. Eski bir sürümde aynı anda tek konteyner çalıştırın ya da bu hatanın hiç olmadığı 6.18 ya da 7.2'yi kullanın.</p>
+</section>
+
+<section id="rmmod-panic">
+<h3>Wi-Fi sürücüsü kaldırılınca cihaz çöküyor (6.18, 7.2)</h3>
+<p>v2026.10.20'ye kadar 6.18 ya da 7.2'de <code>rmmod sprd_wlan_combo</code> bir saniye içinde çökmeye yol açıyordu (<code>__run_timers</code>: sürücü, boşaltılmış bellekte çalışmaya devam eden bir zamanlayıcı bırakıyordu; sorun #146). v2026.10.21'den beri düzeltildi. Eski bir sürümde modülü kaldırmayın; onun yerine cihazı yeniden başlatın.</p>
+</section>
+
+<section id="wlan-log-noise">
+<h3>Günlük birkaç saniyede bir <code>sprd-wlan</code> hatalarıyla doluyor</h3>
+<p><code>dmesg</code> ve <code>logread</code>'de yaklaşık altı saniyede bir, hata düzeyinde <code>sc2355_dump_survey, idx 0</code>, <code>bssid not found, multicast?</code> ya da <code>data len is 251, skb need 576</code> gibi satırlar (v2026.10.20'ye kadarki sürümler). Bunlar sürücünün olağan işini anlatır, bir arızayı değil (sorun #140). v2026.10.21'den beri bunlar hata ayıklama satırıdır ve ancak siz isterseniz görünür: <code>echo 'module sprd_wlan_combo +p' &gt; /sys/kernel/debug/dynamic_debug/control</code>. Yanlarındaki gerçek hatalar yine günlüğe yazılır.</p>
+</section>
+
+<section id="mmc1-dumps">
+<h3>F50'de günlük <code>mmc1</code> yazmaç dökümleriyle doluyor (6.18, 7.2)</h3>
+<p>SD yuvası boş bir F50'de, 6.18 ve 7.2'de v2026.10.21'e kadar, <code>dmesg -l err</code>'de birkaç saniyeden birkaç dakikaya varan aralıklarla <code>mmc1: Got command interrupt 0x00000001 even though no command operation was in progress</code> ve ardından 16 satırlık bir <code>SDHCI REGISTER DUMP</code> (sorun #181). Anaçizgi çekirdeğin EIC sürücüsü denetleyicinin altı bankasından yalnızca üçünü eşliyordu; yuvanın kart algılama hattı bulunamıyor, yuva bunun yerine sürekli yoklanıyordu: her saniye orada olmayan bir kart başlatılıyor, kimsenin yanıtlamadığı komuta denetleyicinin geç verdiği yanıt da dökümle birlikte günlüğe yazılıyordu. v2026.10.22'den beri düzeltildi: altı banka da eşlenir, yuvanın gerçek kart algılaması (bir kesme) vardır ve boş yuvaya kart takılana kadar dokunulmaz. Dökümler gürültüdür, arıza değil; eski bir sürümde yuvaya bir kart takın (kart varken döküm olmaz) ya da bunun hiç görülmediği 5.4'ü kullanın. U30 Air'de yuva yoktur.</p>
+</section>
+
+<section id="hotspot-wpa3">
+<h3>Hotspot WPA3'ten WPA2'ye geçti ya da WPA3 ile başlamıyor</h3>
+<p>Hotspot'ta WPA3 (SAE) bu Wi-Fi çipinde, her cihazda kapalı: U30 Air'in yazılımındaki WPA3 bir istemciyi parolasız içeri alabilir (<a href="https://github.com/dikeckaan/mu300-linux/blob/main/docs/U30AIR-SAE.md">neden</a>). WPA3 olan bir hotspot açılışta aynı parolayla WPA2'ye geçirildi: aynı parolayla yeniden bağlanın. LuCI'nin bildirimi hotspot'un kapalı olduğunu söylüyorsa WPA2'nin kullanabileceği bir parolası yoktu: LuCI → Ağ → Kablosuz'da WPA2-PSK ile bir parola (8-63 karakter) girip etkinleştirin (USB ya da SSH üzerinden). LuCI'de seçilen WPA3 ya da karma WPA2/WPA3 başlatılmaz; WPA2-PSK seçin.</p>
+</section>
+
+<section id="wpa3">
+<h3>Wi-Fi istemcisi bir ağa katılamıyor</h3>
+<p>Yalnızca WPA3 olan ağlar çalışmaz (Wi-Fi sürücüsünde SAE yok); yönlendiriciyi karma WPA2/WPA3 kipine alın. Ayrıca radyo ya hotspot ya istemcidir ve buna açılışta karar verilir: hotspot iken <code>wifi-client connect</code> yeniden başlatma ister.</p>
+</section>
+
+<section id="password">
+<h3>Şifreyi unuttum</h3>
+<p>Android'e dönmek için giriş yapmanız gerekmez; bilgisayarınızdaki bir betik de verilerinizi koruyarak yeni bir şifre belirleyebilir: bkz. <a href="../updates/#password">unutulan şifre</a>.</p>
+</section>
+
+<section id="location">
+<h3>Web siteleri beni başka bir ülkede sanıyor</h3>
+<p>Cihazda GPS yok; siteler konumu IP adresinden tahmin eder, mobil operatörler ve VPN sunucuları da çoğu zaman başka bir şehirdeymiş gibi görünür.</p>
+</section>
+
+<section id="journal">
+<h3>Çekirdek uyarıları <code>journalctl -k</code>'da yok</h3>
+<p>Ubuntu'da <code>journalctl -t kernel</code>'dadırlar: yalnızca uyarılar ve hatalar, her açılışın başından, tekrarlayan üretici gevezeliği ayıklanmış olarak (<code>/etc/mu300/kmsg-ignore</code>). Gerisi <code>dmesg</code>'de.</p>
+</section>
+
+<h2 id="known">Güncel sürümdeki bilinen sorunlar</h2>
+<ul>
+<li>6.18'de açılışta nadir, sessiz bir donma; bir kartta görüldü (bkz. <a href="#kernel-618">yukarıda</a>).</li>
+<li>Uzun süreli Wi-Fi yükünde üretici sürücüsü paket düşürürken <code>edma_pending_q_buffer full</code> ya da
+<code>push link fail</code> yazar. Aktarım tamamlanır.</li>
+<li>Hotspot açıkken uyku kipi hemen geri döner. Bazı operatörler UDP'yi düşürür ve OpenVPN'i engeller.</li>
+<li>SMS'in e-postayla yönlendirilmesi <code>msmtp</code> ister; imajda olmadığı için o hedef kapalı kalır.</li>
+<li>v2026.10.14 ya da daha eskisinden güncellerken "could not arm the Linux slot for a trial" yazılır. Başarısız
+açılışlardan sonra Android'e dönüş yine çalışır.</li>
+</ul>
+<p>Her sürümün notları kendi sorunlarını listeler: <a href="https://github.com/dikeckaan/mu300-linux/releases">sürümler</a>.</p>
+
+<div class="callout warn" id="sysupgrade">
+<strong>OpenWrt'nin <code>sysupgrade</code>'ini asla kullanmayın, OpenWrt yazılım imajı da yüklemeyin</strong>
+<p>Bunlar sıradan yönlendiriciler için yazılmıştır ve cihazın depolamasının üzerine yazar. Normal bir
+<code>apk upgrade</code> sorun değildir; <code>kernel</code> ve <code>kmod-*</code> paketleri hariç. Güncellemeyi
+<code>mu300-update</code> ile yapın.</p>
+</div>
+
+<h2 id="help">Yardım istemek</h2>
+<ol>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues?q=is%3Aissue">Mevcut issue'lara</a> göz atın.</li>
+<li>Günlükleri <code>tools/collect-logs.sh</code> ile toplayın, <code>./install.sh --check</code>'in yazdıklarını
+kopyalayın.</li>
+<li>Özel olan her şeyi çıkarın (IMEI'niz, telefon numaranız, Wi-Fi adları ve şifreleri) ve
+<a href="https://github.com/dikeckaan/mu300-linux/issues/new">bir issue açın</a>: hangi cihaz, hangi sistem ve çekirdek, hangi sürüm, ne yaptınız, ne
+oldu.</li>
+</ol>
+<p>Donanımın daha derin açıklamaları <a href="https://github.com/dikeckaan/mu300-linux/blob/main/docs/FINDINGS.md" hreflang="en">docs/FINDINGS.md</a>'de
+ve <a href="https://github.com/dikeckaan/mu300-linux/wiki/Troubleshooting" hreflang="en">wiki'de</a> (İngilizce).</p>
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>Proje</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">GitHub'daki kaynak kod</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">Projeye destek ol</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">Sürümler (indirmeler)</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN modülü</a></li>
+</ul>
+</div>
+<div>
+<h2>Yardım</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki (İngilizce)</a></li>
+<li><a href="../../tr/troubleshooting/">Sorun giderme</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">Sorun bildir</a></li>
+<li><a href="https://t.me/mu300project">Telegram kanalı (haberler ve sürümler)</a></li>
+</ul>
+</div>
+<div>
+<p>Kendi sorumluluğunuzda kullanılan, garantisi olmayan bir hobi projesi. ZTE, Unisoc ya da herhangi bir operatör tarafından desteklenmez. Betikler ve belgeler: MIT; çekirdekler: GPL-2.0.</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

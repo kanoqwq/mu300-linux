@@ -1,0 +1,15 @@
+[Unit]
+Description=MU300 compressed swap in RAM (zram)
+DefaultDependencies=no
+After=local-fs.target
+Before=swap.target
+Conflicts=shutdown.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/mu300/bin/mu300-zram start
+ExecStop=-/opt/mu300/bin/mu300-zram stop
+
+[Install]
+WantedBy=swap.target

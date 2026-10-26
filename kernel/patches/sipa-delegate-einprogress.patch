@@ -1,0 +1,81 @@
+sipa_delegate: survive traffic at load time (-EINPROGRESS is success, check the start, no devm under a running thread)
+
+Same fix as upstream/modules (docs/FINDINGS.md 31f): OpenWrt brings the WAN up before the delegate loads, and the
+vendor code turned the -EINPROGRESS of that case into a freed delegator under its running connection thread.
+
+diff -ru a/drivers/net/sprd/sipa_delegate/sipa_dele_cmn.c b/drivers/net/sprd/sipa_delegate/sipa_dele_cmn.c
+--- a/drivers/net/sprd/sipa_delegate/sipa_dele_cmn.c	2026-09-27 14:22:10
++++ b/drivers/net/sprd/sipa_delegate/sipa_dele_cmn.c	2026-09-27 14:22:10
+@@ -484,6 +484,15 @@
+ 
+ 	ret = sipa_rm_add_dependency(delegator->cons_prod,
+ 				     delegator->prod_id);
++	/*
++	 * MU300: -EINPROGRESS is not a failure. When the consumer is granted already - traffic flowing before the
++	 * delegate is loaded, which is how OpenWrt boots - adding the dependency starts requesting this producer and
++	 * the grant completes later. Treating it as an error deleted PROD_CP here, cp_delegator_init() then failed
++	 * with "SIPA_RM_RES_PROD_CP does not exist", and the thread started above ran on freed memory: a NULL call
++	 * from conn_thread, or a soft lockup (docs/FINDINGS.md 31f).
++	 */
++	if (ret == -EINPROGRESS)
++		ret = 0;
+ 	if (ret)
+ 		goto del_res;
+ 
+diff -ru a/drivers/net/sprd/sipa_delegate/sipa_dele_cp_in_ap.c b/drivers/net/sprd/sipa_delegate/sipa_dele_cp_in_ap.c
+--- a/drivers/net/sprd/sipa_delegate/sipa_dele_cp_in_ap.c	2026-09-27 14:22:10
++++ b/drivers/net/sprd/sipa_delegate/sipa_dele_cp_in_ap.c	2026-09-27 14:22:10
+@@ -17,6 +17,7 @@
+ #define pr_fmt(fmt) "sipa_dele: " fmt
+ 
+ #include <linux/delay.h>
++#include <linux/slab.h>
+ #include <linux/device.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+@@ -158,9 +159,11 @@
+ {
+ 	int ret;
+ 
+-	s_cp_delegator = devm_kzalloc(params->pdev,
+-				      sizeof(*s_cp_delegator),
+-				      GFP_KERNEL);
++	/*
++	 * MU300: not devm. The connection thread starts inside sipa_delegator_start() and cannot be stopped while it
++	 * waits on the channel, so a probe that fails after that point must not free what the thread is using.
++	 */
++	s_cp_delegator = kzalloc(sizeof(*s_cp_delegator), GFP_KERNEL);
+ 	if (!s_cp_delegator)
+ 		return -ENOMEM;
+ 	ret = sipa_delegator_init(&s_cp_delegator->delegator,
+@@ -173,18 +176,25 @@
+ 	s_cp_delegator->delegator.pd_eb_flag = false;
+ 	s_cp_delegator->delegator.pd_get_flag = false;
+ 	s_cp_delegator->delegator.smsg_cnt = 0;
+-	sipa_delegator_start(&s_cp_delegator->delegator);
++	/* MU300: its result used to be ignored, so a PROD_CP it had deleted again went unnoticed */
++	ret = sipa_delegator_start(&s_cp_delegator->delegator);
++	if (ret)
++		return ret;
+ 	pm_runtime_enable(s_cp_delegator->delegator.pdev);
+ 
++	/*
++	 * MU300: the Wi-Fi offload path, which this device does not use (the CONS_WIFI resources stay released): a
++	 * failure here is reported, not fatal - failing the probe left the running delegate without its device.
++	 */
+ 	ret = sipa_rm_add_dependency(SIPA_RM_RES_CONS_WIFI_UL,
+ 				     s_cp_delegator->delegator.prod_id);
+-	if (ret)
+-		return ret;
++	if (ret && ret != -EINPROGRESS)
++		dev_warn(params->pdev, "CONS_WIFI_UL -> PROD_CP: %d\n", ret);
+ 
+ 	ret = sipa_rm_add_dependency(SIPA_RM_RES_CONS_WIFI_DL,
+ 				     s_cp_delegator->delegator.prod_id);
+-	if (ret)
+-		return ret;
++	if (ret && ret != -EINPROGRESS)
++		dev_warn(params->pdev, "CONS_WIFI_DL -> PROD_CP: %d\n", ret);
+ 
+ 	sipa_dele_init_sysfs(s_cp_delegator);
+ 

@@ -1,0 +1,58 @@
+#!/bin/sh
+# imei-diag SLOT -- the slot's IMEI as the modem's NV holds it, read over the diag port.
+#
+# Some U30 Air firmware (MOCORTM_V2_23A_W25.03.2_Debug) answers AT+CGSN -- and AT+SPIMEI? -- with fifteen zeros:
+# on both SIM slots, and through the vendor's own miscserver path.  The NV still holds both IMEIs and the vendor's
+# backend reads them from the diag port with the request below (FINDINGS 220).  This is that read: no write, no
+# state change.
+#
+#   imei-diag 0   the external card's IMEI (IMEI1, diag 0x5E81)
+#   imei-diag 1   the internal card's IMEI (IMEI2, diag 0x5E82)
+#
+# Prints the 15 digits and exits 0; prints nothing and exits 0 when the port cannot be read, so the caller keeps
+# its own fallback.  MU300_DIAG_DEV (tests: a regular file holding the modem's answer) overrides the port.
+set -u
+
+DEV=${MU300_DIAG_DEV:-/dev/sdiag_nr}
+# OpenWrt's own busybox has neither od nor timeout; the image's full static one (/opt/mu300/bin/busybox) has both,
+# and is taken where it is. Elsewhere (a test host) the system's od and timeout.
+BB=${MU300_BUSYBOX:-/opt/mu300/bin/busybox}
+bb() { if [ -x "$BB" ]; then "$BB" "$@"; else "$@"; fi; }
+case ${1:-} in
+    0) req='\176\000\000\000\000\012\000\136\201\000\000\176' ;;
+    1) req='\176\000\000\000\000\012\000\136\202\000\000\176' ;;
+    *) echo "usage: imei-diag 0|1" >&2; exit 2 ;;
+esac
+
+# od, not $(cat): a shell drops the NUL bytes of the answer in a command substitution, and the block carries one.
+if [ -c "$DEV" ]; then
+    # The diag port ignores the baud rate; non-canonical and no echo are what the vendor's reader sets. The read
+    # is one second at most: the answer arrives in milliseconds and the tty holds it until cat opens it.
+    stty -F "$DEV" -icanon -echo 2>/dev/null
+    printf "$req" > "$DEV" 2>/dev/null || exit 0
+    hex=$( { bb timeout 1 cat "$DEV"; } 2>/dev/null | bb od -An -tx1 -v | tr -d ' \n')
+elif [ -f "$DEV" ]; then
+    hex=$(bb od -An -tx1 -v "$DEV" 2>/dev/null | tr -d ' \n')
+else
+    exit 0
+fi
+
+case $hex in
+    *74005e01*) hex=${hex#*74005e01} ;;
+    *) exit 0 ;;
+esac
+
+# The value follows the 74 00 5E 01 marker as one 8-byte block, least significant nibble first, with an a as the
+# filler before the first digit.  The first block that is not all zero is the IMEI; the vendor's reader does the
+# same, and it is what keeps this working when the padding around it changes.
+printf '%s\n' "$hex" | awk '
+    {
+        for (i = 1; i + 16 <= length($0); i += 2) {
+            block = substr($0, i, 16)
+            if (substr(block, 1, 2) == "00") continue
+            out = ""
+            for (j = 1; j <= 16; j += 2) out = out substr(block, j + 1, 1) substr(block, j, 1)
+            sub(/^[aA]/, "", out)
+            if (length(out) >= 15) { print substr(out, 1, 15); exit }
+        }
+    }'

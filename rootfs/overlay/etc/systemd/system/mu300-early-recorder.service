@@ -1,0 +1,10 @@
+[Unit]
+Description=MU300 early boot recorder (dmesg to the Linux boot partition's persistent log area)
+DefaultDependencies=no
+After=local-fs.target
+
+[Service]
+ExecStart=/opt/mu300/bin/early-recorder 300
+
+[Install]
+WantedBy=sysinit.target

@@ -1,0 +1,39 @@
+gpio: eic-sprd: map up to eight EIC banks (the UMS9620's sync controller has six)
+
+Mainline's sprd-eic maps at most three banks of eight lines per controller (SPRD_EIC_MAX_BANK 3, the SC9860's
+layout); a controller whose "reg" lists more banks gets a gpiochip of 24 lines and the rest is unreachable. The
+UMS9620's sync controller (/soc/aon/gpio@2000c0, "sprd,qogirn6pro-eic-sync", "sprd,sc9860-eic-sync") lists six
+banks (0x2000c0 ... 0x2500c0, Unisoc's qogirn6pro.dtsi), and the F50's SD card slot has its card detect on line
+35 of it (cd-gpios = <&eic_sync 35 GPIO_ACTIVE_HIGH>): in the fifth bank, so of_gpio_simple_xlate() rejected
+the line, the lookup never found the chip and mmc_of_parse() returned -EPROBE_DEFER for ever (FINDINGS 31j).
+The port then dropped cd-gpios and polled the slot (MMC_CAP_NEEDS_POLL); with SDHCI_QUIRK_BROKEN_CARD_DETECTION
+sdhci_get_cd() reports a card present on every poll, so an empty slot was initialised once a second, and the
+host's late command interrupts for commands nothing answered came as "mmc1: Got command interrupt 0x00000001
+even though no command operation was in progress" with a register dump each (issue #181).
+
+Unisoc's 5.4 driver (gpio-eic-sprd.c, GPL-2.0) maps eight banks; this takes the same limit. Nothing else in the
+driver depends on it: the bank count comes from the "reg" entries, the gpiochip gets num_banks * 8 lines and the
+interrupt handler walks the banks the chip has. With the card detect found, mmc_of_parse() succeeds at the first
+try, the core takes the line's interrupt (EIC sync, both edges) instead of polling, and an empty slot is left
+alone.
+
+diff -Naur a/drivers/gpio/gpio-eic-sprd.c b/drivers/gpio/gpio-eic-sprd.c
+--- a/drivers/gpio/gpio-eic-sprd.c	2026-10-12 11:52:04
++++ b/drivers/gpio/gpio-eic-sprd.c	2026-10-12 11:52:13
+@@ -51,10 +51,13 @@
+ #define SPRD_EIC_SYNC_DATA		0x1c
+
+ /*
+- * The digital-chip EIC controller can support maximum 3 banks, and each bank
+- * contains 8 EICs.
++ * The digital-chip EIC controller can support maximum 8 banks, and each bank
++ * contains 8 EICs: the SC9860's controllers have up to 3 banks, the UMS9620's
++ * (qogirn6pro) up to 6 - its sync controller lists six "reg" entries, and the
++ * SD card slot's card detect is line 35, in the fifth. Unisoc's own driver
++ * maps 8 as well.
+  */
+-#define SPRD_EIC_MAX_BANK		3
++#define SPRD_EIC_MAX_BANK		8
+ #define SPRD_EIC_PER_BANK_NR		8
+ #define SPRD_EIC_DATA_MASK		GENMASK(7, 0)
+ #define SPRD_EIC_BIT(x)			((x) & (SPRD_EIC_PER_BANK_NR - 1))

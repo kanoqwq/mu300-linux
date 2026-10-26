@@ -1,0 +1,20 @@
+#!/bin/sh
+# Forward kernel warnings and errors into the journal, minus the vendor chatter that repeats forever on this
+# hardware. Patterns (extended regular expressions, one per line) come from /etc/mu300/kmsg-ignore; comment a line
+# out to see those messages again. Everything still lands in `dmesg`, this only decides what is written to disk.
+# journald does not read the kernel's buffer here (ReadKMsg=no), so these are `journalctl -t kernel`, not `-k`.
+#
+# The first start of a boot forwards the buffer from its start: the early call traces come seconds before this
+# service, and --follow-new lost them. A restart (Restart=always) forwards only what is new, so nothing is written
+# twice. The kernel's timestamps stay in the text: the journal's own time of an early message is when it was read.
+IGNORE=${MU300_KMSG_IGNORE:-/etc/mu300/kmsg-ignore}
+MARK=${MU300_KMSG_MARK:-/run/mu300/kmsg-forwarded}
+if [ -e "$MARK" ]; then from=--follow-new
+else from=--follow; mkdir -p "${MARK%/*}" 2>/dev/null; : > "$MARK"; fi
+if [ -s "$IGNORE" ] && grep -qv '^[[:space:]]*\(#.*\)\?$' "$IGNORE"; then
+    pat=$(grep -v '^[[:space:]]*\(#.*\)\?$' "$IGNORE" | tr '\n' '|' | sed 's/|$//')
+    # (exec in a pipeline replaces only its subshell: without the exit, the unfiltered one ran once this ended)
+    dmesg $from --level=emerg,alert,crit,err,warn | grep --line-buffered -Ev "$pat" | systemd-cat -t kernel -p warning
+    exit
+fi
+exec dmesg $from --level=emerg,alert,crit,err,warn | systemd-cat -t kernel -p warning

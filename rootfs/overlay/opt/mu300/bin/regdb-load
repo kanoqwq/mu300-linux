@@ -1,0 +1,17 @@
+#!/bin/sh
+# Load the wireless regulatory database. cfg80211 asks for regulatory.db before the rootfs is mounted; the direct load
+# fails and the request waits 60 s in the sysfs firmware fallback, blocking "iw reg reload". Answer pending requests
+# (database, then its signature) through /sys/class/firmware, then reload.
+# A kernel without the sysfs fallback (CONFIG_FW_LOADER_USER_HELPER unset, the mainline kernels) has no
+# /sys/class/firmware: no request can be pending there, so nothing is waited for (it cost 6 s of every boot).
+[ -d /sys/class/firmware ] && for f in regulatory.db regulatory.db.p7s; do
+    src=/lib/firmware/$f
+    [ -e "$src" ] || src=/usr/lib/firmware/$f
+    for n in 1 2 3 4 5 6 7 8 9 10; do [ -d /sys/class/firmware/$f ] && break; sleep 0.3 2>/dev/null || sleep 1; done
+    s=/sys/class/firmware/$f
+    [ -d $s ] && [ -e "$src" ] || continue
+    echo 1 > $s/loading && cat "$src" > $s/data && echo 0 > $s/loading && echo "fed $f to the pending firmware request"
+done
+for n in $(seq 1 10); do iw reg reload 2>/dev/null && exit 0; sleep 1; done
+echo "iw reg reload failed" >&2
+exit 1

@@ -1,0 +1,138 @@
+#!/bin/sh
+# Languages adapter: LuCI's languages and the lang extra, for the panel's Languages page (mu300dash lang_get,
+# lang_set). Every reply is one JSON object. The work is mu300-extra's (install, remove, lang enable/disable);
+# this only reports, checks the request again and runs an installation detached, as a download can take longer
+# than the 30 s rpcd gives a call.
+#   languages get                       the languages LuCI offers, the extra's, the running or last installation
+#   languages enable|disable CODE...|all
+#   languages use CODE                  LuCI's language: en, auto or a language LuCI offers
+#   languages install release|file      download it from the release of this system, or take the uploaded file
+#                                       (/tmp/mu300-extra-lang.tar.gz, the one path the panel may upload to)
+#   languages remove                    the lang extra, and its languages with it
+set -u
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+LIB=${0%/*}/../../share/unisoc-modem/lib.sh
+[ -f "$LIB" ] || LIB=/usr/share/unisoc-modem/lib.sh
+. "$LIB"
+
+EXTRA_CMD=${MU300_EXTRA_CMD:-/opt/mu300/bin/mu300-extra}
+EXTRA_DIR=${MU300_DISK:-/mnt/mu300-disk}/extra/lang
+UPLOAD=${MU300_LANG_UPLOAD:-/tmp/mu300-extra-lang.tar.gz}
+JOB=${MU300_LANG_JOB_DIR:-$RUN_DIR}
+CODE='[a-z]{2,3}(_[a-z]{2})?'
+TAB=$(printf '\t')
+
+error() { printf '{"ok":0,"error":%s}\n' "$(json_str "$1")"; exit 0; }
+# code_ok CODE: one language code, nothing else
+code_ok() { printf '%s\n' "$1" | LC_ALL=C grep -Eqx -- "$CODE"; }
+running() { [ -s "$JOB/lang-job.pid" ] && kill -0 "$(cat "$JOB/lang-job.pid")" 2>/dev/null; }
+# the last lines of mu300-extra's output, for the page (the result of an installation)
+job_tail() { tail -n 6 "$JOB/lang-job.log" 2>/dev/null | tr -d '\r' | sed 's/^ERROR: //; /^$/d'; }
+
+# a JSON list of {code, name[, enabled, panel]} from KEY<tab>NAME[<tab>STATE] lines on stdin
+json_langs() {
+    awk -F '\t' -v dir="$1" "$JSON_ESC"'
+        BEGIN { printf "["; n = 0 }
+        $1 ~ /^[a-z][a-z][a-z]?(_[a-z][a-z])?$/ {
+            code = $1; gsub(/_/, "-", code)
+            printf "%s{\"code\":\"%s\",\"name\":\"%s\"", (n++ ? "," : ""), $1, jesc($2)
+            if (NF >= 3) printf ",\"enabled\":%d", ($3 == "enabled")
+            if (dir != "") printf ",\"panel\":%d", (system("[ -e \"" dir "/mu300." code ".lmo\" ]") == 0)
+            printf "}"
+        }
+        END { printf "]" }'
+}
+
+do_get() {
+    luci=$(uci -q show luci.languages | sed -n "s/^luci\.languages\.\([a-z_]*\)='\{0,1\}\(.*\)'\{0,1\}$/\1$TAB\2/p" |
+        sed "s/'\$//")
+    if [ -d "$EXTRA_DIR/i18n" ]; then
+        installed=1
+        release=$(cat "$EXTRA_DIR/release" 2>/dev/null)
+        extra=$("$EXTRA_CMD" lang list 2>/dev/null)
+    else
+        installed=0; release=; extra=
+    fi
+    if running; then job=running
+    elif [ -s "$JOB/lang-job.state" ]; then job=$(cat "$JOB/lang-job.state")
+    else job=; fi
+    # "running" without a live job: it was killed (or the device rebooted) before it could say how it ended
+    [ "$job" != running ] || running || job=failed
+    case $job in running|done|failed|'') ;; *) job=failed ;; esac
+    printf '{"ok":1,"current":%s,"luci":%s,"extra":{"installed":%d,"release":%s,"languages":%s},"upload":%d,"job":{"state":%s,"log":%s}}\n' \
+        "$(json_str "$(uci -q get luci.main.lang || echo auto)")" \
+        "$(printf '%s\n' "$luci" | json_langs '')" \
+        "$installed" "$(json_str_or_null "$release")" \
+        "$(printf '%s\n' "$extra" | awk -F '\t' 'NF == 3 { print $1 "\t" $3 "\t" $2 }' | json_langs "$EXTRA_DIR/i18n")" \
+        "$([ -s "$UPLOAD" ] && echo 1 || echo 0)" \
+        "$(json_str_or_null "$job")" "$(json_str_or_null "$(job_tail)")"
+}
+
+do_switch() {  # enable|disable CODE...|all
+    op=$1; shift
+    [ -d "$EXTRA_DIR/i18n" ] || error 'The language pack is not installed'
+    [ $# -gt 0 ] || error 'No language given'
+    if [ "$1" != all ]; then
+        for c in "$@"; do code_ok "$c" || error 'Invalid language code'; done
+    fi
+    out=$("$EXTRA_CMD" lang "$op" "$@" 2>&1) || {
+        printf '{"ok":0,"error":"The language could not be changed","detail":%s}\n' "$(json_str "$out")"; exit 0; }
+    printf '{"ok":1}\n'
+}
+
+do_use() {
+    c=${1:-}
+    case $c in
+        en|auto) ;;
+        *) code_ok "$c" && uci -q get "luci.languages.$c" >/dev/null || error 'LuCI does not offer this language' ;;
+    esac
+    uci -q set "luci.main.lang=$c" && uci -q commit luci || error 'The language could not be changed'
+    printf '{"ok":1}\n'
+}
+
+do_install() {
+    case ${1:-} in
+        release) file= ;;
+        file) [ -f "$UPLOAD" ] && [ ! -L "$UPLOAD" ] || error 'No uploaded language pack' ;;
+        *) error 'Unknown source' ;;
+    esac
+    running && error 'An installation is already running'
+    mkdir -p "$JOB" || error 'The language pack could not be installed'
+    # the upload leaves /tmp (anyone may write there) first: renamed into the runtime directory only root can enter,
+    # and only that copy is checked and used - nothing at the /tmp path can be swapped in between
+    if [ "$1" = file ]; then
+        file=$JOB/lang-upload.tar.gz
+        rm -f "$file"
+        mv -f -- "$UPLOAD" "$file" 2>/dev/null || error 'No uploaded language pack'
+        [ -f "$file" ] && [ ! -L "$file" ] && [ -s "$file" ] || { rm -f "$file"; error 'No uploaded language pack'; }
+    fi
+    echo running > "$JOB/lang-job.state"
+    : > "$JOB/lang-job.log"
+    # detached: the page asks lang_get for the result; the job writes its own pid before anything else, so a job
+    # that ends at once cannot leave a pid behind that it already removed
+    rm -f "$JOB/lang-job.pid"
+    MU300_EXTRA_FILE=$file setsid sh -c '
+        echo $$ > "$2/lang-job.pid"
+        if "$1" install lang > "$2/lang-job.log" 2>&1; then echo done > "$2/lang-job.state"; else echo failed > "$2/lang-job.state"; fi
+        [ -z "$MU300_EXTRA_FILE" ] || rm -f "$MU300_EXTRA_FILE"
+        rm -f "$2/lang-job.pid"' languages-job "$EXTRA_CMD" "$JOB" </dev/null >/dev/null 2>&1 &
+    printf '{"ok":1,"started":1}\n'
+}
+
+do_remove() {
+    [ -d "$EXTRA_DIR" ] || error 'The language pack is not installed'
+    running && error 'An installation is already running'
+    out=$("$EXTRA_CMD" remove lang 2>&1) || {
+        printf '{"ok":0,"error":"The language pack could not be removed","detail":%s}\n' "$(json_str "$out")"; exit 0; }
+    rm -f "$JOB/lang-job.state" "$JOB/lang-job.log"
+    printf '{"ok":1}\n'
+}
+
+case ${1:-} in
+    get) do_get ;;
+    enable|disable) do_switch "$@" ;;
+    use) do_use "${2:-}" ;;
+    install) do_install "${2:-}" ;;
+    remove) do_remove ;;
+    *) error 'Unknown language operation' ;;
+esac

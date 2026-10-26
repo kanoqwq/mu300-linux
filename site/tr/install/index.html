@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>ZTE F50 Linux kurulumu: MU300 ve U30 Air için adım adım rehber</title>
+<meta name="description" content="ZTE F50 / MU300 ve U30 Air'e Ubuntu veya OpenWrt kurulumu, yeni başlayanlar için: kontrol, kurulum soruları, USB ve SSH ile giriş.">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/tr/install/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/install/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/install/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/install/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/install/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="ZTE F50 Linux kurulumu: MU300 ve U30 Air için adım adım rehber">
+<meta property="og:description" content="ZTE F50 / MU300 ve U30 Air'e Ubuntu veya OpenWrt kurulumu, yeni başlayanlar için: kontrol, kurulum soruları, USB ve SSH ile giriş.">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/tr/install/">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="İki odalı bir 5G cep hotspot'u: biri Android'e, biri Linux'a ait">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ZTE F50 Linux kurulumu: MU300 ve U30 Air için adım adım rehber">
+<meta name="twitter:description" content="ZTE F50 / MU300 ve U30 Air'e Ubuntu veya OpenWrt kurulumu, yeni başlayanlar için: kontrol, kurulum soruları, USB ve SSH ile giriş.">
+<meta name="twitter:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;display=swap">
+<link rel="stylesheet" href="../../assets/style.css">
+<script src="../../assets/site.js" defer></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "HowTo",
+ "name": "ZTE F50 / MU300 ya da U30 Air'e Linux kurulumu",
+ "description": "ZTE F50 / MU300 ve U30 Air'e Ubuntu veya OpenWrt kurulumu, yeni başlayanlar için: kontrol, kurulum soruları, USB ve SSH ile giriş.",
+ "totalTime": "PT15M",
+ "inLanguage": "tr",
+ "tool": [
+  {
+   "@type": "HowToTool",
+   "name": "adb kurulu bir bilgisayar (Windows 10/11, macOS ya da Linux)"
+  },
+  {
+   "@type": "HowToTool",
+   "name": "Bir USB kablosu"
+  }
+ ],
+ "step": [
+  {
+   "@type": "HowToStep",
+   "name": "Yedek",
+   "text": "Cihazın kalibrasyon ve IMEI bölümlerini bilgisayarınıza kopyalamak için tools/backup-device.sh çalıştırın.",
+   "url": "https://kaandikec.com/mu300-linux/tr/install/#backup"
+  },
+  {
+   "@type": "HowToStep",
+   "name": "Kontrol",
+   "text": "./install.sh --check çalıştırın. Cihazı yalnızca okur ve Linux'un nereye sığdığını söyler.",
+   "url": "https://kaandikec.com/mu300-linux/tr/install/#check"
+  },
+  {
+   "@type": "HowToStep",
+   "name": "Kurulum",
+   "text": "./install.sh çalıştırın, soruları yanıtlayın, özeti okuyun ve INSTALL yazın.",
+   "url": "https://kaandikec.com/mu300-linux/tr/install/#install"
+  },
+  {
+   "@type": "HowToStep",
+   "name": "Giriş",
+   "text": "Yaklaşık bir dakika sonra ssh ubuntu@192.168.77.1 (U30 Air: 192.168.78.1), OpenWrt için http://192.168.77.1.",
+   "url": "https://kaandikec.com/mu300-linux/tr/install/#login"
+  }
+ ]
+}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [
+  {
+   "@type": "ListItem",
+   "position": 1,
+   "name": "Ana sayfa",
+   "item": "https://kaandikec.com/mu300-linux/tr/"
+  },
+  {
+   "@type": "ListItem",
+   "position": 2,
+   "name": "Kurulum rehberi",
+   "item": "https://kaandikec.com/mu300-linux/tr/install/"
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">İçeriğe geç</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../../tr/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../../tr/install/" aria-current="page">Kurulum</a>
+<a href="../../tr/web-installer/">Web kurucu</a>
+<a href="../../tr/choose/">Sistem seçimi</a>
+<a href="../../tr/features/">Özellikler</a>
+<a href="../../tr/updates/">Güncelleme ve güvenlik</a>
+<a href="../../tr/troubleshooting/">Sorun giderme</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="Dil"><a href="../../install/" hreflang="en" lang="en">English</a><a href="../../tr/install/" hreflang="tr" lang="tr" aria-current="true">Türkçe</a><a href="../../zh/install/" hreflang="zh-Hans" lang="zh-Hans">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="Tema|Otomatik|Açık|Koyu|sisteminizi izler|Renk temasını değiştir"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menü</button>
+</div>
+</header>
+<main id="content">
+
+<header class="page-head">
+<div class="prose">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../../tr/">Ana sayfa</a> <span aria-hidden="true">/</span> <span aria-current="page">Kurulum rehberi</span></nav>
+<h1>F50 ya da U30 Air'inize Linux kurun</h1>
+<p class="lede">Dört adım, yaklaşık 15 dakika. Kurulum programının sorduğu her soru aşağıda, emin olmadığınızda
+vereceğiniz cevapla birlikte açıklanıyor.</p>
+</div>
+</header>
+
+<div class="wrap">
+<ol class="steps">
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><rect x="8" y="10" width="40" height="36" rx="7" fill="none" stroke="currentColor" stroke-width="3"/><path d="M28 18v16m-7-7 7 7 7-7" fill="none" stroke="#2259d6" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 40h22" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg><h3>Yedek</h3><p>Cihazınızın yerine konamayan kendi verilerini bilgisayarınıza kopyalayın. Önerilir.</p></li>
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><circle cx="24" cy="24" r="13" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M34 34l11 11" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M18 24l4 4 8-8" fill="none" stroke="#3fae6a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><h3>Kontrol</h3><p><code>--check</code> cihazı okur ve Linux'un nereye sığdığını söyler. Hiçbir şey yazmaz.</p></li>
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><rect x="12" y="20" width="32" height="28" rx="7" fill="none" stroke="currentColor" stroke-width="3"/><path d="M28 4v22m-7-7 7 7 7-7" fill="none" stroke="#f2b23a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="22" cy="40" r="2.5" fill="#2259d6"/><circle cx="34" cy="40" r="2.5" fill="#f2b23a"/></svg><h3>Kurulum</h3><p>Birkaç soruyu yanıtlayın, özeti okuyun, <code>INSTALL</code> yazın.</p></li>
+<li><svg viewBox="0 0 56 56" aria-hidden="true"><rect x="6" y="10" width="44" height="36" rx="7" fill="none" stroke="currentColor" stroke-width="3"/><path d="M15 22l7 6-7 6" fill="none" stroke="#f2b23a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 36h13" stroke="#f2b23a" stroke-width="3.5" stroke-linecap="round"/></svg><h3>Giriş</h3><p>Yaklaşık bir dakika sonra USB üzerinden: SSH ya da web tarayıcısı.</p></li>
+</ol>
+</div>
+
+<div class="prose">
+
+<nav class="toc" aria-labelledby="toc-h">
+<h2 id="toc-h">Bu sayfada</h2>
+<ol>
+<li><a href="#before">Başlamadan önce</a></li>
+<li><a href="#backup">Adım 0: yedek</a></li>
+<li><a href="#check">Adım 1: kontrol</a></li>
+<li><a href="#install">Adım 2: kurulum</a></li>
+<li><a href="#questions">Kurulum programının soruları</a></li>
+<li><a href="#login">Adım 3: giriş</a></li>
+<li><a href="#after">Kurulumdan sonra</a></li>
+<li><a href="#magisk">Bilgisayarsız: Magisk zip'leri</a></li>
+<li><a href="#uninstall">Geri kaldırmak</a></li>
+</ol>
+</nav>
+
+<div class="callout">
+<strong>Yeni: web kurucu</strong>
+<p><a href="../web-installer/">Web kurucu</a> kurulumu Chrome ya da Edge'den USB üzerinden yapar; bilgisayara bir şey kurmak
+gerekmez. macOS'ta Chrome ile bir F50 üzerinde baştan sona çalıştırıldı; Windows, Linux bilgisayar ve U30 Air ile henüz test
+edilmedi, onlar için bu sayfada anlatılan kurucu vardır.</p>
+</div>
+
+<h2 id="before">Başlamadan önce</h2>
+<p>Tek cümleyle: <strong>cihaz zaten root'lu olmalı ve bilgisayarınız onunla <code>adb</code> üzerinden
+konuşabilmeli</strong>. Tam liste şöyle.</p>
+
+<h3>Cihaz</h3>
+<ul>
+<li>Bir ZTE F50 / MU300 ya da ZTE U30 Air (U30 Pro değil).</li>
+<li><strong>Root'lu ve kilidi açık</strong>: değiştirilmiş bir Android açılış imajıyla zaten açılabiliyor olmalı.
+Oraya getirmek bu projenin parçası değildir; o araçların kendi talimatlarıyla, kendi sorumluluğunuzda yaparsınız.</li>
+<li><strong>USB hata ayıklama</strong> açık ve cihaz bilgisayarınıza USB ile bağlı.</li>
+</ul>
+
+<h3>Bilgisayarınız</h3>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">Bilgisayar</th><th scope="col">Gerekenler</th><th scope="col">Kurulum programını nasıl çalıştırırsınız</th></tr></thead><tbody>
+<tr><th scope="row">macOS</th><td><code>adb</code>, Python 3, <code>lz4</code> ve <code>curl</code> (genellikle zaten vardır)</td><td>Terminal'de <code>./install.sh</code></td></tr>
+<tr><th scope="row">Linux</th><td><code>adb</code>, Python 3, <code>lz4</code> ve <code>curl</code></td><td>bir terminalde <code>./install.sh</code></td></tr>
+<tr><th scope="row">Windows 10/11</th><td><code>adb</code> ve PowerShell. Python 3 ve <code>lz4</code> modülü eksikse kurulum programı onları kendisi kurar.</td><td>PowerShell'de <code>.\install.ps1</code> ya da cmd'de <code>install.cmd</code> (yürütme ilkesini değiştirmek gerekmez)</td></tr>
+</tbody></table></div>
+<p><code>adb</code>, Android'in platform araçlarıyla (platform-tools) gelir. Windows'ta kurulum programı, projenin
+yanına, İndirilenler'e ya da masaüstüne açılmış bir <code>platform-tools</code> klasörünü PATH'te olmasa da bulur.</p>
+
+<h3>Projeyi alın</h3>
+<p>git ile klonlayın ya da GitHub'dan indirin (yeşil "Code" düğmesi, ardından "Download ZIP") ve açın. Her iki
+durumda da kurulum programı başlarken kendini GitHub'la günceller.</p>
+<pre><code>git clone https://github.com/dikeckaan/mu300-linux
+cd mu300-linux</code></pre>
+<p>Sonra bilgisayarın root'lu cihazı gördüğünden emin olun:</p>
+<pre><code>adb devices          <span class="c"># cihazınız "device" olarak listelenmeli</span>
+adb shell su -c id   <span class="c"># uid=0(root) yazmalı</span></code></pre>
+<p>İlk seferde cihaz bu bilgisayardan USB hata ayıklamaya izin verilsin mi diye sorar, Magisk de kabuğa root izni
+isteyebilir: ikisine de izin verin.</p>
+
+<div class="callout warn">
+<strong>Bunu bir kez okuyun</strong>
+<p>Kurulum bir açılış bölümüne (<code>boot_b</code>; Android b yuvasından çalışıyorsa, ki bir güncellemeden sonra
+sık olur, <code>boot_a</code>) ve <code>misc</code>'in 32 baytına yazar. Yaygın 64 GB cihazda Android, verileri ve
+bölüm tablosu hiç değiştirilmez. Yine de yanlış anda bir elektrik kesintisi, kötü bir kablo ya da bir hata, telefon
+sınıfı bir cihazı kurtarma aracı gerektirecek hâle getirebilir. Yedek alın ve kaybetmeyi göze alamayacağınız bir
+cihaza kurmayın.</p>
+</div>
+
+<section class="guide-step" id="backup">
+<span class="num" aria-hidden="true">0</span>
+<h2>Yerine konamayanı yedekleyin</h2>
+<p>Önerilir. Bu, cihazınızın kendine ait verilerini (<code>prodnv</code>, modem kalibrasyonu ve IMEI bölümleri,
+önyükleyici zinciri) bilgisayarınıza kopyalar ve her kopyayı cihazla karşılaştırır.</p>
+<pre><code>tools/backup-device.sh          <span class="c"># macOS / Linux, cihaz root'lu Android'de</span></code></pre>
+<p>Kurulum bu bölümlere hiç dokunmaz, ama bir gün kaybolurlarsa hiçbir yazılım indirmesi onları geri getiremez ve
+modem bozuk kalır. Klasörü güvenli bir yerde ve her türlü deponun dışında tutun: içinde IMEI'niz var. Betik macOS ve
+Linux'ta çalışır.</p>
+</section>
+
+<section class="guide-step" id="check">
+<span class="num" aria-hidden="true">1</span>
+<h2>Cihazınızı kontrol edin</h2>
+<p>Bu yalnızca okur; hiçbir şey yazmaz.</p>
+<pre><code>MU300_LANG=tr ./install.sh --check    <span class="c"># macOS / Linux</span>
+.\install.ps1 -Check -Lang tr          <span class="c"># Windows (PowerShell)</span>
+install.cmd -Check -Lang tr            <span class="c"># Windows (cmd)</span></code></pre>
+<p>Depolama boyutunu, Android'in bölümlerinin nerede bittiğini ve arkalarında ne kadar boş alan olduğunu yazar.
+Önemli olan, <code>sonuç:</code> ile başlayan son satırdır:</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">Şunu yazıyorsa</th><th scope="col">Anlamı</th></tr></thead><tbody>
+<tr><th scope="row"><code>TAMAM: boş ve kullanılmıyor, test edilen cihazla aynı düzen (64 GB eMMC'de userdata'dan sonra ~32 GiB)</code></th><td>Yaygın 64 GB cihaz. 2. adıma geçin.</td></tr>
+<tr><th scope="row"><code>TAMAM: ... ama yalnızca bir sisteme yer var</code> ya da <code>OpenWrt sığar, Ubuntu sığmaz</code></th><td>Daha küçük bir boş alan. Sığanı kurun ya da SD kart kullanın (F50).</td></tr>
+<tr><th scope="row"><code>eMMC'de Linux için yeterli boş alan yok; yükleyici bunun yerine SD kartı önerecek</code></th><td>Yuvada bir kart var; kurulum programı onu önerir ve hiçbir şey yeniden bölümlenmez.</td></tr>
+<tr><th scope="row"><code>TAMAM: zaten bir MU300 Linux kurulumu var</code></th><td>Linux zaten kurulu: kurulum programı update ya da wipe seçeneği sunar.</td></tr>
+<tr><th scope="row"><code>UYARI: bölümlenmemiş alan boş değil</code></th><td>Boş alana bir şey yazılmış. Kurulum onun üzerine yazar; kurulum programı <code>overwrite</code> yazmanızı ister.</td></tr>
+</tbody></table></div>
+
+<h3 id="variant-32gb">Hiç boş alan yok: 32 GB sürüm</h3>
+<p>Kontrol hiç yer bulamazsa elinizde 32 GB sürüm vardır; Android'in <code>userdata</code> bölümü bütün diski
+doldurur. İki yolunuz var:</p>
+<div class="cards">
+<div class="card android"><h3>SD kart kullanın (F50)</h3><p>Cihaz kapalıyken yuvaya en az 700 MiB'lık bir kart takın.
+Kurulum programı onu önerir, biçimlendirir ve dahili depolamada hiçbir şey yeniden bölümlenmez.</p></div>
+<div class="card red"><h3>userdata'yı küçültün (deneysel)</h3><p>Kurulum programı <code>userdata</code>'yı
+küçülterek yer açabilir. Bu bölüm tablosunu yeniden yazar ve <strong>Android'deki her şeyi siler</strong>. Önce sorar
+ve <code>ERASE</code> yazmanızı ister. Evet demeden önce <code>tools/backup-device.sh</code> ile yedek alın.</p></div>
+</div>
+<p>Sayılar iki duruma da benzemiyorsa durun ve <code>--check</code>'in yazdıklarıyla bir
+<a href="https://github.com/dikeckaan/mu300-linux/issues">issue açın</a>: o sayılar sürümü belirler.</p>
+
+<h3 id="sd">SD kart hakkında (yalnızca F50)</h3>
+<ul>
+<li>En az 700 MiB'lık bir kart. <code>mu300sd</code> etiketiyle ext4 olarak biçimlendirilir. Başka bir Linux (ext4)
+dosya sistemi taşıyan bir kart asla biçimlendirilmez.</li>
+<li>Kartı cihaz kapalıyken takın. Linux çalışırken takılan bir kart ancak bir sonraki yeniden başlatmadan sonra okunur.</li>
+<li>Bir <code>mu300sd</code> kartı her zaman önce açılır. Kart yokken cihaz, varsa dahili kurulumu başlatır. Hiçbiri
+yoksa birkaç saniye kart bekler, sonra yaklaşık beş dakika içinde Android'e döner.</li>
+<li>Dört çekirdekte de kart sürücüsü var (7.3'teki henüz bir cihazda denenmedi). U30 Air'de yuva yoktur.</li>
+<li>Cihaz <code>mu300sd</code> etiketli her kartı başlatır; yani cihaz kimin elindeyse karttan kendi sistemini de
+başlatabilir.</li>
+</ul>
+</section>
+
+<section class="guide-step" id="install">
+<span class="num" aria-hidden="true">2</span>
+<h2>Kurun</h2>
+<pre><code>MU300_LANG=tr ./install.sh             <span class="c"># macOS / Linux</span>
+.\install.ps1 -Lang tr                 <span class="c"># Windows (PowerShell)</span>
+install.cmd -Lang tr                   <span class="c"># Windows (cmd)</span></code></pre>
+<p>Önce dili sorar, projenin kopyasını GitHub'la günceller (yeni bir şey varsa kendini yeniden başlatır) ve cihazı
+tekrar kontrol eder. Ardından aşağıdaki sorular gelir. Sorulardan sonra:</p>
+<ol>
+<li>en yeni sürümün hazır imajlarını indirir ve sağlama toplamlarını kontrol eder,</li>
+<li>Wi-Fi ve modem dosyalarını <em>sizin kendi</em> cihazınızdan kopyalar (indirilenlerde tescilli dosya yoktur),</li>
+<li>tam olarak ne yazacağını gösterir ve <code>INSTALL</code> yazmanızı bekler,</li>
+<li>sistemleri cihaza kopyalar, Linux açılış imajını yazar ve Linux yuvasını hazırlar,</li>
+<li>Android'e küçük bir Magisk modülü ekler; böylece sonradan bilgisayarsız Android'den Linux'u başlatabilirsiniz,</li>
+<li>cihazı Linux'a yeniden başlatır.</li>
+</ol>
+<figure>
+<img src="../../assets/img/installer-1-start.png" alt="Terminalde kurulum programı: dil menüsü, cihaz kontrolü, bulunan boş eMMC alanı, ardından hangi sistemlerin kurulacağı, hangi Ubuntu ve Linux'un varsayılan olarak açılıp açılmayacağı soruları (İngilizce)." width="1960" height="1047" loading="lazy" decoding="async">
+<figcaption>Kurulum programının gerçek bir çalışması (İngilizce), dil sorusundan ilk seçimlere kadar.</figcaption>
+</figure>
+</section>
+
+<h2 id="questions">Kurulum programının soruları, tek tek</h2>
+<p>Gri kutulardaki metin, kurulum programının (Türkçe seçildiğinde) yazdığıdır, kısaltılmıştır. Köşeli parantez
+içindeki değer, örneğin <code>[evet]</code>, varsayılandır: <kbd>Enter</kbd>'a basmak onu seçer. Evet/hayır
+sorularına <code>evet</code>/<code>hayır</code>, <code>e</code>/<code>h</code> ya da <code>yes</code>/<code>no</code>
+yazabilirsiniz. Bazı sorular yalnızca gerektiğinde çıkar.</p>
+<div class="qa"><span class="ask">Language / Dil / 语言 [1]</span><p>Kurulum programının dili: 1 English (varsayılan), 2 Türkçe, 3 中文. <code>MU300_LANG=tr</code> ile başlattıysanız bu soru gelmez.</p><p class="pick">Türkçe için <code>2</code> yazın.</p></div>
+<div class="qa"><span class="ask">Linux dosya sistemi nereye kurulsun: dahili depolama mı, SD kart mı (...)? (internal/sd)</span><p>Yalnızca F50'de bir SD kart takılıysa sorulur. <code>internal</code> dahili depolamadaki boş alanı kullanır, <code>sd</code> kartı Linux için biçimlendirir (üzerindeki her şey silinir; onaylamak için <code>ERASE</code> yazarsınız).</p><p class="pick">Emin değilseniz: 64 GB cihazda <code>internal</code>, 32 GB sürümde <code>sd</code>.</p></div>
+<div class="qa"><span class="ask">Ne kurulsun? 1) Ubuntu LTS 2) OpenWrt 3) ikisi de</span><p>Ubuntu, <code>apt</code> ile tam bir Linux sistemidir (yaklaşık 500 MiB RAM kullanır). OpenWrt, web arayüzlü bir yönlendirici sistemidir (yaklaşık 140 MiB). "İkisi de" ikisini yan yana kurar; sonradan <code>mu300-os</code> ile geçiş yaparsınız.</p><p class="pick">Emin değilseniz: kontrol ikisinin de sığdığını söylediyse 3, ikisi de (varsayılan). Bkz. <a href="../choose/">sistem seçimi</a>.</p></div>
+<div class="qa"><span class="ask">Hangi OpenWrt? 1) standart LuCI web arayüzü 2) MU300 kontrol paneli</span><p>OpenWrt seçildiğinde sorulur. Kontrol paneli bir pano, hücresel kilitler, SMS, bir AT terminali ve USB kiplerini ekler.</p><p class="pick">Emin değilseniz: sinyali ve SMS'leri tarayıcıda görmek istiyorsanız 2; düz OpenWrt için 1 (varsayılan).</p></div>
+<div class="qa"><span class="ask">Hangisi açılsın (ubuntu/openwrt)</span><p>İki sistem kurulduğunda: önce hangisi açılsın. Diğeri kurulu kalır.</p><p class="pick">Ubuntu için <kbd>Enter</kbd>'a basın.</p></div>
+<div class="qa"><span class="ask">Hangi Ubuntu? 1) 24.04 LTS 2) 26.04 LTS</span><p>24.04 varsayılandır ve en uzun süre test edilendir, 2029'a kadar desteklenir. 26.04 en yenisidir (systemd 259, daha yeni paketler), 2031'e kadar desteklenir ve ana hat bir çekirdek (6.18, 7.2 ya da 7.3) ister.</p><p class="pick">Emin değilseniz: 1, 24.04 (varsayılan).</p></div>
+<div class="qa"><span class="ask">Varsayılan olarak Android yerine Linux açılsın mı (Linux açılamazsa Android'e döner)? (evet/hayır)</span><p><code>evet</code>: her açılış Linux'a gider; Android yalnızca başarısız açılışlardan sonra ya da siz istediğinizde gelir. <code>hayır</code>: Android varsayılan kalır, Linux'u istediğinizde başlatırsınız.</p><p class="pick">Evet için <kbd>Enter</kbd>'a basın.</p></div>
+<div class="qa"><span class="ask">Android'e dönmeden önceki başarısız açılış sayısı (1-6)</span><p>Cihaz kendiliğinden Android'e dönmeden önce arka arkaya kaç yarım kalmış açılışa izin verilsin. Bir açılış, yaklaşık bir dakika içinde tamamlanmazsa başarısız sayılır: elektrik gider, pil biter ya da Linux takılır. Yüksek sayı oynak bir kabloyu affeder; düşük sayı sizi Android'e daha çabuk götürür. Bilgisayar yokken geri dönüş yolunuz da budur: açılış sırasında elektriği arka arkaya bu kadar kez kesin.</p><p class="pick">5 için <kbd>Enter</kbd>'a basın. Sonradan <code>mu300-next-boot attempts N</code> ile değişir.</p></div>
+<div class="qa"><span class="ask">Android'in hotspot adı ve şifresi Linux'a kopyalansın mı? (evet/hayır)</span><p>Telefonlarınız Android'in hotspot'unu zaten tanıyor; böylece Linux'un hotspot'una yeni ayar yapmadan katılırlar.</p><p class="pick">Evet için <kbd>Enter</kbd>'a basın.</p></div>
+<div class="qa"><span class="ask">Mali GPU (OpenCL) kullanıcı alanı dahil edilsin mi (~90 MiB)? (evet/hayır)</span><p>OpenCL ile hesaplama yapmak için grafik çipi. Her iki durumda da ekran yoktur.</p><p class="pick">Evet için <kbd>Enter</kbd>'a basın; yer kazanmak için hayır deyin.</p></div>
+<div class="qa"><span class="ask">VPN modülü kurulsun mu (yaklaşık 40 MB ek indirme, cihazda 120 MB)? (evet/hayır)</span><p><a href="https://github.com/dikeckaan/mu300-linux-vpn">mu300-linux-vpn</a>'in isteğe bağlı VPN'i. Sonradan cihazda <code>sudo mu300-extra install vpn</code> ile ekleyebilirsiniz.</p><p class="pick">Emin değilseniz: hayır (ilk kurulumda varsayılan).</p></div>
+<div class="qa"><span class="ask">Hangi çekirdek? 1) 5.4 2) 6.18 3) 7.2 4) 7.3</span><p>Çekirdek, Linux'un donanımla konuşan özüdür. 5.4, Unisoc'un üretici çekirdeğidir ve en uzun süre test edilendir. 6.18, ana hat Linux'un uzun süreli destek sürümüdür; daha yeni sürücüler, aynı işlevler. 7.2 kararlı 7.2 serisidir, 6.18'den daha az test edildi. 7.3 en yeni ana hat sürümdür: en yeni sürücüler, aynı işlevler; 7.2'den daha az test edildi (v2026.10.19.2'den sonraki sürümden itibaren).</p><p class="pick">Emin değilseniz: 1, 5.4 (varsayılan). Ubuntu 26.04, 6.18, 7.2 ya da 7.3 ister. Sonradan <code>sudo mu300-update kernel 6.18</code> ile değişir.</p></div>
+<div class="qa"><span class="ask">update (güncelle) ya da wipe (sil)</span><p>Yalnızca Linux zaten kuruluysa sorulur. <code>update</code> sistemleri yeniden kurar ve ayarlarınızı, kullanıcılarınızı, ev dizinlerini, SSH anahtarlarını ve OpenWrt ayarlarını korur. <code>wipe</code> Linux dosya sistemini silip sıfırdan kurar.</p><p class="pick">Güncelleme için <kbd>Enter</kbd>'a basın (<code>güncelle</code> ve <code>sil</code> da kabul edilir).</p></div>
+<div class="qa"><span class="ask">Mevcut parola korunsun mu? (evet/hayır)</span><p>Güncelleme, yerine koyduğu bir sistemin kendi giriş parolası varsa sorar. <code>evet</code>, böyle her sistem için mevcut parolayı bir kez sorar ve cihazda o sistemin parolasıyla karşılaştırır (parola yoksa yalnızca <kbd>Enter</kbd>; OpenWrt'nin <code>root</code>'u ilk geldiği gibi parolasızdır); üç yanlış denemeden sonra kurulum durur ve hiçbir şey değişmez. <code>hayır</code> yeni bir parola sorar, iki kez yazılır.</p><p class="pick"><kbd>Enter</kbd> ile evet, sonra bugün giriş yaptığınız parolayı yazın.</p></div>
+<div class="qa"><span class="ask">"ubuntu" kullanıcısı (Ubuntu) ve "root" (OpenWrt) için şifre</span><p>Giriş yapacağınız şifre; en az 6 karakter, iki kez yazılır. Yazarken ekranda hiçbir şey görünmez.</p><p class="pick">Hatırlayacağınız bir şifre seçin: 3. adımda gerekecek.</p></div>
+<div class="qa"><span class="ask">Devam etmek için INSTALL yazın</span><p>Son durak. Bunun üstünde kurulum programı tam olarak neyi yazacağını gösterir: sistemler, çekirdek, varsayılan açılış ve dokunduğu bölümler. Okuyun. <code>INSTALL</code> dışındaki her şey iptal eder.</p><p class="pick">Büyük harflerle <code>INSTALL</code> yazın.</p></div>
+
+<figure>
+<img src="../../assets/img/installer-2-kernel-tr.png" alt="Kurulum programının Türkçe çekirdek sorusu: 1) 5.4 Unisoc'un üretici çekirdeği, 2) 6.18 ana hat Linux LTS, 3) 7.2 en yeni kararlı ana hat Linux; seçimin sonradan sudo mu300-update kernel ile değiştirilebileceği notu." width="2244" height="611" loading="lazy" decoding="async">
+<figcaption>Çekirdek sorusu, Türkçe.</figcaption>
+</figure>
+
+<figure>
+<img src="../../assets/img/installer-3-summary.png" alt="Kurulumdan önceki özet: sürüm, sistemler, çekirdek, varsayılan açılış, dosya sistemi ve tam olarak hangi bölümlere yazılacağı; ardından INSTALL yazma istemi ve kurulumun sonu (İngilizce)." width="2194" height="1084" loading="lazy" decoding="async">
+<figcaption>Hiçbir şey yazılmadan önceki özet ve başarılı bir kurulumun sonu (İngilizce).</figcaption>
+</figure>
+
+<section class="guide-step" id="login">
+<span class="num" aria-hidden="true">3</span>
+<h2>Giriş yapın</h2>
+<p>Yeniden başlatmadan sonra yaklaşık bir dakika bekleyin. Cihaz, bilgisayarınızda USB üzerinden yeni bir ağ
+bağdaştırıcısı olarak görünür. Sonra bir terminalde (Windows'ta PowerShell'de <code>ssh</code> hazır gelir):</p>
+<pre><code>ssh ubuntu@192.168.77.1        <span class="c"># F50'de Ubuntu</span>
+ssh root@192.168.77.1          <span class="c"># F50'de OpenWrt</span>
+ssh ubuntu@192.168.78.1        <span class="c"># U30 Air'de Ubuntu</span></code></pre>
+<p>Kurulumda seçtiğiniz şifreyi kullanın. İlk seferde <code>ssh</code>, cihazın anahtarına güvenip güvenmediğinizi
+sorar: <code>yes</code> yazın.</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col"></th><th scope="col">F50 / MU300</th><th scope="col">U30 Air</th></tr></thead><tbody>
+<tr><th scope="row">USB üzerinden adres</th><td><code>192.168.77.1</code></td><td><code>192.168.78.1</code></td></tr>
+<tr><th scope="row">Ubuntu</th><td><code>ssh ubuntu@192.168.77.1</code></td><td><code>ssh ubuntu@192.168.78.1</code></td></tr>
+<tr><th scope="row">OpenWrt</th><td><code>ssh root@192.168.77.1</code> ya da tarayıcıda <code>http://192.168.77.1</code></td><td><code>ssh root@192.168.78.1</code> ya da <code>http://192.168.78.1</code></td></tr>
+</tbody></table></div>
+<p>İki adres farklıdır; böylece bir F50 ile bir U30 Air aynı anda tek bilgisayara takılabilir.</p>
+<p>Cihazın yaydığı Wi-Fi ağı onun hotspot'udur: başka bir seçim yapmadıysanız adı ve şifresi Android'den
+kopyalanmıştır.</p>
+<div class="callout">
+<strong>Mac'te ilk seferde ekran kilidini açın</strong>
+<p>macOS, ekran kilitliyken daha önce hiç görmediği bir ağ arayüzünü kurmaz. Cihazı ilk kez taktığınızda (ya da USB
+adreslerini değiştiren bir güncellemeden sonra) Mac'in kilidini açın; arayüz belirir.</p>
+</div>
+<p>Ağ hiç gelmezse aynı kablo üzerinden ağ olmadan da çalışan bir seri konsol vardır:</p>
+<pre><code>screen /dev/cu.usbmodem* 115200   <span class="c"># macOS</span></code></pre>
+</section>
+
+<h2 id="after">Kurulumdan sonra</h2>
+<pre><code>sudo mu300-toolkit             <span class="c"># her şey için bir menü</span>
+sudo mobile-data status        <span class="c"># 5G/LTE bağlantısı açık mı?</span>
+sudo mu300-update check        <span class="c"># daha yeni bir sürüm var mı?</span></code></pre>
+<p><code>mu300-toolkit</code>, <code>raspi-config</code> benzeri bir menüdür: sıcaklıklar, CPU ve RAM kullanımı, ağ
+hızları, performans profilleri, Wi-Fi, VPN ve yazılım güncellemeleri. Doğrudan komutlar
+<a href="../features/">özellikler</a> sayfasında; güncelleme, geri alma ve Android'e gidip gelme
+<a href="../updates/">güncelleme ve güvenlik</a> sayfasında anlatılıyor.</p>
+
+<h3>Önceden ayarlayarak atlayabileceğiniz seçimler</h3>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">Ayar</th><th scope="col">Ne yapar</th></tr></thead><tbody>
+<tr><th scope="row"><code>MU300_LANG=tr ./install.sh</code>, <code>.\install.ps1 -Lang tr</code></th><td>dil sorusunu atlar (<code>en</code>, <code>tr</code>, <code>zh</code>)</td></tr>
+<tr><th scope="row"><code>MU300_STORAGE=sd</code> ya da <code>internal</code></th><td>dahili depolama mı SD kart mı sorusunu yanıtlar</td></tr>
+<tr><th scope="row"><code>MU300_OPENWRT=plain</code> ya da <code>luci</code></th><td>"Hangi OpenWrt?" sorusunu yanıtlar</td></tr>
+<tr><th scope="row"><code>MU300_NO_SELF_UPDATE=1</code>, <code>-NoSelfUpdate</code></th><td>önce projeyi GitHub'dan güncellemez</td></tr>
+<tr><th scope="row"><code>MU300_FETCH_JOBS</code>, <code>MU300_RELEASE_URL</code></th><td>paralel indirme parçası sayısı (varsayılan 8) ya da sürüm dosyalarının kendi aynanız</td></tr>
+</tbody></table></div>
+
+<h2 id="magisk">Bilgisayarsız: Magisk zip'leri</h2>
+<p>Cihaz zaten <strong>Magisk 26 veya daha yenisiyle</strong> root'lu bir Android çalıştırıyorsa Linux cihazın
+kendisinden kurulabilir. Her sürümde her sistem ve çekirdek için bir zip vardır; aynı zip F50'de de U30 Air'de de
+çalışır ve yeri kendisi bulur (dahili depolama ya da SD kart).</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">Zip</th><th scope="col">Sistem</th><th scope="col">Çekirdek</th></tr></thead><tbody>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-k5.4.zip</code></th><td>OpenWrt</td><td>5.4</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-k6.18.zip</code></th><td>OpenWrt</td><td>6.18 LTS</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-k7.2.zip</code></th><td>OpenWrt</td><td>7.2</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-k7.3.zip</code></th><td>OpenWrt</td><td>7.3</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-luci-k5.4.zip</code></th><td>Kontrol panelli OpenWrt</td><td>5.4</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-luci-k6.18.zip</code></th><td>Kontrol panelli OpenWrt</td><td>6.18 LTS</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-luci-k7.2.zip</code></th><td>Kontrol panelli OpenWrt</td><td>7.2</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-openwrt-luci-k7.3.zip</code></th><td>Kontrol panelli OpenWrt</td><td>7.3</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-24.04-k5.4.zip</code></th><td>Ubuntu 24.04</td><td>5.4</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-24.04-k6.18.zip</code></th><td>Ubuntu 24.04</td><td>6.18 LTS</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-24.04-k7.2.zip</code></th><td>Ubuntu 24.04</td><td>7.2</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-24.04-k7.3.zip</code></th><td>Ubuntu 24.04</td><td>7.3</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-26.04-k6.18.zip</code></th><td>Ubuntu 26.04</td><td>6.18 LTS</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-26.04-k7.2.zip</code></th><td>Ubuntu 26.04</td><td>7.2</td></tr>
+<tr><th scope="row"><code>mu300-magisk-&lt;tag&gt;-ubuntu-26.04-k7.3.zip</code></th><td>Ubuntu 26.04</td><td>7.3</td></tr>
+</tbody></table></div>
+<ol>
+<li><strong>Bir zip alın</strong>: <a href="https://github.com/dikeckaan/mu300-linux/releases/latest">son sürümden</a>, ve
+<code>SHA256SUMS-magisk</code> ile kontrol edin. Her sürümde, kontrol panelli OpenWrt dahil 15 zip vardır (7.3'ten önce, v2026.10.19.2'ye kadar 11).</li>
+<li><strong>Kurun</strong>: Magisk uygulamasında (Modüller, Depodan yükle) ya da <code>adb shell</code>'den:
+<pre><code>su -c 'magisk --install-module /sdcard/Download/&lt;zip&gt;'</code></pre>
+Kurtarma (recovery) modundan değil.</li>
+<li><strong>Çıktıyı okuyun.</strong> Bulduğu cihazı, Linux'un nereye gittiğini, neyi yazdığını ve hangi şifrenin
+geçerli olduğunu gösterir: imajların kendi şifresi - Ubuntu'da <code>ubuntu</code> kullanıcısının şifresi
+<code>ubuntu</code>, OpenWrt'de <code>root</code>'un siz belirleyene kadar şifresi yok (<code>passwd</code> ile ya da
+LuCI'de Sistem &gt; Yönetim); ayarlar dosyasındaki <code>MU300_PASSWORD</code> kendi şifrenizi belirler. Aynı not
+<code>/data/adb/mu300-linux-password.txt</code> dosyasında da durur.</li>
+<li><strong>Yeniden başlatın.</strong> Linux açılır; açılmazsa cihaz kendiliğinden Android'e döner.</li>
+</ol>
+<p>İki sistem için OpenWrt (ya da kontrol panelli OpenWrt) zip'ini ve Ubuntu zip'ini arka arkaya kurun. Zip'ler <code>userdata</code>'yı asla
+küçültmez; o iş bilgisayardaki kurulum programında kalır. Depolama, varsayılan açılış ya da kendi şifreniz gibi
+ayarlar bir <code>mu300-install.conf</code> dosyasına yazılır; <a href="https://github.com/dikeckaan/mu300-linux#choosing-something-else-mu300-installconf" hreflang="en">README</a>'de
+(İngilizce) anlatılıyor.</p>
+
+<p><strong>Güncellemede parola.</strong> Kurulu bir sistemin üzerine kurulan zip, parolayı korur ve hiçbir şey sormaz: Magisk zip kurarken bir şey yazılamaz. Çıktıda "korunuyor, doğrulanmadı" yazar. Mevcut parolanın doğrulanması ya da yeni bir parola için, kurmadan önce zip'in en üstüne bir <code>mu300-install.conf</code> koyun - bilgisayarda <code>zip mu300-magisk-&lt;tag&gt;-...zip mu300-install.conf</code> ile, Android'de zip açabilen bir dosya yöneticisiyle. <code>MU300_KEEP_PASSWORD=yes</code> ve <code>MU300_CURRENT_PASSWORD=...</code> parolayı doğrulandıktan sonra korur (yanlışsa kurulum durur, hiçbir şey değişmez; ikinci satır yoksa: parola yok, OpenWrt'nin <code>root</code>'u ilk geldiği gibi); <code>MU300_KEEP_PASSWORD=no</code> ve <code>MU300_PASSWORD=...</code> yenisini belirler. Dosya parolayı düz metin olarak tutar: kurulumdan sonra zip'i ya da içindeki dosyayı silin. Ayrıntılar <a href="https://github.com/dikeckaan/mu300-linux#the-password-of-an-update-a-mu300-installconf-in-the-zip" hreflang="en">README</a>'de (İngilizce).</p>
+
+<h2 id="uninstall">Geri kaldırmak</h2>
+<p>Cihaz Android'e döndüğünde <code>./uninstall.sh</code> çalıştırın (Windows: <code>.\uninstall.ps1</code> ya da
+<code>uninstall.cmd</code>). Android'i yeniden açılış sistemi yapar, ikinci açılış bölümünü geri yükler ve Linux dosya
+sistemini siler. Android verilerinize dokunulmaz. Sunduğu seçenekler <a href="../updates/#uninstall">güncelleme
+ve güvenlik</a> sayfasında.</p>
+<p><a href="../">Ana sayfaya dön</a></p>
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>Proje</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">GitHub'daki kaynak kod</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">Projeye destek ol</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">Sürümler (indirmeler)</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN modülü</a></li>
+</ul>
+</div>
+<div>
+<h2>Yardım</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki (İngilizce)</a></li>
+<li><a href="../../tr/troubleshooting/">Sorun giderme</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">Sorun bildir</a></li>
+<li><a href="https://t.me/mu300project">Telegram kanalı (haberler ve sürümler)</a></li>
+</ul>
+</div>
+<div>
+<p>Kendi sorumluluğunuzda kullanılan, garantisi olmayan bir hobi projesi. ZTE, Unisoc ya da herhangi bir operatör tarafından desteklenmez. Betikler ve belgeler: MIT; çekirdekler: GPL-2.0.</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

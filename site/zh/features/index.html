@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>功能一览：ZTE F50 / U30 Air 刷 Linux 后的 5G 数据、Wi-Fi 热点、短信、VPN</title>
+<meta name="description" content="ZTE F50 / MU300 和 U30 Air 装上 Linux 后能做什么：5G/LTE 移动数据、APN、流量统计、热点和 Wi-Fi 客户端、短信、VPN、电池和指示灯，附命令。">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/zh/features/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/features/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/features/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/features/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/features/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="功能一览：ZTE F50 / U30 Air 刷 Linux 后的 5G 数据、Wi-Fi 热点、短信、VPN">
+<meta property="og:description" content="ZTE F50 / MU300 和 U30 Air 装上 Linux 后能做什么：5G/LTE 移动数据、APN、流量统计、热点和 Wi-Fi 客户端、短信、VPN、电池和指示灯，附命令。">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/zh/features/">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="一台有两个房间的 5G 随身热点：一个给 Android，一个给 Linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="功能一览：ZTE F50 / U30 Air 刷 Linux 后的 5G 数据、Wi-Fi 热点、短信、VPN">
+<meta name="twitter:description" content="ZTE F50 / MU300 和 U30 Air 装上 Linux 后能做什么：5G/LTE 移动数据、APN、流量统计、热点和 Wi-Fi 客户端、短信、VPN、电池和指示灯，附命令。">
+<meta name="twitter:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;display=swap">
+<link rel="stylesheet" href="../../assets/style.css">
+<script src="../../assets/site.js" defer></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [
+  {
+   "@type": "ListItem",
+   "position": 1,
+   "name": "首页",
+   "item": "https://kaandikec.com/mu300-linux/zh/"
+  },
+  {
+   "@type": "ListItem",
+   "position": 2,
+   "name": "功能",
+   "item": "https://kaandikec.com/mu300-linux/zh/features/"
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">跳到正文</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../../zh/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../../zh/install/">安装</a>
+<a href="../../zh/web-installer/">网页安装器</a>
+<a href="../../zh/choose/">选择系统</a>
+<a href="../../zh/features/" aria-current="page">功能</a>
+<a href="../../zh/updates/">更新与安全</a>
+<a href="../../zh/troubleshooting/">故障排除</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="语言"><a href="../../features/" hreflang="en" lang="en">English</a><a href="../../tr/features/" hreflang="tr" lang="tr">Türkçe</a><a href="../../zh/features/" hreflang="zh-Hans" lang="zh-Hans" aria-current="true">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="主题|自动|浅色|深色|跟随系统|切换颜色主题"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">菜单</button>
+</div>
+</header>
+<main id="content">
+
+<header class="page-head">
+<div class="prose">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../../zh/">首页</a> <span aria-hidden="true">/</span> <span aria-current="page">功能</span></nav>
+<h1>它能做什么，怎么用</h1>
+<p class="lede">每个功能先用大白话讲清楚，再给命令。在 OpenWrt 上你本来就是 root，去掉 <code>sudo</code> 即可。</p>
+</div>
+</header>
+
+<div class="prose">
+<nav class="toc" aria-labelledby="toc-h">
+<h2 id="toc-h">功能</h2>
+<ol>
+<li><a href="#mobile-data">移动数据、APN 和流量统计</a></li>
+<li><a href="#hotspot">Wi-Fi 热点</a></li>
+<li><a href="#wifi-client">Wi-Fi 客户端</a></li>
+<li><a href="#usb">USB 网络和控制台</a></li>
+<li><a href="#sms">短信和 USSD</a></li>
+<li><a href="#vpn">VPN</a></li>
+<li><a href="#toolkit">工具箱菜单</a></li>
+<li><a href="#battery">电池、电源和指示灯</a></li>
+<li><a href="#u30air">U30 Air 的额外功能</a></li>
+<li><a href="#panels">网页面板、浏览器里的终端、adb</a></li>
+<li><a href="#docker">Docker</a></li>
+<li><a href="#more">蓝牙、GPU、KVM、语言</a></li>
+<li><a href="#limits">不能用的东西</a></li>
+</ol>
+</nav>
+
+<section id="mobile-data">
+<h2>移动数据和 APN</h2>
+<p>插一张有流量套餐的 SIM 卡，Linux 会自己连上 5G（NSA）或 LTE，再把网络分享给热点和 USB 线上的所有设备。基带重启了，它也会自己重新连上。</p>
+<pre><code>sudo mobile-data status        <span class="c"># 连上了吗？拿到了什么地址？</span></code></pre>
+<p><strong>APN</strong> 是运营商数据网关的名字。大多数运营商什么都不用填：留空，设备就用 SIM 卡里写好的设置。</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">系统</th><th scope="col">在哪里设置 APN</th></tr></thead><tbody>
+<tr><th scope="row">Ubuntu</th><td><code>/etc/mu300/mobile-data.conf</code>：<code>MU300_APN</code> 和 <code>MU300_PDP_TYPE</code></td></tr>
+<tr><th scope="row">OpenWrt</th><td>LuCI：网络 &gt; 接口 &gt; wan，或者用 <code>uci</code>（如下）</td></tr>
+</tbody></table></div>
+<pre><code>uci set network.wan.apn='your.apn'; uci commit network; ifup wan</code></pre>
+<p>带内置 SIM 的 F50 可以改用那张卡而不是卡槽里的卡：<code>mu300-sim select internal</code>（或 LuCI 里 wan 接口的 <strong>SIM source</strong> 字段，填上那张卡自己的 APN），然后重启；<code>external</code> 换回去，默认仍是外置卡。</p>
+<h3 id="data-usage">用了多少流量</h3>
+<p>设备按天、按账单周期统计移动数据，上下行都算，算法和运营商一致。你可以设定账单周期从哪天开始，以及带提醒的每月上限；到上限时关闭移动数据是可选的，下个周期开始时会自动恢复。统计在重启和切换系统后都不会丢，也不会重复计数。在带控制面板的 OpenWrt 上，这就是“蜂窝 &gt; 流量统计”（Cellular &gt; Data usage）页面，状态看板（Status dashboard）还会每秒显示当前的下载和上传速度。</p>
+<pre><code>mu300-traffic                       <span class="c"># 今天、本账单周期和上限</span>
+sudo mu300-traffic set reset-day 1  <span class="c"># 账单周期从每月哪一天开始</span>
+sudo mu300-traffic set cap 50G      <span class="c"># 每月上限（默认用到 90 % 时提醒，可以改）</span>
+sudo mu300-traffic set cut on       <span class="c"># 可选：到上限就关闭移动数据，下个周期自动恢复</span>
+mu300-traffic days                  <span class="c"># 最近有流量的那些天</span></code></pre>
+<h3 id="ttl">固定 TTL</h3>
+<p>每个数据包都带着一个叫 TTL 的小计数器。有些运营商靠它分辨流量是来自热点上的设备还是设备本身。你可以把它设成固定值：</p>
+<pre><code>sudo mu300-ttl set 64          <span class="c"># 移动数据使用固定 TTL</span>
+sudo mu300-ttl off             <span class="c"># 恢复默认</span></code></pre>
+<p><code>mu300-toolkit</code>（网络 &gt; TTL）和控制面板里也能设。在主线内核上，这条规则放在 tc 里，流量卸载保持开启；在 5.4 上它放在 nftables 里，设了 TTL 期间流量卸载会关闭。开启前请先确认运营商条款和当地法律。</p>
+</section>
+
+<section id="hotspot">
+<h2>Wi-Fi 热点</h2>
+<p>设备会发出自己的 Wi-Fi 网络，5 GHz（802.11ac）或 2.4 GHz，同一时间只能用一个。除非安装时另选，它的名称和密码与 Android 下一样，手机照旧能连。</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">系统</th><th scope="col">修改名称或密码</th></tr></thead><tbody>
+<tr><th scope="row">Ubuntu</th><td>编辑 <code>/etc/mu300/hotspot.conf</code>，然后重启服务（如下）</td></tr>
+<tr><th scope="row">OpenWrt</th><td>LuCI：网络 &gt; 无线（那个文件只在第一次启动时读取一次）</td></tr>
+</tbody></table></div>
+<pre><code>sudo nano /etc/mu300/hotspot.conf        <span class="c"># SSID=、PSK=、BAND=5 或 2.4、CHANNEL=auto、COUNTRY=</span>
+sudo systemctl restart mu300-hotspot</code></pre>
+<p>在 5 GHz 上，热点使用 36-48 或 149-165 信道，从不使用 DFS 信道（52-144）：Wi-Fi 驱动无法检测雷达，所以在文件或 LuCI 中选择的 DFS 信道会被换成 36 信道（不允许 36-48 的国家用 149），日志里会写明原因（从 v2026.10.20 起；之前的版本在这种信道上热点根本起不来）。</p>
+<p>热点<strong>只使用 WPA2-PSK（CCMP）</strong>，所有设备都一样。出于安全原因，这块 Wi-Fi 芯片上的 WPA3（SAE）已被禁用：WPA3 握手由芯片固件自己完成，而它交回密钥的方式可能让客户端无需密码即可接入（<a href="https://github.com/dikeckaan/mu300-linux/blob/main/docs/U30AIR-SAE.md">原因</a>）。原来设为 WPA3 的热点会在下次开机时切换为 WPA2，密码不变（如果没有可用的密码，则关闭热点，绝不会变成开放网络），LuCI 会显示一条提示；在 LuCI 中选择 WPA3 时，该接入点不会启动。</p>
+<p>如果 Wi-Fi 芯片的固件崩溃，驱动会重置芯片，Wi-Fi 自己就会恢复，无论是热点还是连接其他网络的客户端：测试中在 6.18 和 7.2 上 15 到 20 秒就回来了。如果 70 秒内芯片重置不成功，设备会干净地重启，而不是卡死。</p>
+</section>
+
+<section id="wifi-client">
+<h2>Wi-Fi 客户端</h2>
+<p>Wi-Fi 也可以不当热点，而是连上别的网络，比如酒店或家里的 Wi-Fi。设备自己用这个网络上网，并分享给 USB 上的设备。两者只能选其一：Wi-Fi 芯片同一时间只能干一件事。</p>
+<pre><code>sudo wifi-client scan                    <span class="c"># 附近的网络</span>
+sudo wifi-client connect "NAME"          <span class="c"># 会询问密码；输入时不显示</span>
+sudo wifi-client status
+sudo wifi-client disconnect              <span class="c"># 热点回来，重启后也保持</span></code></pre>
+<ul>
+<li>也可以用菜单：<code>sudo mu300-toolkit</code> &gt; Network &gt; Wi-Fi &gt; “Join a network”。</li>
+<li><strong>等它问的时候再输密码，</strong>不要写在命令行上：<code>sudo</code> 会把整条命令记进系统日志。</li>
+<li>Wi-Fi 当客户端还是当热点，是开机时决定的。它正在当热点时，<code>connect</code> 会先保存网络，再请你重启。</li>
+<li><strong>WPA2 和 WPA2/WPA3 混合模式的网络能连；只有 WPA3 的网络不行</strong>（这个 Wi-Fi 驱动没有 SAE）。把路由器设成混合模式就能连上。</li>
+<li>USB 上的设备通过这个网络只能上互联网，碰不到那个网络里的其他设备和路由器；设备自己的服务（包括 SSH）也不对那个网络开放。请通过 USB 访问设备。</li>
+<li>Wi-Fi 和移动数据都连着时，走 Wi-Fi，SIM 卡闲着。</li>
+</ul>
+</section>
+
+<section id="usb">
+<h2>USB 网络和串口控制台</h2>
+<p>插到电脑上，设备会显示成一块网卡，电脑从它那里拿到地址。设备自己的地址在 F50 上是 <code>192.168.77.1</code>，在 U30 Air 上是 <code>192.168.78.1</code>，所以两种各一台可以插在同一台电脑上。两台同型号的需要用 <code>/etc/mu300/lan.conf</code> 区分。</p>
+<p>USB 网络模式是 NCM（ECM 作为后备）；控制面板可以把它切换成 RNDIS，下次开机生效。同一根线上还有一个串口控制台（<code>ttyGS0</code>），网络不通时也能登录：Mac 上用 <code>screen /dev/cu.usbmodem* 115200</code>。SSH 和 telnet 都开着。</p>
+</section>
+
+<section id="sms">
+<h2>短信和 USSD</h2>
+<p>读取、发送和删除 SIM 卡上的短信，发送 USSD 代码，比如查余额或者查本机号码的那种。</p>
+<pre><code>sudo sms list
+sudo sms send NUMBER TEXT...
+sudo sms delete INDEX                    <span class="c"># 只接受序号、read 或 all；其他内容在到达基带之前就会被拒绝</span>
+sudo mu300-ussd '*101#'                  <span class="c"># USSD 代码，比如查余额</span></code></pre>
+<p>装了网页面板扩展的 Ubuntu 上，Cockpit 里的 MU300 页面也能读、发、删短信。在带控制面板的 OpenWrt 上，短信在“蜂窝 &gt; 短信”里。这个系统每 30 秒同步一次 SIM 卡，这会把 SIM 卡上的未读短信标成已读；面板自己记录未读状态。不要在那个系统上运行 <code>sms delete read</code>。短信只有在副本安全写到磁盘之后才会从 SIM 卡上删掉，所以断电也不会丢；长短信如果其余部分一直没到，一小时后会把收到的部分标为不完整显示出来。</p>
+<h3 id="sms-forwarding">短信转发</h3>
+<p>在带控制面板的 OpenWrt 上，“蜂窝 &gt; 短信转发”（SMS forwarding）会把收到的短信转出去：转给 webhook（JSON 或表单）、Telegram 聊天，或者用短信转给另一部手机。默认关闭，打开后才生效。每个目标都有模板（<code>{sender}</code>、<code>{time}</code>、<code>{text}</code>、<code>{device}</code>），并可以按发件人和关键词过滤。页面上有“发送测试”（Send test）按钮和投递日志；投递失败会以越来越长的间隔重试。令牌、密码和 webhook 地址保存在只有 root 能读的 <code>/etc/mu300/sms-forward.conf</code> 里，绝不会出现在日志中。邮件转发需要 <code>msmtp</code>，而镜像里没有它，所以这个目标保持关闭。</p>
+</section>
+
+<section id="vpn">
+<h2>VPN</h2>
+<p>VPN 会把流量通过加密隧道送到你选的服务器。这里它覆盖设备自己的流量，<strong>以及</strong> Wi-Fi 和 USB 上所有设备的流量，并带<strong>断网保护（kill switch）</strong>：隧道断了，什么都出不去。</p>
+<p>它是一个可选模块，<a href="https://github.com/dikeckaan/mu300-linux-vpn" hreflang="en">mu300-linux-vpn</a>，在设备上安装（或者在安装程序问到时选上），更新后也会保留。它能保存多种配置：</p>
+<ul>
+<li>WireGuard <code>.conf</code>（需要主线内核）、OpenVPN <code>.ovpn</code>，</li>
+<li>VLESS、VMess、Trojan 或 Shadowsocks 分享链接，</li>
+<li>Clash/mihomo YAML（需加装 <code>vpn-mihomo</code>），或者原始的 Xray、sing-box JSON，</li>
+<li>给 <a href="https://github.com/daeuniverse/dae">dae</a> 用的 hysteria2 或 TUIC 链接、dae 配置（需加装 <code>vpn-dae</code>；要 v2026.10.20 或更新的 6.18/7.2/7.3 内核）。</li>
+</ul>
+<pre><code>sudo mu300-extra install vpn                         <span class="c"># 模块的最新版本，按其 SHA256SUMS 校验；核心和 Xray</span>
+sudo mu300-vpn engine install sing-box               <span class="c"># 每个引擎都是一个扩展：xray、sing-box、mihomo、dae</span>
+sudo mu300-vpn profile import ~/office.conf Office   <span class="c"># WireGuard .conf、.ovpn、YAML 或 JSON 文件</span>
+sudo mu300-vpn profile import 'vless://...'          <span class="c"># 或者分享链接</span>
+sudo mu300-vpn on
+mu300-vpn status</code></pre>
+<p>Tailscale 的流量也走隧道。如果 VPN 开着断网保护而模块不见了，设备会保持封闭：移动数据和 Wi-Fi 客户端一直断开，直到重新装上模块或关掉 VPN。配置、设置和安全模型见<a href="https://github.com/dikeckaan/mu300-linux-vpn#readme" hreflang="en">模块的 README</a>（英文）。有些运营商会丢弃 UDP、封锁 OpenVPN。</p>
+<p>模块 <strong>v2.0.0</strong>（随 v2026.10.20）把它拆成核心和引擎扩展（更新时作为一组一起带上），加入了<strong>订阅</strong>（服务商给的一个 URL，能生成配置，可按计划刷新）和
+<strong>IPv6 防护</strong>：隧道不带 IPv6 时，IPv6 会在隧道旁边被挡住，而不是绕过断网保护泄漏出去。在带控制面板的 OpenWrt 上，这些都在面板的 <strong>VPN</strong> 菜单里：概览、配置、订阅、引擎、设置和日志。面板和工具箱只在装了 VPN 模块之后才显示 VPN 部分。</p>
+</section>
+
+<section id="toolkit">
+<h2>工具箱菜单</h2>
+<p><code>mu300-toolkit</code> 是一个类似树莓派 <code>raspi-config</code> 的菜单：温度、CPU 和内存占用、网速、性能模式、压力测试、Wi-Fi、VPN、服务和软件更新，不用记任何命令。</p>
+<pre><code>sudo mu300-toolkit                       <span class="c"># 菜单</span>
+mu300-toolkit top                        <span class="c"># 温度、CPU、内存、网速</span>
+sudo mu300-toolkit profile performance   <span class="c"># 还有 eco、balanced</span>
+sudo mu300-toolkit stress all 10         <span class="c"># 满载稳定性测试</span>
+mu300-zram                               <span class="c"># 内存压缩交换：状态（sudo mu300-zram off|on）</span></code></pre>
+<p>可选组件叫作扩展（extras）：</p>
+<pre><code>mu300-extra list
+sudo mu300-extra install lang            <span class="c"># 更多网页界面语言（OpenWrt）</span>
+sudo mu300-extra remove vpn</code></pre>
+</section>
+
+<section id="battery">
+<h2>电池、电源和指示灯</h2>
+<p>状态指示灯的含义和 ZTE 原厂固件下一样：</p>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col">指示灯</th><th scope="col">F50 / MU300</th><th scope="col">U30 Air</th></tr></thead><tbody>
+<tr><th scope="row">网络</th><td>蓝色：4G，白色：5G，红色：无服务</td><td>正在使用的 SIM 卡：白色：nano-SIM 卡，蓝色：eSIM（切换到它时闪烁）；红色：无服务</td></tr>
+<tr><th scope="row">Wi-Fi</th><td>热点开着时亮</td><td>白色：5 GHz，蓝色：2.4 GHz</td></tr>
+<tr><th scope="row">电池</th><td>-</td><td>和 ZTE 原厂固件一样：电量 60 % 及以上白色，10 % 起蓝色，以下红色；充电时呼吸闪烁；插着充电器时指示灯不熄灭</td></tr>
+<tr><th scope="row">过热报警</th><td>网络灯轮流闪红、白、蓝：芯片到了 85 °C</td><td>电池灯轮流闪红、白、蓝：芯片到了 85 °C 或电池到了 50 °C</td></tr>
+</tbody></table></div>
+<pre><code>sudo mu300-led test            <span class="c"># 看看哪个灯是哪个</span></code></pre>
+<p>在 U30 Air 上，<code>mu300-power</code> 帮你省电：电源模式（<code>plugged</code>、<code>battery</code>、<code>saver</code> 或 <code>auto</code>）、没人连接时让无线进入空闲，以及 0 到 100 % 的充电上限（从 v2026.10.20 起；之前只有 80 %）：充到上限就停，低于上限 5 个点再继续，电池永远不会被压在 5 % 以下。主线内核上，充电电路现在还会读取 Type-C 口提供的电流，所以 1.5 A 或 3 A 的口能以最高 2 A 充电，而不是 500 mA。在带控制面板的 OpenWrt 上，这就是“系统 &gt; 电源”（System &gt; Power）页面。</p>
+<pre><code>mu300-power status
+sudo mu300-power charge-limit 80         <span class="c"># 0-100；100 = 不限制</span>
+sudo mu300-power profile battery         <span class="c"># plugged、battery、saver 或 auto</span>
+sudo mu300-power set battery.WIFI_IDLE 10</code></pre>
+<h3 id="cpu">CPU 模式</h3>
+<p>三种模式决定处理器最快能跑多快：<strong>saving</strong>（省电，核心频率限制在最高的约 60 %：更凉、更省电）、<strong>balanced</strong>（均衡，默认，原厂行为）和 <strong>performance</strong>（性能，所有核心簇都跑在最高频率）。它们从不改电压，而且无论哪种模式，过热保护始终说了算。控制面板上是“系统 &gt; CPU”。</p>
+<pre><code>mu300-cpu status
+sudo mu300-cpu profile saving            <span class="c"># 或 balanced（默认）、performance</span></code></pre>
+<h3 id="cpu-voltage">CPU 电压偏移（实验性）</h3>
+<div class="callout warn">
+<strong>实验性：可能永久损坏设备</strong>
+<p>本功能为实验性功能，可能对您的设备造成永久性损坏。风险由您自行承担。</p>
+</div>
+<p>在主线内核（6.18、7.2 和 7.3；7.3 上尚未在设备上试过）上，可以按核心簇（CPU 0-3、4-6 和 7）小幅调整 CPU 电压：最多降低 25 mV、最多升高 12.5 mV，步进 3.125 mV。默认关闭（0）。新值在下次重启时作为一次试运行开机生效；该次开机运行满 10 分钟后才保留，任何以崩溃、看门狗复位或断电结束的开机都会将其撤销（恢复为 0）。编码未知的 SoC 固件上会被拒绝（目前只有 F50 的已知）。所有设置入口都要求先输入 <code>EXPERIMENTAL</code>：控制面板的“系统 &gt; CPU”、Ubuntu 面板的电源页、<code>mu300-toolkit</code> 和命令行。固件编码由 <a href="https://github.com/kanoqwq">kano</a> 分析得出。</p>
+<pre><code>sudo mu300-cpu voltage status
+sudo mu300-cpu voltage set -6250,-3125,0 --confirm EXPERIMENTAL   <span class="c"># 单位 µV：CPU 0-3、4-6、7</span>
+sudo mu300-cpu voltage stress 10                                  <span class="c"># 试运行开机时做压力测试</span>
+sudo mu300-cpu voltage off                                        <span class="c"># 下次开机恢复原厂电压</span></code></pre>
+<p>如果是插上充电器才开的机，这次开机会一直处于充电状态（指示灯闪烁，热点和基带关闭），直到你按下 Wi-Fi 键。</p>
+</section>
+
+<section id="u30air">
+<h2>U30 Air 的额外功能</h2>
+<div class="table-scroll"><table>
+<thead><tr><th scope="col"></th><th scope="col">作用</th></tr></thead><tbody>
+<tr><th scope="row">电池</th><td>电量、电压、电流、温度和充电状态，在 <code>mu300-toolkit</code>、控制面板和 <code>/sys/class/power_supply</code> 里都能看到，四个内核都支持。充电：5.4 上由厂商充电驱动负责，6.18、7.2 和 7.3 上从 v2026.10.12 起由 <code>bq256xx</code> 驱动负责；从 v2026.10.20 起有 0-100 % 的充电上限和 Type-C 充电电流</td></tr>
+<tr><th scope="row">按键</th><td>电源键：短按唤醒指示灯（60 秒后熄灭），长按 3 秒关机。Wi-Fi 键：在 2.4 和 5 GHz 之间切换热点，长按 3 秒开关热点</td></tr>
+<tr><th scope="row">NFC</th><td>手机贴一下设备就能连上热点，和 ZTE 原厂固件一样</td></tr>
+<tr><th scope="row">USB 主机</th><td>主线内核上接 OTG 转接头：U 盘（FAT、exFAT）、键盘鼠标、USB 上网卡和以太网转接器</td></tr>
+</tbody></table></div>
+<pre><code>sudo mu300-nfc                 <span class="c"># 显示标签内容</span>
+sudo mu300-nfc wifi            <span class="c"># 写入热点名称和密码</span></code></pre>
+<pre><code>sudo mu300-usb host            <span class="c"># U30 Air，主线内核：接 OTG 转接头，由电池供 5 V</span>
+sudo mu300-usb device          <span class="c"># 切回连接电脑（每次开机的默认状态）</span>
+sudo mu300-usb pd on           <span class="c"># 实验性，默认关闭：由 USB-C 供电协议（PD）决定角色</span></code></pre>
+<p>打开 USB-C PD 后（U30 Air，主线内核，尚未在设备上实测），插上 OTG 转接头端口会自动成为主机；接上自带充电器的 PD
+扩展坞时，U30 Air 一边充电，一边用 <code>sudo mu300-usb host</code> 向扩展坞请求主机角色，扩展坞的 USB 口和网口就能用。只用
+5 V；<code>sudo mu300-usb pd off</code> 恢复原样。</p>
+<p>F50 的 USB 口就是它的电源，所以没有 USB 主机模式；长按电源键 3 秒关机。</p>
+</section>
+
+<section id="panels">
+<h2>网页面板、浏览器里的终端、adb</h2>
+<p><strong>带控制面板的 OpenWrt</strong>（<code>openwrt-luci</code>）有 MU300 页面：状态看板（信号、频段、小区、温度、带速率的 Wi-Fi 客户端、电池）、网络锁定、短信和短信转发、流量统计、AT 终端、TTL 和 USB 模式；从 v2026.10.20 起还有 <strong>VPN</strong> 菜单（概览、配置、订阅、引擎、设置、日志）、<strong>系统 &gt; 终端</strong>（浏览器里的 root shell，只在局域网上，只为你已登录的面板会话打开，闲置 15 分钟关闭）和<strong>系统 &gt; 更新后的软件包</strong>（Packages after an update）。面板也不会再因为一条 AT 命令卡住而冻结；OpenWrt 上一条 AT 命令现在只要 0.13 秒，而不是一秒。见<a href="../choose/#panel">控制面板多了什么</a>。</p>
+<p><strong>Ubuntu</strong> 从 v2026.10.20 起也可以有网页面板：<a href="https://cockpit-project.org/">Cockpit</a>，Ubuntu 自己的网页控制台（终端、日志、服务、网络、存储、账户），里面加了一个 <strong>MU300</strong> 页面：移动网络、移动数据和流量、短信、VPN、电源和 CPU、热点和 Wi-Fi 客户端、更新。它是 <code>panel</code> 扩展，不在镜像里，只在局域网上，地址 <code>https://192.168.77.1:9090</code>（U30 Air：<code>.78.1</code>）；用 <code>ubuntu</code> 登录。选 Ubuntu 时安装程序会问。</p>
+<pre><code>sudo mu300-extra install panel                                           <span class="c"># Cockpit 来自 Ubuntu 的软件源（约 12 MB）</span>
+sudo mu300-extra install panel --from mu300-extra-panel-offline.tar.gz   <span class="c"># 离线，用发布版里的文件</span></code></pre>
+<p><strong>对 Linux 用 adb。</strong>从 v2026.10.20 起，Linux 也能像 Android 一样通过 USB 线提供 <code>adb shell</code>、<code>push</code>、<code>pull</code> 和 <code>forward</code>。它<strong>默认关闭</strong>，只有你授权过密钥的电脑才能进来；持有授权密钥的任何人都会得到 root shell，所以只授权你自己的电脑。安装程序会问要不要为它所在的电脑打开。</p>
+<pre><code>sudo mu300-usb adb key adbkey.pub       <span class="c"># 电脑上的 ~/.android/adbkey.pub，复制到设备上</span>
+sudo mu300-usb adb on                   <span class="c"># 关闭：sudo mu300-usb adb off</span></code></pre>
+</section>
+
+<section id="docker">
+<h2>Docker</h2>
+<p><strong>Ubuntu</strong>（24.04 和 26.04）自带 Docker 29 和 compose（Ubuntu 的 <code>docker.io</code> 和
+<code>docker-compose-v2</code>）；用户 <code>ubuntu</code> 在 <code>docker</code> 组中。引擎不在开机时启动，而是在第一条
+<code>docker</code> 命令时启动（约占 165 MB 内存）；<code>sudo systemctl enable docker</code> 让它每次开机启动。
+<code>docker</code> 组等同于 root：只把信任的账户放进去。</p>
+<p><strong>OpenWrt</strong> 已为 Docker 准备好，但没有预装：<code>apk add dockerd docker docker-compose</code>
+（控制面板系统上再加 <code>luci-app-dockerman</code>），然后 <code>/etc/init.d/dockerd start</code>。这 190 MB
+会让 OpenWrt 所装的最小区域没有空间再更新。</p>
+<p>镜像和容器放在系统旁边的 <code>/mnt/mu300-disk/docker/&lt;系统&gt;</code> 中：更新和回滚既不复制也不丢失它们。Docker
+使用 nftables 后端；容器可以上网，发布的端口可从热点和 USB 客户端访问，不能从移动网络访问；容器无法连接设备本身的服务（SSH、网页面板）。四个内核都可用。</p>
+<pre><code>docker run --rm hello-world
+docker compose up -d</code></pre>
+</section>
+
+<section id="more">
+<h2>蓝牙、GPU、KVM、语言</h2>
+<ul>
+<li><strong>蓝牙：</strong>BlueZ；扫描可用。</li>
+<li><strong>GPU：</strong>Mali-G57 支持 OpenCL 3.0，没有屏幕输出。</li>
+<li><strong>KVM：</strong>四个内核都有 <code>/dev/kvm</code>，可以跑虚拟机。</li>
+<li><strong>内存：</strong>约 1.4 GB 可用，另外还有内存压缩交换（zram，默认开启：内存的一半，lz4；<code>sudo mu300-zram off</code> 关闭，大小和压缩算法在 <code>/etc/mu300/zram.conf</code> 中设置）。</li>
+<li><strong>网页界面语言（OpenWrt）：</strong>自带英语、土耳其语和简体中文；装上 <code>lang</code> 扩展，LuCI 再多 40 种，控制面板再多 29 种。在“系统 &gt; 系统 &gt; 语言和界面”里切换，控制面板上是“系统 &gt; 语言”（Languages）。面板的其他译文是机器翻译，<a href="https://github.com/dikeckaan/mu300-linux#languages" hreflang="en">欢迎指正</a>。</li>
+</ul>
+</section>
+
+<section id="limits">
+<h2>不能用的东西</h2>
+<ul class="dots">
+<li class="r"><strong>屏幕输出</strong>USB-C 转 HDMI：USB-C 电源芯片从不应答。</li>
+<li class="r"><strong>声音</strong>主板上没有扬声器和麦克风；通话音频是可选的音频扩展（<code>mu300-extra install audio</code>）。</li>
+<li class="r"><strong>只有 WPA3 的 Wi-Fi</strong>Wi-Fi 驱动没有 SAE；WPA2/WPA3 混合模式可以。</li>
+<li class="r"><strong>热点和客户端同时开</strong>Wi-Fi 同一时间只能做一件事。</li>
+<li class="r"><strong>监听模式</strong>Wi-Fi 芯片只支持客户端和热点模式。</li>
+<li class="r"><strong>GPS</strong>设备没有 GPS，所以网站只能靠 IP 地址猜你的位置。</li>
+</ul>
+<p>完整的列表见 README 的<a href="https://github.com/dikeckaan/mu300-linux#what-works-and-what-does-not" hreflang="en">“什么能用，什么不能用”</a>（英文）。</p>
+</section>
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>项目</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">GitHub 上的源代码</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">支持本项目</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">发布版本（下载）</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN 模块</a></li>
+</ul>
+</div>
+<div>
+<h2>帮助</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki（英文）</a></li>
+<li><a href="../../zh/troubleshooting/">故障排除</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">报告问题</a></li>
+<li><a href="https://t.me/mu300project">Telegram 频道（动态与新版本）</a></li>
+</ul>
+</div>
+<div>
+<p>这是一个业余项目，风险自负，不提供任何担保。与 ZTE、紫光展锐或任何运营商无关，也未获其认可。脚本和文档：MIT；内核：GPL-2.0。</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

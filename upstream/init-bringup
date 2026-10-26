@@ -1,0 +1,25 @@
+#!/bin/sh
+# Mainline bring-up probe: log what the kernel sees, keep it in pstore (ramoops), warm reboot so Android can read it.
+/bin/busybox mkdir -p /proc /sys /dev /tmp
+/bin/busybox mount -t proc proc /proc
+/bin/busybox mount -t sysfs sysfs /sys
+/bin/busybox mount -t devtmpfs devtmpfs /dev 2>/dev/null
+/bin/busybox --install -s /bin
+log() { echo "MU300-MAINLINE: $*" > /dev/kmsg; }
+log "userspace up: $(uname -a)"
+log "cpus online: $(cat /sys/devices/system/cpu/online) possible: $(cat /sys/devices/system/cpu/possible)"
+log "mem: $(grep -E 'MemTotal|MemFree' /proc/meminfo | tr -s ' ' | tr '\n' ' ')"
+log "cmdline: $(cat /proc/cmdline)"
+log "platform devices: $(ls /sys/bus/platform/devices | tr '\n' ' ')"
+log "drivers bound: $(ls /sys/bus/platform/drivers/*/ 2>/dev/null | grep -c @)"
+log "interrupts: $(head -3 /proc/interrupts | tr -s ' ' | tr '\n' '|')"
+log "pstore: $(ls /sys/fs/pstore 2>&1)"
+mount -t debugfs debugfs /sys/kernel/debug 2>/dev/null
+for d in /sys/bus/platform/drivers/*; do n=$(ls "$d" | grep -c "[.@]"); [ "$n" -gt 0 ] && log "driver ${d##*/}: $(ls "$d" | grep "[.@]" | tr '\n' ' ')"; done
+log "deferred: $(tr '\n' ';' < /sys/kernel/debug/devices_deferred 2>/dev/null | cut -c1-900)"
+log "clocks registered: $(ls /sys/kernel/debug/clk 2>/dev/null | wc -l)"
+log "regulators: $(for r in /sys/class/regulator/regulator.*; do printf "%s=%s/%s " "$(cat $r/name)" "$(cat $r/state 2>/dev/null)" "$(cat $r/microvolts 2>/dev/null)"; done | cut -c1-900)"
+log "pmic: $(ls /sys/bus/spi/devices/ 2>&1 | tr '\n' ' ')"
+for c in 1 2 3 4; do log "uptime $(cut -d' ' -f1 /proc/uptime) load $(cut -d' ' -f1-3 /proc/loadavg)"; sleep 5; done
+log "rebooting (warm) so the console log survives in ramoops"
+echo b > /proc/sysrq-trigger

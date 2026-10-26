@@ -1,0 +1,11 @@
+[Unit]
+Description=MU300 USB-C DisplayPort (PD alt mode + Unisoc DRM)
+After=systemd-modules-load.service systemd-udevd.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/mu300-display-load
+
+[Install]
+WantedBy=multi-user.target

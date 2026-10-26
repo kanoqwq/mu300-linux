@@ -1,0 +1,26 @@
+==> Ready to install
+  source:         prebuilt release v2026.09.30 + vendor files from this device
+  systems:        ubuntu openwrt (Ubuntu 24.04) (boots: ubuntu)
+  kernel:         6.18 (mainline, 6.18.54)
+  default boot:   Linux (Android after 5 failed boots in a row)
+  filesystem:     CREATE new ext4 (erases the Linux region)
+  writes:         Linux region at offset 27762098176, boot_b, 32 bytes of misc (boot_a, GPT and userdata are not touched)
+Type INSTALL to continue [no]: INSTALL
+
+==> Copying to the device
+[device] installing ubuntu
+[device] installing openwrt
+[device] hotspot: SSID F50 imported (passphrase 10 chars)
+[device] installed: openwrt ubuntu boot-os=ubuntu default-linux=1
+MU300-INSTALL-OK
+
+==> Writing boot_b and arming slot b
+
+==> Installing the on-device switch (Magisk module)
+Magisk module installed: after the next Android boot, 'su -c mu300-linux' (or the module's Action
+button in the Magisk app) starts Linux without a computer.
+
+==> Done. Rebooting into ubuntu
+  USB network: 192.168.77.1   SSH: ubuntu@192.168.77.1
+  switch systems: mu300-os ubuntu|openwrt   back to Android: mu300-next-boot android
+  back to Linux from Android (with Magisk): su -c mu300-linux

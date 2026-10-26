@@ -1,0 +1,6 @@
+[Unit]
+Description=MU300 CPU voltage offset (EXPERIMENTAL): mark the offset of this boot good (10 minutes up)
+
+[Service]
+Type=oneshot
+ExecStart=/opt/mu300/bin/mu300-cpu voltage mark-good

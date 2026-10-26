@@ -1,0 +1,779 @@
+#!/bin/sh
+# SMS forwarding of the control panel (Cellular > SMS forwarding on openwrt-luci, SMS on Ubuntu's Cockpit page): every
+# message that lands in the SMS pool (mu300-sms on openwrt-luci; on Ubuntu the forwarding service's own pool, which
+# unisoc-modem/forward-feed fills from "sms watch") can be sent on to a webhook, a Telegram chat, an e-mail address (when
+# the image has msmtp) and another phone, by SMS. Off until the panel turns it on.
+#   mu300-sms-forward enqueue ID...   queue pool messages that pass the filters, then deliver (mu300-sms sync runs it)
+#   mu300-sms-forward kick            start a delivery when something waits and none runs (also run by every sync)
+#   mu300-sms-forward run             deliver what waits, retrying with a growing wait; ends when the queue is empty
+#   mu300-sms-forward test            one delivery of a test message to every target that is on (the panel's button)
+#   mu300-sms-forward test-gate       0 when the panel may start a test now, 1 when one was started under 5 s ago
+#   mu300-sms-forward clear           empty the queue (forwarding turned off)
+#   mu300-sms-forward status          "queued N", "running 0|1", "email 0|1" (msmtp there or not)
+#   mu300-sms-forward log             the delivery log, oldest first: epoch, id, target, result, detail (tab-separated)
+#   mu300-sms-forward log-clear       empty the delivery log (the panel's button)
+#
+# Driven by the pool, never by the modem: mu300-sms hands over each new message by its id, and nothing here polls
+# anything. The queue ("target <TAB> message file", at most MU300_FWD_QUEUE_MAX lines) is on flash, next to the
+# configuration, and is written when a message joins or leaves it - never per attempt: the attempts, the next try and
+# the log are in RAM. After a reboot the first sync resumes what was still queued, from its first attempt.
+#
+# A failed delivery is tried again after 30 s, then 1, 2, 4... minutes (an hour at most), MU300_FWD_ATTEMPTS times in
+# all; a refusal that cannot change by waiting (HTTP 4xx but 408 and 429, a bad number) is not retried.
+#
+# The configuration, /etc/mu300/sms-forward.conf, is written by the panel (unisoc-modem/forward) and is root's only
+# (0600): it holds the Telegram token, the webhook URL and headers and the mail password. None of them is ever put in
+# a command line or the log: an HTTP request goes to the ucode helper (/opt/mu300/lib/sms-forward-http.uc; on Ubuntu,
+# which has no ucode, /opt/mu300/lib/sms-forward-http.sh with curl, the same request and answer) on stdin,
+# the mail password to msmtp in a 0600 file in RAM. The log says which message went where and how it ended, never the
+# message, the sender or a secret. Lines are "key=value": enabled, template (a newline as \n, a backslash as \\),
+# allow, deny, keyword (one entry per line, repeated), webhook, webhook_url, webhook_format (json|form|text),
+# webhook_body (the user's own request body, stored like the template; empty: the standard one), webhook_expect
+# (KEY=VALUE a top-level value of the service's JSON answer must be; empty: any 2xx is a delivery), webhook_header
+# ("Name: value", repeated), telegram, telegram_token, telegram_chat, email, email_host, email_port,
+# email_tls (starttls|tls|off), email_user, email_password, email_from, email_to, sms, sms_number.
+set -u
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+# bytes, not characters: the template, the text and the cut to one SMS work on UTF-8 bytes
+export LC_ALL=C
+umask 077
+
+CONF=${MU300_FWD_CONF:-/etc/mu300/sms-forward.conf}
+STATE=${MU300_FWD_STATE:-/etc/mu300/sms-forward.d}
+RUN=${MU300_FWD_RUN:-/run/mu300-sms-forward}
+[ -d "${RUN%/*}" ] || RUN=${TMPDIR:-/tmp}/mu300-sms-forward
+QUEUE=$STATE/queue
+LOG=$RUN/log
+RETRY=$RUN/retry
+POOL=${MU300_SMS_POOL:-/etc/mu300/sms-pool}
+SMS=${MU300_SMS_BIN:-/opt/mu300/bin/mu300-sms}
+HTTP=${MU300_FWD_HTTP:-/opt/mu300/lib/sms-forward-http.uc}
+HTTP_CURL=${MU300_FWD_HTTP_CURL:-/opt/mu300/lib/sms-forward-http.sh}
+QUEUE_MAX=${MU300_FWD_QUEUE_MAX:-100}
+ATTEMPTS=${MU300_FWD_ATTEMPTS:-10}
+# the largest webhook request body, filled in (the panel takes a body template of 2000 bytes at most)
+BODY_MAX=${MU300_FWD_BODY_MAX:-65536}
+# how much of a webhook's answer is looked at for webhook_expect (the helper keeps no more, answer_verdict reads no more)
+ANSWER_MAX=4096
+# the least time between two tests the panel starts (test-gate): a test is the one way to ask about an answer at will
+TEST_GAP=${MU300_FWD_TEST_GAP:-5}
+LOG_MAX=100
+TAB=$(printf '\t')
+NL='
+'
+DEFAULT_TEMPLATE='{text}\n-- {sender}, {time} ({device})'
+
+say() { echo "mu300-sms-forward: $*" >&2; }
+
+# ------------------------------------------------------------------ configuration
+# conf_load: the settings into c_* (lists newline-separated); never sourced, every line is matched by its key
+conf_load() {
+    c_enabled=0 c_template=$DEFAULT_TEMPLATE c_allow= c_deny= c_keyword=
+    c_webhook=0 c_webhook_url= c_webhook_format=json c_webhook_header= c_webhook_body= c_webhook_expect=
+    c_telegram=0 c_telegram_token= c_telegram_chat=
+    c_email=0 c_email_host= c_email_port=587 c_email_tls=starttls c_email_user= c_email_password= c_email_from= c_email_to=
+    c_sms=0 c_sms_number=
+    [ -r "$CONF" ] || return 0
+    while IFS= read -r _l || [ -n "$_l" ]; do
+        _k=${_l%%=*}; _v=${_l#*=}
+        [ "$_k" != "$_l" ] || continue
+        case $_k in
+            enabled) c_enabled=$_v ;;
+            template) [ -n "$_v" ] && c_template=$_v ;;
+            allow) c_allow=$c_allow$_v$NL ;;
+            deny) c_deny=$c_deny$_v$NL ;;
+            keyword) c_keyword=$c_keyword$_v$NL ;;
+            webhook) c_webhook=$_v ;;
+            webhook_url) c_webhook_url=$_v ;;
+            webhook_format) c_webhook_format=$_v ;;
+            webhook_body) c_webhook_body=$_v ;;
+            webhook_expect) c_webhook_expect=$_v ;;
+            webhook_header) c_webhook_header=$c_webhook_header$_v$NL ;;
+            telegram) c_telegram=$_v ;;
+            telegram_token) c_telegram_token=$_v ;;
+            telegram_chat) c_telegram_chat=$_v ;;
+            email) c_email=$_v ;;
+            email_host) c_email_host=$_v ;;
+            email_port) c_email_port=$_v ;;
+            email_tls) c_email_tls=$_v ;;
+            email_user) c_email_user=$_v ;;
+            email_password) c_email_password=$_v ;;
+            email_from) c_email_from=$_v ;;
+            email_to) c_email_to=$_v ;;
+            sms) c_sms=$_v ;;
+            sms_number) c_sms_number=$_v ;;
+        esac
+    done < "$CONF"
+}
+
+# targets: the targets that are on and have what they need, in a fixed order
+targets() {
+    [ "$c_webhook" = 1 ] && [ -n "$c_webhook_url" ] && echo webhook
+    [ "$c_telegram" = 1 ] && [ -n "$c_telegram_token" ] && [ -n "$c_telegram_chat" ] && echo telegram
+    [ "$c_email" = 1 ] && [ -n "$c_email_host" ] && [ -n "$c_email_to" ] && [ -n "$c_email_from" ] && echo email
+    [ "$c_sms" = 1 ] && [ -n "$c_sms_number" ] && echo sms
+    return 0
+}
+
+# ------------------------------------------------------------------ state
+# mkdir locks, as everywhere here; a dead holder's lock is taken over
+alive() {
+    [ -n "$1" ] && kill -0 "$1" 2>/dev/null || return 1
+    [ -d /proc/self ] || return 0
+    { tr '\0' ' ' < "/proc/$1/cmdline"; } 2>/dev/null | grep -q mu300-sms-forward
+}
+lock() {  # lock NAME [WAIT]: 0 when taken
+    _n=0
+    while ! mkdir "$RUN/$1.lock" 2>/dev/null; do
+        if ! alive "$(cat "$RUN/$1.lock/pid" 2>/dev/null)"; then rm -rf "$RUN/$1.lock"; continue; fi
+        _n=$((_n + 1)); [ "$_n" -gt "${2:-0}" ] && return 1
+        sleep 1
+    done
+    echo $$ > "$RUN/$1.lock/pid"
+}
+unlock() { rm -rf "$RUN/$1.lock"; }
+
+# the RAM directory and the state on flash are ours alone (0700): never one someone else made or a link to one (the
+# log, the retries, the mail password's file and an HTTP request's body are written there)
+state_init() {
+    mkdir -p "$RUN" "$STATE" 2>/dev/null
+    for _d in "$RUN" "$STATE"; do
+        if [ -L "$_d" ] || [ ! -d "$_d" ] || [ ! -O "$_d" ]; then
+            say "refusing $_d: not a directory of our own"; exit 1
+        fi
+    done
+    chmod 700 "$RUN" "$STATE" 2>/dev/null
+}
+
+# log ID TARGET RESULT [DETAIL]: one line in the RAM log (the last LOG_MAX are kept)
+log() {
+    printf '%s\t%s\t%s\t%s\t%s\n' "$(date +%s)" "$1" "$2" "$3" "${4:-}" >> "$LOG"
+    [ "$(wc -l < "$LOG")" -gt $((LOG_MAX + 20)) ] && { tail -n "$LOG_MAX" "$LOG" > "$LOG.part" && mv "$LOG.part" "$LOG"; }
+    return 0
+}
+
+# queue_write FILE: FILE becomes the queue (on flash: only when it differs)
+queue_write() {
+    if cmp -s "$1" "$QUEUE" 2>/dev/null; then rm -f "$1"; return 0; fi
+    if [ -s "$1" ]; then mv "$1" "$QUEUE"; else rm -f "$1" "$QUEUE"; fi
+}
+
+# queue_drop TARGET FILE: one entry out of the queue, and out of the retry state
+queue_drop() {
+    lock queue 30 || return 1
+    T=$1 F=$2 awk -F'\t' '!($1 == ENVIRON["T"] && $2 == ENVIRON["F"])' "$QUEUE" > "$QUEUE.part" 2>/dev/null
+    queue_write "$QUEUE.part"
+    T=$1 F=$2 awk -F'\t' '!($1 == ENVIRON["T"] && $2 == ENVIRON["F"])' "$RETRY" > "$RETRY.part" 2>/dev/null
+    mv "$RETRY.part" "$RETRY"
+    unlock queue
+}
+
+# ------------------------------------------------------------------ messages
+hdr() { sed -n "1,/^\$/s/^$2: //p" "$1" 2>/dev/null | head -n 1; }
+body_of() { sed -n '1,/^$/!p' "$1" 2>/dev/null; }
+msg_id() { _i=${1##*/}; printf '%s\n' "$_i" | sed 's/^0*//'; }
+
+# norm SENDER: a sender as the filters compare it - lower case, without spaces and a leading +
+norm() { printf '%s' "$1" | tr 'A-Z' 'a-z' | tr -d ' ' | sed 's/^+//'; }
+
+# in_list SENDER LIST: SENDER is in LIST (an entry ending in * matches the start of a sender)
+in_list() {
+    _s=$(norm "$1")
+    printf '%s' "$2" | while IFS= read -r _e || [ -n "$_e" ]; do
+        [ -n "$_e" ] || continue
+        _e=$(norm "$_e")
+        case $_e in
+            *'*') case $_s in "${_e%'*'}"*) echo y; break ;; esac ;;
+            *) [ "$_s" = "$_e" ] && { echo y; break; } ;;
+        esac
+    done | grep -q y
+}
+
+# passes SENDER TEXT: the filters let the message through; the reason it does not in $why
+passes() {
+    why=
+    if [ -n "$c_deny" ] && in_list "$1" "$c_deny"; then why='sender denied'; return 1; fi
+    if [ -n "$c_allow" ] && ! in_list "$1" "$c_allow"; then why='sender not allowed'; return 1; fi
+    if [ -n "$c_keyword" ]; then
+        _low=$(printf '%s' "$2" | tr 'A-Z' 'a-z')
+        printf '%s' "$c_keyword" | while IFS= read -r _w || [ -n "$_w" ]; do
+            [ -n "$_w" ] || continue
+            _w=$(printf '%s' "$_w" | tr 'A-Z' 'a-z')
+            case $_low in *"$_w"*) echo y; break ;; esac
+        done | grep -q y || { why='no keyword'; return 1; }
+    fi
+    return 0
+}
+
+# fill TEMPLATE MODE SENDER TIME TEXT DEVICE [MESSAGE]: TEMPLATE (in the stored one-line form) with its placeholders
+# replaced: {sender} {time} {text} {device}, and {message} when MESSAGE is given. Anything else in braces stays as it
+# is. MODE says how a value is written: raw as it is; json as the inside of a JSON string (quote, backslash and every
+# control character escaped - the quotes around it are the template's); url percent-encoded. One pass: a value put in
+# is never read again for placeholders. Neither the template nor a value passes through a shell, eval or awk -v (no
+# escapes are read in them): they reach awk in its environment and are only ever copied.
+fill() {
+    T=$1 M=$2 F=$3 D=$4 X=$5 V=$6 G=${7:-} N=$# awk '
+    function enc(s,   i, c, o) {
+        if (mode == "json") {
+            o = ""
+            for (i = 1; i <= length(s); i++) { c = substr(s, i, 1); o = o ((c in je) ? je[c] : c) }
+            return o
+        }
+        if (mode == "url") {
+            o = ""
+            for (i = 1; i <= length(s); i++) {
+                c = substr(s, i, 1)
+                if (c ~ /[A-Za-z0-9._~-]/) o = o c; else o = o sprintf("%%%02X", ord[c])
+            }
+            return o
+        }
+        return s
+    }
+    BEGIN {
+        mode = ENVIRON["M"]
+        if (mode == "json") {
+            for (i = 1; i < 32; i++) je[sprintf("%c", i)] = sprintf("\\u%04x", i)
+            je["\""] = "\\\""; je["\\"] = "\\\\"; je["\n"] = "\\n"; je["\t"] = "\\t"; je["\r"] = "\\r"
+        }
+        if (mode == "url") for (i = 0; i < 256; i++) ord[sprintf("%c", i)] = i
+        t = ENVIRON["T"]; u = ""
+        # the stored form: \n is a newline, \\ a backslash
+        while ((i = index(t, "\\")) > 0) {
+            c = substr(t, i + 1, 1)
+            u = u substr(t, 1, i - 1) (c == "n" ? "\n" : c)
+            t = substr(t, i + 2)
+        }
+        t = u t; out = ""
+        n = split("sender time text device" (ENVIRON["N"] + 0 >= 7 ? " message" : ""), name, " ")
+        val["sender"] = ENVIRON["F"]; val["time"] = ENVIRON["D"]; val["text"] = ENVIRON["X"]; val["device"] = ENVIRON["V"]
+        val["message"] = ENVIRON["G"]
+        while ((i = index(t, "{")) > 0) {
+            out = out substr(t, 1, i - 1); t = substr(t, i); hit = 0
+            for (k = 1; k <= n; k++) {
+                p = "{" name[k] "}"
+                if (substr(t, 1, length(p)) == p) { out = out enc(val[name[k]]); t = substr(t, length(p) + 1); hit = 1; break }
+            }
+            if (!hit) { out = out "{"; t = substr(t, 2) }
+        }
+        printf "%s", out t
+    }'
+}
+
+# render SENDER TIME TEXT DEVICE: the message template filled in, as text
+render() { fill "$c_template" raw "$1" "$2" "$3" "$4"; }
+
+device_name() { cat /proc/sys/kernel/hostname 2>/dev/null || uname -n; }
+
+# JSON string of $1 (quotes included); every control character escaped, text above 0x7f passed through
+json() {
+    S=$1 awk 'BEGIN {
+        for (i = 1; i < 32; i++) e[sprintf("%c", i)] = sprintf("\\u%04x", i)
+        e["\""] = "\\\""; e["\\"] = "\\\\"; e["\n"] = "\\n"; e["\t"] = "\\t"; e["\r"] = "\\r"
+        s = ENVIRON["S"]; o = ""
+        for (i = 1; i <= length(s); i++) { c = substr(s, i, 1); o = o ((c in e) ? e[c] : c) }
+        printf "\"%s\"", o
+    }'
+}
+
+# urlencode $1: every byte but the unreserved ones as %XX
+urlencode() {
+    S=$1 awk 'BEGIN {
+        for (i = 0; i < 256; i++) ord[sprintf("%c", i)] = i
+        s = ENVIRON["S"]; o = ""
+        for (i = 1; i <= length(s); i++) {
+            c = substr(s, i, 1)
+            if (c ~ /[A-Za-z0-9._~-]/) o = o c; else o = o sprintf("%%%02X", ord[c])
+        }
+        printf "%s", o
+    }'
+}
+
+# one_sms TEXT: TEXT cut to what one SMS carries: 160 characters when every one is plain ASCII outside the GSM
+# extension table, else 70 UCS-2 units (a character beyond U+FFFF takes two). mu300-sms sends one part only.
+one_sms() {
+    S=$1 awk 'BEGIN {
+        for (i = 0; i < 256; i++) ord[sprintf("%c", i)] = i
+        s = ENVIRON["S"]; n = length(s); gsm = 1
+        for (i = 1; i <= n; i++) { b = ord[substr(s, i, 1)]; if (b >= 128 || (b < 32 && b != 10 && b != 13) || index("[]{}\\^~|", substr(s, i, 1))) gsm = 0 }
+        if (gsm) { printf "%s", (n > 160 ? substr(s, 1, 157) "..." : s); exit }
+        units = 0; out = ""
+        for (i = 1; i <= n; ) {
+            b = ord[substr(s, i, 1)]
+            len = (b >= 240) ? 4 : (b >= 224) ? 3 : (b >= 192) ? 2 : 1
+            u = (len == 4) ? 2 : 1
+            if (units + u > 70) { cut = 1; break }
+            out = out substr(s, i, len); units += u; i += len
+        }
+        if (cut) {
+            # room for "..." (three units): drop whole characters from the end until it fits
+            while (units > 67) {
+                b = ord[substr(out, length(out), 1)]
+                while (b >= 128 && b < 192) { out = substr(out, 1, length(out) - 1); b = ord[substr(out, length(out), 1)] }
+                units -= (b >= 240) ? 2 : 1
+                out = substr(out, 1, length(out) - 1)
+            }
+            out = out "..."
+        }
+        printf "%s", out
+    }'
+}
+
+# ------------------------------------------------------------------ delivery
+# http_request URL CONTENT_TYPE BODY [HEADER LINES]: the request as the helper reads it on stdin
+http_request() {
+    printf '%s\n' "$1"
+    printf 'Content-Type: %s\n' "$2"
+    [ -n "${4:-}" ] && printf '%s' "$4" | grep -v '^$'
+    printf '\n'
+    printf '%s' "$3"
+}
+
+# expect_ok RULE: RULE is KEY=VALUE as the panel takes it (unisoc-modem/forward): KEY a name (a letter or _, then
+# letters, digits, _; 32 at most), VALUE a whole number (16 digits at most, a - before it allowed) or 1 to 16
+# lowercase letters (true, false, ok). No more than a status needs: the narrower the rule, the less of an answer
+# anyone who may set it can ask about.
+expect_ok() {
+    _k=${1%%=*}; _w=${1#*=}
+    [ "$_k" != "$1" ] && [ -n "$_k" ] && [ "${#_k}" -le 32 ] || return 1
+    case $_k in [0-9]*|*[!A-Za-z0-9_]*) return 1 ;; esac
+    scalar_ok "$_w" || return 1
+    case $_w in *[!a-z]*) return 0 ;; esac
+    [ "${#_w}" -le 16 ]
+}
+# scalar_ok TEXT: TEXT is a whole number of 16 digits at most (a - before it allowed), or lowercase letters only
+scalar_ok() {
+    case $1 in
+        ''|-) return 1 ;;
+        *[!a-z]*) _n=${1#-}; case $_n in *[!0-9]*) return 1 ;; esac; [ "${#_n}" -le 16 ] ;;
+    esac
+}
+
+# answer_verdict KEY VALUE: stdin is what the helper wrote when asked for the answer: its status line, then the start
+# of the reply. Out: the status line, then one line saying whether the answer is a JSON object whose top-level KEY is
+# the scalar VALUE:
+#   answer ok | answer differs [TOKEN] | answer none
+# "none" is every answer that has no scalar under that key at its top level - no such key, an object or a list there,
+# no JSON object, an empty answer, the key beyond the first ANSWER_MAX bytes: one verdict, so that it says nothing
+# more about the answer. TOKEN is the value found and is given only when it is a whole number of 16 digits at most
+# or a bare true, false or null; any other value (a text, a fraction) is "differs" alone.
+# This is the only place a reply is read, and nothing else of it leaves here: it comes down the pipe, its first
+# ANSWER_MAX bytes are kept in awk (in memory), and that one line goes out. KEY and VALUE reach awk in its
+# environment and are compared as text (a string by its content, anything else as it is written: 0 is not 0.0);
+# nothing of them or of the answer is ever run as a program. Not a JSON parser: it walks the text once, counting
+# brackets and skipping strings, so an answer cut short still gives its verdict when the key came before the cut. A
+# value the cut may have shortened is not looked at. A key that is there twice must have the value both times.
+answer_verdict() {
+    K=$1 W=$2 MAX=$ANSWER_MAX awk '
+    # token(v, bare): v when it may be shown, else ""
+    function token(v, bare,   i, c, d) {
+        if (bare && (v == "true" || v == "false" || v == "null")) return v
+        d = (substr(v, 1, 1) == "-") ? substr(v, 2) : v
+        if (d == "" || length(d) > 16) return ""
+        for (i = 1; i <= length(d); i++) if (!index("0123456789", substr(d, i, 1))) return ""
+        return v
+    }
+    # str(i): b has a quote at i; the content of that string in s, the position after its closing quote (0: cut short)
+    function str(i,   j, c) {
+        for (j = i + 1; j <= n; j++) {
+            c = substr(b, j, 1)
+            if (c == "\\") { j++; continue }
+            if (c == "\"") { s = substr(b, i + 1, j - i - 1); return j + 1 }
+        }
+        return 0
+    }
+    function blank(i) { while (i <= n && index(" \t\r\n", substr(b, i, 1))) i++; return i }
+    BEGIN { max = ENVIRON["MAX"] + 0; key = ENVIRON["K"]; want = ENVIRON["W"] }
+    NR == 1 { print; next }
+    {
+        b = b (NR > 2 ? "\n" : "") $0
+        if (length(b) >= max) { b = substr(b, 1, max); exit }
+    }
+    END {
+        if (NR == 0) exit
+        n = length(b)
+        i = blank(substr(b, 1, 3) == "\357\273\277" ? 4 : 1)
+        if (substr(b, i, 1) != "{") { print "answer none"; exit }
+        depth = 0; found = 0; differs = 0; shown = ""
+        while (i <= n) {
+            c = substr(b, i, 1)
+            if (c == "{" || c == "[") { depth++; i++; continue }
+            if (c == "}" || c == "]") { if (--depth <= 0) break; i++; continue }
+            if (c != "\"") { i++; continue }
+            i = str(i)
+            if (!i) break
+            # a string of the object itself with a colon after it is a key
+            j = blank(i)
+            if (depth != 1 || substr(b, j, 1) != ":" || s != key) continue
+            i = blank(j + 1)
+            if (i > n) break
+            c = substr(b, i, 1)
+            # an object or a list is no value of a rule: as if the key were not there (the walk goes on into it)
+            if (c == "{" || c == "[") continue
+            if (c == "\"") {
+                j = str(i)
+                if (!j) break
+                v = s; bare = 0
+            } else {
+                j = i
+                while (j <= n && !index(",}] \t\r\n", substr(b, j, 1))) j++
+                if (j > n) break
+                v = substr(b, i, j - i); bare = 1
+            }
+            i = j
+            found++; if (v != want && !differs) { differs = 1; shown = token(v, bare) }
+        }
+        if (differs) print "answer differs" (shown != "" ? " " shown : "")
+        else if (found) print "answer ok"
+        else print "answer none"
+    }'
+}
+
+# http_post URL CONTENT_TYPE BODY [HEADER LINES [EXPECT]]: d_status, the HTTP status (0: no answer) and d_detail. The
+# whole request goes to the helper on stdin. The helper passes on the status and nothing of the reply; with EXPECT
+# (KEY=VALUE) it is asked (MU300_FWD_ANSWER) for the start of a 2xx reply as well, which goes straight into
+# answer_verdict: d_answer is that verdict.
+http_post() {
+    d_status=0 d_answer=
+    # the client: OpenWrt's ucode helper, else (Ubuntu) the curl one; both read the same request and say the same
+    if command -v ucode >/dev/null 2>&1 && [ -f "$HTTP" ]; then set -- ucode "$HTTP" "$@"
+    elif command -v curl >/dev/null 2>&1 && [ -f "$HTTP_CURL" ]; then set -- sh "$HTTP_CURL" "$@"
+    else d_detail='no HTTP client (ucode or curl)'; return; fi
+    _hc1=$1 _hc2=$2; shift 2
+    _to=; command -v timeout >/dev/null 2>&1 && _to='timeout 40'
+    if [ -n "${5:-}" ]; then
+        _r=$(http_request "$@" | MU300_FWD_TMP=$RUN MU300_FWD_ANSWER=$ANSWER_MAX $_to "$_hc1" "$_hc2" 2>/dev/null |
+            answer_verdict "${5%%=*}" "${5#*=}" 2>/dev/null)
+        case $_r in *"$NL"*) d_answer=${_r#*"$NL"}; _r=${_r%%"$NL"*} ;; esac
+    else
+        _r=$(http_request "$@" | MU300_FWD_TMP=$RUN $_to "$_hc1" "$_hc2" 2>/dev/null | head -n 1)
+    fi
+    case $_r in
+        'status '[0-9]*) d_status=${_r#status }; d_detail="HTTP $d_status" ;;
+        'error '*) d_detail=${_r#error } ;;
+        *) d_detail='no answer' ;;
+    esac
+}
+
+# http_result: 0 for a 2xx, 2 for a refusal that waiting cannot change (3xx, 4xx but 408 and 429), else 1
+http_result() {
+    case $d_status in
+        2[0-9][0-9]) return 0 ;;
+        408|429|0) return 1 ;;
+        [34][0-9][0-9]) return 2 ;;
+        *) return 1 ;;
+    esac
+}
+
+# answer_result RULE: after a 2xx with RULE (KEY=VALUE), what d_answer makes of the delivery, added to d_detail. 0: the
+# answer has the value. 1: it has another one - the service says it did not take the message, so another try cannot
+# deliver it twice. 2: the answer has no such value at all - nothing says the message was not taken, the rule does
+# not fit what this service answers, and a retry could deliver the message again.
+answer_result() {
+    _k=${1%%=*}
+    case $d_answer in
+        'answer ok') d_detail="$d_detail, $1"; return 0 ;;
+        'answer differs '*)
+            # checked again here: nothing but a number or true, false, null is ever written to the log
+            _tok=${d_answer#answer differs }
+            case $_tok in
+                true|false|null) ;;
+                *[a-z]*) _tok= ;;
+                *) scalar_ok "$_tok" || _tok= ;;
+            esac
+            if [ -n "$_tok" ]; then d_detail="$d_detail, the service answered $_k=$_tok"
+            else d_detail="$d_detail, the service answered another $_k"; fi
+            return 1 ;;
+        'answer differs') d_detail="$d_detail, the service answered another $_k"; return 1 ;;
+        *) d_detail="$d_detail, no $_k in the answer"; return 2 ;;
+    esac
+}
+
+# deliver TARGET FILE: one attempt; 0 delivered, 1 worth another try, 2 not; why in d_detail. FILE "test": a sample.
+deliver() {
+    d_detail=
+    if [ "$2" = test ]; then
+        _from=MU300; _time=$(date '+%Y-%m-%d %H:%M:%S'); _text='Test message from the control panel'
+    else
+        [ -f "$2" ] || { d_detail='message no longer in the pool'; return 2; }
+        _from=$(hdr "$2" from); _time=$(hdr "$2" scts); _text=$(body_of "$2")
+    fi
+    _dev=$(device_name)
+    _msg=$(render "$_from" "$_time" "$_text" "$_dev")
+    case $1 in
+    webhook)
+        # the format is the content type, and how a value is written into a body of the user's own (webhook_body);
+        # with none, the standard body of that format: the five fields, or for text the message alone
+        case $c_webhook_format in
+            form) _type=application/x-www-form-urlencoded; _mode=url ;;
+            text) _type='text/plain; charset=utf-8'; _mode=raw ;;
+            *) _type='application/json; charset=utf-8'; _mode=json ;;
+        esac
+        if [ -n "$c_webhook_body" ]; then
+            _body=$(fill "$c_webhook_body" "$_mode" "$_from" "$_time" "$_text" "$_dev" "$_msg")
+        else
+            case $_mode in
+                url) _body="sender=$(urlencode "$_from")&time=$(urlencode "$_time")&text=$(urlencode "$_text")&device=$(urlencode "$_dev")&message=$(urlencode "$_msg")" ;;
+                raw) _body=$_msg ;;
+                *) _body="{\"sender\":$(json "$_from"),\"time\":$(json "$_time"),\"text\":$(json "$_text"),\"device\":$(json "$_dev"),\"message\":$(json "$_msg")}" ;;
+            esac
+        fi
+        if [ "$(printf '%s' "$_body" | wc -c)" -gt "$BODY_MAX" ]; then d_detail='the webhook body is too large'; return 2; fi
+        # a rule this cannot read (the panel never writes one) is not guessed at: nothing is sent
+        if [ -n "$c_webhook_expect" ] && ! expect_ok "$c_webhook_expect"; then d_detail='the answer check is not KEY=VALUE'; return 2; fi
+        http_post "$c_webhook_url" "$_type" "$_body" "$c_webhook_header" "$c_webhook_expect"
+        http_result || return
+        [ -n "$c_webhook_expect" ] || return 0
+        answer_result "$c_webhook_expect" ;;
+    telegram)
+        http_post "https://api.telegram.org/bot$c_telegram_token/sendMessage" application/x-www-form-urlencoded \
+            "chat_id=$(urlencode "$c_telegram_chat")&disable_web_page_preview=true&text=$(urlencode "$_msg")"
+        http_result ;;
+    email)
+        mail_send "$_from" "$_msg" ;;
+    sms)
+        # never back to the number it came from: two devices forwarding to each other would never stop
+        if [ "$(norm "$_from")" = "$(norm "$c_sms_number")" ]; then d_detail='the sender is the forwarding number'; return 2; fi
+        if [ -x "$SMS" ]; then
+            # the number on stdin's first line, the text after it: neither in an argument
+            _out=$({ printf '%s\n' "$c_sms_number"; one_sms "$_msg"; } | MU300_SMS_POOL=$POOL "$SMS" send --stdin 2>&1)
+        elif command -v sms >/dev/null 2>&1; then
+            # Ubuntu: the sms command (no pool); the number and the text on its stdin, never in an argument
+            _out=$({ printf '%s\n' "$c_sms_number"; one_sms "$_msg"; } | sms send --stdin 2>&1)
+        else
+            d_detail='no SMS command'; return 2
+        fi
+        case $(printf '%s\n' "$_out" | tail -n 1) in
+            'sent'*) d_detail=sent; return 0 ;;
+        esac
+        # the reason, without the text: mu300-sms (and sms) quote only the modem's error line or their own refusal
+        d_detail=$(printf '%s\n' "$_out" | tail -n 1 | sed 's/^mu300-sms: //; s/^sms: //' | cut -c1-120)
+        case $_out in *'number may only'*|*'more than 20 digits'*|*'is empty'*) return 2 ;; esac
+        return 1 ;;
+    *)
+        d_detail='unknown target'; return 2 ;;
+    esac
+}
+
+# mail_send SENDER TEXT: through msmtp (when the image has it); the password goes in a 0600 file in RAM, read by
+# msmtp, removed right after
+mail_send() {
+    command -v msmtp >/dev/null 2>&1 || { d_detail='msmtp is not installed'; return 2; }
+    _cf=$RUN/msmtp.$$
+    (
+        umask 077
+        {
+            printf 'defaults\ntimeout 30\ntls_trust_file /etc/ssl/certs/ca-certificates.crt\naccount default\n'
+            printf 'host %s\nport %s\nfrom %s\n' "$c_email_host" "$c_email_port" "$c_email_from"
+            case $c_email_tls in
+                tls) printf 'tls on\ntls_starttls off\n' ;;
+                off) printf 'tls off\n' ;;
+                *) printf 'tls on\ntls_starttls on\n' ;;
+            esac
+            if [ -n "$c_email_user" ]; then
+                printf 'auth on\nuser %s\npassword %s\n' "$c_email_user" "$c_email_password"
+            else
+                printf 'auth off\n'
+            fi
+        } > "$_cf"
+    )
+    # the subject in plain ASCII: the sender's printable ASCII only
+    _subj=$(printf '%s' "$1" | tr -cd ' -~' | cut -c1-40)
+    _out=$({
+        printf 'From: %s\nTo: %s\nSubject: SMS from %s\n' "$c_email_from" "$c_email_to" "${_subj:-?}"
+        printf 'MIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\n\n'
+        printf '%s\n' "$2"
+    } | msmtp -C "$_cf" -t 2>&1)
+    _rc=$?
+    rm -f "$_cf"
+    [ "$_rc" = 0 ] && { d_detail=sent; return 0; }
+    d_detail="msmtp exit $_rc"
+    return 1
+}
+
+# backoff ATTEMPT: seconds to wait after that many failed attempts (30 s, doubling, an hour at most;
+# MU300_FWD_BACKOFF: the first wait, for the tests)
+backoff() {
+    _b=${MU300_FWD_BACKOFF:-30}; _i=1
+    while [ "$_i" -lt "$1" ] && [ "$_b" -lt 3600 ]; do _b=$((_b * 2)); _i=$((_i + 1)); done
+    [ "$_b" -gt 3600 ] && _b=3600
+    echo "$_b"
+}
+
+# ------------------------------------------------------------------ commands
+cmd_enqueue() {
+    conf_load
+    [ "$c_enabled" = 1 ] || return 0
+    _targets=$(targets)
+    [ -n "$_targets" ] || return 0
+    state_init
+    lock queue 30 || { say "the queue stayed locked"; return 1; }
+    cat "$QUEUE" > "$QUEUE.part" 2>/dev/null || : > "$QUEUE.part"
+    for _id in "$@"; do
+        case $_id in ''|*[!0-9]*) continue ;; esac
+        _f=$POOL/msg/$(printf '%06d' "$(printf '%s' "$_id" | sed 's/^0*//;s/^$/0/')")
+        [ -f "$_f" ] || continue
+        [ "$(hdr "$_f" dir)" = mt ] || continue
+        if ! passes "$(hdr "$_f" from)" "$(body_of "$_f")"; then
+            log "$(msg_id "$_f")" - skipped "$why"
+            continue
+        fi
+        for _t in $_targets; do
+            grep -qxF "$_t$TAB$_f" "$QUEUE.part" || printf '%s\t%s\n' "$_t" "$_f" >> "$QUEUE.part"
+        done
+    done
+    # bounded: the oldest go first
+    _n=$(wc -l < "$QUEUE.part" | tr -d ' ')
+    if [ "$_n" -gt "$QUEUE_MAX" ]; then
+        head -n $((_n - QUEUE_MAX)) "$QUEUE.part" | while IFS="$TAB" read -r _t _f; do
+            log "$(msg_id "$_f")" "$_t" dropped 'queue full'
+        done
+        tail -n "$QUEUE_MAX" "$QUEUE.part" > "$QUEUE.cut" && mv "$QUEUE.cut" "$QUEUE.part"
+    fi
+    queue_write "$QUEUE.part"
+    unlock queue
+    : > "$RUN/wake"
+    cmd_kick
+}
+
+cmd_kick() {
+    [ -s "$QUEUE" ] || return 0
+    # MU300_FWD_NO_WORKER=1: queue only (the tests run the worker themselves)
+    [ "${MU300_FWD_NO_WORKER:-0}" = 1 ] && return 0
+    state_init
+    alive "$(cat "$RUN/worker.lock/pid" 2>/dev/null)" && { : > "$RUN/wake"; return 0; }
+    if command -v setsid >/dev/null 2>&1; then
+        setsid "$0" run </dev/null >/dev/null 2>&1 &
+    else
+        "$0" run </dev/null >/dev/null 2>&1 &
+    fi
+}
+
+cmd_run() {
+    state_init
+    lock worker || return 0
+    # on a signal only, never on EXIT (some shells run an EXIT trap when a subshell ends: see mu300-atd); a worker
+    # that dies otherwise leaves its lock to the next one, which takes it over
+    trap 'unlock worker; exit 0' INT TERM
+    while :; do
+        rm -f "$RUN/wake"
+        conf_load
+        if [ "$c_enabled" != 1 ]; then
+            break
+        fi
+        _now=$(date +%s); _next=
+        # a snapshot: an entry enqueue adds meanwhile is seen on the next round
+        cp "$QUEUE" "$RUN/round" 2>/dev/null || : > "$RUN/round"
+        while IFS="$TAB" read -r _t _f; do
+            [ -n "$_t" ] || continue
+            _st=$(T=$_t F=$_f awk -F'\t' '$1 == ENVIRON["T"] && $2 == ENVIRON["F"] { print $3, $4; exit }' "$RETRY" 2>/dev/null)
+            _att=${_st% *}; _due=${_st#* }
+            case $_att in ''|*[!0-9]*) _att=0 ;; esac
+            case $_due in ''|*[!0-9]*) _due=0 ;; esac
+            if [ "$_due" -gt "$_now" ]; then
+                { [ -z "$_next" ] || [ "$_due" -lt "$_next" ]; } && _next=$_due
+                continue
+            fi
+            # a target turned off since: it leaves the queue
+            if ! targets | grep -qx "$_t"; then queue_drop "$_t" "$_f"; continue; fi
+            _id=$(msg_id "$_f")
+            deliver "$_t" "$_f"
+            case $? in
+                0) queue_drop "$_t" "$_f"; log "$_id" "$_t" sent "$d_detail" ;;
+                2) queue_drop "$_t" "$_f"; log "$_id" "$_t" failed "$d_detail" ;;
+                *)
+                    _att=$((_att + 1))
+                    if [ "$_att" -ge "$ATTEMPTS" ]; then
+                        queue_drop "$_t" "$_f"; log "$_id" "$_t" failed "$d_detail, gave up after $_att attempts"
+                    else
+                        _wait=$(backoff "$_att"); _due=$(( $(date +%s) + _wait ))
+                        { T=$_t F=$_f awk -F'\t' '!($1 == ENVIRON["T"] && $2 == ENVIRON["F"])' "$RETRY" 2>/dev/null
+                          printf '%s\t%s\t%s\t%s\n' "$_t" "$_f" "$_att" "$_due"; } > "$RETRY.part"
+                        mv "$RETRY.part" "$RETRY"
+                        log "$_id" "$_t" retry "$d_detail, attempt $_att, next in $_wait s"
+                        { [ -z "$_next" ] || [ "$_due" -lt "$_next" ]; } && _next=$_due
+                    fi ;;
+            esac
+        done < "$RUN/round"
+        rm -f "$RUN/round"
+        [ -s "$QUEUE" ] || break
+        # wait for the next retry; an enqueue (the wake file) cuts the wait short
+        [ -n "$_next" ] || _next=$(( $(date +%s) + 2 ))
+        while [ "$(date +%s)" -lt "$_next" ] && [ ! -e "$RUN/wake" ]; do sleep 2; done
+    done
+    unlock worker
+    trap - INT TERM
+    # an enqueue that came after the last look found this worker still alive: start again for it
+    [ -e "$RUN/wake" ] && [ -s "$QUEUE" ] && [ "$c_enabled" = 1 ] && cmd_kick
+    return 0
+}
+
+cmd_test() {
+    conf_load
+    state_init
+    _targets=$(targets)
+    [ -n "$_targets" ] || { log test - failed 'no target is on'; say "no target is on"; return 1; }
+    lock test || { say "a test is already running"; return 1; }
+    _rc=0
+    for _t in $_targets; do
+        deliver "$_t" test
+        case $? in
+            0) log test "$_t" sent "$d_detail" ;;
+            *) log test "$_t" failed "$d_detail"; _rc=1 ;;
+        esac
+    done
+    unlock test
+    return "$_rc"
+}
+
+# cmd_test_gate: for the panel's button (unisoc-modem/forward), which asks before each test: 0, and the time noted,
+# when the last test it started is TEST_GAP seconds old or older. A test with an answer check says something about
+# the answer of whatever address the webhook has; this bounds how often that can be asked. Not for the command
+# line, which is root's anyway.
+cmd_test_gate() {
+    state_init
+    lock gate 5 || return 1
+    _now=$(date +%s); _last=$(cat "$RUN/test.at" 2>/dev/null)
+    case $_last in ''|*[!0-9]*) _last=0 ;; esac
+    # (a clock set back since: the note is in the future and does not count)
+    if [ "$_last" -le "$_now" ] && [ $((_now - _last)) -lt "$TEST_GAP" ]; then unlock gate; return 1; fi
+    echo "$_now" > "$RUN/test.at"
+    unlock gate
+}
+
+cmd_clear() {
+    state_init
+    lock queue 30 || return 1
+    if [ -s "$QUEUE" ]; then
+        while IFS="$TAB" read -r _t _f; do log "$(msg_id "$_f")" "$_t" dropped 'forwarding turned off'; done < "$QUEUE"
+    fi
+    rm -f "$QUEUE" "$RETRY"
+    unlock queue
+}
+
+# cmd_log_clear: the log is unlinked, never opened: whatever stands at its name goes (a link too), and what a link
+# points to is not touched
+cmd_log_clear() {
+    state_init
+    rm -f "$LOG" "$LOG.part" 2>/dev/null
+    [ ! -e "$LOG" ] && [ ! -L "$LOG" ]
+}
+
+cmd_status() {
+    _q=0; [ -s "$QUEUE" ] && _q=$(wc -l < "$QUEUE" | tr -d ' ')
+    _w=0; alive "$(cat "$RUN/worker.lock/pid" 2>/dev/null)" && _w=1
+    _m=0; command -v msmtp >/dev/null 2>&1 && _m=1
+    printf 'queued %s\nrunning %s\nemail %s\n' "$_q" "$_w" "$_m"
+}
+
+case ${1:-} in
+    enqueue) shift; cmd_enqueue "$@" ;;
+    kick)    cmd_kick ;;
+    run)     cmd_run ;;
+    test)    cmd_test ;;
+    test-gate) cmd_test_gate ;;
+    clear)   cmd_clear ;;
+    status)  cmd_status ;;
+    log)     cat "$LOG" 2>/dev/null; true ;;
+    log-clear) cmd_log_clear ;;
+    *) sed -n '5,13p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+esac

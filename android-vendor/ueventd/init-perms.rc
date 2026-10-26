@@ -1,0 +1,478 @@
+# The chown/chmod lines of the F50's vendor init *.rc (the lines gen-ueventd-perms.py reads), in their order.
+# Android's init applies them after ueventd; the files themselves are on the vendor partition only.
+    chown root system /sys/class/typec/port0/power_role
+    chown root system /sys/class/typec/port0/data_role
+    chown root system /sys/class/typec/port0/port_type
+    chmod 664 /sys/class/typec/port0/power_role
+    chmod 664 /sys/class/typec/port0/data_role
+    chmod 664 /sys/class/typec/port0/port_type
+    chown root system /sys/class/usb_notify/usb_control/usb_data_enabled
+    chmod 664 /sys/class/usb_notify/usb_control/usb_data_enabled
+    chmod 0666 /sys/class/backlight/sprd_backlight/brightness
+    chmod 664 /sys/power/wakeup_count
+    chown system system /sys/module/zte_misc/parameters/cc_connect
+    chmod 644 /sys/devices/soc0/soc_manufacturer
+    chmod 644 /sys/devices/soc0/soc_model
+    chown root system /sys/devices/soc0/soc_manufacturer
+    chown root system /sys/devices/soc0/soc_model
+    chown system system /sys/devices/platform/soc/soc:aon/64400000.spi/spi_master/spi4/spi4.0/sc27xx-7sreset/hard_mode
+    chown audioserver audio /proc/asound/sprdphonesc2730/asoc-sprd-debug
+    chmod 660 /proc/asound/sprdphonesc2730/asoc-sprd-debug
+    chmod 660 /sys/devices/virtual/misc/sprd_sensor/camera_sensor_name
+    chown cameraserver system /sys/devices/virtual/misc/sprd_sensor/camera_sensor_name
+    chown cameraserver system /sys/devices/virtual/misc/sprd_flash/test
+    chmod 660 /sys/devices/virtual/misc/sprd_flash/test
+    chmod 660 /sys/class/devfreq/isp-dvfs/isp_governor/set_work_freq
+    chown cameraserver system /sys/class/devfreq/isp-dvfs/isp_governor/set_work_freq
+    chown cameraserver system /sys/devices/virtual/misc/sprd_flash/test
+    chmod 660 /sys/devices/virtual/misc/sprd_flash/test
+    chmod 0660 /sys/class/display/dphy0/hop
+    chmod 0660 /sys/class/display/dphy0/ssc
+    chmod 0660 /sys/class/display/panel0/name
+    chmod 666 /sys/class/display/dispc0/vsync_rate_report
+    chmod 0660 /sys/class/display/dispc0/disable_flip
+    chmod 0660 /sys/class/display/dispc0/bg_color
+    chmod 0660 /sys/class/display/dispc0/refresh
+    chmod 0660 /sys/class/display/dispc0/disable_flip
+    chmod 0664 /sys/class/display/dispc0/irq_register
+    chmod 0664 /sys/class/display/dispc0/irq_unregister
+    chmod 0664 /sys/class/display/panel0/esd_check_enable
+    chmod 0664 /sys/class/backlight/sprd_backlight/brightness
+    chmod 666 /sys/class/display/dsi/dpms_mode
+    chown cameraserver system /sys/class/display/dispc0/bg_color
+    chown cameraserver system /sys/class/display/dispc0/refresh
+    chown cameraserver system /sys/class/display/dispc0/disable_flip
+    chown system system /sys/class/backlight/sprd_backlight/brightness
+    chown system system /sys/class/display/dphy0/hop
+    chown system system /sys/class/display/dphy0/ssc
+    chown system system /sys/class/display/panel0/name
+    chown system system /sys/class/display/panel0/resolution
+    chown system system /sys/class/display/panel0/esd_check_enable
+    chown system system /sys/class/display/dispc0/vsync_rate_report
+    chown graphics system /sys/class/display/dsi/dpms_mode
+    chown system system /sys/class/display/dispc0/disable_flip
+    chown system system /sys/class/display/dispc0/dpu_version
+    chown system system /sys/class/display/dispc0/irq_register
+    chown system system /sys/class/display/dispc0/irq_unregister
+    chown graphics system /sys/class/display/dispc0/vsync_rate_report
+    chown system system /sys/class/display/dispc0/low_res_simu
+    chmod 664 /sys/class/display/dispc0/PQ/slp
+    chmod 664 /sys/class/display/dispc0/PQ/cm
+    chmod 664 /sys/class/display/dispc0/PQ/gamma
+    chmod 664 /sys/class/display/dispc0/PQ/hsv
+    chmod 664 /sys/class/display/dispc0/PQ/epf
+    chmod 664 /sys/class/display/dispc0/PQ/scl
+    chmod 664 /sys/class/display/dispc0/PQ/enable
+    chmod 664 /sys/class/display/dispc0/PQ/disable
+    chown system system /sys/class/display/dispc0/PQ/slp
+    chown system system /sys/class/display/dispc0/PQ/cm
+    chown system system /sys/class/display/dispc0/PQ/gamma
+    chown system system /sys/class/display/dispc0/PQ/hsv
+    chown system system /sys/class/display/dispc0/PQ/epf
+    chown system system /sys/class/display/dispc0/PQ/scl
+    chown system system /sys/class/display/dispc0/PQ/enable
+    chown system system /sys/class/display/dispc0/PQ/disable
+    chown system system /sys/class/backlight/sprd_backlight/brightness
+    chown system system /sys/class/backlight/sprd_backlight/max_brightness
+    chown system system /sys/class/display/backlight/max_brightness
+    chown cameraserver system /sys/class/display/dispc0/disable_flip
+    chown system system /sys/class/display/dispc0/frame_count
+    chmod 0664 /sys/class/display/dispc0/frame_count
+    chmod 660 /dev/graphics/fb0
+    chmod 660 /dev/fb0
+    chmod 666 /dev/adf0
+    chmod 666 /dev/adf-interface0.0
+    chmod 666 /dev/adf-overlay-engine0.0
+    chmod 0660 /sys/class/display/dphy0/hop
+    chmod 0660 /sys/class/display/dphy0/ssc
+    chmod 0660 /sys/class/display/panel0/name
+    chmod 666 /sys/class/display/dispc0/vsync_rate_report
+    chmod 0660 /sys/class/display/dispc0/bg_color
+    chmod 0660 /sys/class/display/dispc0/refresh
+    chmod 0660 /sys/class/display/dispc0/disable_flip
+    chmod 0664 /sys/class/backlight/sprd_backlight/brightness
+    chown system system /sys/class/display/dphy0/hop
+    chown system system /sys/class/display/dphy0/ssc
+    chown system system /sys/class/display/panel0/name
+    chown system system /sys/class/display/dispc0/vsync_rate_report
+    chown graphics system /sys/class/display/dispc0/vsync_rate_report
+    chown cameraserver system /sys/class/display/dispc0/bg_color
+    chown cameraserver system /sys/class/display/dispc0/refresh
+    chown cameraserver system /sys/class/display/dispc0/disable_flip
+    chown system system /sys/class/backlight/sprd_backlight/brightness
+    chown system system /sys/class/backlight/sprd_backlight/max_brightness
+    chown system system /dev/iq_mem
+    chown system system /sys/devices/sprd-adf/dispc0/dynamic_pclk
+    chown system system /sys/devices/sprd-adf/dispc0/dynamic_mipi_clk
+    chown system system /dev/sprd_bm
+    chown system system /dev/dmc_mpu
+    chmod 664 /sys/class/display/dispc0/PQ/enable
+    chmod 664 /sys/class/display/dispc0/PQ/sr_epf
+    chmod 664 /sys/class/display/dispc0/PQ/cm
+    chmod 664 /sys/class/display/dispc0/PQ/ltm
+    chmod 664 /sys/class/display/dispc0/PQ/lut3d
+    chmod 664 /sys/class/display/dispc0/PQ/status
+    chmod 664 /sys/class/display/dispc0/PQ/cabc_mode
+    chmod 664 /sys/class/display/dispc0/PQ/cabc_hist
+    chmod 664 /sys/class/display/dispc0/PQ/cabc_hist_v2
+    chmod 664 /sys/class/display/dispc0/PQ/cabc_gain
+    chmod 664 /sys/class/display/dispc0/PQ/cabc_bl_fix
+    chmod 664 /sys/class/display/dispc0/PQ/cabc_cur_bl
+    chmod 664 /sys/class/display/dispc0/PQ/vsync_count
+    chmod 664 /sys/class/display/dispc0/PQ/frame_no
+    chmod 664 /sys/class/display/dispc0/PQ/cabc_run
+    chmod 664 /sys/class/display/dispc0/PQ/cabc_state
+    chmod 664 /sys/class/display/dispc0/PQ/cabc_param
+    chmod 664 /sys/class/display/dispc0/PQ/slp_lut
+    chmod 664 /sys/class/display/dispc0/PQ/luts_print
+    chmod 664 /sys/class/display/dispc0/PQ/update_luts
+    chmod 664 /sys/class/display/dispc0/PQ/ud
+    chmod 664 /sys/class/display/panel0/resolution
+    chown system system /sys/class/display/dispc0/PQ/enable
+    chown system system /sys/class/display/dispc0/PQ/sr_epf
+    chown system system /sys/class/display/dispc0/PQ/cm
+    chown system system /sys/class/display/dispc0/PQ/ltm
+    chown system system /sys/class/display/dispc0/PQ/lut3d
+    chown system system /sys/class/display/dispc0/PQ/status
+    chown system system /sys/class/display/dispc0/PQ/cabc_mode
+    chown system system /sys/class/display/dispc0/PQ/cabc_hist
+    chown system system /sys/class/display/dispc0/PQ/cabc_hist_v2
+    chown system system /sys/class/display/dispc0/PQ/cabc_gain
+    chown system system /sys/class/display/dispc0/PQ/cabc_bl_fix
+    chown system system /sys/class/display/dispc0/PQ/cabc_cur_bl
+    chown system system /sys/class/display/dispc0/PQ/cabc_run
+    chown system system /sys/class/display/dispc0/PQ/vsync_count
+    chown system system /sys/class/display/dispc0/PQ/frame_no
+    chown system system /sys/class/display/dispc0/PQ/cabc_state
+    chown system system /sys/class/display/dispc0/PQ/cabc_param
+    chown system system /sys/class/display/dispc0/PQ/slp_lut
+    chown system system /sys/class/display/dispc0/PQ/luts_print
+    chown system system /sys/class/display/dispc0/PQ/update_luts
+    chown system system /sys/class/display/dispc0/PQ/ud
+    chmod 660 /proc/cptl/wdtirq
+    chmod 660 /proc/cptl/stop
+    chmod 660 /proc/cptl/start
+    chmod 660 /proc/cptl/modem
+    chmod 660 /proc/cptl/deltanv
+    chmod 660 /proc/cptl/gdsp
+    chmod 660 /proc/cptl/ldsp
+    chmod 660 /proc/cptl/cdsp
+    chmod 660 /proc/cptl/fixnv
+    chmod 660 /proc/cptl/runnv
+    chmod 660 /proc/cptl/cpcmdline
+    chmod 660 /proc/cptl/modemassert
+    chmod 440 /proc/cptl/ddr_smem
+    chmod 440 /proc/pmic/aon_iram
+    chmod 440 /proc/cptl/ldinfo
+    chmod 440 /proc/cptl/mini_dump
+    chmod 440 /proc/cptl/mem
+    chown system root /proc/cptl/modemassert
+    chown system root /proc/cptl/ddr_smem
+    chown system root /proc/pmic/aon_iram
+    chown system root /proc/cptl/wdtirq
+    chown system root /proc/cptl/stop
+    chown system root /proc/cptl/start
+    chown system root /proc/cptl/modem
+    chown system root /proc/cptl/deltanv
+    chown system root /proc/cptl/ldsp
+    chown system root /proc/cptl/gdsp
+    chown system root /proc/cptl/cdsp
+    chown system root /proc/cptl/fixnv
+    chown system root /proc/cptl/runnv
+    chown system root /proc/cptl/cpcmdline
+    chown system root /proc/cptl/ldinfo
+    chown system system /proc/cptl/mini_dump
+    chown system system /proc/cptl/mem
+    chmod 660 /dev/modem
+    chmod 660 /dev/phycp
+    chmod 660 /dev/pmsys
+    chmod 660 /dev/chsys
+    chmod 660 /dev/mdm_ctrl
+    chmod 664 /dev/sctl_ch
+    chmod 444 /sys/devices/platform/spool@0/base_addr
+    chmod 444 /sys/devices/platform/spool@1/base_addr
+    chmod 444 /sys/devices/platform/sipc-virt/sipc-virt:core@5/sipc-virt:core@5:channel@5/base_addr
+    chmod 444 /sys/devices/platform/sipc-virt/sipc-virt:core@7/sipc-virt:core@7:channel@5/base_addr
+    chown system system /dev/modem
+    chown system system /dev/phycp
+    chown system system /dev/pmsys
+    chown system system /dev/chsys
+    chown system root /dev/mdm_ctrl
+    chown system system /dev/sctl_ch
+    chown system system /sys/devices/platform/spool@0/base_addr
+    chown system system /sys/devices/platform/spool@1/base_addr
+    chown system system /sys/devices/platform/sipc-virt/sipc-virt:core@5/sipc-virt:core@5:channel@5/base_addr
+    chown system system /sys/devices/platform/sipc-virt/sipc-virt:core@7/sipc-virt:core@7:channel@5/base_addr
+    chmod 660 /dev/cp_dump
+    chown system system /dev/cp_dump
+    chmod 0660 /sys/class/modem/debug-log/freq
+    chmod 0660 /sys/class/modem/debug-log/channel
+    chown system system /sys/class/modem/debug-log/freq
+    chown system system /sys/class/modem/debug-log/channel
+    chmod 0664 /dev/sctl_pm
+    chmod 0664 /dev/iq_mem
+    chown system system /dev/iq_mem
+    chown system system /dev/sctl_pm
+    chown system system /proc/mdbg
+    chown system root /proc/mdbg/assert
+    chown system root /proc/mdbg/wdtirq
+    chown system system /proc/mdbg/at_cmd
+    chown system root /proc/mdbg/loopcheck
+    chmod 770 /proc/mdbg
+    chmod 760 /proc/mdbg/assert
+    chmod 760 /proc/mdbg/wdtirq
+    chmod 760 /proc/mdbg/at_cmd
+    chmod 760 /proc/mdbg/loopcheck
+    chown system root /dev/mbox
+    chown system root /dev/sipc_smsg
+    chown system root /dev/sipc_smem
+    chown system root /dev/sipc_sbuf
+    chown system root /dev/sipc_sblock
+    chown system root /dev/sipx
+    chown system system /sys/devices/platform/soc/soc:ipa-apb/soc:ipa-apb:sipa-dele/sipa_dele_reset
+    chown system system /sys/class/power_supply/battery/charge_control_limit
+    chmod 0644 /sys/class/backlight/sprd_backlight/max_brightness
+    chmod 0644 /sys/class/display/backlight/max_brightness
+    chown system system /sys/class/thermal/thermal_zone4/trip_point_0_temp
+    chown system system /sys/class/thermal/thermal_zone4/trip_point_1_temp
+    chown system system /sys/class/thermal/thermal_zone4/user_power_range
+    chown system system /sys/class/thermal/cooling_device3/min_core_num
+    chown system system /sys/class/thermal/cooling_device3/min_freq
+    chown system system /sys/class/thermal/cooling_device3/max_ctrl_temp
+    chown system system /sys/class/thermal/cooling_device4/min_core_num
+    chown system system /sys/class/thermal/cooling_device4/min_freq
+    chown system system /sys/class/thermal/cooling_device4/max_ctrl_temp
+    chown system system /sys/class/thermal/cooling_device5/min_core_num
+    chown system system /sys/class/thermal/cooling_device5/min_freq
+    chown system system /sys/class/thermal/cooling_device5/max_ctrl_temp
+    chown system system /sys/class/thermal/thermal_zone4/policy
+    chmod 660 /sys/class/thermal/thermal_zone4/policy
+    chown system system /sys/class/thermal/thermal_zone4/thm_enable
+    chmod 660 /sys/class/thermal/thermal_zone3/thm_enable
+    chmod 660 /sys/class/devfreq/scene-frequency/sprd-governor/auto_dfs_on_off
+    chmod 660 /sys/class/devfreq/scene-frequency/sprd-governor/scaling_force_ddr_freq
+    chmod 220 /sys/class/devfreq/scene-frequency/sprd-governor/scenario_dfs
+    chown cameraserver system /sys/class/devfreq/scene-frequency/sprd-governor/scenario_dfs
+    chmod 220 /sys/class/devfreq/scene-frequency/sprd-governor/exit_scene
+    chown cameraserver system /sys/class/devfreq/scene-frequency/sprd-governor/exit_scene
+    chmod 220 /sys/class/devfreq/scene-frequency/sprd-governor/scene_boost_dfs
+    chown cameraserver system /sys/class/devfreq/scene-frequency/sprd-governor/scene_boost_dfs
+    chmod 220 /sys/class/devfreq/scene-frequency/sprd-governor/scene_freq_set
+    chown cameraserver system /sys/class/devfreq/scene-frequency/sprd-governor/scene_freq_set
+    chown system system /sys/class/power_supply/battery/stop_charge
+    chmod 0664 /sys/class/power_supply/battery/stop_charge
+    chown root system /sys/class/power_supply/battery/charger.0/stop_charge
+    chown root system /sys/class/power_supply/battery/charger.0/enable_power_path
+    chmod 0664 /sys/class/power_supply/battery/charger.0/stop_charge
+    chmod 0664 /sys/class/power_supply/battery/charger.0/enable_power_path
+    chmod 660 /sys/class/power_supply/battery/charger.0/jeita_control
+    chmod 660 /sys/class/power_supply/battery/charger.0/keep_awake
+    chmod 0666 /sys/class/power_supply/sprdfgu/cc_test_cmd
+    chmod 660 /sys/class/power_supply/battery/input_current_limit
+    chmod 660 /sys/class/power_supply/battery/constant_charge_current
+    chmod 660 /proc/pmic/stop
+    chmod 660 /proc/pmic/start
+    chmod 660 /proc/pmic/pm_sys
+    chmod 440 /proc/pmic/mem
+    chmod 660 /proc/pmic/status
+    chmod 660 /proc/pmic/wdtirq
+    chmod 660 /proc/pmic/ldinfo
+    chown system root /proc/pmic/stop
+    chown system root /proc/pmic/start
+    chown system root /proc/pmic/pm_sys
+    chown system root /proc/pmic/mem
+    chown system root /proc/pmic/status
+    chown system root /proc/pmic/wdtirq
+    chown system root /proc/pmic/cali_lib
+    chown system root /proc/pmic/ldinfo
+    chown system root /sys/bus/iio/devices/trigger0/name
+    chown system root /sys/class/sprd_sensorhub/sensor_hub/iio/buffer
+    chown system root /sys/class/sprd_sensorhub/sensor_hub/iio/buffer/length
+    chown system root /sys/class/sprd_sensorhub/sensor_hub/iio/buffer/enable
+    chown system root /sys/class/sprd_sensorhub/sensor_hub/iio/trigger/current_trigger
+    chmod 660 /sys/bus/iio/devices/trigger0/name
+    chmod 660 /sys/class/sprd_sensorhub/sensor_hub/iio/buffer/length
+    chmod 660 /sys/class/sprd_sensorhub/sensor_hub/iio/buffer/enable
+    chmod 660 /sys/class/sprd_sensorhub/sensor_hub/iio/trigger/current_trigger
+    chown system root /sys/class/sprd_sensorhub/sensor_hub/iio/name
+    chmod 660 /sys/class/sprd_sensorhub/sensor_hub/iio/name
+    chown system root /sys/module/sensorhub/parameters/gryo_firms
+    chown system root /sys/module/sensorhub/parameters/acc_firms
+    chown system root /sys/module/sensorhub/parameters/mag_firms
+    chown system root /sys/module/sensorhub/parameters/pressure_firms
+    chown system root /sys/module/sensorhub/parameters/light_firms
+    chown system root /sys/module/sensorhub/parameters/prox_firms
+    chown system root /sys/module/sensorhub/parameters/color_temp_firms
+    chown system root /sys/module/firmware_class/parameters/path
+    chmod 660 /sys/module/sensorhub/parameters/gryo_firms
+    chmod 660 /sys/module/sensorhub/parameters/acc_firms
+    chmod 660 /sys/module/sensorhub/parameters/mag_firms
+    chmod 660 /sys/module/sensorhub/parameters/pressure_firms
+    chmod 660 /sys/module/sensorhub/parameters/light_firms
+    chmod 660 /sys/module/sensorhub/parameters/prox_firms
+    chmod 660 /sys/module/sensorhub/parameters/color_temp_firms
+    chmod 660 /sys/module/firmware_class/parameters/path
+    chown system root /sys/bus/iio/devices/trigger0/name
+    chown system root /sys/class/sprd_sensorhub/sensor_hub/iio/buffer
+    chown system root /sys/class/sprd_sensorhub/sensor_hub/iio/buffer/length
+    chown system root /sys/class/sprd_sensorhub/sensor_hub/iio/buffer/enable
+    chown system root /sys/class/sprd_sensorhub/sensor_hub/iio/trigger/current_trigger
+    chmod 660 /sys/bus/iio/devices/trigger0/name
+    chmod 660 /sys/class/sprd_sensorhub/sensor_hub/iio/buffer/length
+    chmod 660 /sys/class/sprd_sensorhub/sensor_hub/iio/buffer/enable
+    chmod 660 /sys/class/sprd_sensorhub/sensor_hub/iio/trigger/current_trigger
+    chown system root /sys/class/sprd_sensorhub/sensor_hub/iio/name
+    chmod 660 /sys/class/sprd_sensorhub/sensor_hub/iio/name
+    chown system root /sys/module/sensorhub/parameters/gryo_firms
+    chown system root /sys/module/sensorhub/parameters/acc_firms
+    chown system root /sys/module/sensorhub/parameters/mag_firms
+    chown system root /sys/module/sensorhub/parameters/pressure_firms
+    chown system root /sys/module/sensorhub/parameters/light_firms
+    chown system root /sys/module/sensorhub/parameters/prox_firms
+    chown system root /sys/module/sensorhub/parameters/color_temp_firms
+    chown system root /sys/module/firmware_class/parameters/path
+    chmod 660 /sys/module/sensorhub/parameters/gryo_firms
+    chmod 660 /sys/module/sensorhub/parameters/acc_firms
+    chmod 660 /sys/module/sensorhub/parameters/mag_firms
+    chmod 660 /sys/module/sensorhub/parameters/pressure_firms
+    chmod 660 /sys/module/sensorhub/parameters/light_firms
+    chmod 660 /sys/module/sensorhub/parameters/prox_firms
+    chmod 660 /sys/module/sensorhub/parameters/color_temp_firms
+    chmod 660 /sys/module/firmware_class/parameters/path
+    chmod 664 /sys/class/leds/sc27xx:red/brightness
+    chmod 664 /sys/class/leds/sc27xx:green/brightness
+    chmod 664 /sys/class/leds/sc27xx:blue/brightness
+    chmod 664 /sys/class/leds/sc27xx:red/trigger
+    chmod 664 /sys/class/leds/sc27xx:green/trigger
+    chmod 664 /sys/class/leds/sc27xx:blue/trigger
+    chown root system /sys/class/leds/sc27xx:red/brightness
+    chown root system /sys/class/leds/sc27xx:green/brightness
+    chown root system /sys/class/leds/sc27xx:blue/brightness
+    chown root system /sys/class/leds/sc27xx:red/trigger
+    chown root system /sys/class/leds/sc27xx:green/trigger
+    chown root system /sys/class/leds/sc27xx:blue/trigger
+    chmod 220 /sys/class/misc/gnss_common_ctl/gnss_power_enable
+    chmod 660 /sys/class/misc/gnss_common_ctl/gnss_dump
+    chmod 660 /sys/class/misc/gnss_common_ctl/gnss_subsys
+    chown system system /sys/class/misc/gnss_common_ctl/gnss_power_enable
+    chown system system /sys/class/misc/gnss_common_ctl/gnss_dump
+    chown system system /sys/class/misc/gnss_common_ctl/gnss_subsys
+    chmod 664 /sys/touchscreen/ts_suspend
+    chown root system /sys/touchscreen/ts_suspend
+    chown system system /dev/cpuctl
+    chown system system /dev/cpuctl/foreground
+    chown system system /dev/cpuctl/background
+    chown system system /dev/cpuctl/top-app
+    chown system system /dev/cpuctl/rt
+    chown system system /dev/cpuctl/tasks
+    chown system system /dev/cpuctl/foreground/tasks
+    chown system system /dev/cpuctl/background/tasks
+    chown system system /dev/cpuctl/top-app/tasks
+    chown system system /dev/cpuctl/rt/tasks
+    chmod 0664 /dev/cpuctl/tasks
+    chmod 0664 /dev/cpuctl/foreground/tasks
+    chmod 0664 /dev/cpuctl/background/tasks
+    chmod 0664 /dev/cpuctl/top-app/tasks
+    chmod 0664 /dev/cpuctl/rt/tasks
+    chown media system /sys/kernel/hmp/boost
+    chown system system /sys/kernel/hmp/boostpulse
+    chown media system /sys/kernel/hmp/packing_boost
+    chown system system /sys/kernel/hmp/packing_boostpulse
+    chown system system /sys/kernel/hmp/boostpulse_duration
+    chmod 660 /sys/kernel/hmp/boost
+    chmod 660 /sys/kernel/hmp/boostpulse
+    chmod 660 /sys/kernel/hmp/packing_boost
+    chmod 660 /sys/kernel/hmp/packing_boostpulse
+    chmod 660 /sys/kernel/hmp/boostpulse_duratio
+    chown system system /sys/devices/system/cpu/cpuhotplug/boostpulse
+    chown system system /sys/devices/system/cpu/cpuhotplug/boostpulse_duration
+    chmod 0660 /sys/devices/system/cpu/cpuhotplug/boostpulse
+    chmod 0660 /sys/devices/system/cpu/cpuhotplug/boostpulse_duration
+    chown system system /sys/devices/system/cpu/cpuhotplug/cluster0_core_max_limit
+    chown system system /sys/devices/system/cpu/cpuhotplug/cluster0_core_min_limit
+    chmod 0660 /sys/devices/system/cpu/cpuhotplug/cluster0_core_max_limit
+    chmod 0660 /sys/devices/system/cpu/cpuhotplug/cluster0_core_max_limit
+    chown system system /dev/cluster0_freq_min
+    chown system system /dev/cluster0_freq_max
+    chown system system /dev/cluster1_freq_min
+    chown system system /dev/cluster1_freq_max
+    chmod 0660 /dev/cluster0_freq_min
+    chmod 0660 /dev/cluster0_freq_max
+    chmod 0660 /dev/cluster1_freq_min
+    chmod 0660 /dev/cluster1_freq_max
+    chown system system /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
+    chown system system /sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed
+    chmod 664 /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
+    chown system system /sys/devices/system/cpu/cpufreq/policy4/scaling_governor
+    chown system system /sys/devices/system/cpu/cpufreq/policy4/scaling_setspeed
+    chmod 664 /sys/devices/system/cpu/cpufreq/policy4/scaling_governor
+    chown system system /proc/sprd_sysdump
+    chown system system /dev/tmc_etb
+    chmod 660 /dev/tmc_etb
+    chmod 0660 /dev/sprd_bm
+    chmod 0660 /dev/dmc_mpu
+    chown system system /dev/sprd_bm
+    chown system system /dev/dmc_mpu
+    chmod 664 /sys/class/modem/serdes0/channel
+    chmod 664 /sys/class/modem/serdes1/channel
+    chown system system /sys/class/modem/serdes0/channel
+    chown system system /sys/class/modem/serdes1/channel
+    chmod 664 /sys/class/modem/serdes0/freq
+    chmod 664 /sys/class/modem/serdes1/freq
+    chown system system /sys/class/modem/serdes0/freq
+    chown system system /sys/class/modem/serdes1/freq
+    chown system audio /dev/rt5512
+    chmod 660 /dev/rt5512
+    chmod 644 /proc/reserve_space/black_list
+    chmod 644 /proc/reserve_space/white_list
+    chmod 644 /proc/reserve_space/black_list_comm
+    chmod 640 /proc/reserve_space/white_list_comm
+    chmod 644 /proc/reserve_space/app_guid
+    chown system system /sys/class/leds/skey0/mode_operation
+    chown system system /sys/class/leds/skey0/sensy_config
+    chown system system /sys/class/leds/skey0/aot_cali
+    chown system system /sys/class/leds/skey1/mode_operation
+    chown system system /sys/class/leds/skey1/sensy_config
+    chown system system /sys/class/leds/skey1/aot_cali
+    chmod 660 /sys/class/leds/skey0/mode_operation
+    chmod 660 /sys/class/leds/skey0/sensy_config
+    chmod 660 /sys/class/leds/skey0/aot_cali
+    chmod 660 /sys/class/leds/skey1/mode_operation
+    chmod 660 /sys/class/leds/skey1/sensy_config
+    chmod 660 /sys/class/leds/skey1/aot_cali
+    chown root system /sys/block/zram0/writeback_limit
+    chmod 0664 /sys/block/zram0/writeback_limit
+    chown root system /sys/block/zram0/writeback_limit_enable
+    chmod 0664 /sys/block/zram0/writeback_limit_enable
+    chmod 0660 /sys/class/leds/aw_led/groupcolor
+    chown system system /sys/class/leds/aw_led/groupcolor
+    chown system system /proc/touchscreen/wake_gesture
+    chmod 644 /proc/touchscreen/wake_gesture
+    chown system system /proc/touchscreen/smart_cover
+    chmod 644 /proc/touchscreen/smart_cover
+    chmod 0664 /proc/touchscreen/screen_state_interface
+    chown system system /proc/touchscreen/screen_state_interface
+    chown system system /sys/bus/platform/devices/zte_touch/uevent
+    chown system system /sys/devices/virtual/tsp_fw/touchscreen/tpd_test_cmd
+    chown system system /sys/devices/virtual/tsp_fw/touchscreen/tpd_test_filename
+    chown system system /sys/devices/virtual/tsp_fw/touchscreen/tpd_test_ini_file_path
+    chown system system /sys/devices/virtual/tsp_fw/touchscreen/tpd_test_save_file_path
+    chown system system /sys/devices/virtual/tsp_fw/touchscreen/tpd_test_save_file_name
+    chown system system /sys/devices/virtual/tsp_fw/touchscreen/tpd_test_bsc_calibration
+    chown system system /sys/devices/virtual/tsp_fw/touchscreen/tpd_test_bsc_calibration_start
+    chmod 0646 /sys/devices/virtual/tsp_fw/touchscreen/tpd_test_cmd
+    chmod 0646 /sys/devices/virtual/tsp_fw/touchscreen/tpd_test_filename
+    chmod 0646 /sys/devices/virtual/tsp_fw/touchscreen/tpd_test_ini_file_path
+    chmod 0646 /sys/devices/virtual/tsp_fw/touchscreen/tpd_test_save_file_path
+    chmod 0646 /sys/devices/virtual/tsp_fw/touchscreen/tpd_test_save_file_name
+    chmod 0646 /sys/devices/virtual/tsp_fw/touchscreen/tpd_test_bsc_calibration
+    chmod 0646 /sys/devices/virtual/tsp_fw/touchscreen/tpd_test_bsc_calibration_start
+    chmod 0646 /dev/gtp_tools
+    chown system system /sys/class/tp_ps/enable
+    chown system system /sys/class/tp_ps/delay
+    chown system system /sys/class/tp_ps/batch
+    chown system system /sys/class/tp_ps/flush
+    chmod 664 /sys/class/tp_ps/enable
+    chmod 664 /sys/class/tp_ps/delay
+    chmod 664 /sys/class/tp_ps/batch
+    chmod 664 /sys/class/tp_ps/flush

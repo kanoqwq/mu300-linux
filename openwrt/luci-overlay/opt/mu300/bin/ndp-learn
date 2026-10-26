@@ -1,0 +1,203 @@
+#!/bin/sh
+# Watch the bearer's public SLAAC prefix and keep it routed to the LAN.
+#
+# The carrier hands out one /64 by RA on sipa_eth0, and odhcpd relays it to LAN
+# clients, which SLAAC their own public addresses out of it. Replies to those
+# addresses (NAT66 DNAT on the way back, or any traffic inside the prefix) must
+# be delivered on br-lan - but no on-link route for the prefix exists there:
+# mu300cell.sh flushes the bearer's v6 routes on every setup, so a lookup for
+# a client address falls through to the default route and the reply leaves via
+# the modem towards the carrier gateway, where it disappears. Measured: every
+# connection from a client address without a pinned /128 timed out (stable
+# SLAAC addresses never made it into the neighbour table, so only the privacy
+# addresses ever got pinned), and Android clients reacted by suppressing AAAA
+# queries for the whole network - "DNS resolves nothing over IPv6, IPv6 looks
+# dead end to end" - until the next reconnect forgot the verdict.
+#
+# The /64 on br-lan is the mechanism: NDP there resolves each client on
+# demand, with no race for addresses that never showed up in the neighbour
+# table. The prefix is tracked so a carrier renumber replaces the route
+# instead of stacking a stale one. Its metric is below the RA's own route for
+# the same /64 on sipa_eth0 (metric 256, re-created by the carrier's RA after
+# every accept_ra cycle): the lower metric wins, so replies go to the LAN, not
+# back out the bearer. Nothing legitimate in the /64 lives behind sipa_eth0,
+# and the router's own address there is in the local table, which a main-table
+# route cannot override.
+#
+# Nothing is learnt from the LAN (security review of the port): the fork also
+# pinned a /128 to br-lan for every global address in br-lan's neighbour table,
+# "a small latency optimisation". Any LAN client can put any address there with
+# a spoofed neighbour advertisement, so that pinned another client's address,
+# the router's own, or an internet host's (a DNS server, say) to br-lan: a route
+# hijack. The pins are left out; the /64 route does the work. Every value that
+# reaches `ip` is checked to be a plain IPv6 address inside the bearer's /64.
+#
+# Every /64 the bearer holds is routed, not only one (#87). A PDP re-activation the event monitor rides out without
+# an ifdown (+CGEV, mu300cell-v6.sh) can bring a new prefix by RA while the old SLAAC address stays on sipa_eth0
+# (this carrier's lifetimes are infinite; only setup and teardown flush it). odhcpd relays the new RA, so LAN clients
+# SLAAC in the new /64 - and this script routed whichever of the two /proc/net/if_inet6 listed first, so clients on
+# the other one lost every NAT66 reply until a WAN restart flushed the old address. The relay itself never withdraws
+# a prefix the carrier stopped announcing (odhcpd forwards the upstream RA's PIOs as they are and keeps no prefix
+# state), so clients keep their old-prefix addresses for those prefixes' lifetimes either way.
+#
+# So this script withdraws such a prefix itself (ra-deprecate): an RA on br-lan with preferred lifetime 0 for the old
+# /64, sent once a different /64 is on the bearer, in three rounds (an RA is a multicast that a client can miss).
+# Not as soon as it leaves: a WAN restart flushes the bearer's address and the carrier usually gives the same /64
+# back, and deprecating that one would take the live prefix from every client until the carrier's next RA.
+#
+# Relay mode of mu300cell only (K37, spec D9; openwrt-luci): init.d/mu300-ndp starts this when network.wan.ipv6 is
+# relay. Ported from kanoqwq/clean-tf-7.2 (cd4fb28, 89b376d), without the neighbour pins.
+# ndp-learn --prefix: print the bearer's /64s, one per line (nothing when it has none), and exit.
+# ndp-learn --once: one round (no router solicitation, no sleep) and exit.
+
+# fixed-width hex, one line per address: address, ifindex, prefix length, scope, flags, name
+SIM_SLOT=0
+if [ -x /opt/mu300/bin/mu300-sim ]; then
+    SIM_SLOT=$(/opt/mu300/bin/mu300-sim active) || exit 1
+fi
+IFACE=sipa_eth$((SIM_SLOT * 8))
+IF_INET6=${MU300_IF_INET6:-/proc/net/if_inet6}
+
+# The bearer's global /64s, from $IF_INET6 (the kernel's own addresses, never the LAN's), sorted, each once. That
+# file uses fixed-width hex, so this also handles prefixes whose first four hextets are compressed by `ip -6 addr`.
+# Global unicast only (2000::/3): never link-local, multicast or anything else a misconfigured scope could let through.
+bearer_prefix() {
+    awk -v iface="$IFACE" '$6==iface && $4=="00" && $1 ~ /^[23][0-9a-f]{31}$/ {
+        p="";
+        for (i=1; i<=4; i++) {
+            h=substr($1,(i-1)*4+1,4); sub(/^0+/,"",h);
+            if (h=="") h="0";
+            p=p (i>1?":":"") h;
+        }
+        print p "::/64"
+    }' "$IF_INET6" 2>/dev/null | sort -u
+}
+
+# in_prefix ADDR STEM: ADDR is a plain IPv6 address (hex digits and colons only, so nothing ip could read as an
+# option or a second argument) that starts with STEM: (inside the /64), and is not the subnet-router anycast STEM::.
+in_prefix() {
+    case $1 in
+        ''|-*|*[!0-9a-f:]*) return 1 ;;
+        "$2::") return 1 ;;
+        "$2:"*) return 0 ;;
+    esac
+    return 1
+}
+
+# Below the RA route's 256 (see above). Before review I2 this was 1024, which lost to the RA route; a route an
+# earlier ndp-learn installed at that metric is removed, so it never lingers beside this one.
+LAN_METRIC=128
+OLD_METRIC=1024
+
+# lan_route PREFIX: route PREFIX to br-lan. replace is idempotent, so every round can run it: one route, never two.
+lan_route() {
+    ip -6 route replace "$1" dev br-lan metric $LAN_METRIC 2>/dev/null
+    ip -6 route del "$1" dev br-lan metric $OLD_METRIC 2>/dev/null
+}
+
+drop_old_prefix() {
+    [ -n "$1" ] || return 0
+    ip -6 route del "$1" dev br-lan metric $LAN_METRIC 2>/dev/null
+    ip -6 route del "$1" dev br-lan metric $OLD_METRIC 2>/dev/null
+}
+
+# has WORD LIST: WORD is one of the whitespace-separated words of LIST
+has() {
+    case " $(echo $2) " in
+        *" $1 "*) return 0 ;;
+    esac
+    return 1
+}
+
+# router_lifetime: what is left of the carrier's default router on the bearer, in seconds (1-9000), for the
+# withdrawing RA; 1800 when the route shows no expiry
+router_lifetime() {
+    ip -6 route show default dev "$IFACE" 2>/dev/null | awk '{
+        for (i = 1; i < NF; i++) if ($i == "expires") { v = $(i + 1); sub(/sec$/, "", v) }
+    } END {
+        if (v !~ /^[0-9]+$/ || v + 0 < 1) v = 1800; else if (v + 0 > 9000) v = 9000
+        print v + 0
+    }'
+}
+
+# Prefixes that left the bearer (gone), and the ones being withdrawn from the LAN with the rounds left (withdraw,
+# withdraw_rounds). See the top for why a prefix waits in gone until another one is there.
+WITHDRAW_ROUNDS=3
+RA_DEPRECATE=${MU300_RA_DEPRECATE:-/opt/mu300/bin/ra-deprecate}
+gone=
+withdraw=
+withdraw_rounds=0
+withdraw_old() {
+    local p g= w=
+    for p in $last_prefixes; do
+        has "$p" "$prefixes" || gone="$gone $p"
+    done
+    # one that came back (a WAN restart that got the same /64) is neither waiting nor withdrawn any more
+    for p in $gone; do
+        has "$p" "$prefixes" || has "$p" "$g" || g="$g $p"
+    done
+    for p in $withdraw; do
+        has "$p" "$prefixes" || w="$w $p"
+    done
+    gone=$(echo $g); withdraw=$(echo $w)
+    [ -n "$prefixes" ] || return 0
+    if [ -n "$gone" ]; then
+        for p in $gone; do
+            has "$p" "$withdraw" || withdraw="$withdraw $p"
+        done
+        withdraw=$(echo $withdraw); withdraw_rounds=$WITHDRAW_ROUNDS; gone=
+        logger -t ndp-learn "withdrawing from the LAN: $withdraw"
+    fi
+    [ -n "$withdraw" ] && [ "$withdraw_rounds" -gt 0 ] || return 0
+    withdraw_rounds=$((withdraw_rounds - 1))
+    # shellcheck disable=SC2086
+    "$RA_DEPRECATE" br-lan "$(router_lifetime)" $withdraw ||
+        logger -t ndp-learn "could not withdraw $withdraw (ra-deprecate)"
+}
+
+# The prefixes routed last round (space-separated). A prefix that left the bearer loses its br-lan route.
+last_prefixes=
+learn_once() {
+    prefixes=$(bearer_prefix)
+    for p in $last_prefixes; do
+        has "$p" "$prefixes" || drop_old_prefix "$p"
+    done
+    withdraw_old
+    for p in $prefixes; do
+        has "$p" "$last_prefixes" || logger -t ndp-learn "LAN prefix route: $p dev br-lan metric $LAN_METRIC"
+        # every round, so a route someone or something removed comes back within one round
+        lan_route "$p"
+    done
+    last_prefixes=$(echo $prefixes)
+    [ -n "$prefixes" ] || return 0
+    # odhcpd's NDP relay can learn a downstream client's /128 on the WAN side.
+    # 91-mu300-luci leaves NDP relay off (review I1), but a hand-made config can
+    # turn it back on, and that more-specific route overrides the LAN /64 and
+    # blackholes NAT66 replies. Remove only host routes inside the shared
+    # prefixes; the LAN /64 resolves the client by NDP even before it appears in
+    # the neighbour table.
+    for r in $(ip -6 route show dev "$IFACE" 2>/dev/null | awk '$1 !~ /\// {print $1}'); do
+        for p in $prefixes; do
+            in_prefix "$r" "${p%::/64}" && { ip -6 route del "$r/128" dev "$IFACE" 2>/dev/null; break; }
+        done
+    done
+    return 0
+}
+
+case ${1:-} in
+    --prefix) bearer_prefix; exit 0 ;;
+    --once) learn_once; exit 0 ;;
+esac
+
+while :; do
+    learn_once
+    # Self-heal the bearer's own public address: the carrier's RA can be missed while the
+    # bearer settles after boot, and nothing else ever re-solicits - flip accept_ra to send
+    # a fresh router solicitation whenever the bearer has no global address.
+    if ! ip -6 addr show "$IFACE" 2>/dev/null | grep -q 'scope global'; then
+        echo 0 > "/proc/sys/net/ipv6/conf/$IFACE/accept_ra" 2>/dev/null
+        sleep 1
+        echo 2 > "/proc/sys/net/ipv6/conf/$IFACE/accept_ra" 2>/dev/null
+    fi
+    sleep 10
+done

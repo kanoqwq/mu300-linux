@@ -1,0 +1,4050 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: el\n"
+
+msgid "Status dashboard"
+msgstr "Πίνακας κατάστασης"
+
+msgid "Cellular"
+msgstr "Κινητό δίκτυο"
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM"
+msgstr "Dual SIM"
+
+msgid "SIM settings"
+msgstr "Ρυθμίσεις SIM"
+
+msgid "Network locks"
+msgstr "Κλειδώματα δικτύου"
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "SMS forwarding"
+msgstr "Προώθηση SMS"
+
+msgid "AT terminal"
+msgstr "Τερματικό AT"
+
+msgid "Adapter settings"
+msgstr "Ρυθμίσεις προσαρμογέα"
+
+msgid "TTL"
+msgstr "TTL"
+
+msgid "Data usage"
+msgstr "Χρήση δεδομένων"
+
+msgid "Device management"
+msgstr "Διαχείριση συσκευής"
+
+msgid "Update"
+msgstr "Ενημέρωση"
+
+msgid "Backup of settings"
+msgstr "Αντίγραφο ασφαλείας ρυθμίσεων"
+
+msgid "Languages"
+msgstr "Γλώσσες"
+
+msgid "Power"
+msgstr "Ισχύς"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Terminal"
+msgstr "Τερματικό"
+
+msgid "Terminal settings"
+msgstr "Ρυθμίσεις τερματικού"
+
+msgid "Overview"
+msgstr "Επισκόπηση"
+
+msgid "Profiles"
+msgstr "Προφίλ"
+
+msgid "Subscriptions"
+msgstr "Συνδρομές"
+
+msgid "Engines"
+msgstr "Μηχανές"
+
+msgid "Settings"
+msgstr "Ρυθμίσεις"
+
+msgid "Logs"
+msgstr "Αρχεία καταγραφής"
+
+msgid "Packages after an update"
+msgstr "Πακέτα μετά από ενημέρωση"
+
+msgid "MU300 control center: status dashboard, network locks, AT terminal, SMS and VPN"
+msgstr "Κέντρο ελέγχου MU300: πίνακας κατάστασης, κλειδώματα δικτύου, τερματικό AT, SMS και VPN"
+
+msgid "Terminal: a root shell on the device in the browser"
+msgstr "Τερματικό: ένα κέλυφος root της συσκευής στο πρόγραμμα περιήγησης"
+
+msgid "China Mobile"
+msgstr "China Mobile"
+
+msgid "China Unicom"
+msgstr "China Unicom"
+
+msgid "China Telecom"
+msgstr "China Telecom"
+
+msgid "China Broadnet"
+msgstr "China Broadnet"
+
+msgid "China Tietong"
+msgstr "China Tietong"
+
+msgid "Excellent"
+msgstr "Εξαιρετικό"
+
+msgid "Good"
+msgstr "Καλό"
+
+msgid "Fair"
+msgstr "Μέτριο"
+
+msgid "Poor"
+msgstr "Κακό"
+
+msgid "Unknown"
+msgstr "Άγνωστο"
+
+msgid "%d d %d h"
+msgstr "%d ημ. %d ώρ."
+
+msgid "%d h %d min"
+msgstr "%d ώρ. %d λεπ."
+
+msgid "%d min"
+msgstr "%d λεπ."
+
+msgid "No neighbor-cell data"
+msgstr "Δεν υπάρχουν δεδομένα γειτονικών κυψελών"
+
+msgid "Locked"
+msgstr "Κλειδωμένο"
+
+msgid "Lock"
+msgstr "Κλείδωμα"
+
+msgid "Unknown error"
+msgstr "Άγνωστο σφάλμα"
+
+msgid "Confirm"
+msgstr "Επιβεβαίωση"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Ακύρωση"
+
+msgid "%d s"
+msgstr "%d δευτ."
+
+msgid "%d h"
+msgstr "%d ώρ."
+
+msgid "New SMS · %s"
+msgstr "Νέο SMS · %s"
+
+msgid "Unknown number"
+msgstr "Άγνωστος αριθμός"
+
+msgid "Select"
+msgstr "Επιλογή"
+
+msgid "never"
+msgstr "ποτέ"
+
+msgid "just now"
+msgstr "μόλις τώρα"
+
+msgid "%s ago"
+msgstr "πριν από %s"
+
+msgid "Failed: %s"
+msgstr "Απέτυχε: %s"
+
+msgid "Management connection lost"
+msgstr "Η σύνδεση διαχείρισης χάθηκε"
+
+msgid "Installing the VPN module"
+msgstr "Εγκατάσταση της μονάδας VPN"
+
+msgid "Installing the engine"
+msgstr "Εγκατάσταση της μηχανής"
+
+msgid "Adding the subscription"
+msgstr "Προσθήκη της συνδρομής"
+
+msgid "Refreshing the subscriptions"
+msgstr "Ανανέωση των συνδρομών"
+
+msgid "Testing the latency of every profile"
+msgstr "Δοκιμή της καθυστέρησης κάθε προφίλ"
+
+msgid "Downloading the config"
+msgstr "Λήψη της διαμόρφωσης"
+
+msgid "Working…"
+msgstr "Σε εξέλιξη…"
+
+msgid "done"
+msgstr "ολοκληρώθηκε"
+
+msgid "failed"
+msgstr "απέτυχε"
+
+msgid "Verify the uploaded file"
+msgstr "Επαλήθευση του αρχείου που ανέβηκε"
+
+msgid "The uploaded file is checked against the SHA256SUMS of the VPN module's latest release, downloaded over HTTPS. When that is not possible (offline, an older release), it is installed only if you allow an unverified file: it then runs as root with no check."
+msgstr "Το αρχείο που ανέβηκε ελέγχεται με το SHA256SUMS της τελευταίας έκδοσης της μονάδας VPN, που λαμβάνεται μέσω HTTPS. Αν αυτό δεν είναι δυνατό (εκτός σύνδεσης, παλαιότερη έκδοση), εγκαθίσταται μόνο αν επιτρέψετε μη επαληθευμένο αρχείο: τότε εκτελείται ως root χωρίς κανέναν έλεγχο."
+
+msgid "Install it even if it cannot be verified"
+msgstr "Εγκατάσταση ακόμη κι αν δεν μπορεί να επαληθευτεί"
+
+msgid "Install only a verified file"
+msgstr "Εγκατάσταση μόνο επαληθευμένου αρχείου"
+
+msgid "Upload failed: %s"
+msgstr "Η μεταφόρτωση απέτυχε: %s"
+
+msgid "The VPN module is too old for this panel"
+msgstr "Η μονάδα VPN είναι πολύ παλιά για αυτόν τον πίνακα"
+
+msgid "The VPN module is not installed"
+msgstr "Η μονάδα VPN δεν είναι εγκατεστημένη"
+
+msgid "This page needs the VPN module with the machine-readable mu300-vpn (module v2 or newer). Updating it keeps the profiles and the settings."
+msgstr "Αυτή η σελίδα απαιτεί τη μονάδα VPN με το mu300-vpn που διαβάζεται από μηχανή (μονάδα v2 ή νεότερη). Η ενημέρωση διατηρεί τα προφίλ και τις ρυθμίσεις."
+
+msgid "The VPN is a module of its own: mu300-vpn with its kill switch and profiles, and one extra per engine (Xray, sing-box, mihomo, dae). It is installed with mu300-extra install vpn."
+msgstr "Το VPN είναι ξεχωριστή μονάδα: το mu300-vpn με το kill switch και τα προφίλ του, και ένα πρόσθετο ανά μηχανή (Xray, sing-box, mihomo, dae). Εγκαθίσταται με το mu300-extra install vpn."
+
+msgid "The download is a few MB for the module and up to tens of MB per engine: on mobile data it counts towards your plan."
+msgstr "Η λήψη είναι λίγα MB για τη μονάδα και έως δεκάδες MB ανά μηχανή: στα δεδομένα κινητής χρεώνεται στο πακέτο σας."
+
+msgid "Update the VPN module"
+msgstr "Ενημέρωση της μονάδας VPN"
+
+msgid "Install the VPN module"
+msgstr "Εγκατάσταση της μονάδας VPN"
+
+msgid "Upload the file…"
+msgstr "Μεταφόρτωση του αρχείου…"
+
+msgid "Offline: upload mu300-linux-vpn-core.tar.gz (or the bundle mu300-linux-vpn.tar.gz) from the release page of the VPN module."
+msgstr "Εκτός σύνδεσης: ανεβάστε το mu300-linux-vpn-core.tar.gz (ή το πακέτο mu300-linux-vpn.tar.gz) από τη σελίδα εκδόσεων της μονάδας VPN."
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "This is a network or frequency scan: it takes one to three minutes, holds the modem's AT channel all that time, and mobile data may pause meanwhile. It runs in the background; the reply appears here when it is done."
+msgstr "Πρόκειται για σάρωση δικτύων ή συχνοτήτων: διαρκεί ένα έως τρία λεπτά, κρατά το κανάλι AT του μόντεμ όλο αυτό το διάστημα και τα δεδομένα κινητής μπορεί να διακοπούν στο μεταξύ. Εκτελείται στο παρασκήνιο· η απάντηση εμφανίζεται εδώ όταν ολοκληρωθεί."
+
+msgid "This changes a network mode, band or cell setting the modem stores: it stays in force after a reboot, and in Android too, where a network that does not match it shows as No Service. The Locks page shows these settings and resets them."
+msgstr "Αυτό αλλάζει μια λειτουργία δικτύου, μια ζώνη ή μια ρύθμιση κυψέλης που αποθηκεύει το μόντεμ: παραμένει σε ισχύ μετά από επανεκκίνηση, και στο Android επίσης, όπου ένα δίκτυο που δεν ταιριάζει εμφανίζεται ως «Χωρίς υπηρεσία». Η σελίδα Κλειδώματα δείχνει αυτές τις ρυθμίσεις και τις επαναφέρει."
+
+msgid "This switches the radio, the data connection or the modem itself: mobile data drops until it is restored, and this page may lose its connection for a while."
+msgstr "Αυτό αλλάζει την κατάσταση του ραδιοφώνου, της σύνδεσης δεδομένων ή του ίδιου του μόντεμ: τα δεδομένα κινητής διακόπτονται μέχρι να αποκατασταθούν και αυτή η σελίδα μπορεί να χάσει τη σύνδεσή της για λίγο."
+
+msgid "This changes the data profiles (APNs) stored in the modem, which mobile data and Android use."
+msgstr "Αυτό αλλάζει τα προφίλ δεδομένων (APN) που είναι αποθηκευμένα στο μόντεμ, τα οποία χρησιμοποιούν τα δεδομένα κινητής και το Android."
+
+msgid "This changes the SIM's PIN lock or enters a PIN: wrong PINs block the SIM until its PUK is entered."
+msgstr "Αυτό αλλάζει το κλείδωμα PIN της SIM ή εισάγει ένα PIN: λανθασμένα PIN κλειδώνουν τη SIM μέχρι να εισαχθεί το PUK της."
+
+msgid "Basic"
+msgstr "Βασικά"
+
+msgid "Registration/signal"
+msgstr "Καταχώριση/σήμα"
+
+msgid "Bearer"
+msgstr "Φορέας"
+
+msgid "Engineering mode"
+msgstr "Λειτουργία μηχανικού"
+
+msgid "AT command (↑↓ history, Enter to send)"
+msgstr "Εντολή AT (↑↓ ιστορικό, Enter για αποστολή)"
+
+msgid "Send"
+msgstr "Αποστολή"
+
+msgid "Clear screen"
+msgstr "Καθαρισμός οθόνης"
+
+msgid "Ready."
+msgstr "Έτοιμο."
+
+msgid "Session history (click to reuse)"
+msgstr "Ιστορικό συνεδρίας (κλικ για επαναχρησιμοποίηση)"
+
+msgid "Running in the background (at most %d s); the reply appears here when it is done…"
+msgstr "Εκτελείται στο παρασκήνιο (το πολύ %d δευτ.)· η απάντηση εμφανίζεται εδώ όταν ολοκληρωθεί…"
+
+msgid "The modem gave no final answer in time"
+msgstr "Το μόντεμ δεν έδωσε τελική απάντηση εγκαίρως"
+
+msgid "%d s in the background"
+msgstr "%d δευτ. στο παρασκήνιο"
+
+msgid "(no output)"
+msgstr "(χωρίς έξοδο)"
+
+msgid "This command changes the modem's state."
+msgstr "Αυτή η εντολή αλλάζει την κατάσταση του μόντεμ."
+
+msgid "Not sent yet: waiting for confirmation"
+msgstr "Δεν στάλθηκε ακόμα: αναμονή επιβεβαίωσης"
+
+msgid "Send this AT command?"
+msgstr "Αποστολή αυτής της εντολής AT;"
+
+msgid "Send anyway"
+msgstr "Αποστολή παρ' όλα αυτά"
+
+msgid "Not sent"
+msgstr "Δεν στάλθηκε"
+
+msgid "Request failed"
+msgstr "Το αίτημα απέτυχε"
+
+msgid "(empty)"
+msgstr "(κενό)"
+
+msgid "Passphrase (8 characters or more)"
+msgstr "Φράση πρόσβασης (8 χαρακτήρες ή περισσότεροι)"
+
+msgid "The passphrase again"
+msgstr "Η φράση πρόσβασης ξανά"
+
+msgid "Download the backup"
+msgstr "Λήψη αντιγράφου"
+
+msgid "Back up the settings"
+msgstr "Αντίγραφο των ρυθμίσεων"
+
+msgid "One file with the hotspot, mobile data and the APN, the network locks, the VPN profiles and settings, SMS forwarding, the LAN address, the host name, the time zone and the SSH keys. It holds passwords: with a passphrase it is encrypted, and only that passphrase opens it again."
+msgstr "Ένα αρχείο με το hotspot, τα δεδομένα κινητής και το APN, τα κλειδώματα δικτύου, τα προφίλ και τις ρυθμίσεις VPN, την προώθηση SMS, τη διεύθυνση LAN, το όνομα κεντρικού υπολογιστή, τη ζώνη ώρας και τα κλειδιά SSH. Περιέχει κωδικούς: με φράση πρόσβασης κρυπτογραφείται, και μόνο αυτή η φράση το ανοίγει ξανά."
+
+msgid "Include the login password"
+msgstr "Να περιληφθεί ο κωδικός σύνδεσης"
+
+msgid "Passphrase, if the file is encrypted"
+msgstr "Φράση πρόσβασης, αν το αρχείο είναι κρυπτογραφημένο"
+
+msgid "Show what would change"
+msgstr "Εμφάνιση του τι θα άλλαζε"
+
+msgid "Restore"
+msgstr "Επαναφορά"
+
+msgid "The file is larger than 4 MiB"
+msgstr "Το αρχείο είναι μεγαλύτερο από 4 MiB"
+
+msgid "The settings of the file replace these. The hotspot, mobile data or the LAN may restart, and this page may lose its connection for a moment."
+msgstr "Οι ρυθμίσεις του αρχείου αντικαθιστούν αυτές. Το hotspot, τα δεδομένα κινητής ή το LAN μπορεί να επανεκκινήσουν, και η σελίδα μπορεί να χάσει τη σύνδεση για λίγο."
+
+msgid "Restore from a backup"
+msgstr "Επαναφορά από αντίγραφο"
+
+msgid "Every value of the file is checked first; one that is refused and nothing is changed. What is the same is left alone, and no VPN profile, subscription or SSH key of this device is removed."
+msgstr "Κάθε τιμή του αρχείου ελέγχεται πρώτα· αν απορριφθεί μία, δεν αλλάζει τίποτα. Ό,τι είναι ίδιο μένει ως έχει, και κανένα προφίλ VPN, συνδρομή ή κλειδί SSH της συσκευής δεν αφαιρείται."
+
+msgid "Keep this device's login password"
+msgstr "Διατήρηση του κωδικού σύνδεσης της συσκευής"
+
+msgid "Take a file of another device model"
+msgstr "Αποδοχή αρχείου άλλου μοντέλου συσκευής"
+
+msgid "The two passphrases differ"
+msgstr "Οι δύο φράσεις διαφέρουν"
+
+msgid "The passphrase needs 8 characters or more"
+msgstr "Η φράση πρόσβασης θέλει 8 χαρακτήρες ή περισσότερους"
+
+msgid "Saved (encrypted)"
+msgstr "Αποθηκεύτηκε (κρυπτογραφημένο)"
+
+msgid "Saved. The file is not encrypted: it holds passwords, keep it safe."
+msgstr "Αποθηκεύτηκε. Το αρχείο δεν είναι κρυπτογραφημένο: περιέχει κωδικούς, φυλάξτε το με ασφάλεια."
+
+msgid "Choose a backup file first"
+msgstr "Επιλέξτε πρώτα ένα αρχείο αντιγράφου"
+
+msgid "Restoring…"
+msgstr "Επαναφορά…"
+
+msgid "Restored"
+msgstr "Επαναφέρθηκε"
+
+msgid "The restore did not finish: see the lines above"
+msgstr "Η επαναφορά δεν ολοκληρώθηκε: δείτε τις παραπάνω γραμμές"
+
+msgid "Loading…"
+msgstr "Φόρτωση…"
+
+msgid "Channel Analysis"
+msgstr "Ανάλυση καναλιών"
+
+msgid "A scan takes the Wi-Fi hotspot off its channel for a moment: connected devices drop, and some (macOS in particular) may not reconnect by themselves. This page scans as soon as it opens and again every few seconds. Reach the panel over USB or another way first if you depend on the hotspot."
+msgstr "Μια σάρωση βγάζει για λίγο το σημείο πρόσβασης Wi-Fi από το κανάλι του: οι συνδεδεμένες συσκευές αποσυνδέονται και κάποιες (ιδίως macOS) μπορεί να μην επανασυνδεθούν μόνες τους. Αυτή η σελίδα σαρώνει μόλις ανοίξει και μετά κάθε λίγα δευτερόλεπτα. Αν εξαρτάστε από το σημείο πρόσβασης, συνδεθείτε πρώτα στον πίνακα μέσω USB ή με άλλο τρόπο."
+
+msgid "Scan anyway"
+msgstr "Σάρωση παρ' όλα αυτά"
+
+msgid "Saved"
+msgstr "Αποθηκεύτηκε"
+
+msgid "CPU profile unavailable"
+msgstr "CPU profile unavailable"
+
+msgid "Power saving"
+msgstr "Power saving"
+
+msgid "Balanced"
+msgstr "Balanced"
+
+msgid "Performance"
+msgstr "Performance"
+
+msgid "Cores capped at about 60 %% of their maximum (cooler, less power)."
+msgstr "Cores capped at about 60 %% of their maximum (cooler, less power)."
+
+msgid "Schedutil across the full hardware range (the stock behaviour)."
+msgstr "Schedutil across the full hardware range (the stock behaviour)."
+
+msgid "Every cluster pinned at its hardware maximum."
+msgstr "Every cluster pinned at its hardware maximum."
+
+msgid "CPU profile"
+msgstr "CPU profile"
+
+msgid "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+msgstr "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+
+msgid "Saved profile: %s"
+msgstr "Saved profile: %s"
+
+msgid "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+msgstr "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+
+msgid "Clusters"
+msgstr "Clusters"
+
+msgid "Cores"
+msgstr "Cores"
+
+msgid "Governor"
+msgstr "Governor"
+
+msgid "Now"
+msgstr "Now"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Hardware max"
+msgstr "Hardware max"
+
+msgid "Frequencies in MHz."
+msgstr "Frequencies in MHz."
+
+msgid "Highlighted cores are online. A core taken offline stays offline, also after a reboot, until it is brought back. CPU0 always stays online."
+msgstr "Οι επισημασμένοι πυρήνες είναι ενεργοί. Ένας πυρήνας που απενεργοποιήθηκε μένει ανενεργός, και μετά από επανεκκίνηση, μέχρι να ενεργοποιηθεί ξανά. Ο CPU0 μένει πάντα ενεργός."
+
+msgid "Low latency: on"
+msgstr "Χαμηλή καθυστέρηση: ενεργή"
+
+msgid "Low latency: off"
+msgstr "Χαμηλή καθυστέρηση: ανενεργή"
+
+msgid "Low latency keeps CPU0 out of its idle states, as ZTE's U30 Air firmware does: Wi-Fi delays are much shorter, and the device draws more power. Off by default."
+msgstr "Η χαμηλή καθυστέρηση κρατά τον CPU0 εκτός των καταστάσεων αδράνειας, όπως το υλικολογισμικό U30 Air της ZTE: οι καθυστερήσεις του Wi-Fi είναι πολύ μικρότερες και η συσκευή καταναλώνει περισσότερη ενέργεια. Ανενεργή από προεπιλογή."
+
+msgid "Thermal"
+msgstr "Θερμικά"
+
+msgid "The kernel's thermal zones, read only. A zone with trip points throttles the cooling devices bound to it at its passive trip; a cooling state of 0 is no throttling."
+msgstr "Οι θερμικές ζώνες του πυρήνα, μόνο για ανάγνωση. Μια ζώνη με σημεία ορίου περιορίζει τις συσκευές ψύξης που είναι συνδεδεμένες σε αυτήν στο παθητικό της όριο· κατάσταση ψύξης 0 σημαίνει χωρίς περιορισμό."
+
+msgid "Zone"
+msgstr "Ζώνη"
+
+msgid "Temperature"
+msgstr "Θερμοκρασία"
+
+msgid "Trip points"
+msgstr "Σημεία ορίου"
+
+msgid "Cooling devices"
+msgstr "Συσκευές ψύξης"
+
+msgid "Stress test started"
+msgstr "Η δοκιμή καταπόνησης ξεκίνησε"
+
+msgid "Saved: it takes effect at the next reboot"
+msgstr "Αποθηκεύτηκε: ισχύει από την επόμενη επανεκκίνηση"
+
+msgid "CPU voltage offset (EXPERIMENTAL)"
+msgstr "Μετατόπιση τάσης CPU (ΠΕΙΡΑΜΑΤΙΚΟ)"
+
+msgid "Experimental: changing the CPU voltage can make the device unstable, corrupt your data and permanently damage your device. Use it entirely at your own risk."
+msgstr "Πειραματικό: η αλλαγή της τάσης της CPU μπορεί να κάνει τη συσκευή ασταθή, να αλλοιώσει τα δεδομένα σας και να προκαλέσει μόνιμη ζημιά στη συσκευή σας. Η χρήση γίνεται εξ ολοκλήρου με δική σας ευθύνη."
+
+msgid "CPU voltage offset unavailable"
+msgstr "Η μετατόπιση τάσης CPU δεν είναι διαθέσιμη"
+
+msgid "Not available with this kernel (a mainline kernel of this release or later has it)."
+msgstr "Δεν είναι διαθέσιμο με αυτόν τον πυρήνα (το διαθέτει ένας mainline πυρήνας αυτής της έκδοσης ή νεότερης)."
+
+msgid "Off: the stock voltages"
+msgstr "Ανενεργό: οι εργοστασιακές τάσεις"
+
+msgid "Changes at the next reboot"
+msgstr "Αλλάζει στην επόμενη επανεκκίνηση"
+
+msgid "Trial boot: kept once this boot has been up 10 minutes"
+msgstr "Δοκιμαστική εκκίνηση: διατηρείται μόλις αυτή η εκκίνηση λειτουργήσει 10 λεπτά"
+
+msgid "Kept: this offset passed its trial boot"
+msgstr "Διατηρήθηκε: αυτή η μετατόπιση πέρασε τη δοκιμαστική εκκίνησή της"
+
+msgid "a boot with it ended without a clean shutdown"
+msgstr "μια εκκίνηση με αυτήν έληξε χωρίς ομαλό τερματισμό λειτουργίας"
+
+msgid "its trial boot ended before 10 minutes"
+msgstr "η δοκιμαστική εκκίνησή της έληξε πριν από τα 10 λεπτά"
+
+msgid "invalid value"
+msgstr "μη έγκυρη τιμή"
+
+msgid "unknown SoC firmware"
+msgstr "άγνωστο υλικολογισμικό SoC"
+
+msgid "refused by the kernel"
+msgstr "απορρίφθηκε από τον πυρήνα"
+
+msgid "the kernel could not start CPU scaling with it"
+msgstr "ο πυρήνας δεν μπόρεσε να ξεκινήσει την κλιμάκωση συχνότητας της CPU με αυτήν"
+
+msgid "Offsets in µV for the three CPU domains (cores 0-3, 4-6 and 7), in whole steps. A new offset takes effect at the next reboot, as a trial: it is kept once that boot has been up 10 minutes, and dropped (back to 0) if a boot with it ends in a crash, a watchdog reset or a power cut."
+msgstr "Μετατοπίσεις σε µV για τους τρεις τομείς CPU (πυρήνες CPU 0-3, 4-6 και 7), σε ακέραια βήματα. Μια νέα μετατόπιση ισχύει από την επόμενη επανεκκίνηση, δοκιμαστικά: διατηρείται μόλις εκείνη η εκκίνηση λειτουργήσει 10 λεπτά και απορρίπτεται (επιστροφή στο 0) αν μια εκκίνηση με αυτήν λήξει με κατάρρευση, επαναφορά από watchdog ή διακοπή ρεύματος."
+
+msgid "Running now (µV)"
+msgstr "Λειτουργεί τώρα (µV)"
+
+msgid "Saved for the next boot (µV)"
+msgstr "Αποθηκευμένο για την επόμενη εκκίνηση (µV)"
+
+msgid "State"
+msgstr "Κατάσταση"
+
+msgid "Taken back automatically: %s µV (%s)"
+msgstr "Αναιρέθηκε αυτόματα: %s µV (%s)"
+
+msgid "The SoC firmware of this device is not one whose voltage encoding is known: only the stock voltages are possible."
+msgstr "Το υλικολογισμικό SoC αυτής της συσκευής δεν είναι από εκείνα με γνωστή κωδικοποίηση τάσης: μόνο οι εργοστασιακές τάσεις είναι δυνατές."
+
+msgid "Domain"
+msgstr "Τομέας"
+
+msgid "Offset now (µV)"
+msgstr "Μετατόπιση τώρα (µV)"
+
+msgid "Highest step"
+msgstr "Υψηλότερο βήμα"
+
+msgid "New offset (µV)"
+msgstr "Νέα μετατόπιση (µV)"
+
+msgid "Limits: %d to %d µV, in steps of %d µV."
+msgstr "Όρια: %d έως %d µV, σε βήματα των %d µV."
+
+msgid "Save for the next boot"
+msgstr "Αποθήκευση για την επόμενη εκκίνηση"
+
+msgid "Each offset must be a multiple of %d µV between %d and %d."
+msgstr "Κάθε μετατόπιση πρέπει να είναι πολλαπλάσιο των %d µV μεταξύ %d και %d."
+
+msgid "Type %s to confirm."
+msgstr "Πληκτρολογήστε %s για επιβεβαίωση."
+
+msgid "Back to the stock voltages"
+msgstr "Επιστροφή στις εργοστασιακές τάσεις"
+
+msgid "Type %s to confirm:"
+msgstr "Πληκτρολογήστε %s για επιβεβαίωση:"
+
+msgid "Run a 10-minute CPU stress test"
+msgstr "Εκτέλεση 10λεπτης δοκιμής καταπόνησης CPU"
+
+msgid "Test a new offset under load during its trial boot. The device may crash if the voltage is too low; the next boot then runs at the stock voltages."
+msgstr "Δοκιμάστε μια νέα μετατόπιση υπό φορτίο κατά τη δοκιμαστική εκκίνησή της. Η συσκευή μπορεί να καταρρεύσει αν η τάση είναι πολύ χαμηλή· η επόμενη εκκίνηση τότε λειτουργεί με τις εργοστασιακές τάσεις."
+
+msgid "A stress test is running."
+msgstr "Εκτελείται δοκιμή καταπόνησης."
+
+msgid "USB role"
+msgstr "Ρόλος USB"
+
+msgid "Current role"
+msgstr "Τρέχων ρόλος"
+
+msgid "Switch USB role"
+msgstr "Αλλαγή ρόλου USB"
+
+msgid "Device mode"
+msgstr "Λειτουργία συσκευής"
+
+msgid "Host mode"
+msgstr "Λειτουργία κεντρικού υπολογιστή"
+
+msgid "Enable host mode at boot"
+msgstr "Ενεργοποίηση λειτουργίας κεντρικού υπολογιστή κατά την εκκίνηση"
+
+msgid "Apply role"
+msgstr "Εφαρμογή ρόλου"
+
+msgid "Host mode disconnects USB networking and serial on this port. F50 has no battery; management may be lost and a USB adapter usually needs a powered hub."
+msgstr "Η λειτουργία κεντρικού υπολογιστή αποσυνδέει τη δικτύωση USB και τη σειριακή σύνδεση σε αυτή τη θύρα. Το F50 δεν έχει μπαταρία· η διαχείριση μπορεί να χαθεί και ένας προσαρμογέας USB συνήθως χρειάζεται hub με τροφοδοσία."
+
+msgid "USB network mode"
+msgstr "Λειτουργία δικτύου USB"
+
+msgid "Network protocol"
+msgstr "Πρωτόκολλο δικτύου"
+
+msgid "Apply duration"
+msgstr "Διάρκεια εφαρμογής"
+
+msgid "Next reboot only"
+msgstr "Μόνο στην επόμενη επανεκκίνηση"
+
+msgid "Permanent"
+msgstr "Μόνιμα"
+
+msgid "Enable selected protocol"
+msgstr "Ενεργοποίηση επιλεγμένου πρωτοκόλλου"
+
+msgid "Save; apply after reboot"
+msgstr "Αποθήκευση· εφαρμογή μετά την επανεκκίνηση"
+
+msgid "NCM is the default. Windows does not natively support ECM; RNDIS changes enumeration. With Enable selected protocol off, only your choice is saved. Next reboot only applies once, then returns to NCM."
+msgstr "Το NCM είναι η προεπιλογή. Τα Windows δεν υποστηρίζουν εγγενώς το ECM· το RNDIS αλλάζει την απαρίθμηση. Με απενεργοποιημένη την Ενεργοποίηση επιλεγμένου πρωτοκόλλου, αποθηκεύεται μόνο η επιλογή σας. Η επιλογή Μόνο στην επόμενη επανεκκίνηση εφαρμόζεται μία φορά και μετά επιστρέφει στο NCM."
+
+msgid "USB adapters"
+msgstr "Προσαρμογείς USB"
+
+msgid "Refresh"
+msgstr "Ανανέωση"
+
+msgid "Available only in host mode. Refresh brings discovered USB adapters up; adding to LAN saves the bridge and reloads networking."
+msgstr "Διαθέσιμο μόνο σε λειτουργία κεντρικού υπολογιστή. Η Ανανέωση ενεργοποιεί τους προσαρμογείς USB που εντοπίστηκαν· η προσθήκη στο LAN αποθηκεύει τη γέφυρα και επαναφορτώνει το δίκτυο."
+
+msgid "Recent modem operations"
+msgstr "Πρόσφατες λειτουργίες μόντεμ"
+
+msgid "Show"
+msgstr "Εμφάνιση"
+
+msgid "The control panel's recent calls, of this boot and the one before: when, which page call or AT command, how long it took and how it ended (ok, error, busy, killed). No values, replies or messages are kept. Useful when the panel was stuck."
+msgstr "Οι πρόσφατες κλήσεις του πίνακα ελέγχου, αυτής και της προηγούμενης εκκίνησης: πότε, ποια κλήση σελίδας ή εντολή AT, πόσο διήρκεσε και πώς τελείωσε (ok, σφάλμα, απασχολημένο, τερματίστηκε). Δεν διατηρούνται τιμές, απαντήσεις ή μηνύματα. Χρήσιμο όταν ο πίνακας κόλλησε."
+
+msgid "Unavailable"
+msgstr "Μη διαθέσιμο"
+
+msgid "USB network mode is unavailable in host mode; host auto-start also disables USB network auto-start."
+msgstr "Η λειτουργία δικτύου USB δεν είναι διαθέσιμη σε λειτουργία κεντρικού υπολογιστή· η αυτόματη εκκίνηση κεντρικού υπολογιστή απενεργοποιεί επίσης την αυτόματη εκκίνηση δικτύου USB."
+
+msgid "Host mode immediately disconnects USB management. F50 has no battery and peripherals may need external power; make sure another management path exists."
+msgstr "Η λειτουργία κεντρικού υπολογιστή αποσυνδέει αμέσως τη διαχείριση μέσω USB. Το F50 δεν έχει μπαταρία και τα περιφερειακά μπορεί να χρειάζονται εξωτερική τροφοδοσία· βεβαιωθείτε ότι υπάρχει άλλη διαδρομή διαχείρισης."
+
+msgid "USB networking and serial will re-enumerate in device mode."
+msgstr "Η δικτύωση USB και η σειριακή σύνδεση θα απαριθμηθούν ξανά σε λειτουργία συσκευής."
+
+msgid "Switch USB role?"
+msgstr "Αλλαγή ρόλου USB;"
+
+msgid "Apply"
+msgstr "Εφαρμογή"
+
+msgid "Switching USB role…"
+msgstr "Αλλαγή ρόλου USB…"
+
+msgid "Switch failed: %s"
+msgstr "Η αλλαγή απέτυχε: %s"
+
+msgid "Management connection lost; reconnect to confirm the USB role."
+msgstr "Η σύνδεση διαχείρισης χάθηκε· συνδεθείτε ξανά για να επιβεβαιώσετε τον ρόλο USB."
+
+msgid "Switch request accepted; the USB connection may briefly disconnect."
+msgstr "Το αίτημα αλλαγής έγινε δεκτό· η σύνδεση USB μπορεί να διακοπεί για λίγο."
+
+msgid "USB role applied"
+msgstr "Ο ρόλος USB εφαρμόστηκε"
+
+msgid "Save USB network mode?"
+msgstr "Αποθήκευση λειτουργίας δικτύου USB;"
+
+msgid "The network mode applies on the next reboot; USB management may need to reconnect."
+msgstr "Η λειτουργία δικτύου εφαρμόζεται στην επόμενη επανεκκίνηση· η διαχείριση μέσω USB μπορεί να χρειαστεί επανασύνδεση."
+
+msgid "Save the selection only; with the selected protocol disabled, the next boot still uses default NCM."
+msgstr "Αποθήκευση μόνο της επιλογής· με απενεργοποιημένο το επιλεγμένο πρωτόκολλο, η επόμενη εκκίνηση χρησιμοποιεί ακόμη το προεπιλεγμένο NCM."
+
+msgid "Save"
+msgstr "Αποθήκευση"
+
+msgid "Saving USB network settings…"
+msgstr "Αποθήκευση ρυθμίσεων δικτύου USB…"
+
+msgid "Settings saved"
+msgstr "Οι ρυθμίσεις αποθηκεύτηκαν"
+
+msgid "Save failed: %s"
+msgstr "Η αποθήκευση απέτυχε: %s"
+
+msgid "This boot"
+msgstr "Αυτή η εκκίνηση"
+
+msgid "Previous boot"
+msgstr "Προηγούμενη εκκίνηση"
+
+msgid "Unable to confirm the role yet; reconnect and refresh the page."
+msgstr "Δεν είναι ακόμη δυνατή η επιβεβαίωση του ρόλου· συνδεθείτε ξανά και ανανεώστε τη σελίδα."
+
+msgid "Switch to host mode to see USB adapters."
+msgstr "Μεταβείτε σε λειτουργία κεντρικού υπολογιστή για να δείτε τους προσαρμογείς USB."
+
+msgid "Scanning USB adapters…"
+msgstr "Σάρωση προσαρμογέων USB…"
+
+msgid "No USB adapters found."
+msgstr "Δεν βρέθηκαν προσαρμογείς USB."
+
+msgid "Link connected"
+msgstr "Η ζεύξη συνδέθηκε"
+
+msgid "No link; enable attempted"
+msgstr "Χωρίς ζεύξη· έγινε απόπειρα ενεργοποίησης"
+
+msgid "Added to LAN"
+msgstr "Προστέθηκε στο LAN"
+
+msgid "Add to LAN"
+msgstr "Προσθήκη στο LAN"
+
+msgid "Add USB adapter to LAN?"
+msgstr "Προσθήκη προσαρμογέα USB στο LAN;"
+
+msgid "This saves the bridge configuration and reloads networking; existing connections may briefly drop."
+msgstr "Αυτό αποθηκεύει τη διαμόρφωση της γέφυρας και επαναφορτώνει το δίκτυο· οι υπάρχουσες συνδέσεις μπορεί να διακοπούν για λίγο."
+
+msgid "Add"
+msgstr "Προσθήκη"
+
+msgid "Adding USB adapter…"
+msgstr "Προσθήκη προσαρμογέα USB…"
+
+msgid "Add failed: %s"
+msgstr "Η προσθήκη απέτυχε: %s"
+
+msgid "Leave empty to keep the saved value"
+msgstr "Αφήστε κενό για να κρατήσετε την αποθηκευμένη τιμή"
+
+msgid "Saved: %s"
+msgstr "Αποθηκεύτηκε: %s"
+
+msgid "Remove the saved value"
+msgstr "Αφαίρεση της αποθηκευμένης τιμής"
+
+msgid "Presets"
+msgstr "Προεπιλογές"
+
+msgid "Form (URL-encoded)"
+msgstr "Φόρμα (κωδικοποίηση URL)"
+
+msgid "Plain text"
+msgstr "Απλό κείμενο"
+
+msgid "Received messages are sent on as they reach the SMS pool. A failed delivery is retried after 30 s, then after twice as long each time (an hour at most), ten times in all."
+msgstr "Τα ληφθέντα μηνύματα προωθούνται μόλις φτάσουν στη δεξαμενή SMS. Μια αποτυχημένη αποστολή επαναλαμβάνεται μετά από 30 s και μετά κάθε φορά σε διπλάσιο χρόνο (έως μία ώρα), δέκα φορές συνολικά."
+
+msgid "Forward received messages"
+msgstr "Προώθηση ληφθέντων μηνυμάτων"
+
+msgid "Message template"
+msgstr "Πρότυπο μηνύματος"
+
+msgid "Placeholders: {sender}, {time}, {text}, {device}"
+msgstr "Σύμβολα κράτησης: {sender}, {time}, {text}, {device}"
+
+msgid "Only these senders"
+msgstr "Μόνο αυτοί οι αποστολείς"
+
+msgid "One per line; empty: every sender. A * at the end matches the start of a sender."
+msgstr "Ένας ανά γραμμή· κενό: όλοι οι αποστολείς. Ένα * στο τέλος ταιριάζει με την αρχή ενός αποστολέα."
+
+msgid "Never these senders"
+msgstr "Ποτέ αυτοί οι αποστολείς"
+
+msgid "Only messages containing one of these words"
+msgstr "Μόνο μηνύματα που περιέχουν μία από αυτές τις λέξεις"
+
+msgid "One per line; empty: every message."
+msgstr "Μία ανά γραμμή· κενό: όλα τα μηνύματα."
+
+msgid "Webhook"
+msgstr "Webhook"
+
+msgid "Enabled"
+msgstr "Ενεργοποιημένο"
+
+msgid "Address (http:// or https://)"
+msgstr "Διεύθυνση (http:// ή https://)"
+
+msgid "Body"
+msgstr "Σώμα"
+
+msgid "Fields: sender, time, text, device, message (the template filled in)"
+msgstr "Πεδία: sender, time, text, device, message (το συμπληρωμένο πρότυπο)"
+
+msgid "Custom body"
+msgstr "Προσαρμοσμένο σώμα"
+
+msgid "Empty: the standard fields (plain text: the message). Placeholders: {sender}, {time}, {text}, {device}, {message}. Each value is escaped for the chosen type. This body is shown again here: keep secrets in the address or a header."
+msgstr "Κενό: τα τυπικά πεδία (απλό κείμενο: το μήνυμα). Σύμβολα κράτησης θέσης: {sender}, {time}, {text}, {device}, {message}. Κάθε τιμή διαφεύγεται ανάλογα με τον επιλεγμένο τύπο. Αυτό το σώμα εμφανίζεται ξανά εδώ: κρατήστε τα μυστικά στη διεύθυνση ή σε κεφαλίδα."
+
+msgid "Extra headers (one \"Name: value\" per line)"
+msgstr "Επιπλέον κεφαλίδες (μία \"Όνομα: τιμή\" ανά γραμμή)"
+
+msgid "The answer must contain"
+msgstr "Η απάντηση πρέπει να περιέχει"
+
+msgid "Empty: every HTTP 2xx answer counts as delivered. With key=value (for example errcode=0), the answer must also be a JSON object that has this value under this key at its top level; otherwise the delivery fails. Only the result of the check is logged, never the answer."
+msgstr "Κενό: κάθε απάντηση HTTP 2xx μετρά ως παράδοση. Με κλειδί=τιμή (για παράδειγμα errcode=0), η απάντηση πρέπει επιπλέον να είναι αντικείμενο JSON που έχει αυτή την τιμή κάτω από αυτό το κλειδί στο ανώτατο επίπεδό του· αλλιώς η παράδοση αποτυγχάνει. Καταγράφεται μόνο το αποτέλεσμα του ελέγχου, ποτέ η απάντηση."
+
+msgid "Bot token"
+msgstr "Διακριτικό bot"
+
+msgid "Chat ID (a number, or @channel)"
+msgstr "ID συνομιλίας (αριθμός ή @κανάλι)"
+
+msgid "E-mail"
+msgstr "Email"
+
+msgid "E-mail needs msmtp, which this image does not have"
+msgstr "Το email χρειάζεται το msmtp, που δεν υπάρχει σε αυτή την εικόνα"
+
+msgid "Mail server"
+msgstr "Διακομιστής αλληλογραφίας"
+
+msgid "Port"
+msgstr "Θύρα"
+
+msgid "Security"
+msgstr "Ασφάλεια"
+
+msgid "None"
+msgstr "Καμία"
+
+msgid "User name"
+msgstr "Όνομα χρήστη"
+
+msgid "Password"
+msgstr "Κωδικός πρόσβασης"
+
+msgid "From"
+msgstr "Από"
+
+msgid "To"
+msgstr "Προς"
+
+msgid "SMS to another phone"
+msgstr "SMS σε άλλο τηλέφωνο"
+
+msgid "Phone number"
+msgstr "Αριθμός τηλεφώνου"
+
+msgid "Sent as one SMS: a longer message is cut short."
+msgstr "Στέλνεται ως ένα SMS: ένα μεγαλύτερο μήνυμα περικόπτεται."
+
+msgid "Send test"
+msgstr "Αποστολή δοκιμής"
+
+msgid "Tokens, passwords and the webhook address and headers stay on the device and are never shown again."
+msgstr "Τα διακριτικά, οι κωδικοί και η διεύθυνση και οι κεφαλίδες του webhook μένουν στη συσκευή και δεν εμφανίζονται ποτέ ξανά."
+
+msgid "Delivered"
+msgstr "Παραδόθηκε"
+
+msgid "Will retry"
+msgstr "Θα επαναληφθεί"
+
+msgid "Failed"
+msgstr "Απέτυχε"
+
+msgid "Filtered out"
+msgstr "Φιλτραρίστηκε"
+
+msgid "Dropped"
+msgstr "Απορρίφθηκε"
+
+msgid "Clear"
+msgstr "Εκκαθάριση"
+
+msgid "Test"
+msgstr "Δοκιμή"
+
+msgid "Delivery log"
+msgstr "Αρχείο παράδοσης"
+
+msgid "Waiting to be delivered"
+msgstr "Αναμένουν παράδοση"
+
+msgid "Time"
+msgstr "Ώρα"
+
+msgid "Message"
+msgstr "Μήνυμα"
+
+msgid "Target"
+msgstr "Προορισμός"
+
+msgid "Result"
+msgstr "Αποτέλεσμα"
+
+msgid "Detail"
+msgstr "Λεπτομέρεια"
+
+msgid "No deliveries yet"
+msgstr "Καμία παράδοση ακόμη"
+
+msgid "Test started with the saved settings; the result appears in the delivery log."
+msgstr "Η δοκιμή ξεκίνησε με τις αποθηκευμένες ρυθμίσεις· το αποτέλεσμα εμφανίζεται στο αρχείο παράδοσης."
+
+msgid "Automatic without 2G (152)"
+msgstr "Αυτόματα χωρίς 2G (152)"
+
+msgid "4G only"
+msgstr "Μόνο 4G"
+
+msgid "Network mode: %s"
+msgstr "Λειτουργία δικτύου: %s"
+
+msgid "EN-DC off"
+msgstr "EN-DC ανενεργό"
+
+msgid "NR band lock: %s"
+msgstr "Κλείδωμα ζωνών NR: %s"
+
+msgid "LTE band lock: %s"
+msgstr "Κλείδωμα ζωνών LTE: %s"
+
+msgid "Cell lock: %s"
+msgstr "Κλείδωμα κυψέλης: %s"
+
+msgid "Modulation DL/UL"
+msgstr "Διαμόρφωση DL/UL"
+
+msgid "Estimated from current MCS"
+msgstr "Εκτίμηση από το τρέχον MCS"
+
+msgid "MCS DL/UL"
+msgstr "MCS DL/UL"
+
+msgid "BLER DL/UL"
+msgstr "BLER DL/UL"
+
+msgid "%s of %s"
+msgstr "%s από %s"
+
+msgid "The monthly cap is reached"
+msgstr "Το μηνιαίο όριο εξαντλήθηκε"
+
+msgid "%d%% of the monthly cap is used"
+msgstr "Χρησιμοποιήθηκε το %d%% του μηνιαίου ορίου"
+
+msgid "This billing cycle"
+msgstr "Αυτή η περίοδος χρέωσης"
+
+msgid "Link & traffic"
+msgstr "Ζεύξη και κίνηση"
+
+msgid "Download rate"
+msgstr "Ρυθμός λήψης"
+
+msgid "Upload rate"
+msgstr "Ρυθμός αποστολής"
+
+msgid "Total received"
+msgstr "Σύνολο ληφθέντων"
+
+msgid "Total sent"
+msgstr "Σύνολο απεσταλμένων"
+
+msgid "Used today"
+msgstr "Χρήση σήμερα"
+
+msgid "SIM source"
+msgstr "Πηγή SIM"
+
+msgid "Session duration"
+msgstr "Διάρκεια συνεδρίας"
+
+msgid "Registration"
+msgstr "Καταχώριση"
+
+msgid "Data roaming"
+msgstr "Περιαγωγή δεδομένων"
+
+msgid "Bandwidth"
+msgstr "Εύρος ζώνης"
+
+msgid "AMBR DL/UL"
+msgstr "AMBR DL/UL"
+
+msgid "Wi-Fi · LAN · Device · SIM"
+msgstr "Wi-Fi · LAN · Συσκευή · SIM"
+
+msgid "CPU usage"
+msgstr "Χρήση CPU"
+
+msgid "Memory"
+msgstr "Μνήμη"
+
+msgid "Storage"
+msgstr "Αποθηκευτικός χώρος"
+
+msgid "Battery"
+msgstr "Μπαταρία"
+
+msgid "Channel"
+msgstr "Κανάλι"
+
+msgid "Encryption"
+msgstr "Κρυπτογράφηση"
+
+msgid "Hidden SSID"
+msgstr "Κρυφό SSID"
+
+msgid "Country"
+msgstr "Χώρα"
+
+msgid "AP status"
+msgstr "Κατάσταση AP"
+
+msgid "USB network"
+msgstr "Δίκτυο USB"
+
+msgid "Connection tracking"
+msgstr "Παρακολούθηση συνδέσεων"
+
+msgid "LAN address"
+msgstr "Διεύθυνση LAN"
+
+msgid "Wi-Fi clients"
+msgstr "Πελάτες Wi-Fi"
+
+msgid "DHCP leases"
+msgstr "Μισθώσεις DHCP"
+
+msgid "Device model"
+msgstr "Μοντέλο συσκευής"
+
+msgid "System"
+msgstr "Σύστημα"
+
+msgid "Modem"
+msgstr "Μόντεμ"
+
+msgid "Carrier"
+msgstr "Πάροχος"
+
+msgid "Own number"
+msgstr "Δικός αριθμός"
+
+msgid "Module"
+msgstr "Μονάδα"
+
+msgid "Firmware"
+msgstr "Υλικολογισμικό"
+
+msgid "Show SIM identifiers"
+msgstr "Εμφάνιση αναγνωριστικών SIM"
+
+msgid "Quick controls"
+msgstr "Γρήγορα χειριστήρια"
+
+msgid "Data connection"
+msgstr "Σύνδεση δεδομένων"
+
+msgid "Cellular radio"
+msgstr "Ραδιόφωνο κινητού δικτύου"
+
+msgid "Wi-Fi hotspot"
+msgstr "Σημείο πρόσβασης Wi-Fi"
+
+msgid "Restart modem"
+msgstr "Επανεκκίνηση μόντεμ"
+
+msgid "Power off or restart"
+msgstr "Απενεργοποίηση ή επανεκκίνηση"
+
+msgid "Switch to Android"
+msgstr "Μετάβαση σε Android"
+
+msgid "Lock Linux"
+msgstr "Κλείδωμα Linux"
+
+msgid "Neighbor cells"
+msgstr "Γειτονικές κυψέλες"
+
+msgid "RAT/Band"
+msgstr "RAT/Ζώνη"
+
+msgid "Frequency"
+msgstr "Συχνότητα"
+
+msgid "Running %s…"
+msgstr "Εκτέλεση %s…"
+
+msgid "Started in background: %s"
+msgstr "Ξεκίνησε στο παρασκήνιο: %s"
+
+msgid "Done: %s"
+msgstr "Ολοκληρώθηκε: %s"
+
+msgid "Disconnecting data…"
+msgstr "Αποσύνδεση δεδομένων…"
+
+msgid "Connecting data…"
+msgstr "Σύνδεση δεδομένων…"
+
+msgid "Turn off cellular radio"
+msgstr "Απενεργοποίηση ραδιοφώνου κινητού δικτύου"
+
+msgid "This SIM will have no calls, SMS or data, and its radio stays off after a reboot until you turn it on again."
+msgstr "Αυτή η SIM δεν θα έχει κλήσεις, SMS ή δεδομένα, και ο πομπός της μένει κλειστός και μετά από επανεκκίνηση μέχρι να τον ανοίξετε ξανά."
+
+msgid "Turn on cellular radio"
+msgstr "Ενεργοποίηση ραδιοφώνου κινητού δικτύου"
+
+msgid "The radio of the SIM in use comes on and stays on after a reboot (up to about 1 minute)."
+msgstr "Ο πομπός της SIM σε χρήση ανοίγει και μένει ανοιχτός μετά από επανεκκίνηση (έως περίπου 1 λεπτό)."
+
+msgid "Turn data roaming off"
+msgstr "Απενεργοποίηση περιαγωγής δεδομένων"
+
+msgid "While the SIM is registered on a roaming network, mobile data stays off; SMS, calls and the registration are not affected. Some SIMs report roaming at home (an MVNO, national roaming): there, data would stop as well."
+msgstr "Όσο η SIM είναι καταχωρισμένη σε δίκτυο περιαγωγής, τα δεδομένα κινητής μένουν απενεργοποιημένα· τα SMS, οι κλήσεις και η καταχώριση δεν επηρεάζονται. Ορισμένες SIM αναφέρουν περιαγωγή και στη χώρα τους (ένας MVNO, εθνική περιαγωγή): εκεί τα δεδομένα θα σταματούσαν επίσης."
+
+msgid "Allow data roaming"
+msgstr "Να επιτρέπεται η περιαγωγή δεδομένων"
+
+msgid "Mobile data is used on roaming networks too, which can cost extra. Some SIMs report roaming at home (an MVNO, national roaming) and need this to have data at all."
+msgstr "Τα δεδομένα κινητής χρησιμοποιούνται και σε δίκτυα περιαγωγής, κάτι που μπορεί να κοστίσει επιπλέον. Ορισμένες SIM αναφέρουν περιαγωγή και στη χώρα τους (ένας MVNO, εθνική περιαγωγή) και το χρειάζονται για να έχουν δεδομένα."
+
+msgid "Cellular connectivity may stop for 1–2 minutes."
+msgstr "Η συνδεσιμότητα κινητού δικτύου μπορεί να διακοπεί για 1–2 λεπτά."
+
+msgid "All connections will be interrupted."
+msgstr "Όλες οι συνδέσεις θα διακοπούν."
+
+msgid "Power off"
+msgstr "Απενεργοποίηση"
+
+msgid "Restart"
+msgstr "Επανεκκίνηση"
+
+msgid "The next boot will enter Android and reboot now. This management page and cellular sharing will disconnect."
+msgstr "Η επόμενη εκκίνηση θα γίνει σε Android και η συσκευή επανεκκινείται τώρα. Αυτή η σελίδα διαχείρισης και η κοινή χρήση κινητού δικτύου θα αποσυνδεθούν."
+
+msgid "To return to OpenWrt, run mu300-next-boot linux in Android and reboot."
+msgstr "Για επιστροφή στο OpenWrt, εκτελέστε mu300-next-boot linux στο Android και επανεκκινήστε."
+
+msgid "Or do nothing: after five boots that do not finish, it falls back automatically."
+msgstr "Ή μην κάνετε τίποτα: μετά από πέντε εκκινήσεις που δεν ολοκληρώνονται, επιστρέφει αυτόματα."
+
+msgid "Preparing Android boot and rebooting…"
+msgstr "Προετοιμασία εκκίνησης Android και επανεκκίνηση…"
+
+msgid "Switch and reboot"
+msgstr "Αλλαγή και επανεκκίνηση"
+
+msgid "Not automatic: %s. The network mode and band locks are stored in the modem and stay in force in Android too; if the network does not match them, Android shows No Service."
+msgstr "Όχι αυτόματο: %s. Η λειτουργία δικτύου και τα κλειδώματα ζωνών αποθηκεύονται στο μόντεμ και ισχύουν και στο Android· αν το δίκτυο δεν ταιριάζει, το Android δείχνει «Καμία υπηρεσία»."
+
+msgid "Reset locks and switch"
+msgstr "Επαναφορά κλειδωμάτων και εναλλαγή"
+
+msgid "Unlock Linux"
+msgstr "Ξεκλείδωμα Linux"
+
+msgid "After five boots in a row that do not finish, the device falls back to Android again."
+msgstr "Μετά από πέντε συνεχόμενες ημιτελείς εκκινήσεις, η συσκευή επιστρέφει ξανά στο Android."
+
+msgid "Unlock"
+msgstr "Ξεκλείδωμα"
+
+msgid "The device will never switch to Android by itself, not even after failed boots: Android only from this page (Switch to Android) or with mu300-next-boot android."
+msgstr "Η συσκευή δεν θα μεταβεί ποτέ μόνη της στο Android, ούτε μετά από αποτυχημένες εκκινήσεις: στο Android μόνο από αυτή τη σελίδα (Μετάβαση σε Android) ή με mu300-next-boot android."
+
+msgid "A new kernel from an update still gets its first boots on trial, and locks again once one of them succeeds."
+msgstr "Ένας νέος πυρήνας από ενημέρωση εξακολουθεί να κάνει τις πρώτες εκκινήσεις δοκιμαστικά και κλειδώνει ξανά μόλις μία πετύχει."
+
+msgid "If the system itself no longer starts, the device waits on USB (telnet) instead of going to Android."
+msgstr "Αν το ίδιο το σύστημα δεν ξεκινά πλέον, η συσκευή περιμένει μέσω USB (telnet) αντί να μεταβεί στο Android."
+
+msgid "Hide SIM identifiers"
+msgstr "Απόκρυψη αναγνωριστικών SIM"
+
+msgid "Lock cell %s?"
+msgstr "Κλείδωμα κυψέλης %s;"
+
+msgid "The radio stack will restart (SFUN); cellular service will stop for about 30 seconds."
+msgstr "Η στοίβα ραδιοφώνου θα επανεκκινηθεί (SFUN)· η υπηρεσία κινητού δικτύου θα διακοπεί για περίπου 30 δευτερόλεπτα."
+
+msgid "Locking %s in the background, about 30 seconds"
+msgstr "Κλείδωμα %s στο παρασκήνιο, περίπου 30 δευτερόλεπτα"
+
+msgid "Locked %s in the background; the status will refresh shortly"
+msgstr "Το %s κλειδώθηκε στο παρασκήνιο· η κατάσταση θα ανανεωθεί σύντομα"
+
+msgid "Lock failed: %s"
+msgstr "Το κλείδωμα απέτυχε: %s"
+
+msgid "Resetting the network locks to automatic (SFUN restart, about 30 seconds)…"
+msgstr "Επαναφορά των κλειδωμάτων δικτύου σε αυτόματο (επανεκκίνηση SFUN, περίπου 30 δευτερόλεπτα)…"
+
+msgid "Reset failed: %s. The saved lock settings were kept."
+msgstr "Η επαναφορά απέτυχε: %s. Οι αποθηκευμένες ρυθμίσεις κλειδώματος διατηρήθηκαν."
+
+msgid "The lock reset was not confirmed in time; switching anyway."
+msgstr "Η επαναφορά των κλειδωμάτων δεν επιβεβαιώθηκε εγκαίρως· γίνεται εναλλαγή ούτως ή άλλως."
+
+msgid "Internal SIM selected: in use after a reboot"
+msgstr "Επιλέχθηκε η εσωτερική SIM: χρησιμοποιείται μετά από επανεκκίνηση"
+
+msgid "Internal SIM selected, but not supported on this device: the external SIM is in use"
+msgstr "Επιλέχθηκε η εσωτερική SIM, αλλά δεν υποστηρίζεται σε αυτή τη συσκευή: χρησιμοποιείται η εξωτερική SIM"
+
+msgid "Uptime %s"
+msgstr "Χρόνος λειτουργίας %s"
+
+msgid "Radio off"
+msgstr "Ραδιόφωνο ανενεργό"
+
+msgid "No response"
+msgstr "Καμία απόκριση"
+
+msgid "Modem busy: cellular readings from %s ago"
+msgstr "Το μόντεμ είναι απασχολημένο: μετρήσεις κινητού δικτύου πριν από %s"
+
+msgid "%s · Signal %s %s/10"
+msgstr "%s · Σήμα %s %s/10"
+
+msgid "%s · Signal %s"
+msgstr "%s · Σήμα %s"
+
+msgid "Anchor B%s"
+msgstr "Άγκυρα B%s"
+
+msgid "No serving cell"
+msgstr "Καμία κυψέλη εξυπηρέτησης"
+
+msgid "Version %s is out: update"
+msgstr "Κυκλοφόρησε η έκδοση %s: ενημερώστε"
+
+msgid "Not registered"
+msgstr "Μη καταχωρισμένο"
+
+msgid "Registered"
+msgstr "Καταχωρισμένο"
+
+msgid "Searching"
+msgstr "Αναζήτηση"
+
+msgid "Registration denied"
+msgstr "Η καταχώριση απορρίφθηκε"
+
+msgid "Registered (roaming)"
+msgstr "Καταχωρισμένο (περιαγωγή)"
+
+msgid "Emergency only"
+msgstr "Μόνο κλήσεις έκτακτης ανάγκης"
+
+msgid "Status %s"
+msgstr "Κατάσταση %s"
+
+msgid "Off: data held back while roaming"
+msgstr "Ανενεργή: τα δεδομένα σταματούν σε περιαγωγή"
+
+msgid "Allowed"
+msgstr "Επιτρέπεται"
+
+msgid "Off"
+msgstr "Ανενεργό"
+
+msgid "LTE anchor"
+msgstr "Άγκυρα LTE"
+
+msgid "LTE link"
+msgstr "Ζεύξη LTE"
+
+msgid "Hidden"
+msgstr "Κρυφό"
+
+msgid "No"
+msgstr "Όχι"
+
+msgid "Running"
+msgstr "Εκτελείται"
+
+msgid "Not running"
+msgstr "Δεν εκτελείται"
+
+msgid "Connected"
+msgstr "Συνδεδεμένο"
+
+msgid "Disconnected"
+msgstr "Αποσυνδεδεμένο"
+
+msgid "%s entries"
+msgstr "%s εγγραφές"
+
+msgid "%s clients"
+msgstr "%s πελάτες"
+
+msgid "Recent DHCP leases"
+msgstr "Πρόσφατες μισθώσεις DHCP"
+
+msgid "Board"
+msgstr "Πλακέτα"
+
+msgid "No temperature readings"
+msgstr "Δεν υπάρχουν μετρήσεις θερμοκρασίας"
+
+msgid "Cluster %d"
+msgstr "Συστάδα %d"
+
+msgid "Total %s · free %s"
+msgstr "Σύνολο %s · ελεύθερα %s"
+
+msgid "charging %s W"
+msgstr "φόρτιση %s W"
+
+msgid "charging"
+msgstr "φορτίζει"
+
+msgid "drawing %s W"
+msgstr "κατανάλωση %s W"
+
+msgid "not charging"
+msgstr "δεν φορτίζει"
+
+msgid "on battery"
+msgstr "σε μπαταρία"
+
+msgid "full"
+msgstr "πλήρης"
+
+msgid "USB in %s W"
+msgstr "είσοδος USB %s W"
+
+msgid "Online"
+msgstr "Σε σύνδεση"
+
+msgid "AT adapter unavailable"
+msgstr "Ο προσαρμογέας AT δεν είναι διαθέσιμος"
+
+msgid "Linux locked"
+msgstr "Το Linux κλειδώθηκε"
+
+msgid "Installing the language pack…"
+msgstr "Εγκατάσταση του πακέτου γλωσσών…"
+
+msgid "The language pack is installed"
+msgstr "Το πακέτο γλωσσών εγκαταστάθηκε"
+
+msgid "The language pack could not be installed"
+msgstr "Δεν ήταν δυνατή η εγκατάσταση του πακέτου γλωσσών"
+
+msgid "Language of the browser"
+msgstr "Γλώσσα του προγράμματος περιήγησης"
+
+msgid "Language of the web interface"
+msgstr "Γλώσσα της διεπαφής ιστού"
+
+msgid "English, Turkish and Chinese come with the system; the language pack adds the others."
+msgstr "Τα Αγγλικά, τα Τουρκικά και τα Κινεζικά περιλαμβάνονται στο σύστημα· το πακέτο γλωσσών προσθέτει τις υπόλοιπες."
+
+msgid "The same setting is in System > System > Language and Style."
+msgstr "Η ίδια ρύθμιση βρίσκεται στο Σύστημα > Σύστημα > Γλώσσα και στυλ."
+
+msgid "Language pack"
+msgstr "Πακέτο γλωσσών"
+
+msgid "The language pack (mu300-extra-lang.tar.gz, about 2 MB) adds LuCI in about 40 more languages and this panel in 29 of them. Download it from the release of this system, or upload the file from the release page when the device has no internet."
+msgstr "Το πακέτο γλωσσών (mu300-extra-lang.tar.gz, περίπου 2 MB) προσθέτει το LuCI σε περίπου 40 ακόμη γλώσσες και αυτόν τον πίνακα σε 29 από αυτές. Κατεβάστε το από την έκδοση αυτού του συστήματος ή μεταφορτώστε το αρχείο από τη σελίδα της έκδοσης όταν η συσκευή δεν έχει internet."
+
+msgid "Download from the release"
+msgstr "Λήψη από την έκδοση"
+
+msgid "Release"
+msgstr "Έκδοση"
+
+msgid "Enable all"
+msgstr "Ενεργοποίηση όλων"
+
+msgid "Disable all"
+msgstr "Απενεργοποίηση όλων"
+
+msgid "Remove the language pack"
+msgstr "Αφαίρεση του πακέτου γλωσσών"
+
+msgid "Remove the language pack?"
+msgstr "Αφαίρεση του πακέτου γλωσσών;"
+
+msgid "Its languages disappear from the list; a page in one of them switches to English."
+msgstr "Οι γλώσσες του εξαφανίζονται από τη λίστα· μια σελίδα σε μία από αυτές αλλάζει σε Αγγλικά."
+
+msgid "Remove"
+msgstr "Αφαίρεση"
+
+msgid "Disable"
+msgstr "Απενεργοποίηση"
+
+msgid "Enable"
+msgstr "Ενεργοποίηση"
+
+msgid "LuCI and this panel"
+msgstr "LuCI και αυτός ο πίνακας"
+
+msgid "LuCI only"
+msgstr "Μόνο LuCI"
+
+msgid "Disabled"
+msgstr "Απενεργοποιημένο"
+
+msgid "Language"
+msgstr "Γλώσσα"
+
+msgid "Code"
+msgstr "Κωδικός"
+
+msgid "Translated"
+msgstr "Μεταφρασμένο"
+
+msgid "LuCI's own translations come from OpenWrt. This panel's translations other than Turkish and Chinese are machine (AI) translations; corrections are welcome."
+msgstr "Οι μεταφράσεις του ίδιου του LuCI προέρχονται από το OpenWrt. Οι μεταφράσεις αυτού του πίνακα εκτός των Τουρκικών και των Κινεζικών είναι αυτόματες (AI)· οι διορθώσεις είναι ευπρόσδεκτες."
+
+msgid "Automatic"
+msgstr "Αυτόματο"
+
+msgid "Serving network"
+msgstr "Δίκτυο εξυπηρέτησης"
+
+msgid "Network mode · EN-DC"
+msgstr "Λειτουργία δικτύου · EN-DC"
+
+msgid "Refresh lock status"
+msgstr "Ανανέωση κατάστασης κλειδώματος"
+
+msgid "Apply at startup"
+msgstr "Εφαρμογή κατά την εκκίνηση"
+
+msgid "Turning this off only stops replay at the next boot; saved network mode, EN-DC, band and cell settings remain."
+msgstr "Η απενεργοποίηση σταματά μόνο την επαναφορά στην επόμενη εκκίνηση· οι αποθηκευμένες ρυθμίσεις λειτουργίας δικτύου, EN-DC, ζωνών και κυψελών παραμένουν."
+
+msgid "Band locking"
+msgstr "Κλείδωμα ζωνών"
+
+msgid "NR bands"
+msgstr "Ζώνες NR"
+
+msgid "LTE bands"
+msgstr "Ζώνες LTE"
+
+msgid "Apply NR bands"
+msgstr "Εφαρμογή ζωνών NR"
+
+msgid "Apply LTE bands"
+msgstr "Εφαρμογή ζωνών LTE"
+
+msgid "Neighbor cells and cell locking"
+msgstr "Γειτονικές κυψέλες και κλείδωμα κυψέλης"
+
+msgid "Lock current serving cell"
+msgstr "Κλείδωμα τρέχουσας κυψέλης εξυπηρέτησης"
+
+msgid "Unlock cell"
+msgstr "Ξεκλείδωμα κυψέλης"
+
+msgid "Enter a cell"
+msgstr "Εισαγωγή κυψέλης"
+
+msgid "Type"
+msgstr "Τύπος"
+
+msgid "Channel number (EARFCN / NR-ARFCN)"
+msgstr "Αριθμός καναλιού (EARFCN / NR-ARFCN)"
+
+msgid "Lock this cell"
+msgstr "Κλείδωμα αυτής της κυψέλης"
+
+msgid "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. A channel number, not a frequency in MHz; the cell need not be in the neighbor list."
+msgstr "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. Αριθμός καναλιού, όχι συχνότητα σε MHz· η κυψέλη δεν χρειάζεται να είναι στη λίστα γειτονικών."
+
+msgid "Applying restarts the radio stack (SFUN) and briefly interrupts cellular service. Settings are saved and replayed by the plugin after AT is ready when Apply at startup is enabled. A platform pre-radio hook can replay without a restart. Apply with no bands selected to restore automatic mode."
+msgstr "Η εφαρμογή επανεκκινεί τη στοίβα ραδιοφώνου (SFUN) και διακόπτει για λίγο την υπηρεσία κινητού δικτύου. Οι ρυθμίσεις αποθηκεύονται και εφαρμόζονται ξανά από το πρόσθετο όταν το AT είναι έτοιμο, εφόσον είναι ενεργή η Εφαρμογή κατά την εκκίνηση. Ένα hook πλατφόρμας πριν από το ραδιόφωνο μπορεί να τις εφαρμόσει χωρίς επανεκκίνηση. Εφαρμόστε χωρίς επιλεγμένες ζώνες για επαναφορά της αυτόματης λειτουργίας."
+
+msgid "Back to automatic"
+msgstr "Επιστροφή σε αυτόματο"
+
+msgid "The network mode and band locks are stored in the modem and stay in force in Android too. If you are not sure, reset them before switching to Android."
+msgstr "Η λειτουργία δικτύου και τα κλειδώματα ζωνών αποθηκεύονται στο μόντεμ και ισχύουν και στο Android. Αν δεν είστε σίγουροι, επαναφέρετέ τα πριν μεταβείτε στο Android."
+
+msgid "Reset all to automatic"
+msgstr "Επαναφορά όλων σε αυτόματο"
+
+msgid "Apply “%s”?"
+msgstr "Εφαρμογή «%s»;"
+
+msgid "Applying %s in the background…"
+msgstr "Εφαρμογή %s στο παρασκήνιο…"
+
+msgid "Applying %s in the background… (SFUN restart and re-registration, about 30 seconds)"
+msgstr "Εφαρμογή %s στο παρασκήνιο… (επανεκκίνηση SFUN και νέα καταχώριση, περίπου 30 δευτερόλεπτα)"
+
+msgid "Queued: another lock is being applied during SFUN restart; this will take effect afterward"
+msgstr "Σε αναμονή: άλλο κλείδωμα εφαρμόζεται κατά την επανεκκίνηση SFUN· αυτό θα ισχύσει μετά"
+
+msgid "Confirming the EN-DC status…"
+msgstr "Επιβεβαίωση κατάστασης EN-DC…"
+
+msgid "Confirming apply at startup…"
+msgstr "Επιβεβαίωση εφαρμογής κατά την εκκίνηση…"
+
+msgid "Started in background: %s (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Ξεκίνησε στο παρασκήνιο: %s (επανεκκίνηση SFUN, περίπου 30 δευτερόλεπτα)· ανάγνωση της κατάστασης…"
+
+msgid "Disable EN-DC (NSA anchor)"
+msgstr "Απενεργοποίηση EN-DC (άγκυρα NSA)"
+
+msgid "Enable EN-DC (NSA anchor)"
+msgstr "Ενεργοποίηση EN-DC (άγκυρα NSA)"
+
+msgid "Disable apply at startup"
+msgstr "Απενεργοποίηση εφαρμογής κατά την εκκίνηση"
+
+msgid "Enable apply at startup"
+msgstr "Ενεργοποίηση εφαρμογής κατά την εκκίνηση"
+
+msgid "Reading the modem directly (a few seconds at most)…"
+msgstr "Απευθείας ανάγνωση του μόντεμ (το πολύ λίγα δευτερόλεπτα)…"
+
+msgid "Refresh failed"
+msgstr "Η ανανέωση απέτυχε"
+
+msgid "Refreshed"
+msgstr "Ανανεώθηκε"
+
+msgid "NR bands: back to automatic"
+msgstr "Ζώνες NR: επιστροφή σε αυτόματο"
+
+msgid "LTE bands: back to automatic"
+msgstr "Ζώνες LTE: επιστροφή σε αυτόματο"
+
+msgid "Network mode automatic, EN-DC on, all LTE and NR bands, no cell lock. The saved lock settings are cleared, so nothing is replayed at startup."
+msgstr "Λειτουργία δικτύου αυτόματη, EN-DC ενεργό, όλες οι ζώνες LTE και NR, χωρίς κλείδωμα κυψέλης. Οι αποθηκευμένες ρυθμίσεις διαγράφονται, οπότε τίποτα δεν εφαρμόζεται ξανά στην εκκίνηση."
+
+msgid "Reset"
+msgstr "Επαναφορά"
+
+msgid "Remove the %s cell lock"
+msgstr "Αφαίρεση κλειδώματος κυψέλης %s"
+
+msgid "The radio stack will restart (SFUN), taking about 30 seconds."
+msgstr "Η στοίβα ραδιοφώνου θα επανεκκινηθεί (SFUN), περίπου 30 δευτερόλεπτα."
+
+msgid "Removing the %s cell lock…"
+msgstr "Αφαίρεση κλειδώματος κυψέλης %s…"
+
+msgid "Unlock failed: %s"
+msgstr "Το ξεκλείδωμα απέτυχε: %s"
+
+msgid "Unlock started in background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Το ξεκλείδωμα ξεκίνησε στο παρασκήνιο (επανεκκίνηση SFUN, περίπου 30 δευτερόλεπτα)· ανάγνωση της κατάστασης…"
+
+msgid "Locking %s in the background…"
+msgstr "Κλείδωμα %s στο παρασκήνιο…"
+
+msgid "Locked %s in the background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Το %s κλειδώθηκε στο παρασκήνιο (επανεκκίνηση SFUN, περίπου 30 δευτερόλεπτα)· ανάγνωση της κατάστασης…"
+
+msgid "Enter a channel number and a PCI in the ranges below"
+msgstr "Εισαγάγετε αριθμό καναλιού και PCI εντός των παρακάτω περιοχών"
+
+msgid "No serving-network data"
+msgstr "Δεν υπάρχουν δεδομένα δικτύου εξυπηρέτησης"
+
+msgid "NR serving cell"
+msgstr "Κυψέλη εξυπηρέτησης NR"
+
+msgid "Status confirmed"
+msgstr "Η κατάσταση επιβεβαιώθηκε"
+
+msgid "Readback timed out; select “Refresh lock status”"
+msgstr "Λήξη χρόνου ανάγνωσης· επιλέξτε «Ανανέωση κατάστασης κλειδώματος»"
+
+msgid "Reset verified: network mode automatic, EN-DC on, all bands, no cell lock; the saved lock settings are cleared"
+msgstr "Η επαναφορά επαληθεύτηκε: λειτουργία δικτύου αυτόματη, EN-DC ενεργό, όλες οι ζώνες, χωρίς κλείδωμα κυψέλης· οι αποθηκευμένες ρυθμίσεις κλειδώματος διαγράφηκαν"
+
+msgid "Applied (EN-DC does not require a radio-stack restart)"
+msgstr "Εφαρμόστηκε (το EN-DC δεν απαιτεί επανεκκίνηση της στοίβας ραδιοφώνου)"
+
+msgid "Apply at startup is on"
+msgstr "Η εφαρμογή κατά την εκκίνηση είναι ενεργή"
+
+msgid "Apply at startup is off"
+msgstr "Η εφαρμογή κατά την εκκίνηση είναι ανενεργή"
+
+msgid "EN-DC status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Λήξη χρόνου ανάγνωσης κατάστασης EN-DC· χρησιμοποιήστε «Ανανέωση κατάστασης κλειδώματος» για επιβεβαίωση"
+
+msgid "Apply-at-startup status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Λήξη χρόνου ανάγνωσης κατάστασης εφαρμογής κατά την εκκίνηση· χρησιμοποιήστε «Ανανέωση κατάστασης κλειδώματος» για επιβεβαίωση"
+
+msgid "Locked cells"
+msgstr "Κλειδωμένες κυψέλες"
+
+msgid "Unlock %s"
+msgstr "Ξεκλείδωμα %s"
+
+msgid "Automatic (%d supported)"
+msgstr "Αυτόματο (%d υποστηριζόμενες)"
+
+msgid "%d locked: %s"
+msgstr "%d κλειδωμένες: %s"
+
+msgid "Repair DNS?"
+msgstr "Επισκευή DNS;"
+
+msgid "This removes the DNS forwarder of a package that is no longer installed. If no other DNS server is left, the device then uses the DNS servers of the mobile connection: the carrier sees the names you look up, outside any proxy or VPN."
+msgstr "Αυτό αφαιρεί την προώθηση DNS ενός πακέτου που δεν είναι πλέον εγκατεστημένο. Αν δεν μείνει άλλος διακομιστής DNS, η συσκευή χρησιμοποιεί τους διακομιστές DNS της σύνδεσης κινητής: ο πάροχος βλέπει τα ονόματα που αναζητάτε, έξω από κάθε proxy ή VPN."
+
+msgid "Repair DNS"
+msgstr "Επισκευή DNS"
+
+msgid "Packages installed on the device are not part of a release image. An update writes them down, and the new system installs them again at its first boot, once it is online. Until a package is back its settings are set aside."
+msgstr "Τα πακέτα που εγκαταστάθηκαν στη συσκευή δεν ανήκουν στην εικόνα της έκδοσης. Μια ενημέρωση τα καταγράφει και το νέο σύστημα τα εγκαθιστά ξανά στην πρώτη εκκίνηση, μόλις είναι συνδεδεμένο. Μέχρι να επιστρέψει ένα πακέτο, οι ρυθμίσεις του φυλάσσονται στην άκρη."
+
+msgid "No packages to install again."
+msgstr "Κανένα πακέτο για επανεγκατάσταση."
+
+msgid "All back"
+msgstr "Όλα επέστρεψαν"
+
+msgid "Not installed yet"
+msgstr "Δεν έχει εγκατασταθεί ακόμα"
+
+msgid "Could not be installed again"
+msgstr "Δεν ήταν δυνατή η επανεγκατάσταση"
+
+msgid "Waiting for the internet"
+msgstr "Αναμονή για internet"
+
+msgid "Given up: no internet at five boots"
+msgstr "Εγκαταλείφθηκε: χωρίς internet σε πέντε εκκινήσεις"
+
+msgid "Skipped"
+msgstr "Παραλείφθηκε"
+
+msgid "Written down by the update from %s"
+msgstr "Καταγράφηκε από την ενημέρωση από %s"
+
+msgid "Installed again"
+msgstr "Επανεγκαταστάθηκαν"
+
+msgid "Install them yourself from where you got them (a package file: apk add --allow-untrusted FILE.apk)."
+msgstr "Εγκαταστήστε τα μόνοι σας από εκεί που τα πήρατε (αρχείο πακέτου: apk add --allow-untrusted FILE.apk)."
+
+msgid "Settings set aside in /etc/mu300/orphaned-config"
+msgstr "Ρυθμίσεις στην άκρη στο /etc/mu300/orphaned-config"
+
+msgid "DNS still goes to a package that is not installed: the device has no DNS through it."
+msgstr "Το DNS πηγαίνει ακόμα σε πακέτο που δεν είναι εγκατεστημένο: η συσκευή δεν έχει DNS μέσω αυτού."
+
+msgid "Try again"
+msgstr "Δοκιμή ξανά"
+
+msgid "Dismiss the note"
+msgstr "Απόκρυψη σημείωσης"
+
+msgid "started"
+msgstr "ξεκίνησε"
+
+msgid "asleep now (asked)"
+msgstr "αναστολή τώρα (κατόπιν αιτήματος)"
+
+msgid "woken: power daemon stopping"
+msgstr "αφύπνιση: η υπηρεσία ενέργειας σταματά"
+
+msgid "woken by a key"
+msgstr "αφύπνιση με πλήκτρο"
+
+msgid "woken by the Wi-Fi key"
+msgstr "αφύπνιση με το πλήκτρο Wi-Fi"
+
+msgid "woken (mu300-power wake)"
+msgstr "αφύπνιση (mu300-power wake)"
+
+msgid "woken by a computer on USB"
+msgstr "αφύπνιση από υπολογιστή μέσω USB"
+
+msgid "woken: plugged in"
+msgstr "αφύπνιση: συνδέθηκε στο ρεύμα"
+
+msgid "woken by a Wi-Fi client"
+msgstr "αφύπνιση από πελάτη Wi-Fi"
+
+msgid "charging boot (powered on by the charger)"
+msgstr "εκκίνηση φόρτισης (ενεργοποίηση από τον φορτιστή)"
+
+msgid "the hotspot is down"
+msgstr "το hotspot είναι κλειστό"
+
+msgid "the VPN is still stopped"
+msgstr "το VPN είναι ακόμη σταματημένο"
+
+msgid "5G (EN-DC) is still off after a failed resume"
+msgstr "το 5G (EN-DC) είναι ακόμη κλειστό μετά από αποτυχημένη συνέχιση"
+
+msgid "self-check: %s"
+msgstr "αυτοέλεγχος: %s"
+
+msgid "asleep: no client for %d min (%s)"
+msgstr "αναστολή: κανένας πελάτης για %d λεπ. (%s)"
+
+msgid "asleep: profile now %s"
+msgstr "αναστολή: προφίλ τώρα %s"
+
+msgid "woken by the %s key"
+msgstr "αφύπνιση με το πλήκτρο %s"
+
+msgid "the modem is suspended (%s)"
+msgstr "το μόντεμ έχει ανασταλεί (%s)"
+
+msgid "Enter a whole number from 0 to %d"
+msgstr "Εισαγάγετε έναν ακέραιο από 0 έως %d"
+
+msgid "Power status unavailable"
+msgstr "Η κατάσταση ισχύος δεν είναι διαθέσιμη"
+
+msgid "Plugged in"
+msgstr "Στην πρίζα"
+
+msgid "On battery"
+msgstr "Με μπαταρία"
+
+msgid "Saver"
+msgstr "Εξοικονόμηση"
+
+msgid "Asleep: hotspot off"
+msgstr "Αναστολή: το hotspot είναι σβηστό"
+
+msgid "Charging boot: press the Wi-Fi key to start"
+msgstr "Εκκίνηση φόρτισης: πατήστε το πλήκτρο Wi-Fi για εκκίνηση"
+
+msgid "Awake"
+msgstr "Ενεργή"
+
+msgid "forced"
+msgstr "εξαναγκασμένο"
+
+msgid "automatic, battery under %d %%"
+msgstr "αυτόματο, μπαταρία κάτω από %d %%"
+
+msgid "automatic"
+msgstr "αυτόματο"
+
+msgid "Nobody connected for %d s"
+msgstr "Κανείς δεν είναι συνδεδεμένος εδώ και %d δ"
+
+msgid "Power source"
+msgstr "Πηγή ισχύος"
+
+msgid "Profile"
+msgstr "Προφίλ"
+
+msgid "Profile in use: %s (%s)"
+msgstr "Προφίλ σε χρήση: %s (%s)"
+
+msgid "%d %%, %s, %d mV, %d mA, %.1f °C"
+msgstr "%d %%, %s, %d mV, %d mA, %.1f °C"
+
+msgid "Charger"
+msgstr "Φορτιστής"
+
+msgid "Charger: %s, %s port"
+msgstr "Φορτιστής: %s, θύρα %s"
+
+msgid "Charging paused: battery temperature"
+msgstr "Η φόρτιση σταμάτησε προσωρινά: θερμοκρασία μπαταρίας"
+
+msgid "Charging paused: charge limit"
+msgstr "Η φόρτιση σταμάτησε προσωρινά: όριο φόρτισης"
+
+msgid "Sleep now"
+msgstr "Αναστολή τώρα"
+
+msgid "Wake"
+msgstr "Αφύπνιση"
+
+msgid "Nobody connected means no Wi-Fi client and no computer on USB. The Wi-Fi key, a computer on USB or the charger wake the device."
+msgstr "Κανείς συνδεδεμένος σημαίνει κανένας πελάτης Wi-Fi και κανένας υπολογιστής στο USB. Το πλήκτρο Wi-Fi, ένας υπολογιστής στο USB ή ο φορτιστής ξυπνούν τη συσκευή."
+
+msgid "Automatic: plugged in / on battery"
+msgstr "Αυτόματο: στην πρίζα / με μπαταρία"
+
+msgid "Switch to Saver under %"
+msgstr "Μετάβαση σε Εξοικονόμηση κάτω από %"
+
+msgid "Stop charging at"
+msgstr "Διακοπή φόρτισης στο"
+
+msgid "0 % never charges the battery (the device runs on the charger), 100 % charges it full; in between, charging stops at that level and starts again 5 points lower. Under 5 % the battery always charges."
+msgstr "Το 0 % δεν φορτίζει ποτέ την μπαταρία (η συσκευή λειτουργεί από τον φορτιστή), το 100 % τη φορτίζει πλήρως· ενδιάμεσα, η φόρτιση σταματά σε εκείνο το επίπεδο και ξεκινά ξανά 5 μονάδες χαμηλότερα. Κάτω από 5 % η μπαταρία φορτίζει πάντα."
+
+msgid "80 % keeps the battery healthier on a device that stays plugged in."
+msgstr "Το 80 % προστατεύει την μπαταρία μιας συσκευής που μένει στην πρίζα."
+
+msgid "When the charger switches the device on"
+msgstr "Όταν ο φορτιστής ενεργοποιεί τη συσκευή"
+
+msgid "Charge only, until a key starts it"
+msgstr "Μόνο φόρτιση, μέχρι να την εκκινήσει ένα πλήκτρο"
+
+msgid "Start normally"
+msgstr "Κανονική εκκίνηση"
+
+msgid "Keep as is"
+msgstr "Να μείνει ως έχει"
+
+msgid "LTE only (5G off)"
+msgstr "Μόνο LTE (5G κλειστό)"
+
+msgid "On"
+msgstr "Ενεργό"
+
+msgid "Full"
+msgstr "Πλήρες"
+
+msgid "Eco: big core off"
+msgstr "Eco: μεγάλος πυρήνας κλειστός"
+
+msgid "Hotspot off after (min, 0 = never)"
+msgstr "Απενεργοποίηση hotspot μετά από (λεπτά, 0 = ποτέ)"
+
+msgid "Modem when idle"
+msgstr "Modem σε αδράνεια"
+
+msgid "LEDs when idle"
+msgstr "LED σε αδράνεια"
+
+msgid "Ignored lines in power.conf: %s"
+msgstr "Αγνοημένες γραμμές στο power.conf: %s"
+
+msgid "Configure how this plugin connects to the current Unisoc OpenWrt platform. Changes do not require editing the dashboard, AT, locks or SMS pages."
+msgstr "Ρυθμίστε πώς συνδέεται αυτό το πρόσθετο με την τρέχουσα πλατφόρμα Unisoc OpenWrt. Οι αλλαγές δεν απαιτούν επεξεργασία των σελίδων πίνακα κατάστασης, AT, κλειδωμάτων ή SMS."
+
+msgid "Platform adapter"
+msgstr "Προσαρμογέας πλατφόρμας"
+
+msgid "AT backend"
+msgstr "Σύστημα υποστήριξης AT"
+
+msgid "Auto-detect"
+msgstr "Αυτόματος εντοπισμός"
+
+msgid "atinout + serial port"
+msgstr "atinout + σειριακή θύρα"
+
+msgid "Custom adapter"
+msgstr "Προσαρμοσμένος προσαρμογέας"
+
+msgid "AT serial port"
+msgstr "Σειριακή θύρα AT"
+
+msgid "Custom AT adapter"
+msgstr "Προσαρμοσμένος προσαρμογέας AT"
+
+msgid "The executable receives a timeout in seconds and the complete AT command, in that order. It must share the serial lock with the platform dialer."
+msgstr "Το εκτελέσιμο λαμβάνει ένα χρονικό όριο σε δευτερόλεπτα και την πλήρη εντολή AT, με αυτή τη σειρά. Πρέπει να μοιράζεται το κλείδωμα σειριακής θύρας με τον dialer της πλατφόρμας."
+
+msgid "SMS adapter"
+msgstr "Προσαρμογέας SMS"
+
+msgid "Implement the list, show, send, delete and sync subcommands; leave blank to find mu300-sms automatically."
+msgstr "Υλοποιήστε τις υποεντολές list, show, send, delete και sync· αφήστε κενό για αυτόματο εντοπισμό του mu300-sms."
+
+msgid "SMS pool directory"
+msgstr "Κατάλογος αποθήκης SMS"
+
+msgid "Cellular logical interface"
+msgstr "Λογική διεπαφή κινητού δικτύου"
+
+msgid "Cellular IPv6 interface"
+msgstr "Διεπαφή IPv6 κινητού δικτύου"
+
+msgid "Cellular network device"
+msgstr "Συσκευή δικτύου κινητού δικτύου"
+
+msgid "Leave blank to detect from netifd"
+msgstr "Αφήστε κενό για εντοπισμό από το netifd"
+
+msgid "LAN bridge"
+msgstr "Γέφυρα LAN"
+
+msgid "Wi-Fi device"
+msgstr "Συσκευή Wi-Fi"
+
+msgid "USB device"
+msgstr "Συσκευή USB"
+
+msgid "Maximum wait for AT readiness (seconds)"
+msgstr "Μέγιστη αναμονή για ετοιμότητα AT (δευτερόλεπτα)"
+
+msgid "Home dashboard refresh interval (seconds)"
+msgstr "Διάστημα ανανέωσης αρχικού πίνακα (δευτερόλεπτα)"
+
+msgid "Controls only the home dashboard refresh rate; 0.5–60 seconds. Reopen Home after saving to apply."
+msgstr "Ελέγχει μόνο τον ρυθμό ανανέωσης του αρχικού πίνακα· 0.5–60 δευτερόλεπτα. Ανοίξτε ξανά την Αρχική μετά την αποθήκευση για εφαρμογή."
+
+msgid "Persistent state directory"
+msgstr "Κατάλογος μόνιμης κατάστασης"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM. Mobile data will disconnect briefly."
+msgstr "Switching SIM. Mobile data will disconnect briefly."
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switch failed; check SIM readiness and hot switching."
+msgstr "SIM switch failed; check SIM readiness and hot switching."
+
+# Source-language fallback for untranslated new controls.
+msgid "Ready"
+msgstr "Ready"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM"
+msgstr "Switching SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switched; saved as boot default"
+msgstr "SIM switched; saved as boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch failed; previous SIM restored"
+msgstr "Switch failed; previous SIM restored"
+
+msgid "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+msgstr "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+
+msgid "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+msgstr "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+
+# Source-language fallback for untranslated new controls.
+msgid "Radio state unknown; reboot required"
+msgstr "Radio state unknown; reboot required"
+
+msgid "Radio state unknown; the device is restarting."
+msgstr "Radio state unknown; the device is restarting."
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM control is only for the U30 Air on OpenWrt."
+msgstr "Dual SIM control is only for the U30 Air on OpenWrt."
+
+# Source-language fallback for untranslated new controls.
+msgid "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+msgstr "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+
+msgid "No card answered in the chosen SIM position at the last boot."
+msgstr "No card answered in the chosen SIM position at the last boot."
+
+msgid "The chosen SIM is locked by its PIN."
+msgstr "The chosen SIM is locked by its PIN."
+
+msgid "The chosen SIM got no mobile data within the time at its first boot."
+msgstr "The chosen SIM got no mobile data within the time at its first boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The second SIM's modem channels did not come up at the last boot."
+msgstr "The second SIM's modem channels did not come up at the last boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The last dual-SIM boot never confirmed itself."
+msgstr "The last dual-SIM boot never confirmed itself."
+
+msgid "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+msgstr "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+
+# Source-language fallback for untranslated new controls.
+msgid "Active SIM"
+msgstr "Active SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "Cold-boot default"
+msgstr "Cold-boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control unavailable"
+msgstr "SIM control unavailable"
+
+# Source-language fallback for untranslated new controls.
+msgid "The device is back on SIM1 without live switching; choose again below to try once more."
+msgstr "The device is back on SIM1 without live switching; choose again below to try once more."
+
+msgid "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+msgstr "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching"
+msgstr "Enable hot switching"
+
+msgid "This device supports next-boot SIM selection only; live switching is unavailable."
+msgstr "This device supports next-boot SIM selection only; live switching is unavailable."
+
+# Source-language fallback for untranslated new controls.
+msgid "Reboot after enabling hot switching to prepare both SIM channels."
+msgstr "Reboot after enabling hot switching to prepare both SIM channels."
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch to SIM%d"
+msgstr "Switch to SIM%d"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM%d at next boot"
+msgstr "Use SIM%d at next boot"
+
+msgid "Built-in SIM 1"
+msgstr "Ενσωματωμένη SIM 1"
+
+msgid "Built-in SIM 2"
+msgstr "Ενσωματωμένη SIM 2"
+
+msgid "Built-in SIM 3"
+msgstr "Ενσωματωμένη SIM 3"
+
+msgid "External SIM"
+msgstr "Εξωτερική SIM"
+
+msgid "SIM card"
+msgstr "Κάρτα SIM"
+
+msgid "Built-in SIM 3 shares SIM2, the external SIM shares SIM1. The card chosen here is switched in before the modem starts, at the next boot; without a choice the cards stay as the bootloader sets them."
+msgstr "Η ενσωματωμένη SIM 3 μοιράζεται τη SIM2 και η εξωτερική SIM τη SIM1. Η κάρτα που επιλέγεται εδώ ενεργοποιείται πριν ξεκινήσει το μόντεμ, στην επόμενη εκκίνηση· χωρίς επιλογή οι κάρτες μένουν όπως τις ορίζει ο φορτωτής εκκίνησης."
+
+msgid "As the bootloader sets them"
+msgstr "Όπως τις ορίζει ο φορτωτής εκκίνησης"
+
+msgid "Applying the radio setting…"
+msgstr "Εφαρμογή ρύθμισης πομπού…"
+
+msgid "SIM settings are not available"
+msgstr "Οι ρυθμίσεις SIM δεν είναι διαθέσιμες"
+
+msgid "Modem default"
+msgstr "Προεπιλογή μόντεμ"
+
+msgid "SIM%d"
+msgstr "SIM%d"
+
+msgid "in use"
+msgstr "σε χρήση"
+
+msgid "Turn off the radio of SIM%d"
+msgstr "Απενεργοποίηση πομπού SIM%d"
+
+msgid "Radio"
+msgstr "Πομπός"
+
+msgid "VoLTE"
+msgstr "VoLTE"
+
+msgid "VoNR"
+msgstr "VoNR"
+
+msgid "Modem: %s"
+msgstr "Μόντεμ: %s"
+
+msgid "Sent to this SIM when its radio next starts."
+msgstr "Αποστέλλεται σε αυτή τη SIM την επόμενη φορά που θα ξεκινήσει ο πομπός της."
+
+msgid "VoLTE and VoNR for each SIM, kept across reboots and sent again whenever that SIM starts. VoLTE is on unless switched off; VoNR stays as the modem has it until set."
+msgstr "VoLTE και VoNR για κάθε SIM, διατηρούνται μετά από επανεκκίνηση και αποστέλλονται ξανά κάθε φορά που ξεκινά η SIM. Το VoLTE είναι ενεργό εκτός αν απενεργοποιηθεί· το VoNR μένει όπως στο μόντεμ μέχρι να οριστεί."
+
+msgid "All radios off (airplane mode)"
+msgstr "Όλοι οι πομποί κλειστοί (λειτουργία πτήσης)"
+
+msgid "All radios on"
+msgstr "Όλοι οι πομποί ανοιχτοί"
+
+msgid "No SIM will have calls, SMS or data, also after a reboot, until a radio is turned on again here or with the dashboard's radio button."
+msgstr "Καμία SIM δεν θα έχει κλήσεις, SMS ή δεδομένα, ακόμη και μετά από επανεκκίνηση, μέχρι να ανοίξει ξανά ένας πομπός εδώ ή με το κουμπί πομπού του πίνακα."
+
+msgid "Each SIM's radio stays as set here after a reboot. A SIM whose radio is off has no calls, SMS or data, and the device does not switch to it."
+msgstr "Ο πομπός κάθε SIM μένει όπως ορίστηκε εδώ μετά από επανεκκίνηση. Μια SIM με κλειστό πομπό δεν έχει κλήσεις, SMS ή δεδομένα, και η συσκευή δεν μεταβαίνει σε αυτή."
+
+msgid "The setting is saved, but the radio did not follow it yet."
+msgstr "Η ρύθμιση αποθηκεύτηκε, αλλά ο πομπός δεν την ακολούθησε ακόμη."
+
+msgid "Recipient: number, e.g. 10086 or +86..."
+msgstr "Παραλήπτης: αριθμός, π.χ. 10086 ή +86..."
+
+msgid "Sync from SIM"
+msgstr "Συγχρονισμός από SIM"
+
+msgid "Clear local pool"
+msgstr "Εκκαθάριση τοπικής αποθήκης"
+
+msgid "Select a conversation on the left, or enter a number below to send."
+msgstr "Επιλέξτε μια συνομιλία στα αριστερά ή εισαγάγετε έναν αριθμό παρακάτω για αποστολή."
+
+msgid "Message (Enter to send, Shift+Enter for newline)"
+msgstr "Μήνυμα (Enter για αποστολή, Shift+Enter για νέα γραμμή)"
+
+msgid "Sending uses AT+CMGS (PDU mode); retry if the channel is busy. To delete one message, use the bin icon on its bubble."
+msgstr "Η αποστολή χρησιμοποιεί AT+CMGS (λειτουργία PDU)· δοκιμάστε ξανά αν το κανάλι είναι απασχολημένο. Για διαγραφή ενός μηνύματος, χρησιμοποιήστε το εικονίδιο κάδου στο συννεφάκι του."
+
+msgid "Sending…"
+msgstr "Αποστολή…"
+
+msgid "Sent; the list refreshes shortly."
+msgstr "Εστάλη· η λίστα ανανεώνεται σύντομα."
+
+msgid "Sending failed"
+msgstr "Η αποστολή απέτυχε"
+
+msgid "Syncing from the SIM in the background (AT+CMGL)…"
+msgstr "Συγχρονισμός από τη SIM στο παρασκήνιο (AT+CMGL)…"
+
+msgid "SIM sync started; the list refreshes in a few seconds."
+msgstr "Ο συγχρονισμός SIM ξεκίνησε· η λίστα ανανεώνεται σε λίγα δευτερόλεπτα."
+
+msgid "Clear local SMS pool"
+msgstr "Εκκαθάριση τοπικής αποθήκης SMS"
+
+msgid "Only local files will be deleted; messages on the SIM remain."
+msgstr "Θα διαγραφούν μόνο τα τοπικά αρχεία· τα μηνύματα στη SIM παραμένουν."
+
+msgid "Delete this SMS"
+msgstr "Διαγραφή αυτού του SMS"
+
+msgid "Deletion cannot be undone."
+msgstr "Η διαγραφή δεν μπορεί να αναιρεθεί."
+
+msgid "Local only"
+msgstr "Μόνο τοπικά"
+
+msgid "Local + SIM"
+msgstr "Τοπικά + SIM"
+
+msgid "Delete failed"
+msgstr "Η διαγραφή απέτυχε"
+
+msgid "Deleted (local + SIM)"
+msgstr "Διαγράφηκε (τοπικά + SIM)"
+
+msgid "Deleted (local only)"
+msgstr "Διαγράφηκε (μόνο τοπικά)"
+
+msgid "Enter both a number and a message."
+msgstr "Εισαγάγετε αριθμό και μήνυμα."
+
+msgid "· %d messages, %d unread · %d conversations"
+msgstr "· %d μηνύματα, %d μη αναγνωσμένα · %d συνομιλίες"
+
+msgid "· %d messages · %d conversations"
+msgstr "· %d μηνύματα · %d συνομιλίες"
+
+msgid "The pool is empty. Incoming and sent messages appear here, or select “Sync from SIM”."
+msgstr "Η αποθήκη είναι κενή. Τα εισερχόμενα και απεσταλμένα μηνύματα εμφανίζονται εδώ, ή επιλέξτε «Συγχρονισμός από SIM»."
+
+msgid "Me: %s"
+msgstr "Εγώ: %s"
+
+msgid "Incomplete: %d of %d parts arrived"
+msgstr "Ελλιπές: έφτασαν %d από %d τμήματα"
+
+msgid "Delete"
+msgstr "Διαγραφή"
+
+msgid "ttyd is not installed."
+msgstr "Το ttyd δεν είναι εγκατεστημένο."
+
+msgid "The terminal is turned off (/etc/config/ttyd)."
+msgstr "Το τερματικό είναι απενεργοποιημένο (/etc/config/ttyd)."
+
+msgid "Too many terminals are opening at once. Try again in a minute."
+msgstr "Ανοίγουν πάρα πολλά τερματικά ταυτόχρονα. Δοκιμάστε ξανά σε ένα λεπτό."
+
+msgid "The terminal is not available."
+msgstr "Το τερματικό δεν είναι διαθέσιμο."
+
+msgid "This is a root shell on the device: every command runs with full rights, and a mistake can make the device unbootable."
+msgstr "Αυτό είναι ένα κέλυφος root της συσκευής: κάθε εντολή εκτελείται με πλήρη δικαιώματα και ένα λάθος μπορεί να κάνει τη συσκευή να μην εκκινεί."
+
+msgid "It is reachable from the LAN only (USB and the hotspot), never from mobile data, and only from this logged-in page."
+msgstr "Είναι προσβάσιμο μόνο από το LAN (USB και hotspot), ποτέ από τα δεδομένα κινητής, και μόνο από αυτή τη σελίδα με σύνδεση."
+
+msgid "It closes after a minute without activity."
+msgstr "Κλείνει μετά από ένα λεπτό χωρίς δραστηριότητα."
+
+msgid "It closes after %d minutes without activity."
+msgstr "Κλείνει μετά από %d λεπτά χωρίς δραστηριότητα."
+
+msgid "Reconnect"
+msgstr "Επανασύνδεση"
+
+msgid "Open in a new tab"
+msgstr "Άνοιγμα σε νέα καρτέλα"
+
+msgid "This page was opened over HTTPS, and the terminal is served over HTTP on the LAN: it opens in a tab of its own."
+msgstr "Αυτή η σελίδα άνοιξε μέσω HTTPS και το τερματικό εξυπηρετείται μέσω HTTP στο LAN: ανοίγει σε δική του καρτέλα."
+
+msgid "The data usage could not be read"
+msgstr "Η χρήση δεδομένων δεν μπόρεσε να διαβαστεί"
+
+msgid "Today"
+msgstr "Σήμερα"
+
+msgid "Days left in this cycle"
+msgstr "Ημέρες που απομένουν στην περίοδο"
+
+msgid "Received"
+msgstr "Ληφθέντα"
+
+msgid "Sent"
+msgstr "Απεσταλμένα"
+
+msgid "Corrected by"
+msgstr "Διόρθωση"
+
+msgid "Monthly cap"
+msgstr "Μηνιαίο όριο"
+
+msgid "%s, warning at %d%%"
+msgstr "%s, προειδοποίηση στο %d%%"
+
+msgid "The monthly cap is reached: mobile data was turned off. It comes back on when the next cycle starts."
+msgstr "Το μηνιαίο όριο εξαντλήθηκε: τα δεδομένα κινητής απενεργοποιήθηκαν. Ενεργοποιούνται ξανά όταν αρχίσει η επόμενη περίοδος."
+
+msgid "%s waits for the clock: it has not been set over the network yet. It already counts towards this cycle and goes to its day once the clock is set."
+msgstr "%s περιμένει το ρολόι: δεν έχει ρυθμιστεί ακόμη από το δίκτυο. Ήδη μετράει σε αυτή την περίοδο και θα πάει στη μέρα του μόλις ρυθμιστεί το ρολόι."
+
+msgid "The interface %s is not there right now: nothing is counted until it comes back."
+msgstr "Η διεπαφή %s δεν υπάρχει αυτή τη στιγμή: τίποτα δεν μετριέται μέχρι να επιστρέψει."
+
+msgid "Counted on %s, both ways, as the operator counts it (a VPN's overhead included)."
+msgstr "Μετριέται στο %s, και προς τις δύο κατευθύνσεις, όπως μετράει ο πάροχος (μαζί με την επιβάρυνση ενός VPN)."
+
+msgid "The count is kept in memory and written to the disk every 30 minutes and at shutdown: a power cut loses at most the last half hour."
+msgstr "Ο μετρητής κρατιέται στη μνήμη και γράφεται στον δίσκο κάθε 30 λεπτά και στον τερματισμό: μια διακοπή ρεύματος χάνει το πολύ την τελευταία μισή ώρα."
+
+msgid "Counting since %s."
+msgstr "Μέτρηση από %s."
+
+msgid "Per day"
+msgstr "Ανά ημέρα"
+
+msgid "Date"
+msgstr "Ημερομηνία"
+
+msgid "Total"
+msgstr "Σύνολο"
+
+msgid "Per billing cycle"
+msgstr "Ανά περίοδο χρέωσης"
+
+msgid "Billing cycle"
+msgstr "Περίοδος χρέωσης"
+
+msgid "Enter a size in GB, for example 50 or 2.5"
+msgstr "Εισαγάγετε μέγεθος σε GB, για παράδειγμα 50 ή 2.5"
+
+msgid "Enter a percentage from 1 to 100"
+msgstr "Εισαγάγετε ποσοστό από 1 έως 100"
+
+msgid "Turn mobile data off at the cap"
+msgstr "Απενεργοποίηση δεδομένων κινητής στο όριο"
+
+msgid "When this cycle reaches the cap, mobile data is turned off: no internet through the operator until the next cycle starts, the cap is raised or this is turned off again. Turning mobile data back on by hand keeps it on until the next reboot."
+msgstr "Όταν αυτή η περίοδος φτάσει το όριο, τα δεδομένα κινητής απενεργοποιούνται: χωρίς internet μέσω του παρόχου μέχρι να αρχίσει η επόμενη περίοδος, να αυξηθεί το όριο ή να απενεργοποιηθεί ξανά αυτή η επιλογή. Αν ενεργοποιήσετε ξανά χειροκίνητα τα δεδομένα κινητής, μένουν ενεργά μέχρι την επόμενη επανεκκίνηση."
+
+msgid "Set"
+msgstr "Ορισμός"
+
+msgid "Clear the count"
+msgstr "Μηδενισμός μετρητή"
+
+msgid "Every day and billing cycle counted so far is forgotten. Counting goes on from now."
+msgstr "Όλες οι ημέρες και οι περίοδοι χρέωσης που μετρήθηκαν ως τώρα ξεχνιούνται. Η μέτρηση συνεχίζεται από τώρα."
+
+msgid "Billing cycle and cap"
+msgstr "Περίοδος χρέωσης και όριο"
+
+msgid "A billing cycle starts on day"
+msgstr "Η περίοδος χρέωσης αρχίζει την ημέρα"
+
+msgid "31: on the last day of each month"
+msgstr "31: την τελευταία ημέρα κάθε μήνα"
+
+msgid "Monthly cap (GB, 0: none)"
+msgstr "Μηνιαίο όριο (GB, 0: κανένα)"
+
+msgid "Warning at this percentage of the cap"
+msgstr "Προειδοποίηση σε αυτό το ποσοστό του ορίου"
+
+msgid "Used so far in this cycle (GB)"
+msgstr "Χρήση ως τώρα σε αυτή την περίοδο (GB)"
+
+msgid "What the operator shows for this cycle (for example when counting started in the middle of it); the count is corrected to it."
+msgstr "Ό,τι δείχνει ο πάροχος για αυτή την περίοδο (για παράδειγμα αν η μέτρηση ξεκίνησε στη μέση της); ο μετρητής διορθώνεται σε αυτό."
+
+msgid "Current setting"
+msgstr "Τρέχουσα ρύθμιση"
+
+msgid "Fixed at %d"
+msgstr "Σταθερό στο %d"
+
+msgid "Not changed (default)"
+msgstr "Χωρίς αλλαγή (προεπιλογή)"
+
+msgid "Rule in force"
+msgstr "Ενεργός κανόνας"
+
+msgid "Flow offloading"
+msgstr "Εκφόρτωση ροών (flow offloading)"
+
+msgid "TTL of mobile data"
+msgstr "TTL των δεδομένων κινητής"
+
+msgid "Every packet that leaves through mobile data gets this TTL (IPv6: hop limit). A phone or laptop behind the hotspot sends 64 (Windows: 128) and the device forwards it with one less, which is how an operator can tell tethered traffic apart."
+msgstr "Κάθε πακέτο που φεύγει μέσω των δεδομένων κινητής παίρνει αυτό το TTL (IPv6: hop limit). Ένα τηλέφωνο ή φορητός πίσω από το hotspot στέλνει 64 (Windows: 128) και η συσκευή το προωθεί με ένα λιγότερο — έτσι ένας πάροχος μπορεί να αναγνωρίσει την κοινόχρηστη κίνηση."
+
+msgid "On this kernel the firewall fast-path is off while a TTL is set"
+msgstr "Σε αυτόν τον πυρήνα η γρήγορη διαδρομή του τείχους προστασίας είναι κλειστή όσο έχει οριστεί TTL"
+
+msgid "Set %d"
+msgstr "Ορισμός %d"
+
+msgid "Enter a number from 1 to 255"
+msgstr "Εισαγάγετε έναν αριθμό από 1 έως 255"
+
+msgid "Turn off"
+msgstr "Απενεργοποίηση"
+
+msgid "64 makes every packet leave like the device's own traffic"
+msgstr "Με 64 κάθε πακέτο φεύγει όπως η κίνηση της ίδιας της συσκευής"
+
+msgid "Check for updates"
+msgstr "Έλεγχος για ενημερώσεις"
+
+msgid "Checking the file"
+msgstr "Έλεγχος του αρχείου"
+
+msgid "Update from a file"
+msgstr "Ενημέρωση από αρχείο"
+
+msgid "Back to the previous version"
+msgstr "Επιστροφή στην προηγούμενη έκδοση"
+
+msgid "Back to the previous boot image"
+msgstr "Επιστροφή στην προηγούμενη εικόνα εκκίνησης"
+
+msgid "Remove the previous version"
+msgstr "Αφαίρεση της προηγούμενης έκδοσης"
+
+msgid "Kernel change"
+msgstr "Αλλαγή πυρήνα"
+
+msgid "Starting…"
+msgstr "Εκκίνηση…"
+
+msgid "Downloading"
+msgstr "Λήψη"
+
+msgid "All files are here and verified"
+msgstr "Όλα τα αρχεία είναι εδώ και έχουν επαληθευτεί"
+
+msgid "Unpacking the new system"
+msgstr "Αποσυμπίεση του νέου συστήματος"
+
+msgid "Carrying over your settings"
+msgstr "Μεταφορά των ρυθμίσεών σας"
+
+msgid "Writing down the packages you installed"
+msgstr "Καταγραφή των πακέτων που εγκαταστήσατε"
+
+msgid "Switching to the new system"
+msgstr "Μετάβαση στο νέο σύστημα"
+
+msgid "Kernel and boot image"
+msgstr "Πυρήνας και εικόνα εκκίνησης"
+
+msgid "Restart the device?"
+msgstr "Επανεκκίνηση της συσκευής;"
+
+msgid "The device restarts now. The default boot is Android, so it starts Android: switch to Linux from there to start the updated system."
+msgstr "Η συσκευή επανεκκινείται τώρα. Η προεπιλεγμένη εκκίνηση είναι το Android, οπότε ξεκινά το Android: μεταβείτε από εκεί στο Linux για να ξεκινήσει το ενημερωμένο σύστημα."
+
+msgid "The device restarts now and is away for about a minute. If the new system does not start, the device goes back to Android by itself after the failed attempts."
+msgstr "Η συσκευή επανεκκινείται τώρα και θα λείπει για περίπου ένα λεπτό. Αν το νέο σύστημα δεν ξεκινήσει, η συσκευή επιστρέφει μόνη της στο Android μετά τις αποτυχημένες προσπάθειες."
+
+msgid "Restarting… open this page again in about a minute."
+msgstr "Επανεκκίνηση… ανοίξτε ξανά αυτή τη σελίδα σε περίπου ένα λεπτό."
+
+msgid "Running for %s. It goes on when this page is closed; do not switch the device off."
+msgstr "Εκτελείται εδώ και %s. Συνεχίζει και όταν κλείσει αυτή η σελίδα· μην απενεργοποιήσετε τη συσκευή."
+
+msgid "Done. Restart the device to start it."
+msgstr "Ολοκληρώθηκε. Επανεκκινήστε τη συσκευή για να τεθεί σε ισχύ."
+
+msgid "Done. Nothing needs a restart."
+msgstr "Ολοκληρώθηκε. Δεν χρειάζεται επανεκκίνηση."
+
+msgid "It did not finish, and part of it was done: read the log before you restart."
+msgstr "Δεν ολοκληρώθηκε και ένα μέρος έγινε: διαβάστε το αρχείο καταγραφής πριν επανεκκινήσετε."
+
+msgid "It did not finish. Nothing was changed; the log says why."
+msgstr "Δεν ολοκληρώθηκε. Δεν άλλαξε τίποτα· το αρχείο καταγραφής εξηγεί τον λόγο."
+
+msgid "Log"
+msgstr "Αρχείο καταγραφής"
+
+msgid "Restart now"
+msgstr "Επανεκκίνηση τώρα"
+
+msgid "Later"
+msgstr "Αργότερα"
+
+msgid "Close"
+msgstr "Κλείσιμο"
+
+msgid "Updating is not available on this system"
+msgstr "Η ενημέρωση δεν είναι διαθέσιμη σε αυτό το σύστημα"
+
+msgid "Another update is running on the device"
+msgstr "Εκτελείται άλλη ενημέρωση στη συσκευή"
+
+msgid "It was started outside this page (a terminal, the toolkit). Nothing can be started here until it has finished."
+msgstr "Ξεκίνησε εκτός αυτής της σελίδας (τερματικό, toolkit). Δεν μπορεί να ξεκινήσει τίποτα εδώ μέχρι να τελειώσει."
+
+msgid "Restart needed"
+msgstr "Απαιτείται επανεκκίνηση"
+
+msgid "This system was updated and still runs the old version. The new one starts at the next restart."
+msgstr "Αυτό το σύστημα ενημερώθηκε και εκτελεί ακόμη την παλιά έκδοση. Η νέα ξεκινά στην επόμενη επανεκκίνηση."
+
+msgid "Installed"
+msgstr "Εγκατεστημένο"
+
+msgid "This system"
+msgstr "Αυτό το σύστημα"
+
+msgid "Also on this device"
+msgstr "Επίσης σε αυτή τη συσκευή"
+
+msgid "Kernel"
+msgstr "Πυρήνας"
+
+msgid "choice %s"
+msgstr "επιλογή %s"
+
+msgid "Boot image"
+msgstr "Εικόνα εκκίνησης"
+
+msgid "from the installer"
+msgstr "από το πρόγραμμα εγκατάστασης"
+
+msgid "Default boot"
+msgstr "Προεπιλεγμένη εκκίνηση"
+
+msgid "Free space"
+msgstr "Ελεύθερος χώρος"
+
+msgid "Release signatures"
+msgstr "Υπογραφές εκδόσεων"
+
+msgid "checked with the project's key"
+msgstr "ελέγχονται με το κλειδί του έργου"
+
+msgid "this system has no release key"
+msgstr "αυτό το σύστημα δεν έχει κλειδί εκδόσεων"
+
+msgid "The default boot is Android: a restart goes to Android, and Linux is started from there."
+msgstr "Η προεπιλεγμένη εκκίνηση είναι το Android: μια επανεκκίνηση οδηγεί στο Android και το Linux ξεκινά από εκεί."
+
+msgid "Linux is locked as the default boot: a failed start does not send the device to Android by itself, except the first starts of a new boot image."
+msgstr "Το Linux είναι κλειδωμένο ως προεπιλεγμένη εκκίνηση: μια αποτυχημένη εκκίνηση δεν στέλνει τη συσκευή μόνη της στο Android, εκτός από τις πρώτες εκκινήσεις μιας νέας εικόνας εκκίνησης."
+
+msgid "If Linux fails to start %d times in a row, the device starts Android by itself."
+msgstr "Αν το Linux αποτύχει να ξεκινήσει %d φορές στη σειρά, η συσκευή ξεκινά μόνη της το Android."
+
+msgid "Report of the last update"
+msgstr "Αναφορά της τελευταίας ενημέρωσης"
+
+msgid "Online update"
+msgstr "Ενημέρωση μέσω διαδικτύου"
+
+msgid "Asking GitHub…"
+msgstr "Ερώτημα στο GitHub…"
+
+msgid "Checked %s ago"
+msgstr "Ελέγχθηκε πριν από %s"
+
+msgid "Not checked yet"
+msgstr "Δεν έχει ελεγχθεί ακόμη"
+
+msgid "Mirror (release files)"
+msgstr "Καθρέφτης (αρχεία έκδοσης)"
+
+msgid "Leave empty for GitHub."
+msgstr "Αφήστε κενό για το GitHub."
+
+msgid "Install the packages I added again after the update (needs the device online at the first start)"
+msgstr "Εγκατάσταση ξανά, μετά την ενημέρωση, των πακέτων που πρόσθεσα (η συσκευή πρέπει να είναι σε σύνδεση στην πρώτη εκκίνηση)"
+
+msgid "Pre-release"
+msgstr "Προέκδοση"
+
+msgid "Newest release"
+msgstr "Νεότερη έκδοση"
+
+msgid "Release notes"
+msgstr "Σημειώσεις έκδοσης"
+
+msgid "Download"
+msgstr "Λήψη"
+
+msgid "Free space needed"
+msgstr "Απαιτούμενος ελεύθερος χώρος"
+
+msgid "not enough: remove the previous version first"
+msgstr "δεν επαρκεί: αφαιρέστε πρώτα την προηγούμενη έκδοση"
+
+msgid "A pre-release is a release still being tried: it can have faults a release does not. The previous version is kept all the same."
+msgstr "Μια προέκδοση είναι έκδοση που ακόμη δοκιμάζεται: μπορεί να έχει σφάλματα που μια κανονική έκδοση δεν έχει. Η προηγούμενη έκδοση διατηρείται ούτως ή άλλως."
+
+msgid "This system is newer than the newest release (a test release)."
+msgstr "Αυτό το σύστημα είναι νεότερο από τη νεότερη έκδοση (δοκιμαστική έκδοση)."
+
+msgid "Up to date."
+msgstr "Ενημερωμένο."
+
+msgid "This release is not signed, and this system checks signatures: it is not installed from here. Update from its file below, which asks you to confirm."
+msgstr "Αυτή η έκδοση δεν είναι υπογεγραμμένη και αυτό το σύστημα ελέγχει τις υπογραφές: δεν εγκαθίσταται από εδώ. Ενημερώστε από το αρχείο της παρακάτω, που ζητά επιβεβαίωση."
+
+msgid "Update to %s"
+msgstr "Ενημέρωση σε %s"
+
+msgid "Choose at least one system"
+msgstr "Επιλέξτε τουλάχιστον ένα σύστημα"
+
+msgid "Update to %s?"
+msgstr "Ενημέρωση σε %s;"
+
+msgid "The device downloads %s, puts the new system beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Η συσκευή κατεβάζει το %s, τοποθετεί το νέο σύστημα δίπλα σε αυτό που εκτελείται και μεταβαίνει σε αυτό στην επόμενη επανεκκίνηση. Οι ρυθμίσεις σας μεταφέρονται και η προηγούμενη έκδοση διατηρείται. Διαρκεί αρκετά λεπτά· μην απενεργοποιήσετε τη συσκευή."
+
+msgid "Also offer the pre-release %s"
+msgstr "Να προτείνεται και η προέκδοση %s"
+
+msgid "Systems to update:"
+msgstr "Συστήματα προς ενημέρωση:"
+
+msgid "GitHub could not be reached: the device has no internet connection, or GitHub did not answer. Without internet, update from a file below."
+msgstr "Δεν ήταν δυνατή η επικοινωνία με το GitHub: η συσκευή δεν έχει σύνδεση στο διαδίκτυο ή το GitHub δεν απάντησε. Χωρίς διαδίκτυο, ενημερώστε από αρχείο παρακάτω."
+
+msgid "release"
+msgstr "έκδοση"
+
+msgid "For a device without internet: download the Magisk zip of a release for this system and this kernel on another computer, from the release page on GitHub, and upload it here. For this device that is:"
+msgstr "Για συσκευή χωρίς διαδίκτυο: κατεβάστε σε άλλον υπολογιστή το Magisk zip μιας έκδοσης για αυτό το σύστημα και αυτόν τον πυρήνα, από τη σελίδα της έκδοσης στο GitHub, και ανεβάστε το εδώ. Για αυτή τη συσκευή είναι:"
+
+msgid "Uploaded file"
+msgstr "Αρχείο που ανέβηκε"
+
+msgid "Checking the file…"
+msgstr "Έλεγχος του αρχείου…"
+
+msgid "It says it is"
+msgstr "Δηλώνει ότι είναι"
+
+msgid "kernel %s"
+msgstr "πυρήνας %s"
+
+msgid "Signature"
+msgstr "Υπογραφή"
+
+msgid "signed with the project's release key"
+msgstr "υπογεγραμμένο με το κλειδί εκδόσεων του έργου"
+
+msgid "WRONG: it does not match the project's release key"
+msgstr "ΛΑΘΟΣ: δεν ταιριάζει με το κλειδί εκδόσεων του έργου"
+
+msgid "not signed"
+msgstr "χωρίς υπογραφή"
+
+msgid "cannot be checked on this system"
+msgstr "δεν μπορεί να ελεγχθεί σε αυτό το σύστημα"
+
+msgid "Its system is not installed on this device."
+msgstr "Το σύστημά του δεν είναι εγκατεστημένο σε αυτή τη συσκευή."
+
+msgid "It is the other Ubuntu release, not the one installed."
+msgstr "Είναι η άλλη έκδοση του Ubuntu, όχι η εγκατεστημένη."
+
+msgid "It carries another kernel than this device uses. Take the zip for kernel %s, or change the kernel first."
+msgstr "Περιέχει διαφορετικό πυρήνα από αυτόν που χρησιμοποιεί η συσκευή. Πάρτε το zip για τον πυρήνα %s ή αλλάξτε πρώτα τον πυρήνα."
+
+msgid "Its kernel does not run on this model."
+msgstr "Ο πυρήνας του δεν λειτουργεί σε αυτό το μοντέλο."
+
+msgid "The file is damaged: its contents do not match their checksums."
+msgstr "Το αρχείο είναι κατεστραμμένο: τα περιεχόμενά του δεν ταιριάζουν με τα αθροίσματα ελέγχου τους."
+
+msgid "Its signature is wrong. This file does not come from the project as it is; it is never installed."
+msgstr "Η υπογραφή του είναι λάθος. Αυτό το αρχείο, όπως είναι, δεν προέρχεται από το έργο· δεν εγκαθίσταται ποτέ."
+
+msgid "This file cannot be used here."
+msgstr "Αυτό το αρχείο δεν μπορεί να χρησιμοποιηθεί εδώ."
+
+msgid "Compare the SHA-256 with the one in SHA256SUMS-magisk on the release page: it is the only proof of where an unsigned file comes from."
+msgstr "Συγκρίνετε το SHA-256 με αυτό στο SHA256SUMS-magisk στη σελίδα της έκδοσης: είναι η μόνη απόδειξη για την προέλευση ενός αρχείου χωρίς υπογραφή."
+
+msgid "This release is installed already; the update would only refresh the boot image."
+msgstr "Αυτή η έκδοση είναι ήδη εγκατεστημένη· η ενημέρωση θα ανανέωνε μόνο την εικόνα εκκίνησης."
+
+msgid "I know this file is not signed: nothing proves that it comes from the project. I compared its SHA-256 myself and want it installed."
+msgstr "Γνωρίζω ότι αυτό το αρχείο δεν είναι υπογεγραμμένο: τίποτα δεν αποδεικνύει ότι προέρχεται από το έργο. Σύγκρινα ο ίδιος το SHA-256 του και θέλω να εγκατασταθεί."
+
+msgid "I know this is %s, older than the installed %s, and want to go back to it."
+msgstr "Γνωρίζω ότι αυτή είναι η %s, παλαιότερη από την εγκατεστημένη %s, και θέλω να επιστρέψω σε αυτήν."
+
+msgid "This is not a release file of this project: a Magisk zip of a release is expected."
+msgstr "Αυτό δεν είναι αρχείο έκδοσης αυτού του έργου: αναμένεται το Magisk zip μιας έκδοσης."
+
+msgid "Update from this file"
+msgstr "Ενημέρωση από αυτό το αρχείο"
+
+msgid "Tick the confirmations above first"
+msgstr "Επιλέξτε πρώτα τις παραπάνω επιβεβαιώσεις"
+
+msgid "The device puts the system of this file beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Η συσκευή τοποθετεί το σύστημα αυτού του αρχείου δίπλα σε αυτό που εκτελείται και μεταβαίνει σε αυτό στην επόμενη επανεκκίνηση. Οι ρυθμίσεις σας μεταφέρονται και η προηγούμενη έκδοση διατηρείται. Διαρκεί αρκετά λεπτά· μην απενεργοποιήσετε τη συσκευή."
+
+msgid "Check the file"
+msgstr "Έλεγχος του αρχείου"
+
+msgid "Remove the file"
+msgstr "Αφαίρεση του αρχείου"
+
+msgid "Previous version"
+msgstr "Προηγούμενη έκδοση"
+
+msgid "No previous version is kept on this device."
+msgstr "Δεν διατηρείται προηγούμενη έκδοση σε αυτή τη συσκευή."
+
+msgid "replaced %s"
+msgstr "αντικαταστάθηκε στις %s"
+
+msgid "I want the previous system back; what I changed since the update stays in the version I leave."
+msgstr "Θέλω πίσω το προηγούμενο σύστημα· ό,τι άλλαξα μετά την ενημέρωση μένει στην έκδοση που αφήνω."
+
+msgid "Back to the previous version?"
+msgstr "Επιστροφή στην προηγούμενη έκδοση;"
+
+msgid "The previous system (%s) becomes the one that starts at the next restart. The version you leave is not kept; settings you changed since the update are not carried back."
+msgstr "Το προηγούμενο σύστημα (%s) γίνεται αυτό που ξεκινά στην επόμενη επανεκκίνηση. Η έκδοση που αφήνετε δεν διατηρείται· οι ρυθμίσεις που αλλάξατε μετά την ενημέρωση δεν μεταφέρονται πίσω."
+
+msgid "Go back"
+msgstr "Επιστροφή"
+
+msgid "The previous version is the one running now: restart first."
+msgstr "Η προηγούμενη έκδοση είναι αυτή που εκτελείται τώρα: επανεκκινήστε πρώτα."
+
+msgid "I want the previous kernel and boot image back."
+msgstr "Θέλω πίσω τον προηγούμενο πυρήνα και την προηγούμενη εικόνα εκκίνησης."
+
+msgid "Back to the previous boot image?"
+msgstr "Επιστροφή στην προηγούμενη εικόνα εκκίνησης;"
+
+msgid "The previous boot image (%s) is written to the Linux slot and starts at the next restart. If it does not start, the device goes back to Android by itself."
+msgstr "Η προηγούμενη εικόνα εκκίνησης (%s) γράφεται στη θέση του Linux και ξεκινά στην επόμενη επανεκκίνηση. Αν δεν ξεκινήσει, η συσκευή επιστρέφει μόνη της στο Android."
+
+msgid "I do not need to go back: delete the previous system to free its space."
+msgstr "Δεν χρειάζεται να επιστρέψω: διαγραφή του προηγούμενου συστήματος για να ελευθερωθεί ο χώρος του."
+
+msgid "Remove the previous version?"
+msgstr "Αφαίρεση της προηγούμενης έκδοσης;"
+
+msgid "The kept copy of the previous system is deleted for good. After that there is no going back to it from this page."
+msgstr "Το αντίγραφο του προηγούμενου συστήματος που διατηρείται διαγράφεται οριστικά. Μετά από αυτό δεν υπάρχει επιστροφή σε αυτό από αυτή τη σελίδα."
+
+msgid "the vendor kernel"
+msgstr "ο πυρήνας του κατασκευαστή"
+
+msgid "mainline"
+msgstr "mainline"
+
+msgid "not with Ubuntu 26.04"
+msgstr "όχι με το Ubuntu 26.04"
+
+msgid "Change the kernel"
+msgstr "Αλλαγή του πυρήνα"
+
+msgid "This kernel is the one in use"
+msgstr "Αυτός ο πυρήνας είναι ο πυρήνας σε χρήση"
+
+msgid "Change the kernel to %s?"
+msgstr "Αλλαγή του πυρήνα σε %s;"
+
+msgid "The device downloads that kernel from the newest release and writes a new boot image; it starts at the next restart. The previous boot image is kept, and if the new one does not start the device goes back to Android by itself. The device must be online."
+msgstr "Η συσκευή κατεβάζει αυτόν τον πυρήνα από τη νεότερη έκδοση και γράφει μια νέα εικόνα εκκίνησης· αυτή ξεκινά στην επόμενη επανεκκίνηση. Η προηγούμενη εικόνα εκκίνησης διατηρείται και, αν η νέα δεν ξεκινήσει, η συσκευή επιστρέφει μόνη της στο Android. Η συσκευή πρέπει να είναι σε σύνδεση."
+
+msgid "Start Android at the next restart"
+msgstr "Εκκίνηση του Android στην επόμενη επανεκκίνηση"
+
+msgid "Start Android at the next restart?"
+msgstr "Εκκίνηση του Android στην επόμενη επανεκκίνηση;"
+
+msgid "The next restart, and the ones after it, start Android instead of Linux. Linux is started again from Android (the Magisk module's Action button, or mu300-linux)."
+msgstr "Η επόμενη επανεκκίνηση, και όσες ακολουθούν, ξεκινούν το Android αντί για το Linux. Το Linux ξεκινά ξανά από το Android (το κουμπί Ενέργεια της μονάδας Magisk ή το mu300-linux)."
+
+msgid "Start Android next"
+msgstr "Εκκίνηση του Android την επόμενη φορά"
+
+msgid "What an update keeps"
+msgstr "Τι διατηρεί μια ενημέρωση"
+
+msgid "An update puts the system of the new release in place and carries over what is yours: the settings, the accounts and their passwords, the device's keys and the home directories. Packages you installed yourself are written down and installed again at the first start, once the device is online. The previous version stays on the device until you remove it, so you can go back."
+msgstr "Μια ενημέρωση εγκαθιστά το σύστημα της νέας έκδοσης και μεταφέρει ό,τι είναι δικό σας: τις ρυθμίσεις, τους λογαριασμούς και τους κωδικούς τους, τα κλειδιά της συσκευής και τους προσωπικούς καταλόγους. Τα πακέτα που εγκαταστήσατε εσείς καταγράφονται και εγκαθίστανται ξανά στην πρώτη εκκίνηση, μόλις η συσκευή βρεθεί σε σύνδεση. Η προηγούμενη έκδοση μένει στη συσκευή μέχρι να την αφαιρέσετε, ώστε να μπορείτε να επιστρέψετε."
+
+msgid "The wiki's Updating page lists exactly what is kept."
+msgstr "Η σελίδα του wiki για την ενημέρωση αναφέρει ακριβώς τι διατηρείται."
+
+msgid "Choose a file first"
+msgstr "Επιλέξτε πρώτα ένα αρχείο"
+
+msgid "Uploading: %s of %s"
+msgstr "Μεταφόρτωση: %s από %s"
+
+msgid "running"
+msgstr "εκτελείται"
+
+msgid "(about %s)"
+msgstr "(περίπου %s)"
+
+msgid "Install %s?"
+msgstr "Εγκατάσταση του %s;"
+
+msgid "It is installed from this system's package feed."
+msgstr "Εγκαθίσταται από το αποθετήριο πακέτων αυτού του συστήματος."
+
+msgid "It is downloaded from the release of the VPN module and checked against its SHA256SUMS."
+msgstr "Λαμβάνεται από την έκδοση της μονάδας VPN και ελέγχεται με το SHA256SUMS της."
+
+msgid "An engine is tens of MB: on mobile data the download counts towards your plan."
+msgstr "Μια μηχανή είναι δεκάδες MB: στα δεδομένα κινητής η λήψη χρεώνεται στο πακέτο σας."
+
+msgid "Install"
+msgstr "Εγκατάσταση"
+
+msgid "Remove %s?"
+msgstr "Αφαίρεση του %s;"
+
+msgid "Profiles run on it: %s. They cannot start until it is installed again (the module refuses while the running profile needs it)."
+msgstr "Προφίλ που τη χρησιμοποιούν: %s. Δεν μπορούν να ξεκινήσουν μέχρι να εγκατασταθεί ξανά (η μονάδα αρνείται όσο το ενεργό προφίλ τη χρειάζεται)."
+
+msgid "No profile runs on it."
+msgstr "Κανένα προφίλ δεν τη χρησιμοποιεί."
+
+msgid "Removed"
+msgstr "Αφαιρέθηκε"
+
+msgid "Each engine is an extra of its own: install only the ones your profiles need. Xray runs vless, vmess, trojan and ss links (with hev-socks5-tunnel), sing-box the same links and its own JSON, mihomo Clash subscriptions, dae hysteria2, tuic and the rest on newer kernels. WireGuard and OpenVPN are packages of the system."
+msgstr "Κάθε μηχανή είναι ξεχωριστό πρόσθετο: εγκαταστήστε μόνο όσες χρειάζονται τα προφίλ σας. Το Xray εκτελεί συνδέσμους vless, vmess, trojan και ss (με το hev-socks5-tunnel), το sing-box τους ίδιους συνδέσμους και το δικό του JSON, το mihomo συνδρομές Clash, το dae hysteria2, tuic και τα υπόλοιπα σε νεότερους πυρήνες. Το WireGuard και το OpenVPN είναι πακέτα του συστήματος."
+
+msgid "Downloads are tens of MB per engine: on mobile data they count towards your plan. Offline, upload the engine's tarball from the release page of the VPN module."
+msgstr "Οι λήψεις είναι δεκάδες MB ανά μηχανή: στα δεδομένα κινητής χρεώνονται στο πακέτο σας. Εκτός σύνδεσης, ανεβάστε το tarball της μηχανής από τη σελίδα εκδόσεων της μονάδας VPN."
+
+msgid "The available versions come from the latest release of the VPN module."
+msgstr "Οι διαθέσιμες εκδόσεις προέρχονται από την τελευταία έκδοση της μονάδας VPN."
+
+msgid "system package"
+msgstr "πακέτο συστήματος"
+
+msgid "in the vpn bundle"
+msgstr "στο πακέτο vpn"
+
+msgid "extra %s"
+msgstr "πρόσθετο %s"
+
+msgid "not installed"
+msgstr "μη εγκατεστημένο"
+
+msgid "cannot run here"
+msgstr "δεν μπορεί να εκτελεστεί εδώ"
+
+msgid "update available"
+msgstr "διαθέσιμη ενημέρωση"
+
+msgid "installed"
+msgstr "εγκατεστημένο"
+
+msgid "Kind"
+msgstr "Είδος"
+
+msgid "Version"
+msgstr "Έκδοση"
+
+msgid "Available"
+msgstr "Διαθέσιμη"
+
+msgid "not checked"
+msgstr "δεν ελέγχθηκε"
+
+msgid "Size"
+msgstr "Μέγεθος"
+
+msgid "Needed by"
+msgstr "Χρησιμοποιείται από"
+
+msgid "no profile"
+msgstr "κανένα προφίλ"
+
+msgid "dae needs a kernel with BTF, 5.17 or newer: not the 5.4 vendor kernel (mu300-update kernel 6.18). It can be installed anyway."
+msgstr "Το dae χρειάζεται πυρήνα με BTF, 5.17 ή νεότερο: όχι τον πυρήνα 5.4 του κατασκευαστή (mu300-update kernel 6.18). Μπορεί να εγκατασταθεί πάντως."
+
+msgid "All engines"
+msgstr "Όλες οι μηχανές"
+
+msgid "Last %s lines"
+msgstr "Τελευταίες %s γραμμές"
+
+msgid "VPN service log"
+msgstr "Αρχείο καταγραφής υπηρεσίας VPN"
+
+msgid "Every 5 s"
+msgstr "Κάθε 5 δ"
+
+msgid "The log is empty."
+msgstr "Το αρχείο καταγραφής είναι κενό."
+
+msgid "The VPN is starting"
+msgstr "Το VPN ξεκινά"
+
+msgid "The VPN is stopped"
+msgstr "Το VPN έχει σταματήσει"
+
+msgid "The VPN is restarting"
+msgstr "Το VPN επανεκκινείται"
+
+msgid "With the kill switch on, nothing leaves the device or the LAN outside the tunnel: while the VPN is down, starting or broken, every connection fails instead of going out directly. It stays up until you stop the VPN here (Stop removes it)."
+msgstr "Με ενεργό το kill switch, τίποτα δεν βγαίνει από τη συσκευή ή το LAN εκτός του τούνελ: όσο το VPN είναι κάτω, ξεκινά ή είναι χαλασμένο, κάθε σύνδεση αποτυγχάνει αντί να βγει απευθείας. Παραμένει ενεργό μέχρι να σταματήσετε το VPN από εδώ (η Διακοπή το αφαιρεί)."
+
+msgid "Without the kill switch, traffic goes out directly, unprotected, whenever the tunnel is down (while it starts, after a crash, when the engine is missing)."
+msgstr "Χωρίς το kill switch, η κίνηση βγαίνει απευθείας, απροστάτευτη, κάθε φορά που το τούνελ είναι κάτω (κατά την εκκίνηση, μετά από κρασάρισμα, όταν λείπει η μηχανή)."
+
+msgid "Turn the kill switch on?"
+msgstr "Ενεργοποίηση του kill switch;"
+
+msgid "Turn the kill switch off?"
+msgstr "Απενεργοποίηση του kill switch;"
+
+msgid "Turn on"
+msgstr "Ενεργοποίηση"
+
+msgid "unknown"
+msgstr "άγνωστο"
+
+msgid "The exit address could not be found (is the tunnel up?)"
+msgstr "Δεν βρέθηκε η διεύθυνση εξόδου (είναι ενεργό το τούνελ;)"
+
+msgid "Connecting…"
+msgstr "Σύνδεση…"
+
+msgid "On, but not running"
+msgstr "Ενεργό, αλλά δεν εκτελείται"
+
+msgid "Stopped"
+msgstr "Σταματημένο"
+
+msgid "Install it"
+msgstr "Εγκατάσταση"
+
+msgid "The engine of the active profile is not installed: %s"
+msgstr "Η μηχανή του ενεργού προφίλ δεν είναι εγκατεστημένη: %s"
+
+msgid "The kill switch keeps everything closed until it is there; the service downloads it by itself when it can."
+msgstr "Το kill switch κρατά τα πάντα κλειστά μέχρι να υπάρξει· η υπηρεσία την κατεβάζει μόνη της όταν μπορεί."
+
+msgid "The VPN cannot start until it is installed."
+msgstr "Το VPN δεν μπορεί να ξεκινήσει μέχρι να εγκατασταθεί."
+
+msgid "%s cannot run on this system"
+msgstr "Το %s δεν μπορεί να εκτελεστεί σε αυτό το σύστημα"
+
+msgid "The VPN is on, but no profile is active: choose one below."
+msgstr "Το VPN είναι ενεργό, αλλά κανένα προφίλ δεν είναι ενεργό: επιλέξτε ένα παρακάτω."
+
+msgid "Profile: %s"
+msgstr "Προφίλ: %s"
+
+msgid "No active profile"
+msgstr "Κανένα ενεργό προφίλ"
+
+msgid "engine %s"
+msgstr "μηχανή %s"
+
+msgid "interface %s"
+msgstr "διεπαφή %s"
+
+msgid "Kill switch active"
+msgstr "Kill switch ενεργό"
+
+msgid "Kill switch on"
+msgstr "Kill switch ενεργοποιημένο"
+
+msgid "Kill switch off"
+msgstr "Kill switch απενεργοποιημένο"
+
+msgid "IPv6 in the tunnel"
+msgstr "IPv6 στο τούνελ"
+
+msgid "IPv6 blocked"
+msgstr "IPv6 αποκλεισμένο"
+
+msgid "IPv6 untouched"
+msgstr "IPv6 ανεπηρέαστο"
+
+msgid "Module %s"
+msgstr "Μονάδα %s"
+
+msgid "Check"
+msgstr "Έλεγχος"
+
+msgid "Uptime"
+msgstr "Χρόνος λειτουργίας"
+
+msgid "Rate"
+msgstr "Ρυθμός"
+
+msgid "Exit address"
+msgstr "Διεύθυνση εξόδου"
+
+msgid "Start"
+msgstr "Εκκίνηση"
+
+msgid "Stop"
+msgstr "Διακοπή"
+
+msgid "Stop the VPN?"
+msgstr "Διακοπή του VPN;"
+
+msgid "Traffic then goes out directly, without the tunnel; the kill switch is taken down with it."
+msgstr "Η κίνηση θα βγαίνει τότε απευθείας, χωρίς το τούνελ· το kill switch αφαιρείται μαζί του."
+
+msgid "The VPN is on: it starts again by itself after a reboot."
+msgstr "Το VPN είναι ενεργό: ξεκινά ξανά αυτόματα μετά από επανεκκίνηση."
+
+msgid "The VPN is off."
+msgstr "Το VPN είναι απενεργοποιημένο."
+
+msgid "Kill switch"
+msgstr "Kill switch"
+
+msgid "Setting"
+msgstr "Ρύθμιση"
+
+msgid "Active: only the tunnel can reach the internet"
+msgstr "Ενεργό: μόνο το τούνελ φτάνει στο διαδίκτυο"
+
+msgid "Not active"
+msgstr "Ανενεργό"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down, so nothing ever leaves without the tunnel. If the tunnel cannot come up (a dead server, an expired account), the device stays offline until you fix the profile or stop the VPN. The panel itself stays reachable from the LAN."
+msgstr "Το kill switch αποκλείει όλη την κίνηση της συσκευής και του LAN όσο το VPN είναι κάτω, ώστε τίποτα να μη βγαίνει ποτέ χωρίς το τούνελ. Αν το τούνελ δεν μπορεί να ανέβει (νεκρός διακομιστής, ληγμένος λογαριασμός), η συσκευή μένει εκτός σύνδεσης μέχρι να διορθώσετε το προφίλ ή να σταματήσετε το VPN. Ο ίδιος ο πίνακας παραμένει προσβάσιμος από το LAN."
+
+msgid "Choose a profile"
+msgstr "Επιλέξτε προφίλ"
+
+msgid "No profiles yet"
+msgstr "Δεν υπάρχουν ακόμη προφίλ"
+
+msgid "engine not installed"
+msgstr "η μηχανή δεν είναι εγκατεστημένη"
+
+msgid "Use"
+msgstr "Χρήση"
+
+msgid "Switched: the VPN restarts on the new profile"
+msgstr "Άλλαξε: το VPN επανεκκινείται με το νέο προφίλ"
+
+msgid "Active profile"
+msgstr "Ενεργό προφίλ"
+
+msgid "A running VPN restarts on the profile you choose; the kill switch stays up in between."
+msgstr "Ένα VPN που εκτελείται επανεκκινείται με το προφίλ που επιλέγετε· το kill switch παραμένει ενεργό στο ενδιάμεσο."
+
+msgid "Manage the profiles"
+msgstr "Διαχείριση των προφίλ"
+
+msgid "Automatic: through the tunnel where the engine can carry it"
+msgstr "Αυτόματο: μέσω του τούνελ όπου η μηχανή μπορεί να το μεταφέρει"
+
+msgid "Ask the engine for IPv6 in the tunnel"
+msgstr "Ζήτηση IPv6 στο τούνελ από τη μηχανή"
+
+msgid "Never through the tunnel (blocked while the VPN is up)"
+msgstr "Ποτέ μέσω του τούνελ (αποκλείεται όσο το VPN είναι ενεργό)"
+
+msgid "Saved: it applies from the next start (Restart)"
+msgstr "Αποθηκεύτηκε: ισχύει από την επόμενη εκκίνηση (Επανεκκίνηση)"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "The tunnel carries IPv6"
+msgstr "Το τούνελ μεταφέρει IPv6"
+
+msgid "Yes"
+msgstr "Ναι"
+
+msgid "IPv6 guard"
+msgstr "Προστασία IPv6"
+
+msgid "Active: IPv6 outside the tunnel is refused"
+msgstr "Ενεργή: το IPv6 εκτός τούνελ απορρίπτεται"
+
+msgid "While the VPN is up, IPv6 never leaves beside a tunnel that does not carry it: it is refused at once, so programs and LAN clients fall back to IPv4 instead of leaking or waiting. Automatic: WireGuard and OpenVPN use the IPv6 addresses of their config; Xray, sing-box and mihomo are asked at every start whether IPv6 works through the tunnel, and carry it only then; dae stays IPv4."
+msgstr "Όσο το VPN είναι ενεργό, το IPv6 δεν βγαίνει ποτέ δίπλα σε τούνελ που δεν το μεταφέρει: απορρίπτεται αμέσως, ώστε τα προγράμματα και οι πελάτες του LAN να περνούν σε IPv4 αντί να διαρρέουν ή να περιμένουν. Αυτόματο: το WireGuard και το OpenVPN χρησιμοποιούν τις διευθύνσεις IPv6 της διαμόρφωσής τους· για τα Xray, sing-box και mihomo ελέγχεται σε κάθε εκκίνηση αν το IPv6 λειτουργεί μέσα από το τούνελ, και μόνο τότε το μεταφέρουν· το dae μένει σε IPv4."
+
+msgid "%d ms"
+msgstr "%d ms"
+
+msgid "UDP: not testable"
+msgstr "UDP: δεν δοκιμάζεται"
+
+msgid "blocked by the kill switch"
+msgstr "αποκλείστηκε από το kill switch"
+
+msgid "A WireGuard or OpenVPN config, a Clash/mihomo YAML, an Xray or sing-box JSON, a dae config"
+msgstr "Διαμόρφωση WireGuard ή OpenVPN, YAML Clash/mihomo, JSON Xray ή sing-box, διαμόρφωση dae"
+
+msgid "After OK, choose the file: a WireGuard .conf, an OpenVPN .ovpn, a Clash/mihomo .yaml, an Xray or sing-box .json or a dae config (at most 1 MiB)."
+msgstr "Μετά το OK, επιλέξτε το αρχείο: ένα .conf WireGuard, ένα .ovpn OpenVPN, ένα .yaml Clash/mihomo, ένα .json Xray ή sing-box ή μια διαμόρφωση dae (έως 1 MiB)."
+
+msgid "From the source"
+msgstr "Από την πηγή"
+
+msgid "Detect"
+msgstr "Εντοπισμός"
+
+msgid "The URL may hold a token: it goes to the device on its own, never into a command line or a log."
+msgstr "Το URL μπορεί να περιέχει διακριτικό: πηγαίνει στη συσκευή χωριστά, ποτέ σε γραμμή εντολών ή αρχείο καταγραφής."
+
+msgid "Share link"
+msgstr "Σύνδεσμος κοινοποίησης"
+
+msgid "Paste"
+msgstr "Επικόλληση"
+
+msgid "File"
+msgstr "Αρχείο"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Not a share link this panel takes"
+msgstr "Δεν είναι σύνδεσμος κοινοποίησης που δέχεται αυτός ο πίνακας"
+
+msgid "The config is empty"
+msgstr "Η διαμόρφωση είναι κενή"
+
+msgid "Not an https URL"
+msgstr "Δεν είναι URL https"
+
+msgid "Invalid name: 1-64 characters, no control characters"
+msgstr "Μη έγκυρο όνομα: 1-64 χαρακτήρες, χωρίς χαρακτήρες ελέγχου"
+
+msgid "Add a profile"
+msgstr "Προσθήκη προφίλ"
+
+msgid "Name"
+msgstr "Όνομα"
+
+msgid "Detect: the module tells the kind from the link or the file. Choose the type for a JSON that could be either Xray or sing-box, or for a link that should run on another engine."
+msgstr "Εντοπισμός: η μονάδα καταλαβαίνει το είδος από τον σύνδεσμο ή το αρχείο. Επιλέξτε τον τύπο για ένα JSON που μπορεί να είναι Xray ή sing-box, ή για έναν σύνδεσμο που πρέπει να εκτελεστεί σε άλλη μηχανή."
+
+msgid "The profile is added"
+msgstr "Το προφίλ προστέθηκε"
+
+msgid "Rename the profile"
+msgstr "Μετονομασία του προφίλ"
+
+msgid "Delete the profile %s?"
+msgstr "Διαγραφή του προφίλ %s;"
+
+msgid "It is the active profile: with the VPN on, the module refuses; stop the VPN or choose another profile first."
+msgstr "Είναι το ενεργό προφίλ: με ενεργό VPN, η μονάδα αρνείται· σταματήστε πρώτα το VPN ή επιλέξτε άλλο προφίλ."
+
+msgid "Its config and credentials are deleted from the device."
+msgstr "Η διαμόρφωση και τα διαπιστευτήριά του διαγράφονται από τη συσκευή."
+
+msgid "Deleted"
+msgstr "Διαγράφηκε"
+
+msgid "The profile passes the check"
+msgstr "Το προφίλ περνά τον έλεγχο"
+
+msgid "Show the config?"
+msgstr "Εμφάνιση της διαμόρφωσης;"
+
+msgid "The config holds the credentials of the profile (keys, passwords, UUIDs). It is shown on this screen only; anyone who can see the screen can read it."
+msgstr "Η διαμόρφωση περιέχει τα διαπιστευτήρια του προφίλ (κλειδιά, κωδικούς, UUID). Εμφανίζεται μόνο σε αυτήν την οθόνη· όποιος βλέπει την οθόνη μπορεί να τη διαβάσει."
+
+msgid "Saving checks the config with the engine first (profile edit); a config that does not pass is not saved and the old one stays."
+msgstr "Η αποθήκευση ελέγχει πρώτα τη διαμόρφωση με τη μηχανή (profile edit)· μια διαμόρφωση που δεν περνά τον έλεγχο δεν αποθηκεύεται και παραμένει η παλιά."
+
+msgid "This profile comes from a subscription: its next refresh replaces your changes."
+msgstr "Αυτό το προφίλ προέρχεται από συνδρομή: η επόμενη ανανέωσή της αντικαθιστά τις αλλαγές σας."
+
+msgid "Config of %s"
+msgstr "Διαμόρφωση του %s"
+
+msgid "Rename"
+msgstr "Μετονομασία"
+
+msgid "Show / edit the config"
+msgstr "Εμφάνιση / επεξεργασία της διαμόρφωσης"
+
+msgid "Test the latency of all"
+msgstr "Δοκιμή καθυστέρησης όλων"
+
+msgid "No profiles yet: add one from a share link, a config file or a subscription."
+msgstr "Δεν υπάρχουν ακόμη προφίλ: προσθέστε ένα από σύνδεσμο κοινοποίησης, αρχείο διαμόρφωσης ή συνδρομή."
+
+msgid "Active"
+msgstr "Ενεργό"
+
+msgid "This profile is the active one now"
+msgstr "Αυτό το προφίλ είναι τώρα το ενεργό"
+
+msgid "More"
+msgstr "Περισσότερα"
+
+msgid "active"
+msgstr "ενεργό"
+
+msgid "subscription"
+msgstr "συνδρομή"
+
+msgid "migrated"
+msgstr "μεταφέρθηκε"
+
+msgid "gone from its subscription"
+msgstr "αφαιρέθηκε από τη συνδρομή του"
+
+msgid "Server"
+msgstr "Διακομιστής"
+
+msgid "Engine"
+msgstr "Μηχανή"
+
+msgid "Latency"
+msgstr "Καθυστέρηση"
+
+msgid "The latency is a TCP connection to the server, through the tunnel when the VPN is up. WireGuard and OpenVPN servers usually speak UDP and cannot be tested this way."
+msgstr "Η καθυστέρηση είναι μια σύνδεση TCP προς τον διακομιστή, μέσω του τούνελ όταν το VPN είναι ενεργό. Οι διακομιστές WireGuard και OpenVPN συνήθως χρησιμοποιούν UDP και δεν μπορούν να δοκιμαστούν έτσι."
+
+msgid "Enter an IPv4 or IPv6 address"
+msgstr "Εισαγάγετε διεύθυνση IPv4 ή IPv6"
+
+msgid "On: nothing leaves outside the tunnel"
+msgstr "Ενεργό: τίποτα δεν βγαίνει εκτός τούνελ"
+
+msgid "Off: traffic goes out directly while the tunnel is down"
+msgstr "Ανενεργό: η κίνηση βγαίνει απευθείας όσο το τούνελ είναι κάτω"
+
+msgid "Yes: Tailscale's own connections go through the tunnel"
+msgstr "Ναι: οι δικές του συνδέσεις του Tailscale περνούν από το τούνελ"
+
+msgid "No: Tailscale connects directly"
+msgstr "Όχι: το Tailscale συνδέεται απευθείας"
+
+msgid "Routing"
+msgstr "Δρομολόγηση"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down."
+msgstr "Το kill switch αποκλείει όλη την κίνηση της συσκευής και του LAN όσο το VPN είναι κάτω."
+
+msgid "Bypass the tunnel"
+msgstr "Παράκαμψη του τούνελ"
+
+msgid "Enter address ranges like 192.168.0.0/16, separated by commas"
+msgstr "Εισαγάγετε περιοχές διευθύνσεων όπως 192.168.0.0/16, χωρισμένες με κόμματα"
+
+msgid "Address ranges that never go into the tunnel, besides the LAN itself (which never does). Empty: the LAN only."
+msgstr "Περιοχές διευθύνσεων που δεν μπαίνουν ποτέ στο τούνελ, εκτός από το ίδιο το LAN (που δεν μπαίνει ποτέ). Κενό: μόνο το LAN."
+
+msgid "Tailscale through the VPN"
+msgstr "Tailscale μέσω του VPN"
+
+msgid "When Tailscale runs on the device, its WireGuard, DERP and control connections go through whichever tunnel runs (dae catches them like any other)."
+msgstr "Όταν το Tailscale εκτελείται στη συσκευή, οι συνδέσεις WireGuard, DERP και ελέγχου περνούν από όποιο τούνελ εκτελείται (το dae τις πιάνει όπως όλες τις άλλες)."
+
+msgid "DNS"
+msgstr "DNS"
+
+msgid "DNS through the tunnel"
+msgstr "DNS μέσω του τούνελ"
+
+msgid "The resolver the device's and the LAN's lookups go to, through the tunnel. Nothing goes to the carrier's resolver."
+msgstr "Ο επιλυτής στον οποίο πηγαίνουν, μέσω του τούνελ, τα ερωτήματα της συσκευής και του LAN. Τίποτα δεν πηγαίνει στον επιλυτή του παρόχου."
+
+msgid "Bootstrap DNS"
+msgstr "DNS εκκίνησης"
+
+msgid "Finds the VPN server's own address before the tunnel is up (directly, on the engine's own connection)."
+msgstr "Βρίσκει τη διεύθυνση του ίδιου του διακομιστή VPN πριν ανέβει το τούνελ (απευθείας, με τη δική της σύνδεση της μηχανής)."
+
+msgid "Empty puts a setting back to its default."
+msgstr "Το κενό επαναφέρει μια ρύθμιση στην προεπιλογή της."
+
+msgid "TUN stack"
+msgstr "Στοίβα TUN"
+
+msgid "Default (gvisor)"
+msgstr "Προεπιλογή (gvisor)"
+
+msgid "system (not on the 5.4 kernel)"
+msgstr "system (όχι στον πυρήνα 5.4)"
+
+msgid "set (unchanged unless you type a new one)"
+msgstr "ορίστηκε (αμετάβλητο αν δεν πληκτρολογήσετε νέο)"
+
+msgid "not set"
+msgstr "δεν ορίστηκε"
+
+msgid "Upstream HTTP proxy"
+msgstr "Ανάντη διακομιστής μεσολάβησης HTTP"
+
+msgid "TLS certificate pin (SHA-256)"
+msgstr "Καρφίτσωμα πιστοποιητικού TLS (SHA-256)"
+
+msgid "Enter host:port"
+msgstr "Εισαγάγετε host:port"
+
+msgid "Enter the SHA-256 in hex"
+msgstr "Εισαγάγετε το SHA-256 σε δεκαεξαδική μορφή"
+
+msgid "Profile options"
+msgstr "Επιλογές προφίλ"
+
+msgid "None of the profiles has options of its type."
+msgstr "Κανένα από τα προφίλ δεν έχει επιλογές για τον τύπο του."
+
+msgid "mihomo's mode (rule, global, direct), the engines' log levels, dae's groups and routing are part of each profile's own config: VPN > Profiles, Show / edit the config."
+msgstr "Η λειτουργία του mihomo (rule, global, direct), τα επίπεδα καταγραφής των μηχανών, οι ομάδες και η δρομολόγηση του dae αποτελούν μέρος της διαμόρφωσης κάθε προφίλ: VPN > Προφίλ, Εμφάνιση / επεξεργασία της διαμόρφωσης."
+
+msgid "Delete the subscription %s?"
+msgstr "Διαγραφή της συνδρομής %s;"
+
+msgid "Its profiles can go with it or stay as profiles of their own. The active profile is never removed while the VPN is on."
+msgstr "Τα προφίλ της μπορούν να διαγραφούν μαζί της ή να μείνουν ως ανεξάρτητα προφίλ. Το ενεργό προφίλ δεν αφαιρείται ποτέ όσο το VPN είναι ενεργό."
+
+msgid "Keep the profiles"
+msgstr "Διατήρηση των προφίλ"
+
+msgid "Delete with its profiles"
+msgstr "Διαγραφή μαζί με τα προφίλ"
+
+msgid "Only by hand"
+msgstr "Μόνο χειροκίνητα"
+
+msgid "Every %d h"
+msgstr "Κάθε %d ώρες"
+
+msgid "Share links: one profile per link"
+msgstr "Σύνδεσμοι κοινοποίησης: ένα προφίλ ανά σύνδεσμο"
+
+msgid "Clash/mihomo YAML: one mihomo profile"
+msgstr "YAML Clash/mihomo: ένα προφίλ mihomo"
+
+msgid "dae: one profile with every node in one group"
+msgstr "dae: ένα προφίλ με όλους τους κόμβους σε μία ομάδα"
+
+msgid "Add a subscription"
+msgstr "Προσθήκη συνδρομής"
+
+msgid "Format"
+msgstr "Μορφή"
+
+msgid "The URL usually holds your account token: it is stored on the device readable by root only, and never shown again. The subscription is fetched over the device's own connection: through the tunnel when the VPN is up; with the kill switch up and the tunnel down it cannot be fetched."
+msgstr "Το URL συνήθως περιέχει το διακριτικό του λογαριασμού σας: αποθηκεύεται στη συσκευή αναγνώσιμο μόνο από τον root και δεν εμφανίζεται ξανά. Η συνδρομή λαμβάνεται μέσω της δικής της σύνδεσης της συσκευής: μέσω του τούνελ όταν το VPN είναι ενεργό· με ενεργό kill switch και τούνελ κάτω δεν μπορεί να ληφθεί."
+
+msgid "Refresh all"
+msgstr "Ανανέωση όλων"
+
+msgid "No subscriptions yet."
+msgstr "Δεν υπάρχουν ακόμη συνδρομές."
+
+msgid "Host"
+msgstr "Κεντρικός υπολογιστής"
+
+msgid "Updated"
+msgstr "Ενημερώθηκε"
+
+msgid "Share links"
+msgstr "Σύνδεσμοι κοινοποίησης"
+
+msgid "A refresh keeps the profiles whose name is unchanged, adds the new ones and removes the ones that are gone (the active one stays while the VPN is on, marked as gone). A refresh of the active profile restarts the running VPN."
+msgstr "Η ανανέωση διατηρεί τα προφίλ με αμετάβλητο όνομα, προσθέτει τα νέα και αφαιρεί όσα έχουν φύγει (το ενεργό μένει όσο το VPN είναι ενεργό, σημειωμένο ως αφαιρεμένο). Η ανανέωση του ενεργού προφίλ επανεκκινεί το VPN που εκτελείται."
+
+msgid "Dashboard info failed"
+msgstr "Οι πληροφορίες του πίνακα απέτυχαν"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch): no live signal right now"
+msgstr "The modem is restarting (network locks or a SIM switch): no live signal right now"
+
+msgid "Live signal read failed"
+msgstr "Η ανάγνωση ζωντανού σήματος απέτυχε"
+
+msgid "Unknown op"
+msgstr "Άγνωστη λειτουργία"
+
+msgid "Invalid argument for this op"
+msgstr "Μη έγκυρο όρισμα για αυτή τη λειτουργία"
+
+msgid "The radio is busy: the dial or the watchdog is switching it, try again shortly"
+msgstr "Το ραδιόφωνο είναι απασχολημένο: η κλήση σύνδεσης ή το watchdog το αλλάζει, δοκιμάστε ξανά σε λίγο"
+
+msgid "The action gave no valid reply"
+msgstr "Η ενέργεια δεν έδωσε έγκυρη απάντηση"
+
+msgid "The confirm parameter must be 0 or 1"
+msgstr "Η παράμετρος confirm πρέπει να είναι 0 ή 1"
+
+msgid "An AT command is one line of printable ASCII, at most 512 characters"
+msgstr "Μια εντολή AT είναι μία γραμμή εκτυπώσιμων ASCII, έως 512 χαρακτήρες"
+
+msgid "Must be an AT command"
+msgstr "Πρέπει να είναι εντολή AT"
+
+msgid "No \";\" command chaining"
+msgstr "Χωρίς αλυσίδωση εντολών με \";\""
+
+msgid "Denied: this command wedges the AT port until a reboot"
+msgstr "Απορρίφθηκε: αυτή η εντολή μπλοκάρει τη θύρα AT μέχρι την επανεκκίνηση"
+
+msgid "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+msgstr "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+msgstr "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+
+msgid "A long AT command is still running in the background; try again when it has finished"
+msgstr "Μια μεγάλη εντολή AT εκτελείται ακόμα στο παρασκήνιο· δοκιμάστε ξανά όταν τελειώσει"
+
+msgid "This command needs confirmation"
+msgstr "Αυτή η εντολή χρειάζεται επιβεβαίωση"
+
+msgid "The AT channel is busy; the command was not sent, try again"
+msgstr "Το κανάλι AT είναι απασχολημένο· η εντολή δεν στάλθηκε, δοκιμάστε ξανά"
+
+msgid "The modem did not answer in time; the command may still run, check before sending it again"
+msgstr "Το μόντεμ δεν απάντησε εγκαίρως· η εντολή μπορεί ακόμη να εκτελείται, ελέγξτε πριν τη στείλετε ξανά"
+
+msgid "The fresh parameter must be 0 or 1"
+msgstr "Η παράμετρος fresh πρέπει να είναι 0 ή 1"
+
+msgid "Reading the locks from the modem; try again in a few seconds"
+msgstr "Γίνεται ανάγνωση των κλειδωμάτων από το μόντεμ· δοκιμάστε ξανά σε λίγα δευτερόλεπτα"
+
+msgid "Lock read failed"
+msgstr "Η ανάγνωση κλειδώματος απέτυχε"
+
+msgid "Unknown lock kind"
+msgstr "Άγνωστο είδος κλειδώματος"
+
+msgid "Invalid value for this lock kind"
+msgstr "Μη έγκυρη τιμή για αυτό το είδος κλειδώματος"
+
+msgid "None of these bands is supported by this modem"
+msgstr "Αυτό το μόντεμ δεν υποστηρίζει καμία από αυτές τις ζώνες"
+
+msgid "Band, mode and cell locks are not supported for SIM2 yet"
+msgstr "Τα κλειδώματα ζώνης, λειτουργίας και κυψέλης δεν υποστηρίζονται ακόμη για τη SIM2"
+
+msgid "Band, mode and cell locks are not supported while dual-SIM switching manages the radio"
+msgstr "Τα κλειδώματα ζώνης, λειτουργίας και κυψέλης δεν υποστηρίζονται όσο η εναλλαγή διπλής SIM διαχειρίζεται τον πομπό"
+
+msgid "Invalid page"
+msgstr "Μη έγκυρη σελίδα"
+
+msgid "mu300-sms is not available (the SMS service is not installed or not running)"
+msgstr "Το mu300-sms δεν είναι διαθέσιμο (η υπηρεσία SMS δεν είναι εγκατεστημένη ή δεν εκτελείται)"
+
+msgid "No output"
+msgstr "Χωρίς έξοδο"
+
+msgid "Bad ID"
+msgstr "Μη έγκυρο ID"
+
+msgid "Read failed"
+msgstr "Η ανάγνωση απέτυχε"
+
+msgid "The number may only contain digits (and a leading +)"
+msgstr "Ο αριθμός μπορεί να περιέχει μόνο ψηφία (και ένα αρχικό +)"
+
+msgid "The message is empty"
+msgstr "Το μήνυμα είναι κενό"
+
+msgid "The message is too long (over 480 characters)"
+msgstr "Το μήνυμα είναι πολύ μεγάλο (πάνω από 480 χαρακτήρες)"
+
+msgid "The message contains a control character"
+msgstr "Το μήνυμα περιέχει χαρακτήρα ελέγχου"
+
+msgid "The sim parameter must be 0 or 1"
+msgstr "Η παράμετρος sim πρέπει να είναι 0 ή 1"
+
+msgid "The USB adapter (device-usb) gave no valid reply"
+msgstr "Ο προσαρμογέας USB (device-usb) δεν έδωσε έγκυρη απάντηση"
+
+msgid "The auto parameter must be 0 or 1"
+msgstr "Η παράμετρος auto πρέπει να είναι 0 ή 1"
+
+msgid "Invalid USB role"
+msgstr "Μη έγκυρος ρόλος USB"
+
+msgid "A USB role takes no scope"
+msgstr "Ένας ρόλος USB δεν δέχεται εμβέλεια"
+
+msgid "Invalid USB network mode"
+msgstr "Μη έγκυρη λειτουργία δικτύου USB"
+
+msgid "Invalid USB network scope"
+msgstr "Μη έγκυρη εμβέλεια δικτύου USB"
+
+msgid "Unknown USB setting"
+msgstr "Άγνωστη ρύθμιση USB"
+
+msgid "Invalid interface name"
+msgstr "Μη έγκυρο όνομα διεπαφής"
+
+msgid "The power adapter gave no valid reply"
+msgstr "Ο προσαρμογέας ισχύος δεν έδωσε έγκυρη απάντηση"
+
+msgid "Unknown power operation"
+msgstr "Άγνωστη λειτουργία ισχύος"
+
+msgid "Unknown power setting"
+msgstr "Άγνωστη ρύθμιση ισχύος"
+
+msgid "Invalid power value"
+msgstr "Μη έγκυρη τιμή ισχύος"
+
+msgid "Invalid power request"
+msgstr "Μη έγκυρο αίτημα ισχύος"
+
+msgid "The languages adapter gave no valid reply"
+msgstr "Ο προσαρμογέας γλωσσών δεν έδωσε έγκυρη απάντηση"
+
+msgid "Unknown language operation"
+msgstr "Άγνωστη λειτουργία γλώσσας"
+
+msgid "Invalid language code"
+msgstr "Μη έγκυρος κωδικός γλώσσας"
+
+msgid "Invalid language request"
+msgstr "Μη έγκυρο αίτημα γλώσσας"
+
+msgid "Unknown source"
+msgstr "Άγνωστη πηγή"
+
+msgid "The TTL adapter gave no valid reply"
+msgstr "Ο προσαρμογέας TTL δεν έδωσε έγκυρη απάντηση"
+
+msgid "Invalid TTL"
+msgstr "Μη έγκυρο TTL"
+
+msgid "The data usage adapter gave no valid reply"
+msgstr "Ο προσαρμογέας χρήσης δεδομένων δεν έδωσε έγκυρη απάντηση"
+
+msgid "Unknown data usage setting"
+msgstr "Άγνωστη ρύθμιση χρήσης δεδομένων"
+
+msgid "Invalid value for this setting"
+msgstr "Μη έγκυρη τιμή για αυτή τη ρύθμιση"
+
+msgid "The forwarding adapter gave no valid reply"
+msgstr "Ο προσαρμογέας προώθησης δεν έδωσε έγκυρη απάντηση"
+
+msgid "The CPU adapter gave no valid reply"
+msgstr "The CPU adapter gave no valid reply"
+
+msgid "Invalid CPU profile"
+msgstr "Invalid CPU profile"
+
+msgid "Invalid CPU core"
+msgstr "Μη έγκυρος πυρήνας CPU"
+
+msgid "Unknown CPU operation"
+msgstr "Unknown CPU operation"
+
+msgid "Unknown CPU voltage operation"
+msgstr "Άγνωστη λειτουργία τάσης CPU"
+
+msgid "Invalid CPU voltage request"
+msgstr "Μη έγκυρο αίτημα τάσης CPU"
+
+msgid "Invalid CPU voltage offset"
+msgstr "Μη έγκυρη μετατόπιση τάσης CPU"
+
+msgid "Type the confirmation word to apply a voltage offset"
+msgstr "Πληκτρολογήστε τη λέξη επιβεβαίωσης για να εφαρμόσετε μετατόπιση τάσης"
+
+msgid "Invalid stress test length"
+msgstr "Μη έγκυρη διάρκεια δοκιμής καταπόνησης"
+
+msgid "The packages adapter gave no valid reply"
+msgstr "Ο προσαρμογέας πακέτων δεν έδωσε έγκυρη απάντηση"
+
+msgid "Invalid packages operation"
+msgstr "Μη έγκυρη ενέργεια πακέτων"
+
+msgid "The sizes parameter must be 0 or 1"
+msgstr "Η παράμετρος sizes πρέπει να είναι 0 ή 1"
+
+msgid "The update adapter gave no valid reply"
+msgstr "Ο προσαρμογέας ενημέρωσης δεν έδωσε έγκυρη απάντηση"
+
+msgid "Unknown update operation"
+msgstr "Άγνωστη λειτουργία ενημέρωσης"
+
+msgid "Invalid update request"
+msgstr "Μη έγκυρο αίτημα ενημέρωσης"
+
+msgid "The backup tool gave no valid reply"
+msgstr "Το εργαλείο αντιγράφων δεν έδωσε έγκυρη απάντηση"
+
+msgid "Mobile data integration is not provided by this platform"
+msgstr "Η ενσωμάτωση δεδομένων κινητής δεν παρέχεται από αυτή την πλατφόρμα"
+
+msgid "The SIM settings could not be read"
+msgstr "Δεν ήταν δυνατή η ανάγνωση των ρυθμίσεων SIM"
+
+msgid "Radio control is not provided by this platform"
+msgstr "Αυτή η πλατφόρμα δεν παρέχει έλεγχο πομπού"
+
+msgid "A SIM radio change is already running"
+msgstr "Μια αλλαγή πομπού SIM εκτελείται ήδη"
+
+# Source-language fallback for untranslated new controls.
+msgid "Invalid SIM setting"
+msgstr "Invalid SIM setting"
+
+msgid "The modem did not take the setting; nothing was saved"
+msgstr "Το μόντεμ δεν δέχτηκε τη ρύθμιση· δεν αποθηκεύτηκε τίποτα"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control failed"
+msgstr "SIM control failed"
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching; reboot if channels are unavailable or wait until idle"
+msgstr "Enable hot switching; reboot if channels are unavailable or wait until idle"
+
+msgid "Request too large"
+msgstr "Το αίτημα είναι πολύ μεγάλο"
+
+msgid "The runtime directory is not safe; nothing was run"
+msgstr "Ο κατάλογος εκτέλεσης δεν είναι ασφαλής· δεν εκτελέστηκε τίποτα"
+
+msgid "No such method"
+msgstr "Δεν υπάρχει τέτοια μέθοδος"
+
+msgid "The VPN module refused the request"
+msgstr "Η μονάδα VPN απέρριψε το αίτημα"
+
+msgid "The VPN panel is busy, try again"
+msgstr "Ο πίνακας VPN είναι απασχολημένος, δοκιμάστε ξανά"
+
+msgid "Another VPN task is still running"
+msgstr "Άλλη εργασία VPN εκτελείται ακόμη"
+
+msgid "The exit_ip parameter must be 0 or 1"
+msgstr "Η παράμετρος exit_ip πρέπει να είναι 0 ή 1"
+
+msgid "The VPN status could not be read"
+msgstr "Δεν ήταν δυνατή η ανάγνωση της κατάστασης του VPN"
+
+msgid "The profiles could not be read"
+msgstr "Δεν ήταν δυνατή η ανάγνωση των προφίλ"
+
+msgid "The check parameter must be 0 or 1"
+msgstr "Η παράμετρος check πρέπει να είναι 0 ή 1"
+
+msgid "The engines could not be read"
+msgstr "Δεν ήταν δυνατή η ανάγνωση των μηχανών"
+
+msgid "The subscriptions could not be read"
+msgstr "Δεν ήταν δυνατή η ανάγνωση των συνδρομών"
+
+msgid "The VPN settings could not be read"
+msgstr "Δεν ήταν δυνατή η ανάγνωση των ρυθμίσεων του VPN"
+
+msgid "Unknown VPN operation"
+msgstr "Άγνωστη λειτουργία VPN"
+
+msgid "The VPN could not be switched"
+msgstr "Δεν ήταν δυνατή η εναλλαγή του VPN"
+
+msgid "The kill switch is on or off"
+msgstr "Το kill switch είναι ενεργό ή ανενεργό"
+
+msgid "The kill switch could not be changed"
+msgstr "Δεν ήταν δυνατή η αλλαγή του kill switch"
+
+msgid "Invalid profile id"
+msgstr "Μη έγκυρο αναγνωριστικό προφίλ"
+
+msgid "The profile could not be made the active one"
+msgstr "Δεν ήταν δυνατό να γίνει το προφίλ ενεργό"
+
+msgid "Unknown profile source"
+msgstr "Άγνωστη πηγή προφίλ"
+
+msgid "Unknown profile type"
+msgstr "Άγνωστος τύπος προφίλ"
+
+msgid "The config is empty, too large or holds control characters"
+msgstr "Η διαμόρφωση είναι κενή, πολύ μεγάλη ή περιέχει χαρακτήρες ελέγχου"
+
+msgid "Invalid profile request"
+msgstr "Μη έγκυρο αίτημα προφίλ"
+
+msgid "A config from a URL takes the type it says"
+msgstr "Μια διαμόρφωση από URL παίρνει τον τύπο που δηλώνει"
+
+msgid "No uploaded file"
+msgstr "Δεν υπάρχει αρχείο που ανέβηκε"
+
+msgid "The file is larger than 1 MiB"
+msgstr "Το αρχείο είναι μεγαλύτερο από 1 MiB"
+
+msgid "The profile could not be added"
+msgstr "Δεν ήταν δυνατή η προσθήκη του προφίλ"
+
+msgid "The profile could not be renamed"
+msgstr "Δεν ήταν δυνατή η μετονομασία του προφίλ"
+
+msgid "The profile could not be removed"
+msgstr "Δεν ήταν δυνατή η αφαίρεση του προφίλ"
+
+msgid "The profile does not pass the check"
+msgstr "Το προφίλ δεν περνά τον έλεγχο"
+
+msgid "Unknown profile option"
+msgstr "Άγνωστη επιλογή προφίλ"
+
+msgid "Invalid value for this option"
+msgstr "Μη έγκυρη τιμή για αυτήν την επιλογή"
+
+msgid "The option could not be set"
+msgstr "Δεν ήταν δυνατός ο ορισμός της επιλογής"
+
+msgid "The config could not be read"
+msgstr "Δεν ήταν δυνατή η ανάγνωση της διαμόρφωσης"
+
+msgid "The config was not saved"
+msgstr "Η διαμόρφωση δεν αποθηκεύτηκε"
+
+msgid "The latency test failed"
+msgstr "Η δοκιμή καθυστέρησης απέτυχε"
+
+msgid "The refresh interval is 1 to 999 hours"
+msgstr "Το διάστημα ανανέωσης είναι από 1 έως 999 ώρες"
+
+msgid "Unknown subscription type"
+msgstr "Άγνωστος τύπος συνδρομής"
+
+msgid "Invalid subscription id"
+msgstr "Μη έγκυρο αναγνωριστικό συνδρομής"
+
+msgid "The keep parameter must be 0 or 1"
+msgstr "Η παράμετρος keep πρέπει να είναι 0 ή 1"
+
+msgid "The subscription could not be removed"
+msgstr "Δεν ήταν δυνατή η αφαίρεση της συνδρομής"
+
+msgid "The file is too large"
+msgstr "Το αρχείο είναι πολύ μεγάλο"
+
+msgid "Unknown engine"
+msgstr "Άγνωστη μηχανή"
+
+msgid "The unverified parameter must be 0 or 1"
+msgstr "Η παράμετρος unverified πρέπει να είναι 0 ή 1"
+
+msgid "This engine is a system package: it has no file to upload"
+msgstr "Αυτή η μηχανή είναι πακέτο συστήματος: δεν έχει αρχείο για ανέβασμα"
+
+msgid "The engine could not be removed"
+msgstr "Δεν ήταν δυνατή η αφαίρεση της μηχανής"
+
+msgid "mu300-extra is not on this system"
+msgstr "Το mu300-extra δεν υπάρχει σε αυτό το σύστημα"
+
+msgid "Unknown VPN setting"
+msgstr "Άγνωστη ρύθμιση VPN"
+
+msgid "The setting could not be saved"
+msgstr "Η ρύθμιση δεν μπόρεσε να αποθηκευτεί"
+
+msgid "The number of lines is 1 to 1000"
+msgstr "Ο αριθμός γραμμών είναι από 1 έως 1000"
+
+msgid "The log could not be read"
+msgstr "Δεν ήταν δυνατή η ανάγνωση του αρχείου καταγραφής"
+
+msgid "The radio of this SIM is switched off in its settings"
+msgstr "Ο πομπός αυτής της SIM είναι κλειστός στις ρυθμίσεις της"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM control or reboot for managed dual-SIM radio"
+msgstr "Use SIM control or reboot for managed dual-SIM radio"
+
+msgid "The radio did not follow its setting"
+msgstr "Ο πομπός δεν ακολούθησε τη ρύθμισή του"
+
+msgid "The data roaming setting could not be saved"
+msgstr "Δεν ήταν δυνατή η αποθήκευση της ρύθμισης περιαγωγής δεδομένων"
+
+msgid "Expected on or off"
+msgstr "Αναμενόταν on ή off"
+
+msgid "VPN integration is not provided by this platform"
+msgstr "Η ενσωμάτωση VPN δεν παρέχεται από αυτή την πλατφόρμα"
+
+msgid "Dual-boot integration is not provided by this platform"
+msgstr "Η ενσωμάτωση διπλής εκκίνησης δεν παρέχεται από αυτή την πλατφόρμα"
+
+msgid "mu300-next-boot failed"
+msgstr "Το mu300-next-boot απέτυχε"
+
+msgid "AT backend did not answer (radio off, modem restarting, or adapter unavailable)"
+msgstr "Το σύστημα υποστήριξης AT δεν απάντησε (ραδιόφωνο ανενεργό, επανεκκίνηση μόντεμ ή μη διαθέσιμος προσαρμογέας)"
+
+msgid "The CPU profile could not be read"
+msgstr "The CPU profile could not be read"
+
+msgid "The CPU profile could not be set"
+msgstr "The CPU profile could not be set"
+
+msgid "The CPU core could not be switched"
+msgstr "Δεν ήταν δυνατή η εναλλαγή του πυρήνα CPU"
+
+msgid "Invalid low latency setting"
+msgstr "Μη έγκυρη ρύθμιση χαμηλής καθυστέρησης"
+
+msgid "The low latency setting could not be applied"
+msgstr "Δεν ήταν δυνατή η εφαρμογή της ρύθμισης χαμηλής καθυστέρησης"
+
+msgid "The CPU voltage offset could not be read"
+msgstr "Δεν ήταν δυνατή η ανάγνωση της μετατόπισης τάσης CPU"
+
+msgid "The CPU voltage offset was refused"
+msgstr "Η μετατόπιση τάσης CPU απορρίφθηκε"
+
+msgid "The CPU voltage offset could not be turned off"
+msgstr "Δεν ήταν δυνατή η απενεργοποίηση της μετατόπισης τάσης CPU"
+
+msgid "The stress test could not be started"
+msgstr "Δεν ήταν δυνατή η εκκίνηση της δοκιμής καταπόνησης"
+
+msgid "USB role adapter is not executable"
+msgstr "Ο προσαρμογέας ρόλου USB δεν είναι εκτελέσιμος"
+
+msgid "USB role adapter failed"
+msgstr "Ο προσαρμογέας ρόλου USB απέτυχε"
+
+msgid "USB role switch is unavailable"
+msgstr "Η αλλαγή ρόλου USB δεν είναι διαθέσιμη"
+
+msgid "USB role switch failed"
+msgstr "Η αλλαγή ρόλου USB απέτυχε"
+
+msgid "USB role switch was refused by platform safety checks"
+msgstr "Η αλλαγή ρόλου USB απορρίφθηκε από τους ελέγχους ασφαλείας της πλατφόρμας"
+
+msgid "Cannot create USB boot settings directory"
+msgstr "Δεν είναι δυνατή η δημιουργία καταλόγου ρυθμίσεων εκκίνησης USB"
+
+msgid "Cannot write USB boot settings"
+msgstr "Δεν είναι δυνατή η εγγραφή ρυθμίσεων εκκίνησης USB"
+
+msgid "Cannot save USB boot settings"
+msgstr "Δεν είναι δυνατή η αποθήκευση ρυθμίσεων εκκίνησης USB"
+
+msgid "Invalid boot-auto value"
+msgstr "Μη έγκυρη τιμή boot-auto"
+
+msgid "Device is the boot default; host auto-apply is the only persistent role"
+msgstr "Η συσκευή είναι η προεπιλογή εκκίνησης· η αυτόματη εφαρμογή κεντρικού υπολογιστή είναι ο μόνος μόνιμος ρόλος"
+
+msgid "Cannot save USB role policy"
+msgstr "Δεν είναι δυνατή η αποθήκευση πολιτικής ρόλου USB"
+
+msgid "Cannot disable USB network boot policy"
+msgstr "Δεν είναι δυνατή η απενεργοποίηση πολιτικής εκκίνησης δικτύου USB"
+
+msgid "Cannot commit USB role policy"
+msgstr "Δεν είναι δυνατή η δέσμευση πολιτικής ρόλου USB"
+
+msgid "USB network mode is unavailable in host role"
+msgstr "Η λειτουργία δικτύου USB δεν είναι διαθέσιμη σε ρόλο κεντρικού υπολογιστή"
+
+msgid "Disable host boot-auto before configuring USB network"
+msgstr "Απενεργοποιήστε το boot-auto κεντρικού υπολογιστή πριν από τη ρύθμιση δικτύου USB"
+
+msgid "Cannot save USB network policy"
+msgstr "Δεν είναι δυνατή η αποθήκευση πολιτικής δικτύου USB"
+
+msgid "Cannot commit USB network policy"
+msgstr "Δεν είναι δυνατή η δέσμευση πολιτικής δικτύου USB"
+
+msgid "USB host mode is required"
+msgstr "Απαιτείται λειτουργία κεντρικού υπολογιστή USB"
+
+msgid "Not a USB network interface"
+msgstr "Δεν είναι διεπαφή δικτύου USB"
+
+msgid "LAN bridge device section was not found"
+msgstr "Δεν βρέθηκε η ενότητα συσκευής της γέφυρας LAN"
+
+msgid "Cannot bring USB network interface up"
+msgstr "Δεν είναι δυνατή η ενεργοποίηση της διεπαφής δικτύου USB"
+
+msgid "Cannot add interface to LAN bridge"
+msgstr "Δεν είναι δυνατή η προσθήκη διεπαφής στη γέφυρα LAN"
+
+msgid "Cannot save LAN bridge"
+msgstr "Δεν είναι δυνατή η αποθήκευση της γέφυρας LAN"
+
+msgid "Network reload failed"
+msgstr "Η επαναφόρτωση δικτύου απέτυχε"
+
+msgid "Cannot attach USB interface to LAN bridge"
+msgstr "Δεν είναι δυνατή η σύνδεση διεπαφής USB στη γέφυρα LAN"
+
+msgid "Invalid forwarding setting"
+msgstr "Μη έγκυρη ρύθμιση προώθησης"
+
+msgid "The message template is too long or contains a control character"
+msgstr "Το πρότυπο μηνύματος είναι πολύ μεγάλο ή περιέχει χαρακτήρα ελέγχου"
+
+msgid "Invalid filter list (at most 50 lines)"
+msgstr "Μη έγκυρη λίστα φίλτρων (έως 50 γραμμές)"
+
+msgid "The webhook address must be an http:// or https:// URL"
+msgstr "Η διεύθυνση του webhook πρέπει να είναι URL http:// ή https://"
+
+msgid "The webhook body is too long or contains a control character"
+msgstr "Το σώμα του webhook είναι πολύ μεγάλο ή περιέχει χαρακτήρα ελέγχου"
+
+msgid "The answer check must be key=value, like errcode=0 or ok=true (the value a whole number or lowercase letters, 16 at most)"
+msgstr "Ο έλεγχος της απάντησης πρέπει να είναι κλειδί=τιμή, όπως errcode=0 ή ok=true (η τιμή ακέραιος αριθμός ή πεζά γράμματα, το πολύ 16)"
+
+msgid "Invalid header (one \"Name: value\" per line; Host, Content-Type, Content-Length, Transfer-Encoding and Connection are set by the device)"
+msgstr "Μη έγκυρη κεφαλίδα (μία \"Όνομα: τιμή\" ανά γραμμή· τα Host, Content-Type, Content-Length, Transfer-Encoding και Connection τα ορίζει η συσκευή)"
+
+msgid "Invalid Telegram bot token"
+msgstr "Μη έγκυρο διακριτικό bot του Telegram"
+
+msgid "Invalid Telegram chat (a number, or @channel)"
+msgstr "Μη έγκυρη συνομιλία Telegram (αριθμός ή @κανάλι)"
+
+msgid "Invalid e-mail setting"
+msgstr "Μη έγκυρη ρύθμιση email"
+
+msgid "The webhook needs an address"
+msgstr "Το webhook χρειάζεται διεύθυνση"
+
+msgid "Telegram needs a bot token and a chat"
+msgstr "Το Telegram χρειάζεται διακριτικό bot και συνομιλία"
+
+msgid "E-mail needs a server, a sender and a recipient"
+msgstr "Το email χρειάζεται διακομιστή, αποστολέα και παραλήπτη"
+
+msgid "SMS forwarding needs a phone number"
+msgstr "Η προώθηση με SMS χρειάζεται αριθμό τηλεφώνου"
+
+msgid "The forwarding settings could not be saved"
+msgstr "Δεν ήταν δυνατή η αποθήκευση των ρυθμίσεων προώθησης"
+
+msgid "SMS forwarding is not installed"
+msgstr "Η προώθηση SMS δεν είναι εγκατεστημένη"
+
+msgid "A test was started a moment ago; wait a few seconds"
+msgstr "Μια δοκιμή ξεκίνησε μόλις τώρα· περιμένετε λίγα δευτερόλεπτα"
+
+msgid "The delivery log could not be cleared"
+msgstr "Το αρχείο παράδοσης δεν ήταν δυνατό να καθαριστεί"
+
+msgid "Unknown forwarding operation"
+msgstr "Άγνωστη λειτουργία προώθησης"
+
+msgid "The language pack is not installed"
+msgstr "Το πακέτο γλωσσών δεν είναι εγκατεστημένο"
+
+msgid "No language given"
+msgstr "Δεν δόθηκε γλώσσα"
+
+msgid "The language could not be changed"
+msgstr "Δεν ήταν δυνατή η αλλαγή της γλώσσας"
+
+msgid "LuCI does not offer this language"
+msgstr "Το LuCI δεν προσφέρει αυτή τη γλώσσα"
+
+msgid "No uploaded language pack"
+msgstr "Δεν υπάρχει μεταφορτωμένο πακέτο γλωσσών"
+
+msgid "An installation is already running"
+msgstr "Μια εγκατάσταση εκτελείται ήδη"
+
+msgid "The language pack could not be removed"
+msgstr "Δεν ήταν δυνατή η αφαίρεση του πακέτου γλωσσών"
+
+msgid "Lock cache unavailable"
+msgstr "Η κρυφή μνήμη κλειδωμάτων δεν είναι διαθέσιμη"
+
+msgid "The modem refused a write"
+msgstr "Το μόντεμ απέρριψε μια εγγραφή"
+
+msgid "The saved locks could not be cleared"
+msgstr "Τα αποθηκευμένα κλειδώματα δεν ήταν δυνατό να διαγραφούν"
+
+msgid "No serving cell to lock to"
+msgstr "Δεν υπάρχει κυψέλη εξυπηρέτησης για κλείδωμα"
+
+msgid "The modem did not answer the mode query; nothing was sent"
+msgstr "Το μόντεμ δεν απάντησε στο ερώτημα λειτουργίας· δεν στάλθηκε τίποτα"
+
+msgid "The read-back does not match the automatic values"
+msgstr "Η επανάγνωση δεν ταιριάζει με τις αυτόματες τιμές"
+
+msgid "The read-back after the stack restart does not match the automatic values"
+msgstr "Η επανάγνωση μετά την επανεκκίνηση της στοίβας δεν ταιριάζει με τις αυτόματες τιμές"
+
+msgid "The reset was interrupted"
+msgstr "Η επαναφορά διακόπηκε"
+
+msgid "Reinstalling packages is not available on this system"
+msgstr "Η επανεγκατάσταση πακέτων δεν είναι διαθέσιμη σε αυτό το σύστημα"
+
+msgid "No packages were written down by an update"
+msgstr "Καμία ενημέρωση δεν κατέγραψε πακέτα"
+
+msgid "Reinstalling is running already"
+msgstr "Η επανεγκατάσταση εκτελείται ήδη"
+
+msgid "The note could not be dropped"
+msgstr "Η σημείωση δεν ήταν δυνατό να αφαιρεθεί"
+
+msgid "Unknown packages operation"
+msgstr "Άγνωστη ενέργεια πακέτων"
+
+msgid "usage: power get|set KEY VALUE|wake|idle"
+msgstr "usage: power get|set KEY VALUE|wake|idle"
+
+msgid "Data usage is not available on this system"
+msgstr "Η χρήση δεδομένων δεν είναι διαθέσιμη σε αυτό το σύστημα"
+
+msgid "Unknown data usage operation"
+msgstr "Άγνωστη λειτουργία χρήσης δεδομένων"
+
+msgid "The TTL setting could not be read"
+msgstr "Δεν ήταν δυνατή η ανάγνωση της ρύθμισης TTL"
+
+msgid "The TTL could not be set"
+msgstr "Δεν ήταν δυνατός ο ορισμός του TTL"
+
+msgid "Unknown TTL operation"
+msgstr "Άγνωστη λειτουργία TTL"
+
+msgid "An update task is already running"
+msgstr "Εκτελείται ήδη μια εργασία ενημέρωσης"
+
+msgid "The task could not be started"
+msgstr "Δεν ήταν δυνατή η εκκίνηση της εργασίας"
+
+msgid "The updater gave no valid reply"
+msgstr "Το πρόγραμμα ενημέρωσης δεν έδωσε έγκυρη απάντηση"
+
+msgid "This needs confirmation"
+msgstr "Αυτό χρειάζεται επιβεβαίωση"
+
+msgid "Check for updates first"
+msgstr "Ελέγξτε πρώτα για ενημερώσεις"
+
+msgid "The upload directory is not safe; nothing was changed"
+msgstr "Ο κατάλογος μεταφόρτωσης δεν είναι ασφαλής· δεν άλλαξε τίποτα"
+
+msgid "Not enough memory for this upload"
+msgstr "Δεν επαρκεί η μνήμη για αυτή τη μεταφόρτωση"
+
+msgid "Not enough free space on the Linux partition"
+msgstr "Δεν επαρκεί ο ελεύθερος χώρος στο διαμέρισμα του Linux"
+
+msgid "The file was not checked; upload it again"
+msgstr "Το αρχείο δεν ελέγχθηκε· ανεβάστε το ξανά"
+
+msgid "This file is not for this device"
+msgstr "Αυτό το αρχείο δεν είναι για αυτή τη συσκευή"
+
+msgid "The signature of this file is wrong"
+msgstr "Η υπογραφή αυτού του αρχείου είναι λάθος"
+
+msgid "This file is not signed: that needs confirmation"
+msgstr "Αυτό το αρχείο είναι χωρίς υπογραφή: αυτό χρειάζεται επιβεβαίωση"
+
+msgid "This file is older than what is installed: that needs confirmation"
+msgstr "Αυτό το αρχείο είναι παλαιότερο από το εγκατεστημένο: αυτό χρειάζεται επιβεβαίωση"
+
+msgid "The release source was not changed"
+msgstr "Η πηγή έκδοσης δεν άλλαξε"

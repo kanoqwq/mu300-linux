@@ -1,0 +1,14 @@
+[Unit]
+Description=MU300 mobile data count (mu300-traffic: per day, per billing cycle, the monthly cap)
+# the clock: systemd-timesyncd's synchronized flag is read at every reading, nothing waits for it
+After=local-fs.target
+
+[Service]
+ExecStart=/opt/mu300/bin/mu300-traffic run
+# SIGTERM: one last reading, saved to the disk, then it exits
+TimeoutStopSec=10
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

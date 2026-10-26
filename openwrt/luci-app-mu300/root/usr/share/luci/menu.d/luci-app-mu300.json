@@ -1,0 +1,202 @@
+{
+	"admin/home": {
+		"title": "Status dashboard",
+		"order": 5,
+		"action": {
+			"type": "view",
+			"path": "mu300/home"
+		},
+		"depends": {
+			"acl": [ "luci-app-mu300" ]
+		}
+	},
+
+	"admin/modem": {
+		"title": "Cellular",
+		"order": 25,
+		"action": {
+			"type": "firstchild"
+		},
+		"depends": {
+			"acl": [ "luci-app-mu300" ]
+		}
+	},
+
+	"admin/modem/sim": {
+		"title": "Dual SIM",
+		"order": 0,
+		"action": { "type": "view", "path": "mu300/sim" },
+		"depends": { "acl": [ "luci-app-mu300" ] }
+	},
+
+	"admin/modem/simcard": {
+		"title": "SIM settings",
+		"order": 9,
+		"action": { "type": "view", "path": "mu300/simcard" },
+		"depends": { "acl": [ "luci-app-mu300" ] }
+	},
+
+	"admin/modem/locks": {
+		"title": "Network locks",
+		"order": 1,
+		"action": {
+			"type": "view",
+			"path": "mu300/locks"
+		},
+		"depends": {
+			"acl": [ "luci-app-mu300" ]
+		}
+	},
+
+	"admin/modem/sms": {
+		"title": "SMS",
+		"order": 2,
+		"action": {
+			"type": "view",
+			"path": "mu300/sms"
+		},
+		"depends": {
+			"acl": [ "luci-app-mu300" ]
+		}
+	},
+
+	"admin/modem/sms-forward": {
+		"title": "SMS forwarding",
+		"order": 3,
+		"action": { "type": "view", "path": "mu300/forward" },
+		"depends": { "acl": [ "luci-app-mu300" ] }
+	},
+
+	"admin/modem/at": {
+		"title": "AT terminal",
+		"order": 4,
+		"action": {
+			"type": "view",
+			"path": "mu300/at"
+		},
+		"depends": {
+			"acl": [ "luci-app-mu300" ]
+		}
+	},
+
+	"admin/modem/settings": {
+		"title": "Adapter settings",
+		"order": 7,
+		"action": {
+			"type": "view",
+			"path": "mu300/settings"
+		},
+		"depends": {
+			"acl": [ "luci-app-mu300" ]
+		}
+	},
+	"admin/modem/ttl": {
+		"title": "TTL",
+		"order": 5,
+		"action": { "type": "view", "path": "mu300/ttl" },
+		"depends": { "acl": [ "luci-app-mu300" ] }
+	},
+	"admin/modem/traffic": {
+		"title": "Data usage",
+		"order": 8,
+		"action": { "type": "view", "path": "mu300/traffic" },
+		"depends": { "acl": [ "luci-app-mu300" ] }
+	},
+	"admin/modem/device": {
+		"title": "Device management",
+		"order": 6,
+		"action": { "type": "view", "path": "mu300/device" },
+		"depends": { "acl": [ "luci-app-mu300" ] }
+	},
+	"admin/system/mu300-update": {
+		"title": "Update",
+		"order": 14,
+		"action": { "type": "view", "path": "mu300/update" },
+		"depends": { "acl": [ "luci-app-mu300" ] }
+	},
+	"admin/system/mu300-backup": {
+		"title": "Backup of settings",
+		"order": 14,
+		"action": { "type": "view", "path": "mu300/backup" },
+		"depends": { "acl": [ "luci-app-mu300" ] }
+	},
+	"admin/system/mu300-languages": {
+		"title": "Languages",
+		"order": 15,
+		"action": { "type": "view", "path": "mu300/languages" },
+		"depends": { "acl": [ "luci-app-mu300" ] }
+	},
+	"admin/system/power": {
+		"title": "Power",
+		"order": 16,
+		"action": { "type": "view", "path": "mu300/power" },
+		"depends": { "acl": [ "luci-app-mu300" ] }
+	},
+	"admin/system/cpu": {
+		"title": "CPU",
+		"order": 17,
+		"action": { "type": "view", "path": "mu300/cpu" },
+		"depends": { "acl": [ "luci-app-mu300" ] }
+	},
+	"admin/system/terminal": {
+		"title": "Terminal",
+		"order": 18,
+		"action": { "type": "firstchild" },
+		"depends": { "acl": [ "luci-app-mu300-terminal" ] }
+	},
+	"admin/system/terminal/shell": {
+		"title": "Terminal",
+		"order": 1,
+		"action": { "type": "view", "path": "mu300/terminal" },
+		"depends": { "acl": [ "luci-app-mu300-terminal" ] }
+	},
+	"admin/system/terminal/config": {
+		"title": "Terminal settings",
+		"order": 2,
+		"action": { "type": "view", "path": "ttyd/config" },
+		"depends": { "acl": [ "luci-app-ttyd" ], "uci": { "ttyd": true } }
+	},
+
+	"admin/vpn/mu300-overview": {
+		"title": "Overview",
+		"order": 1,
+		"action": { "type": "view", "path": "mu300/vpn-overview" },
+		"depends": { "acl": [ "luci-app-mu300" ], "fs": { "/mnt/mu300-disk/extra/vpn/bin/mu300-vpn": "executable" } }
+	},
+	"admin/vpn/mu300-profiles": {
+		"title": "Profiles",
+		"order": 2,
+		"action": { "type": "view", "path": "mu300/vpn-profiles" },
+		"depends": { "acl": [ "luci-app-mu300" ], "fs": { "/mnt/mu300-disk/extra/vpn/bin/mu300-vpn": "executable" } }
+	},
+	"admin/vpn/mu300-subscriptions": {
+		"title": "Subscriptions",
+		"order": 3,
+		"action": { "type": "view", "path": "mu300/vpn-subscriptions" },
+		"depends": { "acl": [ "luci-app-mu300" ], "fs": { "/mnt/mu300-disk/extra/vpn/bin/mu300-vpn": "executable" } }
+	},
+	"admin/vpn/mu300-engines": {
+		"title": "Engines",
+		"order": 4,
+		"action": { "type": "view", "path": "mu300/vpn-engines" },
+		"depends": { "acl": [ "luci-app-mu300" ], "fs": { "/mnt/mu300-disk/extra/vpn/bin/mu300-vpn": "executable" } }
+	},
+	"admin/vpn/mu300-settings": {
+		"title": "Settings",
+		"order": 5,
+		"action": { "type": "view", "path": "mu300/vpn-settings" },
+		"depends": { "acl": [ "luci-app-mu300" ], "fs": { "/mnt/mu300-disk/extra/vpn/bin/mu300-vpn": "executable" } }
+	},
+	"admin/vpn/mu300-logs": {
+		"title": "Logs",
+		"order": 6,
+		"action": { "type": "view", "path": "mu300/vpn-logs" },
+		"depends": { "acl": [ "luci-app-mu300" ], "fs": { "/mnt/mu300-disk/extra/vpn/bin/mu300-vpn": "executable" } }
+	},
+	"admin/system/mu300-packages": {
+		"title": "Packages after an update",
+		"order": 19,
+		"action": { "type": "view", "path": "mu300/packages" },
+		"depends": { "acl": [ "luci-app-mu300" ] }
+	}
+}

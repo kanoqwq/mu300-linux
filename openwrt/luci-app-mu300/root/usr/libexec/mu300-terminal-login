@@ -1,0 +1,67 @@
+#!/bin/sh
+# mu300-terminal-login -- the command ttyd runs for each browser that opens System > Terminal (/etc/config/ttyd).
+#
+# A root shell, for a token the panel issued and nothing else: the page asks rpcd's mu300term for a token (only a
+# LuCI session with the luci-app-mu300-terminal ACL may), and loads ttyd with ?arg=<token>; ttyd -a hands the URL's
+# arg values over as this script's arguments. The token is a 32-hex file in the runtime directory, valid for TTL
+# seconds and for one connection: it is renamed away (atomic, so two connections never both win) before the shell
+# starts. Anything else (no token, an old, used or forged one, more arguments) gets a message and no shell: ttyd
+# never asks for a password, so it adds no new place to guess the root password.
+#
+# The shell is closed after IDLE seconds without terminal output or input (uci ttyd.mu300.idle, default 900, 0 = off):
+# a watchdog compares the pseudo-terminal's modification time, which the kernel updates (every 8 s at most) whenever
+# the shell or a program writes to it, typed characters' echo included. OpenWrt's ash has no TMOUT.
+DIR=${MU300_TERM_DIR:-/var/run/mu300-terminal}
+TTL=${MU300_TERM_TTL:-60}
+LOGIN=${MU300_TERM_LOGIN:-/bin/login}
+
+deny() {
+    printf '\r\n%s\r\n' "$1"
+    # the message reaches the browser before ttyd sees the command end and closes the terminal
+    sleep "${MU300_TERM_DENY_WAIT:-3}"
+    exit 1
+}
+EXPIRED='This terminal link has expired or was already used. Open System > Terminal in the control panel again.'
+
+[ $# -eq 1 ] || deny "$EXPIRED"
+tok=$1
+case $tok in *[!0-9a-f]*|'') deny "$EXPIRED" ;; esac
+[ ${#tok} -eq 32 ] || deny "$EXPIRED"
+# root's own directory (rpcd mu300term makes it 0700): one someone else made or a link is not trusted
+[ -d "$DIR" ] && [ ! -L "$DIR" ] && [ -O "$DIR" ] || deny "$EXPIRED"
+mv "$DIR/$tok" "$DIR/$tok.used" 2>/dev/null || deny "$EXPIRED"
+issued=$(date -r "$DIR/$tok.used" +%s 2>/dev/null) || issued=0
+rm -f "$DIR/$tok.used"
+age=$(( $(date +%s) - issued ))
+[ "$age" -ge 0 ] && [ "$age" -le "$TTL" ] || deny "$EXPIRED"
+
+IDLE=${MU300_TERM_IDLE:-$(uci -q get ttyd.mu300.idle 2>/dev/null)}
+case $IDLE in ''|*[!0-9]*) IDLE=900 ;; esac
+tty=$(readlink /proc/$$/fd/0 2>/dev/null) || tty=
+case $tty in /dev/pts/[0-9]*) ;; *) tty= ;; esac
+if [ "$IDLE" -gt 0 ] && [ -n "$tty" ]; then
+    pid=$$
+    # this process's start time (field 22 of /proc/PID/stat, after the command name in parentheses): exec keeps it,
+    # and the watchdog stops as soon as PID is another process
+    st=$(sed 's/^.*) //' /proc/$pid/stat | cut -d' ' -f20)
+    (
+        trap '' HUP
+        while sleep "${MU300_TERM_TICK:-30}"; do
+            [ "$(sed 's/^.*) //' /proc/$pid/stat 2>/dev/null | cut -d' ' -f20)" = "$st" ] || exit 0
+            last=$(date -r "$tty" +%s 2>/dev/null) || exit 0
+            if [ $(( $(date +%s) - last )) -ge "$IDLE" ]; then
+                case $IDLE in [0-9]|[1-5][0-9]) took="$IDLE seconds" ;; 6[0-9]|[7-9][0-9]|1[01][0-9]) took="1 minute" ;;
+                    *) took="$((IDLE / 60)) minutes" ;; esac
+                printf '\r\n%s\r\n' "Closed after $took without activity." >"$tty" 2>/dev/null
+                # time for ttyd to carry the line to the browser: it closes the websocket as soon as the shell ends
+                sleep "${MU300_TERM_NOTICE_WAIT:-3}"
+                kill -HUP "$pid" 2>/dev/null
+                sleep 2
+                [ "$(sed 's/^.*) //' /proc/$pid/stat 2>/dev/null | cut -d' ' -f20)" = "$st" ] && kill -KILL "$pid" 2>/dev/null
+                exit 0
+            fi
+        done
+    ) </dev/null >/dev/null 2>&1 &
+fi
+# login -f: root, already authenticated (by the token); a login shell as on the console (HOME, /etc/profile)
+exec "$LOGIN" -f root

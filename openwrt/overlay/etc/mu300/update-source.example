@@ -1,0 +1,25 @@
+# Release source for the MU300 (Ubuntu and OpenWrt). To use it:
+#   install -m 600 /etc/mu300/update-source.example /etc/mu300/update-source
+# and edit that - or have the command write it for you: mu300-update source https://<mirror>/
+# The file has to stay root's own (mu300-update refuses anything else): whoever can write it decides what this
+# device installs. The command line and the panel's System > Update page read the same file.
+
+# Where the release files come from. A GitHub file proxy belongs here (the release tag is added after it), and so
+# does a directory of a release's files on the LAN, served by something like python3 -m http.server.
+#MU300_DOWNLOAD_URL=http://mirror.lan/mu300/releases/download
+
+# Where "which release is newest" is asked. The usual GitHub file proxies do NOT serve GitHub's API - a request
+# through them for api.github.com comes back 403 - so this is normally left out and GitHub itself is asked.
+#MU300_API_URL=https://api.github.com/repos/dikeckaan/mu300-linux
+
+# A release is checked against the checksums the project signed (SHA256SUMS.sig, with the release key in
+# /opt/mu300/lib/release.pub - see wiki/Updating.md) wherever it came from. A system that has no such key - every
+# release up to v2026.10.27 - has nothing of its own to compare with: there a mirror is trusted as much as whoever
+# runs it. A mirror that cannot be reached is said once, and the rest of that run comes from github.com; the
+# setting stays, so the next run tries your mirror again. A mirror that answers and then stalls is not
+# "unreachable": the run keeps taking the files from it.
+# On a metered link the fallback can be the worse answer - the release would come over mobile data. So it only
+# happens by itself for an https mirror on a public name: a plain-http mirror, or one on a private address or a
+# LAN-only name (192.168.x.x, 10.x.x.x, nas.lan, ...), stops the update and says so instead. This line decides it
+# for every mirror: 0 never falls back, 1 always may.
+#MU300_MIRROR_FALLBACK=0

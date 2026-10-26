@@ -1,0 +1,22 @@
+[Unit]
+# the vendor modem loader exists only in the 5.4 kernel
+# the modem driver, not its device node: the driver is loaded in the initramfs on both kernels, but the node
+# appears later on mainline (+18 s, after sysinit), and a condition checked before that dropped these units
+ConditionPathExists=|/sys/module/sprd_modem_loader
+ConditionPathExists=|/dev/modem
+ConditionPathExists=|/dev/pmsys
+Description=MU300 Android vendor services (modem_control: PM/modem bring-up, disarms PM watchdog)
+DefaultDependencies=no
+After=local-fs.target systemd-udevd.service
+Before=sysinit.target
+
+[Service]
+Type=simple
+# the node the vendor daemons open (it is there already on 5.4; ~2 s after sysinit's start on mainline)
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 60); do [ -e /dev/modem ] || [ -e /dev/pmsys ] && exit 0; sleep 1; done; echo "no /dev/modem after 60 s" >&2; exit 1'
+ExecStart=/opt/mu300/bin/android-vendor-start
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=sysinit.target

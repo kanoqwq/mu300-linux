@@ -1,0 +1,163 @@
+#!/bin/sh
+# The MU300's OpenWrt settings: what the system needs on every run, and first-install defaults once.
+#
+# This runs more than once: mu300-update apply and android-install.sh UPDATE=1 unpack a fresh rootfs (which carries
+# /etc/uci-defaults again) and keep /etc/config, so it runs on the first boot after every update, against the
+# user's settings.
+#
+# Once (a first install): one LAN for USB and Wi-Fi (192.168.77.1/24 on an F50, 192.168.78.1/24 on a U30 Air, 192.168.79.1/24 on a V50) with
+# the USB gadget in its bridge, no wan6, an empty APN, the hostname and time zone, and fw4's software flowtable. The
+# marker system.mu300.defaults is written last, in /etc/config with the settings it guards: an update keeps both, a
+# fresh or reset configuration has neither and gets the defaults again.
+# An install from before the marker is told by its wan: only this script makes wan the modem's (proto mu300cell),
+# and no first boot has that, so such a configuration was set up by an earlier run and keeps its settings. It gets
+# the one default the releases before the marker did not set (the flowtable), and the marker.
+#
+# Every run: wan is the modem's, the LAN bridge does not wait for a missing member, the USB host's pinned lease when
+# there is none (K25), the early USB path's firewall zone (K26), logd's 1 MiB buffer over a stock size, and the USB
+# serial console in the fresh inittab.
+# /etc/config/network can hold a password (the APN's, FINDINGS 65; a PPPoE or WireGuard one): root's alone from the
+# first boot on, before anybody types one in. uci keeps the mode of a file it rewrites. (No link is followed.)
+[ -f /etc/config/network ] && [ ! -L /etc/config/network ] && chmod 600 /etc/config/network 2>/dev/null
+lan_ip=$(/opt/mu300/bin/mu300-lan-ip)
+# The USB host's MAC (K25): boot/init leaves it in /run (the gadget's host_addr); else the gadget's own address
+# tells it (init gives the host the next one: :01 -> :02 for usb0, :03 -> :04 for rndis0).
+usb_host_mac=$(cat /run/mu300-usb-host-mac 2>/dev/null)
+for nic in usb0:02 rndis0:04; do
+	[ -z "$usb_host_mac" ] || break
+	devmac=$(cat /sys/class/net/${nic%:*}/address 2>/dev/null)
+	[ -n "$devmac" ] && usb_host_mac=${devmac%:*}:${nic#*:}
+done
+dev=$(uci -q show network | sed -n "s/^network\.\(@device\[[0-9]*\]\)\.name='br-lan'$/\1/p" | head -1)
+
+# first (a first install), old (an install from before the marker) or done; told before wan is set below
+if [ "$(uci -q get system.mu300.defaults)" = 1 ]; then run=done
+elif [ "$(uci -q get network.wan.proto)" = mu300cell ]; then run=old
+else run=first
+fi
+
+if [ "$run" = first ]; then
+	# lan ip6assign 64: a carrier hands out one /64 (the wan_6 that mu300cell adds), and the default /60 request
+	# would leave the LAN without IPv6 (openwrt-luci's 91-mu300-luci, run after this, asks for a /60 of the ULA)
+	uci -q batch <<UCI
+set system.@system[0].hostname='mu300'
+set system.@system[0].zonename='Europe/Istanbul'
+set system.@system[0].timezone='<+03>-3'
+set network.lan.ipaddr='$lan_ip'
+set network.lan.netmask='255.255.255.0'
+set network.lan.ip6assign='64'
+delete network.wan6
+set network.wan=interface
+set network.wan.apn=''
+UCI
+	# the armsr default bridges eth0; the MU300 LAN bridge carries the USB gadget (Wi-Fi joins via wireless config)
+	if [ -n "$dev" ]; then
+		uci -q delete network.$dev.ports
+		uci add_list network.$dev.ports='usb0'
+		# the gadget's RNDIS netdev (Windows without NCM) exists only when init made RNDIS; the LAN hook
+		# (hotplug.d/iface/10-mu300-usb) bridges it when a later boot does (K27, kanoqwq fork cd4fb28 and 4e70d02)
+		[ -e /sys/class/net/rndis0 ] && uci add_list network.$dev.ports='rndis0'
+	fi
+fi
+if [ "$run" != done ]; then
+	# Forwarded TCP/UDP through the kernel's software flowtable (fw4 puts sipa_eth0 in it: patches/fw4-sipa-offload.patch).
+	# The Unisoc SIPA and SC2355 drivers have no nftables hardware flow offload. (mu300-ttl turns it off while a TTL
+	# is set.)
+	uci -q set firewall.@defaults[0].flow_offloading='1'
+	uci -q set firewall.@defaults[0].flow_offloading_hw='0'
+fi
+
+# --- every run
+uci -q batch <<UCI
+set network.wan=interface
+set network.wan.proto='mu300cell'
+UCI
+# the wired LAN does not wait for a member that is not there yet (Wi-Fi, a gadget netdev)
+[ -z "$dev" ] || uci set network.$dev.bridge_empty='1'
+# K25 (ported from the kanoqwq fork, cd4fb28): the USB host keeps the address it had from the early server, and
+# dnsmasq broadcasts its OFFER/ACK: Windows can keep asking for the early lease after it has already removed that
+# address, and a unicast reply to the removed address is lost in the NCM host stack. The address is the one preinit's
+# early server gives on the LAN as configured (lib/mu300/usb-host.sh: never the router's own). Added when there is
+# none (an install from before K25, or a host MAC not known yet); one that is there is left as it is.
+. /lib/mu300/usb-host.sh
+if [ -n "$usb_host_mac" ] && [ -z "$(uci -q get dhcp.mu300_usb)" ]; then
+	mu300_lan "$(uci -q get network.lan.ipaddr)" "$(uci -q get network.lan.netmask)"
+	usb_host_ip=$(mu300_usb_host_ip "${mu300_lan_addr:-$lan_ip}" "$mu300_lan_mask")
+	uci -q batch <<UCI
+set dhcp.mu300_usb=host
+set dhcp.mu300_usb.name='mu300-usb-host'
+set dhcp.mu300_usb.mac='$usb_host_mac'
+set dhcp.mu300_usb.ip='$usb_host_ip'
+set dhcp.mu300_usb.broadcast='1'
+UCI
+fi
+# K26 (same fork commit): before netifd makes br-lan, the early address lives on the gadget's netdev itself (preinit
+# 06_mu300_early_usb); the host's DHCP and management traffic there gets the LAN's input policy, never forwarding.
+# Bridged, the packets come in through br-lan as usual. Added once.
+if ! uci -q show firewall | grep -q "^firewall\.@zone\[[0-9]*\]\.name='earlyusb'$"; then
+	early=$(uci add firewall zone)
+	uci set firewall.$early.name='earlyusb'
+	uci add_list firewall.$early.device='usb0'
+	uci add_list firewall.$early.device='rndis0'
+	uci set firewall.$early.input='ACCEPT'
+	uci set firewall.$early.output='ACCEPT'
+	uci set firewall.$early.forward='REJECT'
+fi
+# Issue #67: the lan and wan zones name their devices, not only their networks. fw4 renders a zone's rules from
+# the devices its networks have at the time, and S19 firewall runs before S20 network: on the boot ruleset neither
+# br-lan nor the modem's sipa_eth0 exists yet, so the LAN's input rules and the wan's masquerade are left out, for
+# the reload every ifup triggers to fill in. On the 5.4 kernel that reload failed (hotplug.d/iface/19-mu300-fw4),
+# and the device came up with no DHCP, no LuCI and no NAT on every boot (#67; #61 looks the same). With the devices
+# named, the boot ruleset is complete whatever the reloads do. Added to a zone that lacks its device; once.
+# sipa_eth8 is the F50's internal card's bearer (mu300-sim select internal; docs/SIM-SELECTION.md): named too, so
+# LAN clients are masqueraded on it from the boot ruleset on, the same as on sipa_eth0.
+for zd in lan:br-lan wan:sipa_eth0 wan:sipa_eth8; do
+	zone=$(uci -q show firewall | sed -n "s/^\(firewall\.@zone\[[0-9]*\]\)\.name='${zd%:*}'$/\1/p" | head -1)
+	[ -n "$zone" ] || continue
+	case " $(uci -q get $zone.device) " in *" ${zd#*:} "*) ;; *) uci add_list $zone.device="${zd#*:}" ;; esac
+done
+# LuCI's language (both systems) is English, not "auto" (which follows the browser): once, with its own marker
+# luci.mu300.lang, so a language the user picks later stays through every update. A system from before the marker
+# that still says "auto" (or nothing) gets English too: auto was nobody's choice there (luci-base's default, and
+# 91-mu300-luci's until it set English), and with the Turkish and Chinese catalogs now in the image it would switch
+# the language under the user. A language set on purpose stays.
+# The languages the image has catalogs for (Turkish and Chinese) are offered on every run: their own uci-defaults ran
+# when the image was built, and an update keeps the old /etc/config/luci, which may not know them (plain OpenWrt
+# before v2026.10.11 had none). One the user's configuration has stays as it is.
+if uci -q get luci.main >/dev/null; then
+	uci -q get luci.languages >/dev/null || uci -q set luci.languages=internal
+	[ ! -e /usr/lib/lua/luci/i18n/base.tr.lmo ] || uci -q get luci.languages.tr >/dev/null ||
+		uci -q set luci.languages.tr='Türkçe (Turkish)'
+	[ ! -e /usr/lib/lua/luci/i18n/base.zh-cn.lmo ] || uci -q get luci.languages.zh_cn >/dev/null ||
+		uci -q set luci.languages.zh_cn="$(printf '\347\256\200\344\275\223\344\270\255\346\226\207 (Simplified Chinese)')"
+	uci commit luci
+fi
+if uci -q get luci.main >/dev/null && [ "$(uci -q get luci.mu300.lang)" != 1 ]; then
+	case $(uci -q get luci.main.lang) in ''|auto) uci -q set luci.main.lang='en' ;; esac
+	uci -q batch <<UCI
+set luci.mu300=mu300
+set luci.mu300.lang='1'
+UCI
+	uci commit luci
+fi
+# logd's ring buffer (FINDINGS 191): OpenWrt's 128 KiB held only the last two minutes of an F50's log, so what the
+# services said at boot was gone before anybody looked. A boot alone writes about 500 KiB; 1 MiB of the 1.5 GB RAM
+# keeps all of it and more than an hour after. From the next start of logd (this runs before it at boot). Every
+# run, but only over the stock sizes (none, 64, 128): a size the user set stays.
+case $(uci -q get system.@system[0].log_size) in ''|64|128) uci -q set system.@system[0].log_size='1024' ;; esac
+# network last: a first run cut short before its commit has no wan proto mu300cell yet, and runs again as a first
+# install, in full
+uci commit system
+uci commit dhcp
+uci commit firewall
+uci commit network
+grep -q '^ttyGS0:' /etc/inittab || echo 'ttyGS0::askfirst:/usr/libexec/login.sh' >> /etc/inittab
+# the marker last
+if [ "$run" != done ]; then
+	uci -q batch <<UCI
+set system.mu300=mu300
+set system.mu300.defaults='1'
+UCI
+	uci commit system
+fi
+exit 0

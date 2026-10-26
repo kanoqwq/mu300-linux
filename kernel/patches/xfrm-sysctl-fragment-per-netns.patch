@@ -1,0 +1,103 @@
+xfrm: register the vendor's enable_xfrm_fragment sysctl with each namespace's own header (#103)
+
+The Unisoc CONFIG_XFRM_FRAGMENT addition (net/xfrm/xfrm_sysctl.c, "only for sprd": there is no upstream
+counterpart, and linux-5.4.y has not touched this file since 2017) registers its enable_xfrm_fragment entry
+under net/core with a second ctl_table_header, kept with its kmemdup'd table in two static pointers. Every
+network namespace's xfrm_sysctl_init() overwrites both, and every namespace's xfrm_sysctl_fini() unregisters
+and frees whatever they point at: with two namespaces alive (Docker's containers, a sandbox), the first one to
+exit tears down the newer one's registration and leaves its own behind, and the second one's exit unregisters
+a freed header (count_subheaders in unregister_sysctl_table) and frees the table a second time (kernel BUG at
+mm/slub.c:308), both of which the F50 of #103 reported under "Workqueue: netns cleanup_net", after the
+"retire_sysctl_set" warning for the registration left behind. The 0660 entry was also visible and, with
+CAP_NET_ADMIN over the namespace, writable from an unprivileged user namespace.
+
+The entry is now the fifth member of the per-namespace xfrm_table, registered and torn down with
+net->xfrm.sysctl_hdr like the other four; the switch stays one global integer (default 1, get_xfrm_fragment()
+unchanged, same path and mode), and it follows the table's rule of being hidden from namespaces owned by a
+non-initial user namespace. Candidate fix from the reporter of #103, tested there over 460 namespace
+lifecycles on an F50. Reproduce: `for i in $(seq 200); do unshare -n true & unshare -n true; wait; done` on
+the unpatched 5.4 kernel panics within a few iterations.
+
+--- a/net/xfrm/xfrm_sysctl.c
++++ b/net/xfrm/xfrm_sysctl.c
+@@ -6,8 +6,6 @@
+ 
+ #ifdef CONFIG_XFRM_FRAGMENT
+ static int enable_xfrm_fragment __read_mostly = 1;
+-static struct ctl_table *sprd_sys_ctl_table;
+-static struct ctl_table_header	*sprd_xfrm_hdr;
+ #endif
+ 
+ static void __net_init __xfrm_sysctl_init(struct net *net)
+@@ -44,20 +42,26 @@
+ 		.mode		= 0644,
+ 		.proc_handler	= proc_dointvec
+ 	},
+-	{}
+-};
+-
+ #ifdef CONFIG_XFRM_FRAGMENT
+-static struct ctl_table sprd_net_sys_table[] = {
++	/*
++	 * MU300: the vendor registered this entry with a second header kept in a
++	 * static pointer, which every namespace's init overwrote and every
++	 * namespace's exit unregistered and freed (#103). An entry of the
++	 * per-namespace table is registered and torn down with that namespace's
++	 * own header; the switch itself stays one global integer.
++	 */
+ 	{
+ 		.procname	= "enable_xfrm_fragment",
++		.data		= &enable_xfrm_fragment,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0660,
+ 		.proc_handler	= proc_dointvec
+ 	},
++#endif
+ 	{}
+ };
+ 
++#ifdef CONFIG_XFRM_FRAGMENT
+ int get_xfrm_fragment(void)
+ {
+ 	return enable_xfrm_fragment;
+@@ -85,27 +89,8 @@
+ 	net->xfrm.sysctl_hdr = register_net_sysctl(net, "net/core", table);
+ 	if (!net->xfrm.sysctl_hdr)
+ 		goto out_register;
+-
+-#ifdef CONFIG_XFRM_FRAGMENT
+-	sprd_sys_ctl_table = kmemdup(sprd_net_sys_table,
+-				     sizeof(sprd_net_sys_table), GFP_KERNEL);
+-	if (!sprd_sys_ctl_table)
+-		goto out_kmemdup;
+-
+-	sprd_sys_ctl_table[0].data = &enable_xfrm_fragment;
+-	sprd_xfrm_hdr = register_net_sysctl(net, "net/core",
+-					    sprd_sys_ctl_table);
+-	if (!sprd_xfrm_hdr)
+-		goto out_register2;
+-#endif
+ 	return 0;
+ 
+-#ifdef CONFIG_XFRM_FRAGMENT
+-out_register2:
+-	kfree(sprd_sys_ctl_table);
+-	sprd_sys_ctl_table = NULL;
+-#endif
+-
+ out_register:
+ 	kfree(table);
+ out_kmemdup:
+@@ -119,12 +104,6 @@
+ 	table = net->xfrm.sysctl_hdr->ctl_table_arg;
+ 	unregister_net_sysctl_table(net->xfrm.sysctl_hdr);
+ 	kfree(table);
+-#ifdef CONFIG_XFRM_FRAGMENT
+-	if (sprd_xfrm_hdr) {
+-		unregister_net_sysctl_table(sprd_xfrm_hdr);
+-		kfree(sprd_sys_ctl_table);
+-	}
+-#endif
+ }
+ #else
+ int __net_init xfrm_sysctl_init(struct net *net)

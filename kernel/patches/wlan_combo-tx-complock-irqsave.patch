@@ -1,0 +1,41 @@
+sc2355: take complock with interrupts off - it is also taken in the PCIe tx-complete interrupt
+
+--- a/sc2355/tx.c	2026-09-27 13:31:28
++++ b/sc2355/tx.c	2026-09-27 13:31:28
+@@ -21,15 +21,20 @@
+ 
+ #define MAX_FW_TX_DSCR	(1024)
+ 
++/* complock is also taken from the PCIe tx-complete interrupt (sc2355_pcie_tx_cmd_pop_list ->
++ * sc2355_free_cmd_buf), so it must be taken with interrupts off everywhere: with only bottom halves off, that
++ * interrupt on the same CPU spins on the lock forever */
+ static void tx_dequeue_cmd_buf(struct sprd_msg *msg, struct sprd_msg_list *list)
+ {
++	unsigned long flags;
++
+ 	spin_lock_bh(&list->busylock);
+ 	list_del(&msg->list);
+ 	spin_unlock_bh(&list->busylock);
+ 
+-	spin_lock_bh(&list->complock);
++	spin_lock_irqsave(&list->complock, flags);
+ 	list_add_tail(&msg->list, &list->cmd_to_free);
+-	spin_unlock_bh(&list->complock);
++	spin_unlock_irqrestore(&list->complock, flags);
+ }
+ 
+ static inline void tx_enqueue_data_msg(struct sprd_msg *msg, struct sprd_hif *hif)
+@@ -1099,9 +1104,11 @@
+ 
+ void sc2355_free_cmd_buf(struct sprd_msg *msg, struct sprd_msg_list *list)
+ {
+-	spin_lock_bh(&list->complock);
++	unsigned long flags;
++
++	spin_lock_irqsave(&list->complock, flags);
+ 	list_del(&msg->list);
+-	spin_unlock_bh(&list->complock);
++	spin_unlock_irqrestore(&list->complock, flags);
+ 	sprd_free_msg(msg, list);
+ }
+ 

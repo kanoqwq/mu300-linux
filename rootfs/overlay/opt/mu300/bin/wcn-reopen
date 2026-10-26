@@ -1,0 +1,23 @@
+#!/bin/sh
+# MU300: reopen Wi-Fi after sprd_wlan_combo reset the WCN chip (issue #94; run by mu300-wcn-reopen.service from
+# 70-mu300-wcn.rules). The chip stays off until wlan0 is opened again, and only a down/up of the interface opens it.
+# The hotspot does that itself (hotspot-start). A client of another network does not: wifi-client never takes wlan0
+# down (on a running chip that powers it off), so its restart alone left the chip off and the recovery watchdog
+# rebooted the device a minute later. If nothing here brings Wi-Fi back, that watchdog still reboots.
+IFACE=wlan0
+R=${MU300_SYSROOT:-}
+if systemctl -q is-active mu300-hotspot.service; then
+    exec systemctl restart mu300-hotspot.service
+fi
+[ -e "$R/sys/class/net/$IFACE" ] || exit 0
+client=0
+[ -e "$R/run/mu300-wifi-client.active" ] && client=1
+[ $client = 1 ] && systemctl stop mu300-wifi-client.service
+# With neither up (scan mode, or mu300-power's idle hotspot-off) only the chip comes back and nothing is started.
+# The watchdog waits for a power-on even with wlan0 down, so a down interface goes up once and back down.
+was_up=0
+ip link show $IFACE | grep -q '[<,]UP[,>]' && was_up=1
+ip link set $IFACE down
+ip link set $IFACE up
+[ $was_up = 1 ] || ip link set $IFACE down
+[ $client = 0 ] || systemctl start mu300-wifi-client.service

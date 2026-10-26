@@ -1,0 +1,5 @@
+# modules that may bind to a node of the vendor device tree (check-dt-modules.py): the drivers the boards need are
+# built in or the vendor modules, which are not checked
+# the U30 Air's USB-C port controller (patch 0020, FINDINGS 150): its probe returns -ENODEV unless the module is
+# loaded with enable=1 (mu300-usb pd on), and Ubuntu's udev does not load it at all (modprobe.d/mu300-usb-pd.conf)
+ump9620_tcpc

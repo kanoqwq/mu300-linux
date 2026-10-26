@@ -1,0 +1,849 @@
+#!/bin/sh
+# mu300vpn -- the VPN pages' RPC object of luci-app-mu300 (VPN > Overview, Profiles, Subscriptions, Engines,
+# Settings, Logs).
+#
+# Called by LuCI as:  ubus call mu300vpn <method> '{...}'
+#   rpcd runs this script as:  mu300vpn call <method>   with the params JSON on stdin; `mu300vpn list` prints the
+#   method declaration blob. The reply is one JSON object on stdout.
+#
+# The work is mu300-vpn's, the command of the VPN module (github.com/dikeckaan/mu300-linux-vpn), through its
+# machine-readable CLI (the module's spec 2026-10-11-engine-extras, section 4: JSON on stdout, messages on stderr,
+# exit 0 ok, 1 failed, 2 usage). This object is separate from mu300dash because what passes through it holds secrets
+# (share links, configs, subscription URLs, OpenVPN passwords): nothing here is logged (mu300dash keeps every reply
+# for its rpcd-crash forensics), and a config may be larger than mu300dash's request limit.
+#
+# Read methods (the ACL's read grant):
+#   status [exit_ip]   mu300-vpn status --json [--exit-ip]; installed 0 (and whether mu300-extra can get it) when the
+#                      module is not there, legacy 1 when its mu300-vpn has no --json (module v1)
+#   profiles           profile list --json (the CLI masks every secret)
+#   engines [check]    engines --json [--check] (check: the release's VERSIONS, a few hundred bytes)
+#   subscriptions      subscription list --json (the URL's host only)
+#   settings           settings get, as an object of the keys this page shows
+#   (every read returns masked data only: no credential, no URL path or query)
+# Write methods (the ACL's write grant):
+#   job                 the background task: kind, state, the last lines of its output (URLs redacted), a JSON result
+#   service op          on|off|restart
+#   killswitch value    on|off
+#   use id              the active profile
+#   profile_add source data name type   source link|text|file|url; the link, text or URL on stdin of the CLI, the
+#                       file the one upload path below; url runs as a task (a download)
+#   profile_rename id name, profile_remove id, profile_check id
+#   profile_option id key value   an option of the profile's type; OVPN_USER/OVPN_PASS on stdin
+#   profile_reveal id   profile show --json --reveal: the raw config (credentials included), for the editor
+#   profile_edit id config   profile edit ID - (checked by the CLI before it replaces anything)
+#   latency id          one profile inline, all as a task
+#   sub_add name url type interval, sub_refresh id|all|due (a task), sub_remove id keep
+#   engine_install name source unverified (a task), engine_remove name
+#   core_install source unverified   the vpn extra itself (mu300-extra install vpn, a task); an uploaded tarball is
+#                       installed only when it is in the official SHA256SUMS, or with unverified=1 (see engines below)
+#   setting_set key value
+#   logs engine lines   the service's log (it may name the hosts the device talked to: write, as the AT history)
+#
+# Long work (downloads, a refresh, a latency round over every profile) runs detached as the one background task,
+# bounded in time; the page polls `job`. Only one task at a time, started under a lock; each request's files (a
+# secret for stdin, an upload) live in a fresh 0700 directory of its own under the root-only runtime directory.
+
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+
+LIB=${0%/*}/../../share/unisoc-modem/lib.sh
+[ -f "$LIB" ] || LIB=/usr/share/unisoc-modem/lib.sh
+. "$LIB"
+
+VPN=${MU300_VPN_CMD:-/opt/mu300/bin/mu300-vpn}
+SELF=$(cd "${0%/*}" 2>/dev/null && pwd)/${0##*/}
+EXTRA=${MU300_EXTRA_CMD:-/opt/mu300/bin/mu300-extra}
+VPN_RUN=${MU300_VPN_RUN:-/run/mu300-vpn}
+# The two paths the panel may upload to (the ACL grants exactly these): a profile's config, and an extra's tarball
+UPLOAD_CFG=${MU300_VPN_UPLOAD:-/tmp/mu300-vpn-upload}
+UPLOAD_PKG=${MU300_VPN_UPLOAD_PKG:-/tmp/mu300-vpn-extra.tar.gz}
+DIR=${MU300_DASH_DIR:-$RUN_DIR}
+JOB=$DIR/vpn-job
+DIR_OK=1
+private_dir "$DIR" || DIR_OK=0
+[ "$DIR_OK" != 1 ] || private_dir "$JOB" || DIR_OK=0
+
+NL='
+'
+# A config may be large (a mihomo YAML of a subscription): 128 KiB of request, 64 KiB of config text
+INPUT_MAX=131072
+TEXT_MAX=65536
+# what is read of the CLI's stdout, and of its last message
+OUT_MAX=262144
+ERR_MAX=300
+# an inline call stays under the 30 s rpcd gives it
+INLINE_SECS=25
+INPUT=
+
+# ------------------------------------------------------------- input, JSON
+# As in mu300dash: every parameter is checked against an allow-list before it is used, a refusal answers a fixed
+# English error and runs nothing; a value reaches the CLI only as one argument that cannot start with "-" or, when
+# it can hold a secret, on its stdin - never in argv, where every local user can read it.
+input_too_large() { [ $(($(printf '%s' "$INPUT" | wc -c))) -gt "$INPUT_MAX" ]; }
+inp() {
+    V=$(printf '%s' "$INPUT" | jsonfilter -e "$1" 2>/dev/null | tr '\000' '\001'; printf x)
+    V=${V%x}; V=${V%"$NL"}
+    case $V in null) V= ;; esac
+}
+is_ascii_line() { [ "$(printf '%s' "$1" | LC_ALL=C tr -d ' -~'; echo x)" = x ]; }
+allowed() { is_ascii_line "$1" && printf '%s\n' "$1" | LC_ALL=C grep -Eqx -- "$2"; }
+# name_ok NAME: a profile or subscription name: 1-64 characters of text (UTF-8 allowed, no control character),
+# at most 128 bytes, not starting with "-" or a space, not ending with a space
+name_ok() {
+    [ -n "$1" ] || return 1
+    [ "$(printf '%s' "$1" | LC_ALL=C tr -d '\040-\176\200-\377'; echo x)" = x ] || return 1
+    [ "$(printf '%s' "$1" | wc -c)" -le 128 ] || return 1
+    [ "$(printf '%s' "$1" | LC_ALL=C tr -d '\200-\277' | wc -c)" -le 64 ] || return 1
+    case $1 in -*|' '*|*' ') return 1 ;; esac
+}
+# text_ok TEXT: a config: no control character but tab, newline and CR, at most TEXT_MAX bytes, not empty
+text_ok() {
+    [ -n "$1" ] || return 1
+    [ "$(printf '%s' "$1" | wc -c)" -le "$TEXT_MAX" ] || return 1
+    [ "$(printf '%s' "$1" | LC_ALL=C tr -d '\011\012\015\040-\176\200-\377'; echo x)" = x ]
+}
+# secret_ok VALUE MAX: one line of printable ASCII or UTF-8 text (an OpenVPN user name or password), at most MAX bytes
+secret_ok() {
+    [ "$(printf '%s' "$1" | wc -c)" -le "$2" ] || return 1
+    [ "$(printf '%s' "$1" | LC_ALL=C tr -d '\040-\176\200-\377'; echo x)" = x ]
+}
+ID='[a-z0-9][a-z0-9-]{0,31}'
+ENGINE='(xray|sing-box|mihomo|dae|wireguard|openvpn)'
+# (POSIX regular expressions count to 255 at most: the lengths of a link and a URL are checked by long_ok)
+LINK='(vless|vmess|trojan|ss|hysteria2|hy2|tuic|wireguard|wg)://[!-~]+'
+# https only: the CLI checks the certificate and takes plain http only with --insecure, which the panel never sets
+URL='https://[A-Za-z0-9.-]{1,253}(:[0-9]{1,5})?(/[!-~]*)?'
+long_ok() { [ ${#1} -le "$2" ]; }
+IP4='((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])'
+IP6='[0-9A-Fa-f]{0,4}(:[0-9A-Fa-f]{0,4}){2,7}'
+CIDR="($IP4/([0-9]|[12][0-9]|3[0-2])|$IP6/([0-9]|[1-9][0-9]|1[01][0-9]|12[0-8]))"
+HOSTPORT='([A-Za-z0-9]([A-Za-z0-9.-]{0,252})|\[[0-9A-Fa-f:.]{2,45}\]):[0-9]{1,5}'
+
+json_str_n() { json_str "$(printf '%s' "$1" | head -c "$2")"; }
+refuse() {
+    if [ -n "${2:-}" ]; then
+        printf '{"ok":0,"error":%s,"detail":%s}\n' "$(json_str "$1")" "$(json_str_n "$2" "$ERR_MAX")"
+    else
+        printf '{"ok":0,"error":%s}\n' "$(json_str "$1")"
+    fi
+}
+# json_val TEXT: TEXT as jsonfilter re-serialises it, if it is one JSON object or array; fails otherwise
+json_val() {
+    _o=$(printf '%s' "$1" | jsonfilter -e '@' 2>/dev/null) || return 1
+    case $_o in '{'*'}'|'['*']') printf '%s\n' "$_o" ;; *) return 1 ;; esac
+}
+
+# ------------------------------------------------------------------ the CLI
+installed() { [ -x "$VPN" ]; }
+# cli_message FILE: the CLI's last message, from its stderr in FILE. A refused import, edit or switch ends with a
+# line that says only that nothing was done ("profile not added", "profile ID not changed", "subscription not added",
+# "profile ID does not check: the VPN stays on profile X"); the line before it says why, and that is what the page
+# must show - with the closing line alone, every refused config read "The profile could not be added: profile not
+# added" (FINDINGS 56). A note of the CLI ("note: top-level keys ... not used") is never the reason.
+cli_message() {
+    tr -d '\r' < "$1" 2>/dev/null | sed '/^[[:space:]]*$/d' | awk '
+        { prev = last; last = $0 }
+        END {
+            if (prev != "" && prev !~ /^note: / &&
+                last ~ /^(profile( [a-z0-9-]+)? not (added|changed)|subscription( [a-z0-9-]+)? not (added|refreshed)|profile [a-z0-9-]+ (does not check|cannot run on this system): .*)$/)
+                print prev
+            else
+                print last
+        }'
+}
+# cli ARG...: mu300-vpn with ARGs (stdin: the caller's), bounded in time; OUT its stdout (at most OUT_MAX bytes),
+# ERR its last message (the JSON error on stdout, else stderr's: cli_message), RC its status. The two files are in
+# the root-only runtime directory and gone before this returns.
+cli() {
+    _o=$JOB/cli.$$.out; _e=$JOB/cli.$$.err
+    if command -v timeout >/dev/null 2>&1; then
+        (umask 077; timeout "$INLINE_SECS" "$VPN" "$@" >"$_o" 2>"$_e" 9>&-); RC=$?
+    else
+        (umask 077; "$VPN" "$@" >"$_o" 2>"$_e" 9>&-); RC=$?
+    fi
+    OUT=$(head -c "$OUT_MAX" "$_o" 2>/dev/null)
+    ERR=$(printf '%s' "$OUT" | jsonfilter -e '@.error' 2>/dev/null | head -n 1)
+    [ -n "$ERR" ] || ERR=$(cli_message "$_e")
+    ERR=$(printf '%s' "$ERR" | LC_ALL=C tr -d '\000-\037\177' | redact | head -c "$ERR_MAX")
+    rm -f "$_o" "$_e"
+    case $RC in 124|143) ERR='timed out' ;; esac
+    return "$RC"
+}
+# cli_fail MESSAGE: the refusal for a failed cli, the CLI's own message as the detail
+cli_fail() {
+    if [ "$RC" = 2 ]; then refuse 'The VPN module refused the request' "$ERR"
+    else refuse "$1" "$ERR"; fi
+}
+# reply_list KEY MESSAGE: OUT (a JSON value) as {"ok":1,KEY:OUT}
+reply_val() {
+    _j=$(json_val "$OUT") || { refuse "$2"; return; }
+    printf '{"ok":1,"%s":%s}\n' "$1" "$_j"
+}
+need_vpn() { installed || { refuse 'The VPN module is not installed'; return 1; }; }
+# arg_ok VALUE: never read as an option (a dash first) - every value below is checked by a pattern that already
+# ensures it, this is the last line
+arg_ok() { case $1 in -*) return 1 ;; esac; }
+
+# ------------------------------------------------------------------- tasks
+job_running() { [ -s "$JOB/pid" ] && kill -0 "$(cat "$JOB/pid" 2>/dev/null)" 2>/dev/null; }
+
+# The panel's lock: flock(1) on a file of the root-only job directory, through fd 9 (busybox has the applet on
+# OpenWrt, util-linux on Ubuntu). Held by a request from its check that no task runs, through the staging of its
+# upload, until the task's pid is written - so two requests can never both start a task, nor can one stage a file
+# while another task runs. The kernel releases it when the request ends, however it ends (a request killed by rpcd
+# leaves no stale lock behind). Nothing the request starts keeps fd 9: the task and the CLI get it closed.
+LOCK=$JOB/lock
+LOCKED=
+lock_take() {
+    command -v flock >/dev/null 2>&1 || return 1
+    (umask 077; : >> "$LOCK") 2>/dev/null || return 1
+    exec 9>>"$LOCK" || return 1
+    # (busybox's flock has no -w: -n, 20 times a second apart)
+    _n=0
+    until flock -n 9; do
+        _n=$((_n + 1)); [ "$_n" -le 20 ] || { exec 9>&-; return 1; }
+        sleep 1
+    done
+    LOCKED=1
+}
+lock_drop() { if [ -n "$LOCKED" ]; then exec 9>&-; fi; LOCKED=; }
+# busy_or_lock: the lock taken and no task running, or the refusal (and 1)
+busy_or_lock() {
+    lock_take || { refuse 'The VPN panel is busy, try again'; return 1; }
+    if job_running; then lock_drop; refuse 'Another VPN task is still running'; return 1; fi
+}
+
+# stage_new: a new private directory for one request's files (mktemp -d: a fresh unpredictable name, mode 0700,
+# under the root-only job directory), in STAGE. A task removes its own when it ends; an inline request at its end.
+stage_new() { STAGE=$(mktemp -d "$JOB/stage.XXXXXX" 2>/dev/null) && [ -d "$STAGE" ] && [ ! -L "$STAGE" ] && chmod 700 "$STAGE"; }
+stage_drop() { [ -z "${STAGE:-}" ] || rm -rf "$STAGE"; STAGE=; }
+
+# job_start KIND SECS JSON CMD ARG...: CMD detached in a new session, the one background task; the caller holds the
+# lock (busy_or_lock) and its stage directory, if any, is STAGE. STAGE/in, if there, becomes CMD's stdin and is
+# removed as soon as it is open (a secret); the whole stage directory goes when the task ends. JSON=1: CMD's stdout is
+# the task's JSON result, its stderr the log; 0: both are the log. At most SECS seconds (timeout, where the system
+# has it). The pid is written before the lock is released ($! is the task's shell: setsid execs it).
+job_start() {
+    _kind=$1 _secs=$2 _json=$3; shift 3
+    rm -f "$JOB/pid" "$JOB/result" "$JOB/out"
+    (umask 077
+     printf '%s\n' "$_kind" > "$JOB/kind"
+     echo running > "$JOB/state"
+     : > "$JOB/log"
+     date +%s > "$JOB/started")
+    setsid sh -c '
+        echo $$ > "$1/pid"; j=$1; secs=$2; st=$3; json=$4; shift 4
+        umask 077
+        if [ -n "$st" ] && [ -f "$st/in" ]; then exec 3<"$st/in"; rm -f "$st/in"; else exec 3</dev/null; fi
+        if command -v timeout >/dev/null 2>&1; then set -- timeout "$secs" "$@"; fi
+        if [ "$json" = 1 ]; then "$@" <&3 >"$j/out" 2>"$j/log"; else "$@" <&3 >"$j/log" 2>&1; fi
+        rc=$?
+        exec 3<&-
+        if [ "$json" = 1 ]; then head -c 262144 "$j/out" > "$j/result"; fi
+        rm -f "$j/out"
+        [ -z "$st" ] || rm -rf "$st"
+        tail -c 16384 "$j/log" > "$j/log.t" && mv "$j/log.t" "$j/log"
+        if [ "$rc" = 0 ]; then echo done > "$j/state"; else echo failed > "$j/state"; fi
+        rm -f "$j/pid"' mu300vpn-job "$JOB" "$_secs" "${STAGE:-}" "$_json" "$@" </dev/null >/dev/null 2>&1 9>&- &
+    echo "$!" > "$JOB/pid"
+    STAGE=
+    lock_drop
+    printf '{"ok":1,"started":1,"kind":%s}\n' "$(json_str "$_kind")"
+}
+# links FILE: its hard link count
+links() { ls -ld "$1" 2>/dev/null | awk '{ print $2 }'; }
+# take_upload SRC NAME MAX: the file the page uploaded to SRC (/tmp: anyone may write there) renamed into STAGE as
+# NAME first; only that copy, which no one but root can reach, is checked (a regular file of ours, not a link, one
+# hard link, not empty, at most MAX bytes) and then used - nothing at the /tmp path can be swapped in between. UP: its
+# path. 1: no usable upload, 2: too large.
+take_upload() {
+    UP=$STAGE/$2
+    [ -f "$1" ] && [ ! -L "$1" ] || return 1
+    mv -f -- "$1" "$UP" 2>/dev/null || return 1
+    if [ ! -f "$UP" ] || [ -L "$UP" ] || [ ! -O "$UP" ] || [ "$(links "$UP")" != 1 ] || [ ! -s "$UP" ]; then
+        rm -f "$UP"; return 1
+    fi
+    chmod 600 "$UP"
+    [ "$(wc -c < "$UP")" -le "$3" ] || { rm -f "$UP"; return 2; }
+}
+# secret_file TEXT: TEXT in STAGE/in (a new stage directory, 0600), its path in SECRET, for the CLI's stdin: never a
+# pipe into cli, which would run it in a subshell (OUT, ERR and RC lost), never an argument
+secret_file() {
+    stage_new || return 1
+    SECRET=$STAGE/in
+    (umask 077; printf '%s\n' "$1" > "$SECRET")
+}
+# redact: every URL or share link in the text reduced to its scheme (a log or a message must never carry a token,
+# a password or a UUID, whatever the program that wrote it), and the target of a redirect, which uclient-fetch and wget
+# name without a scheme ("Redirected to /path?signature on host")
+redact() {
+    sed -E -e 's#([A-Za-z][A-Za-z0-9+.-]{1,15}://)[^[:space:]"'"'"'<>]+#\1[hidden]#g' \
+        -e 's#([Rr]edirected to )[^[:space:]"'"'"'<>]+#\1[hidden]#g'
+}
+
+m_job() {
+    local kind state started log result
+    kind=$(head -c 32 "$JOB/kind" 2>/dev/null | head -n 1)
+    state=$(head -c 16 "$JOB/state" 2>/dev/null | head -n 1)
+    started=$(head -c 16 "$JOB/started" 2>/dev/null | head -n 1)
+    case $started in ''|*[!0-9]*) started= ;; esac
+    # running without a live task: it was killed (or the device rebooted) before it could say how it ended - unless
+    # it started a moment ago and has not written its pid yet
+    if [ "$state" = running ] && ! job_running; then
+        if [ -z "$started" ] || [ $(( $(date +%s) - started )) -gt 5 ]; then state=failed; fi
+    fi
+    case $state in running|done|failed) ;; *) state= ;; esac
+    case $kind in core-install|engine-install|sub-add|sub-refresh|latency-all|import-url) ;; *) kind= ;; esac
+    log=$(tail -n 30 "$JOB/log" 2>/dev/null | tr -d '\r' | redact | head -c 8192)
+    result=$(json_val "$(cat "$JOB/result" 2>/dev/null)") || result=null
+    printf '{"ok":1,"job":{"kind":%s,"state":%s,"started":%s,"log":%s,"result":%s}}\n' \
+        "$(json_str_or_null "$kind")" "$(json_str_or_null "$state")" "${started:-null}" \
+        "$(json_str_or_null "$log")" "$result"
+}
+
+# ------------------------------------------------------------------ reads
+m_status() {
+    local exit_ip st since=null
+    inp '@.exit_ip'; exit_ip=$V
+    allowed "$exit_ip" '(0|1)?' || { refuse 'The exit_ip parameter must be 0 or 1'; return; }
+    if ! installed; then
+        printf '{"ok":1,"installed":0,"extra":%d}\n' "$([ -x "$EXTRA" ] && echo 1 || echo 0)"
+        return
+    fi
+    if [ "$exit_ip" = 1 ]; then cli status --json --exit-ip </dev/null; else cli status --json </dev/null; fi
+    if ! st=$(json_val "$OUT") || [ "${st#\{}" = "$st" ]; then
+        # a module from before the machine-readable CLI (v1: no --json, its status is text): it runs, but this panel
+        # cannot read it
+        printf '{"ok":1,"installed":1,"legacy":1,"extra":%d}\n' "$([ -x "$EXTRA" ] && echo 1 || echo 0)"
+        return
+    fi
+    # {"error": ...}: the CLI says why it could not
+    if [ "$RC" != 0 ] || [ -n "$(printf '%s' "$st" | jsonfilter -e '@.error' 2>/dev/null)" ]; then
+        refuse 'The VPN status could not be read' "$ERR"
+        return
+    fi
+    # since: when the tunnel came up (the interface file its last start wrote), for the uptime
+    if [ -s "$VPN_RUN/iface" ]; then
+        since=$(date -r "$VPN_RUN/iface" +%s 2>/dev/null) || since=
+        case $since in ''|*[!0-9]*) since=null ;; esac
+    fi
+    printf '{"ok":1,"installed":1,"now":%s,"since":%s,"extra":%d,"status":%s}\n' "$(date +%s)" "$since" \
+        "$([ -x "$EXTRA" ] && echo 1 || echo 0)" "$st"
+}
+
+m_profiles() {
+    need_vpn || return
+    cli profile list --json </dev/null || { cli_fail 'The profiles could not be read'; return; }
+    reply_val profiles 'The profiles could not be read'
+}
+
+m_engines() {
+    local check
+    inp '@.check'; check=$V
+    allowed "$check" '(0|1)?' || { refuse 'The check parameter must be 0 or 1'; return; }
+    need_vpn || return
+    if [ "$check" = 1 ]; then cli engines --json --check </dev/null; else cli engines --json </dev/null; fi ||
+        { cli_fail 'The engines could not be read'; return; }
+    reply_val engines 'The engines could not be read'
+}
+
+m_subscriptions() {
+    need_vpn || return
+    cli subscription list --json </dev/null || { cli_fail 'The subscriptions could not be read'; return; }
+    reply_val subscriptions 'The subscriptions could not be read'
+}
+
+# the settings this page shows and sets (the binaries' paths are not the page's: a path root runs)
+SETTINGS_SHOWN='KILL_SWITCH TAILSCALE IPV6 REMOTE_DNS BOOTSTRAP_DNS LAN_CIDRS'
+m_settings() {
+    local k v first=1
+    need_vpn || return
+    # settings --json: one object of every key (the binaries' paths too); only the shown keys are passed on
+    cli settings --json </dev/null || { cli_fail 'The VPN settings could not be read'; return; }
+    json_val "$OUT" >/dev/null || { refuse 'The VPN settings could not be read'; return; }
+    printf '{"ok":1,"settings":{'
+    for k in $SETTINGS_SHOWN; do
+        v=$(printf '%s' "$OUT" | jsonfilter -e "@.$k" 2>/dev/null | head -n 1)
+        [ "$first" = 1 ] || printf ','
+        first=0
+        printf '"%s":%s' "$k" "$(json_str_n "$v" 512)"
+    done
+    printf '}}\n'
+}
+
+# ------------------------------------------------------------- the service
+m_service() {
+    local op
+    inp '@.op'; op=$V
+    allowed "$op" '(on|off|restart)' || { refuse 'Unknown VPN operation'; return; }
+    need_vpn || return
+    cli "$op" </dev/null || { cli_fail 'The VPN could not be switched'; return; }
+    printf '{"ok":1}\n'
+}
+
+m_killswitch() {
+    local value
+    inp '@.value'; value=$V
+    allowed "$value" '(on|off)' || { refuse 'The kill switch is on or off'; return; }
+    need_vpn || return
+    cli killswitch "$value" </dev/null || { cli_fail 'The kill switch could not be changed'; return; }
+    printf '{"ok":1}\n'
+}
+
+m_use() {
+    local id
+    inp '@.id'; id=$V
+    allowed "$id" "$ID" || { refuse 'Invalid profile id'; return; }
+    need_vpn || return
+    cli use "$id" </dev/null || { cli_fail 'The profile could not be made the active one'; return; }
+    printf '{"ok":1}\n'
+}
+
+# ---------------------------------------------------------------- profiles
+TYPES='(auto|xray|sing-box|mihomo|wireguard|openvpn|dae)'
+# a new profile: a share link, pasted text or the uploaded file, through the CLI's stdin ("-"); a URL is a download
+# and runs as a task. type auto: the CLI tells the kind from the source (profile import); another: profile add TYPE.
+m_profile_add() {
+    local source data name type file
+    inp '@.source'; source=$V
+    inp '@.data'; data=$V
+    inp '@.name'; name=$V
+    inp '@.type'; type=$V
+    allowed "$source" '(link|text|file|url)' || { refuse 'Unknown profile source'; return; }
+    allowed "${type:-auto}" "$TYPES" || { refuse 'Unknown profile type'; return; }
+    type=${type:-auto}
+    [ -z "$name" ] || name_ok "$name" || { refuse 'Invalid name: 1-64 characters, no control characters'; return; }
+    case $source in
+        link)
+            # without the white space a copy and paste adds
+            data=$(printf '%s' "$data" | tr -d '\r' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+            { long_ok "$data" 8000 && allowed "$data" "$LINK"; } || { refuse 'Not a share link this panel takes'; return; } ;;
+        text) text_ok "$data" || { refuse 'The config is empty, too large or holds control characters'; return; } ;;
+        file) [ -z "$data" ] || { refuse 'Invalid profile request'; return; } ;;
+        url)
+            { long_ok "$data" 2048 && allowed "$data" "$URL"; } || { refuse 'Not an https URL'; return; }
+            [ "$type" = auto ] || { refuse 'A config from a URL takes the type it says'; return; } ;;
+    esac
+    need_vpn || return
+    # a type that is not sniffed needs a name (profile add TYPE NAME SRC)
+    [ "$type" = auto ] || [ -n "$name" ] || name=$type
+    case $source in
+        url)
+            busy_or_lock || return
+            secret_file "$data" || { lock_drop; refuse 'The runtime directory is not safe; nothing was run'; return; }
+            if [ -n "$name" ]; then job_start import-url 120 0 "$VPN" profile import --url - "$name"
+            else job_start import-url 120 0 "$VPN" profile import --url -; fi
+            return ;;
+        file)
+            stage_new || { refuse 'The runtime directory is not safe; nothing was run'; return; }
+            take_upload "$UPLOAD_CFG" profile 1048576; _r=$?
+            case $_r in
+                1) stage_drop; refuse 'No uploaded file'; return ;;
+                2) stage_drop; refuse 'The file is larger than 1 MiB'; return ;;
+            esac
+            if [ "$type" = auto ]; then
+                if [ -n "$name" ]; then cli profile import - "$name" < "$UP"; else cli profile import - < "$UP"; fi
+            else
+                cli profile add "$type" "$name" - < "$UP"
+            fi
+            RC=$?; stage_drop ;;
+        *)
+            secret_file "$data" || { refuse 'The runtime directory is not safe; nothing was run'; return; }
+            if [ "$type" = auto ]; then
+                if [ -n "$name" ]; then cli profile import - "$name" < "$SECRET"; else cli profile import - < "$SECRET"; fi
+            else
+                cli profile add "$type" "$name" - < "$SECRET"
+            fi
+            RC=$?; stage_drop ;;
+    esac
+    [ "$RC" = 0 ] || { cli_fail 'The profile could not be added'; return; }
+    # the CLI prints the new profile's id
+    id=$(printf '%s\n' "$OUT" | tail -n 1)
+    allowed "$id" "$ID" || id=
+    printf '{"ok":1,"id":%s}\n' "$(json_str_or_null "$id")"
+}
+
+m_profile_rename() {
+    local id name
+    inp '@.id'; id=$V
+    inp '@.name'; name=$V
+    allowed "$id" "$ID" || { refuse 'Invalid profile id'; return; }
+    name_ok "$name" && arg_ok "$name" || { refuse 'Invalid name: 1-64 characters, no control characters'; return; }
+    need_vpn || return
+    cli profile set "$id" NAME "$name" </dev/null || { cli_fail 'The profile could not be renamed'; return; }
+    printf '{"ok":1}\n'
+}
+
+m_profile_remove() {
+    local id
+    inp '@.id'; id=$V
+    allowed "$id" "$ID" || { refuse 'Invalid profile id'; return; }
+    need_vpn || return
+    cli profile remove "$id" </dev/null || { cli_fail 'The profile could not be removed'; return; }
+    printf '{"ok":1}\n'
+}
+
+m_profile_check() {
+    local id
+    inp '@.id'; id=$V
+    allowed "$id" "$ID" || { refuse 'Invalid profile id'; return; }
+    need_vpn || return
+    # "check ID", which every module has: "profile check ID" (the spec's name for it) exists only in the modules
+    # after v2.0.0, and v2.0.0 answered it with its usage text - this page's check never worked (FINDINGS 56)
+    cli check "$id" </dev/null || { cli_fail 'The profile does not pass the check'; return; }
+    printf '{"ok":1}\n'
+}
+
+# the options of the profile types (the drivers' DRV_KEYS): OVPN_USER and OVPN_PASS travel on stdin ("-")
+m_profile_option() {
+    local id key value
+    inp '@.id'; id=$V
+    inp '@.key'; key=$V
+    inp '@.value'; value=$V
+    allowed "$id" "$ID" || { refuse 'Invalid profile id'; return; }
+    case $key in
+        MIHOMO_STACK)        allowed "$value" '(gvisor|system|mixed)?' ;;
+        TLS_PIN_SHA256)      long_ok "$value" 512 && allowed "$value" '[0-9A-Fa-f:,]*' ;;
+        UPSTREAM_HTTP_PROXY) [ -z "$value" ] || allowed "$value" "$HOSTPORT" ;;
+        OVPN_USER)           secret_ok "$value" 128 ;;
+        OVPN_PASS)           secret_ok "$value" 256 ;;
+        *) refuse 'Unknown profile option'; return ;;
+    esac || { refuse 'Invalid value for this option'; return; }
+    need_vpn || return
+    case $key in
+        OVPN_*)
+            secret_file "$value" || { refuse 'The runtime directory is not safe; nothing was run'; return; }
+            cli profile set "$id" "$key" - < "$SECRET"; RC=$?; stage_drop ;;
+        *) cli profile set "$id" "$key" "$value" </dev/null ;;
+    esac
+    [ "$RC" = 0 ] || { cli_fail 'The option could not be set'; return; }
+    printf '{"ok":1}\n'
+}
+
+# the raw config, credentials included: asked for by the page's reveal step, never logged, never in a read grant
+m_profile_reveal() {
+    local id cfg
+    inp '@.id'; id=$V
+    allowed "$id" "$ID" || { refuse 'Invalid profile id'; return; }
+    need_vpn || return
+    cli profile show "$id" --json --reveal </dev/null || { cli_fail 'The config could not be read'; return; }
+    cfg=$(printf '%s' "$OUT" | jsonfilter -e '@.config' 2>/dev/null; printf x)
+    cfg=${cfg%x}; cfg=${cfg%"$NL"}
+    [ -n "$cfg" ] || { refuse 'The config could not be read'; return; }
+    printf '{"ok":1,"config":%s}\n' "$(json_str "$cfg")"
+}
+
+m_profile_edit() {
+    local id config
+    inp '@.id'; id=$V
+    inp '@.config'; config=$V
+    allowed "$id" "$ID" || { refuse 'Invalid profile id'; return; }
+    text_ok "$config" || { refuse 'The config is empty, too large or holds control characters'; return; }
+    need_vpn || return
+    secret_file "$config" || { refuse 'The runtime directory is not safe; nothing was run'; return; }
+    cli profile edit "$id" - < "$SECRET"; RC=$?; stage_drop
+    [ "$RC" = 0 ] || { cli_fail 'The config was not saved'; return; }
+    printf '{"ok":1}\n'
+}
+
+m_latency() {
+    local id
+    inp '@.id'; id=$V
+    allowed "$id" "(all|$ID)" || { refuse 'Invalid profile id'; return; }
+    need_vpn || return
+    if [ "$id" = all ]; then
+        busy_or_lock || return
+        job_start latency-all 300 1 "$VPN" latency --all --json
+        return
+    fi
+    cli latency "$id" --json </dev/null
+    # a failed test is a result too ({"ms": null, "error": ...}, exit 1)
+    _j=$(json_val "$OUT") || { cli_fail 'The latency test failed'; return; }
+    printf '{"ok":1,"result":%s}\n' "$_j"
+}
+
+# ----------------------------------------------------------- subscriptions
+m_sub_add() {
+    local name url type interval
+    inp '@.name'; name=$V
+    inp '@.url'; url=$V
+    inp '@.type'; type=$V
+    inp '@.interval'; interval=$V
+    # hours between automatic refreshes (subscription refresh --due), none when empty
+    allowed "$interval" '([1-9][0-9]{0,2})?' || { refuse 'The refresh interval is 1 to 999 hours'; return; }
+    name_ok "$name" || { refuse 'Invalid name: 1-64 characters, no control characters'; return; }
+    url=$(printf '%s' "$url" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+    { long_ok "$url" 2048 && allowed "$url" "$URL"; } || { refuse 'Not an https URL'; return; }
+    allowed "${type:-auto}" '(auto|links|mihomo|dae)' || { refuse 'Unknown subscription type'; return; }
+    need_vpn || return
+    # the URL holds the subscription's token: on stdin, from a 0600 file the task removes once it is open
+    busy_or_lock || return
+    secret_file "$url" || { lock_drop; refuse 'The runtime directory is not safe; nothing was run'; return; }
+    if [ -n "$interval" ]; then
+        job_start sub-add 180 0 "$VPN" subscription add "$name" - --type "${type:-auto}" --interval "$interval"
+    else
+        job_start sub-add 180 0 "$VPN" subscription add "$name" - --type "${type:-auto}"
+    fi
+}
+
+m_sub_refresh() {
+    local id
+    inp '@.id'; id=$V
+    # all, due (the ones whose interval has passed: the CLI installs no timer) or one id
+    allowed "$id" "(all|due|$ID)" || { refuse 'Invalid subscription id'; return; }
+    need_vpn || return
+    busy_or_lock || return
+    case $id in
+        all) job_start sub-refresh 300 0 "$VPN" subscription refresh --all ;;
+        due) job_start sub-refresh 300 0 "$VPN" subscription refresh --due ;;
+        *)   job_start sub-refresh 180 0 "$VPN" subscription refresh "$id" ;;
+    esac
+}
+
+m_sub_remove() {
+    local id keep
+    inp '@.id'; id=$V
+    inp '@.keep'; keep=$V
+    allowed "$id" "$ID" || { refuse 'Invalid subscription id'; return; }
+    allowed "$keep" '(0|1)?' || { refuse 'The keep parameter must be 0 or 1'; return; }
+    need_vpn || return
+    if [ "$keep" = 1 ]; then cli subscription remove "$id" --keep-profiles </dev/null
+    else cli subscription remove "$id" </dev/null; fi || { cli_fail 'The subscription could not be removed'; return; }
+    printf '{"ok":1}\n'
+}
+
+# ----------------------------------------------------------------- engines
+# An install from the release is mu300-extra's own: it downloads from the release hosts and checks every file against
+# the release's SHA256SUMS. An uploaded tarball is the user's file and runs as root (its hooks): it is installed only
+# when its SHA-256 is in the SHA256SUMS of the VPN module's latest release, fetched over HTTPS by the task itself
+# (MU300_VPN_SUMS_URL: the tests), under the name of the asset it claims to be - or, when that is impossible
+# (offline, an older release), when the page sent unverified=1 after the user confirmed a clearly labelled step.
+# An uploaded SHA256SUMS would prove nothing, so none is taken. The file checked is the very file installed: staged
+# in the task's own 0700 directory, which only root can reach, under the lock.
+SUMS_URL=${MU300_VPN_SUMS_URL:-https://github.com/dikeckaan/mu300-linux-vpn/releases/latest/download/SHA256SUMS}
+PKG_MAX=268435456
+# the release files an upload for an engine (or the module) may be
+engine_asset() {
+    case $1 in xray) echo mu300-linux-vpn-xray.tar.gz ;; sing-box) echo mu300-linux-vpn-singbox.tar.gz ;;
+        mihomo) echo mu300-linux-vpn-mihomo.tar.gz ;; dae) echo mu300-linux-vpn-dae.tar.gz ;;
+        core) echo 'mu300-linux-vpn-core.tar.gz mu300-linux-vpn.tar.gz' ;; esac
+}
+sha256_of() {
+    if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | awk '{ print $1 }'
+    elif command -v openssl >/dev/null 2>&1; then openssl dgst -sha256 "$1" | awk '{ print $NF }'
+    else return 1; fi
+}
+# fetch_sums: the official SHA256SUMS on stdout (HTTPS only, 30 s, 64 KiB at most), or 1
+fetch_sums() {
+    case $SUMS_URL in https://*) ;; *) return 1 ;; esac
+    if command -v curl >/dev/null 2>&1; then curl -fsSL --proto '=https' --max-time 30 "$SUMS_URL"
+    elif command -v uclient-fetch >/dev/null 2>&1; then uclient-fetch -q -T 30 -O - "$SUMS_URL"
+    elif command -v wget >/dev/null 2>&1; then wget -q -T 30 -O - "$SUMS_URL"
+    else return 1; fi
+}
+# do_verify FILE ASSETS UNVERIFIED CMD...: (the task, as "mu300vpn __verify ...") FILE's SHA-256 looked up in the
+# official SHA256SUMS under one of ASSETS; then CMD, which installs FILE. Not found: only with UNVERIFIED=1.
+do_verify() {
+    _f=$1 _assets=$2 _unv=$3; shift 3
+    if [ ! -f "$_f" ] || [ -L "$_f" ]; then echo "the uploaded file is gone" >&2; exit 1; fi
+    _sum=$(sha256_of "$_f") || { echo "no sha256sum on this system" >&2; exit 1; }
+    echo "SHA-256 of the uploaded file: $_sum"
+    _sums=$(fetch_sums 2>/dev/null | head -c 65536) || _sums=
+    if [ -n "$_sums" ] && printf '%s\n' "$_sums" | awk -v h="$_sum" -v a=" $_assets " '
+            { n = $2; sub(/^\*/, "", n) } tolower($1) == h && index(a, " " n " ") { f = 1 } END { exit !f }'; then
+        echo "verified: it is in the SHA256SUMS of the latest release of the VPN module"
+        # mu300-extra checks a file brought onto the device against a SHA256SUMS next to it, and refuses it without
+        # one: the line for the hash just verified, next to the staged file (the stage is this task's, root's only)
+        ( umask 077; printf '%s  %s\n' "$_sum" "${_f##*/}" > "${_f%/*}/SHA256SUMS" ) || exit 1
+    elif [ "$_unv" = 1 ]; then
+        echo "NOT VERIFIED: $([ -n "$_sums" ] && echo "not in the SHA256SUMS of the latest release" || echo "the release's SHA256SUMS could not be fetched"); installed because you allowed an unverified file"
+        # (mu300-extra installs a file no SHA256SUMS vouches for only when told so)
+        export MU300_VPN_UNVERIFIED=1
+    else
+        echo "not installed: $([ -n "$_sums" ] && echo "the file is not in the SHA256SUMS of the latest release of the VPN module" || echo "the release's SHA256SUMS could not be fetched to check it") (allow an unverified file to install it anyway)" >&2
+        exit 1
+    fi
+    exec "$@"
+}
+# stage_pkg ASSET: the uploaded tarball staged (STAGE, UP) under the lock, or the refusal and 1 (lock released)
+stage_pkg() {
+    stage_new || { lock_drop; refuse 'The runtime directory is not safe; nothing was run'; return 1; }
+    take_upload "$UPLOAD_PKG" "$1" "$PKG_MAX"
+    case $? in
+        0) return 0 ;;
+        2) stage_drop; lock_drop; refuse 'The file is too large'; return 1 ;;
+        *) stage_drop; lock_drop; refuse 'No uploaded file'; return 1 ;;
+    esac
+}
+m_engine_install() {
+    local name source unv assets
+    inp '@.name'; name=$V
+    inp '@.source'; source=$V
+    inp '@.unverified'; unv=$V
+    allowed "$name" "$ENGINE" || { refuse 'Unknown engine'; return; }
+    allowed "${source:-release}" '(release|file)' || { refuse 'Unknown source'; return; }
+    allowed "$unv" '(0|1)?' || { refuse 'The unverified parameter must be 0 or 1'; return; }
+    need_vpn || return
+    if [ "$source" = file ]; then
+        case $name in wireguard|openvpn) refuse 'This engine is a system package: it has no file to upload'; return ;; esac
+        assets=$(engine_asset "$name")
+        busy_or_lock || return
+        stage_pkg "$assets" || return
+        job_start engine-install 1200 0 sh "$SELF" __verify "$UP" "$assets" "${unv:-0}" \
+            "$VPN" engine install "$name" --from "$UP"
+    else
+        busy_or_lock || return
+        job_start engine-install 1200 0 "$VPN" engine install "$name"
+    fi
+}
+
+m_engine_remove() {
+    local name
+    inp '@.name'; name=$V
+    allowed "$name" "$ENGINE" || { refuse 'Unknown engine'; return; }
+    need_vpn || return
+    busy_or_lock || return
+    cli engine remove "$name" </dev/null; RC=$?
+    lock_drop
+    [ "$RC" = 0 ] || { cli_fail 'The engine could not be removed'; return; }
+    printf '{"ok":1}\n'
+}
+
+# the module itself, when it is not there (or too old for this panel): mu300-extra install vpn
+m_core_install() {
+    local source unv
+    inp '@.source'; source=$V
+    inp '@.unverified'; unv=$V
+    allowed "${source:-release}" '(release|file)' || { refuse 'Unknown source'; return; }
+    allowed "$unv" '(0|1)?' || { refuse 'The unverified parameter must be 0 or 1'; return; }
+    [ -x "$EXTRA" ] || { refuse 'mu300-extra is not on this system'; return; }
+    if [ "$source" = file ]; then
+        busy_or_lock || return
+        stage_pkg mu300-linux-vpn-core.tar.gz || return
+        job_start core-install 1200 0 sh "$SELF" __verify "$UP" "$(engine_asset core)" "${unv:-0}" \
+            "$EXTRA" install vpn --from "$UP"
+    else
+        busy_or_lock || return
+        job_start core-install 1200 0 "$EXTRA" install vpn
+    fi
+}
+
+# ---------------------------------------------------------------- settings
+m_setting_set() {
+    local key value
+    inp '@.key'; key=$V
+    inp '@.value'; value=$V
+    # an empty value puts the setting back to its default
+    case $key in
+        TAILSCALE)                 allowed "$value" '(0|1)?' ;;
+        IPV6)                      allowed "$value" '(0|1|auto)?' ;;
+        REMOTE_DNS|BOOTSTRAP_DNS)  [ -z "$value" ] || allowed "$value" "($IP4|$IP6)" ;;
+        LAN_CIDRS)                 [ -z "$value" ] || allowed "$value" "$CIDR(,$CIDR){0,31}" ;;
+        *) refuse 'Unknown VPN setting'; return ;;
+    esac || { refuse 'Invalid value for this setting'; return; }
+    need_vpn || return
+    cli settings set "$key" "$value" </dev/null || { cli_fail 'The setting could not be saved'; return; }
+    printf '{"ok":1}\n'
+}
+
+m_logs() {
+    local engine lines
+    inp '@.engine'; engine=$V
+    inp '@.lines'; lines=$V
+    allowed "${engine:-all}" "(all|$ENGINE)" || { refuse 'Unknown engine'; return; }
+    allowed "${lines:-100}" '[1-9][0-9]{0,3}' && [ "${lines:-100}" -le 1000 ] ||
+        { refuse 'The number of lines is 1 to 1000'; return; }
+    need_vpn || return
+    if [ -z "$engine" ] || [ "$engine" = all ]; then cli logs -n "${lines:-100}" </dev/null
+    else cli logs "$engine" -n "${lines:-100}" </dev/null; fi || { cli_fail 'The log could not be read'; return; }
+    # the last 64 KiB of it, whole lines
+    printf '{"ok":1,"log":%s}\n' "$(json_str "$(printf '%s\n' "$OUT" | tail -c 65536 | tr -d '\r')")"
+}
+
+do_list() {
+    cat <<EOF
+{
+	"status": { "exit_ip": "String" },
+	"profiles": { },
+	"engines": { "check": "String" },
+	"subscriptions": { },
+	"settings": { },
+	"job": { },
+	"service": { "op": "String" },
+	"killswitch": { "value": "String" },
+	"use": { "id": "String" },
+	"profile_add": { "source": "String", "data": "String", "name": "String", "type": "String" },
+	"profile_rename": { "id": "String", "name": "String" },
+	"profile_remove": { "id": "String" },
+	"profile_check": { "id": "String" },
+	"profile_option": { "id": "String", "key": "String", "value": "String" },
+	"profile_reveal": { "id": "String" },
+	"profile_edit": { "id": "String", "config": "String" },
+	"latency": { "id": "String" },
+	"sub_add": { "name": "String", "url": "String", "type": "String", "interval": "String" },
+	"sub_refresh": { "id": "String" },
+	"sub_remove": { "id": "String", "keep": "String" },
+	"engine_install": { "name": "String", "source": "String", "unverified": "String" },
+	"engine_remove": { "name": "String" },
+	"core_install": { "source": "String", "unverified": "String" },
+	"setting_set": { "key": "String", "value": "String" },
+	"logs": { "engine": "String", "lines": "String" }
+}
+EOF
+}
+
+case "${1:-}" in
+list)
+    do_list
+    ;;
+__verify)
+    # the install task's first step (job_start runs it; rpcd only ever calls list and call)
+    shift
+    do_verify "$@"
+    ;;
+call)
+    INPUT=$(cat 2>/dev/null)
+    if input_too_large; then
+        refuse 'Request too large'
+        exit 0
+    fi
+    if [ "$DIR_OK" != 1 ]; then
+        refuse 'The runtime directory is not safe; nothing was run'
+        exit 0
+    fi
+    # nothing of a reply is logged: replies can hold a config (profile_reveal). The lock and a stage directory go
+    # with the request, however it ends.
+    trap 'lock_drop; stage_drop' EXIT
+    case ${2:-} in
+        status)         m_status ;;
+        profiles)       m_profiles ;;
+        engines)        m_engines ;;
+        subscriptions)  m_subscriptions ;;
+        settings)       m_settings ;;
+        job)            m_job ;;
+        service)        m_service ;;
+        killswitch)     m_killswitch ;;
+        use)            m_use ;;
+        profile_add)    m_profile_add ;;
+        profile_rename) m_profile_rename ;;
+        profile_remove) m_profile_remove ;;
+        profile_check)  m_profile_check ;;
+        profile_option) m_profile_option ;;
+        profile_reveal) m_profile_reveal ;;
+        profile_edit)   m_profile_edit ;;
+        latency)        m_latency ;;
+        sub_add)        m_sub_add ;;
+        sub_refresh)    m_sub_refresh ;;
+        sub_remove)     m_sub_remove ;;
+        engine_install) m_engine_install ;;
+        engine_remove)  m_engine_remove ;;
+        core_install)   m_core_install ;;
+        setting_set)    m_setting_set ;;
+        logs)           m_logs ;;
+        *)              refuse 'No such method' ;;
+    esac
+    ;;
+*)
+    echo "usage: $0 {list|call <method>}" >&2
+    exit 2
+    ;;
+esac

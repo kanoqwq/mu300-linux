@@ -1,0 +1,838 @@
+#!/bin/sh
+# mu300-backup: the user's settings as one file, and back (FINDINGS 155). Ubuntu and OpenWrt; F50, U30 Air, V50.
+#
+#   mu300-backup export [-o FILE|-] [--encrypt] [--with-password] [--only S,S...] [PASSPHRASE]
+#       the settings into FILE (0600; without -o: ./mu300-backup-HOST-DATE.json, or .enc when encrypted; "-o -" is
+#       stdout). --with-password adds the login password's hash.
+#   mu300-backup import FILE|- [--dry-run] [--force] [--only S,S...] [--skip S,S...] [PASSPHRASE]
+#       every value of FILE checked by the rules of the setter that takes it, then what differs set, the rest left
+#       alone. --dry-run: the check and what would change, nothing changed. A file of another device type is
+#       refused without --force; one of the other system (Ubuntu <-> OpenWrt) gives what both have.
+#   mu300-backup show FILE|- [PASSPHRASE]   where a file comes from and what it holds (no secret)
+#   PASSPHRASE: --passphrase-file FILE (its first line) | --passphrase-stdin (the first line of stdin; with "-" the
+#       file follows it). Without either, --encrypt and an encrypted file ask on the terminal. 8-256 characters.
+#
+# Sections: wifi (the hotspot: name, password, band, channel, hidden, on), data (APN, PDP type, authentication, user,
+# password, data roaming), sim (the boot SIM), locks (band, mode, EN-DC and cell locks; OpenWrt with the panel and
+# Ubuntu), vpn (the VPN module's own profiles, subscriptions, settings, the active one, on/off), sms_forward (OpenWrt
+# with the panel and Ubuntu), lan (the device's address), system (host name, time zone, SSH on/off), ssh_keys (the login user's
+# authorized keys), password (with --with-password).
+#
+# The file holds secrets (the hotspot's and the APN's passwords, VPN configurations, tokens): it is written 0600,
+# and --encrypt seals it with a passphrase (openssl enc: AES-256-CBC, PBKDF2-SHA256, 600000 rounds; the SHA-256 of
+# the contents inside the encryption is checked before anything is read: openssl enc has no GCM). An import adds and
+# changes, and never removes a VPN profile, a subscription or an SSH key that the file does not have. Nothing secret
+# is printed (a password "changes", a VPN configuration "is replaced") or put on a command line.
+# Exit: 0 done (dry run: everything valid), 1 a step failed or the file was refused, 2 usage or not a valid file.
+# (MU300_SYSROOT, MU300_BIN, MU300_API, MU300_LOCK_TOOL, MU300_FWD_ADAPTER, MU300_BACKUP_ITER are for tests/)
+set -u
+umask 077
+HERE=$(cd "${0%/*}" 2>/dev/null && pwd)
+APIBIN=${MU300_API:-$HERE/mu300-api}
+[ -r "$APIBIN" ] || { echo "mu300-backup: $APIBIN is missing" >&2; exit 1; }
+# mu300-api's helpers and the system's facts (R, BIN, SYS, HOTSPOT, MDCONF, LANCONF, conf, uci_q, wifi_iface, ...)
+MU300_LIB=1
+. "$APIBIN"
+unset MU300_LIB
+set -u
+umask 077
+
+FORMAT=mu300-backup
+ITER=${MU300_BACKUP_ITER:-600000}
+MAX_FILE=4194304
+SECTIONS='wifi data sim locks vpn sms_forward lan system ssh_keys password'
+LOCKTOOL=${MU300_LOCK_TOOL:-$R/usr/libexec/unisoc-modem/lock}
+FWDA=${MU300_FWD_ADAPTER:-$R/usr/libexec/unisoc-modem/forward}
+VPN_STORE=$R/etc/mu300/vpn
+
+say() { printf '%s\n' "$*"; }
+warn() { printf 'mu300-backup: %s\n' "$*" >&2; }
+die() { warn "$*"; exit 1; }
+usage() { sed -n '2,15s/^# \{0,1\}//p' "$HERE/mu300-backup" >&2 2>/dev/null; exit 2; }
+bad_file() { warn "not a valid backup: $*"; exit 2; }
+
+command -v jq >/dev/null 2>&1 || die "needs jq (both images have it)"
+[ "$(id -u)" = 0 ] || [ -n "${MU300_API_NOROOT:-}" ] || die "run it as root"
+
+WORK=$(mktemp -d /run/mu300-backup.XXXXXX 2>/dev/null) || WORK=$(mktemp -d "${TMPDIR:-/tmp}/mu300-backup.XXXXXX") ||
+    die "no room for a working directory"
+trap 'rm -rf "$WORK"' EXIT
+trap 'rm -rf "$WORK"; exit 1' INT TERM HUP
+
+device_name() { "$BIN/mu300-device" 2>/dev/null || echo f50; }
+DEV=$(device_name)
+case $DEV in *[!a-z0-9]*|'') DEV=f50 ;; esac
+USR=$(login_user)
+
+# ------------------------------------------------------------------ the passphrase
+PASS= PASS_FROM=
+read_pass() {   # read_pass [twice]: PASS from where it was asked to come from
+    case $PASS_FROM in
+        file) [ -r "$PASS_FILE" ] || die "cannot read $PASS_FILE"
+              PASS=$(head -n 1 "$PASS_FILE" | tr -d '\r') ;;
+        stdin) IFS= read -r PASS || PASS=; PASS=$(printf '%s' "$PASS" | tr -d '\r') ;;
+        *)
+            { [ -r /dev/tty ] && : < /dev/tty; } 2>/dev/null || die "the passphrase: --passphrase-file FILE or --passphrase-stdin"
+            stty -echo < /dev/tty 2>/dev/null
+            printf 'Passphrase: ' > /dev/tty; IFS= read -r PASS < /dev/tty || PASS=; printf '\n' > /dev/tty
+            if [ "${1:-}" = twice ]; then
+                printf 'Again: ' > /dev/tty; IFS= read -r _again < /dev/tty || _again=; printf '\n' > /dev/tty
+                [ "$_again" = "$PASS" ] || { stty echo < /dev/tty 2>/dev/null; die "the two passphrases differ"; }
+                _again=
+            fi
+            stty echo < /dev/tty 2>/dev/null ;;
+    esac
+    [ "$(printf '%s' "$PASS" | wc -c)" -ge 8 ] && [ "$(printf '%s' "$PASS" | wc -c)" -le 256 ] &&
+        [ "$(printf '%s' "$PASS" | LC_ALL=C tr -d '\040-\176\200-\377'; echo x)" = x ] ||
+        die "the passphrase is 8 to 256 characters on one line"
+}
+# the passphrase reaches openssl on a pipe of its own (fd 3), never on its command line
+ssl() { printf '%s\n' "$PASS" | { openssl enc "$@" -aes-256-cbc -pbkdf2 -iter "$ITER" -md sha256 -a -pass fd:3 3<&0 <"$SSL_IN"; }; }
+sha256_of() { openssl dgst -sha256 < "$1" | sed 's/^.*= *//'; }
+ENC_HEAD='MU300-BACKUP-ENCRYPTED 1'
+encrypt() {     # encrypt PLAIN > ARMOURED
+    _sum=$(sha256_of "$1")
+    { printf 'sha256=%s\n' "$_sum"; cat "$1"; } > "$WORK/seal"
+    printf '%s\ncipher=aes-256-cbc kdf=pbkdf2 digest=sha256 iter=%s\n' "$ENC_HEAD" "$ITER"
+    SSL_IN=$WORK/seal ssl -e || die "openssl could not encrypt"
+    rm -f "$WORK/seal"
+}
+decrypt() {     # decrypt ARMOURED PLAIN
+    _h=$(sed -n '2p' "$1")
+    case $_h in "cipher=aes-256-cbc kdf=pbkdf2 digest=sha256 iter="*) ;; *) bad_file "an encryption this version does not know" ;; esac
+    ITER=${_h##*iter=}
+    case $ITER in ''|*[!0-9]*|???????????*) bad_file "the encryption's rounds" ;; esac
+    [ "$ITER" -ge 10000 ] && [ "$ITER" -le 5000000 ] || bad_file "the encryption's rounds"
+    sed '1,2d' "$1" > "$WORK/armour"
+    [ -n "$PASS" ] || read_pass
+    SSL_IN=$WORK/armour ssl -d > "$WORK/opened" 2>/dev/null || die "wrong passphrase, or the file is damaged"
+    _want=$(head -n 1 "$WORK/opened" | sed -n 's/^sha256=\([0-9a-f]\{64\}\)$/\1/p')
+    [ -n "$_want" ] || die "wrong passphrase, or the file is damaged"
+    sed '1d' "$WORK/opened" > "$2"
+    rm -f "$WORK/opened" "$WORK/armour"
+    [ "$(sha256_of "$2")" = "$_want" ] || die "the file was changed after it was encrypted"
+}
+
+# ------------------------------------------------------------------ export: one JSON object per section
+jb_of() { case ${1:-} in 1|true|yes|on) echo true ;; *) echo false ;; esac; }
+sec_wifi() {
+    if is_openwrt; then
+        command -v uci >/dev/null 2>&1 || return 1
+        _rd=$(wifi_radio); [ -n "$_rd" ] || return 1
+        _if=$(wifi_iface)
+        _ssid=$(uci_q get "$_if.ssid"); _key=$(uci_q get "$_if.key")
+        case $(uci_q get "$_rd.band") in 2g) _band=2.4 ;; *) _band=5 ;; esac
+        _ch=$(uci_q get "$_rd.channel"); _hid=$(uci_q get "$_if.hidden")
+        _on=true
+        { [ "$(uci_q get "$_rd.disabled")" = 1 ] || [ "$(uci_q get "$_if.disabled")" = 1 ]; } && _on=false
+    else
+        [ -f "$HOTSPOT" ] || return 1
+        _ssid=$(conf SSID "$HOTSPOT"); _key=$(conf PSK "$HOTSPOT")
+        case $(conf BAND "$HOTSPOT") in 2.4) _band=2.4 ;; *) _band=5 ;; esac
+        _ch=$(conf CHANNEL "$HOTSPOT"); _hid=$(conf HIDDEN "$HOTSPOT")
+        _on=$(systemctl is-enabled mu300-hotspot >/dev/null 2>&1 && echo true || echo false)
+    fi
+    S1=$_ssid S2=$_key S3=$_band S4=${_ch:-auto} jq -n --argjson hid "$(jb_of "$_hid")" --argjson on "$_on" \
+        '{ssid: env.S1, password: env.S2, band: env.S3, channel: env.S4, hidden: $hid, enabled: $on}'
+}
+sec_data() {
+    if is_openwrt; then
+        uci_q show network 2>/dev/null | grep -q '^network\.wan=' || return 1
+        _apn=$(uci_q get network.wan.apn); _pdp=$(uci_q get network.wan.pdptype); _auth=$(uci_q get network.wan.auth)
+        _user=$(uci_q get network.wan.username); _pw=$(uci_q get network.wan.password)
+    else
+        [ -f "$MDCONF" ] || [ -x "$BIN/mobile-data" ] || return 1
+        _apn=$(conf_unq MU300_APN "$MDCONF"); _pdp=$(conf_unq MU300_PDP_TYPE "$MDCONF")
+        _auth=$(conf_unq MU300_APN_AUTH "$MDCONF"); _user=$(conf_unq MU300_APN_USER "$MDCONF")
+        _pw=$(conf_unq MU300_APN_PASSWORD "$MDCONF")
+    fi
+    _roam=null
+    if [ -x "$BIN/mobile-data" ]; then
+        _roam=$(timed 10 "$BIN/mobile-data" roaming --json 2>/dev/null | head -n 1 | jq -c '.allowed | booleans' 2>/dev/null)
+        [ -n "$_roam" ] || _roam=null
+    fi
+    S1=$_apn S2=${_pdp:-IP} S3=$_auth S4=$_user S5=$_pw jq -n --argjson roam "$_roam" \
+        '{apn: env.S1, pdp: env.S2, auth: env.S3, user: env.S4, password: env.S5} + (if $roam == null then {} else {roaming: $roam} end)'
+}
+sec_sim() {
+    [ -x "$BIN/mu300-sim" ] || return 1
+    _s=$(timed 10 "$BIN/mu300-sim" configured 2>/dev/null) || return 1
+    case $_s in 0|1) ;; *) return 1 ;; esac
+    # the ZTE V50's chosen card too (mu300-sim card, FINDINGS 204)
+    _c=
+    if [ "$(timed 5 "$BIN/mu300-device" 2>/dev/null)" = v50 ]; then
+        _c=$(timed 10 "$BIN/mu300-sim" status --json 2>/dev/null | jq -r '.v50.saved_card // empty' 2>/dev/null) || _c=
+    fi
+    case $_c in
+        [0-3]) printf '{"default":%s,"card":%s}\n' "$((_s + 1))" "$_c" ;;
+        *) printf '{"default":%s}\n' "$((_s + 1))" ;;
+    esac
+}
+lock_dir() {
+    _d=$(uci_q get unisoc_modem.main.state_dir 2>/dev/null)
+    case $_d in
+        /etc/unisoc-modem/*|/etc/mu300/*|/etc/unisoc-modem|/etc/mu300)
+            case $_d in */.*|*//*|*/|*[!A-Za-z0-9_./-]*) _d= ;; esac ;;
+        *) _d= ;;
+    esac
+    printf '%s\n' "$R${_d:-/etc/unisoc-modem/lock-state.d}"
+}
+LOCK_KINDS='mode endc lte nr cell'
+sec_locks() {
+    [ -x "$LOCKTOOL" ] || return 1
+    _d=$(lock_dir)
+    for _k in $LOCK_KINDS; do
+        [ -f "$_d/$_k" ] || continue
+        S1=$_k S2=$(head -c 200 "$_d/$_k" | tr -d '\n\r') jq -n '{(env.S1): env.S2}'
+    done | jq -s 'add // {}'
+}
+vpn_conf_enable() { sed -n 's/^ENABLE=//p' "$R/etc/mu300/vpn.conf" 2>/dev/null | tail -n 1 | tr -d "\"' "; }
+sec_vpn() {
+    VPN=$(vpn_cmd); [ -n "$VPN" ] || return 1
+    timed 30 "$VPN" profile list --json > "$WORK/vpn.list" 2>/dev/null && jq -e 'type == "array"' "$WORK/vpn.list" >/dev/null 2>&1 ||
+        { warn "vpn: the VPN module gave no profile list (too old for a backup?): left out"; return 1; }
+    : > "$WORK/vpn.profiles"
+    for _id in $(jq -r '.[] | select((.source // "manual") != "subscription" and .subscription == null) | .id' "$WORK/vpn.list"); do
+        case $_id in ''|*[!a-z0-9-]*) continue ;; esac
+        timed 30 "$VPN" profile show "$_id" --json --reveal 2>/dev/null > "$WORK/vpn.p" || { warn "vpn: profile $_id could not be read: left out"; continue; }
+        _auth=$VPN_STORE/profiles/$_id/auth.txt
+        _u= _p=
+        if [ -f "$_auth" ] && [ ! -L "$_auth" ]; then { IFS= read -r _u || :; IFS= read -r _p || :; } < "$_auth"; fi
+        S1=$_u S2=$_p jq -c 'select(type == "object" and (.config | type) == "string") |
+            {name, type, config, options: ((.options // {}) | with_entries(select((.value | type) == "string" and .value != "" and .value != "set")))}
+            | if (env.S1 + env.S2) != "" and .type == "openvpn" then .options += {OVPN_USER: env.S1, OVPN_PASS: env.S2} else . end' \
+            "$WORK/vpn.p" >> "$WORK/vpn.profiles" 2>/dev/null
+    done
+    rm -f "$WORK/vpn.p"
+    : > "$WORK/vpn.subs"
+    if timed 30 "$VPN" subscription list --json > "$WORK/vpn.sl" 2>/dev/null; then
+        for _id in $(jq -r '.[]?.id' "$WORK/vpn.sl" 2>/dev/null); do
+            case $_id in ''|*[!a-z0-9-]*) continue ;; esac
+            timed 30 "$VPN" subscription show "$_id" --json --reveal 2>/dev/null |
+                jq -c 'select(type == "object" and (.url | type) == "string") | {name, url, type, interval, insecure}' >> "$WORK/vpn.subs" 2>/dev/null
+        done
+    fi
+    timed 30 "$VPN" settings --json > "$WORK/vpn.set" 2>/dev/null || echo '{}' > "$WORK/vpn.set"
+    jq -n --slurpfile p "$WORK/vpn.profiles" --slurpfile s "$WORK/vpn.subs" --slurpfile l "$WORK/vpn.list" \
+        --slurpfile set "$WORK/vpn.set" --argjson en "$(jb_of "$(vpn_conf_enable)")" '
+        {enabled: $en,
+         active: ([$l[0][]? | select(.active == true) | .name] | first // null),
+         settings: (($set[0] // {}) | with_entries(select((.key | IN("KILL_SWITCH", "TAILSCALE", "IPV6", "REMOTE_DNS",
+                        "BOOTSTRAP_DNS", "LAN_CIDRS")) and (.value | type) == "string" and .value != ""))),
+         profiles: $p, subscriptions: $s}'
+    rm -f "$WORK"/vpn.*
+}
+FWD_CONF=$R/etc/mu300/sms-forward.conf
+sec_sms_forward() {
+    [ -x "$FWDA" ] && [ -f "$FWD_CONF" ] || return 1
+    jq -R -s '
+        # (no regular expressions: the jq of OpenWrt is built without them, and test/capture/gsub fail there)
+        def unesc: explode | reduce .[] as $c ({o: [], e: false};
+            if .e then .o += [if $c == 110 then 10 else $c end] | .e = false
+            elif $c == 92 then .e = true else .o += [$c] end) | (.o + (if .e then [92] else [] end)) | implode;
+        def kv: index("=") as $i | if $i != null and $i > 0 and (.[:$i] | explode | all((. >= 97 and . <= 122) or . == 95))
+            then {k: .[:$i], v: .[$i + 1:]} else empty end;
+        (split("\n") | map(select(length > 0) | kv)) as $l
+        | def one($k): ([$l[] | select(.k == $k) | .v] | first // "");
+          def many($k): ([$l[] | select(.k == $k) | .v] | join("\n"));
+          def on($k): one($k) == "1";
+        {enabled: on("enabled"), template: (one("template") | unesc), allow: many("allow"), deny: many("deny"),
+         keywords: many("keyword"), webhook: on("webhook"), webhook_url: one("webhook_url"),
+         webhook_format: one("webhook_format"), webhook_body: (one("webhook_body") | unesc),
+         webhook_expect: one("webhook_expect"), webhook_headers: many("webhook_header"), telegram: on("telegram"),
+         telegram_token: one("telegram_token"), telegram_chat: one("telegram_chat"), email: on("email"),
+         email_host: one("email_host"), email_port: one("email_port"), email_tls: one("email_tls"),
+         email_user: one("email_user"), email_password: one("email_password"), email_from: one("email_from"),
+         email_to: one("email_to"), sms: on("sms"), sms_number: one("sms_number")}' "$FWD_CONF"
+}
+sec_lan() {
+    if is_openwrt; then _ip=$(uci_q get network.lan.ipaddr)
+    else _ip=$(conf LAN_IP "$LANCONF"); fi
+    [ -n "$_ip" ] || return 1
+    S1=$_ip jq -n '{ip: env.S1}'
+}
+sec_system() {
+    if is_openwrt; then _h=$(uci_q get 'system.@system[0].hostname')
+    else _h=$(first "$R/etc/hostname"); fi
+    S1=$_h S2=$(timezone) jq -n --argjson ssh "$(ssh_on && echo true || echo false)" \
+        '{hostname: env.S1, timezone: env.S2, ssh: $ssh} | with_entries(select(.value != ""))'
+}
+keys_file() { if is_openwrt; then echo "$R/etc/dropbear/authorized_keys"; else echo "$R/home/$USR/.ssh/authorized_keys"; fi; }
+# a public key line of OpenSSH's own (POSIX regular expressions count to 255 at most: key_ok checks the length): no options in front (from=, command=: such a line is left out, and said so)
+KEY_ERE='(ssh-(rsa|ed25519|dss)|ecdsa-sha2-nistp(256|384|521)|sk-ssh-ed25519@openssh\.com|sk-ecdsa-sha2-nistp256@openssh\.com) [A-Za-z0-9+/]{16,}={0,3}( [ -~]{0,200})?'
+key_ok() { [ "${#1}" -le 8500 ] && allowed "$1" "$KEY_ERE"; }
+sec_ssh_keys() {
+    _f=$(keys_file)
+    [ -f "$_f" ] && [ ! -L "$_f" ] || return 1
+    _skip=0
+    tr -d '\r' < "$_f" | while IFS= read -r _l || [ -n "$_l" ]; do
+        case $_l in ''|'#'*) continue ;; esac
+        if key_ok "$_l"; then S1=$_l jq -n 'env.S1'; else echo skipped >&2; fi
+    done 2>"$WORK/keys.skipped" | jq -s '.[:100]'
+    _skip=$(grep -c skipped "$WORK/keys.skipped" 2>/dev/null) || _skip=0
+    [ "$_skip" = 0 ] || warn "ssh_keys: $_skip line(s) with options or of another kind left out"
+}
+# a crypt(3) hash: SHA-512 or SHA-256 crypt, bcrypt, yescrypt (Ubuntu's own)
+HASH_ERE='\$(6|5)\$(rounds=[0-9]{4,9}\$)?[./A-Za-z0-9]{1,16}\$[./A-Za-z0-9]{43,86}|\$2[aby]\$[0-9]{2}\$[./A-Za-z0-9]{53}|\$y\$[./A-Za-z0-9]{1,8}\$[./A-Za-z0-9]{1,86}\$[./A-Za-z0-9]{43}'
+hash_ok() {
+    allowed "$1" "$HASH_ERE" || return 1
+    # OpenWrt's C library (musl) has no yescrypt: such a hash there would lock the user out
+    case $1 in '$y$'*) ! is_openwrt ;; esac
+}
+sec_password() {
+    _h=$(awk -F: -v u="$USR" '$1 == u { print $2; exit }' "$R/etc/shadow" 2>/dev/null)
+    allowed "$_h" "$HASH_ERE" || { warn "password: $USR has no password hash to keep: left out"; return 1; }
+    S1=$_h jq -n '{hash: env.S1}'
+}
+
+# collect SECTION...: the document of this device (only those sections) on stdout
+collect() {
+    : > "$WORK/collect"
+    for SECT in "$@"; do
+        sec_"$SECT" > "$WORK/sec" 2>"$WORK/sec.err" || { cat "$WORK/sec.err" >&2; continue; }
+        cat "$WORK/sec.err" >&2
+        jq -e 'type == "object" or type == "array"' "$WORK/sec" >/dev/null 2>&1 || continue
+        S1=$SECT jq -c '{(env.S1): .}' "$WORK/sec" >> "$WORK/collect"
+    done
+    rm -f "$WORK/sec" "$WORK/sec.err"
+    S1=$DEV S2=$SYS S3=$(release) S4=$(uname -n) jq -s --argjson now "$(date +%s)" '
+        {format: "mu300-backup", version: 1, created: $now,
+         source: {device: env.S1, system: env.S2, release: env.S3, hostname: env.S4}, sections: (add // {})}' "$WORK/collect"
+    rm -f "$WORK/collect"
+}
+
+# pick LIST: the sections of LIST (comma-separated) that exist, in SECTIONS' order; refuses an unknown one
+pick() {
+    _out=
+    for _w in $(printf '%s' "$1" | tr ',' ' '); do
+        case " $SECTIONS " in *" $_w "*) ;; *) warn "unknown section: $_w (the sections: $SECTIONS)"; exit 2 ;; esac
+    done
+    for _s in $SECTIONS; do
+        case ",$1," in *",$_s,"*) _out="$_out $_s" ;; esac
+    done
+    printf '%s\n' "${_out# }"
+}
+
+# ------------------------------------------------------------------ export
+do_export() {
+    OUTF= ENC=0 WITHPW=0 ONLY=
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -o) [ $# -ge 2 ] || usage; OUTF=$2; shift 2 ;;
+            --encrypt) ENC=1; shift ;;
+            --with-password) WITHPW=1; shift ;;
+            --only) [ $# -ge 2 ] || usage; ONLY=$2; shift 2 ;;
+            --passphrase-file) [ $# -ge 2 ] || usage; PASS_FROM=file PASS_FILE=$2; ENC=1; shift 2 ;;
+            --passphrase-stdin) PASS_FROM=stdin; ENC=1; shift ;;
+            *) usage ;;
+        esac
+    done
+    if [ -n "$ONLY" ]; then _secs=$(pick "$ONLY") || exit 2; else _secs=$SECTIONS; fi
+    [ "$WITHPW" = 1 ] || _secs=$(printf '%s\n' $_secs | grep -vx password | tr '\n' ' ')
+    [ "$ENC" = 0 ] || read_pass twice
+    collect $_secs > "$WORK/doc.json" || die "the settings could not be read"
+    if [ "$ENC" = 1 ]; then encrypt "$WORK/doc.json" > "$WORK/out" || exit 1
+    else cp "$WORK/doc.json" "$WORK/out"; fi
+    if [ "$OUTF" = - ]; then cat "$WORK/out"; return 0; fi
+    if [ -z "$OUTF" ]; then
+        _ext=json; [ "$ENC" = 0 ] || _ext=enc
+        OUTF=./mu300-backup-$(uname -n | tr -cd 'A-Za-z0-9-')-$(date +%Y%m%d-%H%M%S).$_ext
+    fi
+    [ ! -L "$OUTF" ] && [ ! -d "$OUTF" ] || die "$OUTF is a link or a directory: not written"
+    _tmp=$OUTF.part.$$
+    { cp "$WORK/out" "$_tmp" && chmod 600 "$_tmp" && mv -f "$_tmp" "$OUTF"; } || { rm -f "$_tmp"; die "could not write $OUTF"; }
+    say "written: $OUTF ($( [ "$ENC" = 1 ] && echo encrypted || echo 'not encrypted: it holds passwords, keep it safe'))"
+    say "sections: $(jq -r '.sections | keys_unsorted | join(" ")' "$WORK/doc.json")"
+}
+
+# ------------------------------------------------------------------ reading a file
+SCHEMA_JQ='
+# every key known, every value of its kind and size: a file that says anything else is refused whole
+def s($n): type == "string" and (utf8bytelength <= $n);
+# No regular expressions anywhere in here: the jq of OpenWrt is built without them (test/capture/gsub fail there,
+# and every file was refused as "a value of the wrong kind", F50-C 2026-10-17). Characters are checked by code point.
+# one line: no control character at all - C0, DEL and C1 (a configuration and the forwarding texts are s, the rest l)
+def l($n): s($n) and (explode | all(. >= 32 and (. < 127 or . > 159)));
+def az09: (. >= 97 and . <= 122) or (. >= 48 and . <= 57);
+def AZ: . >= 65 and . <= 90;
+# [a-z0-9][a-z0-9-]*, [A-Z][A-Z0-9_]{0,31} and [a-z0-9]+, whole values
+def word: explode | length > 0 and (.[0] | az09) and all(.[]; az09 or . == 45);
+def optkey: explode | length > 0 and length <= 32 and (.[0] | AZ) and all(.[]; AZ or (. >= 48 and . <= 57) or . == 95);
+def lowalnum: explode | length > 0 and all(.[]; az09);
+def keysin($k): type == "object" and ((keys - $k) | length) == 0;
+def err($m): if . then empty else $m end;
+def flags: type == "boolean";
+def profile: keysin(["name", "type", "config", "options"]) and (.name | l(128))
+    and (.type | l(16) and word) and (.config | s(1048576))
+    and ((.options // {}) | type == "object" and length <= 16 and all(keys[]; optkey)
+         and all(.[]; l(512)));
+def subscription: keysin(["name", "url", "type", "interval", "insecure"]) and (.name | l(128)) and (.url | l(2048))
+    and ((.type // "auto") | IN("auto", "links", "mihomo", "dae"))
+    and (.interval == null or (.interval | type == "number" and . >= 0 and . <= 720 and floor == .))
+    and (.insecure // false | flags);
+def sec($name; cond): if has($name) then (.[$name] | cond) | err("section " + $name) else empty end;
+try (if type != "object" then "not a JSON object"
+elif .format != "mu300-backup" then "not a mu300 backup"
+elif .version != 1 then "a backup format this version does not know (\(.version))"
+else
+  ( (keysin(["format", "version", "created", "source", "sections"])) | err("unknown keys") ),
+  ( (.created | type == "number") | err("created") ),
+  ( (.source | keysin(["device", "system", "release", "hostname"]) and (.device | l(16) and lowalnum)
+       and (.system | IN("ubuntu", "openwrt", "openwrt-luci")) and (.release | l(64)) and (.hostname | l(64)))
+    | err("source") ),
+  ( .sections | if type != "object" then "sections" else
+      ( (keysin(["wifi", "data", "sim", "locks", "vpn", "sms_forward", "lan", "system", "ssh_keys", "password"])) | err("unknown section") ),
+      sec("wifi"; keysin(["ssid", "password", "band", "channel", "hidden", "enabled"]) and (.ssid // "" | l(32))
+          and (.password // "" | l(63)) and (.band // "5" | IN("2.4", "5")) and (.channel // "auto" | l(4))
+          and (.hidden // false | flags) and (.enabled // true | flags)),
+      sec("data"; keysin(["apn", "pdp", "auth", "user", "password", "roaming"]) and (.apn // "" | l(100))
+          and (.pdp // "" | l(8)) and (.auth // "" | l(8)) and (.user // "" | l(64)) and (.password // "" | l(64))
+          and (.roaming // false | flags)),
+      sec("sim"; keysin(["default", "card"]) and (.default | IN(1, 2)) and (.card == null or (.card | IN(0, 1, 2, 3)))),
+      sec("locks"; keysin(["mode", "endc", "lte", "nr", "cell"]) and all(.[]; l(127))),
+      sec("vpn"; keysin(["enabled", "active", "settings", "profiles", "subscriptions"])
+          and (.enabled // false | flags)
+          and (.active == null or (.active | l(128)))
+          and ((.settings // {}) | keysin(["KILL_SWITCH", "TAILSCALE", "IPV6", "REMOTE_DNS", "BOOTSTRAP_DNS", "LAN_CIDRS"])
+               and all(.[]; l(512)))
+          and ((.profiles // []) | type == "array" and length <= 64 and all(.[]; profile))
+          and ((.subscriptions // []) | type == "array" and length <= 32 and all(.[]; subscription))),
+      sec("sms_forward"; keysin(["enabled", "template", "allow", "deny", "keywords", "webhook", "webhook_url",
+          "webhook_format", "webhook_body", "webhook_expect", "webhook_headers", "telegram", "telegram_token",
+          "telegram_chat", "email", "email_host", "email_port", "email_tls", "email_user", "email_password",
+          "email_from", "email_to", "sms", "sms_number"]) and all(.[]; (type == "boolean") or s(30000))),
+      sec("lan"; keysin(["ip"]) and (.ip | l(15))),
+      sec("system"; keysin(["hostname", "timezone", "ssh"]) and (.hostname // "" | l(63)) and (.timezone // "" | l(64))
+          and (.ssh // true | flags)),
+      sec("ssh_keys"; type == "array" and length <= 100 and all(.[]; l(8500))),
+      sec("password"; keysin(["hash"]) and (.hash | l(256)))
+    end )
+end) catch "a value of the wrong kind"
+'
+# load FILE|-: the document, decrypted and checked against the format, in $WORK/doc.json
+load() {
+    if [ "$1" = - ]; then
+        [ "$PASS_FROM" != stdin ] || { read_pass; PASS_FROM=given; }
+        head -c $((MAX_FILE + 1)) > "$WORK/in"
+    else
+        [ -f "$1" ] || die "no such file: $1"
+        head -c $((MAX_FILE + 1)) "$1" > "$WORK/in"
+    fi
+    [ "$(wc -c < "$WORK/in")" -le "$MAX_FILE" ] || bad_file "larger than 4 MiB"
+    if [ "$(head -n 1 "$WORK/in" | tr -d '\r')" = "$ENC_HEAD" ]; then
+        [ -n "$PASS" ] || read_pass
+        decrypt "$WORK/in" "$WORK/doc.json"
+    else
+        mv "$WORK/in" "$WORK/doc.json"
+    fi
+    rm -f "$WORK/in"
+    jq -e . "$WORK/doc.json" >/dev/null 2>&1 || bad_file "not JSON"
+    _why=$(jq -r "$SCHEMA_JQ" "$WORK/doc.json" 2>/dev/null) || bad_file "not JSON"
+    [ -z "$_why" ] || bad_file "$(printf '%s' "$_why" | head -n 1)"
+}
+
+do_show() {
+    _f=
+    while [ $# -gt 0 ]; do
+        case $1 in
+            --passphrase-file) [ $# -ge 2 ] || usage; PASS_FROM=file PASS_FILE=$2; shift 2 ;;
+            --passphrase-stdin) PASS_FROM=stdin; shift ;;
+            -*) [ "$1" = - ] && { _f=-; shift; continue; }; usage ;;
+            *) [ -z "$_f" ] || usage; _f=$1; shift ;;
+        esac
+    done
+    [ -n "$_f" ] || usage
+    [ "$PASS_FROM" != file ] || read_pass
+    if [ "$PASS_FROM" = stdin ] && [ "$_f" != - ]; then read_pass; fi
+    load "$_f"
+    jq -r '"from: \(.source.device), \(.source.system), \(.source.release), host \(.source.hostname)",
+           "made: \(.created | todate)",
+           (.sections | to_entries[] | "  \(.key): " + (
+              if .key == "vpn" then "\(.value.profiles // [] | length) profile(s), \(.value.subscriptions // [] | length) subscription(s), \(if .value.enabled then "on" else "off" end)"
+              elif .key == "ssh_keys" then "\(.value | length) key(s)"
+              elif .key == "password" then "the login password hash"
+              elif (.value | type) == "object" then (.value | keys | join(", "))
+              else "" end))' "$WORK/doc.json"
+}
+
+# ------------------------------------------------------------------ import
+# the steps: what differs between the file ($b) and this device ($c), in the order they are applied (what can cut
+# the connection of whoever restores - the hotspot, the LAN address - last). Secrets are compared, never shown.
+PLAN_JQ='
+def want($s): ($only | length == 0 or index([$s]) != null) and ($skip | index([$s]) == null);
+def q: tostring | @json;
+($b[0].sections) as $B | ($c[0].sections) as $C
+| [
+  ( if $B.ssh_keys != null and want("ssh_keys") then
+      ([ ($C.ssh_keys // [])[] | split(" ")[0:2] | join(" ") ]) as $have
+      | [ $B.ssh_keys[] | select((split(" ")[0:2] | join(" ")) as $k | ($have | index([$k])) == null) ] as $new
+      | if ($new | length) > 0 then {sec: "ssh_keys", do: "keys", keys: $new, say: "SSH keys: \($new | length) to add"} else empty end
+    else empty end ),
+  ( if $B.password != null and want("password") and $B.password.hash != ($C.password.hash // null) then
+      {sec: "password", do: "password", hash: $B.password.hash, say: "login password: changes"} else empty end ),
+  ( if $B.sms_forward != null and want("sms_forward") and $B.sms_forward != $C.sms_forward then
+      {sec: "sms_forward", do: "forward",
+       # (the panel keeps a saved secret that comes empty: "clear" names those the file has none of)
+       data: ($B.sms_forward + {clear: ([ [ "webhook_url", "webhook_headers", "telegram_token", "email_password" ][]
+                                        | select(($B.sms_forward[.] // "") == "")] | join(" "))}),
+       say: "SMS forwarding: its settings change"} else empty end ),
+  ( if $B.vpn != null and want("vpn") then
+      ($B.vpn) as $v | ($C.vpn // {}) as $cv
+      | ( $v.profiles // [] | .[] as $p
+          | ([ ($cv.profiles // [])[] | select(.name == $p.name and .type == $p.type) ] | first) as $cur
+          | if $cur == null then
+              {sec: "vpn", do: "vpn-add", name: $p.name, type: $p.type, config: $p.config, options: ($p.options // {}),
+               say: "VPN: add profile \($p.name | q) (\($p.type))"}
+            else
+              ( if $cur.config != $p.config then
+                  {sec: "vpn", do: "vpn-edit", name: $p.name, type: $p.type, config: $p.config,
+                   say: "VPN: profile \($p.name | q): its configuration is replaced"} else empty end ),
+              ( if ($p.options // {}) != ($cur.options // {}) then
+                  {sec: "vpn", do: "vpn-options", name: $p.name, type: $p.type, options: ($p.options // {}),
+                   say: "VPN: profile \($p.name | q): its options change"} else empty end )
+            end ),
+        ( $v.subscriptions // [] | .[] | select(.name as $n | ($cv.subscriptions // []) | any(.name == $n) | not)
+          | {sec: "vpn", do: "vpn-sub", name, url, type: (.type // "auto"), interval, insecure: (.insecure // false),
+             say: "VPN: add subscription \(.name | q) (it is fetched now)"} ),
+        ( $v.settings // {} | to_entries[] | select(.value != ($cv.settings[.key] // null))
+          | {sec: "vpn", do: "vpn-setting", key, value, say: "VPN: \(.key) \($cv.settings[.key] // "default") -> \(.value)"} ),
+        ( if $v.active != null and $v.active != ($cv.active // null) then
+            {sec: "vpn", do: "vpn-use", name: $v.active, say: "VPN: profile \($v.active | q) becomes the active one"} else empty end ),
+        ( if ($v.enabled // false) != ($cv.enabled // false) then
+            {sec: "vpn", do: "vpn-power", state: (if $v.enabled then "on" else "off" end),
+             say: "VPN: turned \(if $v.enabled then "on" else "off" end)"} else empty end )
+    else empty end ),
+  ( if $B.sim != null and want("sim") and $B.sim.card != null then
+      (if $B.sim.card != ($C.sim.card // null) then
+         {sec: "sim", do: "api", method: "sim.card", req: {card: $B.sim.card},
+          say: "SIM: card \($B.sim.card) at the next boot"} else empty end)
+    elif $B.sim != null and want("sim") and $B.sim.default != ($C.sim.default // null) then
+      {sec: "sim", do: "api", method: "sim.select", req: {slot: $B.sim.default},
+       say: "SIM: SIM \($B.sim.default) at the next boot"} else empty end ),
+  ( if $B.data != null and want("data") then
+      ($B.data) as $d | ($C.data // {}) as $cd
+      | (if (($d.user // "") == "" and ($d.password // "") == "") and (($cd.user // "") != "" or ($cd.password // "") != "")
+         then {clear_credentials: true} else {} end) as $clr
+      | ( reduce ("apn", "pdp", "auth", "user", "password") as $k ({};
+            if $d[$k] != null and $d[$k] != ($cd[$k] // "") and ($clr == {} or $k == "apn" or $k == "pdp")
+               and ($d[$k] != "" or $k == "apn" or $k == "user") then .[$k] = $d[$k] else . end) ) as $chg
+      | ( $clr + $chg ) as $req
+      | ( if ($req | length) > 0 then
+            {sec: "data", do: "api", method: "data.set", req: $req,
+             say: ("mobile data: " + ([ $req | keys_unsorted[] as $k
+                 | if $k == "password" then "the APN password changes" elif $k == "clear_credentials" then "user and password cleared"
+                   else "\($k) \(($cd[$k] // "") | q) -> \($req[$k] | q)" end ] | join(", ")))} else empty end ),
+        ( if $d.roaming != null and $d.roaming != ($cd.roaming // null) then
+            {sec: "data", do: "api", method: "data.set", req: {roaming: $d.roaming},
+             say: "data roaming: \(if $d.roaming then "allowed" else "not allowed" end)"} else empty end )
+    else empty end ),
+  ( if $B.locks != null and want("locks") and $B.locks != ($C.locks // {}) then
+      ($B.locks) as $l | ($C.locks // {}) as $cl
+      | ([ $cl | keys[] as $k | select(($l | has($k)) | not) ] | length > 0) as $reset
+      | ( if $reset then {sec: "locks", do: "lock-reset", say: "network locks: back to automatic first"} else empty end ),
+        ( ("mode", "endc", "lte", "nr", "cell") as $k | select($l | has($k))
+          | select($reset or $l[$k] != ($cl[$k] // null))
+          | {sec: "locks", do: "lock", kind: $k, val: $l[$k], say: "network lock: \($k) \($l[$k] | q)"} )
+    else empty end ),
+  ( if $B.system != null and want("system") then
+      ($B.system) as $s | ($C.system // {}) as $cs
+      | ( if $s.timezone != null and $s.timezone != ($cs.timezone // null) then
+            {sec: "system", do: "api", method: "system.timezone", req: {zone: $s.timezone}, say: "time zone: \($cs.timezone // "" | q) -> \($s.timezone | q)"} else empty end ),
+        ( if $s.ssh != null and $s.ssh != ($cs.ssh // null) then
+            {sec: "system", do: "api", method: "system.ssh", req: {state: (if $s.ssh then "on" else "off" end)},
+             say: "SSH: \(if $s.ssh then "on" else "off" end)"} else empty end ),
+        ( if $s.hostname != null and $s.hostname != ($cs.hostname // null) then
+            {sec: "system", do: "api", method: "system.hostname", req: {name: $s.hostname}, say: "host name: \($cs.hostname // "" | q) -> \($s.hostname | q)"} else empty end )
+    else empty end ),
+  ( if $B.wifi != null and want("wifi") then
+      ($B.wifi) as $w | ($C.wifi // {}) as $cw
+      | ( reduce ("ssid", "password", "band", "channel", "hidden") as $k ({};
+            if $w[$k] != null and $w[$k] != $cw[$k] and ($k != "password" or $w[$k] != "") then .[$k] = $w[$k] else . end)
+          | if has("band") and $w.channel != null then .channel = $w.channel else . end ) as $req
+      | ( if ($req | length) > 0 then
+            {sec: "wifi", do: "api", method: "wifi.set", req: $req,
+             say: ("hotspot: " + ([ $req | keys_unsorted[] as $k
+                 | if $k == "password" then "the password changes" else "\($k) \(($cw[$k] // "") | q) -> \($req[$k] | q)" end ] | join(", ")))}
+          else empty end ),
+        ( if $w.enabled != null and $w.enabled != ($cw.enabled // null) then
+            {sec: "wifi", do: "api", method: "wifi.power", req: {state: (if $w.enabled then "on" else "off" end)},
+             say: "hotspot: \(if $w.enabled then "on" else "off" end)"} else empty end ),
+        ( if ($w | has("password")) and $w.password == "" and ($cw.password // "") != "" then
+            {sec: "wifi", do: "note", say: "hotspot: the file has an open hotspot; the password here is kept"} else empty end )
+    else empty end ),
+  ( if $B.lan != null and want("lan") and $B.lan.ip != ($C.lan.ip // null) then
+      {sec: "lan", do: "api", method: "lan.set", req: {ip: $B.lan.ip}, say: "LAN address: \($C.lan.ip // "" | q) -> \($B.lan.ip | q)"} else empty end )
+] | .[] | tojson'
+
+# what this system cannot take (SECTION: why), else nothing
+not_here() {
+    case $1 in
+        locks) [ -x "$LOCKTOOL" ] || echo "no network locks on this system" ;;
+        sms_forward) [ -x "$FWDA" ] || echo "no SMS forwarding on this system" ;;
+        vpn) [ -n "$(vpn_cmd)" ] || echo "the VPN module is not installed (mu300-extra install vpn)" ;;
+        sim) [ -x "$BIN/mu300-sim" ] || echo "no SIM selection on this system" ;;
+    esac
+}
+api_call() {   # api_call METHOD REQUEST [check]: mu300-api's answer in ANS, true when ok
+    if [ "${3:-}" = check ]; then ANS=$(printf '%s' "$2" | MU300_API_CHECK=1 timed 60 sh "$APIBIN" "$1" 2>/dev/null)
+    else ANS=$(printf '%s' "$2" | timed 120 sh "$APIBIN" "$1" 2>/dev/null); fi
+    [ "$(printf '%s' "$ANS" | jq -r '.ok' 2>/dev/null)" = 1 ]
+}
+ans_error() { printf '%s' "$ANS" | jq -r '[.error, .detail] | map(select(. != null)) | join(": ")' 2>/dev/null; }
+VPN_URL_ERE='https://[A-Za-z0-9.-]{1,253}(:[0-9]{1,5})?(/[!-~]*)?'
+IP_ERE='[0-9]{1,3}(\.[0-9]{1,3}){3}|[0-9A-Fa-f:]{2,39}'
+# vpn_setting_ok KEY VALUE: the module's own rules (setting_valid), narrowed to what a backup may set: never the
+# path of an engine binary (XRAY, SING_BOX, ... are left out of every file)
+vpn_setting_ok() {
+    case $1 in
+        KILL_SWITCH|TAILSCALE) allowed "$2" '0|1' ;;
+        IPV6) allowed "$2" '0|1|auto' ;;
+        REMOTE_DNS|BOOTSTRAP_DNS) allowed "$2" "$IP_ERE" ;;
+        LAN_CIDRS) allowed "$2" '[0-9A-Fa-f.:/]{1,43}(,[0-9A-Fa-f.:/]{1,43}){0,15}' ;;
+        *) return 1 ;;
+    esac
+}
+# config_ok: a configuration on stdin: text (tabs, newlines, UTF-8), no other control character, 1 MiB at most
+config_ok() { [ "$(LC_ALL=C tr -d '\011\012\015\040-\176\200-\377' | wc -c)" -eq 0 ]; }
+field() { printf '%s' "$ST" | jq -r "$1"; }   # (for messages and fixed words only)
+fieldc() { printf '%s' "$ST" | jq -c "$1"; }
+# getv VAR FILTER: the step's value exactly (no trailing newline taken off, as $(...) would)
+getv() { _gv=$(printf '%s' "$ST" | jq -j "$2"; printf x); _gv=${_gv%x}; eval "$1=\$_gv"; }
+# arg VAR FILTER: a value that goes onto a command line: one line, no control character, never starting with "-"
+# (a tool would take it for an option: "--insecure", "--json"), else false (the security review of #285)
+arg() {
+    getv "$1" "$2"
+    eval "_av=\$$1"
+    [ -n "$_av" ] || return 1
+    case $_av in -*) return 1 ;; esac
+    [ "$(printf '%s' "$_av" | LC_ALL=C tr -d '\040-\176\200-\377' | wc -c)" -eq 0 ]
+}
+# check_step: the step in $ST passes the rules of what will apply it (CHK_WHY when not; CHK_SKIP when this system
+# cannot take it)
+check_step() {
+    CHK_WHY= CHK_SKIP=
+    _sec=$(field .sec)
+    _why=$(not_here "$_sec"); [ -z "$_why" ] || { CHK_SKIP=$_why; return 0; }
+    case $(field .do) in
+        note) ;;
+        api)
+            _m=$(field .method)
+            case $_m in wifi.set|wifi.power|data.set|sim.select|sim.card|lan.set|system.hostname|system.timezone|system.ssh) ;;
+                *) CHK_WHY="no such step"; return 1 ;; esac
+            if ! api_call "$_m" "$(fieldc .req)" check; then
+                case $(printf '%s' "$ANS" | jq -r .error 2>/dev/null) in
+                    unsupported|not-installed) CHK_SKIP=$(ans_error) ;;
+                    *) CHK_WHY=$(ans_error); [ -n "$CHK_WHY" ] || CHK_WHY="refused"; return 1 ;;
+                esac
+            elif [ "$(printf '%s' "$ANS" | jq -r .checked 2>/dev/null)" != true ]; then
+                CHK_WHY="mu300-api cannot check $_m"; return 1
+            fi ;;
+        lock) api_call lock.set "$(printf '%s' "$ST" | jq -c '{kind, val}')" check || { CHK_WHY=$(ans_error); return 1; }
+              # (an empty band list is "automatic": the lock tool takes it as an empty argument)
+              arg _k .kind && { getv _v .val; [ -z "$_v" ] || arg _v .val; } || { CHK_WHY="a lock value"; return 1; }
+              [ -x "$LOCKTOOL" ] || CHK_SKIP="no lock tool here" ;;
+        lock-reset) [ -x "$LOCKTOOL" ] || CHK_SKIP="no lock tool here" ;;
+        keys) for _k in $(printf '%s' "$ST" | jq -r '.keys | to_entries[] | .key'); do
+                  key_ok "$(printf '%s' "$ST" | jq -r --argjson i "$_k" '.keys[$i]')" || { CHK_WHY="SSH key $((_k + 1)) is not an OpenSSH public key"; return 1; }
+              done ;;
+        password) arg _h .hash && hash_ok "$_h" || { CHK_WHY="not a password hash this system takes"; return 1; } ;;
+        forward)
+            [ -x "$FWDA" ] || { CHK_SKIP="no SMS forwarding here"; return 0; }
+            _r=$(printf '%s' "$ST" | jq -c .data | MU300_FWD_CHECK=1 timed 30 "$FWDA" set 2>/dev/null)
+            [ "$(printf '%s' "$_r" | jq -r .checked 2>/dev/null)" = 1 ] ||
+                { CHK_WHY=$(printf '%s' "$_r" | jq -r '.error // "refused"' 2>/dev/null); return 1; } ;;
+        vpn-add|vpn-edit|vpn-options)
+            arg _nm .name && vpn_name_ok "$_nm" || { CHK_WHY="a VPN profile name"; return 1; }
+            arg _t .type && allowed "$_t" '[a-z0-9][a-z0-9-]{0,15}' || { CHK_WHY="a VPN profile type"; return 1; }
+            if [ "$(field .do)" != vpn-options ]; then
+                printf '%s' "$ST" | jq -j .config | config_ok || { CHK_WHY="VPN profile $(field '.name | @json'): not a text configuration"; return 1; }
+                [ -n "$(field .config)" ] || { CHK_WHY="VPN profile $(field '.name | @json'): no configuration"; return 1; }
+            fi
+            # by index: a key is never split by the shell into words
+            _i=0 _nk=$(printf '%s' "$ST" | jq '(.options // {}) | length')
+            while [ "$_i" -lt "$_nk" ]; do
+                getv _k "(.options // {}) | keys[$_i]"
+                allowed "$_k" '[A-Z][A-Z0-9_]{0,31}' || { CHK_WHY="a VPN profile option"; return 1; }
+                arg _v "(.options // {}) | .[keys[$_i]]" && text_ok "$_v" 512 || { CHK_WHY="VPN option $_k"; return 1; }
+                _i=$((_i + 1))
+            done ;;
+        vpn-sub)
+            arg _nm .name && vpn_name_ok "$_nm" || { CHK_WHY="a VPN subscription name"; return 1; }
+            getv _u .url; [ "${#_u}" -le 2048 ] && allowed "$_u" "$VPN_URL_ERE" || { CHK_WHY="VPN subscription $(field '.name | @json'): not an https:// address"; return 1; }
+            _u=
+            arg _t .type && allowed "$_t" 'auto|links|mihomo|dae' || { CHK_WHY="a VPN subscription type"; return 1; }
+            getv _iv .interval; allowed "$_iv" 'null|0|[1-9][0-9]{0,2}' && { [ "$_iv" = null ] || [ "$_iv" -le 720 ]; } ||
+                { CHK_WHY="a VPN subscription interval"; return 1; } ;;
+        vpn-setting) arg _k .key && arg _v .value && vpn_setting_ok "$_k" "$_v" || { CHK_WHY="VPN setting $(field .key)"; return 1; } ;;
+        vpn-use) arg _nm .name && vpn_name_ok "$_nm" || { CHK_WHY="a VPN profile name"; return 1; } ;;
+        vpn-power) arg _s .state && allowed "$_s" 'on|off' || { CHK_WHY="the VPN switch"; return 1; } ;;
+        *) CHK_WHY="no such step"; return 1 ;;
+    esac
+    return 0
+}
+
+# vpn_id NAME [TYPE]: the id of this device's profile of that name (and type)
+vpn_id() {
+    timed 30 "$VPN" profile list --json 2>/dev/null |
+        N=$1 T=${2:-} jq -r '[.[]? | select(.name == env.N and (env.T == "" or .type == env.T)) | .id] | first // empty' |
+        grep -x '[a-z0-9][a-z0-9-]\{0,31\}'
+}
+vpn_options() {   # vpn_options ID: the step's options set on profile ID (OpenVPN's user and password into auth.txt)
+    arg _t .type || return 1
+    _i=0 _nk=$(printf '%s' "$ST" | jq '(.options // {}) | length')
+    while [ "$_i" -lt "$_nk" ]; do
+        getv _k "(.options // {}) | keys[$_i]"; _i=$((_i + 1))
+        allowed "$_k" '[A-Z][A-Z0-9_]{0,31}' || return 1
+        case $_t:$_k in openvpn:OVPN_USER|openvpn:OVPN_PASS) continue ;; esac
+        case $_k in *PASS*|*SECRET*|*KEY) say "  (VPN option $_k is a secret the module takes on its command line only: left out)"; continue ;; esac
+        arg _v "(.options // {}) | .[keys[$((_i - 1))]]" || return 1
+        timed 30 "$VPN" profile set "$1" "$_k" "$_v" </dev/null >/dev/null 2>&1 || return 1
+    done
+    if [ "$_t" = openvpn ] && [ "$(printf '%s' "$ST" | jq -r '.options | has("OVPN_USER") or has("OVPN_PASS")')" = true ]; then
+        _d=$VPN_STORE/profiles/$1
+        [ -d "$_d" ] && [ ! -L "$_d" ] || return 1
+        printf '%s' "$ST" | jq -r '.options.OVPN_USER // "", .options.OVPN_PASS // ""' > "$_d/auth.txt.new" &&
+            chmod 600 "$_d/auth.txt.new" && mv -f "$_d/auth.txt.new" "$_d/auth.txt" || { rm -f "$_d/auth.txt.new"; return 1; }
+    fi
+}
+add_keys() {
+    _f=$(keys_file); _dir=${_f%/*}
+    if is_openwrt; then _own=0:0
+    else
+        _own=$(awk -F: -v u="$USR" '$1 == u { print $3 ":" $4; exit }' "$R/etc/passwd" 2>/dev/null)
+        [ -n "$_own" ] || return 1
+    fi
+    # never through a link (a home directory is its user's: ~/.ssh could point anywhere)
+    [ ! -L "$_dir" ] && [ ! -L "$_f" ] || return 1
+    [ -d "$_dir" ] || { mkdir -p "$_dir" && chmod 700 "$_dir" && { is_openwrt || chown "$_own" "$_dir" 2>/dev/null || [ -n "${MU300_API_NOROOT:-}" ]; }; } || return 1
+    { [ -f "$_f" ] && cat "$_f"; printf '%s' "$ST" | jq -r '.keys[]'; } > "$_dir/.authorized_keys.mu300-backup" &&
+        chmod 600 "$_dir/.authorized_keys.mu300-backup" &&
+        { is_openwrt || chown "$_own" "$_dir/.authorized_keys.mu300-backup" 2>/dev/null || [ -n "${MU300_API_NOROOT:-}" ]; } &&
+        mv -f "$_dir/.authorized_keys.mu300-backup" "$_f" || { rm -f "$_dir/.authorized_keys.mu300-backup"; return 1; }
+}
+set_password() {
+    if is_openwrt && [ -x "$BIN/busybox" ]; then set -- "$BIN/busybox" chpasswd -e; else set -- chpasswd -e; fi
+    arg _h .hash && hash_ok "$_h" || return 1
+    case $USR in root|ubuntu) ;; *) return 1 ;; esac
+    printf '%s:%s\n' "$USR" "$_h" | timed 20 "$@" >/dev/null 2>&1
+}
+# apply_step: the step in $ST done
+apply_step() {
+    case $(field .do) in
+        note) return 0 ;;
+        api) api_call "$(field .method)" "$(fieldc .req)" || { APPLY_WHY=$(ans_error); return 1; } ;;
+        lock) arg _k .kind || return 1; getv _v .val; [ -z "$_v" ] || arg _v .val || return 1
+              timed 120 "$LOCKTOOL" apply "$_k" "$_v" </dev/null >/dev/null 2>&1 ;;
+        lock-reset) timed 180 "$LOCKTOOL" reset </dev/null >/dev/null 2>&1 ;;
+        keys) add_keys ;;
+        password) set_password ;;
+        forward) _r=$(printf '%s' "$ST" | jq -c .data | timed 30 "$FWDA" set 2>/dev/null)
+                 [ "$(printf '%s' "$_r" | jq -r .ok 2>/dev/null)" = 1 ] || { APPLY_WHY=$(printf '%s' "$_r" | jq -r '.error // empty' 2>/dev/null); return 1; } ;;
+        vpn-add)
+            arg _t .type && arg _nm .name || return 1
+            _id=$(printf '%s' "$ST" | jq -j .config | timed 60 "$VPN" profile add "$_t" "$_nm" - 2>"$WORK/vpn.err" | tail -n 1)
+            case $_id in ''|-*|*[!a-z0-9-]*) APPLY_WHY=$(tail -n 1 "$WORK/vpn.err" | sanitize); return 1 ;; esac
+            vpn_options "$_id" ;;
+        vpn-edit)
+            arg _nm .name && arg _t .type || return 1
+            _id=$(vpn_id "$_nm" "$_t"); [ -n "$_id" ] || return 1
+            printf '%s' "$ST" | jq -j .config | timed 60 "$VPN" profile edit "$_id" - >/dev/null 2>"$WORK/vpn.err" ||
+                { APPLY_WHY=$(tail -n 1 "$WORK/vpn.err" | sanitize); return 1; } ;;
+        vpn-options) arg _nm .name && arg _t .type || return 1
+                     _id=$(vpn_id "$_nm" "$_t"); [ -n "$_id" ] || return 1; vpn_options "$_id" ;;
+        vpn-sub)
+            arg _nm .name && arg _t .type || return 1
+            allowed "$_t" 'auto|links|mihomo|dae' || return 1
+            set -- subscription add "$_nm" - --type "$_t"
+            getv _iv .interval
+            case $_iv in null|'') ;; *) allowed "$_iv" '0|[1-9][0-9]{0,2}' || return 1; set -- "$@" --interval "$_iv" ;; esac
+            [ "$(field .insecure)" != true ] || set -- "$@" --insecure
+            field .url | timed 180 "$VPN" "$@" >/dev/null 2>"$WORK/vpn.err" || { APPLY_WHY=$(tail -n 1 "$WORK/vpn.err" | sanitize); return 1; } ;;
+        vpn-setting)
+            arg _k .key && arg _v .value && vpn_setting_ok "$_k" "$_v" || return 1
+            if [ "$_k" = KILL_SWITCH ]; then
+                case $_v in 1) _v=on ;; *) _v=off ;; esac
+                timed 30 "$VPN" killswitch "$_v" </dev/null >/dev/null 2>"$WORK/vpn.err"
+            else
+                timed 30 "$VPN" settings set "$_k" "$_v" </dev/null >/dev/null 2>"$WORK/vpn.err"
+            fi || { APPLY_WHY=$(tail -n 1 "$WORK/vpn.err" | sanitize); return 1; } ;;
+        vpn-use) arg _nm .name || return 1
+                 _id=$(vpn_id "$_nm"); [ -n "$_id" ] || { APPLY_WHY="no profile of that name"; return 1; }
+                 timed 60 "$VPN" profile use "$_id" </dev/null >/dev/null 2>"$WORK/vpn.err" || { APPLY_WHY=$(tail -n 1 "$WORK/vpn.err" | sanitize); return 1; } ;;
+        vpn-power) arg _s .state && allowed "$_s" 'on|off' || return 1
+                   timed 120 "$VPN" "$_s" </dev/null >/dev/null 2>"$WORK/vpn.err" || { APPLY_WHY=$(tail -n 1 "$WORK/vpn.err" | sanitize); return 1; } ;;
+        *) return 1 ;;
+    esac
+}
+
+do_import() {
+    _f= DRY=0 FORCE=0 ONLY= SKIP=
+    while [ $# -gt 0 ]; do
+        case $1 in
+            --dry-run) DRY=1; shift ;;
+            --force) FORCE=1; shift ;;
+            --only) [ $# -ge 2 ] || usage; ONLY=$2; shift 2 ;;
+            --skip) [ $# -ge 2 ] || usage; SKIP=$2; shift 2 ;;
+            --passphrase-file) [ $# -ge 2 ] || usage; PASS_FROM=file PASS_FILE=$2; shift 2 ;;
+            --passphrase-stdin) PASS_FROM=stdin; shift ;;
+            -) [ -z "$_f" ] || usage; _f=-; shift ;;
+            -*) usage ;;
+            *) [ -z "$_f" ] || usage; _f=$1; shift ;;
+        esac
+    done
+    [ -n "$_f" ] || usage
+    [ -z "$ONLY" ] || { pick "$ONLY" >/dev/null || exit 2; }
+    [ -z "$SKIP" ] || { pick "$SKIP" >/dev/null || exit 2; }
+    [ "$PASS_FROM" != file ] || read_pass
+    if [ "$PASS_FROM" = stdin ] && [ "$_f" != - ]; then read_pass; fi
+    load "$_f"
+    _dev=$(jq -r .source.device "$WORK/doc.json"); _sys=$(jq -r .source.system "$WORK/doc.json")
+    say "backup of a $_dev on $_sys ($(jq -r .source.release "$WORK/doc.json"), host $(jq -r .source.hostname "$WORK/doc.json")), made $(jq -r '.created | todate' "$WORK/doc.json")"
+    if [ "$_dev" != "$DEV" ]; then
+        [ "$FORCE" = 1 ] || die "this file is from a $_dev, this device is a $DEV: refused (--force takes it anyway)"
+        say "note: from a $_dev, taken on a $DEV (--force)"
+    fi
+    case $_sys:$SYS in ubuntu:ubuntu|openwrt*:openwrt*) ;; *) say "note: from $_sys, taken on $SYS: what both systems have" ;; esac
+    # this device as it is now, in the same form, for the comparison (its password hash only when the file has one)
+    _secs=$(printf '%s\n' $SECTIONS | grep -vx password | tr '\n' ' ')
+    [ "$(jq -r '.sections | has("password")' "$WORK/doc.json")" != true ] || _secs="$_secs password"
+    collect $_secs > "$WORK/cur.json" 2>/dev/null || die "the settings of this device could not be read"
+    _o=$(jq -n -c --arg s "$ONLY" '$s | split(",") | map(select(length > 0))')
+    _k=$(jq -n -c --arg s "$SKIP" '$s | split(",") | map(select(length > 0))')
+    jq -n -r --slurpfile b "$WORK/doc.json" --slurpfile c "$WORK/cur.json" --argjson only "$_o" --argjson skip "$_k" \
+        "$PLAN_JQ" > "$WORK/steps" || die "the plan could not be made"
+    rm -f "$WORK/cur.json"
+    # the check: every step by the rules of what applies it; one refusal and nothing is changed
+    : > "$WORK/todo"; _bad=0 _n=0
+    while IFS= read -r ST; do
+        if [ "$(field .do)" = note ]; then say "note  $(field .say)"; continue; fi
+        if check_step; then
+            if [ -n "$CHK_SKIP" ]; then say "skip  $(field .say) ($CHK_SKIP)"
+            else say "$( [ "$DRY" = 1 ] && echo would || echo will)  $(field .say)"; printf '%s\n' "$ST" >> "$WORK/todo"; _n=$((_n + 1)); fi
+        else
+            say "BAD   $(field .say): $CHK_WHY"; _bad=$((_bad + 1))
+        fi
+    done < "$WORK/steps"
+    ST=
+    rm -f "$WORK/steps"
+    [ "$_bad" = 0 ] || die "$_bad value(s) refused: nothing was changed"
+    [ "$_n" -gt 0 ] || { say "nothing to change"; return 0; }
+    [ "$DRY" = 0 ] || { say "dry run: nothing was changed"; return 0; }
+    VPN=$(vpn_cmd)
+    _fail=0
+    while IFS= read -r ST; do
+        APPLY_WHY=
+        if apply_step; then say "done  $(field .say)"
+        else say "FAILED $(field .say)${APPLY_WHY:+: $APPLY_WHY}"; _fail=$((_fail + 1)); fi
+    done < "$WORK/todo"
+    ST=
+    [ "$_fail" = 0 ] || die "$_fail step(s) failed; the others were done"
+    say "restored"
+}
+
+case ${1:-} in
+    export) shift; do_export "$@" ;;
+    import) shift; do_import "$@" ;;
+    show) shift; do_show "$@" ;;
+    *) usage ;;
+esac

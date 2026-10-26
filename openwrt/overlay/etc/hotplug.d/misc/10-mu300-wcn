@@ -1,0 +1,30 @@
+#!/bin/sh
+# MU300: the Wi-Fi driver reset the WCN chip after a firmware assert (issue #94: sprd_wlan_combo's recovery watchdog,
+# or wcn_bsp's own reset). The chip is off until Wi-Fi is reopened: the next open powers it on and reloads the
+# firmware, and hostapd has to start the access point again. One "wifi down/up", as mu300-hw does at boot. In the
+# background: procd runs hotplug scripts one at a time. If Wi-Fi does not come back, the watchdog reboots the device
+# about a minute later (sprd_wlan_combo.recovery_reboot).
+#
+# One reopen at a time: a reset can send FW_ERROR more than once (the watchdog's and wcn_bsp's own), and two
+# overlapping "wifi down; wifi up" runs race each other through netifd. A second event while one runs is dropped -
+# the running one reopens the chip that is there by then. The lock names its holder, so one left behind by a killed
+# run is taken over. (The Ubuntu side gets this from systemd: starting a oneshot that is already starting is one run.)
+# Based on kanoqwq/mu300-linux@23361ce.
+[ "$ACTION" = change ] && [ "$SOURCE" = unisocwl ] && [ "$EVENT" = FW_ERROR ] || exit 0
+
+LOCK=${MU300_WCN_LOCK:-/run/mu300-wcn-reopen.lock}
+take_lock() {
+    mkdir "$LOCK" 2>/dev/null && return 0
+    holder=$(cat "$LOCK/pid" 2>/dev/null)
+    [ -n "$holder" ] && kill -0 "$holder" 2>/dev/null && return 1
+    rm -rf "$LOCK"
+    mkdir "$LOCK" 2>/dev/null
+}
+
+logger -t mu300-wcn "Wi-Fi firmware error, reopening Wi-Fi"
+(
+    take_lock || { logger -t mu300-wcn "a reopen is already running"; exit 0; }
+    sh -c 'echo $PPID' > "$LOCK/pid"
+    trap 'rm -rf "$LOCK"' EXIT
+    sleep 1; wifi down; wifi up
+) >/dev/null 2>&1 </dev/null &

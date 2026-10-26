@@ -1,0 +1,319 @@
+kernel 5.4: quiet the IPA (sipa_eth, sipa_rm, sipa core, sipa_dele) and WCN loopcheck lines that repeat all day
+
+docs/FINDINGS.md 191. On an idle F50 the IPA powers down and the next packet powers it up again, every 10-15 s; the
+vendor drivers printed about 30 info lines for each round trip (resource state changes, the delegate's smsg
+exchange, "fail to send, ret -115" for the -EINPROGRESS of a resume that SIPA_LEAVE_FLOWCTRL then ends), and the
+WCN loopcheck printed four more every 5 s. That was about 300 of the 470 kernel lines a minute that filled OpenWrt's
+128 KiB log buffer within two minutes of boot. Only printk levels change (CONFIG_DYNAMIC_DEBUG is on, so
+`echo 'module sipa_core +p' > /sys/kernel/debug/dynamic_debug/control` style lines bring any of them back), plus:
+a failed send other than -EINPROGRESS stays an error but rate-limited, and sipa_nic_trigger_flow_ctrl_work() knows
+-EINPROGRESS instead of warning "don't have this flow ctrl err type". upstream/modules has the same change.
+
+diff --git a/drivers/net/sprd/sipa_delegate/sipa_dele_cmn.c b/drivers/net/sprd/sipa_delegate/sipa_dele_cmn.c
+index d6b919a..adf775d 100644
+--- a/drivers/net/sprd/sipa_delegate/sipa_dele_cmn.c
++++ b/drivers/net/sprd/sipa_delegate/sipa_dele_cmn.c
+@@ -63,7 +63,7 @@ static int conn_thread(void *data)
+ 			continue;
+ 		}
+ 
+-		pr_info("smsg_recv, smsg_cnt=%d, dst=%d, chan=%d, type=%d, flag=0x%x, value=0x%08x\n",
++		pr_debug("smsg_recv, smsg_cnt=%d, dst=%d, chan=%d, type=%d, flag=0x%x, value=0x%08x\n",
+ 			delegator->smsg_cnt++,
+ 			delegator->dst, delegator->chan,
+ 			mrecv.type, mrecv.flag, mrecv.value);
+@@ -122,7 +122,7 @@ static void sipa_dele_wq_handler(struct work_struct *work)
+ 			     struct sipa_dele_smsg_work_type,
+ 			     work);
+ 
+-	pr_info("smsg_send, dst=%d chan=%d type=%d flag=%d\n",
++	pr_debug("smsg_send, dst=%d chan=%d type=%d flag=%d\n",
+ 		smsg_work->delegator->dst,
+ 		smsg_work->msg.channel,
+ 		smsg_work->msg.type,
+diff --git a/drivers/net/sprd/sipa_delegate/sipa_dele_cp_in_ap.c b/drivers/net/sprd/sipa_delegate/sipa_dele_cp_in_ap.c
+index 649d5d1..251cb98 100644
+--- a/drivers/net/sprd/sipa_delegate/sipa_dele_cp_in_ap.c
++++ b/drivers/net/sprd/sipa_delegate/sipa_dele_cp_in_ap.c
+@@ -36,7 +36,7 @@ static void cp_dele_on_commad(void *priv, u16 flag, u32 data)
+ 	struct sipa_delegator *delegator = priv;
+ 	int ret;
+ 
+-	pr_info("prod_id:%d, on_cmd, flag = %d\n", delegator->prod_id, flag);
++	pr_debug("prod_id:%d, on_cmd, flag = %d\n", delegator->prod_id, flag);
+ 
+ 	switch (flag) {
+ 	case SMSG_FLG_DELE_ENABLE:
+@@ -63,7 +63,7 @@ static void cp_dele_on_commad(void *priv, u16 flag, u32 data)
+ 		sipa_dele_start_done_work(delegator,
+ 					  SMSG_FLG_DELE_ENABLE,
+ 					  SMSG_VAL_DELE_REQ_SUCCESS);
+-		pr_info("sipa_dele get pd success ret = %d\n", ret);
++		pr_debug("sipa_dele get pd success ret = %d\n", ret);
+ 
+ 		break;
+ 	case SMSG_FLG_DELE_DISABLE:
+@@ -78,7 +78,7 @@ static void cp_dele_on_commad(void *priv, u16 flag, u32 data)
+ 		break;
+ 	}
+ 
+-	pr_info("sipa pd_eb_flag = %d, pd_get_flag = %d\n",
++	pr_debug("sipa pd_eb_flag = %d, pd_get_flag = %d\n",
+ 		delegator->pd_eb_flag, delegator->pd_get_flag);
+ 
+ 	/* do default operations */
+diff --git a/drivers/net/sprd/sipa_v3/sipa_core.c b/drivers/net/sprd/sipa_v3/sipa_core.c
+index 52418f1..d0b739b 100644
+--- a/drivers/net/sprd/sipa_v3/sipa_core.c
++++ b/drivers/net/sprd/sipa_v3/sipa_core.c
+@@ -402,7 +402,7 @@ static int sipa_resume_work(struct device *dev)
+ 	// wake_up_process(ipa->set_rps_thread);
+ 	// hrtimer_start(&ipa->daemon_timer, ms_to_ktime(0),
+ 		     // HRTIMER_MODE_REL);
+-	pr_info("sipa resume hrtimer start\n");
++	pr_debug("sipa resume hrtimer start\n");
+ 
+ 	sipa_rm_notify_completion(SIPA_RM_EVT_GRANTED,
+ 				  SIPA_RM_RES_PROD_IPA);
+@@ -593,7 +593,7 @@ static int sipa_prepare_suspend(struct device *dev)
+ 		// sipa_single_little_core(SIPA_USER_RECOVERY);
+ 		sipa_set_enabled(false);
+ 		ipa->suspend_stage |= SIPA_EB_SUSPEND;
+-		dev_info(dev, "sipa ready to suspend and change to single\n");
++		dev_dbg(dev, "sipa ready to suspend and change to single\n");
+ 	}
+ 
+ 	if (!(ipa->suspend_stage & SIPA_FORCE_SUSPEND)) {
+@@ -603,7 +603,7 @@ static int sipa_prepare_suspend(struct device *dev)
+ 
+ 	ipa->suspend_stage |= SIPA_ACTION_SUSPEND;
+ 
+-	dev_info(dev, "sipa prepare suspend finished\n");
++	dev_dbg(dev, "sipa prepare suspend finished\n");
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/sprd/sipa_v3/sipa_eth.c b/drivers/net/sprd/sipa_v3/sipa_eth.c
+index c7acf79..62cd081 100644
+--- a/drivers/net/sprd/sipa_v3/sipa_eth.c
++++ b/drivers/net/sprd/sipa_v3/sipa_eth.c
+@@ -57,7 +57,7 @@ static void sipa_eth_flowctrl_handler(void *priv, int flowctrl)
+ 		spin_lock_irqsave(&queue_lock, queue_lock_flags);
+ 		netif_wake_queue(dev);
+ 		spin_unlock_irqrestore(&queue_lock, queue_lock_flags);
+-		pr_info("wakeup queue on dev %s\n", dev->name);
++		pr_debug("wakeup queue on dev %s\n", dev->name);
+ 	}
+ }
+ 
+@@ -68,7 +68,7 @@ static void sipa_eth_notify_cb(void *priv, enum sipa_evt_type evt,
+ 
+ 	switch (evt) {
+ 	case SIPA_LEAVE_FLOWCTRL:
+-		pr_info("dev %s SIPA LEAVE FLOWCTRL\n", sipa_eth->netdev->name);
++		pr_debug("dev %s SIPA LEAVE FLOWCTRL\n", sipa_eth->netdev->name);
+ 		sipa_eth_flowctrl_handler(priv, 0);
+ 		break;
+ 	/* following cases may be deprecated */
+@@ -134,12 +134,17 @@ static netdev_tx_t sipa_eth_start_xmit(struct sk_buff *skb,
+ 
+ 	ret = sipa_nic_tx(sipa_eth->nic_id, pdata->src_id, netid, skb);
+ 	if (unlikely(ret != 0)) {
+-		pr_err("fail to send, ret %d\n", ret);
++		/* -EINPROGRESS: the IPA is resuming and SIPA_LEAVE_FLOWCTRL wakes the queue (MU300: not an error, and
++		 * it came several times a minute, every time the idle IPA was woken by a packet) */
++		if (ret == -EINPROGRESS)
++			pr_debug("fail to send, ret %d\n", ret);
++		else
++			pr_err_ratelimited("fail to send, ret %d\n", ret);
+ 		stats->tx_errors++;
+ 		spin_lock_irqsave(&queue_lock, queue_lock_flags);
+ 		if (sipa_nic_check_flow_ctrl(sipa_eth->nic_id)) {
+ 			netif_stop_queue(dev);
+-			pr_info("stop queue on dev %s\n", dev->name);
++			pr_debug("stop queue on dev %s\n", dev->name);
+ 		}
+ 		spin_unlock_irqrestore(&queue_lock, queue_lock_flags);
+ 		sipa_nic_trigger_flow_ctrl_work(sipa_eth->nic_id, ret);
+diff --git a/drivers/net/sprd/sipa_v3/sipa_nic.c b/drivers/net/sprd/sipa_v3/sipa_nic.c
+index 0690443..0994a61 100644
+--- a/drivers/net/sprd/sipa_v3/sipa_nic.c
++++ b/drivers/net/sprd/sipa_v3/sipa_nic.c
+@@ -650,6 +650,9 @@ int sipa_nic_trigger_flow_ctrl_work(enum sipa_nic_id nic_id, int err)
+ 		ipa->sender->free_notify_net = true;
+ 		schedule_work(&ipa->flow_ctrl_work);
+ 		break;
++	case -EINPROGRESS:
++		/* MU300: the IPA is resuming; its SIPA_LEAVE_FLOWCTRL wakes the queue, nothing to do here */
++		break;
+ 	default:
+ 		dev_warn(ipa->dev, "don't have this flow ctrl err type\n");
+ 		break;
+diff --git a/drivers/net/sprd/sipa_v3/sipa_rm_res.c b/drivers/net/sprd/sipa_v3/sipa_rm_res.c
+index 7f406b8..6a20531 100644
+--- a/drivers/net/sprd/sipa_v3/sipa_rm_res.c
++++ b/drivers/net/sprd/sipa_v3/sipa_rm_res.c
+@@ -128,9 +128,9 @@ int sipa_rm_resource_producer_request_work(struct sipa_rm_res_prod *prod)
+ {
+ 	int driver_result;
+ 
+-	pr_info("calling driver CB\n");
++	pr_debug("calling driver CB\n");
+ 	driver_result = prod->request_resource(prod->user_data);
+-	pr_info("driver CB returned with %d\n", driver_result);
++	pr_debug("driver CB returned with %d\n", driver_result);
+ 
+ 	return driver_result;
+ }
+@@ -261,12 +261,12 @@ int sipa_rm_resource_producer_request(struct sipa_rm_res_prod *producer,
+ 
+ bail:
+ 	if (prev_state != producer->resource.state)
+-		pr_info("%s state changed %d->%d\n",
++		pr_debug("%s state changed %d->%d\n",
+ 			sipa_rm_res_str(producer->resource.name),
+ 			prev_state,
+ 			producer->resource.state);
+ 
+-	pr_info("EXIT with %d\n", result);
++	pr_debug("EXIT with %d\n", result);
+ 
+ 	return result;
+ }
+@@ -312,7 +312,7 @@ int sipa_rm_resource_producer_release(struct sipa_rm_res_prod *prod,
+ 
+ bail:
+ 	if (save_state != prod->resource.state)
+-		pr_info("%s state changed %d->%d\n",
++		pr_debug("%s state changed %d->%d\n",
+ 			sipa_rm_res_str(prod->resource.name),
+ 			save_state,
+ 			prod->resource.state);
+@@ -813,7 +813,7 @@ int sipa_rm_resource_delete_dependency(struct sipa_rm_resource *consumer,
+ 				sipa_rm_resource_consumer_enter_granted(cons);
+ 
+ 			if (prev_state != consumer->state)
+-				pr_info("%s state changed %d->%d\n",
++				pr_debug("%s state changed %d->%d\n",
+ 					sipa_rm_res_str(consumer->name),
+ 					prev_state,
+ 					consumer->state);
+@@ -871,7 +871,7 @@ int sipa_rm_resource_consumer_request(struct sipa_rm_res_cons *cons)
+ 	}
+ bail:
+ 	if (state != cons->resource.state)
+-		pr_info("%s state changed %d->%d\n",
++		pr_debug("%s state changed %d->%d\n",
+ 			sipa_rm_res_str(cons->resource.name),
+ 			state,
+ 			cons->resource.state);
+@@ -917,7 +917,7 @@ int sipa_rm_resource_consumer_release(struct sipa_rm_res_cons *cons)
+ 
+ bail:
+ 	if (state != cons->resource.state)
+-		pr_info("%s state changed %d->%d\n",
++		pr_debug("%s state changed %d->%d\n",
+ 			sipa_rm_res_str(cons->resource.name),
+ 			state,
+ 			cons->resource.state);
+@@ -967,7 +967,7 @@ static void sipa_rm_resource_consumer_handle_cb(struct sipa_rm_res_cons *cons,
+ 	}
+ 
+ 	if (prev_state != cons->resource.state)
+-		pr_info("%s state changed %d->%d\n",
++		pr_debug("%s state changed %d->%d\n",
+ 			sipa_rm_res_str(cons->resource.name),
+ 			prev_state,
+ 			cons->resource.state);
+@@ -1040,7 +1040,7 @@ cons:
+ 	return;
+ bail:
+ 	if (save_state != prod->resource.state)
+-		pr_info("%s state changed %d->%d\n",
++		pr_debug("%s state changed %d->%d\n",
+ 			sipa_rm_res_str(prod->resource.name),
+ 			save_state,
+ 			prod->resource.state);
+diff --git a/drivers/net/sprd/sipa_v3/sipa_usb.c b/drivers/net/sprd/sipa_v3/sipa_usb.c
+index 73c8b29..78f1ffd 100644
+--- a/drivers/net/sprd/sipa_v3/sipa_usb.c
++++ b/drivers/net/sprd/sipa_v3/sipa_usb.c
+@@ -51,7 +51,7 @@ static void sipa_usb_notify_cb(void *priv, enum sipa_evt_type evt,
+ {
+ 	switch (evt) {
+ 	case SIPA_LEAVE_FLOWCTRL:
+-		pr_info("SIPA LEAVE FLOWCTRL\n");
++		pr_debug("SIPA LEAVE FLOWCTRL\n");
+ 		sipa_usb_flowctrl_handler(priv, 0);
+ 		break;
+ 	/* following cases may be deprecated */
+diff --git a/drivers/unisoc_platform/sprdwcn/pcie/edma_engine.c b/drivers/unisoc_platform/sprdwcn/pcie/edma_engine.c
+index 794e791..95b27c2 100644
+--- a/drivers/unisoc_platform/sprdwcn/pcie/edma_engine.c
++++ b/drivers/unisoc_platform/sprdwcn/pcie/edma_engine.c
+@@ -1801,7 +1801,7 @@ int edma_tp_count(int chn, void *head, void *tail, int num)
+ 		bytecount += mbuf->len;
+ 		dt = time_sub_us(&start_time, &time);
+ 		if (dt >= 5000000) {
+-			WCN_INFO("edma-tp:%d/%d (byte/us)\n",
++			WCN_DBG("edma-tp:%d/%d (byte/us)\n",
+ 				 bytecount, dt);
+ 			bytecount = 0;
+ 		}
+diff --git a/drivers/unisoc_platform/sprdwcn/platform/loopcheck.c b/drivers/unisoc_platform/sprdwcn/platform/loopcheck.c
+index 9c11a62..052ce40 100644
+--- a/drivers/unisoc_platform/sprdwcn/platform/loopcheck.c
++++ b/drivers/unisoc_platform/sprdwcn/platform/loopcheck.c
+@@ -43,7 +43,7 @@ static int loopcheck_send_pcie(char *cmd, unsigned int len)
+ 	static int at_buf_flag;
+ 	struct wcn_pcie_info *pcie_dev;
+ 
+-	WCN_INFO("%s enter\n", __func__);
++	WCN_DBG("%s enter\n", __func__);
+ 	pcie_dev = get_wcn_device_info();
+ 	if (!pcie_dev) {
+ 		WCN_ERR("%s:PCIE device link error\n", __func__);
+@@ -85,7 +85,7 @@ static int loopcheck_send_pcie(char *cmd, unsigned int len)
+ 	if (ret)
+ 		WCN_INFO("sprdwcn_bus_push_list error=%d\n", ret);
+ 
+-	WCN_INFO("tx:%s in %s\n", cmd, __func__);
++	WCN_DBG("tx:%s in %s\n", cmd, __func__);
+ 
+ 	return len;
+ }
+@@ -114,7 +114,7 @@ static int loopcheck_send(char *buf, unsigned int len)
+ 		pub_head_rsv = PUB_HEAD_RSV;
+ 
+ 	WCN_INFO("%s", __wcn_get_sw_ver());
+-	WCN_INFO("tx:%s\n", buf);
++	WCN_DBG("tx:%s\n", buf);
+ 	if (unlikely(!marlin_get_module_status())) {
+ 		WCN_ERR("WCN module have not open\n");
+ 		return -EIO;
+diff --git a/drivers/unisoc_platform/sprdwcn/platform/wcn_procfs.c b/drivers/unisoc_platform/sprdwcn/platform/wcn_procfs.c
+index f1ef8c0..d8ead65 100644
+--- a/drivers/unisoc_platform/sprdwcn/platform/wcn_procfs.c
++++ b/drivers/unisoc_platform/sprdwcn/platform/wcn_procfs.c
+@@ -323,7 +323,7 @@ int mdbg_loopcheck_read(int channel, struct mbuf_t *head,
+ 		memcpy(mdbg_proc->loopcheck.buf, head->buf, head->len);
+ 		mdbg_proc->loopcheck.rcv_len = head->len;
+ 	}
+-	WCN_INFO("rx:%s\n", (char *)(mdbg_proc->loopcheck.buf));
++	WCN_DBG("rx:%s\n", (char *)(mdbg_proc->loopcheck.buf));
+ 	mdbg_proc->fail_count = 0;
+ 	complete(&mdbg_proc->loopcheck.completed);
+ 	complete_kernel_loopcheck();
+diff --git a/drivers/unisoc_platform/sprdwcn/platform/wcn_txrx.c b/drivers/unisoc_platform/sprdwcn/platform/wcn_txrx.c
+index bf9881c..a4bc8d9 100644
+--- a/drivers/unisoc_platform/sprdwcn/platform/wcn_txrx.c
++++ b/drivers/unisoc_platform/sprdwcn/platform/wcn_txrx.c
+@@ -331,7 +331,7 @@ int mdbg_tx_cb(int channel, struct mbuf_t *head,
+ 		}
+ 	}
+ 
+-	WCN_INFO("%s, chn:%d\n", __func__, channel);
++	WCN_DBG("%s, chn:%d\n", __func__, channel);
+ 	/* PCIe buf is witebuf[], not kmalloc, no need to free */
+ 	sprdwcn_bus_list_free(channel, head, tail, num);
+ 

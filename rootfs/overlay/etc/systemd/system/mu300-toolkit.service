@@ -1,0 +1,13 @@
+[Unit]
+Description=MU300 toolkit: apply the saved performance profile and TTL setting
+ConditionPathExists=|/etc/mu300/toolkit.conf
+ConditionPathExists=|/etc/mu300/ttl.conf
+After=mu300-vendor.service mu300-firewall.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/mu300/bin/mu300-toolkit apply
+
+[Install]
+WantedBy=multi-user.target

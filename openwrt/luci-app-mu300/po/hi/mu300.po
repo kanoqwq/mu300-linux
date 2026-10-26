@@ -1,0 +1,4050 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: hi\n"
+
+msgid "Status dashboard"
+msgstr "स्थिति डैशबोर्ड"
+
+msgid "Cellular"
+msgstr "सेल्युलर"
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM"
+msgstr "Dual SIM"
+
+msgid "SIM settings"
+msgstr "SIM सेटिंग्स"
+
+msgid "Network locks"
+msgstr "नेटवर्क लॉक"
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "SMS forwarding"
+msgstr "SMS अग्रेषण"
+
+msgid "AT terminal"
+msgstr "AT टर्मिनल"
+
+msgid "Adapter settings"
+msgstr "एडेप्टर सेटिंग्स"
+
+msgid "TTL"
+msgstr "TTL"
+
+msgid "Data usage"
+msgstr "डेटा उपयोग"
+
+msgid "Device management"
+msgstr "डिवाइस प्रबंधन"
+
+msgid "Update"
+msgstr "अपडेट करें"
+
+msgid "Backup of settings"
+msgstr "सेटिंग्स का बैकअप"
+
+msgid "Languages"
+msgstr "भाषाएँ"
+
+msgid "Power"
+msgstr "पावर"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Terminal"
+msgstr "टर्मिनल"
+
+msgid "Terminal settings"
+msgstr "टर्मिनल सेटिंग्स"
+
+msgid "Overview"
+msgstr "अवलोकन"
+
+msgid "Profiles"
+msgstr "प्रोफ़ाइल"
+
+msgid "Subscriptions"
+msgstr "सब्सक्रिप्शन"
+
+msgid "Engines"
+msgstr "इंजन"
+
+msgid "Settings"
+msgstr "सेटिंग्स"
+
+msgid "Logs"
+msgstr "लॉग"
+
+msgid "Packages after an update"
+msgstr "अपडेट के बाद पैकेज"
+
+msgid "MU300 control center: status dashboard, network locks, AT terminal, SMS and VPN"
+msgstr "MU300 कंट्रोल सेंटर: स्टेटस डैशबोर्ड, नेटवर्क लॉक, AT टर्मिनल, SMS और VPN"
+
+msgid "Terminal: a root shell on the device in the browser"
+msgstr "टर्मिनल: ब्राउज़र में डिवाइस का root शेल"
+
+msgid "China Mobile"
+msgstr "China Mobile"
+
+msgid "China Unicom"
+msgstr "China Unicom"
+
+msgid "China Telecom"
+msgstr "China Telecom"
+
+msgid "China Broadnet"
+msgstr "China Broadnet"
+
+msgid "China Tietong"
+msgstr "China Tietong"
+
+msgid "Excellent"
+msgstr "उत्कृष्ट"
+
+msgid "Good"
+msgstr "अच्छा"
+
+msgid "Fair"
+msgstr "औसत"
+
+msgid "Poor"
+msgstr "कमज़ोर"
+
+msgid "Unknown"
+msgstr "अज्ञात"
+
+msgid "%d d %d h"
+msgstr "%d दिन %d घं"
+
+msgid "%d h %d min"
+msgstr "%d घं %d मि"
+
+msgid "%d min"
+msgstr "%d मि"
+
+msgid "No neighbor-cell data"
+msgstr "पड़ोसी सेल का कोई डेटा नहीं"
+
+msgid "Locked"
+msgstr "लॉक है"
+
+msgid "Lock"
+msgstr "लॉक करें"
+
+msgid "Unknown error"
+msgstr "अज्ञात त्रुटि"
+
+msgid "Confirm"
+msgstr "पुष्टि करें"
+
+msgid "OK"
+msgstr "ठीक है"
+
+msgid "Cancel"
+msgstr "रद्द करें"
+
+msgid "%d s"
+msgstr "%d से"
+
+msgid "%d h"
+msgstr "%d घं"
+
+msgid "New SMS · %s"
+msgstr "नया SMS · %s"
+
+msgid "Unknown number"
+msgstr "अज्ञात नंबर"
+
+msgid "Select"
+msgstr "चुनें"
+
+msgid "never"
+msgstr "कभी नहीं"
+
+msgid "just now"
+msgstr "अभी-अभी"
+
+msgid "%s ago"
+msgstr "%s पहले"
+
+msgid "Failed: %s"
+msgstr "विफल: %s"
+
+msgid "Management connection lost"
+msgstr "प्रबंधन कनेक्शन टूट गया"
+
+msgid "Installing the VPN module"
+msgstr "VPN मॉड्यूल इंस्टॉल हो रहा है"
+
+msgid "Installing the engine"
+msgstr "इंजन इंस्टॉल हो रहा है"
+
+msgid "Adding the subscription"
+msgstr "सब्सक्रिप्शन जोड़ा जा रहा है"
+
+msgid "Refreshing the subscriptions"
+msgstr "सब्सक्रिप्शन रीफ़्रेश हो रहे हैं"
+
+msgid "Testing the latency of every profile"
+msgstr "हर प्रोफ़ाइल की लेटेंसी जाँची जा रही है"
+
+msgid "Downloading the config"
+msgstr "कॉन्फ़िग डाउनलोड हो रहा है"
+
+msgid "Working…"
+msgstr "काम जारी है…"
+
+msgid "done"
+msgstr "पूरा हुआ"
+
+msgid "failed"
+msgstr "विफल"
+
+msgid "Verify the uploaded file"
+msgstr "अपलोड की गई फ़ाइल सत्यापित करें"
+
+msgid "The uploaded file is checked against the SHA256SUMS of the VPN module's latest release, downloaded over HTTPS. When that is not possible (offline, an older release), it is installed only if you allow an unverified file: it then runs as root with no check."
+msgstr "अपलोड की गई फ़ाइल को VPN मॉड्यूल की नवीनतम रिलीज़ की HTTPS से डाउनलोड की गई SHA256SUMS से जाँचा जाता है। यदि यह संभव न हो (ऑफ़लाइन, पुरानी रिलीज़), तो इसे तभी इंस्टॉल किया जाता है जब आप असत्यापित फ़ाइल की अनुमति दें: तब यह बिना किसी जाँच के root के रूप में चलती है।"
+
+msgid "Install it even if it cannot be verified"
+msgstr "सत्यापित न हो सके तब भी इंस्टॉल करें"
+
+msgid "Install only a verified file"
+msgstr "केवल सत्यापित फ़ाइल इंस्टॉल करें"
+
+msgid "Upload failed: %s"
+msgstr "अपलोड विफल: %s"
+
+msgid "The VPN module is too old for this panel"
+msgstr "VPN मॉड्यूल इस पैनल के लिए बहुत पुराना है"
+
+msgid "The VPN module is not installed"
+msgstr "VPN मॉड्यूल इंस्टॉल नहीं है"
+
+msgid "This page needs the VPN module with the machine-readable mu300-vpn (module v2 or newer). Updating it keeps the profiles and the settings."
+msgstr "इस पेज को मशीन-पठनीय mu300-vpn वाला VPN मॉड्यूल (मॉड्यूल v2 या नया) चाहिए। अपडेट करने से प्रोफ़ाइल और सेटिंग्स बनी रहती हैं।"
+
+msgid "The VPN is a module of its own: mu300-vpn with its kill switch and profiles, and one extra per engine (Xray, sing-box, mihomo, dae). It is installed with mu300-extra install vpn."
+msgstr "VPN एक अलग मॉड्यूल है: kill switch और प्रोफ़ाइल के साथ mu300-vpn, और हर इंजन के लिए एक अलग एक्स्ट्रा (Xray, sing-box, mihomo, dae)। यह mu300-extra install vpn से इंस्टॉल होता है।"
+
+msgid "The download is a few MB for the module and up to tens of MB per engine: on mobile data it counts towards your plan."
+msgstr "डाउनलोड मॉड्यूल के लिए कुछ MB और हर इंजन के लिए दर्जनों MB तक का है: मोबाइल डेटा पर यह आपके प्लान से कटता है।"
+
+msgid "Update the VPN module"
+msgstr "VPN मॉड्यूल अपडेट करें"
+
+msgid "Install the VPN module"
+msgstr "VPN मॉड्यूल इंस्टॉल करें"
+
+msgid "Upload the file…"
+msgstr "फ़ाइल अपलोड करें…"
+
+msgid "Offline: upload mu300-linux-vpn-core.tar.gz (or the bundle mu300-linux-vpn.tar.gz) from the release page of the VPN module."
+msgstr "ऑफ़लाइन: VPN मॉड्यूल के रिलीज़ पेज से mu300-linux-vpn-core.tar.gz (या बंडल mu300-linux-vpn.tar.gz) अपलोड करें।"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "This is a network or frequency scan: it takes one to three minutes, holds the modem's AT channel all that time, and mobile data may pause meanwhile. It runs in the background; the reply appears here when it is done."
+msgstr "यह नेटवर्क या फ़्रीक्वेंसी स्कैन है: इसमें एक से तीन मिनट लगते हैं, यह पूरे समय मॉडेम का AT चैनल घेरे रखता है, और इस बीच मोबाइल डेटा रुक सकता है। यह बैकग्राउंड में चलता है; पूरा होने पर जवाब यहाँ दिखेगा।"
+
+msgid "This changes a network mode, band or cell setting the modem stores: it stays in force after a reboot, and in Android too, where a network that does not match it shows as No Service. The Locks page shows these settings and resets them."
+msgstr "यह मॉडेम में सहेजी गई नेटवर्क मोड, बैंड या सेल सेटिंग बदलता है: यह रीबूट के बाद भी लागू रहती है, और Android में भी, जहाँ इससे मेल न खाने वाला नेटवर्क 'कोई सेवा नहीं' दिखता है। लॉक पेज इन सेटिंग्स को दिखाता है और रीसेट करता है।"
+
+msgid "This switches the radio, the data connection or the modem itself: mobile data drops until it is restored, and this page may lose its connection for a while."
+msgstr "यह रेडियो, डेटा कनेक्शन या ख़ुद मॉडेम को बदलता है: मोबाइल डेटा बहाल होने तक कट जाता है, और यह पेज कुछ देर के लिए कनेक्शन खो सकता है।"
+
+msgid "This changes the data profiles (APNs) stored in the modem, which mobile data and Android use."
+msgstr "यह मॉडेम में सहेजे गए डेटा प्रोफ़ाइल (APN) बदलता है, जिनका उपयोग मोबाइल डेटा और Android करते हैं।"
+
+msgid "This changes the SIM's PIN lock or enters a PIN: wrong PINs block the SIM until its PUK is entered."
+msgstr "यह SIM का PIN लॉक बदलता है या PIN दर्ज करता है: गलत PIN डालने पर SIM तब तक ब्लॉक रहती है जब तक उसका PUK दर्ज न किया जाए।"
+
+msgid "Basic"
+msgstr "मूल"
+
+msgid "Registration/signal"
+msgstr "पंजीकरण/सिग्नल"
+
+msgid "Bearer"
+msgstr "बेयरर"
+
+msgid "Engineering mode"
+msgstr "इंजीनियरिंग मोड"
+
+msgid "AT command (↑↓ history, Enter to send)"
+msgstr "AT कमांड (↑↓ इतिहास, भेजने के लिए Enter)"
+
+msgid "Send"
+msgstr "भेजें"
+
+msgid "Clear screen"
+msgstr "स्क्रीन साफ़ करें"
+
+msgid "Ready."
+msgstr "तैयार।"
+
+msgid "Session history (click to reuse)"
+msgstr "सत्र इतिहास (फिर से उपयोग के लिए क्लिक करें)"
+
+msgid "Running in the background (at most %d s); the reply appears here when it is done…"
+msgstr "बैकग्राउंड में चल रहा है (अधिकतम %d से); पूरा होने पर जवाब यहाँ दिखेगा…"
+
+msgid "The modem gave no final answer in time"
+msgstr "मॉडेम ने समय पर अंतिम जवाब नहीं दिया"
+
+msgid "%d s in the background"
+msgstr "बैकग्राउंड में %d से"
+
+msgid "(no output)"
+msgstr "(कोई आउटपुट नहीं)"
+
+msgid "This command changes the modem's state."
+msgstr "यह कमांड मॉडेम की स्थिति बदलता है।"
+
+msgid "Not sent yet: waiting for confirmation"
+msgstr "अभी भेजा नहीं गया: पुष्टि की प्रतीक्षा है"
+
+msgid "Send this AT command?"
+msgstr "यह AT कमांड भेजें?"
+
+msgid "Send anyway"
+msgstr "फिर भी भेजें"
+
+msgid "Not sent"
+msgstr "नहीं भेजा गया"
+
+msgid "Request failed"
+msgstr "अनुरोध विफल"
+
+msgid "(empty)"
+msgstr "(खाली)"
+
+msgid "Passphrase (8 characters or more)"
+msgstr "पासफ़्रेज़ (8 या अधिक अक्षर)"
+
+msgid "The passphrase again"
+msgstr "पासफ़्रेज़ दोबारा"
+
+msgid "Download the backup"
+msgstr "बैकअप डाउनलोड करें"
+
+msgid "Back up the settings"
+msgstr "सेटिंग्स का बैकअप लें"
+
+msgid "One file with the hotspot, mobile data and the APN, the network locks, the VPN profiles and settings, SMS forwarding, the LAN address, the host name, the time zone and the SSH keys. It holds passwords: with a passphrase it is encrypted, and only that passphrase opens it again."
+msgstr "एक फ़ाइल जिसमें हॉटस्पॉट, मोबाइल डेटा और APN, नेटवर्क लॉक, VPN प्रोफ़ाइल और सेटिंग्स, SMS फ़ॉरवर्डिंग, LAN पता, होस्ट नाम, समय क्षेत्र और SSH कुंजियाँ हैं। इसमें पासवर्ड हैं: पासफ़्रेज़ से यह एन्क्रिप्ट होती है, और केवल वही पासफ़्रेज़ इसे फिर खोलता है।"
+
+msgid "Include the login password"
+msgstr "लॉगिन पासवर्ड भी शामिल करें"
+
+msgid "Passphrase, if the file is encrypted"
+msgstr "पासफ़्रेज़, यदि फ़ाइल एन्क्रिप्टेड है"
+
+msgid "Show what would change"
+msgstr "दिखाएँ क्या बदलेगा"
+
+msgid "Restore"
+msgstr "पुनर्स्थापित करें"
+
+msgid "The file is larger than 4 MiB"
+msgstr "फ़ाइल 4 MiB से बड़ी है"
+
+msgid "The settings of the file replace these. The hotspot, mobile data or the LAN may restart, and this page may lose its connection for a moment."
+msgstr "फ़ाइल की सेटिंग्स इनकी जगह लेंगी। हॉटस्पॉट, मोबाइल डेटा या LAN फिर से शुरू हो सकते हैं, और यह पेज कुछ पल के लिए कनेक्शन खो सकता है।"
+
+msgid "Restore from a backup"
+msgstr "बैकअप से पुनर्स्थापित करें"
+
+msgid "Every value of the file is checked first; one that is refused and nothing is changed. What is the same is left alone, and no VPN profile, subscription or SSH key of this device is removed."
+msgstr "फ़ाइल का हर मान पहले जाँचा जाता है; एक भी अस्वीकार हो तो कुछ नहीं बदलता। जो समान है उसे छुआ नहीं जाता, और इस डिवाइस की कोई VPN प्रोफ़ाइल, सदस्यता या SSH कुंजी हटाई नहीं जाती।"
+
+msgid "Keep this device's login password"
+msgstr "इस डिवाइस का लॉगिन पासवर्ड रखें"
+
+msgid "Take a file of another device model"
+msgstr "दूसरे डिवाइस मॉडल की फ़ाइल स्वीकार करें"
+
+msgid "The two passphrases differ"
+msgstr "दोनों पासफ़्रेज़ अलग हैं"
+
+msgid "The passphrase needs 8 characters or more"
+msgstr "पासफ़्रेज़ में 8 या अधिक अक्षर चाहिए"
+
+msgid "Saved (encrypted)"
+msgstr "सहेजा गया (एन्क्रिप्टेड)"
+
+msgid "Saved. The file is not encrypted: it holds passwords, keep it safe."
+msgstr "सहेजा गया। फ़ाइल एन्क्रिप्टेड नहीं है: इसमें पासवर्ड हैं, इसे सुरक्षित रखें।"
+
+msgid "Choose a backup file first"
+msgstr "पहले एक बैकअप फ़ाइल चुनें"
+
+msgid "Restoring…"
+msgstr "पुनर्स्थापित हो रहा है…"
+
+msgid "Restored"
+msgstr "पुनर्स्थापित"
+
+msgid "The restore did not finish: see the lines above"
+msgstr "पुनर्स्थापना पूरी नहीं हुई: ऊपर की पंक्तियाँ देखें"
+
+msgid "Loading…"
+msgstr "लोड हो रहा है…"
+
+msgid "Channel Analysis"
+msgstr "चैनल विश्लेषण"
+
+msgid "A scan takes the Wi-Fi hotspot off its channel for a moment: connected devices drop, and some (macOS in particular) may not reconnect by themselves. This page scans as soon as it opens and again every few seconds. Reach the panel over USB or another way first if you depend on the hotspot."
+msgstr "स्कैन के दौरान Wi-Fi हॉटस्पॉट कुछ पल के लिए अपना चैनल छोड़ देता है: जुड़े हुए डिवाइस कट जाते हैं, और कुछ (ख़ासकर macOS) अपने-आप दोबारा नहीं जुड़ते। यह पेज खुलते ही और फिर हर कुछ सेकंड में स्कैन करता है। अगर आप हॉटस्पॉट पर निर्भर हैं, तो पहले USB या किसी अन्य रास्ते से पैनल तक पहुँचें।"
+
+msgid "Scan anyway"
+msgstr "फिर भी स्कैन करें"
+
+msgid "Saved"
+msgstr "सहेजा गया"
+
+msgid "CPU profile unavailable"
+msgstr "CPU profile unavailable"
+
+msgid "Power saving"
+msgstr "Power saving"
+
+msgid "Balanced"
+msgstr "Balanced"
+
+msgid "Performance"
+msgstr "Performance"
+
+msgid "Cores capped at about 60 %% of their maximum (cooler, less power)."
+msgstr "Cores capped at about 60 %% of their maximum (cooler, less power)."
+
+msgid "Schedutil across the full hardware range (the stock behaviour)."
+msgstr "Schedutil across the full hardware range (the stock behaviour)."
+
+msgid "Every cluster pinned at its hardware maximum."
+msgstr "Every cluster pinned at its hardware maximum."
+
+msgid "CPU profile"
+msgstr "CPU profile"
+
+msgid "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+msgstr "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+
+msgid "Saved profile: %s"
+msgstr "Saved profile: %s"
+
+msgid "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+msgstr "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+
+msgid "Clusters"
+msgstr "Clusters"
+
+msgid "Cores"
+msgstr "Cores"
+
+msgid "Governor"
+msgstr "Governor"
+
+msgid "Now"
+msgstr "Now"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Hardware max"
+msgstr "Hardware max"
+
+msgid "Frequencies in MHz."
+msgstr "Frequencies in MHz."
+
+msgid "Highlighted cores are online. A core taken offline stays offline, also after a reboot, until it is brought back. CPU0 always stays online."
+msgstr "हाइलाइट किए गए कोर ऑनलाइन हैं। बंद किया गया कोर फिर से चालू किए जाने तक, रीबूट के बाद भी, ऑफ़लाइन रहता है। CPU0 हमेशा ऑनलाइन रहता है।"
+
+msgid "Low latency: on"
+msgstr "कम विलंब: चालू"
+
+msgid "Low latency: off"
+msgstr "कम विलंब: बंद"
+
+msgid "Low latency keeps CPU0 out of its idle states, as ZTE's U30 Air firmware does: Wi-Fi delays are much shorter, and the device draws more power. Off by default."
+msgstr "कम विलंब मोड CPU0 को उसकी निष्क्रिय अवस्थाओं से बाहर रखता है, जैसा ZTE का U30 Air फ़र्मवेयर करता है: Wi-Fi विलंब बहुत कम हो जाता है और डिवाइस अधिक बिजली लेता है। डिफ़ॉल्ट रूप से बंद।"
+
+msgid "Thermal"
+msgstr "थर्मल"
+
+msgid "The kernel's thermal zones, read only. A zone with trip points throttles the cooling devices bound to it at its passive trip; a cooling state of 0 is no throttling."
+msgstr "कर्नेल के थर्मल ज़ोन, केवल पढ़ने के लिए। ट्रिप पॉइंट वाला ज़ोन अपने पैसिव ट्रिप पर उससे जुड़े कूलिंग उपकरणों को सीमित करता है; कूलिंग स्थिति 0 का अर्थ है कोई सीमा नहीं।"
+
+msgid "Zone"
+msgstr "ज़ोन"
+
+msgid "Temperature"
+msgstr "तापमान"
+
+msgid "Trip points"
+msgstr "ट्रिप पॉइंट"
+
+msgid "Cooling devices"
+msgstr "कूलिंग उपकरण"
+
+msgid "Stress test started"
+msgstr "स्ट्रेस टेस्ट शुरू हुआ"
+
+msgid "Saved: it takes effect at the next reboot"
+msgstr "सहेजा गया: अगले रीबूट पर लागू होगा"
+
+msgid "CPU voltage offset (EXPERIMENTAL)"
+msgstr "CPU वोल्टेज ऑफ़सेट (प्रायोगिक)"
+
+msgid "Experimental: changing the CPU voltage can make the device unstable, corrupt your data and permanently damage your device. Use it entirely at your own risk."
+msgstr "प्रायोगिक: CPU वोल्टेज बदलने से डिवाइस अस्थिर हो सकता है, आपका डेटा खराब हो सकता है और आपके डिवाइस को स्थायी नुकसान पहुँच सकता है। इसका उपयोग पूरी तरह अपने जोखिम पर करें।"
+
+msgid "CPU voltage offset unavailable"
+msgstr "CPU वोल्टेज ऑफ़सेट उपलब्ध नहीं है"
+
+msgid "Not available with this kernel (a mainline kernel of this release or later has it)."
+msgstr "इस कर्नेल के साथ उपलब्ध नहीं (इस रिलीज़ या बाद के mainline कर्नेल में यह है)।"
+
+msgid "Off: the stock voltages"
+msgstr "बंद: फ़ैक्टरी वोल्टेज"
+
+msgid "Changes at the next reboot"
+msgstr "अगले रीबूट पर बदलेगा"
+
+msgid "Trial boot: kept once this boot has been up 10 minutes"
+msgstr "परीक्षण बूट: यह बूट 10 मिनट चलने के बाद रखा जाएगा"
+
+msgid "Kept: this offset passed its trial boot"
+msgstr "रखा गया: इस ऑफ़सेट ने अपना परीक्षण बूट पास किया"
+
+msgid "a boot with it ended without a clean shutdown"
+msgstr "इसके साथ एक बूट साफ़ शटडाउन के बिना समाप्त हुआ"
+
+msgid "its trial boot ended before 10 minutes"
+msgstr "इसका परीक्षण बूट 10 मिनट से पहले समाप्त हो गया"
+
+msgid "invalid value"
+msgstr "अमान्य मान"
+
+msgid "unknown SoC firmware"
+msgstr "अज्ञात SoC फ़र्मवेयर"
+
+msgid "refused by the kernel"
+msgstr "कर्नेल ने अस्वीकार किया"
+
+msgid "the kernel could not start CPU scaling with it"
+msgstr "कर्नेल इसके साथ CPU स्केलिंग शुरू नहीं कर सका"
+
+msgid "Offsets in µV for the three CPU domains (cores 0-3, 4-6 and 7), in whole steps. A new offset takes effect at the next reboot, as a trial: it is kept once that boot has been up 10 minutes, and dropped (back to 0) if a boot with it ends in a crash, a watchdog reset or a power cut."
+msgstr "तीन CPU डोमेन (CPU कोर 0-3, 4-6 और 7) के लिए µV में ऑफ़सेट, पूरे चरणों में। नया ऑफ़सेट अगले रीबूट पर परीक्षण के रूप में लागू होता है: वह बूट 10 मिनट चलने के बाद इसे रखा जाता है, और यदि इसके साथ कोई बूट क्रैश, watchdog रीसेट या बिजली कटने से समाप्त होता है तो इसे हटा दिया जाता है (वापस 0 पर)।"
+
+msgid "Running now (µV)"
+msgstr "अभी चल रहा (µV)"
+
+msgid "Saved for the next boot (µV)"
+msgstr "अगले बूट के लिए सहेजा गया (µV)"
+
+msgid "State"
+msgstr "स्थिति"
+
+msgid "Taken back automatically: %s µV (%s)"
+msgstr "स्वचालित रूप से वापस लिया गया: %s µV (%s)"
+
+msgid "The SoC firmware of this device is not one whose voltage encoding is known: only the stock voltages are possible."
+msgstr "इस डिवाइस का SoC फ़र्मवेयर उनमें से नहीं है जिनकी वोल्टेज एन्कोडिंग ज्ञात है: केवल फ़ैक्टरी वोल्टेज संभव हैं।"
+
+msgid "Domain"
+msgstr "डोमेन"
+
+msgid "Offset now (µV)"
+msgstr "अभी का ऑफ़सेट (µV)"
+
+msgid "Highest step"
+msgstr "सबसे ऊँचा चरण"
+
+msgid "New offset (µV)"
+msgstr "नया ऑफ़सेट (µV)"
+
+msgid "Limits: %d to %d µV, in steps of %d µV."
+msgstr "सीमाएँ: %d से %d µV, %d µV के चरणों में।"
+
+msgid "Save for the next boot"
+msgstr "अगले बूट के लिए सहेजें"
+
+msgid "Each offset must be a multiple of %d µV between %d and %d."
+msgstr "हर ऑफ़सेट %d µV का गुणज होना चाहिए, %d और %d के बीच।"
+
+msgid "Type %s to confirm."
+msgstr "पुष्टि करने के लिए %s टाइप करें।"
+
+msgid "Back to the stock voltages"
+msgstr "फ़ैक्टरी वोल्टेज पर वापस जाएँ"
+
+msgid "Type %s to confirm:"
+msgstr "पुष्टि करने के लिए %s टाइप करें:"
+
+msgid "Run a 10-minute CPU stress test"
+msgstr "10 मिनट का CPU स्ट्रेस टेस्ट चलाएँ"
+
+msgid "Test a new offset under load during its trial boot. The device may crash if the voltage is too low; the next boot then runs at the stock voltages."
+msgstr "नए ऑफ़सेट को उसके परीक्षण बूट के दौरान लोड में जाँचें। वोल्टेज बहुत कम होने पर डिवाइस क्रैश हो सकता है; तब अगला बूट फ़ैक्टरी वोल्टेज पर चलता है।"
+
+msgid "A stress test is running."
+msgstr "एक स्ट्रेस टेस्ट चल रहा है।"
+
+msgid "USB role"
+msgstr "USB भूमिका"
+
+msgid "Current role"
+msgstr "वर्तमान भूमिका"
+
+msgid "Switch USB role"
+msgstr "USB भूमिका बदलें"
+
+msgid "Device mode"
+msgstr "डिवाइस मोड"
+
+msgid "Host mode"
+msgstr "होस्ट मोड"
+
+msgid "Enable host mode at boot"
+msgstr "बूट पर होस्ट मोड सक्षम करें"
+
+msgid "Apply role"
+msgstr "भूमिका लागू करें"
+
+msgid "Host mode disconnects USB networking and serial on this port. F50 has no battery; management may be lost and a USB adapter usually needs a powered hub."
+msgstr "होस्ट मोड इस पोर्ट पर USB नेटवर्किंग और सीरियल को डिस्कनेक्ट कर देता है। F50 में बैटरी नहीं है; प्रबंधन कनेक्शन टूट सकता है और USB एडेप्टर को आमतौर पर बाहरी पावर वाले हब की ज़रूरत होती है।"
+
+msgid "USB network mode"
+msgstr "USB नेटवर्क मोड"
+
+msgid "Network protocol"
+msgstr "नेटवर्क प्रोटोकॉल"
+
+msgid "Apply duration"
+msgstr "लागू रहने की अवधि"
+
+msgid "Next reboot only"
+msgstr "केवल अगला रीबूट"
+
+msgid "Permanent"
+msgstr "स्थायी"
+
+msgid "Enable selected protocol"
+msgstr "चयनित प्रोटोकॉल सक्षम करें"
+
+msgid "Save; apply after reboot"
+msgstr "सहेजें; रीबूट के बाद लागू करें"
+
+msgid "NCM is the default. Windows does not natively support ECM; RNDIS changes enumeration. With Enable selected protocol off, only your choice is saved. Next reboot only applies once, then returns to NCM."
+msgstr "NCM डिफ़ॉल्ट है। Windows में ECM का मूल समर्थन नहीं है; RNDIS एन्यूमरेशन बदल देता है। “चयनित प्रोटोकॉल सक्षम करें” बंद होने पर केवल आपका चयन सहेजा जाता है। “केवल अगला रीबूट” एक बार लागू होता है, फिर NCM पर लौट आता है।"
+
+msgid "USB adapters"
+msgstr "USB एडेप्टर"
+
+msgid "Refresh"
+msgstr "रीफ़्रेश करें"
+
+msgid "Available only in host mode. Refresh brings discovered USB adapters up; adding to LAN saves the bridge and reloads networking."
+msgstr "केवल होस्ट मोड में उपलब्ध। रीफ़्रेश करने पर मिले हुए USB एडेप्टर चालू हो जाते हैं; LAN में जोड़ने से ब्रिज सहेजा जाता है और नेटवर्किंग पुनः लोड होती है।"
+
+msgid "Recent modem operations"
+msgstr "हाल के मॉडेम संचालन"
+
+msgid "Show"
+msgstr "दिखाएँ"
+
+msgid "The control panel's recent calls, of this boot and the one before: when, which page call or AT command, how long it took and how it ended (ok, error, busy, killed). No values, replies or messages are kept. Useful when the panel was stuck."
+msgstr "इस और पिछले बूट में कंट्रोल पैनल की हाल की कॉल: कब, कौन-सी पेज कॉल या AT कमांड, कितना समय लगा और कैसे ख़त्म हुई (ok, त्रुटि, व्यस्त, रोकी गई)। कोई मान, जवाब या संदेश नहीं रखा जाता। पैनल अटक जाने पर उपयोगी।"
+
+msgid "Unavailable"
+msgstr "अनुपलब्ध"
+
+msgid "USB network mode is unavailable in host mode; host auto-start also disables USB network auto-start."
+msgstr "होस्ट मोड में USB नेटवर्क मोड उपलब्ध नहीं है; होस्ट ऑटो-स्टार्ट USB नेटवर्क का ऑटो-स्टार्ट भी बंद कर देता है।"
+
+msgid "Host mode immediately disconnects USB management. F50 has no battery and peripherals may need external power; make sure another management path exists."
+msgstr "होस्ट मोड USB प्रबंधन को तुरंत डिस्कनेक्ट कर देता है। F50 में बैटरी नहीं है और पेरिफ़ेरल्स को बाहरी पावर की ज़रूरत हो सकती है; सुनिश्चित करें कि प्रबंधन का कोई अन्य रास्ता मौजूद है।"
+
+msgid "USB networking and serial will re-enumerate in device mode."
+msgstr "डिवाइस मोड में USB नेटवर्किंग और सीरियल फिर से एन्यूमरेट होंगे।"
+
+msgid "Switch USB role?"
+msgstr "USB भूमिका बदलें?"
+
+msgid "Apply"
+msgstr "लागू करें"
+
+msgid "Switching USB role…"
+msgstr "USB भूमिका बदली जा रही है…"
+
+msgid "Switch failed: %s"
+msgstr "बदलना विफल: %s"
+
+msgid "Management connection lost; reconnect to confirm the USB role."
+msgstr "प्रबंधन कनेक्शन टूट गया; USB भूमिका की पुष्टि के लिए फिर से कनेक्ट करें।"
+
+msgid "Switch request accepted; the USB connection may briefly disconnect."
+msgstr "बदलने का अनुरोध स्वीकार हुआ; USB कनेक्शन कुछ देर के लिए टूट सकता है।"
+
+msgid "USB role applied"
+msgstr "USB भूमिका लागू की गई"
+
+msgid "Save USB network mode?"
+msgstr "USB नेटवर्क मोड सहेजें?"
+
+msgid "The network mode applies on the next reboot; USB management may need to reconnect."
+msgstr "नेटवर्क मोड अगले रीबूट पर लागू होगा; USB प्रबंधन को फिर से कनेक्ट करना पड़ सकता है।"
+
+msgid "Save the selection only; with the selected protocol disabled, the next boot still uses default NCM."
+msgstr "केवल चयन सहेजा जाएगा; चयनित प्रोटोकॉल अक्षम होने पर अगला बूट डिफ़ॉल्ट NCM का ही उपयोग करेगा।"
+
+msgid "Save"
+msgstr "सहेजें"
+
+msgid "Saving USB network settings…"
+msgstr "USB नेटवर्क सेटिंग्स सहेजी जा रही हैं…"
+
+msgid "Settings saved"
+msgstr "सेटिंग्स सहेजी गईं"
+
+msgid "Save failed: %s"
+msgstr "सहेजना विफल: %s"
+
+msgid "This boot"
+msgstr "यह बूट"
+
+msgid "Previous boot"
+msgstr "पिछला बूट"
+
+msgid "Unable to confirm the role yet; reconnect and refresh the page."
+msgstr "भूमिका की अभी पुष्टि नहीं हो सकी; फिर से कनेक्ट करें और पेज रीफ़्रेश करें।"
+
+msgid "Switch to host mode to see USB adapters."
+msgstr "USB एडेप्टर देखने के लिए होस्ट मोड पर जाएँ।"
+
+msgid "Scanning USB adapters…"
+msgstr "USB एडेप्टर स्कैन किए जा रहे हैं…"
+
+msgid "No USB adapters found."
+msgstr "कोई USB एडेप्टर नहीं मिला।"
+
+msgid "Link connected"
+msgstr "लिंक जुड़ा है"
+
+msgid "No link; enable attempted"
+msgstr "लिंक नहीं; सक्षम करने का प्रयास किया गया"
+
+msgid "Added to LAN"
+msgstr "LAN में जोड़ा गया"
+
+msgid "Add to LAN"
+msgstr "LAN में जोड़ें"
+
+msgid "Add USB adapter to LAN?"
+msgstr "USB एडेप्टर को LAN में जोड़ें?"
+
+msgid "This saves the bridge configuration and reloads networking; existing connections may briefly drop."
+msgstr "इससे ब्रिज कॉन्फ़िगरेशन सहेजा जाएगा और नेटवर्किंग पुनः लोड होगी; मौजूदा कनेक्शन कुछ देर के लिए टूट सकते हैं।"
+
+msgid "Add"
+msgstr "जोड़ें"
+
+msgid "Adding USB adapter…"
+msgstr "USB एडेप्टर जोड़ा जा रहा है…"
+
+msgid "Add failed: %s"
+msgstr "जोड़ना विफल: %s"
+
+msgid "Leave empty to keep the saved value"
+msgstr "सहेजा गया मान रखने के लिए खाली छोड़ें"
+
+msgid "Saved: %s"
+msgstr "सहेजा गया: %s"
+
+msgid "Remove the saved value"
+msgstr "सहेजा गया मान हटाएँ"
+
+msgid "Presets"
+msgstr "प्रीसेट"
+
+msgid "Form (URL-encoded)"
+msgstr "फ़ॉर्म (URL-एन्कोडेड)"
+
+msgid "Plain text"
+msgstr "सादा पाठ"
+
+msgid "Received messages are sent on as they reach the SMS pool. A failed delivery is retried after 30 s, then after twice as long each time (an hour at most), ten times in all."
+msgstr "प्राप्त संदेश SMS पूल में पहुँचते ही आगे भेजे जाते हैं। विफल डिलीवरी 30 सेकंड बाद फिर आज़माई जाती है, फिर हर बार दोगुने समय बाद (अधिकतम एक घंटा), कुल दस बार।"
+
+msgid "Forward received messages"
+msgstr "प्राप्त संदेश आगे भेजें"
+
+msgid "Message template"
+msgstr "संदेश टेम्पलेट"
+
+msgid "Placeholders: {sender}, {time}, {text}, {device}"
+msgstr "प्लेसहोल्डर: {sender}, {time}, {text}, {device}"
+
+msgid "Only these senders"
+msgstr "केवल ये प्रेषक"
+
+msgid "One per line; empty: every sender. A * at the end matches the start of a sender."
+msgstr "प्रति पंक्ति एक; खाली: सभी प्रेषक। अंत में * प्रेषक की शुरुआत से मेल खाता है।"
+
+msgid "Never these senders"
+msgstr "ये प्रेषक कभी नहीं"
+
+msgid "Only messages containing one of these words"
+msgstr "केवल वे संदेश जिनमें इनमें से कोई शब्द हो"
+
+msgid "One per line; empty: every message."
+msgstr "प्रति पंक्ति एक; खाली: सभी संदेश।"
+
+msgid "Webhook"
+msgstr "वेबहुक"
+
+msgid "Enabled"
+msgstr "सक्षम"
+
+msgid "Address (http:// or https://)"
+msgstr "पता (http:// या https://)"
+
+msgid "Body"
+msgstr "बॉडी"
+
+msgid "Fields: sender, time, text, device, message (the template filled in)"
+msgstr "फ़ील्ड: sender, time, text, device, message (भरा हुआ टेम्पलेट)"
+
+msgid "Custom body"
+msgstr "कस्टम बॉडी"
+
+msgid "Empty: the standard fields (plain text: the message). Placeholders: {sender}, {time}, {text}, {device}, {message}. Each value is escaped for the chosen type. This body is shown again here: keep secrets in the address or a header."
+msgstr "खाली: मानक फ़ील्ड (सादा पाठ: संदेश)। प्लेसहोल्डर: {sender}, {time}, {text}, {device}, {message}। हर मान चुने गए प्रकार के अनुसार एस्केप किया जाता है। यह बॉडी यहाँ फिर दिखाई जाती है: गोपनीय जानकारी पते या किसी हेडर में रखें।"
+
+msgid "Extra headers (one \"Name: value\" per line)"
+msgstr "अतिरिक्त हेडर (प्रति पंक्ति एक \"Name: value\")"
+
+msgid "The answer must contain"
+msgstr "उत्तर में यह होना चाहिए"
+
+msgid "Empty: every HTTP 2xx answer counts as delivered. With key=value (for example errcode=0), the answer must also be a JSON object that has this value under this key at its top level; otherwise the delivery fails. Only the result of the check is logged, never the answer."
+msgstr "खाली: हर HTTP 2xx उत्तर डिलीवर माना जाता है। कुंजी=मान (उदाहरण के लिए errcode=0) देने पर उत्तर साथ ही ऐसा JSON ऑब्जेक्ट होना चाहिए जिसके शीर्ष स्तर पर इस कुंजी के नीचे यही मान हो; अन्यथा डिलीवरी विफल होती है। लॉग में केवल जाँच का परिणाम लिखा जाता है, उत्तर कभी नहीं।"
+
+msgid "Bot token"
+msgstr "बॉट टोकन"
+
+msgid "Chat ID (a number, or @channel)"
+msgstr "चैट ID (एक संख्या या @चैनल)"
+
+msgid "E-mail"
+msgstr "ईमेल"
+
+msgid "E-mail needs msmtp, which this image does not have"
+msgstr "ईमेल के लिए msmtp चाहिए, जो इस इमेज में नहीं है"
+
+msgid "Mail server"
+msgstr "मेल सर्वर"
+
+msgid "Port"
+msgstr "पोर्ट"
+
+msgid "Security"
+msgstr "सुरक्षा"
+
+msgid "None"
+msgstr "कोई नहीं"
+
+msgid "User name"
+msgstr "उपयोगकर्ता नाम"
+
+msgid "Password"
+msgstr "पासवर्ड"
+
+msgid "From"
+msgstr "प्रेषक"
+
+msgid "To"
+msgstr "प्राप्तकर्ता"
+
+msgid "SMS to another phone"
+msgstr "दूसरे फ़ोन पर SMS"
+
+msgid "Phone number"
+msgstr "फ़ोन नंबर"
+
+msgid "Sent as one SMS: a longer message is cut short."
+msgstr "एक SMS के रूप में भेजा जाता है: लंबा संदेश छोटा कर दिया जाता है।"
+
+msgid "Send test"
+msgstr "परीक्षण भेजें"
+
+msgid "Tokens, passwords and the webhook address and headers stay on the device and are never shown again."
+msgstr "टोकन, पासवर्ड और वेबहुक का पता व हेडर डिवाइस पर ही रहते हैं और फिर कभी नहीं दिखाए जाते।"
+
+msgid "Delivered"
+msgstr "डिलीवर हुआ"
+
+msgid "Will retry"
+msgstr "फिर प्रयास होगा"
+
+msgid "Failed"
+msgstr "विफल"
+
+msgid "Filtered out"
+msgstr "फ़िल्टर किया गया"
+
+msgid "Dropped"
+msgstr "छोड़ा गया"
+
+msgid "Clear"
+msgstr "साफ़ करें"
+
+msgid "Test"
+msgstr "परीक्षण"
+
+msgid "Delivery log"
+msgstr "डिलीवरी लॉग"
+
+msgid "Waiting to be delivered"
+msgstr "डिलीवरी की प्रतीक्षा में"
+
+msgid "Time"
+msgstr "समय"
+
+msgid "Message"
+msgstr "संदेश"
+
+msgid "Target"
+msgstr "लक्ष्य"
+
+msgid "Result"
+msgstr "परिणाम"
+
+msgid "Detail"
+msgstr "विवरण"
+
+msgid "No deliveries yet"
+msgstr "अभी तक कोई डिलीवरी नहीं"
+
+msgid "Test started with the saved settings; the result appears in the delivery log."
+msgstr "सहेजी गई सेटिंग्स से परीक्षण शुरू हुआ; परिणाम डिलीवरी लॉग में दिखेगा।"
+
+msgid "Automatic without 2G (152)"
+msgstr "स्वचालित, 2G के बिना (152)"
+
+msgid "4G only"
+msgstr "केवल 4G"
+
+msgid "Network mode: %s"
+msgstr "नेटवर्क मोड: %s"
+
+msgid "EN-DC off"
+msgstr "EN-DC बंद"
+
+msgid "NR band lock: %s"
+msgstr "NR बैंड लॉक: %s"
+
+msgid "LTE band lock: %s"
+msgstr "LTE बैंड लॉक: %s"
+
+msgid "Cell lock: %s"
+msgstr "सेल लॉक: %s"
+
+msgid "Modulation DL/UL"
+msgstr "मॉड्यूलेशन DL/UL"
+
+msgid "Estimated from current MCS"
+msgstr "वर्तमान MCS से अनुमानित"
+
+msgid "MCS DL/UL"
+msgstr "MCS DL/UL"
+
+msgid "BLER DL/UL"
+msgstr "BLER DL/UL"
+
+msgid "%s of %s"
+msgstr "%s / %s"
+
+msgid "The monthly cap is reached"
+msgstr "मासिक सीमा पूरी हो गई"
+
+msgid "%d%% of the monthly cap is used"
+msgstr "मासिक सीमा का %d%% उपयोग हुआ"
+
+msgid "This billing cycle"
+msgstr "यह बिलिंग चक्र"
+
+msgid "Link & traffic"
+msgstr "लिंक और ट्रैफ़िक"
+
+msgid "Download rate"
+msgstr "डाउनलोड गति"
+
+msgid "Upload rate"
+msgstr "अपलोड गति"
+
+msgid "Total received"
+msgstr "कुल प्राप्त"
+
+msgid "Total sent"
+msgstr "कुल भेजा गया"
+
+msgid "Used today"
+msgstr "आज उपयोग किया"
+
+msgid "SIM source"
+msgstr "SIM स्रोत"
+
+msgid "Session duration"
+msgstr "सत्र अवधि"
+
+msgid "Registration"
+msgstr "पंजीकरण"
+
+msgid "Data roaming"
+msgstr "डेटा रोमिंग"
+
+msgid "Bandwidth"
+msgstr "बैंडविड्थ"
+
+msgid "AMBR DL/UL"
+msgstr "AMBR DL/UL"
+
+msgid "Wi-Fi · LAN · Device · SIM"
+msgstr "Wi-Fi · LAN · डिवाइस · SIM"
+
+msgid "CPU usage"
+msgstr "CPU उपयोग"
+
+msgid "Memory"
+msgstr "मेमोरी"
+
+msgid "Storage"
+msgstr "स्टोरेज"
+
+msgid "Battery"
+msgstr "बैटरी"
+
+msgid "Channel"
+msgstr "चैनल"
+
+msgid "Encryption"
+msgstr "एन्क्रिप्शन"
+
+msgid "Hidden SSID"
+msgstr "छिपा SSID"
+
+msgid "Country"
+msgstr "देश"
+
+msgid "AP status"
+msgstr "AP स्थिति"
+
+msgid "USB network"
+msgstr "USB नेटवर्क"
+
+msgid "Connection tracking"
+msgstr "कनेक्शन ट्रैकिंग"
+
+msgid "LAN address"
+msgstr "LAN पता"
+
+msgid "Wi-Fi clients"
+msgstr "Wi-Fi क्लाइंट"
+
+msgid "DHCP leases"
+msgstr "DHCP लीज़"
+
+msgid "Device model"
+msgstr "डिवाइस मॉडल"
+
+msgid "System"
+msgstr "सिस्टम"
+
+msgid "Modem"
+msgstr "मॉडेम"
+
+msgid "Carrier"
+msgstr "ऑपरेटर"
+
+msgid "Own number"
+msgstr "अपना नंबर"
+
+msgid "Module"
+msgstr "मॉड्यूल"
+
+msgid "Firmware"
+msgstr "फ़र्मवेयर"
+
+msgid "Show SIM identifiers"
+msgstr "SIM पहचानकर्ता दिखाएँ"
+
+msgid "Quick controls"
+msgstr "त्वरित नियंत्रण"
+
+msgid "Data connection"
+msgstr "डेटा कनेक्शन"
+
+msgid "Cellular radio"
+msgstr "सेल्युलर रेडियो"
+
+msgid "Wi-Fi hotspot"
+msgstr "Wi-Fi हॉटस्पॉट"
+
+msgid "Restart modem"
+msgstr "मॉडेम पुनः आरंभ करें"
+
+msgid "Power off or restart"
+msgstr "बंद करें या पुनः आरंभ करें"
+
+msgid "Switch to Android"
+msgstr "Android पर जाएँ"
+
+msgid "Lock Linux"
+msgstr "Linux लॉक करें"
+
+msgid "Neighbor cells"
+msgstr "पड़ोसी सेल"
+
+msgid "RAT/Band"
+msgstr "RAT/बैंड"
+
+msgid "Frequency"
+msgstr "आवृत्ति"
+
+msgid "Running %s…"
+msgstr "%s चल रहा है…"
+
+msgid "Started in background: %s"
+msgstr "पृष्ठभूमि में शुरू किया गया: %s"
+
+msgid "Done: %s"
+msgstr "पूर्ण: %s"
+
+msgid "Disconnecting data…"
+msgstr "डेटा डिस्कनेक्ट किया जा रहा है…"
+
+msgid "Connecting data…"
+msgstr "डेटा कनेक्ट किया जा रहा है…"
+
+msgid "Turn off cellular radio"
+msgstr "सेल्युलर रेडियो बंद करें"
+
+msgid "This SIM will have no calls, SMS or data, and its radio stays off after a reboot until you turn it on again."
+msgstr "इस SIM पर कॉल, SMS या डेटा नहीं होगा, और इसका रेडियो रीबूट के बाद भी तब तक बंद रहेगा जब तक आप इसे फिर से चालू न करें।"
+
+msgid "Turn on cellular radio"
+msgstr "सेल्युलर रेडियो चालू करें"
+
+msgid "The radio of the SIM in use comes on and stays on after a reboot (up to about 1 minute)."
+msgstr "उपयोग में SIM का रेडियो चालू होता है और रीबूट के बाद भी चालू रहता है (लगभग 1 मिनट तक)।"
+
+msgid "Turn data roaming off"
+msgstr "डेटा रोमिंग बंद करें"
+
+msgid "While the SIM is registered on a roaming network, mobile data stays off; SMS, calls and the registration are not affected. Some SIMs report roaming at home (an MVNO, national roaming): there, data would stop as well."
+msgstr "जब तक SIM किसी रोमिंग नेटवर्क पर पंजीकृत है, मोबाइल डेटा बंद रहता है; SMS, कॉल और पंजीकरण प्रभावित नहीं होते। कुछ SIM घर पर भी रोमिंग बताते हैं (कोई MVNO, राष्ट्रीय रोमिंग): वहाँ भी डेटा रुक जाएगा।"
+
+msgid "Allow data roaming"
+msgstr "डेटा रोमिंग की अनुमति दें"
+
+msgid "Mobile data is used on roaming networks too, which can cost extra. Some SIMs report roaming at home (an MVNO, national roaming) and need this to have data at all."
+msgstr "मोबाइल डेटा रोमिंग नेटवर्क पर भी उपयोग होता है, जिसका अतिरिक्त शुल्क लग सकता है। कुछ SIM घर पर भी रोमिंग बताते हैं (कोई MVNO, राष्ट्रीय रोमिंग) और डेटा पाने के लिए इसकी ज़रूरत होती है।"
+
+msgid "Cellular connectivity may stop for 1–2 minutes."
+msgstr "सेल्युलर कनेक्टिविटी 1–2 मिनट के लिए रुक सकती है।"
+
+msgid "All connections will be interrupted."
+msgstr "सभी कनेक्शन बाधित होंगे।"
+
+msgid "Power off"
+msgstr "बंद करें"
+
+msgid "Restart"
+msgstr "रीस्टार्ट करें"
+
+msgid "The next boot will enter Android and reboot now. This management page and cellular sharing will disconnect."
+msgstr "अगला बूट Android में होगा और डिवाइस अभी रीबूट होगा। यह प्रबंधन पेज और सेल्युलर शेयरिंग डिस्कनेक्ट हो जाएँगे।"
+
+msgid "To return to OpenWrt, run mu300-next-boot linux in Android and reboot."
+msgstr "OpenWrt पर लौटने के लिए Android में mu300-next-boot linux चलाएँ और रीबूट करें।"
+
+msgid "Or do nothing: after five boots that do not finish, it falls back automatically."
+msgstr "या कुछ न करें: पाँच अधूरे बूट के बाद यह अपने आप वापस लौट आता है।"
+
+msgid "Preparing Android boot and rebooting…"
+msgstr "Android बूट तैयार किया जा रहा है और रीबूट हो रहा है…"
+
+msgid "Switch and reboot"
+msgstr "बदलें और रीबूट करें"
+
+msgid "Not automatic: %s. The network mode and band locks are stored in the modem and stay in force in Android too; if the network does not match them, Android shows No Service."
+msgstr "स्वचालित नहीं: %s। नेटवर्क मोड और बैंड लॉक मॉडेम में सहेजे जाते हैं और Android में भी लागू रहते हैं; यदि नेटवर्क उनसे मेल नहीं खाता, तो Android \"कोई सेवा नहीं\" दिखाता है।"
+
+msgid "Reset locks and switch"
+msgstr "लॉक रीसेट करें और स्विच करें"
+
+msgid "Unlock Linux"
+msgstr "Linux अनलॉक करें"
+
+msgid "After five boots in a row that do not finish, the device falls back to Android again."
+msgstr "लगातार पाँच अधूरे बूट के बाद डिवाइस फिर से Android पर लौट आता है।"
+
+msgid "Unlock"
+msgstr "अनलॉक करें"
+
+msgid "The device will never switch to Android by itself, not even after failed boots: Android only from this page (Switch to Android) or with mu300-next-boot android."
+msgstr "डिवाइस अपने आप कभी Android पर नहीं जाएगा, असफल बूट के बाद भी नहीं: Android पर केवल इस पेज (Android पर जाएँ) से या mu300-next-boot android से।"
+
+msgid "A new kernel from an update still gets its first boots on trial, and locks again once one of them succeeds."
+msgstr "अपडेट से आया नया कर्नेल फिर भी पहले परीक्षण के रूप में बूट होता है, और उनमें से एक सफल होते ही फिर से लॉक हो जाता है।"
+
+msgid "If the system itself no longer starts, the device waits on USB (telnet) instead of going to Android."
+msgstr "यदि सिस्टम स्वयं शुरू नहीं होता, तो डिवाइस Android पर जाने के बजाय USB (telnet) पर प्रतीक्षा करता है।"
+
+msgid "Hide SIM identifiers"
+msgstr "SIM पहचानकर्ता छिपाएँ"
+
+msgid "Lock cell %s?"
+msgstr "सेल %s लॉक करें?"
+
+msgid "The radio stack will restart (SFUN); cellular service will stop for about 30 seconds."
+msgstr "रेडियो स्टैक पुनः आरंभ होगा (SFUN); सेल्युलर सेवा लगभग 30 सेकंड के लिए रुकेगी।"
+
+msgid "Locking %s in the background, about 30 seconds"
+msgstr "%s को पृष्ठभूमि में लॉक किया जा रहा है, लगभग 30 सेकंड"
+
+msgid "Locked %s in the background; the status will refresh shortly"
+msgstr "%s पृष्ठभूमि में लॉक किया गया; स्थिति जल्द ही रीफ़्रेश होगी"
+
+msgid "Lock failed: %s"
+msgstr "लॉक विफल: %s"
+
+msgid "Resetting the network locks to automatic (SFUN restart, about 30 seconds)…"
+msgstr "नेटवर्क लॉक स्वचालित पर रीसेट हो रहे हैं (SFUN रीस्टार्ट, लगभग 30 सेकंड)…"
+
+msgid "Reset failed: %s. The saved lock settings were kept."
+msgstr "रीसेट विफल: %s. सहेजी गई लॉक सेटिंग्स रखी गईं।"
+
+msgid "The lock reset was not confirmed in time; switching anyway."
+msgstr "लॉक रीसेट समय पर पुष्ट नहीं हुआ; फिर भी स्विच किया जा रहा है।"
+
+msgid "Internal SIM selected: in use after a reboot"
+msgstr "आंतरिक SIM चुना गया: रीबूट के बाद उपयोग में आएगा"
+
+msgid "Internal SIM selected, but not supported on this device: the external SIM is in use"
+msgstr "आंतरिक SIM चुना गया, पर इस डिवाइस पर समर्थित नहीं है: बाहरी SIM उपयोग में है"
+
+msgid "Uptime %s"
+msgstr "अपटाइम %s"
+
+msgid "Radio off"
+msgstr "रेडियो बंद"
+
+msgid "No response"
+msgstr "कोई प्रतिक्रिया नहीं"
+
+msgid "Modem busy: cellular readings from %s ago"
+msgstr "मॉडेम व्यस्त है: सेलुलर रीडिंग %s पहले की है"
+
+msgid "%s · Signal %s %s/10"
+msgstr "%s · सिग्नल %s %s/10"
+
+msgid "%s · Signal %s"
+msgstr "%s · सिग्नल %s"
+
+msgid "Anchor B%s"
+msgstr "एंकर B%s"
+
+msgid "No serving cell"
+msgstr "कोई सर्विंग सेल नहीं"
+
+msgid "Version %s is out: update"
+msgstr "संस्करण %s आ गया है: अपडेट करें"
+
+msgid "Not registered"
+msgstr "पंजीकृत नहीं"
+
+msgid "Registered"
+msgstr "पंजीकृत"
+
+msgid "Searching"
+msgstr "खोज रहा है"
+
+msgid "Registration denied"
+msgstr "पंजीकरण अस्वीकृत"
+
+msgid "Registered (roaming)"
+msgstr "पंजीकृत (रोमिंग)"
+
+msgid "Emergency only"
+msgstr "केवल आपातकालीन"
+
+msgid "Status %s"
+msgstr "स्थिति %s"
+
+msgid "Off: data held back while roaming"
+msgstr "बंद: रोमिंग में डेटा रोका गया"
+
+msgid "Allowed"
+msgstr "अनुमत"
+
+msgid "Off"
+msgstr "बंद"
+
+msgid "LTE anchor"
+msgstr "LTE एंकर"
+
+msgid "LTE link"
+msgstr "LTE लिंक"
+
+msgid "Hidden"
+msgstr "छिपा"
+
+msgid "No"
+msgstr "नहीं"
+
+msgid "Running"
+msgstr "चल रहा है"
+
+msgid "Not running"
+msgstr "नहीं चल रहा"
+
+msgid "Connected"
+msgstr "कनेक्टेड"
+
+msgid "Disconnected"
+msgstr "डिस्कनेक्टेड"
+
+msgid "%s entries"
+msgstr "%s प्रविष्टियाँ"
+
+msgid "%s clients"
+msgstr "%s क्लाइंट"
+
+msgid "Recent DHCP leases"
+msgstr "हाल की DHCP लीज़"
+
+msgid "Board"
+msgstr "बोर्ड"
+
+msgid "No temperature readings"
+msgstr "तापमान का कोई डेटा नहीं"
+
+msgid "Cluster %d"
+msgstr "क्लस्टर %d"
+
+msgid "Total %s · free %s"
+msgstr "कुल %s · खाली %s"
+
+msgid "charging %s W"
+msgstr "%s W पर चार्ज हो रही है"
+
+msgid "charging"
+msgstr "चार्ज हो रही है"
+
+msgid "drawing %s W"
+msgstr "%s W खर्च कर रही है"
+
+msgid "not charging"
+msgstr "चार्ज नहीं हो रही"
+
+msgid "on battery"
+msgstr "बैटरी पर"
+
+msgid "full"
+msgstr "पूरी भरी"
+
+msgid "USB in %s W"
+msgstr "USB इनपुट %s W"
+
+msgid "Online"
+msgstr "ऑनलाइन"
+
+msgid "AT adapter unavailable"
+msgstr "AT एडेप्टर उपलब्ध नहीं"
+
+msgid "Linux locked"
+msgstr "Linux लॉक है"
+
+msgid "Installing the language pack…"
+msgstr "भाषा पैक इंस्टॉल किया जा रहा है…"
+
+msgid "The language pack is installed"
+msgstr "भाषा पैक इंस्टॉल हो गया है"
+
+msgid "The language pack could not be installed"
+msgstr "भाषा पैक इंस्टॉल नहीं हो सका"
+
+msgid "Language of the browser"
+msgstr "ब्राउज़र की भाषा"
+
+msgid "Language of the web interface"
+msgstr "वेब इंटरफ़ेस की भाषा"
+
+msgid "English, Turkish and Chinese come with the system; the language pack adds the others."
+msgstr "अंग्रेज़ी, तुर्की और चीनी सिस्टम के साथ आती हैं; भाषा पैक बाकी भाषाएँ जोड़ता है।"
+
+msgid "The same setting is in System > System > Language and Style."
+msgstr "यही सेटिंग System > System > Language and Style में भी है।"
+
+msgid "Language pack"
+msgstr "भाषा पैक"
+
+msgid "The language pack (mu300-extra-lang.tar.gz, about 2 MB) adds LuCI in about 40 more languages and this panel in 29 of them. Download it from the release of this system, or upload the file from the release page when the device has no internet."
+msgstr "भाषा पैक (mu300-extra-lang.tar.gz, लगभग 2 MB) LuCI को लगभग 40 और भाषाओं में और इस पैनल को उनमें से 29 भाषाओं में जोड़ता है। इसे इस सिस्टम की रिलीज़ से डाउनलोड करें, या डिवाइस पर इंटरनेट न होने पर रिलीज़ पेज से फ़ाइल अपलोड करें।"
+
+msgid "Download from the release"
+msgstr "रिलीज़ से डाउनलोड करें"
+
+msgid "Release"
+msgstr "रिलीज़"
+
+msgid "Enable all"
+msgstr "सभी सक्षम करें"
+
+msgid "Disable all"
+msgstr "सभी अक्षम करें"
+
+msgid "Remove the language pack"
+msgstr "भाषा पैक हटाएँ"
+
+msgid "Remove the language pack?"
+msgstr "भाषा पैक हटाएँ?"
+
+msgid "Its languages disappear from the list; a page in one of them switches to English."
+msgstr "इसकी भाषाएँ सूची से हट जाएँगी; उनमें से किसी भाषा में खुला पेज अंग्रेज़ी में बदल जाएगा।"
+
+msgid "Remove"
+msgstr "हटाएँ"
+
+msgid "Disable"
+msgstr "अक्षम करें"
+
+msgid "Enable"
+msgstr "सक्षम करें"
+
+msgid "LuCI and this panel"
+msgstr "LuCI और यह पैनल"
+
+msgid "LuCI only"
+msgstr "केवल LuCI"
+
+msgid "Disabled"
+msgstr "अक्षम"
+
+msgid "Language"
+msgstr "भाषा"
+
+msgid "Code"
+msgstr "कोड"
+
+msgid "Translated"
+msgstr "अनुवादित"
+
+msgid "LuCI's own translations come from OpenWrt. This panel's translations other than Turkish and Chinese are machine (AI) translations; corrections are welcome."
+msgstr "LuCI के अपने अनुवाद OpenWrt से आते हैं। तुर्की और चीनी के अलावा इस पैनल के अनुवाद मशीनी (AI) अनुवाद हैं; सुधारों का स्वागत है।"
+
+msgid "Automatic"
+msgstr "स्वचालित"
+
+msgid "Serving network"
+msgstr "सर्विंग नेटवर्क"
+
+msgid "Network mode · EN-DC"
+msgstr "नेटवर्क मोड · EN-DC"
+
+msgid "Refresh lock status"
+msgstr "लॉक स्थिति रीफ़्रेश करें"
+
+msgid "Apply at startup"
+msgstr "स्टार्टअप पर लागू करें"
+
+msgid "Turning this off only stops replay at the next boot; saved network mode, EN-DC, band and cell settings remain."
+msgstr "इसे बंद करने से केवल अगले बूट पर दोबारा लागू होना रुकता है; सहेजे गए नेटवर्क मोड, EN-DC, बैंड और सेल सेटिंग्स बनी रहती हैं।"
+
+msgid "Band locking"
+msgstr "बैंड लॉकिंग"
+
+msgid "NR bands"
+msgstr "NR बैंड"
+
+msgid "LTE bands"
+msgstr "LTE बैंड"
+
+msgid "Apply NR bands"
+msgstr "NR बैंड लागू करें"
+
+msgid "Apply LTE bands"
+msgstr "LTE बैंड लागू करें"
+
+msgid "Neighbor cells and cell locking"
+msgstr "पड़ोसी सेल और सेल लॉकिंग"
+
+msgid "Lock current serving cell"
+msgstr "वर्तमान सर्विंग सेल लॉक करें"
+
+msgid "Unlock cell"
+msgstr "सेल अनलॉक करें"
+
+msgid "Enter a cell"
+msgstr "सेल दर्ज करें"
+
+msgid "Type"
+msgstr "प्रकार"
+
+msgid "Channel number (EARFCN / NR-ARFCN)"
+msgstr "चैनल संख्या (EARFCN / NR-ARFCN)"
+
+msgid "Lock this cell"
+msgstr "इस सेल को लॉक करें"
+
+msgid "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. A channel number, not a frequency in MHz; the cell need not be in the neighbor list."
+msgstr "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. चैनल संख्या, MHz में आवृत्ति नहीं; सेल का पड़ोसी सूची में होना ज़रूरी नहीं है।"
+
+msgid "Applying restarts the radio stack (SFUN) and briefly interrupts cellular service. Settings are saved and replayed by the plugin after AT is ready when Apply at startup is enabled. A platform pre-radio hook can replay without a restart. Apply with no bands selected to restore automatic mode."
+msgstr "लागू करने से रेडियो स्टैक (SFUN) पुनः आरंभ होता है और सेल्युलर सेवा कुछ देर बाधित होती है। सेटिंग्स सहेजी जाती हैं और “स्टार्टअप पर लागू करें” सक्षम होने पर AT तैयार होने के बाद प्लगइन उन्हें दोबारा लागू करता है। प्लेटफ़ॉर्म का प्री-रेडियो हुक बिना पुनः आरंभ के उन्हें लागू कर सकता है। स्वचालित मोड पर लौटने के लिए बिना कोई बैंड चुने लागू करें।"
+
+msgid "Back to automatic"
+msgstr "स्वचालित पर वापस"
+
+msgid "The network mode and band locks are stored in the modem and stay in force in Android too. If you are not sure, reset them before switching to Android."
+msgstr "नेटवर्क मोड और बैंड लॉक मॉडेम में सहेजे जाते हैं और Android में भी लागू रहते हैं। यदि आप निश्चित नहीं हैं, तो Android पर जाने से पहले उन्हें रीसेट करें।"
+
+msgid "Reset all to automatic"
+msgstr "सब कुछ स्वचालित पर रीसेट करें"
+
+msgid "Apply “%s”?"
+msgstr "“%s” लागू करें?"
+
+msgid "Applying %s in the background…"
+msgstr "%s पृष्ठभूमि में लागू किया जा रहा है…"
+
+msgid "Applying %s in the background… (SFUN restart and re-registration, about 30 seconds)"
+msgstr "%s पृष्ठभूमि में लागू किया जा रहा है… (SFUN पुनः आरंभ और पुनः पंजीकरण, लगभग 30 सेकंड)"
+
+msgid "Queued: another lock is being applied during SFUN restart; this will take effect afterward"
+msgstr "कतार में: SFUN पुनः आरंभ के दौरान एक अन्य लॉक लागू हो रहा है; यह उसके बाद प्रभावी होगा"
+
+msgid "Confirming the EN-DC status…"
+msgstr "EN-DC स्थिति की पुष्टि की जा रही है…"
+
+msgid "Confirming apply at startup…"
+msgstr "स्टार्टअप पर लागू करने की पुष्टि की जा रही है…"
+
+msgid "Started in background: %s (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "पृष्ठभूमि में शुरू किया गया: %s (SFUN पुनः आरंभ, लगभग 30 सेकंड); स्थिति वापस पढ़ी जा रही है…"
+
+msgid "Disable EN-DC (NSA anchor)"
+msgstr "EN-DC अक्षम करें (NSA एंकर)"
+
+msgid "Enable EN-DC (NSA anchor)"
+msgstr "EN-DC सक्षम करें (NSA एंकर)"
+
+msgid "Disable apply at startup"
+msgstr "स्टार्टअप पर लागू करना अक्षम करें"
+
+msgid "Enable apply at startup"
+msgstr "स्टार्टअप पर लागू करना सक्षम करें"
+
+msgid "Reading the modem directly (a few seconds at most)…"
+msgstr "मॉडेम को सीधे पढ़ा जा रहा है (अधिकतम कुछ सेकंड)…"
+
+msgid "Refresh failed"
+msgstr "रीफ़्रेश विफल"
+
+msgid "Refreshed"
+msgstr "रीफ़्रेश किया गया"
+
+msgid "NR bands: back to automatic"
+msgstr "NR बैंड: स्वचालित पर वापस"
+
+msgid "LTE bands: back to automatic"
+msgstr "LTE बैंड: स्वचालित पर वापस"
+
+msgid "Network mode automatic, EN-DC on, all LTE and NR bands, no cell lock. The saved lock settings are cleared, so nothing is replayed at startup."
+msgstr "नेटवर्क मोड स्वचालित, EN-DC चालू, सभी LTE और NR बैंड, कोई सेल लॉक नहीं। सहेजी गई लॉक सेटिंग्स मिटा दी जाती हैं, इसलिए स्टार्टअप पर कुछ भी दोबारा लागू नहीं होता।"
+
+msgid "Reset"
+msgstr "रीसेट"
+
+msgid "Remove the %s cell lock"
+msgstr "%s सेल लॉक हटाएँ"
+
+msgid "The radio stack will restart (SFUN), taking about 30 seconds."
+msgstr "रेडियो स्टैक पुनः आरंभ होगा (SFUN), जिसमें लगभग 30 सेकंड लगेंगे।"
+
+msgid "Removing the %s cell lock…"
+msgstr "%s सेल लॉक हटाया जा रहा है…"
+
+msgid "Unlock failed: %s"
+msgstr "अनलॉक विफल: %s"
+
+msgid "Unlock started in background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "अनलॉक पृष्ठभूमि में शुरू हुआ (SFUN पुनः आरंभ, लगभग 30 सेकंड); स्थिति वापस पढ़ी जा रही है…"
+
+msgid "Locking %s in the background…"
+msgstr "%s को पृष्ठभूमि में लॉक किया जा रहा है…"
+
+msgid "Locked %s in the background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "%s पृष्ठभूमि में लॉक किया गया (SFUN पुनः आरंभ, लगभग 30 सेकंड); स्थिति वापस पढ़ी जा रही है…"
+
+msgid "Enter a channel number and a PCI in the ranges below"
+msgstr "नीचे दी गई सीमाओं में चैनल संख्या और PCI दर्ज करें"
+
+msgid "No serving-network data"
+msgstr "सर्विंग नेटवर्क का कोई डेटा नहीं"
+
+msgid "NR serving cell"
+msgstr "NR सर्विंग सेल"
+
+msgid "Status confirmed"
+msgstr "स्थिति की पुष्टि हुई"
+
+msgid "Readback timed out; select “Refresh lock status”"
+msgstr "वापस पढ़ने का समय समाप्त; “लॉक स्थिति रीफ़्रेश करें” चुनें"
+
+msgid "Reset verified: network mode automatic, EN-DC on, all bands, no cell lock; the saved lock settings are cleared"
+msgstr "रीसेट सत्यापित: नेटवर्क मोड स्वचालित, EN-DC चालू, सभी बैंड, कोई सेल लॉक नहीं; सहेजी गई लॉक सेटिंग्स साफ़ कर दी गईं"
+
+msgid "Applied (EN-DC does not require a radio-stack restart)"
+msgstr "लागू किया गया (EN-DC के लिए रेडियो स्टैक पुनः आरंभ की ज़रूरत नहीं)"
+
+msgid "Apply at startup is on"
+msgstr "स्टार्टअप पर लागू करना चालू है"
+
+msgid "Apply at startup is off"
+msgstr "स्टार्टअप पर लागू करना बंद है"
+
+msgid "EN-DC status readback timed out; use “Refresh lock status” to confirm"
+msgstr "EN-DC स्थिति वापस पढ़ने का समय समाप्त; पुष्टि के लिए “लॉक स्थिति रीफ़्रेश करें” का उपयोग करें"
+
+msgid "Apply-at-startup status readback timed out; use “Refresh lock status” to confirm"
+msgstr "स्टार्टअप पर लागू करने की स्थिति वापस पढ़ने का समय समाप्त; पुष्टि के लिए “लॉक स्थिति रीफ़्रेश करें” का उपयोग करें"
+
+msgid "Locked cells"
+msgstr "लॉक किए गए सेल"
+
+msgid "Unlock %s"
+msgstr "%s अनलॉक करें"
+
+msgid "Automatic (%d supported)"
+msgstr "स्वचालित (%d समर्थित)"
+
+msgid "%d locked: %s"
+msgstr "%d लॉक: %s"
+
+msgid "Repair DNS?"
+msgstr "DNS ठीक करें?"
+
+msgid "This removes the DNS forwarder of a package that is no longer installed. If no other DNS server is left, the device then uses the DNS servers of the mobile connection: the carrier sees the names you look up, outside any proxy or VPN."
+msgstr "यह उस पैकेज का DNS फ़ॉरवर्डर हटाता है जो अब इंस्टॉल नहीं है। अगर कोई और DNS सर्वर नहीं बचता, तो डिवाइस मोबाइल कनेक्शन के DNS सर्वर इस्तेमाल करता है: ऑपरेटर आपके खोजे गए नाम किसी भी प्रॉक्सी या VPN के बाहर देख सकता है।"
+
+msgid "Repair DNS"
+msgstr "DNS ठीक करें"
+
+msgid "Packages installed on the device are not part of a release image. An update writes them down, and the new system installs them again at its first boot, once it is online. Until a package is back its settings are set aside."
+msgstr "डिवाइस पर इंस्टॉल किए गए पैकेज रिलीज़ इमेज का हिस्सा नहीं होते। अपडेट उन्हें दर्ज करता है, और नया सिस्टम पहली बार चालू होने पर, ऑनलाइन होते ही, उन्हें फिर से इंस्टॉल करता है। पैकेज वापस आने तक उसकी सेटिंग्स अलग रखी जाती हैं।"
+
+msgid "No packages to install again."
+msgstr "फिर से इंस्टॉल करने के लिए कोई पैकेज नहीं।"
+
+msgid "All back"
+msgstr "सभी वापस आ गए"
+
+msgid "Not installed yet"
+msgstr "अभी इंस्टॉल नहीं हुआ"
+
+msgid "Could not be installed again"
+msgstr "फिर से इंस्टॉल नहीं हो सका"
+
+msgid "Waiting for the internet"
+msgstr "इंटरनेट की प्रतीक्षा"
+
+msgid "Given up: no internet at five boots"
+msgstr "छोड़ दिया: पाँच बार चालू होने पर भी इंटरनेट नहीं"
+
+msgid "Skipped"
+msgstr "छोड़ा गया"
+
+msgid "Written down by the update from %s"
+msgstr "%s से हुए अपडेट ने दर्ज किया"
+
+msgid "Installed again"
+msgstr "फिर से इंस्टॉल हुए"
+
+msgid "Install them yourself from where you got them (a package file: apk add --allow-untrusted FILE.apk)."
+msgstr "इन्हें वहीं से खुद इंस्टॉल करें जहाँ से आपने लिया था (पैकेज फ़ाइल: apk add --allow-untrusted FILE.apk)।"
+
+msgid "Settings set aside in /etc/mu300/orphaned-config"
+msgstr "/etc/mu300/orphaned-config में अलग रखी सेटिंग्स"
+
+msgid "DNS still goes to a package that is not installed: the device has no DNS through it."
+msgstr "DNS अब भी ऐसे पैकेज पर जाता है जो इंस्टॉल नहीं है: उसके ज़रिए डिवाइस के पास DNS नहीं है।"
+
+msgid "Try again"
+msgstr "फिर से कोशिश करें"
+
+msgid "Dismiss the note"
+msgstr "सूचना हटाएँ"
+
+msgid "started"
+msgstr "शुरू हुआ"
+
+msgid "asleep now (asked)"
+msgstr "अभी स्लीप (अनुरोध पर)"
+
+msgid "woken: power daemon stopping"
+msgstr "जागा: पावर सेवा रुक रही है"
+
+msgid "woken by a key"
+msgstr "एक बटन से जागा"
+
+msgid "woken by the Wi-Fi key"
+msgstr "Wi-Fi बटन से जागा"
+
+msgid "woken (mu300-power wake)"
+msgstr "जागा (mu300-power wake)"
+
+msgid "woken by a computer on USB"
+msgstr "USB पर कंप्यूटर से जागा"
+
+msgid "woken: plugged in"
+msgstr "जागा: चार्जर लगाया गया"
+
+msgid "woken by a Wi-Fi client"
+msgstr "Wi-Fi क्लाइंट से जागा"
+
+msgid "charging boot (powered on by the charger)"
+msgstr "चार्जिंग बूट (चार्जर ने चालू किया)"
+
+msgid "the hotspot is down"
+msgstr "हॉटस्पॉट बंद है"
+
+msgid "the VPN is still stopped"
+msgstr "VPN अभी भी रुका है"
+
+msgid "5G (EN-DC) is still off after a failed resume"
+msgstr "विफल रिज़्यूम के बाद 5G (EN-DC) अभी भी बंद है"
+
+msgid "self-check: %s"
+msgstr "स्व-जाँच: %s"
+
+msgid "asleep: no client for %d min (%s)"
+msgstr "स्लीप: %d मिनट से कोई क्लाइंट नहीं (%s)"
+
+msgid "asleep: profile now %s"
+msgstr "स्लीप: प्रोफ़ाइल अब %s"
+
+msgid "woken by the %s key"
+msgstr "%s बटन से जागा"
+
+msgid "the modem is suspended (%s)"
+msgstr "मॉडेम निलंबित है (%s)"
+
+msgid "Enter a whole number from 0 to %d"
+msgstr "0 से %d के बीच की पूर्ण संख्या दर्ज करें"
+
+msgid "Power status unavailable"
+msgstr "पावर स्थिति उपलब्ध नहीं है"
+
+msgid "Plugged in"
+msgstr "बिजली से जुड़ा"
+
+msgid "On battery"
+msgstr "बैटरी पर"
+
+msgid "Saver"
+msgstr "बचत"
+
+msgid "Asleep: hotspot off"
+msgstr "नींद: हॉटस्पॉट बंद"
+
+msgid "Charging boot: press the Wi-Fi key to start"
+msgstr "चार्जिंग बूट: शुरू करने के लिए Wi-Fi कुंजी दबाएँ"
+
+msgid "Awake"
+msgstr "जागृत"
+
+msgid "forced"
+msgstr "ज़बरदस्ती"
+
+msgid "automatic, battery under %d %%"
+msgstr "स्वचालित, बैटरी %d %% से कम"
+
+msgid "automatic"
+msgstr "स्वचालित"
+
+msgid "Nobody connected for %d s"
+msgstr "%d सेकंड से कोई जुड़ा नहीं है"
+
+msgid "Power source"
+msgstr "पावर स्रोत"
+
+msgid "Profile"
+msgstr "प्रोफ़ाइल"
+
+msgid "Profile in use: %s (%s)"
+msgstr "उपयोग में प्रोफ़ाइल: %s (%s)"
+
+msgid "%d %%, %s, %d mV, %d mA, %.1f °C"
+msgstr "%d %%, %s, %d mV, %d mA, %.1f °C"
+
+msgid "Charger"
+msgstr "चार्जर"
+
+msgid "Charger: %s, %s port"
+msgstr "चार्जर: %s, %s पोर्ट"
+
+msgid "Charging paused: battery temperature"
+msgstr "चार्जिंग रुकी: बैटरी का तापमान"
+
+msgid "Charging paused: charge limit"
+msgstr "चार्जिंग रुकी: चार्ज सीमा"
+
+msgid "Sleep now"
+msgstr "अभी सुलाएँ"
+
+msgid "Wake"
+msgstr "जगाएँ"
+
+msgid "Nobody connected means no Wi-Fi client and no computer on USB. The Wi-Fi key, a computer on USB or the charger wake the device."
+msgstr "कोई जुड़ा नहीं का मतलब है कोई Wi-Fi क्लाइंट नहीं और USB पर कोई कंप्यूटर नहीं। Wi-Fi कुंजी, USB पर कंप्यूटर या चार्जर डिवाइस को जगाते हैं।"
+
+msgid "Automatic: plugged in / on battery"
+msgstr "स्वचालित: बिजली से जुड़ा / बैटरी पर"
+
+msgid "Switch to Saver under %"
+msgstr "इससे कम पर बचत में जाएँ %"
+
+msgid "Stop charging at"
+msgstr "चार्जिंग यहाँ रोकें"
+
+msgid "0 % never charges the battery (the device runs on the charger), 100 % charges it full; in between, charging stops at that level and starts again 5 points lower. Under 5 % the battery always charges."
+msgstr "0 % बैटरी को कभी चार्ज नहीं करता (डिवाइस चार्जर से चलता है), 100 % उसे पूरा चार्ज करता है; बीच के मानों पर चार्जिंग उस स्तर पर रुकती है और 5 अंक नीचे फिर शुरू होती है। 5 % से नीचे बैटरी हमेशा चार्ज होती है।"
+
+msgid "80 % keeps the battery healthier on a device that stays plugged in."
+msgstr "80 % हमेशा बिजली से जुड़े रहने वाले डिवाइस में बैटरी को स्वस्थ रखता है।"
+
+msgid "When the charger switches the device on"
+msgstr "जब चार्जर डिवाइस को चालू करे"
+
+msgid "Charge only, until a key starts it"
+msgstr "केवल चार्जिंग, जब तक कोई बटन इसे चालू न करे"
+
+msgid "Start normally"
+msgstr "सामान्य रूप से शुरू करें"
+
+msgid "Keep as is"
+msgstr "जैसा है वैसा रखें"
+
+msgid "LTE only (5G off)"
+msgstr "केवल LTE (5G बंद)"
+
+msgid "On"
+msgstr "चालू"
+
+msgid "Full"
+msgstr "पूर्ण"
+
+msgid "Eco: big core off"
+msgstr "इको: बड़ा कोर बंद"
+
+msgid "Hotspot off after (min, 0 = never)"
+msgstr "हॉटस्पॉट इतनी देर बाद बंद (मिनट, 0 = कभी नहीं)"
+
+msgid "Modem when idle"
+msgstr "निष्क्रिय होने पर मोडेम"
+
+msgid "LEDs when idle"
+msgstr "निष्क्रिय होने पर LED"
+
+msgid "Ignored lines in power.conf: %s"
+msgstr "power.conf में अनदेखी की गई पंक्तियाँ: %s"
+
+msgid "Configure how this plugin connects to the current Unisoc OpenWrt platform. Changes do not require editing the dashboard, AT, locks or SMS pages."
+msgstr "कॉन्फ़िगर करें कि यह प्लगइन वर्तमान Unisoc OpenWrt प्लेटफ़ॉर्म से कैसे जुड़ता है। बदलावों के लिए डैशबोर्ड, AT, लॉक या SMS पेजों को संपादित करने की ज़रूरत नहीं है।"
+
+msgid "Platform adapter"
+msgstr "प्लेटफ़ॉर्म एडेप्टर"
+
+msgid "AT backend"
+msgstr "AT बैकएंड"
+
+msgid "Auto-detect"
+msgstr "स्वतः पहचानें"
+
+msgid "atinout + serial port"
+msgstr "atinout + सीरियल पोर्ट"
+
+msgid "Custom adapter"
+msgstr "कस्टम एडेप्टर"
+
+msgid "AT serial port"
+msgstr "AT सीरियल पोर्ट"
+
+msgid "Custom AT adapter"
+msgstr "कस्टम AT एडेप्टर"
+
+msgid "The executable receives a timeout in seconds and the complete AT command, in that order. It must share the serial lock with the platform dialer."
+msgstr "एक्ज़ीक्यूटेबल को इसी क्रम में सेकंड में टाइमआउट और पूरा AT कमांड मिलता है। इसे प्लेटफ़ॉर्म डायलर के साथ सीरियल लॉक साझा करना होगा।"
+
+msgid "SMS adapter"
+msgstr "SMS एडेप्टर"
+
+msgid "Implement the list, show, send, delete and sync subcommands; leave blank to find mu300-sms automatically."
+msgstr "list, show, send, delete और sync सबकमांड लागू करें; mu300-sms को अपने आप खोजने के लिए खाली छोड़ें।"
+
+msgid "SMS pool directory"
+msgstr "SMS पूल डायरेक्टरी"
+
+msgid "Cellular logical interface"
+msgstr "सेल्युलर लॉजिकल इंटरफ़ेस"
+
+msgid "Cellular IPv6 interface"
+msgstr "सेल्युलर IPv6 इंटरफ़ेस"
+
+msgid "Cellular network device"
+msgstr "सेल्युलर नेटवर्क डिवाइस"
+
+msgid "Leave blank to detect from netifd"
+msgstr "netifd से पहचानने के लिए खाली छोड़ें"
+
+msgid "LAN bridge"
+msgstr "LAN ब्रिज"
+
+msgid "Wi-Fi device"
+msgstr "Wi-Fi डिवाइस"
+
+msgid "USB device"
+msgstr "USB डिवाइस"
+
+msgid "Maximum wait for AT readiness (seconds)"
+msgstr "AT तैयार होने की अधिकतम प्रतीक्षा (सेकंड)"
+
+msgid "Home dashboard refresh interval (seconds)"
+msgstr "होम डैशबोर्ड रीफ़्रेश अंतराल (सेकंड)"
+
+msgid "Controls only the home dashboard refresh rate; 0.5–60 seconds. Reopen Home after saving to apply."
+msgstr "केवल होम डैशबोर्ड की रीफ़्रेश दर नियंत्रित करता है; 0.5–60 सेकंड। लागू करने के लिए सहेजने के बाद होम फिर से खोलें।"
+
+msgid "Persistent state directory"
+msgstr "स्थायी स्थिति डायरेक्टरी"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM. Mobile data will disconnect briefly."
+msgstr "Switching SIM. Mobile data will disconnect briefly."
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switch failed; check SIM readiness and hot switching."
+msgstr "SIM switch failed; check SIM readiness and hot switching."
+
+# Source-language fallback for untranslated new controls.
+msgid "Ready"
+msgstr "Ready"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM"
+msgstr "Switching SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switched; saved as boot default"
+msgstr "SIM switched; saved as boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch failed; previous SIM restored"
+msgstr "Switch failed; previous SIM restored"
+
+msgid "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+msgstr "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+
+msgid "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+msgstr "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+
+# Source-language fallback for untranslated new controls.
+msgid "Radio state unknown; reboot required"
+msgstr "Radio state unknown; reboot required"
+
+msgid "Radio state unknown; the device is restarting."
+msgstr "Radio state unknown; the device is restarting."
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM control is only for the U30 Air on OpenWrt."
+msgstr "Dual SIM control is only for the U30 Air on OpenWrt."
+
+# Source-language fallback for untranslated new controls.
+msgid "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+msgstr "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+
+msgid "No card answered in the chosen SIM position at the last boot."
+msgstr "No card answered in the chosen SIM position at the last boot."
+
+msgid "The chosen SIM is locked by its PIN."
+msgstr "The chosen SIM is locked by its PIN."
+
+msgid "The chosen SIM got no mobile data within the time at its first boot."
+msgstr "The chosen SIM got no mobile data within the time at its first boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The second SIM's modem channels did not come up at the last boot."
+msgstr "The second SIM's modem channels did not come up at the last boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The last dual-SIM boot never confirmed itself."
+msgstr "The last dual-SIM boot never confirmed itself."
+
+msgid "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+msgstr "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+
+# Source-language fallback for untranslated new controls.
+msgid "Active SIM"
+msgstr "Active SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "Cold-boot default"
+msgstr "Cold-boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control unavailable"
+msgstr "SIM control unavailable"
+
+# Source-language fallback for untranslated new controls.
+msgid "The device is back on SIM1 without live switching; choose again below to try once more."
+msgstr "The device is back on SIM1 without live switching; choose again below to try once more."
+
+msgid "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+msgstr "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching"
+msgstr "Enable hot switching"
+
+msgid "This device supports next-boot SIM selection only; live switching is unavailable."
+msgstr "This device supports next-boot SIM selection only; live switching is unavailable."
+
+# Source-language fallback for untranslated new controls.
+msgid "Reboot after enabling hot switching to prepare both SIM channels."
+msgstr "Reboot after enabling hot switching to prepare both SIM channels."
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch to SIM%d"
+msgstr "Switch to SIM%d"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM%d at next boot"
+msgstr "Use SIM%d at next boot"
+
+msgid "Built-in SIM 1"
+msgstr "अंतर्निहित SIM 1"
+
+msgid "Built-in SIM 2"
+msgstr "अंतर्निहित SIM 2"
+
+msgid "Built-in SIM 3"
+msgstr "अंतर्निहित SIM 3"
+
+msgid "External SIM"
+msgstr "बाहरी SIM"
+
+msgid "SIM card"
+msgstr "SIM कार्ड"
+
+msgid "Built-in SIM 3 shares SIM2, the external SIM shares SIM1. The card chosen here is switched in before the modem starts, at the next boot; without a choice the cards stay as the bootloader sets them."
+msgstr "अंतर्निहित SIM 3, SIM2 साझा करता है और बाहरी SIM, SIM1 साझा करता है। यहाँ चुना गया कार्ड अगले बूट पर मॉडेम शुरू होने से पहले जोड़ा जाता है; कोई चुनाव न होने पर कार्ड वैसे ही रहते हैं जैसे बूटलोडर उन्हें सेट करता है।"
+
+msgid "As the bootloader sets them"
+msgstr "जैसे बूटलोडर उन्हें सेट करता है"
+
+msgid "Applying the radio setting…"
+msgstr "रेडियो सेटिंग लागू हो रही है…"
+
+msgid "SIM settings are not available"
+msgstr "SIM सेटिंग्स उपलब्ध नहीं हैं"
+
+msgid "Modem default"
+msgstr "मॉडेम का डिफ़ॉल्ट"
+
+msgid "SIM%d"
+msgstr "SIM%d"
+
+msgid "in use"
+msgstr "उपयोग में"
+
+msgid "Turn off the radio of SIM%d"
+msgstr "SIM%d का रेडियो बंद करें"
+
+msgid "Radio"
+msgstr "रेडियो"
+
+msgid "VoLTE"
+msgstr "VoLTE"
+
+msgid "VoNR"
+msgstr "VoNR"
+
+msgid "Modem: %s"
+msgstr "मॉडेम: %s"
+
+msgid "Sent to this SIM when its radio next starts."
+msgstr "इस SIM का रेडियो अगली बार शुरू होने पर इसे भेजा जाएगा।"
+
+msgid "VoLTE and VoNR for each SIM, kept across reboots and sent again whenever that SIM starts. VoLTE is on unless switched off; VoNR stays as the modem has it until set."
+msgstr "हर SIM के लिए VoLTE और VoNR, रीबूट के बाद भी रहते हैं और वह SIM जब भी शुरू हो, फिर से भेजे जाते हैं। VoLTE बंद न करने तक चालू रहता है; VoNR सेट करने तक मॉडेम जैसा ही रहता है।"
+
+msgid "All radios off (airplane mode)"
+msgstr "सभी रेडियो बंद (हवाई जहाज़ मोड)"
+
+msgid "All radios on"
+msgstr "सभी रेडियो चालू"
+
+msgid "No SIM will have calls, SMS or data, also after a reboot, until a radio is turned on again here or with the dashboard's radio button."
+msgstr "किसी भी SIM पर कॉल, SMS या डेटा नहीं होगा, रीबूट के बाद भी, जब तक यहाँ या डैशबोर्ड के रेडियो बटन से कोई रेडियो फिर चालू न हो।"
+
+msgid "Each SIM's radio stays as set here after a reboot. A SIM whose radio is off has no calls, SMS or data, and the device does not switch to it."
+msgstr "हर SIM का रेडियो रीबूट के बाद भी यहाँ सेट किए अनुसार रहता है। जिस SIM का रेडियो बंद है उस पर कॉल, SMS या डेटा नहीं होता, और डिवाइस उस पर स्विच नहीं करता।"
+
+msgid "The setting is saved, but the radio did not follow it yet."
+msgstr "सेटिंग सहेज ली गई है, पर रेडियो ने अभी उसका पालन नहीं किया।"
+
+msgid "Recipient: number, e.g. 10086 or +86..."
+msgstr "प्राप्तकर्ता: नंबर, जैसे 10086 या +86..."
+
+msgid "Sync from SIM"
+msgstr "SIM से सिंक करें"
+
+msgid "Clear local pool"
+msgstr "स्थानीय पूल साफ़ करें"
+
+msgid "Select a conversation on the left, or enter a number below to send."
+msgstr "बाईं ओर कोई बातचीत चुनें, या भेजने के लिए नीचे नंबर दर्ज करें।"
+
+msgid "Message (Enter to send, Shift+Enter for newline)"
+msgstr "संदेश (भेजने के लिए Enter, नई पंक्ति के लिए Shift+Enter)"
+
+msgid "Sending uses AT+CMGS (PDU mode); retry if the channel is busy. To delete one message, use the bin icon on its bubble."
+msgstr "भेजने के लिए AT+CMGS (PDU मोड) का उपयोग होता है; चैनल व्यस्त होने पर फिर से प्रयास करें। किसी एक संदेश को हटाने के लिए उसके बबल पर बने कूड़ेदान आइकन का उपयोग करें।"
+
+msgid "Sending…"
+msgstr "भेजा जा रहा है…"
+
+msgid "Sent; the list refreshes shortly."
+msgstr "भेजा गया; सूची जल्द ही रीफ़्रेश होगी।"
+
+msgid "Sending failed"
+msgstr "भेजना विफल"
+
+msgid "Syncing from the SIM in the background (AT+CMGL)…"
+msgstr "पृष्ठभूमि में SIM से सिंक किया जा रहा है (AT+CMGL)…"
+
+msgid "SIM sync started; the list refreshes in a few seconds."
+msgstr "SIM सिंक शुरू हुआ; सूची कुछ सेकंड में रीफ़्रेश होगी।"
+
+msgid "Clear local SMS pool"
+msgstr "स्थानीय SMS पूल साफ़ करें"
+
+msgid "Only local files will be deleted; messages on the SIM remain."
+msgstr "केवल स्थानीय फ़ाइलें हटाई जाएँगी; SIM पर संदेश बने रहेंगे।"
+
+msgid "Delete this SMS"
+msgstr "यह SMS हटाएँ"
+
+msgid "Deletion cannot be undone."
+msgstr "हटाने को पूर्ववत नहीं किया जा सकता।"
+
+msgid "Local only"
+msgstr "केवल स्थानीय"
+
+msgid "Local + SIM"
+msgstr "स्थानीय + SIM"
+
+msgid "Delete failed"
+msgstr "हटाना विफल"
+
+msgid "Deleted (local + SIM)"
+msgstr "हटाया गया (स्थानीय + SIM)"
+
+msgid "Deleted (local only)"
+msgstr "हटाया गया (केवल स्थानीय)"
+
+msgid "Enter both a number and a message."
+msgstr "नंबर और संदेश दोनों दर्ज करें।"
+
+msgid "· %d messages, %d unread · %d conversations"
+msgstr "· %d संदेश, %d अपठित · %d बातचीत"
+
+msgid "· %d messages · %d conversations"
+msgstr "· %d संदेश · %d बातचीत"
+
+msgid "The pool is empty. Incoming and sent messages appear here, or select “Sync from SIM”."
+msgstr "पूल खाली है। आने वाले और भेजे गए संदेश यहाँ दिखते हैं, या “SIM से सिंक करें” चुनें।"
+
+msgid "Me: %s"
+msgstr "मैं: %s"
+
+msgid "Incomplete: %d of %d parts arrived"
+msgstr "अधूरा: %d / %d भाग पहुँचे"
+
+msgid "Delete"
+msgstr "हटाएँ"
+
+msgid "ttyd is not installed."
+msgstr "ttyd इंस्टॉल नहीं है।"
+
+msgid "The terminal is turned off (/etc/config/ttyd)."
+msgstr "टर्मिनल बंद है (/etc/config/ttyd)।"
+
+msgid "Too many terminals are opening at once. Try again in a minute."
+msgstr "एक साथ बहुत सारे टर्मिनल खुल रहे हैं। एक मिनट बाद फिर कोशिश करें।"
+
+msgid "The terminal is not available."
+msgstr "टर्मिनल उपलब्ध नहीं है।"
+
+msgid "This is a root shell on the device: every command runs with full rights, and a mistake can make the device unbootable."
+msgstr "यह डिवाइस का root शेल है: हर कमांड पूरे अधिकारों के साथ चलती है, और एक गलती डिवाइस को बूट होने से रोक सकती है।"
+
+msgid "It is reachable from the LAN only (USB and the hotspot), never from mobile data, and only from this logged-in page."
+msgstr "यह केवल LAN (USB और हॉटस्पॉट) से पहुँच योग्य है, मोबाइल डेटा से कभी नहीं, और केवल इसी लॉग-इन पेज से।"
+
+msgid "It closes after a minute without activity."
+msgstr "एक मिनट तक कोई गतिविधि न होने पर यह बंद हो जाता है।"
+
+msgid "It closes after %d minutes without activity."
+msgstr "%d मिनट तक कोई गतिविधि न होने पर यह बंद हो जाता है।"
+
+msgid "Reconnect"
+msgstr "फिर से कनेक्ट करें"
+
+msgid "Open in a new tab"
+msgstr "नए टैब में खोलें"
+
+msgid "This page was opened over HTTPS, and the terminal is served over HTTP on the LAN: it opens in a tab of its own."
+msgstr "यह पेज HTTPS से खोला गया है, और टर्मिनल LAN पर HTTP से चलता है: इसलिए यह अपने अलग टैब में खुलता है।"
+
+msgid "The data usage could not be read"
+msgstr "डेटा उपयोग पढ़ा नहीं जा सका"
+
+msgid "Today"
+msgstr "आज"
+
+msgid "Days left in this cycle"
+msgstr "चक्र में शेष दिन"
+
+msgid "Received"
+msgstr "प्राप्त"
+
+msgid "Sent"
+msgstr "भेजा गया"
+
+msgid "Corrected by"
+msgstr "सुधार"
+
+msgid "Monthly cap"
+msgstr "मासिक सीमा"
+
+msgid "%s, warning at %d%%"
+msgstr "%s, %d%% पर चेतावनी"
+
+msgid "The monthly cap is reached: mobile data was turned off. It comes back on when the next cycle starts."
+msgstr "मासिक सीमा पूरी हो गई: मोबाइल डेटा बंद कर दिया गया। अगला चक्र शुरू होने पर यह फिर चालू होगा।"
+
+msgid "%s waits for the clock: it has not been set over the network yet. It already counts towards this cycle and goes to its day once the clock is set."
+msgstr "%s घड़ी की प्रतीक्षा में है: घड़ी अभी नेटवर्क से सेट नहीं हुई है। यह पहले से इस चक्र में गिना जा रहा है और घड़ी सेट होने पर अपने दिन में जाएगा।"
+
+msgid "The interface %s is not there right now: nothing is counted until it comes back."
+msgstr "इंटरफ़ेस %s अभी मौजूद नहीं है: इसके लौटने तक कुछ नहीं गिना जाता।"
+
+msgid "Counted on %s, both ways, as the operator counts it (a VPN's overhead included)."
+msgstr "%s पर, दोनों दिशाओं में, ऑपरेटर की तरह गिना जाता है (VPN का अतिरिक्त भार शामिल)।"
+
+msgid "The count is kept in memory and written to the disk every 30 minutes and at shutdown: a power cut loses at most the last half hour."
+msgstr "गिनती मेमोरी में रखी जाती है और हर 30 मिनट तथा बंद होने पर डिस्क पर लिखी जाती है: बिजली कटने पर अधिकतम पिछला आधा घंटा खोता है।"
+
+msgid "Counting since %s."
+msgstr "%s से गिनती।"
+
+msgid "Per day"
+msgstr "प्रति दिन"
+
+msgid "Date"
+msgstr "तारीख"
+
+msgid "Total"
+msgstr "कुल"
+
+msgid "Per billing cycle"
+msgstr "प्रति बिलिंग चक्र"
+
+msgid "Billing cycle"
+msgstr "बिलिंग चक्र"
+
+msgid "Enter a size in GB, for example 50 or 2.5"
+msgstr "GB में आकार दर्ज करें, उदाहरण 50 या 2.5"
+
+msgid "Enter a percentage from 1 to 100"
+msgstr "1 से 100 तक प्रतिशत दर्ज करें"
+
+msgid "Turn mobile data off at the cap"
+msgstr "सीमा पर मोबाइल डेटा बंद करें"
+
+msgid "When this cycle reaches the cap, mobile data is turned off: no internet through the operator until the next cycle starts, the cap is raised or this is turned off again. Turning mobile data back on by hand keeps it on until the next reboot."
+msgstr "जब यह चक्र सीमा तक पहुँचेगा, मोबाइल डेटा बंद हो जाएगा: अगला चक्र शुरू होने, सीमा बढ़ाने या यह विकल्प फिर बंद करने तक ऑपरेटर से इंटरनेट नहीं मिलेगा। मोबाइल डेटा हाथ से फिर चालू करने पर वह अगले रीबूट तक चालू रहता है।"
+
+msgid "Set"
+msgstr "सेट करें"
+
+msgid "Clear the count"
+msgstr "गिनती साफ़ करें"
+
+msgid "Every day and billing cycle counted so far is forgotten. Counting goes on from now."
+msgstr "अब तक गिने गए सभी दिन और बिलिंग चक्र भुला दिए जाएँगे। गिनती अभी से जारी रहेगी।"
+
+msgid "Billing cycle and cap"
+msgstr "बिलिंग चक्र और सीमा"
+
+msgid "A billing cycle starts on day"
+msgstr "बिलिंग चक्र इस दिन शुरू होता है"
+
+msgid "31: on the last day of each month"
+msgstr "31: हर महीने के अंतिम दिन"
+
+msgid "Monthly cap (GB, 0: none)"
+msgstr "मासिक सीमा (GB, 0: कोई नहीं)"
+
+msgid "Warning at this percentage of the cap"
+msgstr "सीमा के इस प्रतिशत पर चेतावनी दें"
+
+msgid "Used so far in this cycle (GB)"
+msgstr "इस चक्र में अब तक उपयोग (GB)"
+
+msgid "What the operator shows for this cycle (for example when counting started in the middle of it); the count is corrected to it."
+msgstr "ऑपरेटर इस चक्र के लिए जो दिखाता है (उदाहरण के लिए जब गिनती चक्र के बीच में शुरू हुई); गिनती उसी के अनुसार सुधारी जाती है।"
+
+msgid "Current setting"
+msgstr "वर्तमान सेटिंग"
+
+msgid "Fixed at %d"
+msgstr "%d पर स्थिर"
+
+msgid "Not changed (default)"
+msgstr "नहीं बदला (डिफ़ॉल्ट)"
+
+msgid "Rule in force"
+msgstr "लागू नियम"
+
+msgid "Flow offloading"
+msgstr "फ़्लो ऑफ़लोडिंग"
+
+msgid "TTL of mobile data"
+msgstr "मोबाइल डेटा का TTL"
+
+msgid "Every packet that leaves through mobile data gets this TTL (IPv6: hop limit). A phone or laptop behind the hotspot sends 64 (Windows: 128) and the device forwards it with one less, which is how an operator can tell tethered traffic apart."
+msgstr "मोबाइल डेटा से बाहर जाने वाले हर पैकेट को यह TTL (IPv6: hop limit) मिलता है। हॉटस्पॉट से जुड़ा फ़ोन या लैपटॉप 64 (Windows: 128) भेजता है और डिवाइस उसे एक कम करके आगे भेजता है, इसी से ऑपरेटर साझा ट्रैफ़िक पहचान सकता है।"
+
+msgid "On this kernel the firewall fast-path is off while a TTL is set"
+msgstr "इस कर्नेल पर TTL सेट रहने तक फ़ायरवॉल का तेज़ पथ बंद रहता है"
+
+msgid "Set %d"
+msgstr "%d सेट करें"
+
+msgid "Enter a number from 1 to 255"
+msgstr "1 से 255 तक की संख्या दर्ज करें"
+
+msgid "Turn off"
+msgstr "बंद करें"
+
+msgid "64 makes every packet leave like the device's own traffic"
+msgstr "64 से हर पैकेट डिवाइस के अपने ट्रैफ़िक की तरह बाहर जाता है"
+
+msgid "Check for updates"
+msgstr "अपडेट जाँचें"
+
+msgid "Checking the file"
+msgstr "फ़ाइल जाँची जा रही है"
+
+msgid "Update from a file"
+msgstr "फ़ाइल से अपडेट करें"
+
+msgid "Back to the previous version"
+msgstr "पिछले संस्करण पर लौटें"
+
+msgid "Back to the previous boot image"
+msgstr "पिछली बूट इमेज पर लौटें"
+
+msgid "Remove the previous version"
+msgstr "पिछला संस्करण हटाएँ"
+
+msgid "Kernel change"
+msgstr "कर्नेल बदलना"
+
+msgid "Starting…"
+msgstr "शुरू हो रहा है…"
+
+msgid "Downloading"
+msgstr "डाउनलोड हो रहा है"
+
+msgid "All files are here and verified"
+msgstr "सभी फ़ाइलें आ गई हैं और सत्यापित हैं"
+
+msgid "Unpacking the new system"
+msgstr "नया सिस्टम खोला जा रहा है"
+
+msgid "Carrying over your settings"
+msgstr "आपकी सेटिंग्स ले जाई जा रही हैं"
+
+msgid "Writing down the packages you installed"
+msgstr "आपके इंस्टॉल किए पैकेज दर्ज किए जा रहे हैं"
+
+msgid "Switching to the new system"
+msgstr "नए सिस्टम पर स्विच किया जा रहा है"
+
+msgid "Kernel and boot image"
+msgstr "कर्नेल और बूट इमेज"
+
+msgid "Restart the device?"
+msgstr "डिवाइस रीस्टार्ट करें?"
+
+msgid "The device restarts now. The default boot is Android, so it starts Android: switch to Linux from there to start the updated system."
+msgstr "डिवाइस अभी रीस्टार्ट होगा। डिफ़ॉल्ट बूट Android है, इसलिए Android शुरू होगा: अपडेट किया गया सिस्टम शुरू करने के लिए वहाँ से Linux पर स्विच करें।"
+
+msgid "The device restarts now and is away for about a minute. If the new system does not start, the device goes back to Android by itself after the failed attempts."
+msgstr "डिवाइस अभी रीस्टार्ट होगा और लगभग एक मिनट तक उपलब्ध नहीं रहेगा। अगर नया सिस्टम शुरू नहीं होता, तो विफल प्रयासों के बाद डिवाइस अपने आप Android पर लौट जाता है।"
+
+msgid "Restarting… open this page again in about a minute."
+msgstr "रीस्टार्ट हो रहा है… लगभग एक मिनट बाद यह पेज फिर से खोलें।"
+
+msgid "Running for %s. It goes on when this page is closed; do not switch the device off."
+msgstr "%s से चल रहा है। यह पेज बंद करने पर भी जारी रहता है; डिवाइस बंद न करें।"
+
+msgid "Done. Restart the device to start it."
+msgstr "पूरा हुआ। इसे शुरू करने के लिए डिवाइस रीस्टार्ट करें।"
+
+msgid "Done. Nothing needs a restart."
+msgstr "पूरा हुआ। रीस्टार्ट की ज़रूरत नहीं है।"
+
+msgid "It did not finish, and part of it was done: read the log before you restart."
+msgstr "यह पूरा नहीं हुआ, और इसका कुछ हिस्सा हो चुका है: रीस्टार्ट करने से पहले लॉग पढ़ें।"
+
+msgid "It did not finish. Nothing was changed; the log says why."
+msgstr "यह पूरा नहीं हुआ। कुछ भी नहीं बदला; कारण लॉग में है।"
+
+msgid "Log"
+msgstr "लॉग"
+
+msgid "Restart now"
+msgstr "अभी रीस्टार्ट करें"
+
+msgid "Later"
+msgstr "बाद में"
+
+msgid "Close"
+msgstr "बंद करें"
+
+msgid "Updating is not available on this system"
+msgstr "इस सिस्टम पर अपडेट उपलब्ध नहीं है"
+
+msgid "Another update is running on the device"
+msgstr "डिवाइस पर दूसरा अपडेट चल रहा है"
+
+msgid "It was started outside this page (a terminal, the toolkit). Nothing can be started here until it has finished."
+msgstr "इसे इस पेज के बाहर से शुरू किया गया था (टर्मिनल, टूलकिट)। इसके पूरा होने तक यहाँ से कुछ भी शुरू नहीं किया जा सकता।"
+
+msgid "Restart needed"
+msgstr "रीस्टार्ट ज़रूरी है"
+
+msgid "This system was updated and still runs the old version. The new one starts at the next restart."
+msgstr "यह सिस्टम अपडेट हो चुका है और अभी भी पुराना संस्करण चला रहा है। नया संस्करण अगले रीस्टार्ट पर शुरू होगा।"
+
+msgid "Installed"
+msgstr "इंस्टॉल है"
+
+msgid "This system"
+msgstr "यह सिस्टम"
+
+msgid "Also on this device"
+msgstr "इस डिवाइस पर और भी"
+
+msgid "Kernel"
+msgstr "कर्नेल"
+
+msgid "choice %s"
+msgstr "चुनाव %s"
+
+msgid "Boot image"
+msgstr "बूट इमेज"
+
+msgid "from the installer"
+msgstr "इंस्टॉलर से"
+
+msgid "Default boot"
+msgstr "डिफ़ॉल्ट बूट"
+
+msgid "Free space"
+msgstr "खाली जगह"
+
+msgid "Release signatures"
+msgstr "रिलीज़ के हस्ताक्षर"
+
+msgid "checked with the project's key"
+msgstr "प्रोजेक्ट की कुंजी से जाँचे जाते हैं"
+
+msgid "this system has no release key"
+msgstr "इस सिस्टम में रिलीज़ कुंजी नहीं है"
+
+msgid "The default boot is Android: a restart goes to Android, and Linux is started from there."
+msgstr "डिफ़ॉल्ट बूट Android है: रीस्टार्ट करने पर Android खुलता है, और Linux वहाँ से शुरू किया जाता है।"
+
+msgid "Linux is locked as the default boot: a failed start does not send the device to Android by itself, except the first starts of a new boot image."
+msgstr "Linux डिफ़ॉल्ट बूट के रूप में लॉक है: शुरू होने में विफलता डिवाइस को अपने आप Android पर नहीं भेजती, सिवाय नई बूट इमेज के पहले कुछ स्टार्ट के।"
+
+msgid "If Linux fails to start %d times in a row, the device starts Android by itself."
+msgstr "अगर Linux लगातार %d बार शुरू नहीं हो पाता, तो डिवाइस अपने आप Android शुरू करता है।"
+
+msgid "Report of the last update"
+msgstr "पिछले अपडेट की रिपोर्ट"
+
+msgid "Online update"
+msgstr "ऑनलाइन अपडेट"
+
+msgid "Asking GitHub…"
+msgstr "GitHub से पूछा जा रहा है…"
+
+msgid "Checked %s ago"
+msgstr "%s पहले जाँचा गया"
+
+msgid "Not checked yet"
+msgstr "अभी तक जाँचा नहीं गया"
+
+msgid "Mirror (release files)"
+msgstr "मिरर (रिलीज़ फ़ाइलें)"
+
+msgid "Leave empty for GitHub."
+msgstr "GitHub के लिए खाली छोड़ें।"
+
+msgid "Install the packages I added again after the update (needs the device online at the first start)"
+msgstr "अपडेट के बाद मेरे जोड़े हुए पैकेज फिर से इंस्टॉल करें (पहले स्टार्ट पर डिवाइस का ऑनलाइन होना ज़रूरी है)"
+
+msgid "Pre-release"
+msgstr "प्री-रिलीज़"
+
+msgid "Newest release"
+msgstr "सबसे नई रिलीज़"
+
+msgid "Release notes"
+msgstr "रिलीज़ नोट्स"
+
+msgid "Download"
+msgstr "डाउनलोड"
+
+msgid "Free space needed"
+msgstr "ज़रूरी खाली जगह"
+
+msgid "not enough: remove the previous version first"
+msgstr "काफ़ी नहीं: पहले पिछला संस्करण हटाएँ"
+
+msgid "A pre-release is a release still being tried: it can have faults a release does not. The previous version is kept all the same."
+msgstr "प्री-रिलीज़ वह रिलीज़ है जिसे अभी आज़माया जा रहा है: इसमें ऐसी खामियाँ हो सकती हैं जो रिलीज़ में नहीं होतीं। पिछला संस्करण फिर भी रखा जाता है।"
+
+msgid "This system is newer than the newest release (a test release)."
+msgstr "यह सिस्टम सबसे नई रिलीज़ से भी नया है (एक टेस्ट रिलीज़)।"
+
+msgid "Up to date."
+msgstr "अप टू डेट है।"
+
+msgid "This release is not signed, and this system checks signatures: it is not installed from here. Update from its file below, which asks you to confirm."
+msgstr "यह रिलीज़ हस्ताक्षरित नहीं है, और यह सिस्टम हस्ताक्षर जाँचता है: इसे यहाँ से इंस्टॉल नहीं किया जाता। नीचे इसकी फ़ाइल से अपडेट करें, जो आपसे पुष्टि माँगती है।"
+
+msgid "Update to %s"
+msgstr "%s पर अपडेट करें"
+
+msgid "Choose at least one system"
+msgstr "कम से कम एक सिस्टम चुनें"
+
+msgid "Update to %s?"
+msgstr "%s पर अपडेट करें?"
+
+msgid "The device downloads %s, puts the new system beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "डिवाइस %s डाउनलोड करता है, नए सिस्टम को चल रहे सिस्टम के साथ रखता है और अगले रीस्टार्ट पर उस पर स्विच करता है। आपकी सेटिंग्स साथ ले जाई जाती हैं और पिछला संस्करण रखा जाता है। इसमें कई मिनट लगते हैं; डिवाइस बंद न करें।"
+
+msgid "Also offer the pre-release %s"
+msgstr "प्री-रिलीज़ %s भी दिखाएँ"
+
+msgid "Systems to update:"
+msgstr "अपडेट किए जाने वाले सिस्टम:"
+
+msgid "GitHub could not be reached: the device has no internet connection, or GitHub did not answer. Without internet, update from a file below."
+msgstr "GitHub तक पहुँचा नहीं जा सका: डिवाइस में इंटरनेट कनेक्शन नहीं है, या GitHub ने जवाब नहीं दिया। इंटरनेट न हो तो नीचे फ़ाइल से अपडेट करें।"
+
+msgid "release"
+msgstr "रिलीज़"
+
+msgid "For a device without internet: download the Magisk zip of a release for this system and this kernel on another computer, from the release page on GitHub, and upload it here. For this device that is:"
+msgstr "बिना इंटरनेट वाले डिवाइस के लिए: इस सिस्टम और इस कर्नेल की किसी रिलीज़ का Magisk zip किसी दूसरे कंप्यूटर पर GitHub के रिलीज़ पेज से डाउनलोड करें और यहाँ अपलोड करें। इस डिवाइस के लिए वह फ़ाइल है:"
+
+msgid "Uploaded file"
+msgstr "अपलोड की गई फ़ाइल"
+
+msgid "Checking the file…"
+msgstr "फ़ाइल जाँची जा रही है…"
+
+msgid "It says it is"
+msgstr "फ़ाइल के अनुसार यह है"
+
+msgid "kernel %s"
+msgstr "कर्नेल %s"
+
+msgid "Signature"
+msgstr "हस्ताक्षर"
+
+msgid "signed with the project's release key"
+msgstr "प्रोजेक्ट की रिलीज़ कुंजी से हस्ताक्षरित"
+
+msgid "WRONG: it does not match the project's release key"
+msgstr "ग़लत: यह प्रोजेक्ट की रिलीज़ कुंजी से मेल नहीं खाता"
+
+msgid "not signed"
+msgstr "हस्ताक्षरित नहीं"
+
+msgid "cannot be checked on this system"
+msgstr "इस सिस्टम पर जाँचा नहीं जा सकता"
+
+msgid "Its system is not installed on this device."
+msgstr "इस फ़ाइल का सिस्टम इस डिवाइस पर इंस्टॉल नहीं है।"
+
+msgid "It is the other Ubuntu release, not the one installed."
+msgstr "यह दूसरी Ubuntu रिलीज़ है, वह नहीं जो इंस्टॉल है।"
+
+msgid "It carries another kernel than this device uses. Take the zip for kernel %s, or change the kernel first."
+msgstr "इसमें इस डिवाइस के कर्नेल से अलग कर्नेल है। कर्नेल %s वाला zip लें, या पहले कर्नेल बदलें।"
+
+msgid "Its kernel does not run on this model."
+msgstr "इसका कर्नेल इस मॉडल पर नहीं चलता।"
+
+msgid "The file is damaged: its contents do not match their checksums."
+msgstr "फ़ाइल ख़राब है: इसकी सामग्री चेकसम से मेल नहीं खाती।"
+
+msgid "Its signature is wrong. This file does not come from the project as it is; it is never installed."
+msgstr "इसका हस्ताक्षर ग़लत है। यह फ़ाइल जैसी है वैसी प्रोजेक्ट से नहीं आई है; इसे कभी इंस्टॉल नहीं किया जाता।"
+
+msgid "This file cannot be used here."
+msgstr "यह फ़ाइल यहाँ इस्तेमाल नहीं की जा सकती।"
+
+msgid "Compare the SHA-256 with the one in SHA256SUMS-magisk on the release page: it is the only proof of where an unsigned file comes from."
+msgstr "SHA-256 की तुलना रिलीज़ पेज पर SHA256SUMS-magisk में दिए मान से करें: बिना हस्ताक्षर वाली फ़ाइल कहाँ से आई है, इसका यही एकमात्र प्रमाण है।"
+
+msgid "This release is installed already; the update would only refresh the boot image."
+msgstr "यह रिलीज़ पहले से इंस्टॉल है; अपडेट केवल बूट इमेज को दोबारा लिखेगा।"
+
+msgid "I know this file is not signed: nothing proves that it comes from the project. I compared its SHA-256 myself and want it installed."
+msgstr "मुझे पता है कि यह फ़ाइल हस्ताक्षरित नहीं है: कुछ भी यह साबित नहीं करता कि यह प्रोजेक्ट से आई है। मैंने इसके SHA-256 की तुलना ख़ुद की है और मुझे इसे इंस्टॉल करना है।"
+
+msgid "I know this is %s, older than the installed %s, and want to go back to it."
+msgstr "मुझे पता है कि यह %s है, जो इंस्टॉल किए गए %s से पुराना है, और मुझे इसी पर लौटना है।"
+
+msgid "This is not a release file of this project: a Magisk zip of a release is expected."
+msgstr "यह इस प्रोजेक्ट की रिलीज़ फ़ाइल नहीं है: किसी रिलीज़ का Magisk zip चाहिए।"
+
+msgid "Update from this file"
+msgstr "इस फ़ाइल से अपडेट करें"
+
+msgid "Tick the confirmations above first"
+msgstr "पहले ऊपर दिए पुष्टि वाले बॉक्स पर निशान लगाएँ"
+
+msgid "The device puts the system of this file beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "डिवाइस इस फ़ाइल के सिस्टम को चल रहे सिस्टम के साथ रखता है और अगले रीस्टार्ट पर उस पर स्विच करता है। आपकी सेटिंग्स साथ ले जाई जाती हैं और पिछला संस्करण रखा जाता है। इसमें कई मिनट लगते हैं; डिवाइस बंद न करें।"
+
+msgid "Check the file"
+msgstr "फ़ाइल जाँचें"
+
+msgid "Remove the file"
+msgstr "फ़ाइल हटाएँ"
+
+msgid "Previous version"
+msgstr "पिछला संस्करण"
+
+msgid "No previous version is kept on this device."
+msgstr "इस डिवाइस पर कोई पिछला संस्करण नहीं रखा गया है।"
+
+msgid "replaced %s"
+msgstr "%s को बदला गया"
+
+msgid "I want the previous system back; what I changed since the update stays in the version I leave."
+msgstr "मुझे पिछला सिस्टम वापस चाहिए; अपडेट के बाद मैंने जो बदला वह छोड़े जा रहे संस्करण में ही रह जाएगा।"
+
+msgid "Back to the previous version?"
+msgstr "पिछले संस्करण पर लौटें?"
+
+msgid "The previous system (%s) becomes the one that starts at the next restart. The version you leave is not kept; settings you changed since the update are not carried back."
+msgstr "पिछला सिस्टम (%s) अगले रीस्टार्ट पर शुरू होने वाला सिस्टम बन जाता है। जिस संस्करण को आप छोड़ते हैं वह नहीं रखा जाता; अपडेट के बाद बदली गई सेटिंग्स वापस नहीं ले जाई जातीं।"
+
+msgid "Go back"
+msgstr "वापस जाएँ"
+
+msgid "The previous version is the one running now: restart first."
+msgstr "अभी पिछला संस्करण ही चल रहा है: पहले रीस्टार्ट करें।"
+
+msgid "I want the previous kernel and boot image back."
+msgstr "मुझे पिछला कर्नेल और बूट इमेज वापस चाहिए।"
+
+msgid "Back to the previous boot image?"
+msgstr "पिछली बूट इमेज पर लौटें?"
+
+msgid "The previous boot image (%s) is written to the Linux slot and starts at the next restart. If it does not start, the device goes back to Android by itself."
+msgstr "पिछली बूट इमेज (%s) Linux स्लॉट में लिखी जाती है और अगले रीस्टार्ट पर शुरू होती है। अगर यह शुरू नहीं होती, तो डिवाइस अपने आप Android पर लौट जाता है।"
+
+msgid "I do not need to go back: delete the previous system to free its space."
+msgstr "मुझे वापस जाने की ज़रूरत नहीं: जगह खाली करने के लिए पिछला सिस्टम हटा दें।"
+
+msgid "Remove the previous version?"
+msgstr "पिछला संस्करण हटाएँ?"
+
+msgid "The kept copy of the previous system is deleted for good. After that there is no going back to it from this page."
+msgstr "पिछले सिस्टम की रखी हुई कॉपी हमेशा के लिए हटा दी जाती है। इसके बाद इस पेज से उस पर वापस नहीं जाया जा सकता।"
+
+msgid "the vendor kernel"
+msgstr "वेंडर कर्नेल"
+
+msgid "mainline"
+msgstr "मेनलाइन"
+
+msgid "not with Ubuntu 26.04"
+msgstr "Ubuntu 26.04 के साथ नहीं"
+
+msgid "Change the kernel"
+msgstr "कर्नेल बदलें"
+
+msgid "This kernel is the one in use"
+msgstr "यही कर्नेल इस्तेमाल में है"
+
+msgid "Change the kernel to %s?"
+msgstr "कर्नेल को %s में बदलें?"
+
+msgid "The device downloads that kernel from the newest release and writes a new boot image; it starts at the next restart. The previous boot image is kept, and if the new one does not start the device goes back to Android by itself. The device must be online."
+msgstr "डिवाइस वह कर्नेल सबसे नई रिलीज़ से डाउनलोड करता है और नई बूट इमेज लिखता है; यह अगले रीस्टार्ट पर शुरू होती है। पिछली बूट इमेज रखी जाती है, और अगर नई शुरू नहीं होती तो डिवाइस अपने आप Android पर लौट जाता है। डिवाइस का ऑनलाइन होना ज़रूरी है।"
+
+msgid "Start Android at the next restart"
+msgstr "अगले रीस्टार्ट पर Android शुरू करें"
+
+msgid "Start Android at the next restart?"
+msgstr "अगले रीस्टार्ट पर Android शुरू करें?"
+
+msgid "The next restart, and the ones after it, start Android instead of Linux. Linux is started again from Android (the Magisk module's Action button, or mu300-linux)."
+msgstr "अगला रीस्टार्ट, और उसके बाद वाले भी, Linux की जगह Android शुरू करते हैं। Linux फिर से Android से शुरू किया जाता है (Magisk मॉड्यूल का Action बटन, या mu300-linux)।"
+
+msgid "Start Android next"
+msgstr "अगली बार Android शुरू करें"
+
+msgid "What an update keeps"
+msgstr "अपडेट क्या-क्या रखता है"
+
+msgid "An update puts the system of the new release in place and carries over what is yours: the settings, the accounts and their passwords, the device's keys and the home directories. Packages you installed yourself are written down and installed again at the first start, once the device is online. The previous version stays on the device until you remove it, so you can go back."
+msgstr "अपडेट नई रिलीज़ का सिस्टम लगाता है और जो आपका है उसे साथ ले जाता है: सेटिंग्स, खाते और उनके पासवर्ड, डिवाइस की कुंजियाँ और होम डायरेक्टरी। आपके ख़ुद इंस्टॉल किए पैकेज दर्ज किए जाते हैं और डिवाइस के ऑनलाइन होने पर पहले स्टार्ट पर फिर से इंस्टॉल किए जाते हैं। पिछला संस्करण तब तक डिवाइस पर रहता है जब तक आप उसे हटा न दें, ताकि आप वापस जा सकें।"
+
+msgid "The wiki's Updating page lists exactly what is kept."
+msgstr "विकी के अपडेट पेज पर ठीक-ठीक बताया गया है कि क्या-क्या रखा जाता है।"
+
+msgid "Choose a file first"
+msgstr "पहले कोई फ़ाइल चुनें"
+
+msgid "Uploading: %s of %s"
+msgstr "अपलोड हो रहा है: %s / %s"
+
+msgid "running"
+msgstr "चल रहा है"
+
+msgid "(about %s)"
+msgstr "(लगभग %s)"
+
+msgid "Install %s?"
+msgstr "%s इंस्टॉल करें?"
+
+msgid "It is installed from this system's package feed."
+msgstr "यह इस सिस्टम के पैकेज फ़ीड से इंस्टॉल होता है।"
+
+msgid "It is downloaded from the release of the VPN module and checked against its SHA256SUMS."
+msgstr "यह VPN मॉड्यूल की रिलीज़ से डाउनलोड होता है और SHA256SUMS से जाँचा जाता है।"
+
+msgid "An engine is tens of MB: on mobile data the download counts towards your plan."
+msgstr "एक इंजन दर्जनों MB का होता है: मोबाइल डेटा पर डाउनलोड आपके प्लान से कटता है।"
+
+msgid "Install"
+msgstr "इंस्टॉल करें"
+
+msgid "Remove %s?"
+msgstr "%s हटाएँ?"
+
+msgid "Profiles run on it: %s. They cannot start until it is installed again (the module refuses while the running profile needs it)."
+msgstr "प्रोफ़ाइल इस पर चलते हैं: %s। दोबारा इंस्टॉल होने तक वे शुरू नहीं हो सकते (चालू प्रोफ़ाइल को इसकी ज़रूरत हो तो मॉड्यूल हटाने से मना कर देता है)।"
+
+msgid "No profile runs on it."
+msgstr "कोई प्रोफ़ाइल इस पर नहीं चलता।"
+
+msgid "Removed"
+msgstr "हटाया गया"
+
+msgid "Each engine is an extra of its own: install only the ones your profiles need. Xray runs vless, vmess, trojan and ss links (with hev-socks5-tunnel), sing-box the same links and its own JSON, mihomo Clash subscriptions, dae hysteria2, tuic and the rest on newer kernels. WireGuard and OpenVPN are packages of the system."
+msgstr "हर इंजन एक अलग एक्स्ट्रा है: केवल वही इंस्टॉल करें जो आपके प्रोफ़ाइल को चाहिए। Xray, vless, vmess, trojan और ss लिंक चलाता है (hev-socks5-tunnel के साथ), sing-box वही लिंक और अपना JSON, mihomo Clash सब्सक्रिप्शन, और dae नए कर्नेल पर hysteria2, tuic व बाकी। WireGuard और OpenVPN सिस्टम के पैकेज हैं।"
+
+msgid "Downloads are tens of MB per engine: on mobile data they count towards your plan. Offline, upload the engine's tarball from the release page of the VPN module."
+msgstr "डाउनलोड हर इंजन के लिए दर्जनों MB के होते हैं: मोबाइल डेटा पर ये आपके प्लान से कटते हैं। ऑफ़लाइन होने पर, VPN मॉड्यूल के रिलीज़ पेज से इंजन का tarball अपलोड करें।"
+
+msgid "The available versions come from the latest release of the VPN module."
+msgstr "उपलब्ध संस्करण VPN मॉड्यूल की नवीनतम रिलीज़ से आते हैं।"
+
+msgid "system package"
+msgstr "सिस्टम पैकेज"
+
+msgid "in the vpn bundle"
+msgstr "vpn बंडल में"
+
+msgid "extra %s"
+msgstr "एक्स्ट्रा %s"
+
+msgid "not installed"
+msgstr "इंस्टॉल नहीं है"
+
+msgid "cannot run here"
+msgstr "यहाँ नहीं चल सकता"
+
+msgid "update available"
+msgstr "अपडेट उपलब्ध है"
+
+msgid "installed"
+msgstr "इंस्टॉल है"
+
+msgid "Kind"
+msgstr "प्रकार"
+
+msgid "Version"
+msgstr "संस्करण"
+
+msgid "Available"
+msgstr "उपलब्ध"
+
+msgid "not checked"
+msgstr "जाँचा नहीं गया"
+
+msgid "Size"
+msgstr "आकार"
+
+msgid "Needed by"
+msgstr "किसे चाहिए"
+
+msgid "no profile"
+msgstr "कोई प्रोफ़ाइल नहीं"
+
+msgid "dae needs a kernel with BTF, 5.17 or newer: not the 5.4 vendor kernel (mu300-update kernel 6.18). It can be installed anyway."
+msgstr "dae को BTF वाला कर्नेल 5.17 या नया चाहिए: 5.4 वेंडर कर्नेल पर नहीं चलता (mu300-update kernel 6.18)। फिर भी इंस्टॉल किया जा सकता है।"
+
+msgid "All engines"
+msgstr "सभी इंजन"
+
+msgid "Last %s lines"
+msgstr "अंतिम %s पंक्तियाँ"
+
+msgid "VPN service log"
+msgstr "VPN सेवा लॉग"
+
+msgid "Every 5 s"
+msgstr "हर 5 सेकंड में"
+
+msgid "The log is empty."
+msgstr "लॉग खाली है।"
+
+msgid "The VPN is starting"
+msgstr "VPN शुरू हो रहा है"
+
+msgid "The VPN is stopped"
+msgstr "VPN बंद है"
+
+msgid "The VPN is restarting"
+msgstr "VPN रीस्टार्ट हो रहा है"
+
+msgid "With the kill switch on, nothing leaves the device or the LAN outside the tunnel: while the VPN is down, starting or broken, every connection fails instead of going out directly. It stays up until you stop the VPN here (Stop removes it)."
+msgstr "Kill switch चालू होने पर, VPN डाउन, शुरू होते या ख़राब होने की स्थिति में डिवाइस या LAN से कुछ भी टनल के बाहर नहीं जाता: हर कनेक्शन सीधे बाहर जाने के बजाय विफल हो जाता है। यह तब तक चालू रहता है जब तक आप यहाँ VPN बंद नहीं करते (बंद करें इसे हटा देता है)।"
+
+msgid "Without the kill switch, traffic goes out directly, unprotected, whenever the tunnel is down (while it starts, after a crash, when the engine is missing)."
+msgstr "Kill switch के बिना, टनल डाउन होने पर (शुरू होते समय, क्रैश के बाद, इंजन न होने पर) ट्रैफ़िक असुरक्षित रूप से सीधे बाहर जाता है।"
+
+msgid "Turn the kill switch on?"
+msgstr "Kill switch चालू करें?"
+
+msgid "Turn the kill switch off?"
+msgstr "Kill switch बंद करें?"
+
+msgid "Turn on"
+msgstr "चालू करें"
+
+msgid "unknown"
+msgstr "अज्ञात"
+
+msgid "The exit address could not be found (is the tunnel up?)"
+msgstr "एग्ज़िट पता नहीं मिला (क्या टनल चालू है?)"
+
+msgid "Connecting…"
+msgstr "कनेक्ट हो रहा है…"
+
+msgid "On, but not running"
+msgstr "चालू, पर चल नहीं रहा"
+
+msgid "Stopped"
+msgstr "बंद किया गया"
+
+msgid "Install it"
+msgstr "इंस्टॉल करें"
+
+msgid "The engine of the active profile is not installed: %s"
+msgstr "सक्रिय प्रोफ़ाइल का इंजन इंस्टॉल नहीं है: %s"
+
+msgid "The kill switch keeps everything closed until it is there; the service downloads it by itself when it can."
+msgstr "Kill switch तब तक सब कुछ बंद रखता है जब तक वह नहीं आ जाता; सेवा संभव होने पर उसे खुद डाउनलोड कर लेती है।"
+
+msgid "The VPN cannot start until it is installed."
+msgstr "इंस्टॉल होने तक VPN शुरू नहीं हो सकता।"
+
+msgid "%s cannot run on this system"
+msgstr "%s इस सिस्टम पर नहीं चल सकता"
+
+msgid "The VPN is on, but no profile is active: choose one below."
+msgstr "VPN चालू है, पर कोई प्रोफ़ाइल सक्रिय नहीं है: नीचे से एक चुनें।"
+
+msgid "Profile: %s"
+msgstr "प्रोफ़ाइल: %s"
+
+msgid "No active profile"
+msgstr "कोई सक्रिय प्रोफ़ाइल नहीं"
+
+msgid "engine %s"
+msgstr "इंजन %s"
+
+msgid "interface %s"
+msgstr "इंटरफ़ेस %s"
+
+msgid "Kill switch active"
+msgstr "Kill switch सक्रिय"
+
+msgid "Kill switch on"
+msgstr "Kill switch चालू"
+
+msgid "Kill switch off"
+msgstr "Kill switch बंद"
+
+msgid "IPv6 in the tunnel"
+msgstr "टनल में IPv6"
+
+msgid "IPv6 blocked"
+msgstr "IPv6 ब्लॉक"
+
+msgid "IPv6 untouched"
+msgstr "IPv6 अछूता"
+
+msgid "Module %s"
+msgstr "मॉड्यूल %s"
+
+msgid "Check"
+msgstr "जाँचें"
+
+msgid "Uptime"
+msgstr "अपटाइम"
+
+msgid "Rate"
+msgstr "दर"
+
+msgid "Exit address"
+msgstr "एग्ज़िट पता"
+
+msgid "Start"
+msgstr "शुरू करें"
+
+msgid "Stop"
+msgstr "बंद करें"
+
+msgid "Stop the VPN?"
+msgstr "VPN बंद करें?"
+
+msgid "Traffic then goes out directly, without the tunnel; the kill switch is taken down with it."
+msgstr "तब ट्रैफ़िक टनल के बिना सीधे बाहर जाता है; kill switch भी इसके साथ हट जाता है।"
+
+msgid "The VPN is on: it starts again by itself after a reboot."
+msgstr "VPN चालू है: रीबूट के बाद यह अपने आप फिर शुरू होता है।"
+
+msgid "The VPN is off."
+msgstr "VPN बंद है।"
+
+msgid "Kill switch"
+msgstr "Kill switch"
+
+msgid "Setting"
+msgstr "सेटिंग"
+
+msgid "Active: only the tunnel can reach the internet"
+msgstr "सक्रिय: इंटरनेट तक केवल टनल पहुँच सकती है"
+
+msgid "Not active"
+msgstr "सक्रिय नहीं"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down, so nothing ever leaves without the tunnel. If the tunnel cannot come up (a dead server, an expired account), the device stays offline until you fix the profile or stop the VPN. The panel itself stays reachable from the LAN."
+msgstr "VPN डाउन होने पर kill switch डिवाइस और LAN का सारा ट्रैफ़िक रोक देता है, इसलिए टनल के बिना कुछ भी बाहर नहीं जाता। अगर टनल नहीं बन पाती (बंद सर्वर, समाप्त अकाउंट), तो जब तक आप प्रोफ़ाइल ठीक नहीं करते या VPN बंद नहीं करते, डिवाइस ऑफ़लाइन रहता है। पैनल LAN से पहुँच में रहता है।"
+
+msgid "Choose a profile"
+msgstr "प्रोफ़ाइल चुनें"
+
+msgid "No profiles yet"
+msgstr "अभी कोई प्रोफ़ाइल नहीं"
+
+msgid "engine not installed"
+msgstr "इंजन इंस्टॉल नहीं है"
+
+msgid "Use"
+msgstr "उपयोग करें"
+
+msgid "Switched: the VPN restarts on the new profile"
+msgstr "बदल गया: VPN नए प्रोफ़ाइल पर रीस्टार्ट हो रहा है"
+
+msgid "Active profile"
+msgstr "सक्रिय प्रोफ़ाइल"
+
+msgid "A running VPN restarts on the profile you choose; the kill switch stays up in between."
+msgstr "चालू VPN आपके चुने प्रोफ़ाइल पर रीस्टार्ट होता है; इस बीच kill switch चालू रहता है।"
+
+msgid "Manage the profiles"
+msgstr "प्रोफ़ाइल प्रबंधित करें"
+
+msgid "Automatic: through the tunnel where the engine can carry it"
+msgstr "स्वचालित: जहाँ इंजन ले जा सके वहाँ टनल से"
+
+msgid "Ask the engine for IPv6 in the tunnel"
+msgstr "इंजन से टनल में IPv6 माँगें"
+
+msgid "Never through the tunnel (blocked while the VPN is up)"
+msgstr "कभी टनल से नहीं (VPN चालू होने पर ब्लॉक)"
+
+msgid "Saved: it applies from the next start (Restart)"
+msgstr "सहेजा गया: यह अगली शुरुआत से लागू होगा (रीस्टार्ट करें)"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "The tunnel carries IPv6"
+msgstr "टनल IPv6 ले जाती है"
+
+msgid "Yes"
+msgstr "हाँ"
+
+msgid "IPv6 guard"
+msgstr "IPv6 गार्ड"
+
+msgid "Active: IPv6 outside the tunnel is refused"
+msgstr "सक्रिय: टनल के बाहर IPv6 अस्वीकार है"
+
+msgid "While the VPN is up, IPv6 never leaves beside a tunnel that does not carry it: it is refused at once, so programs and LAN clients fall back to IPv4 instead of leaking or waiting. Automatic: WireGuard and OpenVPN use the IPv6 addresses of their config; Xray, sing-box and mihomo are asked at every start whether IPv6 works through the tunnel, and carry it only then; dae stays IPv4."
+msgstr "VPN चालू होने पर, IPv6 उस टनल के बगल से कभी बाहर नहीं जाता जो उसे नहीं ले जाती: उसे तुरंत अस्वीकार कर दिया जाता है, ताकि प्रोग्राम और LAN क्लाइंट लीक करने या इंतज़ार करने के बजाय IPv4 पर लौट आएँ। स्वचालित: WireGuard और OpenVPN अपने कॉन्फ़िग के IPv6 पते इस्तेमाल करते हैं; Xray, sing-box और mihomo के लिए हर शुरुआत पर जाँचा जाता है कि IPv6 टनल से होकर काम करता है या नहीं, और तभी वे उसे ले जाते हैं; dae IPv4 पर रहता है।"
+
+msgid "%d ms"
+msgstr "%d ms"
+
+msgid "UDP: not testable"
+msgstr "UDP: जाँचा नहीं जा सकता"
+
+msgid "blocked by the kill switch"
+msgstr "kill switch ने रोका"
+
+msgid "A WireGuard or OpenVPN config, a Clash/mihomo YAML, an Xray or sing-box JSON, a dae config"
+msgstr "WireGuard या OpenVPN कॉन्फ़िग, Clash/mihomo YAML, Xray या sing-box JSON, dae कॉन्फ़िग"
+
+msgid "After OK, choose the file: a WireGuard .conf, an OpenVPN .ovpn, a Clash/mihomo .yaml, an Xray or sing-box .json or a dae config (at most 1 MiB)."
+msgstr "ठीक है के बाद फ़ाइल चुनें: WireGuard .conf, OpenVPN .ovpn, Clash/mihomo .yaml, Xray या sing-box .json या dae कॉन्फ़िग (अधिकतम 1 MiB)।"
+
+msgid "From the source"
+msgstr "स्रोत से"
+
+msgid "Detect"
+msgstr "पहचानें"
+
+msgid "The URL may hold a token: it goes to the device on its own, never into a command line or a log."
+msgstr "URL में टोकन हो सकता है: वह डिवाइस को अलग से भेजा जाता है, कभी कमांड लाइन या लॉग में नहीं जाता।"
+
+msgid "Share link"
+msgstr "शेयर लिंक"
+
+msgid "Paste"
+msgstr "चिपकाएँ"
+
+msgid "File"
+msgstr "फ़ाइल"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Not a share link this panel takes"
+msgstr "यह इस पैनल द्वारा स्वीकार किया जाने वाला शेयर लिंक नहीं है"
+
+msgid "The config is empty"
+msgstr "कॉन्फ़िग खाली है"
+
+msgid "Not an https URL"
+msgstr "यह https URL नहीं है"
+
+msgid "Invalid name: 1-64 characters, no control characters"
+msgstr "अमान्य नाम: 1-64 अक्षर, कोई कंट्रोल कैरेक्टर नहीं"
+
+msgid "Add a profile"
+msgstr "प्रोफ़ाइल जोड़ें"
+
+msgid "Name"
+msgstr "नाम"
+
+msgid "Detect: the module tells the kind from the link or the file. Choose the type for a JSON that could be either Xray or sing-box, or for a link that should run on another engine."
+msgstr "पहचानें: मॉड्यूल लिंक या फ़ाइल से प्रकार पहचानता है। Xray या sing-box, दोनों हो सकने वाले JSON के लिए, या किसी अन्य इंजन पर चलने वाले लिंक के लिए, प्रकार चुनें।"
+
+msgid "The profile is added"
+msgstr "प्रोफ़ाइल जोड़ दिया गया"
+
+msgid "Rename the profile"
+msgstr "प्रोफ़ाइल का नाम बदलें"
+
+msgid "Delete the profile %s?"
+msgstr "प्रोफ़ाइल %s हटाएँ?"
+
+msgid "It is the active profile: with the VPN on, the module refuses; stop the VPN or choose another profile first."
+msgstr "यह सक्रिय प्रोफ़ाइल है: VPN चालू होने पर मॉड्यूल मना कर देता है; पहले VPN बंद करें या कोई दूसरा प्रोफ़ाइल चुनें।"
+
+msgid "Its config and credentials are deleted from the device."
+msgstr "इसका कॉन्फ़िग और क्रेडेंशियल डिवाइस से हटा दिए जाते हैं।"
+
+msgid "Deleted"
+msgstr "हटाया गया"
+
+msgid "The profile passes the check"
+msgstr "प्रोफ़ाइल जाँच में सफल है"
+
+msgid "Show the config?"
+msgstr "कॉन्फ़िग दिखाएँ?"
+
+msgid "The config holds the credentials of the profile (keys, passwords, UUIDs). It is shown on this screen only; anyone who can see the screen can read it."
+msgstr "कॉन्फ़िग में प्रोफ़ाइल के क्रेडेंशियल (की, पासवर्ड, UUID) होते हैं। यह केवल इसी स्क्रीन पर दिखता है; स्क्रीन देखने वाला कोई भी इसे पढ़ सकता है।"
+
+msgid "Saving checks the config with the engine first (profile edit); a config that does not pass is not saved and the old one stays."
+msgstr "सहेजने पर पहले इंजन से कॉन्फ़िग जाँचा जाता है (profile edit); जाँच में विफल कॉन्फ़िग सहेजा नहीं जाता और पुराना बना रहता है।"
+
+msgid "This profile comes from a subscription: its next refresh replaces your changes."
+msgstr "यह प्रोफ़ाइल एक सब्सक्रिप्शन से आता है: उसका अगला रीफ़्रेश आपके बदलाव मिटा देगा।"
+
+msgid "Config of %s"
+msgstr "%s का कॉन्फ़िग"
+
+msgid "Rename"
+msgstr "नाम बदलें"
+
+msgid "Show / edit the config"
+msgstr "कॉन्फ़िग दिखाएँ / संपादित करें"
+
+msgid "Test the latency of all"
+msgstr "सबकी लेटेंसी जाँचें"
+
+msgid "No profiles yet: add one from a share link, a config file or a subscription."
+msgstr "अभी कोई प्रोफ़ाइल नहीं: शेयर लिंक, कॉन्फ़िग फ़ाइल या सब्सक्रिप्शन से एक जोड़ें।"
+
+msgid "Active"
+msgstr "सक्रिय"
+
+msgid "This profile is the active one now"
+msgstr "यह प्रोफ़ाइल अभी सक्रिय है"
+
+msgid "More"
+msgstr "और"
+
+msgid "active"
+msgstr "सक्रिय"
+
+msgid "subscription"
+msgstr "सब्सक्रिप्शन"
+
+msgid "migrated"
+msgstr "माइग्रेट किया गया"
+
+msgid "gone from its subscription"
+msgstr "सब्सक्रिप्शन से हट गया"
+
+msgid "Server"
+msgstr "सर्वर"
+
+msgid "Engine"
+msgstr "इंजन"
+
+msgid "Latency"
+msgstr "लेटेंसी"
+
+msgid "The latency is a TCP connection to the server, through the tunnel when the VPN is up. WireGuard and OpenVPN servers usually speak UDP and cannot be tested this way."
+msgstr "लेटेंसी सर्वर से एक TCP कनेक्शन है, VPN चालू होने पर टनल से होकर। WireGuard और OpenVPN सर्वर आमतौर पर UDP बोलते हैं और इस तरह जाँचे नहीं जा सकते।"
+
+msgid "Enter an IPv4 or IPv6 address"
+msgstr "IPv4 या IPv6 पता दर्ज करें"
+
+msgid "On: nothing leaves outside the tunnel"
+msgstr "चालू: टनल के बाहर कुछ भी नहीं जाता"
+
+msgid "Off: traffic goes out directly while the tunnel is down"
+msgstr "बंद: टनल डाउन होने पर ट्रैफ़िक सीधे बाहर जाता है"
+
+msgid "Yes: Tailscale's own connections go through the tunnel"
+msgstr "हाँ: Tailscale के अपने कनेक्शन टनल से जाते हैं"
+
+msgid "No: Tailscale connects directly"
+msgstr "नहीं: Tailscale सीधे कनेक्ट होता है"
+
+msgid "Routing"
+msgstr "रूटिंग"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down."
+msgstr "VPN डाउन होने पर kill switch डिवाइस और LAN का सारा ट्रैफ़िक रोक देता है।"
+
+msgid "Bypass the tunnel"
+msgstr "टनल को बायपास करें"
+
+msgid "Enter address ranges like 192.168.0.0/16, separated by commas"
+msgstr "192.168.0.0/16 जैसी पता रेंज कॉमा से अलग करके दर्ज करें"
+
+msgid "Address ranges that never go into the tunnel, besides the LAN itself (which never does). Empty: the LAN only."
+msgstr "वे पता रेंज जो कभी टनल में नहीं जातीं, LAN के अलावा (जो कभी नहीं जाता)। खाली: केवल LAN।"
+
+msgid "Tailscale through the VPN"
+msgstr "VPN के ज़रिए Tailscale"
+
+msgid "When Tailscale runs on the device, its WireGuard, DERP and control connections go through whichever tunnel runs (dae catches them like any other)."
+msgstr "जब डिवाइस पर Tailscale चलता है, तो उसके WireGuard, DERP और कंट्रोल कनेक्शन जो भी टनल चल रही हो उससे होकर जाते हैं (dae उन्हें बाकी की तरह पकड़ता है)।"
+
+msgid "DNS"
+msgstr "DNS"
+
+msgid "DNS through the tunnel"
+msgstr "टनल के ज़रिए DNS"
+
+msgid "The resolver the device's and the LAN's lookups go to, through the tunnel. Nothing goes to the carrier's resolver."
+msgstr "वह रिज़ॉल्वर जिसके पास डिवाइस और LAN की लुकअप टनल से होकर जाती हैं। कुछ भी कैरियर के रिज़ॉल्वर के पास नहीं जाता।"
+
+msgid "Bootstrap DNS"
+msgstr "बूटस्ट्रैप DNS"
+
+msgid "Finds the VPN server's own address before the tunnel is up (directly, on the engine's own connection)."
+msgstr "टनल चालू होने से पहले VPN सर्वर का अपना पता खोजता है (सीधे, इंजन के अपने कनेक्शन से)।"
+
+msgid "Empty puts a setting back to its default."
+msgstr "खाली छोड़ने पर सेटिंग डिफ़ॉल्ट पर लौट आती है।"
+
+msgid "TUN stack"
+msgstr "TUN स्टैक"
+
+msgid "Default (gvisor)"
+msgstr "डिफ़ॉल्ट (gvisor)"
+
+msgid "system (not on the 5.4 kernel)"
+msgstr "system (5.4 कर्नेल पर नहीं)"
+
+msgid "set (unchanged unless you type a new one)"
+msgstr "सेट है (नया टाइप करने तक अपरिवर्तित)"
+
+msgid "not set"
+msgstr "सेट नहीं है"
+
+msgid "Upstream HTTP proxy"
+msgstr "अपस्ट्रीम HTTP प्रॉक्सी"
+
+msgid "TLS certificate pin (SHA-256)"
+msgstr "TLS सर्टिफ़िकेट पिन (SHA-256)"
+
+msgid "Enter host:port"
+msgstr "host:port दर्ज करें"
+
+msgid "Enter the SHA-256 in hex"
+msgstr "SHA-256 हेक्स में दर्ज करें"
+
+msgid "Profile options"
+msgstr "प्रोफ़ाइल विकल्प"
+
+msgid "None of the profiles has options of its type."
+msgstr "किसी भी प्रोफ़ाइल में उसके प्रकार के विकल्प नहीं हैं।"
+
+msgid "mihomo's mode (rule, global, direct), the engines' log levels, dae's groups and routing are part of each profile's own config: VPN > Profiles, Show / edit the config."
+msgstr "mihomo का मोड (rule, global, direct), इंजनों के लॉग स्तर, dae के ग्रुप और रूटिंग हर प्रोफ़ाइल के अपने कॉन्फ़िग का हिस्सा हैं: VPN > प्रोफ़ाइल, कॉन्फ़िग दिखाएँ / संपादित करें।"
+
+msgid "Delete the subscription %s?"
+msgstr "सब्सक्रिप्शन %s हटाएँ?"
+
+msgid "Its profiles can go with it or stay as profiles of their own. The active profile is never removed while the VPN is on."
+msgstr "इसके प्रोफ़ाइल इसके साथ जा सकते हैं या अलग प्रोफ़ाइल के रूप में रह सकते हैं। VPN चालू होने पर सक्रिय प्रोफ़ाइल कभी नहीं हटाया जाता।"
+
+msgid "Keep the profiles"
+msgstr "प्रोफ़ाइल रखें"
+
+msgid "Delete with its profiles"
+msgstr "प्रोफ़ाइल सहित हटाएँ"
+
+msgid "Only by hand"
+msgstr "केवल हाथ से"
+
+msgid "Every %d h"
+msgstr "हर %d घंटे"
+
+msgid "Share links: one profile per link"
+msgstr "शेयर लिंक: हर लिंक पर एक प्रोफ़ाइल"
+
+msgid "Clash/mihomo YAML: one mihomo profile"
+msgstr "Clash/mihomo YAML: एक mihomo प्रोफ़ाइल"
+
+msgid "dae: one profile with every node in one group"
+msgstr "dae: हर नोड एक ग्रुप में, एक प्रोफ़ाइल"
+
+msgid "Add a subscription"
+msgstr "सब्सक्रिप्शन जोड़ें"
+
+msgid "Format"
+msgstr "फ़ॉर्मैट"
+
+msgid "The URL usually holds your account token: it is stored on the device readable by root only, and never shown again. The subscription is fetched over the device's own connection: through the tunnel when the VPN is up; with the kill switch up and the tunnel down it cannot be fetched."
+msgstr "URL में आमतौर पर आपका अकाउंट टोकन होता है: वह डिवाइस पर केवल root-पठनीय रूप में सहेजा जाता है और दोबारा नहीं दिखाया जाता। सब्सक्रिप्शन डिवाइस के अपने कनेक्शन से लाया जाता है: VPN चालू होने पर टनल से; kill switch चालू और टनल बंद होने पर इसे लाया नहीं जा सकता।"
+
+msgid "Refresh all"
+msgstr "सभी रीफ़्रेश करें"
+
+msgid "No subscriptions yet."
+msgstr "अभी कोई सब्सक्रिप्शन नहीं।"
+
+msgid "Host"
+msgstr "होस्ट"
+
+msgid "Updated"
+msgstr "अपडेट किया गया"
+
+msgid "Share links"
+msgstr "शेयर लिंक"
+
+msgid "A refresh keeps the profiles whose name is unchanged, adds the new ones and removes the ones that are gone (the active one stays while the VPN is on, marked as gone). A refresh of the active profile restarts the running VPN."
+msgstr "रीफ़्रेश उन प्रोफ़ाइल को रखता है जिनका नाम नहीं बदला, नए जोड़ता है और जो हट गए उन्हें हटाता है (VPN चालू होने पर सक्रिय प्रोफ़ाइल रहता है, हट गया के रूप में चिह्नित)। सक्रिय प्रोफ़ाइल का रीफ़्रेश चालू VPN को रीस्टार्ट करता है।"
+
+msgid "Dashboard info failed"
+msgstr "डैशबोर्ड जानकारी प्राप्त नहीं हो सकी"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch): no live signal right now"
+msgstr "The modem is restarting (network locks or a SIM switch): no live signal right now"
+
+msgid "Live signal read failed"
+msgstr "लाइव सिग्नल पढ़ना विफल"
+
+msgid "Unknown op"
+msgstr "अज्ञात ऑपरेशन"
+
+msgid "Invalid argument for this op"
+msgstr "इस ऑपरेशन के लिए अमान्य आर्ग्युमेंट"
+
+msgid "The radio is busy: the dial or the watchdog is switching it, try again shortly"
+msgstr "रेडियो व्यस्त है: डायल या वॉचडॉग इसे बदल रहा है, थोड़ी देर में फिर से प्रयास करें"
+
+msgid "The action gave no valid reply"
+msgstr "कार्रवाई से कोई मान्य उत्तर नहीं मिला"
+
+msgid "The confirm parameter must be 0 or 1"
+msgstr "confirm पैरामीटर 0 या 1 होना चाहिए"
+
+msgid "An AT command is one line of printable ASCII, at most 512 characters"
+msgstr "AT कमांड प्रिंट करने योग्य ASCII की एक पंक्ति होती है, अधिकतम 512 अक्षर"
+
+msgid "Must be an AT command"
+msgstr "AT कमांड होना चाहिए"
+
+msgid "No \";\" command chaining"
+msgstr "\";\" से कमांड जोड़ने की अनुमति नहीं"
+
+msgid "Denied: this command wedges the AT port until a reboot"
+msgstr "अस्वीकृत: यह कमांड रीबूट होने तक AT पोर्ट को अटका देता है"
+
+msgid "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+msgstr "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+msgstr "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+
+msgid "A long AT command is still running in the background; try again when it has finished"
+msgstr "एक लंबा AT कमांड अभी भी बैकग्राउंड में चल रहा है; उसके पूरा होने पर फिर कोशिश करें"
+
+msgid "This command needs confirmation"
+msgstr "इस कमांड के लिए पुष्टि ज़रूरी है"
+
+msgid "The AT channel is busy; the command was not sent, try again"
+msgstr "AT चैनल व्यस्त है; कमांड नहीं भेजा गया, फिर से प्रयास करें"
+
+msgid "The modem did not answer in time; the command may still run, check before sending it again"
+msgstr "मॉडेम ने समय पर उत्तर नहीं दिया; कमांड अभी भी चल सकता है, दोबारा भेजने से पहले जाँच लें"
+
+msgid "The fresh parameter must be 0 or 1"
+msgstr "fresh पैरामीटर 0 या 1 होना चाहिए"
+
+msgid "Reading the locks from the modem; try again in a few seconds"
+msgstr "मॉडेम से लॉक पढ़े जा रहे हैं; कुछ सेकंड बाद फिर कोशिश करें"
+
+msgid "Lock read failed"
+msgstr "लॉक स्थिति पढ़ना विफल"
+
+msgid "Unknown lock kind"
+msgstr "अज्ञात लॉक प्रकार"
+
+msgid "Invalid value for this lock kind"
+msgstr "इस लॉक प्रकार के लिए अमान्य मान"
+
+msgid "None of these bands is supported by this modem"
+msgstr "यह मॉडेम इनमें से किसी भी बैंड का समर्थन नहीं करता"
+
+msgid "Band, mode and cell locks are not supported for SIM2 yet"
+msgstr "बैंड, मोड और सेल लॉक अभी SIM2 के लिए समर्थित नहीं हैं"
+
+msgid "Band, mode and cell locks are not supported while dual-SIM switching manages the radio"
+msgstr "जब डुअल-SIM स्विचिंग रेडियो को नियंत्रित करती है, तब बैंड, मोड और सेल लॉक समर्थित नहीं हैं"
+
+msgid "Invalid page"
+msgstr "अमान्य पेज"
+
+msgid "mu300-sms is not available (the SMS service is not installed or not running)"
+msgstr "mu300-sms उपलब्ध नहीं है (SMS सेवा इंस्टॉल नहीं है या नहीं चल रही)"
+
+msgid "No output"
+msgstr "कोई आउटपुट नहीं"
+
+msgid "Bad ID"
+msgstr "अमान्य ID"
+
+msgid "Read failed"
+msgstr "पढ़ना विफल"
+
+msgid "The number may only contain digits (and a leading +)"
+msgstr "नंबर में केवल अंक हो सकते हैं (और शुरुआत में +)"
+
+msgid "The message is empty"
+msgstr "संदेश खाली है"
+
+msgid "The message is too long (over 480 characters)"
+msgstr "संदेश बहुत लंबा है (480 अक्षरों से अधिक)"
+
+msgid "The message contains a control character"
+msgstr "संदेश में एक नियंत्रण वर्ण है"
+
+msgid "The sim parameter must be 0 or 1"
+msgstr "sim पैरामीटर 0 या 1 होना चाहिए"
+
+msgid "The USB adapter (device-usb) gave no valid reply"
+msgstr "USB एडेप्टर (device-usb) से कोई मान्य उत्तर नहीं मिला"
+
+msgid "The auto parameter must be 0 or 1"
+msgstr "auto पैरामीटर 0 या 1 होना चाहिए"
+
+msgid "Invalid USB role"
+msgstr "अमान्य USB भूमिका"
+
+msgid "A USB role takes no scope"
+msgstr "USB भूमिका के साथ अवधि नहीं दी जाती"
+
+msgid "Invalid USB network mode"
+msgstr "अमान्य USB नेटवर्क मोड"
+
+msgid "Invalid USB network scope"
+msgstr "अमान्य USB नेटवर्क अवधि"
+
+msgid "Unknown USB setting"
+msgstr "अज्ञात USB सेटिंग"
+
+msgid "Invalid interface name"
+msgstr "अमान्य इंटरफ़ेस नाम"
+
+msgid "The power adapter gave no valid reply"
+msgstr "पावर अडैप्टर ने मान्य उत्तर नहीं दिया"
+
+msgid "Unknown power operation"
+msgstr "अज्ञात पावर संचालन"
+
+msgid "Unknown power setting"
+msgstr "अज्ञात पावर सेटिंग"
+
+msgid "Invalid power value"
+msgstr "अमान्य पावर मान"
+
+msgid "Invalid power request"
+msgstr "अमान्य पावर अनुरोध"
+
+msgid "The languages adapter gave no valid reply"
+msgstr "भाषा एडेप्टर से कोई मान्य उत्तर नहीं मिला"
+
+msgid "Unknown language operation"
+msgstr "अज्ञात भाषा ऑपरेशन"
+
+msgid "Invalid language code"
+msgstr "अमान्य भाषा कोड"
+
+msgid "Invalid language request"
+msgstr "अमान्य भाषा अनुरोध"
+
+msgid "Unknown source"
+msgstr "अज्ञात स्रोत"
+
+msgid "The TTL adapter gave no valid reply"
+msgstr "TTL एडेप्टर ने कोई मान्य उत्तर नहीं दिया"
+
+msgid "Invalid TTL"
+msgstr "अमान्य TTL"
+
+msgid "The data usage adapter gave no valid reply"
+msgstr "डेटा उपयोग एडेप्टर ने मान्य उत्तर नहीं दिया"
+
+msgid "Unknown data usage setting"
+msgstr "अज्ञात डेटा उपयोग सेटिंग"
+
+msgid "Invalid value for this setting"
+msgstr "इस सेटिंग के लिए अमान्य मान"
+
+msgid "The forwarding adapter gave no valid reply"
+msgstr "अग्रेषण एडैप्टर ने कोई मान्य उत्तर नहीं दिया"
+
+msgid "The CPU adapter gave no valid reply"
+msgstr "The CPU adapter gave no valid reply"
+
+msgid "Invalid CPU profile"
+msgstr "Invalid CPU profile"
+
+msgid "Invalid CPU core"
+msgstr "अमान्य CPU कोर"
+
+msgid "Unknown CPU operation"
+msgstr "Unknown CPU operation"
+
+msgid "Unknown CPU voltage operation"
+msgstr "अज्ञात CPU वोल्टेज ऑपरेशन"
+
+msgid "Invalid CPU voltage request"
+msgstr "अमान्य CPU वोल्टेज अनुरोध"
+
+msgid "Invalid CPU voltage offset"
+msgstr "अमान्य CPU वोल्टेज ऑफ़सेट"
+
+msgid "Type the confirmation word to apply a voltage offset"
+msgstr "वोल्टेज ऑफ़सेट लागू करने के लिए पुष्टि शब्द टाइप करें"
+
+msgid "Invalid stress test length"
+msgstr "अमान्य स्ट्रेस टेस्ट अवधि"
+
+msgid "The packages adapter gave no valid reply"
+msgstr "पैकेज एडेप्टर ने मान्य जवाब नहीं दिया"
+
+msgid "Invalid packages operation"
+msgstr "अमान्य पैकेज क्रिया"
+
+msgid "The sizes parameter must be 0 or 1"
+msgstr "sizes पैरामीटर 0 या 1 होना चाहिए"
+
+msgid "The update adapter gave no valid reply"
+msgstr "अपडेट अडैप्टर ने कोई मान्य जवाब नहीं दिया"
+
+msgid "Unknown update operation"
+msgstr "अज्ञात अपडेट ऑपरेशन"
+
+msgid "Invalid update request"
+msgstr "अमान्य अपडेट अनुरोध"
+
+msgid "The backup tool gave no valid reply"
+msgstr "बैकअप टूल ने कोई मान्य उत्तर नहीं दिया"
+
+msgid "Mobile data integration is not provided by this platform"
+msgstr "इस प्लेटफ़ॉर्म पर मोबाइल डेटा एकीकरण उपलब्ध नहीं है"
+
+msgid "The SIM settings could not be read"
+msgstr "SIM सेटिंग्स पढ़ी नहीं जा सकीं"
+
+msgid "Radio control is not provided by this platform"
+msgstr "यह प्लेटफ़ॉर्म रेडियो नियंत्रण नहीं देता"
+
+msgid "A SIM radio change is already running"
+msgstr "SIM रेडियो का बदलाव पहले से चल रहा है"
+
+# Source-language fallback for untranslated new controls.
+msgid "Invalid SIM setting"
+msgstr "Invalid SIM setting"
+
+msgid "The modem did not take the setting; nothing was saved"
+msgstr "मॉडेम ने सेटिंग स्वीकार नहीं की; कुछ भी सहेजा नहीं गया"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control failed"
+msgstr "SIM control failed"
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching; reboot if channels are unavailable or wait until idle"
+msgstr "Enable hot switching; reboot if channels are unavailable or wait until idle"
+
+msgid "Request too large"
+msgstr "अनुरोध बहुत बड़ा है"
+
+msgid "The runtime directory is not safe; nothing was run"
+msgstr "रनटाइम डायरेक्टरी सुरक्षित नहीं है; कुछ भी नहीं चलाया गया"
+
+msgid "No such method"
+msgstr "ऐसा कोई मेथड नहीं"
+
+msgid "The VPN module refused the request"
+msgstr "VPN मॉड्यूल ने अनुरोध अस्वीकार कर दिया"
+
+msgid "The VPN panel is busy, try again"
+msgstr "VPN पैनल व्यस्त है, फिर से प्रयास करें"
+
+msgid "Another VPN task is still running"
+msgstr "कोई दूसरा VPN कार्य अभी भी चल रहा है"
+
+msgid "The exit_ip parameter must be 0 or 1"
+msgstr "exit_ip पैरामीटर 0 या 1 होना चाहिए"
+
+msgid "The VPN status could not be read"
+msgstr "VPN स्टेटस पढ़ा नहीं जा सका"
+
+msgid "The profiles could not be read"
+msgstr "प्रोफ़ाइल पढ़े नहीं जा सके"
+
+msgid "The check parameter must be 0 or 1"
+msgstr "check पैरामीटर 0 या 1 होना चाहिए"
+
+msgid "The engines could not be read"
+msgstr "इंजन पढ़े नहीं जा सके"
+
+msgid "The subscriptions could not be read"
+msgstr "सब्सक्रिप्शन पढ़े नहीं जा सके"
+
+msgid "The VPN settings could not be read"
+msgstr "VPN सेटिंग्स पढ़ी नहीं जा सकीं"
+
+msgid "Unknown VPN operation"
+msgstr "अज्ञात VPN ऑपरेशन"
+
+msgid "The VPN could not be switched"
+msgstr "VPN बदला नहीं जा सका"
+
+msgid "The kill switch is on or off"
+msgstr "Kill switch चालू या बंद होता है"
+
+msgid "The kill switch could not be changed"
+msgstr "Kill switch बदला नहीं जा सका"
+
+msgid "Invalid profile id"
+msgstr "अमान्य प्रोफ़ाइल आईडी"
+
+msgid "The profile could not be made the active one"
+msgstr "प्रोफ़ाइल को सक्रिय नहीं बनाया जा सका"
+
+msgid "Unknown profile source"
+msgstr "अज्ञात प्रोफ़ाइल स्रोत"
+
+msgid "Unknown profile type"
+msgstr "अज्ञात प्रोफ़ाइल प्रकार"
+
+msgid "The config is empty, too large or holds control characters"
+msgstr "कॉन्फ़िग खाली है, बहुत बड़ा है या कंट्रोल कैरेक्टर रखता है"
+
+msgid "Invalid profile request"
+msgstr "अमान्य प्रोफ़ाइल अनुरोध"
+
+msgid "A config from a URL takes the type it says"
+msgstr "URL से आया कॉन्फ़िग वही प्रकार लेता है जो वह बताता है"
+
+msgid "No uploaded file"
+msgstr "कोई फ़ाइल अपलोड नहीं हुई"
+
+msgid "The file is larger than 1 MiB"
+msgstr "फ़ाइल 1 MiB से बड़ी है"
+
+msgid "The profile could not be added"
+msgstr "प्रोफ़ाइल जोड़ा नहीं जा सका"
+
+msgid "The profile could not be renamed"
+msgstr "प्रोफ़ाइल का नाम बदला नहीं जा सका"
+
+msgid "The profile could not be removed"
+msgstr "प्रोफ़ाइल हटाया नहीं जा सका"
+
+msgid "The profile does not pass the check"
+msgstr "प्रोफ़ाइल जाँच में सफल नहीं है"
+
+msgid "Unknown profile option"
+msgstr "अज्ञात प्रोफ़ाइल विकल्प"
+
+msgid "Invalid value for this option"
+msgstr "इस विकल्प के लिए अमान्य मान"
+
+msgid "The option could not be set"
+msgstr "विकल्प सेट नहीं किया जा सका"
+
+msgid "The config could not be read"
+msgstr "कॉन्फ़िग पढ़ा नहीं जा सका"
+
+msgid "The config was not saved"
+msgstr "कॉन्फ़िग सहेजा नहीं गया"
+
+msgid "The latency test failed"
+msgstr "लेटेंसी जाँच विफल रही"
+
+msgid "The refresh interval is 1 to 999 hours"
+msgstr "रीफ़्रेश अंतराल 1 से 999 घंटे है"
+
+msgid "Unknown subscription type"
+msgstr "अज्ञात सब्सक्रिप्शन प्रकार"
+
+msgid "Invalid subscription id"
+msgstr "अमान्य सब्सक्रिप्शन आईडी"
+
+msgid "The keep parameter must be 0 or 1"
+msgstr "keep पैरामीटर 0 या 1 होना चाहिए"
+
+msgid "The subscription could not be removed"
+msgstr "सब्सक्रिप्शन हटाया नहीं जा सका"
+
+msgid "The file is too large"
+msgstr "फ़ाइल बहुत बड़ी है"
+
+msgid "Unknown engine"
+msgstr "अज्ञात इंजन"
+
+msgid "The unverified parameter must be 0 or 1"
+msgstr "unverified पैरामीटर 0 या 1 होना चाहिए"
+
+msgid "This engine is a system package: it has no file to upload"
+msgstr "यह इंजन एक सिस्टम पैकेज है: इसकी अपलोड करने के लिए कोई फ़ाइल नहीं है"
+
+msgid "The engine could not be removed"
+msgstr "इंजन हटाया नहीं जा सका"
+
+msgid "mu300-extra is not on this system"
+msgstr "mu300-extra इस सिस्टम पर नहीं है"
+
+msgid "Unknown VPN setting"
+msgstr "अज्ञात VPN सेटिंग"
+
+msgid "The setting could not be saved"
+msgstr "सेटिंग सहेजी नहीं जा सकी"
+
+msgid "The number of lines is 1 to 1000"
+msgstr "पंक्तियों की संख्या 1 से 1000 है"
+
+msgid "The log could not be read"
+msgstr "लॉग पढ़ा नहीं जा सका"
+
+msgid "The radio of this SIM is switched off in its settings"
+msgstr "इस SIM का रेडियो उसकी सेटिंग्स में बंद है"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM control or reboot for managed dual-SIM radio"
+msgstr "Use SIM control or reboot for managed dual-SIM radio"
+
+msgid "The radio did not follow its setting"
+msgstr "रेडियो ने अपनी सेटिंग का पालन नहीं किया"
+
+msgid "The data roaming setting could not be saved"
+msgstr "डेटा रोमिंग सेटिंग सहेजी नहीं जा सकी"
+
+msgid "Expected on or off"
+msgstr "on या off अपेक्षित है"
+
+msgid "VPN integration is not provided by this platform"
+msgstr "यह प्लेटफ़ॉर्म VPN एकीकरण प्रदान नहीं करता"
+
+msgid "Dual-boot integration is not provided by this platform"
+msgstr "यह प्लेटफ़ॉर्म ड्यूल-बूट एकीकरण प्रदान नहीं करता"
+
+msgid "mu300-next-boot failed"
+msgstr "mu300-next-boot विफल"
+
+msgid "AT backend did not answer (radio off, modem restarting, or adapter unavailable)"
+msgstr "AT बैकएंड ने उत्तर नहीं दिया (रेडियो बंद, मॉडेम पुनः आरंभ हो रहा है, या एडेप्टर उपलब्ध नहीं)"
+
+msgid "The CPU profile could not be read"
+msgstr "The CPU profile could not be read"
+
+msgid "The CPU profile could not be set"
+msgstr "The CPU profile could not be set"
+
+msgid "The CPU core could not be switched"
+msgstr "CPU कोर बदला नहीं जा सका"
+
+msgid "Invalid low latency setting"
+msgstr "अमान्य कम विलंब सेटिंग"
+
+msgid "The low latency setting could not be applied"
+msgstr "कम विलंब सेटिंग लागू नहीं की जा सकी"
+
+msgid "The CPU voltage offset could not be read"
+msgstr "CPU वोल्टेज ऑफ़सेट पढ़ा नहीं जा सका"
+
+msgid "The CPU voltage offset was refused"
+msgstr "CPU वोल्टेज ऑफ़सेट अस्वीकार कर दिया गया"
+
+msgid "The CPU voltage offset could not be turned off"
+msgstr "CPU वोल्टेज ऑफ़सेट बंद नहीं किया जा सका"
+
+msgid "The stress test could not be started"
+msgstr "स्ट्रेस टेस्ट शुरू नहीं किया जा सका"
+
+msgid "USB role adapter is not executable"
+msgstr "USB भूमिका एडेप्टर निष्पादन योग्य नहीं है"
+
+msgid "USB role adapter failed"
+msgstr "USB भूमिका एडेप्टर विफल"
+
+msgid "USB role switch is unavailable"
+msgstr "USB भूमिका स्विच उपलब्ध नहीं है"
+
+msgid "USB role switch failed"
+msgstr "USB भूमिका बदलना विफल"
+
+msgid "USB role switch was refused by platform safety checks"
+msgstr "प्लेटफ़ॉर्म सुरक्षा जाँचों ने USB भूमिका बदलने से मना कर दिया"
+
+msgid "Cannot create USB boot settings directory"
+msgstr "USB बूट सेटिंग्स डायरेक्टरी नहीं बनाई जा सकती"
+
+msgid "Cannot write USB boot settings"
+msgstr "USB बूट सेटिंग्स नहीं लिखी जा सकतीं"
+
+msgid "Cannot save USB boot settings"
+msgstr "USB बूट सेटिंग्स सहेजी नहीं जा सकतीं"
+
+msgid "Invalid boot-auto value"
+msgstr "अमान्य boot-auto मान"
+
+msgid "Device is the boot default; host auto-apply is the only persistent role"
+msgstr "बूट पर डिफ़ॉल्ट डिवाइस मोड है; केवल होस्ट का स्वतः लागू होना ही स्थायी भूमिका है"
+
+msgid "Cannot save USB role policy"
+msgstr "USB भूमिका नीति सहेजी नहीं जा सकती"
+
+msgid "Cannot disable USB network boot policy"
+msgstr "USB नेटवर्क बूट नीति अक्षम नहीं की जा सकती"
+
+msgid "Cannot commit USB role policy"
+msgstr "USB भूमिका नीति कमिट नहीं की जा सकती"
+
+msgid "USB network mode is unavailable in host role"
+msgstr "होस्ट भूमिका में USB नेटवर्क मोड उपलब्ध नहीं है"
+
+msgid "Disable host boot-auto before configuring USB network"
+msgstr "USB नेटवर्क कॉन्फ़िगर करने से पहले होस्ट boot-auto अक्षम करें"
+
+msgid "Cannot save USB network policy"
+msgstr "USB नेटवर्क नीति सहेजी नहीं जा सकती"
+
+msgid "Cannot commit USB network policy"
+msgstr "USB नेटवर्क नीति कमिट नहीं की जा सकती"
+
+msgid "USB host mode is required"
+msgstr "USB होस्ट मोड आवश्यक है"
+
+msgid "Not a USB network interface"
+msgstr "यह USB नेटवर्क इंटरफ़ेस नहीं है"
+
+msgid "LAN bridge device section was not found"
+msgstr "LAN ब्रिज डिवाइस सेक्शन नहीं मिला"
+
+msgid "Cannot bring USB network interface up"
+msgstr "USB नेटवर्क इंटरफ़ेस चालू नहीं किया जा सकता"
+
+msgid "Cannot add interface to LAN bridge"
+msgstr "इंटरफ़ेस को LAN ब्रिज में नहीं जोड़ा जा सकता"
+
+msgid "Cannot save LAN bridge"
+msgstr "LAN ब्रिज सहेजा नहीं जा सकता"
+
+msgid "Network reload failed"
+msgstr "नेटवर्क पुनः लोड करना विफल"
+
+msgid "Cannot attach USB interface to LAN bridge"
+msgstr "USB इंटरफ़ेस को LAN ब्रिज से नहीं जोड़ा जा सकता"
+
+msgid "Invalid forwarding setting"
+msgstr "अमान्य अग्रेषण सेटिंग"
+
+msgid "The message template is too long or contains a control character"
+msgstr "संदेश टेम्पलेट बहुत लंबा है या उसमें नियंत्रण वर्ण है"
+
+msgid "Invalid filter list (at most 50 lines)"
+msgstr "अमान्य फ़िल्टर सूची (अधिकतम 50 पंक्तियाँ)"
+
+msgid "The webhook address must be an http:// or https:// URL"
+msgstr "वेबहुक का पता http:// या https:// URL होना चाहिए"
+
+msgid "The webhook body is too long or contains a control character"
+msgstr "वेबहुक बॉडी बहुत लंबी है या उसमें कोई नियंत्रण वर्ण है"
+
+msgid "The answer check must be key=value, like errcode=0 or ok=true (the value a whole number or lowercase letters, 16 at most)"
+msgstr "उत्तर की जाँच कुंजी=मान के रूप में होनी चाहिए, जैसे errcode=0 या ok=true (मान एक पूर्णांक या छोटे अक्षर, अधिकतम 16)"
+
+msgid "Invalid header (one \"Name: value\" per line; Host, Content-Type, Content-Length, Transfer-Encoding and Connection are set by the device)"
+msgstr "अमान्य हेडर (प्रति पंक्ति एक \"Name: value\"; Host, Content-Type, Content-Length, Transfer-Encoding और Connection डिवाइस सेट करता है)"
+
+msgid "Invalid Telegram bot token"
+msgstr "अमान्य Telegram बॉट टोकन"
+
+msgid "Invalid Telegram chat (a number, or @channel)"
+msgstr "अमान्य Telegram चैट (एक संख्या या @चैनल)"
+
+msgid "Invalid e-mail setting"
+msgstr "अमान्य ईमेल सेटिंग"
+
+msgid "The webhook needs an address"
+msgstr "वेबहुक को एक पता चाहिए"
+
+msgid "Telegram needs a bot token and a chat"
+msgstr "Telegram को बॉट टोकन और एक चैट चाहिए"
+
+msgid "E-mail needs a server, a sender and a recipient"
+msgstr "ईमेल को सर्वर, प्रेषक और प्राप्तकर्ता चाहिए"
+
+msgid "SMS forwarding needs a phone number"
+msgstr "SMS द्वारा अग्रेषण के लिए फ़ोन नंबर चाहिए"
+
+msgid "The forwarding settings could not be saved"
+msgstr "अग्रेषण सेटिंग्स सहेजी नहीं जा सकीं"
+
+msgid "SMS forwarding is not installed"
+msgstr "SMS अग्रेषण इंस्टॉल नहीं है"
+
+msgid "A test was started a moment ago; wait a few seconds"
+msgstr "अभी-अभी एक परीक्षण शुरू किया गया है; कुछ सेकंड प्रतीक्षा करें"
+
+msgid "The delivery log could not be cleared"
+msgstr "डिलीवरी लॉग साफ़ नहीं किया जा सका"
+
+msgid "Unknown forwarding operation"
+msgstr "अज्ञात अग्रेषण कार्रवाई"
+
+msgid "The language pack is not installed"
+msgstr "भाषा पैक इंस्टॉल नहीं है"
+
+msgid "No language given"
+msgstr "कोई भाषा नहीं दी गई"
+
+msgid "The language could not be changed"
+msgstr "भाषा नहीं बदली जा सकी"
+
+msgid "LuCI does not offer this language"
+msgstr "LuCI यह भाषा उपलब्ध नहीं कराता"
+
+msgid "No uploaded language pack"
+msgstr "कोई अपलोड किया गया भाषा पैक नहीं"
+
+msgid "An installation is already running"
+msgstr "एक इंस्टॉलेशन पहले से चल रहा है"
+
+msgid "The language pack could not be removed"
+msgstr "भाषा पैक हटाया नहीं जा सका"
+
+msgid "Lock cache unavailable"
+msgstr "लॉक कैश उपलब्ध नहीं"
+
+msgid "The modem refused a write"
+msgstr "मोडेम ने एक लेखन अस्वीकार कर दिया"
+
+msgid "The saved locks could not be cleared"
+msgstr "सहेजे गए लॉक साफ़ नहीं किए जा सके"
+
+msgid "No serving cell to lock to"
+msgstr "लॉक करने के लिए कोई सर्विंग सेल नहीं"
+
+msgid "The modem did not answer the mode query; nothing was sent"
+msgstr "मोडेम ने मोड क्वेरी का उत्तर नहीं दिया; कुछ भी नहीं भेजा गया"
+
+msgid "The read-back does not match the automatic values"
+msgstr "रीड-बैक स्वचालित मानों से मेल नहीं खाता"
+
+msgid "The read-back after the stack restart does not match the automatic values"
+msgstr "स्टैक पुनरारंभ के बाद रीड-बैक स्वचालित मानों से मेल नहीं खाता"
+
+msgid "The reset was interrupted"
+msgstr "रीसेट बाधित हो गया"
+
+msgid "Reinstalling packages is not available on this system"
+msgstr "इस सिस्टम पर पैकेज फिर से इंस्टॉल करना उपलब्ध नहीं है"
+
+msgid "No packages were written down by an update"
+msgstr "किसी अपडेट ने कोई पैकेज दर्ज नहीं किया"
+
+msgid "Reinstalling is running already"
+msgstr "फिर से इंस्टॉल करना पहले से चल रहा है"
+
+msgid "The note could not be dropped"
+msgstr "सूचना हटाई नहीं जा सकी"
+
+msgid "Unknown packages operation"
+msgstr "अज्ञात पैकेज क्रिया"
+
+msgid "usage: power get|set KEY VALUE|wake|idle"
+msgstr "usage: power get|set KEY VALUE|wake|idle"
+
+msgid "Data usage is not available on this system"
+msgstr "इस सिस्टम पर डेटा उपयोग उपलब्ध नहीं है"
+
+msgid "Unknown data usage operation"
+msgstr "अज्ञात डेटा उपयोग ऑपरेशन"
+
+msgid "The TTL setting could not be read"
+msgstr "TTL सेटिंग पढ़ी नहीं जा सकी"
+
+msgid "The TTL could not be set"
+msgstr "TTL सेट नहीं किया जा सका"
+
+msgid "Unknown TTL operation"
+msgstr "अज्ञात TTL कार्रवाई"
+
+msgid "An update task is already running"
+msgstr "एक अपडेट टास्क पहले से चल रहा है"
+
+msgid "The task could not be started"
+msgstr "टास्क शुरू नहीं हो सका"
+
+msgid "The updater gave no valid reply"
+msgstr "अपडेटर ने कोई मान्य जवाब नहीं दिया"
+
+msgid "This needs confirmation"
+msgstr "इसके लिए पुष्टि ज़रूरी है"
+
+msgid "Check for updates first"
+msgstr "पहले अपडेट जाँचें"
+
+msgid "The upload directory is not safe; nothing was changed"
+msgstr "अपलोड डायरेक्टरी सुरक्षित नहीं है; कुछ भी नहीं बदला गया"
+
+msgid "Not enough memory for this upload"
+msgstr "इस अपलोड के लिए पर्याप्त मेमोरी नहीं है"
+
+msgid "Not enough free space on the Linux partition"
+msgstr "Linux पार्टिशन पर पर्याप्त खाली जगह नहीं है"
+
+msgid "The file was not checked; upload it again"
+msgstr "फ़ाइल जाँची नहीं गई; इसे दोबारा अपलोड करें"
+
+msgid "This file is not for this device"
+msgstr "यह फ़ाइल इस डिवाइस के लिए नहीं है"
+
+msgid "The signature of this file is wrong"
+msgstr "इस फ़ाइल का हस्ताक्षर गलत है"
+
+msgid "This file is not signed: that needs confirmation"
+msgstr "यह फ़ाइल हस्ताक्षरित नहीं है: इसके लिए पुष्टि ज़रूरी है"
+
+msgid "This file is older than what is installed: that needs confirmation"
+msgstr "यह फ़ाइल इंस्टॉल किए गए संस्करण से पुरानी है: इसके लिए पुष्टि ज़रूरी है"
+
+msgid "The release source was not changed"
+msgstr "रिलीज़ स्रोत नहीं बदला गया"

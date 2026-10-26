@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var t=localStorage.getItem("mu300-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>故障排除：ZTE F50 / MU300 和 U30 Air 上的 MU300 Linux</title>
+<meta name="description" content="ZTE F50 / MU300 和 U30 Air 刷 Linux 的常见问题与解决办法：安装程序、USB 拿不到地址、没网、退回 Android、5.4 上的 OpenWrt、下载慢和已知问题。">
+<link rel="canonical" href="https://kaandikec.com/mu300-linux/zh/troubleshooting/">
+<link rel="alternate" hreflang="en" href="https://kaandikec.com/mu300-linux/troubleshooting/">
+<link rel="alternate" hreflang="tr" href="https://kaandikec.com/mu300-linux/tr/troubleshooting/">
+<link rel="alternate" hreflang="zh-Hans" href="https://kaandikec.com/mu300-linux/zh/troubleshooting/">
+<link rel="alternate" hreflang="x-default" href="https://kaandikec.com/mu300-linux/troubleshooting/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MU300 Linux">
+<meta property="og:title" content="故障排除：ZTE F50 / MU300 和 U30 Air 上的 MU300 Linux">
+<meta property="og:description" content="ZTE F50 / MU300 和 U30 Air 刷 Linux 的常见问题与解决办法：安装程序、USB 拿不到地址、没网、退回 Android、5.4 上的 OpenWrt、下载慢和已知问题。">
+<meta property="og:url" content="https://kaandikec.com/mu300-linux/zh/troubleshooting/">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="一台有两个房间的 5G 随身热点：一个给 Android，一个给 Linux">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="故障排除：ZTE F50 / MU300 和 U30 Air 上的 MU300 Linux">
+<meta name="twitter:description" content="ZTE F50 / MU300 和 U30 Air 刷 Linux 的常见问题与解决办法：安装程序、USB 拿不到地址、没网、退回 Android、5.4 上的 OpenWrt、下载慢和已知问题。">
+<meta name="twitter:image" content="https://kaandikec.com/mu300-linux/assets/img/og-image.png">
+<meta name="theme-color" content="#f3f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1520" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&amp;family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&amp;display=swap">
+<link rel="stylesheet" href="../../assets/style.css">
+<script src="../../assets/site.js" defer></script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "BreadcrumbList",
+ "itemListElement": [
+  {
+   "@type": "ListItem",
+   "position": 1,
+   "name": "首页",
+   "item": "https://kaandikec.com/mu300-linux/zh/"
+  },
+  {
+   "@type": "ListItem",
+   "position": 2,
+   "name": "故障排除",
+   "item": "https://kaandikec.com/mu300-linux/zh/troubleshooting/"
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">跳到正文</a>
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="../../zh/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="8" width="52" height="50" rx="12" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="20" r="3.5" fill="#2259d6"/><circle cx="32" cy="20" r="3.5" fill="currentColor"/><circle cx="42" cy="20" r="3.5" fill="#f2b23a"/><path d="M17 32 l9 7 l-9 7" fill="none" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 47 h15" stroke="#f2b23a" stroke-width="4.5" stroke-linecap="round"/></svg>MU300 Linux</a>
+<nav class="site-nav" id="site-nav" aria-label="Main">
+<a href="../../zh/install/">安装</a>
+<a href="../../zh/web-installer/">网页安装器</a>
+<a href="../../zh/choose/">选择系统</a>
+<a href="../../zh/features/">功能</a>
+<a href="../../zh/updates/">更新与安全</a>
+<a href="../../zh/troubleshooting/" aria-current="page">故障排除</a>
+<a href="https://github.com/dikeckaan/mu300-linux">GitHub</a>
+<span class="langs" role="group" aria-label="语言"><a href="../../troubleshooting/" hreflang="en" lang="en">English</a><a href="../../tr/troubleshooting/" hreflang="tr" lang="tr">Türkçe</a><a href="../../zh/troubleshooting/" hreflang="zh-Hans" lang="zh-Hans" aria-current="true">中文</a></span>
+</nav>
+<button class="theme-btn" type="button" hidden data-labels="主题|自动|浅色|深色|跟随系统|切换颜色主题"><svg class="i-auto" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg><svg class="i-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span class="theme-name"></span></button>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">菜单</button>
+</div>
+</header>
+<main id="content">
+
+<header class="page-head">
+<div class="prose">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../../zh/">首页</a> <span aria-hidden="true">/</span> <span aria-current="page">故障排除</span></nav>
+<h1>故障排除</h1>
+<p class="lede">大家真正遇到过的问题，以及该怎么办。这里都对不上时，收集日志，开一个 issue。</p>
+</div>
+</header>
+
+<div class="prose">
+<div class="callout android">
+<strong>先说让人安心的部分</strong>
+<p>启动不了 Linux 的设备，会在达到你设的失败次数（默认 5 次）后自己回到 Android，除非 Linux 处于锁定状态。耐心等一等、重新插一下，能解决的问题比你想象的多。</p>
+</div>
+
+<h2 id="installing">安装过程中</h2>
+
+<section id="no-device">
+<h3>安装程序找不到设备</h3>
+<p>先确认电脑能看到设备，并且 root 可用：</p><pre><code>adb devices
+adb shell su -c id</code></pre><p>设备应该显示为 <code>device</code>（如果是 <code>unauthorized</code>：在设备上同意 USB 调试的提示），第二条命令应该输出 <code>uid=0(root)</code>。安装程序需要已经 root 并解锁的设备：见<a href="../install/#before">开始之前</a>。</p>
+</section>
+
+<section id="no-space">
+<h3>检查发现没有空闲空间</h3>
+<p>这是 32 GB 版本，<code>userdata</code> 占满了整个磁盘。可以用 SD 卡（F50），或者让安装程序缩小 <code>userdata</code>，这会清空 Android 的数据：见<a href="../install/#variant-32gb">32 GB 版本</a>。如果数字既不像 64 GB 也不像 32 GB 的设备，请带上 <code>--check</code> 的输出<a href="https://github.com/dikeckaan/mu300-linux/issues" hreflang="en">开一个 issue</a>。</p>
+</section>
+
+<section id="not-empty">
+<h3>“警告：未分区空间并非空白”</h3>
+<p>安装程序在空闲区域抽查的样本里有一些含有数据，说明这个固件可能在用这块地方。安装会覆盖它，安装程序会请你输入 <code>overwrite</code>。如果你不确定是谁写进去的，先停下来，带上检查的输出在 issue 里问一问。</p>
+</section>
+
+<section id="stuck-installer">
+<h3>安装程序好几分钟没有输出，设备还发烫</h3>
+<p>在分区表一直延伸到磁盘末尾的设备上（32 GB 版本，以及 <code>userdata</code> 后面没有空隙的 F50），读取内部存储末尾之外的位置会一直卡住不返回。从 v2026.10.13 起已修复。重启设备结束卡住的读取，然后用当前的安装程序。</p>
+</section>
+
+<section id="slow-downloads">
+<h3>下载很慢</h3>
+<p>GitHub 的下载服务器在某些地区会限制单个连接的速度。安装程序本来就分 8 段并行下载；可以用 <code>MU300_FETCH_JOBS</code> 调整段数，或者把 <code>MU300_RELEASE_URL</code> 指向你自己的发布文件镜像。</p>
+</section>
+
+<h2 id="after">安装之后</h2>
+
+<section id="no-return">
+<h3>安装后设备没有回来</h3>
+<p>等两分钟。还是没动静，就拔掉再插上。每一次没完成的启动都算数，连续 5 次（或你设的次数）之后设备会启动 Android。然后收集日志：</p><pre><code>tools/collect-logs.sh            <span class="c"># 在电脑上运行，设备处于 Android</span></code></pre>
+</section>
+
+<section id="no-address">
+<h3>电脑能看到设备，但拿不到地址（macOS）</h3>
+<p>macOS 在屏幕锁定时不会为从没见过的网卡做设置。每台设备都有自己的 USB MAC 地址，所以第一次插上某台设备时（或者更新带来了这些地址之后），解锁 Mac，网卡就会出现。F50 和 U30 Air 同时插着时，地址分别是 <code>192.168.77.1</code> 和 <code>192.168.78.1</code>；两台同型号的需要用 <code>/etc/mu300/lan.conf</code> 区分。即使没有网络，串口控制台（<code>screen /dev/cu.usbmodem* 115200</code>）也能用。</p>
+</section>
+
+<section id="no-internet">
+<h3>没网</h3>
+<p>先确认 SIM 卡有流量套餐，然后运行 <code>sudo mobile-data status</code>。没有套餐时，看起来就像连接不停地断开。大多数运营商不需要 APN；如果你的需要，见<a href="../features/#mobile-data">移动数据和 APN</a>。</p>
+</section>
+
+<section id="kernel-618">
+<h3>用 6.18 内核时，没要求却回到了 Android</h3>
+<p>在部分板子上，6.18 偶尔会在启动的头几秒卡死（README 在一块板子上测得大约每 20 次启动一次；最新的发布说明在一块板子上看到 50 次中 2 次，另一块 100 次中 0 次，7.2 也是 100 次中 0 次）。这时设备会回到 Android；如果 Linux 处于锁定状态，则会再次启动 Linux。用 <code>su -c mu300-linux</code> 或 Magisk 模块的操作按钮重新启动 Linux，或者换成 7.2 或 5.4。详情见 <a href="https://github.com/dikeckaan/mu300-linux/blob/main/docs/FINDINGS.md" hreflang="en">FINDINGS 31m</a>（英文）。</p>
+</section>
+
+<section id="android-after-update">
+<h3>更新后回到了 Android</h3>
+<p>用较老的启动镜像（v2026.09.27 及更早）时，Linux 只要崩溃或重置一次，设备就会回到 Android 并停在那里。用 <code>su -c mu300-linux</code> 重新启动 Linux，然后按<a href="../updates/#update">更新</a>里的方法更新。如果 Linux 再也起不来，就在电脑上重新运行安装程序并选 <code>update</code>：它会写入新的启动镜像，并保留你的设置和数据。</p>
+</section>
+
+<section id="openwrt-54">
+<h3>5.4 内核上的 OpenWrt：拿不到地址、打不开网页界面、连不上热点</h3>
+<p>在 v2026.10.13 之前的版本里，防火墙开机时的规则里没有 LAN 的部分，而在 5.4 上本该补上这些规则的重新加载总是失败。从 v2026.10.13 起已修复；请更新。在受影响的版本上，通过 USB 串口控制台（<code>ttyGS0</code>，root shell）登录，运行：</p><pre><code>nft delete flowtable inet fw4 ft; fw4 reload</code></pre><p>从 v2026.10.17 起，5.4 上单独执行 <code>fw4 reload</code> 或 <code>restart</code> 就能生效。</p>
+</section>
+
+<section id="dfs">
+<h3>热点在 52 到 144 之间的 5 GHz 信道上起不来</h3>
+<p>hostapd 报 <code>start_dfs_cac() failed</code> 然后停下（v2026.10.18 及之前的版本）。那些是 DFS 信道，而 Wi-Fi 驱动无法检测雷达。从 v2026.10.20 起已修复：这种信道会被换成 36（或 149），日志里有一行说明。在旧版本上请选 36-48 或 149-165，Ubuntu 上也可以用 <code>auto</code>。</p>
+</section>
+
+<section id="panel-stuck">
+<h3>一条 AT 命令卡住后，控制面板一片空白</h3>
+<p>在带控制面板的 OpenWrt 上，直到 v2026.10.18，一条卡住的 AT 命令能让所有页面空白好几分钟，连电池卡片也是，重启之后也一样。从 v2026.10.20 起已修复：页面会保留上一次的读数并说明它们有多旧，OpenWrt 上一条 AT 命令只要 0.13 秒而不是一秒。在旧版本上等它过去，或者重启 <code>rpcd</code> 和 <code>mu300-atd</code>。</p>
+</section>
+
+<section id="sms-600">
+<h3>发短信失败，提示 <code>SMS FAILED: CODE:600</code>，或面板的日志里是 <code>sms_send - killed</code></h3>
+<p>直到 v2026.10.21，在某些网络上（中国广电，issue #176）调制解调器的 IMS 栈拒绝每一次提交（URC 日志里是 <code>+SPIMSREASON: 1,512,"SMS FAILED: CODE:600 REASON:Busy Everywhere"</code>），而收短信正常；另外，在带控制面板的 OpenWrt 上，一次超过 30 秒的发送会连同面板的请求一起被杀掉，操作日志里只剩 <code>sms_send - killed</code>，短信有没有发出去无从得知。从 v2026.10.22 起已修复：一次发送是一个完整的 AT 事务（从准备到提交一直占着通道，别的客户端插不进来），而且每次发送前都把调制解调器报告的 SMSC 原样写回去；OpenWrt 上的 <code>mu300-sms</code> 和面板、Ubuntu 上的 <code>sms</code> 都是如此。面板把发送放到后台并跟踪它，刷新页面之后也一样。在旧版本上，自己把 SMSC 写回去（<code>mu300-at 'AT+CSCA?'</code>，然后 <code>mu300-at 'AT+CSCA="&lt;它显示的值&gt;",&lt;类型&gt;'</code>，Ubuntu 上加 <code>sudo</code>），并趁面板空闲时从 shell 发送（OpenWrt 上 <code>mu300-sms send 号码 内容</code>，Ubuntu 上 <code>sudo sms send 号码 内容</code>）。</p>
+</section>
+
+<section id="netns-panic">
+<h3>5.4 内核上，一个容器停止时设备就重启</h3>
+<p>直到 v2026.10.20，在 5.4 内核上，同时存在两个网络命名空间（network namespace）而其中一个退出时（Docker 容器、沙箱、<code>unshare -n</code>），内核在清理它时可能崩溃（栈里有 <code>xfrm_sysctl_fini</code>；issue #103）；设备随即重启，几次之后就回到 Android。从 v2026.10.21 起已修复；请更新。在旧版本上一次只跑一个容器，或者改用从来没有这个问题的 6.18 或 7.2。</p>
+</section>
+
+<section id="rmmod-panic">
+<h3>卸载 Wi-Fi 驱动时设备崩溃（6.18、7.2）</h3>
+<p>直到 v2026.10.20，在 6.18 或 7.2 上执行 <code>rmmod sprd_wlan_combo</code> 会在一秒内崩溃（<code>__run_timers</code>：驱动在已释放的内存里留下了一个还在跑的定时器；issue #146）。从 v2026.10.21 起已修复。在旧版本上不要卸载这个模块，改为重启设备。</p>
+</section>
+
+<section id="wlan-log-noise">
+<h3>日志里每隔几秒就是一条 <code>sprd-wlan</code> 错误</h3>
+<p><code>dmesg</code> 和 <code>logread</code> 里大约每六秒出现一次错误级别的 <code>sc2355_dump_survey, idx 0</code>、<code>bssid not found, multicast?</code> 或 <code>data len is 251, skb need 576</code> 之类的行（v2026.10.20 及之前的版本）。它们描述的是驱动的日常工作，不是故障（issue #140）。从 v2026.10.21 起它们成了调试行，只有你主动打开才会显示：<code>echo 'module sprd_wlan_combo +p' &gt; /sys/kernel/debug/dynamic_debug/control</code>。旁边真正的错误仍然会记录。</p>
+</section>
+
+<section id="mmc1-dumps">
+<h3>F50 的日志里全是 <code>mmc1</code> 寄存器转储（6.18、7.2）</h3>
+<p>在 SD 卡槽空着的 F50 上，6.18 和 7.2 直到 v2026.10.21，<code>dmesg -l err</code> 里每隔几秒到几分钟就出现一次 <code>mmc1: Got command interrupt 0x00000001 even though no command operation was in progress</code>，后面跟着 16 行的 <code>SDHCI REGISTER DUMP</code>（issue #181）。主线内核的 EIC 驱动只映射了控制器六个 bank 中的三个，卡槽的卡检测线因此找不到，卡槽改为轮询：每秒初始化一张并不存在的卡，而主机对那条无人应答的命令迟到的回应就连同转储一起写进日志。从 v2026.10.22 起已修复：六个 bank 都映射了，卡槽有了真正的卡检测（一个中断），空卡槽在插入卡之前不会被碰。这些转储是噪音，不是故障；在旧版本上往卡槽里插一张卡（有卡时就没有转储），或者改用从来没有这个问题的 5.4。U30 Air 没有卡槽。</p>
+</section>
+
+<section id="hotspot-wpa3">
+<h3>热点从 WPA3 变成了 WPA2，或者设成 WPA3 后起不来</h3>
+<p>所有设备上，这块 Wi-Fi 芯片的热点 WPA3（SAE）都已被禁用：U30 Air 固件实现的 WPA3 可能让客户端无需密码即可接入（<a href="https://github.com/dikeckaan/mu300-linux/blob/main/docs/U30AIR-SAE.md">原因</a>）。原来是 WPA3 的热点已在开机时切换为 WPA2，密码不变：用同一密码重新连接即可。如果 LuCI 的提示说热点已关闭，说明它没有 WPA2 可用的密码：请通过 USB 或 SSH 进入 LuCI → 网络 → 无线，选择 WPA2-PSK，设置 8-63 个字符的密码并启用。在 LuCI 中选择 WPA3 或 WPA2/WPA3 混合模式时，该接入点不会启动；请选择 WPA2-PSK。</p>
+</section>
+
+<section id="wpa3">
+<h3>Wi-Fi 客户端连不上某个网络</h3>
+<p>只有 WPA3 的网络连不上（Wi-Fi 驱动没有 SAE）；把路由器设成 WPA2/WPA3 混合模式。另外，无线要么当热点要么当客户端，在开机时决定：它正在当热点时，<code>wifi-client connect</code> 会请你重启。</p>
+</section>
+
+<section id="password">
+<h3>我忘了密码</h3>
+<p>不用登录也能回到 Android，电脑上的一个脚本可以在保留数据的同时设置新密码：见<a href="../updates/#password">忘记密码</a>。</p>
+</section>
+
+<section id="location">
+<h3>网站以为我在别的国家</h3>
+<p>设备没有 GPS，网站只能根据 IP 地址猜位置，而移动运营商和 VPN 服务器的 IP 常常看起来像在另一个城市。</p>
+</section>
+
+<section id="journal">
+<h3>内核警告不在 <code>journalctl -k</code> 里</h3>
+<p>在 Ubuntu 上，它们在 <code>journalctl -t kernel</code> 里：只有警告和错误，从每次启动开始记录，重复出现的厂商驱动杂讯已经过滤掉（<code>/etc/mu300/kmsg-ignore</code>）。其余的都在 <code>dmesg</code> 里。</p>
+</section>
+
+<h2 id="known">当前版本的已知问题</h2>
+<ul>
+<li>6.18 上罕见的启动时无声卡死，只在一块板子上见过（见<a href="#kernel-618">上文</a>）。</li>
+<li>Wi-Fi 长时间高负载时，厂商驱动会在丢包的同时记录 <code>edma_pending_q_buffer full</code> 或 <code>push link fail</code>。传输最终会完成。</li>
+<li>开着热点时挂起（suspend）会立即返回。有些运营商会丢弃 UDP、封锁 OpenVPN。</li>
+<li>短信的邮件转发需要 <code>msmtp</code>，而镜像里没有它，所以这个目标保持关闭。</li>
+<li>从 v2026.10.14 或更早的版本更新时，会显示“could not arm the Linux slot for a trial”。启动失败后回到 Android 的功能仍然正常。</li>
+</ul>
+<p>每个版本的说明都会列出它自己的已知问题：<a href="https://github.com/dikeckaan/mu300-linux/releases" hreflang="en">发布页面</a>。</p>
+
+<div class="callout warn" id="sysupgrade">
+<strong>千万不要用 OpenWrt 的 <code>sysupgrade</code>，也不要刷 OpenWrt 固件镜像</strong>
+<p>它们是为普通路由器写的，会覆盖设备的存储。正常的 <code>apk upgrade</code> 没问题，但 <code>kernel</code> 和 <code>kmod-*</code> 软件包除外。请用 <code>mu300-update</code> 更新。</p>
+</div>
+
+<h2 id="help">寻求帮助</h2>
+<ol>
+<li>先翻一翻<a href="https://github.com/dikeckaan/mu300-linux/issues?q=is%3Aissue" hreflang="en">已有的 issue</a>。</li>
+<li>用 <code>tools/collect-logs.sh</code> 收集日志，并复制 <code>./install.sh --check</code> 的输出。</li>
+<li>删掉所有隐私信息（IMEI、电话号码、Wi-Fi 名称和密码），然后<a href="https://github.com/dikeckaan/mu300-linux/issues/new" hreflang="en">开一个 issue</a>：写明设备、系统和内核、版本号、你做了什么、发生了什么。</li>
+</ol>
+<p>关于硬件的深入说明在 <a href="https://github.com/dikeckaan/mu300-linux/blob/main/docs/FINDINGS.md" hreflang="en">docs/FINDINGS.md</a> 和 <a href="https://github.com/dikeckaan/mu300-linux/wiki/Troubleshooting" hreflang="en">wiki</a> 里（英文）。</p>
+</div>
+
+</main>
+<footer class="site-footer">
+<div class="wrap">
+<div>
+<h2>项目</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux">GitHub 上的源代码</a></li>
+<li><a href="https://github.com/sponsors/dikeckaan">支持本项目</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/releases">发布版本（下载）</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux-vpn">VPN 模块</a></li>
+</ul>
+</div>
+<div>
+<h2>帮助</h2>
+<ul>
+<li><a href="https://github.com/dikeckaan/mu300-linux/wiki">Wiki（英文）</a></li>
+<li><a href="../../zh/troubleshooting/">故障排除</a></li>
+<li><a href="https://github.com/dikeckaan/mu300-linux/issues">报告问题</a></li>
+<li><a href="https://t.me/mu300project">Telegram 频道（动态与新版本）</a></li>
+</ul>
+</div>
+<div>
+<p>这是一个业余项目，风险自负，不提供任何担保。与 ZTE、紫光展锐或任何运营商无关，也未获其认可。脚本和文档：MIT；内核：GPL-2.0。</p>
+</div>
+</div>
+</footer>
+</body>
+</html>

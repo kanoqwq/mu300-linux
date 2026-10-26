@@ -1,0 +1,13 @@
+[Unit]
+Description=MU300 host firewall (block connections from the cellular network)
+DefaultDependencies=no
+Before=network-pre.target mu300-mobile-data.service
+Wants=network-pre.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/nft -f /etc/mu300/firewall.nft
+
+[Install]
+WantedBy=sysinit.target

@@ -1,0 +1,15 @@
+[Unit]
+Description=MU300 power profiles: idle radios when nobody is connected, the charging boot, the charge guard
+After=mu300-hotspot.service mu300-mobile-data.service mu300-buttons.service
+ConditionPathExists=/opt/mu300/bin/mu300-power
+
+[Service]
+ExecStart=/opt/mu300/bin/mu300-power daemon
+Restart=always
+RestartSec=10
+# stopped while idle, the TERM trap brings back the hotspot, LEDs and CPU, then the radio without a dial (up to ~120 s
+# for the radio lock; the watchdog redials); not during a shutdown
+TimeoutStopSec=150
+
+[Install]
+WantedBy=multi-user.target

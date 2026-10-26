@@ -1,0 +1,233 @@
+power: supply: bq256xx: the U30 Air's boost as the "otg-vbus" regulator, and a PD contract's input current
+
+For the U30 Air's USB-C port controller (0020, ump9620-tcpc, experimental and off by default), "ti,bq2560x_chg"
+only. After kano's 0018 of kanoqwq/mu300-linux 2af101f8, reviewed and changed:
+
+- The boost (OTG_CONFIG) is the device tree's "otg-vbus" regulator (vddvbus, the vbus-supply of the PMIC's PD
+  node). Enabling it is refused while an outside supply is on VBUS (power good, and VBUS_STAT not the chip's own
+  boost), after waiting up to 100 ms for that supply to go (a power role swap). kano's version enabled it
+  unconditionally: TCPM's states were all that kept two supplies apart. CHG_CONFIG is off while it runs and back as
+  it was, or as userspace left it ("N/A" in charge_type), after.
+- At probe a boost still on from before the reboot is switched off (the chip runs on the battery and keeps its
+  registers). Before, only mu300-usb's boot step did that, and kano's mu300-usb skipped it with the port controller
+  loaded, so a boost left on by a crash in host mode stayed on until a computer met it.
+- With a PD contract the port controller sets the input current (USB type PD, then INPUT_CURRENT_LIMIT, from the
+  kernel only); a VBUS event then leaves it alone, so the charger's BC1.2/Rp choice cannot overwrite it. In a PD 3.0
+  contract a source's Rp only says whether the sink may talk (SinkTxOk is Rp 3 A whatever the source offers): 0012's
+  Rp current would be wrong then. The contract ends when the port controller says so (USB type UNKNOWN) or with
+  VBUS, whichever comes first, and the charger's own detection takes over again. INPUT_CURRENT_LIMIT is now set
+  under the driver's lock, so it cannot cross bq2560x_chg_detect.
+- bq2560x_chg_detect no longer writes CHG_CONFIG while the boost runs.
+
+mu300-usb's own OTG_CONFIG writes (host mode without the port controller) are unchanged: the regulator reads the bit
+from the chip, and nothing uses it unless ump9620-tcpc is loaded with enable=1.
+
+--- a/drivers/power/supply/bq256xx_charger.c
++++ b/drivers/power/supply/bq256xx_charger.c
+@@ -11,6 +11,7 @@
+ #include <linux/gpio/consumer.h>
+ #include <linux/power_supply.h>
+ #include <linux/regmap.h>
++#include <linux/regulator/driver.h>
+ #include <linux/types.h>
+ #include <linux/usb/phy.h>
+ #include <linux/device.h>
+@@ -276,6 +277,8 @@
+ 	 */
+ 	bool bq2560x_chg;
+ 	bool chg_off;
++	/* a USB PD contract's input current is in force (the UMP9620's port controller, ump9620-tcpc) */
++	bool pd_contract;
+ 	bool iindet_noted;
+ 	int usb_type;
+ 	struct device *pmic;
+@@ -944,10 +947,33 @@
+ 	int ret = -EINVAL;
+ 
+ 	switch (prop) {
++	case POWER_SUPPLY_PROP_USB_TYPE:
++		/*
++		 * "ti,bq2560x_chg", from the kernel only (not writeable from sysfs): ump9620-tcpc says PD when a PD
++		 * contract's current follows (INPUT_CURRENT_LIMIT), UNKNOWN when it ends; the charger's own detection
++		 * then takes over again. While PD, a VBUS event leaves the input current alone.
++		 */
++		if (!bq->bq2560x_chg || (val->intval != POWER_SUPPLY_USB_TYPE_PD &&
++					 val->intval != POWER_SUPPLY_USB_TYPE_UNKNOWN))
++			return -EINVAL;
++		mutex_lock(&bq->lock);
++		ret = bq->pd_contract != (val->intval == POWER_SUPPLY_USB_TYPE_PD);
++		WRITE_ONCE(bq->pd_contract, val->intval == POWER_SUPPLY_USB_TYPE_PD);
++		mutex_unlock(&bq->lock);
++		if (ret && !bq->pd_contract)
++			mod_delayed_work(system_power_efficient_wq, &bq->vbus_work, 0);
++		ret = 0;
++		break;
++
+ 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
++		/* (under the lock, so that it cannot cross bq2560x_chg_detect's own setting) */
++		mutex_lock(&bq->lock);
+ 		ret = bq->chip_info->bq256xx_set_iindpm(bq, val->intval);
++		mutex_unlock(&bq->lock);
+ 		if (ret)
+ 			return ret;
++		if (bq->bq2560x_chg && READ_ONCE(bq->pd_contract))
++			dev_info(bq->dev, "USB PD: input current %d mA\n", val->intval / 1000);
+ 		break;
+ 
+ 	case POWER_SUPPLY_PROP_STATUS:
+@@ -1093,6 +1119,10 @@
+ 		break;
+ 
+ 	case POWER_SUPPLY_PROP_USB_TYPE:
++		if (bq->bq2560x_chg && READ_ONCE(bq->pd_contract)) {
++			val->intval = POWER_SUPPLY_USB_TYPE_PD;
++			break;
++		}
+ 		/* "ti,bq2560x_chg": the PMIC's charger detection, when it said something (bq2560x_chg_detect) */
+ 		if (bq->bq2560x_chg && READ_ONCE(bq->usb_type) != POWER_SUPPLY_USB_TYPE_UNKNOWN &&
+ 		    state.vbus_stat != BQ256XX_VBUS_STAT_NO_INPUT &&
+@@ -1292,6 +1322,7 @@
+ 		     BIT(POWER_SUPPLY_USB_TYPE_CDP) |
+ 		     BIT(POWER_SUPPLY_USB_TYPE_DCP) |
+ 		     BIT(POWER_SUPPLY_USB_TYPE_ACA) |
++		     BIT(POWER_SUPPLY_USB_TYPE_PD) |
+ 		     BIT(POWER_SUPPLY_USB_TYPE_UNKNOWN),
+ 	.properties = bq256xx_power_supply_props,
+ 	.num_properties = ARRAY_SIZE(bq256xx_power_supply_props),
+@@ -1822,15 +1853,19 @@
+ 	const char *src = "PMIC";
+ 
+ 	mutex_lock(&bq->lock);
+-	ret = regmap_update_bits(bq->regmap, BQ256XX_CHARGER_CONTROL_0, BQ256XX_CHG_CONFIG_MASK,
+-				 off ? 0 : BQ256XX_CHG_CONFIG_MASK);
+-	if (!ret)
+-		ret = regmap_read(bq->regmap, BQ256XX_CHARGER_CONTROL_0, &ctrl0);
++	/* charging on, unless the boost is on (it drives VBUS: mu300-usb host, or the otg-vbus regulator) */
++	ret = regmap_read(bq->regmap, BQ256XX_CHARGER_CONTROL_0, &ctrl0);
++	if (!ret && !(ctrl0 & BQ256XX_OTG_CONFIG))
++		ret = regmap_update_bits(bq->regmap, BQ256XX_CHARGER_CONTROL_0, BQ256XX_CHG_CONFIG_MASK,
++					 off ? 0 : BQ256XX_CHG_CONFIG_MASK);
+ 	if (!ret)
+ 		ret = regmap_read(bq->regmap, BQ256XX_CHARGER_STATUS_0, &stat);
+-	/* nothing on VBUS, or the chip's own boost drives it (mu300-usb host) */
++	/* a contract does not outlive VBUS, whatever became of the port controller */
++	if (!ret && !(stat & BQ256XX_PG_STAT_MASK))
++		WRITE_ONCE(bq->pd_contract, false);
++	/* nothing on VBUS, or the chip's own boost drives it, or a PD contract set the input current */
+ 	if (ret || (ctrl0 & BQ256XX_OTG_CONFIG) || !(stat & BQ256XX_PG_STAT_MASK) ||
+-	    (stat & BQ256XX_VBUS_STAT_MASK) == BQ256XX_VBUS_STAT_USB_OTG)
++	    (stat & BQ256XX_VBUS_STAT_MASK) == BQ256XX_VBUS_STAT_USB_OTG || bq->pd_contract)
+ 		goto out;
+ 
+ 	type = bq2560x_chg_pmic_type(bq);
+@@ -2099,7 +2134,100 @@
+ 
+ 	return 0;
+ }
++
++/*
++ * "ti,bq2560x_chg": the boost (OTG_CONFIG) as the DT's "otg-vbus" regulator (vddvbus, the UMP9620 PD node's
++ * vbus-supply), for ump9620-tcpc. Never against another supply: with power good from outside (a computer, a charger,
++ * a dock) enabling is refused, after waiting up to 100 ms for it to go (a power role swap: the partner has just
++ * switched its own 5 V off). The boost and charging exclude each other: CHG_CONFIG is off while it runs and back as
++ * it was (or as userspace left it) after.
++ */
++static int bq2560x_otg_enable(struct regulator_dev *rdev)
++{
++	struct bq256xx_device *bq = rdev_get_drvdata(rdev);
++	unsigned int stat;
++	int ret;
+ 
++	mutex_lock(&bq->lock);
++	ret = regmap_read_poll_timeout(bq->regmap, BQ256XX_CHARGER_STATUS_0, stat,
++				       !(stat & BQ256XX_PG_STAT_MASK) ||
++				       (stat & BQ256XX_VBUS_STAT_MASK) == BQ256XX_VBUS_STAT_USB_OTG,
++				       10000, 100000);
++	if (ret == -ETIMEDOUT) {
++		dev_warn(bq->dev, "5 V out refused: an outside supply is on VBUS\n");
++		ret = -EBUSY;
++	}
++	if (!ret)
++		ret = regmap_update_bits(bq->regmap, BQ256XX_CHARGER_CONTROL_0,
++					 BQ256XX_OTG_CONFIG | BQ256XX_CHG_CONFIG_MASK, BQ256XX_OTG_CONFIG);
++	mutex_unlock(&bq->lock);
++	if (!ret)
++		dev_info(bq->dev, "5 V out on\n");
++	return ret;
++}
++
++static int bq2560x_otg_disable(struct regulator_dev *rdev)
++{
++	struct bq256xx_device *bq = rdev_get_drvdata(rdev);
++	int ret;
++
++	mutex_lock(&bq->lock);
++	ret = regmap_update_bits(bq->regmap, BQ256XX_CHARGER_CONTROL_0,
++				 BQ256XX_OTG_CONFIG | BQ256XX_CHG_CONFIG_MASK,
++				 READ_ONCE(bq->chg_off) ? 0 : BQ256XX_CHG_CONFIG_MASK);
++	mutex_unlock(&bq->lock);
++	if (!ret) {
++		dev_info(bq->dev, "5 V out off\n");
++		mod_delayed_work(system_power_efficient_wq, &bq->vbus_work, 0);
++	}
++	return ret;
++}
++
++static int bq2560x_otg_is_enabled(struct regulator_dev *rdev)
++{
++	struct bq256xx_device *bq = rdev_get_drvdata(rdev);
++	unsigned int ctrl0;
++	int ret = regmap_read(bq->regmap, BQ256XX_CHARGER_CONTROL_0, &ctrl0);
++
++	return ret ?: !!(ctrl0 & BQ256XX_OTG_CONFIG);
++}
++
++static const struct regulator_ops bq2560x_otg_ops = {
++	.enable = bq2560x_otg_enable,
++	.disable = bq2560x_otg_disable,
++	.is_enabled = bq2560x_otg_is_enabled,
++};
++
++static const struct regulator_desc bq2560x_otg_desc = {
++	.name = "otg-vbus",
++	.of_match = "otg-vbus",
++	.type = REGULATOR_VOLTAGE,
++	.owner = THIS_MODULE,
++	.ops = &bq2560x_otg_ops,
++	.n_voltages = 1,
++	.fixed_uV = 5000000,
++};
++
++static int bq2560x_otg_register(struct bq256xx_device *bq)
++{
++	struct regulator_config config = { .dev = bq->dev, .driver_data = bq };
++	unsigned int ctrl0;
++	int ret;
++
++	/*
++	 * The chip runs on the battery and keeps its registers across a reboot: a boost still on from before it (a
++	 * crash in host mode) would meet the next computer's 5 V. Off before anything can use the port.
++	 */
++	ret = regmap_read(bq->regmap, BQ256XX_CHARGER_CONTROL_0, &ctrl0);
++	if (!ret && (ctrl0 & BQ256XX_OTG_CONFIG)) {
++		ret = regmap_update_bits(bq->regmap, BQ256XX_CHARGER_CONTROL_0, BQ256XX_OTG_CONFIG, 0);
++		dev_info(bq->dev, "the boost was still on from before the reboot: off\n");
++	}
++	if (ret)
++		return ret;
++	return PTR_ERR_OR_ZERO(devm_regulator_register(bq->dev, &bq2560x_otg_desc, &config));
++}
++
+ static int bq256xx_probe(struct i2c_client *client)
+ {
+ 	const struct i2c_device_id *id = i2c_client_get_device_id(client);
+@@ -2257,6 +2385,9 @@
+ 			if (ret)
+ 				return dev_err_probe(dev, ret, "VBUS extcon notifier\n");
+ 		}
++		ret = bq2560x_otg_register(bq);
++		if (ret)
++			return dev_err_probe(dev, ret, "otg-vbus regulator\n");
+ 		mod_delayed_work(system_power_efficient_wq, &bq->vbus_work, 0);
+ 	}
+ 

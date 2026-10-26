@@ -1,0 +1,4050 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: nl\n"
+
+msgid "Status dashboard"
+msgstr "Statusdashboard"
+
+msgid "Cellular"
+msgstr "Mobiel"
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM"
+msgstr "Dual SIM"
+
+msgid "SIM settings"
+msgstr "SIM-instellingen"
+
+msgid "Network locks"
+msgstr "Netwerkvergrendelingen"
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "SMS forwarding"
+msgstr "SMS doorsturen"
+
+msgid "AT terminal"
+msgstr "AT-terminal"
+
+msgid "Adapter settings"
+msgstr "Adapterinstellingen"
+
+msgid "TTL"
+msgstr "TTL"
+
+msgid "Data usage"
+msgstr "Dataverbruik"
+
+msgid "Device management"
+msgstr "Apparaatbeheer"
+
+msgid "Update"
+msgstr "Bijwerken"
+
+msgid "Backup of settings"
+msgstr "Back-up van instellingen"
+
+msgid "Languages"
+msgstr "Talen"
+
+msgid "Power"
+msgstr "Voeding"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "Terminal"
+msgstr "Terminal"
+
+msgid "Terminal settings"
+msgstr "Terminalinstellingen"
+
+msgid "Overview"
+msgstr "Overzicht"
+
+msgid "Profiles"
+msgstr "Profielen"
+
+msgid "Subscriptions"
+msgstr "Abonnementen"
+
+msgid "Engines"
+msgstr "Engines"
+
+msgid "Settings"
+msgstr "Instellingen"
+
+msgid "Logs"
+msgstr "Logboek"
+
+msgid "Packages after an update"
+msgstr "Pakketten na een update"
+
+msgid "MU300 control center: status dashboard, network locks, AT terminal, SMS and VPN"
+msgstr "MU300-controlecentrum: statusdashboard, netwerkvergrendelingen, AT-terminal, sms en VPN"
+
+msgid "Terminal: a root shell on the device in the browser"
+msgstr "Terminal: een root-shell op het apparaat in de browser"
+
+msgid "China Mobile"
+msgstr "China Mobile"
+
+msgid "China Unicom"
+msgstr "China Unicom"
+
+msgid "China Telecom"
+msgstr "China Telecom"
+
+msgid "China Broadnet"
+msgstr "China Broadnet"
+
+msgid "China Tietong"
+msgstr "China Tietong"
+
+msgid "Excellent"
+msgstr "Uitstekend"
+
+msgid "Good"
+msgstr "Goed"
+
+msgid "Fair"
+msgstr "Redelijk"
+
+msgid "Poor"
+msgstr "Slecht"
+
+msgid "Unknown"
+msgstr "Onbekend"
+
+msgid "%d d %d h"
+msgstr "%d d %d u"
+
+msgid "%d h %d min"
+msgstr "%d u %d min"
+
+msgid "%d min"
+msgstr "%d min"
+
+msgid "No neighbor-cell data"
+msgstr "Geen gegevens over buurcellen"
+
+msgid "Locked"
+msgstr "Vergrendeld"
+
+msgid "Lock"
+msgstr "Vergrendelen"
+
+msgid "Unknown error"
+msgstr "Onbekende fout"
+
+msgid "Confirm"
+msgstr "Bevestigen"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Cancel"
+msgstr "Annuleren"
+
+msgid "%d s"
+msgstr "%d s"
+
+msgid "%d h"
+msgstr "%d u"
+
+msgid "New SMS · %s"
+msgstr "Nieuwe SMS · %s"
+
+msgid "Unknown number"
+msgstr "Onbekend nummer"
+
+msgid "Select"
+msgstr "Selecteren"
+
+msgid "never"
+msgstr "nooit"
+
+msgid "just now"
+msgstr "zojuist"
+
+msgid "%s ago"
+msgstr "%s geleden"
+
+msgid "Failed: %s"
+msgstr "Mislukt: %s"
+
+msgid "Management connection lost"
+msgstr "Beheerverbinding verloren"
+
+msgid "Installing the VPN module"
+msgstr "VPN-module installeren"
+
+msgid "Installing the engine"
+msgstr "Engine installeren"
+
+msgid "Adding the subscription"
+msgstr "Abonnement toevoegen"
+
+msgid "Refreshing the subscriptions"
+msgstr "Abonnementen vernieuwen"
+
+msgid "Testing the latency of every profile"
+msgstr "Latentie van elk profiel testen"
+
+msgid "Downloading the config"
+msgstr "Configuratie downloaden"
+
+msgid "Working…"
+msgstr "Bezig…"
+
+msgid "done"
+msgstr "klaar"
+
+msgid "failed"
+msgstr "mislukt"
+
+msgid "Verify the uploaded file"
+msgstr "Geüpload bestand controleren"
+
+msgid "The uploaded file is checked against the SHA256SUMS of the VPN module's latest release, downloaded over HTTPS. When that is not possible (offline, an older release), it is installed only if you allow an unverified file: it then runs as root with no check."
+msgstr "Het geüploade bestand wordt gecontroleerd met de SHA256SUMS van de nieuwste release van de VPN-module, gedownload via HTTPS. Als dat niet kan (offline, een oudere release), wordt het alleen geïnstalleerd als u een ongecontroleerd bestand toestaat: het draait dan als root zonder enige controle."
+
+msgid "Install it even if it cannot be verified"
+msgstr "Installeren, ook als het niet gecontroleerd kan worden"
+
+msgid "Install only a verified file"
+msgstr "Alleen een gecontroleerd bestand installeren"
+
+msgid "Upload failed: %s"
+msgstr "Uploaden mislukt: %s"
+
+msgid "The VPN module is too old for this panel"
+msgstr "De VPN-module is te oud voor dit paneel"
+
+msgid "The VPN module is not installed"
+msgstr "De VPN-module is niet geïnstalleerd"
+
+msgid "This page needs the VPN module with the machine-readable mu300-vpn (module v2 or newer). Updating it keeps the profiles and the settings."
+msgstr "Deze pagina vereist de VPN-module met de machineleesbare mu300-vpn (module v2 of nieuwer). Bijwerken behoudt de profielen en instellingen."
+
+msgid "The VPN is a module of its own: mu300-vpn with its kill switch and profiles, and one extra per engine (Xray, sing-box, mihomo, dae). It is installed with mu300-extra install vpn."
+msgstr "De VPN is een aparte module: mu300-vpn met de kill switch en profielen, plus één extra per engine (Xray, sing-box, mihomo, dae). Installeer met mu300-extra install vpn."
+
+msgid "The download is a few MB for the module and up to tens of MB per engine: on mobile data it counts towards your plan."
+msgstr "De download is enkele MB voor de module en tot tientallen MB per engine: via mobiele data gaat dit van uw databundel af."
+
+msgid "Update the VPN module"
+msgstr "VPN-module bijwerken"
+
+msgid "Install the VPN module"
+msgstr "VPN-module installeren"
+
+msgid "Upload the file…"
+msgstr "Bestand uploaden…"
+
+msgid "Offline: upload mu300-linux-vpn-core.tar.gz (or the bundle mu300-linux-vpn.tar.gz) from the release page of the VPN module."
+msgstr "Offline: upload mu300-linux-vpn-core.tar.gz (of de bundel mu300-linux-vpn.tar.gz) van de releasepagina van de VPN-module."
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "This is a network or frequency scan: it takes one to three minutes, holds the modem's AT channel all that time, and mobile data may pause meanwhile. It runs in the background; the reply appears here when it is done."
+msgstr "Dit is een netwerk- of frequentiescan: die duurt één tot drie minuten, houdt het AT-kanaal van de modem al die tijd bezet en mobiele data kan intussen pauzeren. Hij draait op de achtergrond; het antwoord verschijnt hier als hij klaar is."
+
+msgid "This changes a network mode, band or cell setting the modem stores: it stays in force after a reboot, and in Android too, where a network that does not match it shows as No Service. The Locks page shows these settings and resets them."
+msgstr "Dit wijzigt een netwerkmodus, band of celinstelling die de modem bewaart: die blijft van kracht na een herstart, en ook in Android, waar een netwerk dat er niet bij past als Geen service verschijnt. De pagina Vergrendelingen toont deze instellingen en zet ze terug."
+
+msgid "This switches the radio, the data connection or the modem itself: mobile data drops until it is restored, and this page may lose its connection for a while."
+msgstr "Dit schakelt de radio, de dataverbinding of de modem zelf: mobiele data valt weg tot die hersteld is, en deze pagina kan een tijdje de verbinding verliezen."
+
+msgid "This changes the data profiles (APNs) stored in the modem, which mobile data and Android use."
+msgstr "Dit wijzigt de in de modem opgeslagen dataprofielen (APN's), die mobiele data en Android gebruiken."
+
+msgid "This changes the SIM's PIN lock or enters a PIN: wrong PINs block the SIM until its PUK is entered."
+msgstr "Dit wijzigt de pincodevergrendeling van de simkaart of voert een pincode in: verkeerde pincodes blokkeren de simkaart tot de PUK wordt ingevoerd."
+
+msgid "Basic"
+msgstr "Basis"
+
+msgid "Registration/signal"
+msgstr "Registratie/signaal"
+
+msgid "Bearer"
+msgstr "Bearer"
+
+msgid "Engineering mode"
+msgstr "Engineeringmodus"
+
+msgid "AT command (↑↓ history, Enter to send)"
+msgstr "AT-commando (↑↓ geschiedenis, Enter om te verzenden)"
+
+msgid "Send"
+msgstr "Verzenden"
+
+msgid "Clear screen"
+msgstr "Scherm wissen"
+
+msgid "Ready."
+msgstr "Gereed."
+
+msgid "Session history (click to reuse)"
+msgstr "Sessiegeschiedenis (klik om te hergebruiken)"
+
+msgid "Running in the background (at most %d s); the reply appears here when it is done…"
+msgstr "Draait op de achtergrond (hoogstens %d s); het antwoord verschijnt hier als hij klaar is…"
+
+msgid "The modem gave no final answer in time"
+msgstr "De modem gaf niet op tijd een eindantwoord"
+
+msgid "%d s in the background"
+msgstr "%d s op de achtergrond"
+
+msgid "(no output)"
+msgstr "(geen uitvoer)"
+
+msgid "This command changes the modem's state."
+msgstr "Deze opdracht wijzigt de toestand van de modem."
+
+msgid "Not sent yet: waiting for confirmation"
+msgstr "Nog niet verzonden: wacht op bevestiging"
+
+msgid "Send this AT command?"
+msgstr "Deze AT-opdracht verzenden?"
+
+msgid "Send anyway"
+msgstr "Toch verzenden"
+
+msgid "Not sent"
+msgstr "Niet verzonden"
+
+msgid "Request failed"
+msgstr "Verzoek mislukt"
+
+msgid "(empty)"
+msgstr "(leeg)"
+
+msgid "Passphrase (8 characters or more)"
+msgstr "Wachtzin (8 tekens of meer)"
+
+msgid "The passphrase again"
+msgstr "De wachtzin nogmaals"
+
+msgid "Download the backup"
+msgstr "Back-up downloaden"
+
+msgid "Back up the settings"
+msgstr "Instellingen back-uppen"
+
+msgid "One file with the hotspot, mobile data and the APN, the network locks, the VPN profiles and settings, SMS forwarding, the LAN address, the host name, the time zone and the SSH keys. It holds passwords: with a passphrase it is encrypted, and only that passphrase opens it again."
+msgstr "Eén bestand met de hotspot, mobiele data en de APN, de netwerkvergrendelingen, de VPN-profielen en -instellingen, sms-doorsturen, het LAN-adres, de hostnaam, de tijdzone en de SSH-sleutels. Het bevat wachtwoorden: met een wachtzin wordt het versleuteld, en alleen die wachtzin opent het weer."
+
+msgid "Include the login password"
+msgstr "Het inlogwachtwoord meenemen"
+
+msgid "Passphrase, if the file is encrypted"
+msgstr "Wachtzin, als het bestand versleuteld is"
+
+msgid "Show what would change"
+msgstr "Tonen wat er zou veranderen"
+
+msgid "Restore"
+msgstr "Herstellen"
+
+msgid "The file is larger than 4 MiB"
+msgstr "Het bestand is groter dan 4 MiB"
+
+msgid "The settings of the file replace these. The hotspot, mobile data or the LAN may restart, and this page may lose its connection for a moment."
+msgstr "De instellingen uit het bestand vervangen deze. De hotspot, mobiele data of het LAN kunnen herstarten, en deze pagina kan even de verbinding verliezen."
+
+msgid "Restore from a backup"
+msgstr "Herstellen vanuit een back-up"
+
+msgid "Every value of the file is checked first; one that is refused and nothing is changed. What is the same is left alone, and no VPN profile, subscription or SSH key of this device is removed."
+msgstr "Elke waarde in het bestand wordt eerst gecontroleerd; wordt er één geweigerd, dan verandert er niets. Wat gelijk is blijft ongemoeid, en geen VPN-profiel, abonnement of SSH-sleutel van dit apparaat wordt verwijderd."
+
+msgid "Keep this device's login password"
+msgstr "Het inlogwachtwoord van dit apparaat behouden"
+
+msgid "Take a file of another device model"
+msgstr "Een bestand van een ander apparaatmodel accepteren"
+
+msgid "The two passphrases differ"
+msgstr "De twee wachtzinnen verschillen"
+
+msgid "The passphrase needs 8 characters or more"
+msgstr "De wachtzin moet 8 tekens of meer hebben"
+
+msgid "Saved (encrypted)"
+msgstr "Opgeslagen (versleuteld)"
+
+msgid "Saved. The file is not encrypted: it holds passwords, keep it safe."
+msgstr "Opgeslagen. Het bestand is niet versleuteld: het bevat wachtwoorden, bewaar het veilig."
+
+msgid "Choose a backup file first"
+msgstr "Kies eerst een back-upbestand"
+
+msgid "Restoring…"
+msgstr "Bezig met herstellen…"
+
+msgid "Restored"
+msgstr "Hersteld"
+
+msgid "The restore did not finish: see the lines above"
+msgstr "Het herstel is niet afgerond: zie de regels hierboven"
+
+msgid "Loading…"
+msgstr "Laden…"
+
+msgid "Channel Analysis"
+msgstr "Kanaalanalyse"
+
+msgid "A scan takes the Wi-Fi hotspot off its channel for a moment: connected devices drop, and some (macOS in particular) may not reconnect by themselves. This page scans as soon as it opens and again every few seconds. Reach the panel over USB or another way first if you depend on the hotspot."
+msgstr "Een scan haalt de wifi-hotspot even van zijn kanaal: verbonden apparaten vallen weg en sommige (vooral macOS) maken niet vanzelf opnieuw verbinding. Deze pagina scant zodra ze opent en daarna om de paar seconden. Als u van de hotspot afhankelijk bent, bereik het paneel dan eerst via USB of op een andere manier."
+
+msgid "Scan anyway"
+msgstr "Toch scannen"
+
+msgid "Saved"
+msgstr "Opgeslagen"
+
+msgid "CPU profile unavailable"
+msgstr "CPU profile unavailable"
+
+msgid "Power saving"
+msgstr "Power saving"
+
+msgid "Balanced"
+msgstr "Balanced"
+
+msgid "Performance"
+msgstr "Performance"
+
+msgid "Cores capped at about 60 %% of their maximum (cooler, less power)."
+msgstr "Cores capped at about 60 %% of their maximum (cooler, less power)."
+
+msgid "Schedutil across the full hardware range (the stock behaviour)."
+msgstr "Schedutil across the full hardware range (the stock behaviour)."
+
+msgid "Every cluster pinned at its hardware maximum."
+msgstr "Every cluster pinned at its hardware maximum."
+
+msgid "CPU profile"
+msgstr "CPU profile"
+
+msgid "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+msgstr "A profile sets the CPU governor and the per-cluster frequency limits. It stays within the hardware frequency table and never changes the voltage, so it cannot overclock this SoC. The kernel keeps throttling at its thermal limit in every profile."
+
+msgid "Saved profile: %s"
+msgstr "Saved profile: %s"
+
+msgid "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+msgstr "Thermal throttling is active right now: the frequencies below are below the profile ceiling."
+
+msgid "Clusters"
+msgstr "Clusters"
+
+msgid "Cores"
+msgstr "Cores"
+
+msgid "Governor"
+msgstr "Governor"
+
+msgid "Now"
+msgstr "Now"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Hardware max"
+msgstr "Hardware max"
+
+msgid "Frequencies in MHz."
+msgstr "Frequencies in MHz."
+
+msgid "Highlighted cores are online. A core taken offline stays offline, also after a reboot, until it is brought back. CPU0 always stays online."
+msgstr "Gemarkeerde kernen zijn online. Een uitgeschakelde kern blijft offline, ook na een herstart, totdat hij weer wordt ingeschakeld. CPU0 blijft altijd online."
+
+msgid "Low latency: on"
+msgstr "Lage latentie: aan"
+
+msgid "Low latency: off"
+msgstr "Lage latentie: uit"
+
+msgid "Low latency keeps CPU0 out of its idle states, as ZTE's U30 Air firmware does: Wi-Fi delays are much shorter, and the device draws more power. Off by default."
+msgstr "Lage latentie houdt CPU0 uit zijn rusttoestanden, zoals de U30 Air-firmware van ZTE: wifi-vertragingen worden veel korter en het apparaat verbruikt meer stroom. Standaard uit."
+
+msgid "Thermal"
+msgstr "Thermisch"
+
+msgid "The kernel's thermal zones, read only. A zone with trip points throttles the cooling devices bound to it at its passive trip; a cooling state of 0 is no throttling."
+msgstr "De thermische zones van de kernel, alleen-lezen. Een zone met drempelpunten beperkt de eraan gekoppelde koelapparaten bij haar passieve drempel; koelstand 0 betekent geen beperking."
+
+msgid "Zone"
+msgstr "Zone"
+
+msgid "Temperature"
+msgstr "Temperatuur"
+
+msgid "Trip points"
+msgstr "Drempelpunten"
+
+msgid "Cooling devices"
+msgstr "Koelapparaten"
+
+msgid "Stress test started"
+msgstr "Stresstest gestart"
+
+msgid "Saved: it takes effect at the next reboot"
+msgstr "Opgeslagen: wordt actief bij de volgende herstart"
+
+msgid "CPU voltage offset (EXPERIMENTAL)"
+msgstr "CPU-spanningsoffset (EXPERIMENTEEL)"
+
+msgid "Experimental: changing the CPU voltage can make the device unstable, corrupt your data and permanently damage your device. Use it entirely at your own risk."
+msgstr "Experimenteel: het wijzigen van de CPU-spanning kan het apparaat instabiel maken, uw gegevens corrupt maken en uw apparaat permanent beschadigen. Gebruik is volledig op eigen risico."
+
+msgid "CPU voltage offset unavailable"
+msgstr "CPU-spanningsoffset niet beschikbaar"
+
+msgid "Not available with this kernel (a mainline kernel of this release or later has it)."
+msgstr "Niet beschikbaar met deze kernel (een mainline-kernel van deze release of later heeft het)."
+
+msgid "Off: the stock voltages"
+msgstr "Uit: de fabrieksspanningen"
+
+msgid "Changes at the next reboot"
+msgstr "Verandert bij de volgende herstart"
+
+msgid "Trial boot: kept once this boot has been up 10 minutes"
+msgstr "Proefstart: behouden zodra deze start 10 minuten actief is"
+
+msgid "Kept: this offset passed its trial boot"
+msgstr "Behouden: deze offset heeft zijn proefstart doorstaan"
+
+msgid "a boot with it ended without a clean shutdown"
+msgstr "een start ermee eindigde zonder nette afsluiting"
+
+msgid "its trial boot ended before 10 minutes"
+msgstr "de proefstart eindigde binnen 10 minuten"
+
+msgid "invalid value"
+msgstr "ongeldige waarde"
+
+msgid "unknown SoC firmware"
+msgstr "onbekende SoC-firmware"
+
+msgid "refused by the kernel"
+msgstr "geweigerd door de kernel"
+
+msgid "the kernel could not start CPU scaling with it"
+msgstr "de kernel kon de CPU-frequentieschaling er niet mee starten"
+
+msgid "Offsets in µV for the three CPU domains (cores 0-3, 4-6 and 7), in whole steps. A new offset takes effect at the next reboot, as a trial: it is kept once that boot has been up 10 minutes, and dropped (back to 0) if a boot with it ends in a crash, a watchdog reset or a power cut."
+msgstr "Offsets in µV voor de drie CPU-domeinen (cores 0-3, 4-6 en 7), in hele stappen. Een nieuwe offset wordt actief bij de volgende herstart, op proef: hij blijft behouden zodra die start 10 minuten actief is, en vervalt (terug naar 0) als een start ermee eindigt in een crash, een watchdog-reset of een stroomonderbreking."
+
+msgid "Running now (µV)"
+msgstr "Nu actief (µV)"
+
+msgid "Saved for the next boot (µV)"
+msgstr "Opgeslagen voor de volgende start (µV)"
+
+msgid "State"
+msgstr "Status"
+
+msgid "Taken back automatically: %s µV (%s)"
+msgstr "Automatisch teruggedraaid: %s µV (%s)"
+
+msgid "The SoC firmware of this device is not one whose voltage encoding is known: only the stock voltages are possible."
+msgstr "De SoC-firmware van dit apparaat is er geen waarvan de spanningscodering bekend is: alleen de fabrieksspanningen zijn mogelijk."
+
+msgid "Domain"
+msgstr "Domein"
+
+msgid "Offset now (µV)"
+msgstr "Offset nu (µV)"
+
+msgid "Highest step"
+msgstr "Hoogste stap"
+
+msgid "New offset (µV)"
+msgstr "Nieuwe offset (µV)"
+
+msgid "Limits: %d to %d µV, in steps of %d µV."
+msgstr "Grenzen: %d tot %d µV, in stappen van %d µV."
+
+msgid "Save for the next boot"
+msgstr "Opslaan voor de volgende start"
+
+msgid "Each offset must be a multiple of %d µV between %d and %d."
+msgstr "Elke offset moet een veelvoud van %d µV zijn tussen %d en %d."
+
+msgid "Type %s to confirm."
+msgstr "Typ %s om te bevestigen."
+
+msgid "Back to the stock voltages"
+msgstr "Terug naar de fabrieksspanningen"
+
+msgid "Type %s to confirm:"
+msgstr "Typ %s om te bevestigen:"
+
+msgid "Run a 10-minute CPU stress test"
+msgstr "Een CPU-stresstest van 10 minuten uitvoeren"
+
+msgid "Test a new offset under load during its trial boot. The device may crash if the voltage is too low; the next boot then runs at the stock voltages."
+msgstr "Test een nieuwe offset onder belasting tijdens de proefstart. Het apparaat kan crashen als de spanning te laag is; de volgende start draait dan op de fabrieksspanningen."
+
+msgid "A stress test is running."
+msgstr "Er loopt een stresstest."
+
+msgid "USB role"
+msgstr "USB-rol"
+
+msgid "Current role"
+msgstr "Huidige rol"
+
+msgid "Switch USB role"
+msgstr "USB-rol wisselen"
+
+msgid "Device mode"
+msgstr "Apparaatmodus"
+
+msgid "Host mode"
+msgstr "Hostmodus"
+
+msgid "Enable host mode at boot"
+msgstr "Hostmodus inschakelen bij opstarten"
+
+msgid "Apply role"
+msgstr "Rol toepassen"
+
+msgid "Host mode disconnects USB networking and serial on this port. F50 has no battery; management may be lost and a USB adapter usually needs a powered hub."
+msgstr "Hostmodus verbreekt USB-netwerk en seriële verbinding op deze poort. De F50 heeft geen accu; beheer kan verloren gaan en een USB-adapter heeft meestal een gevoede hub nodig."
+
+msgid "USB network mode"
+msgstr "USB-netwerkmodus"
+
+msgid "Network protocol"
+msgstr "Netwerkprotocol"
+
+msgid "Apply duration"
+msgstr "Geldigheidsduur"
+
+msgid "Next reboot only"
+msgstr "Alleen volgende herstart"
+
+msgid "Permanent"
+msgstr "Permanent"
+
+msgid "Enable selected protocol"
+msgstr "Geselecteerd protocol inschakelen"
+
+msgid "Save; apply after reboot"
+msgstr "Opslaan; toepassen na herstart"
+
+msgid "NCM is the default. Windows does not natively support ECM; RNDIS changes enumeration. With Enable selected protocol off, only your choice is saved. Next reboot only applies once, then returns to NCM."
+msgstr "NCM is de standaard. Windows ondersteunt ECM niet standaard; RNDIS wijzigt de enumeratie. Met „Geselecteerd protocol inschakelen” uit wordt alleen uw keuze opgeslagen. „Alleen volgende herstart” geldt één keer en keert daarna terug naar NCM."
+
+msgid "USB adapters"
+msgstr "USB-adapters"
+
+msgid "Refresh"
+msgstr "Vernieuwen"
+
+msgid "Available only in host mode. Refresh brings discovered USB adapters up; adding to LAN saves the bridge and reloads networking."
+msgstr "Alleen beschikbaar in hostmodus. Vernieuwen activeert gevonden USB-adapters; toevoegen aan LAN slaat de bridge op en herlaadt het netwerk."
+
+msgid "Recent modem operations"
+msgstr "Recente modembewerkingen"
+
+msgid "Show"
+msgstr "Tonen"
+
+msgid "The control panel's recent calls, of this boot and the one before: when, which page call or AT command, how long it took and how it ended (ok, error, busy, killed). No values, replies or messages are kept. Useful when the panel was stuck."
+msgstr "De recente aanroepen van het bedieningspaneel, van deze opstart en de vorige: wanneer, welke pagina-aanroep of AT-opdracht, hoe lang die duurde en hoe die eindigde (ok, fout, bezet, afgebroken). Er worden geen waarden, antwoorden of berichten bewaard. Handig als het paneel vastliep."
+
+msgid "Unavailable"
+msgstr "Niet beschikbaar"
+
+msgid "USB network mode is unavailable in host mode; host auto-start also disables USB network auto-start."
+msgstr "USB-netwerkmodus is niet beschikbaar in hostmodus; automatisch starten als host schakelt ook het automatisch starten van het USB-netwerk uit."
+
+msgid "Host mode immediately disconnects USB management. F50 has no battery and peripherals may need external power; make sure another management path exists."
+msgstr "Hostmodus verbreekt het USB-beheer direct. De F50 heeft geen accu en randapparaten hebben mogelijk externe voeding nodig; zorg voor een ander beheerpad."
+
+msgid "USB networking and serial will re-enumerate in device mode."
+msgstr "USB-netwerk en seriële verbinding worden in apparaatmodus opnieuw geënumereerd."
+
+msgid "Switch USB role?"
+msgstr "USB-rol wisselen?"
+
+msgid "Apply"
+msgstr "Toepassen"
+
+msgid "Switching USB role…"
+msgstr "USB-rol wordt gewisseld…"
+
+msgid "Switch failed: %s"
+msgstr "Wisselen mislukt: %s"
+
+msgid "Management connection lost; reconnect to confirm the USB role."
+msgstr "Beheerverbinding verloren; maak opnieuw verbinding om de USB-rol te bevestigen."
+
+msgid "Switch request accepted; the USB connection may briefly disconnect."
+msgstr "Wisselverzoek geaccepteerd; de USB-verbinding kan kort wegvallen."
+
+msgid "USB role applied"
+msgstr "USB-rol toegepast"
+
+msgid "Save USB network mode?"
+msgstr "USB-netwerkmodus opslaan?"
+
+msgid "The network mode applies on the next reboot; USB management may need to reconnect."
+msgstr "De netwerkmodus geldt na de volgende herstart; USB-beheer moet mogelijk opnieuw verbinden."
+
+msgid "Save the selection only; with the selected protocol disabled, the next boot still uses default NCM."
+msgstr "Alleen de selectie opslaan; met het geselecteerde protocol uitgeschakeld gebruikt de volgende start nog steeds standaard NCM."
+
+msgid "Save"
+msgstr "Opslaan"
+
+msgid "Saving USB network settings…"
+msgstr "USB-netwerkinstellingen worden opgeslagen…"
+
+msgid "Settings saved"
+msgstr "Instellingen opgeslagen"
+
+msgid "Save failed: %s"
+msgstr "Opslaan mislukt: %s"
+
+msgid "This boot"
+msgstr "Deze opstart"
+
+msgid "Previous boot"
+msgstr "Vorige opstart"
+
+msgid "Unable to confirm the role yet; reconnect and refresh the page."
+msgstr "Rol kan nog niet worden bevestigd; maak opnieuw verbinding en vernieuw de pagina."
+
+msgid "Switch to host mode to see USB adapters."
+msgstr "Schakel naar hostmodus om USB-adapters te zien."
+
+msgid "Scanning USB adapters…"
+msgstr "USB-adapters zoeken…"
+
+msgid "No USB adapters found."
+msgstr "Geen USB-adapters gevonden."
+
+msgid "Link connected"
+msgstr "Link verbonden"
+
+msgid "No link; enable attempted"
+msgstr "Geen link; inschakelen geprobeerd"
+
+msgid "Added to LAN"
+msgstr "Toegevoegd aan LAN"
+
+msgid "Add to LAN"
+msgstr "Toevoegen aan LAN"
+
+msgid "Add USB adapter to LAN?"
+msgstr "USB-adapter toevoegen aan LAN?"
+
+msgid "This saves the bridge configuration and reloads networking; existing connections may briefly drop."
+msgstr "Dit slaat de bridgeconfiguratie op en herlaadt het netwerk; bestaande verbindingen kunnen kort wegvallen."
+
+msgid "Add"
+msgstr "Toevoegen"
+
+msgid "Adding USB adapter…"
+msgstr "USB-adapter wordt toegevoegd…"
+
+msgid "Add failed: %s"
+msgstr "Toevoegen mislukt: %s"
+
+msgid "Leave empty to keep the saved value"
+msgstr "Leeg laten om de opgeslagen waarde te behouden"
+
+msgid "Saved: %s"
+msgstr "Opgeslagen: %s"
+
+msgid "Remove the saved value"
+msgstr "Opgeslagen waarde verwijderen"
+
+msgid "Presets"
+msgstr "Voorinstellingen"
+
+msgid "Form (URL-encoded)"
+msgstr "Formulier (URL-gecodeerd)"
+
+msgid "Plain text"
+msgstr "Platte tekst"
+
+msgid "Received messages are sent on as they reach the SMS pool. A failed delivery is retried after 30 s, then after twice as long each time (an hour at most), ten times in all."
+msgstr "Ontvangen berichten worden doorgestuurd zodra ze in de SMS-pool aankomen. Een mislukte levering wordt na 30 s opnieuw geprobeerd, daarna telkens na twee keer zo lang (hooguit een uur), in totaal tien keer."
+
+msgid "Forward received messages"
+msgstr "Ontvangen berichten doorsturen"
+
+msgid "Message template"
+msgstr "Berichtsjabloon"
+
+msgid "Placeholders: {sender}, {time}, {text}, {device}"
+msgstr "Plaatshouders: {sender}, {time}, {text}, {device}"
+
+msgid "Only these senders"
+msgstr "Alleen deze afzenders"
+
+msgid "One per line; empty: every sender. A * at the end matches the start of a sender."
+msgstr "Eén per regel; leeg: alle afzenders. Een * aan het eind komt overeen met het begin van een afzender."
+
+msgid "Never these senders"
+msgstr "Nooit deze afzenders"
+
+msgid "Only messages containing one of these words"
+msgstr "Alleen berichten met een van deze woorden"
+
+msgid "One per line; empty: every message."
+msgstr "Eén per regel; leeg: alle berichten."
+
+msgid "Webhook"
+msgstr "Webhook"
+
+msgid "Enabled"
+msgstr "Ingeschakeld"
+
+msgid "Address (http:// or https://)"
+msgstr "Adres (http:// of https://)"
+
+msgid "Body"
+msgstr "Inhoud"
+
+msgid "Fields: sender, time, text, device, message (the template filled in)"
+msgstr "Velden: sender, time, text, device, message (het ingevulde sjabloon)"
+
+msgid "Custom body"
+msgstr "Aangepaste body"
+
+msgid "Empty: the standard fields (plain text: the message). Placeholders: {sender}, {time}, {text}, {device}, {message}. Each value is escaped for the chosen type. This body is shown again here: keep secrets in the address or a header."
+msgstr "Leeg: de standaardvelden (platte tekst: het bericht). Plaatshouders: {sender}, {time}, {text}, {device}, {message}. Elke waarde wordt ge-escapet voor het gekozen type. Deze body wordt hier opnieuw getoond: zet geheimen in het adres of in een header."
+
+msgid "Extra headers (one \"Name: value\" per line)"
+msgstr "Extra headers (één \"Naam: waarde\" per regel)"
+
+msgid "The answer must contain"
+msgstr "Het antwoord moet bevatten"
+
+msgid "Empty: every HTTP 2xx answer counts as delivered. With key=value (for example errcode=0), the answer must also be a JSON object that has this value under this key at its top level; otherwise the delivery fails. Only the result of the check is logged, never the answer."
+msgstr "Leeg: elk HTTP 2xx-antwoord telt als afgeleverd. Met sleutel=waarde (bijvoorbeeld errcode=0) moet het antwoord bovendien een JSON-object zijn dat op het hoogste niveau onder deze sleutel deze waarde heeft; anders mislukt de aflevering. Alleen de uitkomst van de controle wordt gelogd, nooit het antwoord."
+
+msgid "Bot token"
+msgstr "Bot-token"
+
+msgid "Chat ID (a number, or @channel)"
+msgstr "Chat-ID (een getal of @kanaal)"
+
+msgid "E-mail"
+msgstr "E-mail"
+
+msgid "E-mail needs msmtp, which this image does not have"
+msgstr "E-mail heeft msmtp nodig, dat deze image niet heeft"
+
+msgid "Mail server"
+msgstr "Mailserver"
+
+msgid "Port"
+msgstr "Poort"
+
+msgid "Security"
+msgstr "Beveiliging"
+
+msgid "None"
+msgstr "Geen"
+
+msgid "User name"
+msgstr "Gebruikersnaam"
+
+msgid "Password"
+msgstr "Wachtwoord"
+
+msgid "From"
+msgstr "Van"
+
+msgid "To"
+msgstr "Aan"
+
+msgid "SMS to another phone"
+msgstr "SMS naar een andere telefoon"
+
+msgid "Phone number"
+msgstr "Telefoonnummer"
+
+msgid "Sent as one SMS: a longer message is cut short."
+msgstr "Verzonden als één SMS: een langer bericht wordt ingekort."
+
+msgid "Send test"
+msgstr "Test verzenden"
+
+msgid "Tokens, passwords and the webhook address and headers stay on the device and are never shown again."
+msgstr "Tokens, wachtwoorden en het adres en de headers van de webhook blijven op het apparaat en worden nooit meer getoond."
+
+msgid "Delivered"
+msgstr "Afgeleverd"
+
+msgid "Will retry"
+msgstr "Wordt opnieuw geprobeerd"
+
+msgid "Failed"
+msgstr "Mislukt"
+
+msgid "Filtered out"
+msgstr "Weggefilterd"
+
+msgid "Dropped"
+msgstr "Verworpen"
+
+msgid "Clear"
+msgstr "Wissen"
+
+msgid "Test"
+msgstr "Test"
+
+msgid "Delivery log"
+msgstr "Afleverlog"
+
+msgid "Waiting to be delivered"
+msgstr "Wacht op aflevering"
+
+msgid "Time"
+msgstr "Tijd"
+
+msgid "Message"
+msgstr "Bericht"
+
+msgid "Target"
+msgstr "Doel"
+
+msgid "Result"
+msgstr "Resultaat"
+
+msgid "Detail"
+msgstr "Detail"
+
+msgid "No deliveries yet"
+msgstr "Nog geen afleveringen"
+
+msgid "Test started with the saved settings; the result appears in the delivery log."
+msgstr "Test gestart met de opgeslagen instellingen; het resultaat verschijnt in het afleverlog."
+
+msgid "Automatic without 2G (152)"
+msgstr "Automatisch zonder 2G (152)"
+
+msgid "4G only"
+msgstr "Alleen 4G"
+
+msgid "Network mode: %s"
+msgstr "Netwerkmodus: %s"
+
+msgid "EN-DC off"
+msgstr "EN-DC uit"
+
+msgid "NR band lock: %s"
+msgstr "NR-bandvergrendeling: %s"
+
+msgid "LTE band lock: %s"
+msgstr "LTE-bandvergrendeling: %s"
+
+msgid "Cell lock: %s"
+msgstr "Cel-vergrendeling: %s"
+
+msgid "Modulation DL/UL"
+msgstr "Modulatie DL/UL"
+
+msgid "Estimated from current MCS"
+msgstr "Geschat op basis van huidige MCS"
+
+msgid "MCS DL/UL"
+msgstr "MCS DL/UL"
+
+msgid "BLER DL/UL"
+msgstr "BLER DL/UL"
+
+msgid "%s of %s"
+msgstr "%s van %s"
+
+msgid "The monthly cap is reached"
+msgstr "De maandlimiet is bereikt"
+
+msgid "%d%% of the monthly cap is used"
+msgstr "%d%% van de maandlimiet gebruikt"
+
+msgid "This billing cycle"
+msgstr "Deze factuurperiode"
+
+msgid "Link & traffic"
+msgstr "Verbinding & verkeer"
+
+msgid "Download rate"
+msgstr "Downloadsnelheid"
+
+msgid "Upload rate"
+msgstr "Uploadsnelheid"
+
+msgid "Total received"
+msgstr "Totaal ontvangen"
+
+msgid "Total sent"
+msgstr "Totaal verzonden"
+
+msgid "Used today"
+msgstr "Vandaag gebruikt"
+
+msgid "SIM source"
+msgstr "SIM-bron"
+
+msgid "Session duration"
+msgstr "Sessieduur"
+
+msgid "Registration"
+msgstr "Registratie"
+
+msgid "Data roaming"
+msgstr "Dataroaming"
+
+msgid "Bandwidth"
+msgstr "Bandbreedte"
+
+msgid "AMBR DL/UL"
+msgstr "AMBR DL/UL"
+
+msgid "Wi-Fi · LAN · Device · SIM"
+msgstr "Wi-Fi · LAN · Apparaat · SIM"
+
+msgid "CPU usage"
+msgstr "CPU-gebruik"
+
+msgid "Memory"
+msgstr "Geheugen"
+
+msgid "Storage"
+msgstr "Opslag"
+
+msgid "Battery"
+msgstr "Accu"
+
+msgid "Channel"
+msgstr "Kanaal"
+
+msgid "Encryption"
+msgstr "Versleuteling"
+
+msgid "Hidden SSID"
+msgstr "Verborgen SSID"
+
+msgid "Country"
+msgstr "Land"
+
+msgid "AP status"
+msgstr "AP-status"
+
+msgid "USB network"
+msgstr "USB-netwerk"
+
+msgid "Connection tracking"
+msgstr "Verbindingstracering"
+
+msgid "LAN address"
+msgstr "LAN-adres"
+
+msgid "Wi-Fi clients"
+msgstr "Wi-Fi-clients"
+
+msgid "DHCP leases"
+msgstr "DHCP-leases"
+
+msgid "Device model"
+msgstr "Apparaatmodel"
+
+msgid "System"
+msgstr "Systeem"
+
+msgid "Modem"
+msgstr "Modem"
+
+msgid "Carrier"
+msgstr "Provider"
+
+msgid "Own number"
+msgstr "Eigen nummer"
+
+msgid "Module"
+msgstr "Module"
+
+msgid "Firmware"
+msgstr "Firmware"
+
+msgid "Show SIM identifiers"
+msgstr "SIM-identificatoren tonen"
+
+msgid "Quick controls"
+msgstr "Snelle bediening"
+
+msgid "Data connection"
+msgstr "Dataverbinding"
+
+msgid "Cellular radio"
+msgstr "Mobiele radio"
+
+msgid "Wi-Fi hotspot"
+msgstr "Wi-Fi-hotspot"
+
+msgid "Restart modem"
+msgstr "Modem herstarten"
+
+msgid "Power off or restart"
+msgstr "Uitschakelen of herstarten"
+
+msgid "Switch to Android"
+msgstr "Overschakelen naar Android"
+
+msgid "Lock Linux"
+msgstr "Linux vergrendelen"
+
+msgid "Neighbor cells"
+msgstr "Buurcellen"
+
+msgid "RAT/Band"
+msgstr "RAT/band"
+
+msgid "Frequency"
+msgstr "Frequentie"
+
+msgid "Running %s…"
+msgstr "%s wordt uitgevoerd…"
+
+msgid "Started in background: %s"
+msgstr "Op de achtergrond gestart: %s"
+
+msgid "Done: %s"
+msgstr "Klaar: %s"
+
+msgid "Disconnecting data…"
+msgstr "Dataverbinding wordt verbroken…"
+
+msgid "Connecting data…"
+msgstr "Dataverbinding wordt gemaakt…"
+
+msgid "Turn off cellular radio"
+msgstr "Mobiele radio uitschakelen"
+
+msgid "This SIM will have no calls, SMS or data, and its radio stays off after a reboot until you turn it on again."
+msgstr "Deze SIM heeft geen gesprekken, sms of data, en de radio blijft ook na een herstart uit tot u hem weer aanzet."
+
+msgid "Turn on cellular radio"
+msgstr "Mobiele radio inschakelen"
+
+msgid "The radio of the SIM in use comes on and stays on after a reboot (up to about 1 minute)."
+msgstr "De radio van de SIM in gebruik gaat aan en blijft aan na een herstart (tot ongeveer 1 minuut)."
+
+msgid "Turn data roaming off"
+msgstr "Dataroaming uitzetten"
+
+msgid "While the SIM is registered on a roaming network, mobile data stays off; SMS, calls and the registration are not affected. Some SIMs report roaming at home (an MVNO, national roaming): there, data would stop as well."
+msgstr "Zolang de simkaart op een roamingnetwerk is geregistreerd, blijft mobiele data uit; sms, gesprekken en de registratie worden niet beïnvloed. Sommige simkaarten melden ook thuis roaming (een MVNO, nationale roaming): daar zou data ook stoppen."
+
+msgid "Allow data roaming"
+msgstr "Dataroaming toestaan"
+
+msgid "Mobile data is used on roaming networks too, which can cost extra. Some SIMs report roaming at home (an MVNO, national roaming) and need this to have data at all."
+msgstr "Mobiele data wordt ook op roamingnetwerken gebruikt, wat extra kan kosten. Sommige simkaarten melden ook thuis roaming (een MVNO, nationale roaming) en hebben dit nodig om überhaupt data te hebben."
+
+msgid "Cellular connectivity may stop for 1–2 minutes."
+msgstr "De mobiele verbinding kan 1–2 minuten wegvallen."
+
+msgid "All connections will be interrupted."
+msgstr "Alle verbindingen worden onderbroken."
+
+msgid "Power off"
+msgstr "Uitschakelen"
+
+msgid "Restart"
+msgstr "Herstarten"
+
+msgid "The next boot will enter Android and reboot now. This management page and cellular sharing will disconnect."
+msgstr "De volgende start gaat naar Android en er wordt nu herstart. Deze beheerpagina en het delen van de mobiele verbinding worden verbroken."
+
+msgid "To return to OpenWrt, run mu300-next-boot linux in Android and reboot."
+msgstr "Om terug te keren naar OpenWrt voert u in Android mu300-next-boot linux uit en herstart u."
+
+msgid "Or do nothing: after five boots that do not finish, it falls back automatically."
+msgstr "Of doe niets: na vijf starts die niet voltooien, valt het automatisch terug."
+
+msgid "Preparing Android boot and rebooting…"
+msgstr "Android-start wordt voorbereid en herstart…"
+
+msgid "Switch and reboot"
+msgstr "Wisselen en herstarten"
+
+msgid "Not automatic: %s. The network mode and band locks are stored in the modem and stay in force in Android too; if the network does not match them, Android shows No Service."
+msgstr "Niet automatisch: %s. Netwerkmodus- en bandvergrendelingen worden in de modem opgeslagen en blijven ook in Android van kracht; past het netwerk er niet bij, dan toont Android \"Geen service\"."
+
+msgid "Reset locks and switch"
+msgstr "Vergrendelingen resetten en wisselen"
+
+msgid "Unlock Linux"
+msgstr "Linux ontgrendelen"
+
+msgid "After five boots in a row that do not finish, the device falls back to Android again."
+msgstr "Na vijf onvoltooide opstarts op rij valt het apparaat weer terug op Android."
+
+msgid "Unlock"
+msgstr "Ontgrendelen"
+
+msgid "The device will never switch to Android by itself, not even after failed boots: Android only from this page (Switch to Android) or with mu300-next-boot android."
+msgstr "Het apparaat schakelt nooit zelf naar Android, ook niet na mislukte opstarts: naar Android alleen via deze pagina (Overschakelen naar Android) of met mu300-next-boot android."
+
+msgid "A new kernel from an update still gets its first boots on trial, and locks again once one of them succeeds."
+msgstr "Een nieuwe kernel uit een update start eerst nog op proef en vergrendelt weer zodra een opstart slaagt."
+
+msgid "If the system itself no longer starts, the device waits on USB (telnet) instead of going to Android."
+msgstr "Start het systeem zelf niet meer, dan wacht het apparaat via USB (telnet) in plaats van naar Android te gaan."
+
+msgid "Hide SIM identifiers"
+msgstr "SIM-identificatoren verbergen"
+
+msgid "Lock cell %s?"
+msgstr "Cel %s vergrendelen?"
+
+msgid "The radio stack will restart (SFUN); cellular service will stop for about 30 seconds."
+msgstr "De radiostack herstart (SFUN); de mobiele dienst valt ongeveer 30 seconden weg."
+
+msgid "Locking %s in the background, about 30 seconds"
+msgstr "%s wordt op de achtergrond vergrendeld, ongeveer 30 seconden"
+
+msgid "Locked %s in the background; the status will refresh shortly"
+msgstr "%s op de achtergrond vergrendeld; de status wordt zo vernieuwd"
+
+msgid "Lock failed: %s"
+msgstr "Vergrendelen mislukt: %s"
+
+msgid "Resetting the network locks to automatic (SFUN restart, about 30 seconds)…"
+msgstr "Netwerkvergrendelingen worden op automatisch gezet (SFUN-herstart, ongeveer 30 seconden)…"
+
+msgid "Reset failed: %s. The saved lock settings were kept."
+msgstr "Reset mislukt: %s. De opgeslagen vergrendelingsinstellingen zijn behouden."
+
+msgid "The lock reset was not confirmed in time; switching anyway."
+msgstr "Het resetten van de vergrendelingen is niet op tijd bevestigd; er wordt toch gewisseld."
+
+msgid "Internal SIM selected: in use after a reboot"
+msgstr "Interne SIM gekozen: in gebruik na een herstart"
+
+msgid "Internal SIM selected, but not supported on this device: the external SIM is in use"
+msgstr "Interne SIM gekozen, maar niet ondersteund op dit apparaat: de externe SIM is in gebruik"
+
+msgid "Uptime %s"
+msgstr "Uptime %s"
+
+msgid "Radio off"
+msgstr "Radio uit"
+
+msgid "No response"
+msgstr "Geen antwoord"
+
+msgid "Modem busy: cellular readings from %s ago"
+msgstr "Modem bezet: mobiele metingen van %s geleden"
+
+msgid "%s · Signal %s %s/10"
+msgstr "%s · Signaal %s %s/10"
+
+msgid "%s · Signal %s"
+msgstr "%s · Signaal %s"
+
+msgid "Anchor B%s"
+msgstr "Anker B%s"
+
+msgid "No serving cell"
+msgstr "Geen serving cell"
+
+msgid "Version %s is out: update"
+msgstr "Versie %s is uit: bijwerken"
+
+msgid "Not registered"
+msgstr "Niet geregistreerd"
+
+msgid "Registered"
+msgstr "Geregistreerd"
+
+msgid "Searching"
+msgstr "Zoeken"
+
+msgid "Registration denied"
+msgstr "Registratie geweigerd"
+
+msgid "Registered (roaming)"
+msgstr "Geregistreerd (roaming)"
+
+msgid "Emergency only"
+msgstr "Alleen noodoproepen"
+
+msgid "Status %s"
+msgstr "Status %s"
+
+msgid "Off: data held back while roaming"
+msgstr "Uit: data tegengehouden tijdens roaming"
+
+msgid "Allowed"
+msgstr "Toegestaan"
+
+msgid "Off"
+msgstr "Uit"
+
+msgid "LTE anchor"
+msgstr "LTE-anker"
+
+msgid "LTE link"
+msgstr "LTE-verbinding"
+
+msgid "Hidden"
+msgstr "Verborgen"
+
+msgid "No"
+msgstr "Nee"
+
+msgid "Running"
+msgstr "Actief"
+
+msgid "Not running"
+msgstr "Niet actief"
+
+msgid "Connected"
+msgstr "Verbonden"
+
+msgid "Disconnected"
+msgstr "Verbroken"
+
+msgid "%s entries"
+msgstr "%s items"
+
+msgid "%s clients"
+msgstr "%s clients"
+
+msgid "Recent DHCP leases"
+msgstr "Recente DHCP-leases"
+
+msgid "Board"
+msgstr "Moederbord"
+
+msgid "No temperature readings"
+msgstr "Geen temperatuurmetingen"
+
+msgid "Cluster %d"
+msgstr "Cluster %d"
+
+msgid "Total %s · free %s"
+msgstr "Totaal %s · vrij %s"
+
+msgid "charging %s W"
+msgstr "laadt met %s W"
+
+msgid "charging"
+msgstr "laadt"
+
+msgid "drawing %s W"
+msgstr "verbruikt %s W"
+
+msgid "not charging"
+msgstr "laadt niet"
+
+msgid "on battery"
+msgstr "op accu"
+
+msgid "full"
+msgstr "vol"
+
+msgid "USB in %s W"
+msgstr "USB-ingang %s W"
+
+msgid "Online"
+msgstr "Online"
+
+msgid "AT adapter unavailable"
+msgstr "AT-adapter niet beschikbaar"
+
+msgid "Linux locked"
+msgstr "Linux vergrendeld"
+
+msgid "Installing the language pack…"
+msgstr "Taalpakket wordt geïnstalleerd…"
+
+msgid "The language pack is installed"
+msgstr "Het taalpakket is geïnstalleerd"
+
+msgid "The language pack could not be installed"
+msgstr "Het taalpakket kon niet worden geïnstalleerd"
+
+msgid "Language of the browser"
+msgstr "Taal van de browser"
+
+msgid "Language of the web interface"
+msgstr "Taal van de webinterface"
+
+msgid "English, Turkish and Chinese come with the system; the language pack adds the others."
+msgstr "Engels, Turks en Chinees worden met het systeem meegeleverd; het taalpakket voegt de overige toe."
+
+msgid "The same setting is in System > System > Language and Style."
+msgstr "Dezelfde instelling staat onder Systeem > Systeem > Taal en stijl."
+
+msgid "Language pack"
+msgstr "Taalpakket"
+
+msgid "The language pack (mu300-extra-lang.tar.gz, about 2 MB) adds LuCI in about 40 more languages and this panel in 29 of them. Download it from the release of this system, or upload the file from the release page when the device has no internet."
+msgstr "Het taalpakket (mu300-extra-lang.tar.gz, ongeveer 2 MB) voegt LuCI toe in ongeveer 40 extra talen en dit paneel in 29 daarvan. Download het van de release van dit systeem, of upload het bestand van de releasepagina als het apparaat geen internet heeft."
+
+msgid "Download from the release"
+msgstr "Downloaden van de release"
+
+msgid "Release"
+msgstr "Release"
+
+msgid "Enable all"
+msgstr "Alles inschakelen"
+
+msgid "Disable all"
+msgstr "Alles uitschakelen"
+
+msgid "Remove the language pack"
+msgstr "Taalpakket verwijderen"
+
+msgid "Remove the language pack?"
+msgstr "Taalpakket verwijderen?"
+
+msgid "Its languages disappear from the list; a page in one of them switches to English."
+msgstr "De talen ervan verdwijnen uit de lijst; een pagina in een van die talen schakelt over naar Engels."
+
+msgid "Remove"
+msgstr "Verwijderen"
+
+msgid "Disable"
+msgstr "Uitschakelen"
+
+msgid "Enable"
+msgstr "Inschakelen"
+
+msgid "LuCI and this panel"
+msgstr "LuCI en dit paneel"
+
+msgid "LuCI only"
+msgstr "Alleen LuCI"
+
+msgid "Disabled"
+msgstr "Uitgeschakeld"
+
+msgid "Language"
+msgstr "Taal"
+
+msgid "Code"
+msgstr "Code"
+
+msgid "Translated"
+msgstr "Vertaald"
+
+msgid "LuCI's own translations come from OpenWrt. This panel's translations other than Turkish and Chinese are machine (AI) translations; corrections are welcome."
+msgstr "De eigen vertalingen van LuCI komen van OpenWrt. De vertalingen van dit paneel, behalve Turks en Chinees, zijn machinevertalingen (AI); correcties zijn welkom."
+
+msgid "Automatic"
+msgstr "Automatisch"
+
+msgid "Serving network"
+msgstr "Serving netwerk"
+
+msgid "Network mode · EN-DC"
+msgstr "Netwerkmodus · EN-DC"
+
+msgid "Refresh lock status"
+msgstr "Vergrendelingsstatus vernieuwen"
+
+msgid "Apply at startup"
+msgstr "Toepassen bij opstarten"
+
+msgid "Turning this off only stops replay at the next boot; saved network mode, EN-DC, band and cell settings remain."
+msgstr "Uitschakelen stopt alleen het opnieuw toepassen bij de volgende start; opgeslagen instellingen voor netwerkmodus, EN-DC, banden en cellen blijven behouden."
+
+msgid "Band locking"
+msgstr "Bandvergrendeling"
+
+msgid "NR bands"
+msgstr "NR-banden"
+
+msgid "LTE bands"
+msgstr "LTE-banden"
+
+msgid "Apply NR bands"
+msgstr "NR-banden toepassen"
+
+msgid "Apply LTE bands"
+msgstr "LTE-banden toepassen"
+
+msgid "Neighbor cells and cell locking"
+msgstr "Buurcellen en celvergrendeling"
+
+msgid "Lock current serving cell"
+msgstr "Huidige serving cell vergrendelen"
+
+msgid "Unlock cell"
+msgstr "Cel ontgrendelen"
+
+msgid "Enter a cell"
+msgstr "Een cel invoeren"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Channel number (EARFCN / NR-ARFCN)"
+msgstr "Kanaalnummer (EARFCN / NR-ARFCN)"
+
+msgid "Lock this cell"
+msgstr "Deze cel vergrendelen"
+
+msgid "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. A channel number, not a frequency in MHz; the cell need not be in the neighbor list."
+msgstr "LTE: EARFCN 0–262143, PCI 0–503; NR: NR-ARFCN 1–3279165, PCI 0–1007. Een kanaalnummer, geen frequentie in MHz; de cel hoeft niet in de lijst met buurcellen te staan."
+
+msgid "Applying restarts the radio stack (SFUN) and briefly interrupts cellular service. Settings are saved and replayed by the plugin after AT is ready when Apply at startup is enabled. A platform pre-radio hook can replay without a restart. Apply with no bands selected to restore automatic mode."
+msgstr "Toepassen herstart de radiostack (SFUN) en onderbreekt de mobiele dienst kort. Instellingen worden opgeslagen en door de plugin opnieuw toegepast zodra AT gereed is, als „Toepassen bij opstarten” is ingeschakeld. Een pre-radio-hook van het platform kan ze zonder herstart toepassen. Pas toe zonder geselecteerde banden om de automatische modus te herstellen."
+
+msgid "Back to automatic"
+msgstr "Terug naar automatisch"
+
+msgid "The network mode and band locks are stored in the modem and stay in force in Android too. If you are not sure, reset them before switching to Android."
+msgstr "Netwerkmodus- en bandvergrendelingen worden in de modem opgeslagen en blijven ook in Android van kracht. Twijfel je, reset ze dan voor je naar Android wisselt."
+
+msgid "Reset all to automatic"
+msgstr "Alles op automatisch zetten"
+
+msgid "Apply “%s”?"
+msgstr "„%s” toepassen?"
+
+msgid "Applying %s in the background…"
+msgstr "%s wordt op de achtergrond toegepast…"
+
+msgid "Applying %s in the background… (SFUN restart and re-registration, about 30 seconds)"
+msgstr "%s wordt op de achtergrond toegepast… (SFUN-herstart en herregistratie, ongeveer 30 seconden)"
+
+msgid "Queued: another lock is being applied during SFUN restart; this will take effect afterward"
+msgstr "In wachtrij: tijdens de SFUN-herstart wordt een andere vergrendeling toegepast; deze wordt daarna van kracht"
+
+msgid "Confirming the EN-DC status…"
+msgstr "EN-DC-status wordt bevestigd…"
+
+msgid "Confirming apply at startup…"
+msgstr "„Toepassen bij opstarten” wordt bevestigd…"
+
+msgid "Started in background: %s (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Op de achtergrond gestart: %s (SFUN-herstart, ongeveer 30 seconden); status wordt teruggelezen…"
+
+msgid "Disable EN-DC (NSA anchor)"
+msgstr "EN-DC uitschakelen (NSA-anker)"
+
+msgid "Enable EN-DC (NSA anchor)"
+msgstr "EN-DC inschakelen (NSA-anker)"
+
+msgid "Disable apply at startup"
+msgstr "„Toepassen bij opstarten” uitschakelen"
+
+msgid "Enable apply at startup"
+msgstr "„Toepassen bij opstarten” inschakelen"
+
+msgid "Reading the modem directly (a few seconds at most)…"
+msgstr "Modem wordt direct uitgelezen (hooguit enkele seconden)…"
+
+msgid "Refresh failed"
+msgstr "Vernieuwen mislukt"
+
+msgid "Refreshed"
+msgstr "Vernieuwd"
+
+msgid "NR bands: back to automatic"
+msgstr "NR-banden: terug naar automatisch"
+
+msgid "LTE bands: back to automatic"
+msgstr "LTE-banden: terug naar automatisch"
+
+msgid "Network mode automatic, EN-DC on, all LTE and NR bands, no cell lock. The saved lock settings are cleared, so nothing is replayed at startup."
+msgstr "Netwerkmodus automatisch, EN-DC aan, alle LTE- en NR-banden, geen celvergrendeling. De opgeslagen instellingen worden gewist, bij het opstarten wordt niets opnieuw toegepast."
+
+msgid "Reset"
+msgstr "Resetten"
+
+msgid "Remove the %s cell lock"
+msgstr "%s-celvergrendeling verwijderen"
+
+msgid "The radio stack will restart (SFUN), taking about 30 seconds."
+msgstr "De radiostack herstart (SFUN), dit duurt ongeveer 30 seconden."
+
+msgid "Removing the %s cell lock…"
+msgstr "%s-celvergrendeling wordt verwijderd…"
+
+msgid "Unlock failed: %s"
+msgstr "Ontgrendelen mislukt: %s"
+
+msgid "Unlock started in background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "Ontgrendelen op de achtergrond gestart (SFUN-herstart, ongeveer 30 seconden); status wordt teruggelezen…"
+
+msgid "Locking %s in the background…"
+msgstr "%s wordt op de achtergrond vergrendeld…"
+
+msgid "Locked %s in the background (SFUN restart, about 30 seconds); reading the status back…"
+msgstr "%s op de achtergrond vergrendeld (SFUN-herstart, ongeveer 30 seconden); status wordt teruggelezen…"
+
+msgid "Enter a channel number and a PCI in the ranges below"
+msgstr "Voer een kanaalnummer en een PCI in binnen de bereiken hieronder"
+
+msgid "No serving-network data"
+msgstr "Geen gegevens over het serving netwerk"
+
+msgid "NR serving cell"
+msgstr "NR serving cell"
+
+msgid "Status confirmed"
+msgstr "Status bevestigd"
+
+msgid "Readback timed out; select “Refresh lock status”"
+msgstr "Time-out bij teruglezen; kies „Vergrendelingsstatus vernieuwen”"
+
+msgid "Reset verified: network mode automatic, EN-DC on, all bands, no cell lock; the saved lock settings are cleared"
+msgstr "Reset geverifieerd: netwerkmodus automatisch, EN-DC aan, alle banden, geen celvergrendeling; de opgeslagen vergrendelingsinstellingen zijn gewist"
+
+msgid "Applied (EN-DC does not require a radio-stack restart)"
+msgstr "Toegepast (EN-DC vereist geen herstart van de radiostack)"
+
+msgid "Apply at startup is on"
+msgstr "„Toepassen bij opstarten” staat aan"
+
+msgid "Apply at startup is off"
+msgstr "„Toepassen bij opstarten” staat uit"
+
+msgid "EN-DC status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Time-out bij teruglezen van EN-DC-status; gebruik „Vergrendelingsstatus vernieuwen” om te bevestigen"
+
+msgid "Apply-at-startup status readback timed out; use “Refresh lock status” to confirm"
+msgstr "Time-out bij teruglezen van „Toepassen bij opstarten”; gebruik „Vergrendelingsstatus vernieuwen” om te bevestigen"
+
+msgid "Locked cells"
+msgstr "Vergrendelde cellen"
+
+msgid "Unlock %s"
+msgstr "%s ontgrendelen"
+
+msgid "Automatic (%d supported)"
+msgstr "Automatisch (%d ondersteund)"
+
+msgid "%d locked: %s"
+msgstr "%d vergrendeld: %s"
+
+msgid "Repair DNS?"
+msgstr "DNS herstellen?"
+
+msgid "This removes the DNS forwarder of a package that is no longer installed. If no other DNS server is left, the device then uses the DNS servers of the mobile connection: the carrier sees the names you look up, outside any proxy or VPN."
+msgstr "Dit verwijdert de DNS-doorverwijzing van een pakket dat niet meer geïnstalleerd is. Blijft er geen andere DNS-server over, dan gebruikt het apparaat de DNS-servers van de mobiele verbinding: de provider ziet de namen die u opzoekt, buiten elke proxy of VPN om."
+
+msgid "Repair DNS"
+msgstr "DNS herstellen"
+
+msgid "Packages installed on the device are not part of a release image. An update writes them down, and the new system installs them again at its first boot, once it is online. Until a package is back its settings are set aside."
+msgstr "Pakketten die op het apparaat zijn geïnstalleerd, horen niet bij de release-image. Een update noteert ze en het nieuwe systeem installeert ze bij de eerste start opnieuw, zodra het online is. Tot een pakket terug is, worden de instellingen apart gezet."
+
+msgid "No packages to install again."
+msgstr "Geen pakketten om opnieuw te installeren."
+
+msgid "All back"
+msgstr "Alles terug"
+
+msgid "Not installed yet"
+msgstr "Nog niet geïnstalleerd"
+
+msgid "Could not be installed again"
+msgstr "Kon niet opnieuw worden geïnstalleerd"
+
+msgid "Waiting for the internet"
+msgstr "Wacht op internet"
+
+msgid "Given up: no internet at five boots"
+msgstr "Opgegeven: geen internet bij vijf starts"
+
+msgid "Skipped"
+msgstr "Overgeslagen"
+
+msgid "Written down by the update from %s"
+msgstr "Genoteerd door de update vanaf %s"
+
+msgid "Installed again"
+msgstr "Opnieuw geïnstalleerd"
+
+msgid "Install them yourself from where you got them (a package file: apk add --allow-untrusted FILE.apk)."
+msgstr "Installeer ze zelf vanaf waar u ze vandaan hebt (een pakketbestand: apk add --allow-untrusted FILE.apk)."
+
+msgid "Settings set aside in /etc/mu300/orphaned-config"
+msgstr "Apart gezette instellingen in /etc/mu300/orphaned-config"
+
+msgid "DNS still goes to a package that is not installed: the device has no DNS through it."
+msgstr "DNS gaat nog naar een pakket dat niet geïnstalleerd is: het apparaat heeft daardoor geen DNS."
+
+msgid "Try again"
+msgstr "Opnieuw proberen"
+
+msgid "Dismiss the note"
+msgstr "Melding sluiten"
+
+msgid "started"
+msgstr "gestart"
+
+msgid "asleep now (asked)"
+msgstr "nu slapen (gevraagd)"
+
+msgid "woken: power daemon stopping"
+msgstr "gewekt: energiedienst stopt"
+
+msgid "woken by a key"
+msgstr "gewekt door een toets"
+
+msgid "woken by the Wi-Fi key"
+msgstr "gewekt door de wifi-toets"
+
+msgid "woken (mu300-power wake)"
+msgstr "gewekt (mu300-power wake)"
+
+msgid "woken by a computer on USB"
+msgstr "gewekt door een computer via USB"
+
+msgid "woken: plugged in"
+msgstr "gewekt: aan de lader"
+
+msgid "woken by a Wi-Fi client"
+msgstr "gewekt door een wifi-client"
+
+msgid "charging boot (powered on by the charger)"
+msgstr "laadstart (aangezet door de lader)"
+
+msgid "the hotspot is down"
+msgstr "de hotspot is uit"
+
+msgid "the VPN is still stopped"
+msgstr "de VPN is nog gestopt"
+
+msgid "5G (EN-DC) is still off after a failed resume"
+msgstr "5G (EN-DC) is nog uit na een mislukte hervatting"
+
+msgid "self-check: %s"
+msgstr "zelftest: %s"
+
+msgid "asleep: no client for %d min (%s)"
+msgstr "slaapt: %d min geen client (%s)"
+
+msgid "asleep: profile now %s"
+msgstr "slaapt: profiel nu %s"
+
+msgid "woken by the %s key"
+msgstr "gewekt door de %s-toets"
+
+msgid "the modem is suspended (%s)"
+msgstr "de modem is gepauzeerd (%s)"
+
+msgid "Enter a whole number from 0 to %d"
+msgstr "Voer een geheel getal van 0 tot %d in"
+
+msgid "Power status unavailable"
+msgstr "Voedingsstatus niet beschikbaar"
+
+msgid "Plugged in"
+msgstr "Aangesloten"
+
+msgid "On battery"
+msgstr "Op batterij"
+
+msgid "Saver"
+msgstr "Zuinig"
+
+msgid "Asleep: hotspot off"
+msgstr "In slaap: hotspot uit"
+
+msgid "Charging boot: press the Wi-Fi key to start"
+msgstr "Oplaadstart: druk op de Wi-Fi-toets om te starten"
+
+msgid "Awake"
+msgstr "Wakker"
+
+msgid "forced"
+msgstr "geforceerd"
+
+msgid "automatic, battery under %d %%"
+msgstr "automatisch, batterij onder %d %%"
+
+msgid "automatic"
+msgstr "automatisch"
+
+msgid "Nobody connected for %d s"
+msgstr "Al %d s niemand verbonden"
+
+msgid "Power source"
+msgstr "Voedingsbron"
+
+msgid "Profile"
+msgstr "Profiel"
+
+msgid "Profile in use: %s (%s)"
+msgstr "Gebruikt profiel: %s (%s)"
+
+msgid "%d %%, %s, %d mV, %d mA, %.1f °C"
+msgstr "%d %%, %s, %d mV, %d mA, %.1f °C"
+
+msgid "Charger"
+msgstr "Lader"
+
+msgid "Charger: %s, %s port"
+msgstr "Lader: %s, %s-poort"
+
+msgid "Charging paused: battery temperature"
+msgstr "Laden gepauzeerd: batterijtemperatuur"
+
+msgid "Charging paused: charge limit"
+msgstr "Laden gepauzeerd: laadlimiet"
+
+msgid "Sleep now"
+msgstr "Nu slapen"
+
+msgid "Wake"
+msgstr "Wakker maken"
+
+msgid "Nobody connected means no Wi-Fi client and no computer on USB. The Wi-Fi key, a computer on USB or the charger wake the device."
+msgstr "Niemand verbonden betekent geen Wi-Fi-client en geen computer op de USB. De Wi-Fi-toets, een computer op de USB of de lader maakt het apparaat wakker."
+
+msgid "Automatic: plugged in / on battery"
+msgstr "Automatisch: aangesloten / op batterij"
+
+msgid "Switch to Saver under %"
+msgstr "Overschakelen naar Zuinig onder %"
+
+msgid "Stop charging at"
+msgstr "Stop met laden bij"
+
+msgid "0 % never charges the battery (the device runs on the charger), 100 % charges it full; in between, charging stops at that level and starts again 5 points lower. Under 5 % the battery always charges."
+msgstr "0 % laadt de batterij nooit op (het apparaat draait op de lader), 100 % laadt hem volledig op; daartussen stopt het laden op dat niveau en begint het weer 5 punten lager. Onder 5 % wordt de batterij altijd opgeladen."
+
+msgid "80 % keeps the battery healthier on a device that stays plugged in."
+msgstr "80 % spaart de batterij van een apparaat dat aangesloten blijft."
+
+msgid "When the charger switches the device on"
+msgstr "Wanneer de oplader het apparaat inschakelt"
+
+msgid "Charge only, until a key starts it"
+msgstr "Alleen opladen, totdat een toets het start"
+
+msgid "Start normally"
+msgstr "Normaal starten"
+
+msgid "Keep as is"
+msgstr "Ongewijzigd laten"
+
+msgid "LTE only (5G off)"
+msgstr "Alleen LTE (5G uit)"
+
+msgid "On"
+msgstr "Aan"
+
+msgid "Full"
+msgstr "Volledig"
+
+msgid "Eco: big core off"
+msgstr "Eco: grote kern uit"
+
+msgid "Hotspot off after (min, 0 = never)"
+msgstr "Hotspot uit na (min, 0 = nooit)"
+
+msgid "Modem when idle"
+msgstr "Modem bij inactiviteit"
+
+msgid "LEDs when idle"
+msgstr "LED's bij inactiviteit"
+
+msgid "Ignored lines in power.conf: %s"
+msgstr "Genegeerde regels in power.conf: %s"
+
+msgid "Configure how this plugin connects to the current Unisoc OpenWrt platform. Changes do not require editing the dashboard, AT, locks or SMS pages."
+msgstr "Stel in hoe deze plugin verbinding maakt met het huidige Unisoc-OpenWrt-platform. Wijzigingen vereisen geen aanpassing van de pagina's dashboard, AT, vergrendelingen of SMS."
+
+msgid "Platform adapter"
+msgstr "Platformadapter"
+
+msgid "AT backend"
+msgstr "AT-backend"
+
+msgid "Auto-detect"
+msgstr "Automatisch detecteren"
+
+msgid "atinout + serial port"
+msgstr "atinout + seriële poort"
+
+msgid "Custom adapter"
+msgstr "Aangepaste adapter"
+
+msgid "AT serial port"
+msgstr "Seriële AT-poort"
+
+msgid "Custom AT adapter"
+msgstr "Aangepaste AT-adapter"
+
+msgid "The executable receives a timeout in seconds and the complete AT command, in that order. It must share the serial lock with the platform dialer."
+msgstr "Het programma ontvangt een time-out in seconden en het volledige AT-commando, in die volgorde. Het moet de seriële vergrendeling delen met de dialer van het platform."
+
+msgid "SMS adapter"
+msgstr "SMS-adapter"
+
+msgid "Implement the list, show, send, delete and sync subcommands; leave blank to find mu300-sms automatically."
+msgstr "Implementeer de subcommando's list, show, send, delete en sync; laat leeg om mu300-sms automatisch te vinden."
+
+msgid "SMS pool directory"
+msgstr "SMS-poolmap"
+
+msgid "Cellular logical interface"
+msgstr "Logische mobiele interface"
+
+msgid "Cellular IPv6 interface"
+msgstr "Mobiele IPv6-interface"
+
+msgid "Cellular network device"
+msgstr "Mobiel netwerkapparaat"
+
+msgid "Leave blank to detect from netifd"
+msgstr "Laat leeg om via netifd te detecteren"
+
+msgid "LAN bridge"
+msgstr "LAN-bridge"
+
+msgid "Wi-Fi device"
+msgstr "Wi-Fi-apparaat"
+
+msgid "USB device"
+msgstr "USB-apparaat"
+
+msgid "Maximum wait for AT readiness (seconds)"
+msgstr "Maximale wachttijd op AT-gereedheid (seconden)"
+
+msgid "Home dashboard refresh interval (seconds)"
+msgstr "Vernieuwingsinterval van het startdashboard (seconden)"
+
+msgid "Controls only the home dashboard refresh rate; 0.5–60 seconds. Reopen Home after saving to apply."
+msgstr "Bepaalt alleen de vernieuwingssnelheid van het startdashboard; 0,5–60 seconden. Open Start opnieuw na het opslaan om toe te passen."
+
+msgid "Persistent state directory"
+msgstr "Map voor permanente status"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM. Mobile data will disconnect briefly."
+msgstr "Switching SIM. Mobile data will disconnect briefly."
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switch failed; check SIM readiness and hot switching."
+msgstr "SIM switch failed; check SIM readiness and hot switching."
+
+# Source-language fallback for untranslated new controls.
+msgid "Ready"
+msgstr "Ready"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switching SIM"
+msgstr "Switching SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM switched; saved as boot default"
+msgstr "SIM switched; saved as boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch failed; previous SIM restored"
+msgstr "Switch failed; previous SIM restored"
+
+msgid "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+msgstr "The target SIM got no mobile data; the previous SIM is restored and the saved boot preference is unchanged."
+
+msgid "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+msgstr "The target SIM has no mobile data yet, and the previous SIM had none either: the device stays on the target. The saved boot preference is unchanged."
+
+# Source-language fallback for untranslated new controls.
+msgid "Radio state unknown; reboot required"
+msgstr "Radio state unknown; reboot required"
+
+msgid "Radio state unknown; the device is restarting."
+msgstr "Radio state unknown; the device is restarting."
+
+# Source-language fallback for untranslated new controls.
+msgid "Dual SIM control is only for the U30 Air on OpenWrt."
+msgstr "Dual SIM control is only for the U30 Air on OpenWrt."
+
+# Source-language fallback for untranslated new controls.
+msgid "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+msgstr "The chosen SIM could not be started at the last boot (no card, PIN, or the modem refused it)."
+
+msgid "No card answered in the chosen SIM position at the last boot."
+msgstr "No card answered in the chosen SIM position at the last boot."
+
+msgid "The chosen SIM is locked by its PIN."
+msgstr "The chosen SIM is locked by its PIN."
+
+msgid "The chosen SIM got no mobile data within the time at its first boot."
+msgstr "The chosen SIM got no mobile data within the time at its first boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The second SIM's modem channels did not come up at the last boot."
+msgstr "The second SIM's modem channels did not come up at the last boot."
+
+# Source-language fallback for untranslated new controls.
+msgid "The last dual-SIM boot never confirmed itself."
+msgstr "The last dual-SIM boot never confirmed itself."
+
+msgid "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+msgstr "A live switch saves the target as the next boot default only after it gets mobile data. Without data, the previous SIM is restored and the saved boot preference is unchanged. Each SIM uses its own APN/PDP profile from the WAN settings."
+
+# Source-language fallback for untranslated new controls.
+msgid "Active SIM"
+msgstr "Active SIM"
+
+# Source-language fallback for untranslated new controls.
+msgid "Cold-boot default"
+msgstr "Cold-boot default"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control unavailable"
+msgstr "SIM control unavailable"
+
+# Source-language fallback for untranslated new controls.
+msgid "The device is back on SIM1 without live switching; choose again below to try once more."
+msgstr "The device is back on SIM1 without live switching; choose again below to try once more."
+
+msgid "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+msgstr "Waiting for the first mobile data on SIM2: %d s left. Without data the device goes back to SIM1 and restarts."
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching"
+msgstr "Enable hot switching"
+
+msgid "This device supports next-boot SIM selection only; live switching is unavailable."
+msgstr "This device supports next-boot SIM selection only; live switching is unavailable."
+
+# Source-language fallback for untranslated new controls.
+msgid "Reboot after enabling hot switching to prepare both SIM channels."
+msgstr "Reboot after enabling hot switching to prepare both SIM channels."
+
+# Source-language fallback for untranslated new controls.
+msgid "Switch to SIM%d"
+msgstr "Switch to SIM%d"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM%d at next boot"
+msgstr "Use SIM%d at next boot"
+
+msgid "Built-in SIM 1"
+msgstr "Ingebouwde SIM 1"
+
+msgid "Built-in SIM 2"
+msgstr "Ingebouwde SIM 2"
+
+msgid "Built-in SIM 3"
+msgstr "Ingebouwde SIM 3"
+
+msgid "External SIM"
+msgstr "Externe SIM"
+
+msgid "SIM card"
+msgstr "SIM-kaart"
+
+msgid "Built-in SIM 3 shares SIM2, the external SIM shares SIM1. The card chosen here is switched in before the modem starts, at the next boot; without a choice the cards stay as the bootloader sets them."
+msgstr "Ingebouwde SIM 3 deelt SIM2, de externe SIM deelt SIM1. De hier gekozen kaart wordt bij de volgende start ingeschakeld voordat de modem start; zonder keuze blijven de kaarten zoals de bootloader ze instelt."
+
+msgid "As the bootloader sets them"
+msgstr "Zoals de bootloader ze instelt"
+
+msgid "Applying the radio setting…"
+msgstr "Radio-instelling wordt toegepast…"
+
+msgid "SIM settings are not available"
+msgstr "SIM-instellingen zijn niet beschikbaar"
+
+msgid "Modem default"
+msgstr "Standaard van de modem"
+
+msgid "SIM%d"
+msgstr "SIM%d"
+
+msgid "in use"
+msgstr "in gebruik"
+
+msgid "Turn off the radio of SIM%d"
+msgstr "Radio van SIM%d uitzetten"
+
+msgid "Radio"
+msgstr "Radio"
+
+msgid "VoLTE"
+msgstr "VoLTE"
+
+msgid "VoNR"
+msgstr "VoNR"
+
+msgid "Modem: %s"
+msgstr "Modem: %s"
+
+msgid "Sent to this SIM when its radio next starts."
+msgstr "Wordt naar deze SIM gestuurd zodra de radio ervan weer start."
+
+msgid "VoLTE and VoNR for each SIM, kept across reboots and sent again whenever that SIM starts. VoLTE is on unless switched off; VoNR stays as the modem has it until set."
+msgstr "VoLTE en VoNR per SIM, blijven bewaard na een herstart en worden opnieuw verstuurd telkens als die SIM start. VoLTE staat aan tenzij uitgezet; VoNR blijft zoals de modem het heeft tot het wordt ingesteld."
+
+msgid "All radios off (airplane mode)"
+msgstr "Alle radio's uit (vliegtuigmodus)"
+
+msgid "All radios on"
+msgstr "Alle radio's aan"
+
+msgid "No SIM will have calls, SMS or data, also after a reboot, until a radio is turned on again here or with the dashboard's radio button."
+msgstr "Geen enkele SIM heeft gesprekken, sms of data, ook niet na een herstart, totdat een radio hier of met de radioknop op het dashboard weer wordt aangezet."
+
+msgid "Each SIM's radio stays as set here after a reboot. A SIM whose radio is off has no calls, SMS or data, and the device does not switch to it."
+msgstr "De radio van elke SIM blijft na een herstart zoals hier ingesteld. Een SIM met de radio uit heeft geen gesprekken, sms of data, en het apparaat schakelt er niet naar over."
+
+msgid "The setting is saved, but the radio did not follow it yet."
+msgstr "De instelling is opgeslagen, maar de radio heeft die nog niet gevolgd."
+
+msgid "Recipient: number, e.g. 10086 or +86..."
+msgstr "Ontvanger: nummer, bijv. 10086 of +86..."
+
+msgid "Sync from SIM"
+msgstr "Synchroniseren vanaf SIM"
+
+msgid "Clear local pool"
+msgstr "Lokale pool wissen"
+
+msgid "Select a conversation on the left, or enter a number below to send."
+msgstr "Selecteer links een gesprek, of voer hieronder een nummer in om te verzenden."
+
+msgid "Message (Enter to send, Shift+Enter for newline)"
+msgstr "Bericht (Enter om te verzenden, Shift+Enter voor nieuwe regel)"
+
+msgid "Sending uses AT+CMGS (PDU mode); retry if the channel is busy. To delete one message, use the bin icon on its bubble."
+msgstr "Verzenden gebruikt AT+CMGS (PDU-modus); probeer opnieuw als het kanaal bezet is. Gebruik het prullenbakpictogram op de ballon om één bericht te verwijderen."
+
+msgid "Sending…"
+msgstr "Verzenden…"
+
+msgid "Sent; the list refreshes shortly."
+msgstr "Verzonden; de lijst wordt zo vernieuwd."
+
+msgid "Sending failed"
+msgstr "Verzenden mislukt"
+
+msgid "Syncing from the SIM in the background (AT+CMGL)…"
+msgstr "Synchroniseren vanaf de SIM op de achtergrond (AT+CMGL)…"
+
+msgid "SIM sync started; the list refreshes in a few seconds."
+msgstr "SIM-synchronisatie gestart; de lijst wordt over enkele seconden vernieuwd."
+
+msgid "Clear local SMS pool"
+msgstr "Lokale SMS-pool wissen"
+
+msgid "Only local files will be deleted; messages on the SIM remain."
+msgstr "Alleen lokale bestanden worden verwijderd; berichten op de SIM blijven bewaard."
+
+msgid "Delete this SMS"
+msgstr "Deze SMS verwijderen"
+
+msgid "Deletion cannot be undone."
+msgstr "Verwijderen kan niet ongedaan worden gemaakt."
+
+msgid "Local only"
+msgstr "Alleen lokaal"
+
+msgid "Local + SIM"
+msgstr "Lokaal + SIM"
+
+msgid "Delete failed"
+msgstr "Verwijderen mislukt"
+
+msgid "Deleted (local + SIM)"
+msgstr "Verwijderd (lokaal + SIM)"
+
+msgid "Deleted (local only)"
+msgstr "Verwijderd (alleen lokaal)"
+
+msgid "Enter both a number and a message."
+msgstr "Voer zowel een nummer als een bericht in."
+
+msgid "· %d messages, %d unread · %d conversations"
+msgstr "· %d berichten, %d ongelezen · %d gesprekken"
+
+msgid "· %d messages · %d conversations"
+msgstr "· %d berichten · %d gesprekken"
+
+msgid "The pool is empty. Incoming and sent messages appear here, or select “Sync from SIM”."
+msgstr "De pool is leeg. Ontvangen en verzonden berichten verschijnen hier, of kies „Synchroniseren vanaf SIM”."
+
+msgid "Me: %s"
+msgstr "Ik: %s"
+
+msgid "Incomplete: %d of %d parts arrived"
+msgstr "Onvolledig: %d van %d delen aangekomen"
+
+msgid "Delete"
+msgstr "Verwijderen"
+
+msgid "ttyd is not installed."
+msgstr "ttyd is niet geïnstalleerd."
+
+msgid "The terminal is turned off (/etc/config/ttyd)."
+msgstr "De terminal staat uit (/etc/config/ttyd)."
+
+msgid "Too many terminals are opening at once. Try again in a minute."
+msgstr "Er worden te veel terminals tegelijk geopend. Probeer het over een minuut opnieuw."
+
+msgid "The terminal is not available."
+msgstr "De terminal is niet beschikbaar."
+
+msgid "This is a root shell on the device: every command runs with full rights, and a mistake can make the device unbootable."
+msgstr "Dit is een root-shell op het apparaat: elke opdracht draait met volledige rechten, en een fout kan het apparaat onopstartbaar maken."
+
+msgid "It is reachable from the LAN only (USB and the hotspot), never from mobile data, and only from this logged-in page."
+msgstr "Hij is alleen bereikbaar vanaf het LAN (USB en de hotspot), nooit via mobiele data, en alleen vanaf deze ingelogde pagina."
+
+msgid "It closes after a minute without activity."
+msgstr "Hij sluit na een minuut zonder activiteit."
+
+msgid "It closes after %d minutes without activity."
+msgstr "Hij sluit na %d minuten zonder activiteit."
+
+msgid "Reconnect"
+msgstr "Opnieuw verbinden"
+
+msgid "Open in a new tab"
+msgstr "Openen in een nieuw tabblad"
+
+msgid "This page was opened over HTTPS, and the terminal is served over HTTP on the LAN: it opens in a tab of its own."
+msgstr "Deze pagina is via HTTPS geopend en de terminal wordt via HTTP op het LAN aangeboden: hij opent in een eigen tabblad."
+
+msgid "The data usage could not be read"
+msgstr "Het dataverbruik kon niet worden gelezen"
+
+msgid "Today"
+msgstr "Vandaag"
+
+msgid "Days left in this cycle"
+msgstr "Resterende dagen in deze periode"
+
+msgid "Received"
+msgstr "Ontvangen"
+
+msgid "Sent"
+msgstr "Verzonden"
+
+msgid "Corrected by"
+msgstr "Gecorrigeerd met"
+
+msgid "Monthly cap"
+msgstr "Maandlimiet"
+
+msgid "%s, warning at %d%%"
+msgstr "%s, waarschuwing bij %d%%"
+
+msgid "The monthly cap is reached: mobile data was turned off. It comes back on when the next cycle starts."
+msgstr "De maandlimiet is bereikt: mobiele data is uitgeschakeld. Die gaat weer aan als de volgende periode begint."
+
+msgid "%s waits for the clock: it has not been set over the network yet. It already counts towards this cycle and goes to its day once the clock is set."
+msgstr "%s wacht op de klok: die is nog niet via het netwerk gezet. Het telt al mee voor deze periode en gaat naar zijn dag zodra de klok gezet is."
+
+msgid "The interface %s is not there right now: nothing is counted until it comes back."
+msgstr "De interface %s is er nu niet: er wordt niets geteld tot hij terug is."
+
+msgid "Counted on %s, both ways, as the operator counts it (a VPN's overhead included)."
+msgstr "Geteld op %s, in beide richtingen, zoals de provider telt (inclusief de overhead van een VPN)."
+
+msgid "The count is kept in memory and written to the disk every 30 minutes and at shutdown: a power cut loses at most the last half hour."
+msgstr "De telling staat in het geheugen en wordt elke 30 minuten en bij het afsluiten naar de schijf geschreven: een stroomstoring verliest hooguit het laatste halfuur."
+
+msgid "Counting since %s."
+msgstr "Geteld sinds %s."
+
+msgid "Per day"
+msgstr "Per dag"
+
+msgid "Date"
+msgstr "Datum"
+
+msgid "Total"
+msgstr "Totaal"
+
+msgid "Per billing cycle"
+msgstr "Per factuurperiode"
+
+msgid "Billing cycle"
+msgstr "Factuurperiode"
+
+msgid "Enter a size in GB, for example 50 or 2.5"
+msgstr "Voer een grootte in GB in, bijvoorbeeld 50 of 2.5"
+
+msgid "Enter a percentage from 1 to 100"
+msgstr "Voer een percentage van 1 tot 100 in"
+
+msgid "Turn mobile data off at the cap"
+msgstr "Mobiele data uitschakelen bij de limiet"
+
+msgid "When this cycle reaches the cap, mobile data is turned off: no internet through the operator until the next cycle starts, the cap is raised or this is turned off again. Turning mobile data back on by hand keeps it on until the next reboot."
+msgstr "Bereikt deze periode de limiet, dan wordt mobiele data uitgeschakeld: geen internet via de provider tot de volgende periode begint, de limiet verhoogd wordt of dit weer wordt uitgezet. Wordt mobiele data met de hand weer aangezet, dan blijft die aan tot de volgende herstart."
+
+msgid "Set"
+msgstr "Instellen"
+
+msgid "Clear the count"
+msgstr "Telling wissen"
+
+msgid "Every day and billing cycle counted so far is forgotten. Counting goes on from now."
+msgstr "Alle tot nu toe getelde dagen en factuurperiodes worden vergeten. Het tellen gaat vanaf nu verder."
+
+msgid "Billing cycle and cap"
+msgstr "Factuurperiode en limiet"
+
+msgid "A billing cycle starts on day"
+msgstr "Een factuurperiode begint op dag"
+
+msgid "31: on the last day of each month"
+msgstr "31: op de laatste dag van elke maand"
+
+msgid "Monthly cap (GB, 0: none)"
+msgstr "Maandlimiet (GB, 0: geen)"
+
+msgid "Warning at this percentage of the cap"
+msgstr "Waarschuwen bij dit percentage van de limiet"
+
+msgid "Used so far in this cycle (GB)"
+msgstr "Tot nu toe gebruikt in deze periode (GB)"
+
+msgid "What the operator shows for this cycle (for example when counting started in the middle of it); the count is corrected to it."
+msgstr "Wat de provider voor deze periode toont (bijvoorbeeld als het tellen halverwege begon); de telling wordt daarop gecorrigeerd."
+
+msgid "Current setting"
+msgstr "Huidige instelling"
+
+msgid "Fixed at %d"
+msgstr "Vast op %d"
+
+msgid "Not changed (default)"
+msgstr "Niet gewijzigd (standaard)"
+
+msgid "Rule in force"
+msgstr "Actieve regel"
+
+msgid "Flow offloading"
+msgstr "Flow-offloading"
+
+msgid "TTL of mobile data"
+msgstr "TTL van mobiele data"
+
+msgid "Every packet that leaves through mobile data gets this TTL (IPv6: hop limit). A phone or laptop behind the hotspot sends 64 (Windows: 128) and the device forwards it with one less, which is how an operator can tell tethered traffic apart."
+msgstr "Elk pakket dat via mobiele data vertrekt, krijgt deze TTL (IPv6: hop limit). Een telefoon of laptop achter de hotspot verstuurt 64 (Windows: 128) en het apparaat stuurt het door met één minder; zo kan een provider gedeeld verkeer herkennen."
+
+msgid "On this kernel the firewall fast-path is off while a TTL is set"
+msgstr "Op deze kernel staat het snelle pad van de firewall uit zolang er een TTL is ingesteld"
+
+msgid "Set %d"
+msgstr "%d instellen"
+
+msgid "Enter a number from 1 to 255"
+msgstr "Voer een getal van 1 tot 255 in"
+
+msgid "Turn off"
+msgstr "Uitschakelen"
+
+msgid "64 makes every packet leave like the device's own traffic"
+msgstr "Met 64 vertrekt elk pakket zoals het eigen verkeer van het apparaat"
+
+msgid "Check for updates"
+msgstr "Controleren op updates"
+
+msgid "Checking the file"
+msgstr "Het bestand wordt gecontroleerd"
+
+msgid "Update from a file"
+msgstr "Bijwerken vanuit een bestand"
+
+msgid "Back to the previous version"
+msgstr "Terug naar de vorige versie"
+
+msgid "Back to the previous boot image"
+msgstr "Terug naar de vorige boot-image"
+
+msgid "Remove the previous version"
+msgstr "De vorige versie verwijderen"
+
+msgid "Kernel change"
+msgstr "Kernel wisselen"
+
+msgid "Starting…"
+msgstr "Starten…"
+
+msgid "Downloading"
+msgstr "Downloaden"
+
+msgid "All files are here and verified"
+msgstr "Alle bestanden zijn binnen en gecontroleerd"
+
+msgid "Unpacking the new system"
+msgstr "Het nieuwe systeem wordt uitgepakt"
+
+msgid "Carrying over your settings"
+msgstr "Uw instellingen worden overgenomen"
+
+msgid "Writing down the packages you installed"
+msgstr "De pakketten die u hebt geïnstalleerd worden genoteerd"
+
+msgid "Switching to the new system"
+msgstr "Overschakelen naar het nieuwe systeem"
+
+msgid "Kernel and boot image"
+msgstr "Kernel en boot-image"
+
+msgid "Restart the device?"
+msgstr "Het apparaat herstarten?"
+
+msgid "The device restarts now. The default boot is Android, so it starts Android: switch to Linux from there to start the updated system."
+msgstr "Het apparaat herstart nu. De standaardstart is Android, dus Android start: schakel daar over naar Linux om het bijgewerkte systeem te starten."
+
+msgid "The device restarts now and is away for about a minute. If the new system does not start, the device goes back to Android by itself after the failed attempts."
+msgstr "Het apparaat herstart nu en is ongeveer een minuut weg. Als het nieuwe systeem niet start, gaat het apparaat na de mislukte pogingen vanzelf terug naar Android."
+
+msgid "Restarting… open this page again in about a minute."
+msgstr "Herstarten… open deze pagina over ongeveer een minuut opnieuw."
+
+msgid "Running for %s. It goes on when this page is closed; do not switch the device off."
+msgstr "Al %s bezig. Het gaat door als deze pagina wordt gesloten; zet het apparaat niet uit."
+
+msgid "Done. Restart the device to start it."
+msgstr "Klaar. Herstart het apparaat om het te starten."
+
+msgid "Done. Nothing needs a restart."
+msgstr "Klaar. Er is geen herstart nodig."
+
+msgid "It did not finish, and part of it was done: read the log before you restart."
+msgstr "Het is niet afgerond en een deel is wel uitgevoerd: lees het logboek voordat u herstart."
+
+msgid "It did not finish. Nothing was changed; the log says why."
+msgstr "Het is niet afgerond. Er is niets gewijzigd; in het logboek staat waarom."
+
+msgid "Log"
+msgstr "Logboek"
+
+msgid "Restart now"
+msgstr "Nu herstarten"
+
+msgid "Later"
+msgstr "Later"
+
+msgid "Close"
+msgstr "Sluiten"
+
+msgid "Updating is not available on this system"
+msgstr "Bijwerken is op dit systeem niet beschikbaar"
+
+msgid "Another update is running on the device"
+msgstr "Er draait al een andere update op het apparaat"
+
+msgid "It was started outside this page (a terminal, the toolkit). Nothing can be started here until it has finished."
+msgstr "Het is buiten deze pagina gestart (een terminal, de toolkit). Hier kan niets worden gestart totdat het klaar is."
+
+msgid "Restart needed"
+msgstr "Herstart nodig"
+
+msgid "This system was updated and still runs the old version. The new one starts at the next restart."
+msgstr "Dit systeem is bijgewerkt en draait nog de oude versie. De nieuwe start bij de volgende herstart."
+
+msgid "Installed"
+msgstr "Geïnstalleerd"
+
+msgid "This system"
+msgstr "Dit systeem"
+
+msgid "Also on this device"
+msgstr "Ook op dit apparaat"
+
+msgid "Kernel"
+msgstr "Kernel"
+
+msgid "choice %s"
+msgstr "keuze %s"
+
+msgid "Boot image"
+msgstr "Boot-image"
+
+msgid "from the installer"
+msgstr "van het installatieprogramma"
+
+msgid "Default boot"
+msgstr "Standaardstart"
+
+msgid "Free space"
+msgstr "Vrije ruimte"
+
+msgid "Release signatures"
+msgstr "Handtekeningen van releases"
+
+msgid "checked with the project's key"
+msgstr "gecontroleerd met de sleutel van het project"
+
+msgid "this system has no release key"
+msgstr "dit systeem heeft geen releasesleutel"
+
+msgid "The default boot is Android: a restart goes to Android, and Linux is started from there."
+msgstr "De standaardstart is Android: een herstart gaat naar Android, en Linux wordt van daaruit gestart."
+
+msgid "Linux is locked as the default boot: a failed start does not send the device to Android by itself, except the first starts of a new boot image."
+msgstr "Linux is vastgezet als standaardstart: een mislukte start stuurt het apparaat niet vanzelf naar Android, behalve bij de eerste starts van een nieuwe boot-image."
+
+msgid "If Linux fails to start %d times in a row, the device starts Android by itself."
+msgstr "Als Linux %d keer achter elkaar niet start, start het apparaat vanzelf Android."
+
+msgid "Report of the last update"
+msgstr "Verslag van de laatste update"
+
+msgid "Online update"
+msgstr "Online update"
+
+msgid "Asking GitHub…"
+msgstr "GitHub wordt geraadpleegd…"
+
+msgid "Checked %s ago"
+msgstr "%s geleden gecontroleerd"
+
+msgid "Not checked yet"
+msgstr "Nog niet gecontroleerd"
+
+msgid "Mirror (release files)"
+msgstr "Spiegel (releasebestanden)"
+
+msgid "Leave empty for GitHub."
+msgstr "Leeg laten voor GitHub."
+
+msgid "Install the packages I added again after the update (needs the device online at the first start)"
+msgstr "De pakketten die ik heb toegevoegd na de update opnieuw installeren (het apparaat moet bij de eerste start online zijn)"
+
+msgid "Pre-release"
+msgstr "Pre-release"
+
+msgid "Newest release"
+msgstr "Nieuwste release"
+
+msgid "Release notes"
+msgstr "Release-opmerkingen"
+
+msgid "Download"
+msgstr "Download"
+
+msgid "Free space needed"
+msgstr "Benodigde vrije ruimte"
+
+msgid "not enough: remove the previous version first"
+msgstr "niet genoeg: verwijder eerst de vorige versie"
+
+msgid "A pre-release is a release still being tried: it can have faults a release does not. The previous version is kept all the same."
+msgstr "Een pre-release is een release die nog wordt uitgeprobeerd: er kunnen fouten in zitten die een release niet heeft. De vorige versie blijft evengoed bewaard."
+
+msgid "This system is newer than the newest release (a test release)."
+msgstr "Dit systeem is nieuwer dan de nieuwste release (een testrelease)."
+
+msgid "Up to date."
+msgstr "Up-to-date."
+
+msgid "This release is not signed, and this system checks signatures: it is not installed from here. Update from its file below, which asks you to confirm."
+msgstr "Deze release is niet ondertekend en dit systeem controleert handtekeningen: hij wordt niet vanaf hier geïnstalleerd. Werk bij vanuit het bestand hieronder, dat om bevestiging vraagt."
+
+msgid "Update to %s"
+msgstr "Bijwerken naar %s"
+
+msgid "Choose at least one system"
+msgstr "Kies ten minste één systeem"
+
+msgid "Update to %s?"
+msgstr "Bijwerken naar %s?"
+
+msgid "The device downloads %s, puts the new system beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Het apparaat downloadt %s, zet het nieuwe systeem naast het draaiende en schakelt er bij de volgende herstart naar over. Uw instellingen worden overgenomen en de vorige versie blijft bewaard. Het duurt enkele minuten; zet het apparaat niet uit."
+
+msgid "Also offer the pre-release %s"
+msgstr "Ook de pre-release %s aanbieden"
+
+msgid "Systems to update:"
+msgstr "Bij te werken systemen:"
+
+msgid "GitHub could not be reached: the device has no internet connection, or GitHub did not answer. Without internet, update from a file below."
+msgstr "GitHub was niet bereikbaar: het apparaat heeft geen internetverbinding, of GitHub antwoordde niet. Werk zonder internet hieronder bij vanuit een bestand."
+
+msgid "release"
+msgstr "release"
+
+msgid "For a device without internet: download the Magisk zip of a release for this system and this kernel on another computer, from the release page on GitHub, and upload it here. For this device that is:"
+msgstr "Voor een apparaat zonder internet: download op een andere computer de Magisk-zip van een release voor dit systeem en deze kernel, van de releasepagina op GitHub, en upload die hier. Voor dit apparaat is dat:"
+
+msgid "Uploaded file"
+msgstr "Geüpload bestand"
+
+msgid "Checking the file…"
+msgstr "Het bestand wordt gecontroleerd…"
+
+msgid "It says it is"
+msgstr "Het zegt dat het dit is"
+
+msgid "kernel %s"
+msgstr "kernel %s"
+
+msgid "Signature"
+msgstr "Handtekening"
+
+msgid "signed with the project's release key"
+msgstr "ondertekend met de releasesleutel van het project"
+
+msgid "WRONG: it does not match the project's release key"
+msgstr "FOUT: komt niet overeen met de releasesleutel van het project"
+
+msgid "not signed"
+msgstr "niet ondertekend"
+
+msgid "cannot be checked on this system"
+msgstr "kan op dit systeem niet worden gecontroleerd"
+
+msgid "Its system is not installed on this device."
+msgstr "Het systeem ervan is niet op dit apparaat geïnstalleerd."
+
+msgid "It is the other Ubuntu release, not the one installed."
+msgstr "Het is de andere Ubuntu-release, niet de geïnstalleerde."
+
+msgid "It carries another kernel than this device uses. Take the zip for kernel %s, or change the kernel first."
+msgstr "Het bevat een andere kernel dan dit apparaat gebruikt. Neem de zip voor kernel %s, of wissel eerst van kernel."
+
+msgid "Its kernel does not run on this model."
+msgstr "De kernel ervan werkt niet op dit model."
+
+msgid "The file is damaged: its contents do not match their checksums."
+msgstr "Het bestand is beschadigd: de inhoud komt niet overeen met de controlesommen."
+
+msgid "Its signature is wrong. This file does not come from the project as it is; it is never installed."
+msgstr "De handtekening is fout. Dit bestand komt zo niet van het project; het wordt nooit geïnstalleerd."
+
+msgid "This file cannot be used here."
+msgstr "Dit bestand kan hier niet worden gebruikt."
+
+msgid "Compare the SHA-256 with the one in SHA256SUMS-magisk on the release page: it is the only proof of where an unsigned file comes from."
+msgstr "Vergelijk de SHA-256 met die in SHA256SUMS-magisk op de releasepagina: dat is het enige bewijs van waar een niet-ondertekend bestand vandaan komt."
+
+msgid "This release is installed already; the update would only refresh the boot image."
+msgstr "Deze release is al geïnstalleerd; de update zou alleen de boot-image vernieuwen."
+
+msgid "I know this file is not signed: nothing proves that it comes from the project. I compared its SHA-256 myself and want it installed."
+msgstr "Ik weet dat dit bestand niet is ondertekend: niets bewijst dat het van het project komt. Ik heb de SHA-256 zelf vergeleken en wil het laten installeren."
+
+msgid "I know this is %s, older than the installed %s, and want to go back to it."
+msgstr "Ik weet dat dit %s is, ouder dan de geïnstalleerde %s, en wil ernaar terug."
+
+msgid "This is not a release file of this project: a Magisk zip of a release is expected."
+msgstr "Dit is geen releasebestand van dit project: er wordt een Magisk-zip van een release verwacht."
+
+msgid "Update from this file"
+msgstr "Bijwerken vanuit dit bestand"
+
+msgid "Tick the confirmations above first"
+msgstr "Vink eerst de bevestigingen hierboven aan"
+
+msgid "The device puts the system of this file beside the running one and switches to it at the next restart. Your settings are carried over and the previous version is kept. It takes several minutes; do not switch the device off."
+msgstr "Het apparaat zet het systeem uit dit bestand naast het draaiende en schakelt er bij de volgende herstart naar over. Uw instellingen worden overgenomen en de vorige versie blijft bewaard. Het duurt enkele minuten; zet het apparaat niet uit."
+
+msgid "Check the file"
+msgstr "Het bestand controleren"
+
+msgid "Remove the file"
+msgstr "Het bestand verwijderen"
+
+msgid "Previous version"
+msgstr "Vorige versie"
+
+msgid "No previous version is kept on this device."
+msgstr "Er is geen vorige versie op dit apparaat bewaard."
+
+msgid "replaced %s"
+msgstr "vervangen op %s"
+
+msgid "I want the previous system back; what I changed since the update stays in the version I leave."
+msgstr "Ik wil het vorige systeem terug; wat ik sinds de update heb gewijzigd, blijft achter in de versie die ik verlaat."
+
+msgid "Back to the previous version?"
+msgstr "Terug naar de vorige versie?"
+
+msgid "The previous system (%s) becomes the one that starts at the next restart. The version you leave is not kept; settings you changed since the update are not carried back."
+msgstr "Het vorige systeem (%s) wordt het systeem dat bij de volgende herstart start. De versie die u verlaat wordt niet bewaard; instellingen die u sinds de update hebt gewijzigd, worden niet mee teruggenomen."
+
+msgid "Go back"
+msgstr "Teruggaan"
+
+msgid "The previous version is the one running now: restart first."
+msgstr "De vorige versie is de versie die nu draait: herstart eerst."
+
+msgid "I want the previous kernel and boot image back."
+msgstr "Ik wil de vorige kernel en boot-image terug."
+
+msgid "Back to the previous boot image?"
+msgstr "Terug naar de vorige boot-image?"
+
+msgid "The previous boot image (%s) is written to the Linux slot and starts at the next restart. If it does not start, the device goes back to Android by itself."
+msgstr "De vorige boot-image (%s) wordt naar het Linux-slot geschreven en start bij de volgende herstart. Als die niet start, gaat het apparaat vanzelf terug naar Android."
+
+msgid "I do not need to go back: delete the previous system to free its space."
+msgstr "Ik hoef niet terug te gaan: verwijder het vorige systeem om de ruimte vrij te maken."
+
+msgid "Remove the previous version?"
+msgstr "De vorige versie verwijderen?"
+
+msgid "The kept copy of the previous system is deleted for good. After that there is no going back to it from this page."
+msgstr "De bewaarde kopie van het vorige systeem wordt definitief verwijderd. Daarna kunt u er vanaf deze pagina niet meer naar terug."
+
+msgid "the vendor kernel"
+msgstr "de fabrikantkernel"
+
+msgid "mainline"
+msgstr "mainline"
+
+msgid "not with Ubuntu 26.04"
+msgstr "niet met Ubuntu 26.04"
+
+msgid "Change the kernel"
+msgstr "De kernel wisselen"
+
+msgid "This kernel is the one in use"
+msgstr "Deze kernel is al in gebruik"
+
+msgid "Change the kernel to %s?"
+msgstr "De kernel wisselen naar %s?"
+
+msgid "The device downloads that kernel from the newest release and writes a new boot image; it starts at the next restart. The previous boot image is kept, and if the new one does not start the device goes back to Android by itself. The device must be online."
+msgstr "Het apparaat downloadt die kernel uit de nieuwste release en schrijft een nieuwe boot-image; die start bij de volgende herstart. De vorige boot-image blijft bewaard, en als de nieuwe niet start, gaat het apparaat vanzelf terug naar Android. Het apparaat moet online zijn."
+
+msgid "Start Android at the next restart"
+msgstr "Android starten bij de volgende herstart"
+
+msgid "Start Android at the next restart?"
+msgstr "Android starten bij de volgende herstart?"
+
+msgid "The next restart, and the ones after it, start Android instead of Linux. Linux is started again from Android (the Magisk module's Action button, or mu300-linux)."
+msgstr "De volgende herstart, en die daarna, starten Android in plaats van Linux. Linux wordt weer gestart vanuit Android (de Action-knop van de Magisk-module, of mu300-linux)."
+
+msgid "Start Android next"
+msgstr "Hierna Android starten"
+
+msgid "What an update keeps"
+msgstr "Wat een update bewaart"
+
+msgid "An update puts the system of the new release in place and carries over what is yours: the settings, the accounts and their passwords, the device's keys and the home directories. Packages you installed yourself are written down and installed again at the first start, once the device is online. The previous version stays on the device until you remove it, so you can go back."
+msgstr "Een update zet het systeem van de nieuwe release op zijn plaats en neemt over wat van u is: de instellingen, de accounts en hun wachtwoorden, de sleutels van het apparaat en de thuismappen. Pakketten die u zelf hebt geïnstalleerd worden genoteerd en bij de eerste start opnieuw geïnstalleerd, zodra het apparaat online is. De vorige versie blijft op het apparaat staan totdat u die verwijdert, zodat u terug kunt."
+
+msgid "The wiki's Updating page lists exactly what is kept."
+msgstr "De wikipagina Updating vermeldt precies wat er bewaard blijft."
+
+msgid "Choose a file first"
+msgstr "Kies eerst een bestand"
+
+msgid "Uploading: %s of %s"
+msgstr "Uploaden: %s van %s"
+
+msgid "running"
+msgstr "actief"
+
+msgid "(about %s)"
+msgstr "(ongeveer %s)"
+
+msgid "Install %s?"
+msgstr "%s installeren?"
+
+msgid "It is installed from this system's package feed."
+msgstr "Wordt geïnstalleerd vanuit de pakketbron van dit systeem."
+
+msgid "It is downloaded from the release of the VPN module and checked against its SHA256SUMS."
+msgstr "Wordt gedownload uit de release van de VPN-module en gecontroleerd met de SHA256SUMS."
+
+msgid "An engine is tens of MB: on mobile data the download counts towards your plan."
+msgstr "Een engine is tientallen MB: via mobiele data gaat de download van uw databundel af."
+
+msgid "Install"
+msgstr "Installeren"
+
+msgid "Remove %s?"
+msgstr "%s verwijderen?"
+
+msgid "Profiles run on it: %s. They cannot start until it is installed again (the module refuses while the running profile needs it)."
+msgstr "Profielen die erop draaien: %s. Ze kunnen niet starten tot het opnieuw is geïnstalleerd (de module weigert zolang het actieve profiel het nodig heeft)."
+
+msgid "No profile runs on it."
+msgstr "Er draait geen profiel op."
+
+msgid "Removed"
+msgstr "Verwijderd"
+
+msgid "Each engine is an extra of its own: install only the ones your profiles need. Xray runs vless, vmess, trojan and ss links (with hev-socks5-tunnel), sing-box the same links and its own JSON, mihomo Clash subscriptions, dae hysteria2, tuic and the rest on newer kernels. WireGuard and OpenVPN are packages of the system."
+msgstr "Elke engine is een eigen extra: installeer alleen wat uw profielen nodig hebben. Xray draait vless-, vmess-, trojan- en ss-links (met hev-socks5-tunnel), sing-box dezelfde links en zijn eigen JSON, mihomo Clash-abonnementen, dae hysteria2, tuic en de rest op nieuwere kernels. WireGuard en OpenVPN zijn pakketten van het systeem."
+
+msgid "Downloads are tens of MB per engine: on mobile data they count towards your plan. Offline, upload the engine's tarball from the release page of the VPN module."
+msgstr "Downloads zijn tientallen MB per engine: via mobiele data gaan ze van uw databundel af. Offline uploadt u de tarball van de engine van de releasepagina van de VPN-module."
+
+msgid "The available versions come from the latest release of the VPN module."
+msgstr "De beschikbare versies komen uit de nieuwste release van de VPN-module."
+
+msgid "system package"
+msgstr "systeempakket"
+
+msgid "in the vpn bundle"
+msgstr "in de vpn-bundel"
+
+msgid "extra %s"
+msgstr "extra %s"
+
+msgid "not installed"
+msgstr "niet geïnstalleerd"
+
+msgid "cannot run here"
+msgstr "kan hier niet draaien"
+
+msgid "update available"
+msgstr "update beschikbaar"
+
+msgid "installed"
+msgstr "geïnstalleerd"
+
+msgid "Kind"
+msgstr "Soort"
+
+msgid "Version"
+msgstr "Versie"
+
+msgid "Available"
+msgstr "Beschikbaar"
+
+msgid "not checked"
+msgstr "niet gecontroleerd"
+
+msgid "Size"
+msgstr "Grootte"
+
+msgid "Needed by"
+msgstr "Nodig voor"
+
+msgid "no profile"
+msgstr "geen profiel"
+
+msgid "dae needs a kernel with BTF, 5.17 or newer: not the 5.4 vendor kernel (mu300-update kernel 6.18). It can be installed anyway."
+msgstr "dae heeft een kernel met BTF nodig, 5.17 of nieuwer: niet de 5.4-fabrikantkernel (mu300-update kernel 6.18). Installeren kan toch."
+
+msgid "All engines"
+msgstr "Alle engines"
+
+msgid "Last %s lines"
+msgstr "Laatste %s regels"
+
+msgid "VPN service log"
+msgstr "VPN-servicelog"
+
+msgid "Every 5 s"
+msgstr "Elke 5 s"
+
+msgid "The log is empty."
+msgstr "Het logboek is leeg."
+
+msgid "The VPN is starting"
+msgstr "De VPN wordt gestart"
+
+msgid "The VPN is stopped"
+msgstr "De VPN is gestopt"
+
+msgid "The VPN is restarting"
+msgstr "De VPN wordt herstart"
+
+msgid "With the kill switch on, nothing leaves the device or the LAN outside the tunnel: while the VPN is down, starting or broken, every connection fails instead of going out directly. It stays up until you stop the VPN here (Stop removes it)."
+msgstr "Met de kill switch aan verlaat niets het apparaat of het LAN buiten de tunnel: als de VPN uit staat, start of defect is, mislukt elke verbinding in plaats van direct naar buiten te gaan. Hij blijft actief tot u de VPN hier stopt (Stoppen verwijdert hem)."
+
+msgid "Without the kill switch, traffic goes out directly, unprotected, whenever the tunnel is down (while it starts, after a crash, when the engine is missing)."
+msgstr "Zonder de kill switch gaat het verkeer direct en onbeschermd naar buiten zodra de tunnel down is (tijdens het starten, na een crash, als de engine ontbreekt)."
+
+msgid "Turn the kill switch on?"
+msgstr "Kill switch inschakelen?"
+
+msgid "Turn the kill switch off?"
+msgstr "Kill switch uitschakelen?"
+
+msgid "Turn on"
+msgstr "Inschakelen"
+
+msgid "unknown"
+msgstr "onbekend"
+
+msgid "The exit address could not be found (is the tunnel up?)"
+msgstr "Het uitgangsadres is niet gevonden (is de tunnel actief?)"
+
+msgid "Connecting…"
+msgstr "Verbinden…"
+
+msgid "On, but not running"
+msgstr "Aan, maar draait niet"
+
+msgid "Stopped"
+msgstr "Gestopt"
+
+msgid "Install it"
+msgstr "Installeren"
+
+msgid "The engine of the active profile is not installed: %s"
+msgstr "De engine van het actieve profiel is niet geïnstalleerd: %s"
+
+msgid "The kill switch keeps everything closed until it is there; the service downloads it by itself when it can."
+msgstr "De kill switch houdt alles dicht tot de engine er is; de service downloadt hem zelf wanneer dat kan."
+
+msgid "The VPN cannot start until it is installed."
+msgstr "De VPN kan niet starten tot de engine is geïnstalleerd."
+
+msgid "%s cannot run on this system"
+msgstr "%s kan niet draaien op dit systeem"
+
+msgid "The VPN is on, but no profile is active: choose one below."
+msgstr "De VPN staat aan, maar er is geen actief profiel: kies hieronder een profiel."
+
+msgid "Profile: %s"
+msgstr "Profiel: %s"
+
+msgid "No active profile"
+msgstr "Geen actief profiel"
+
+msgid "engine %s"
+msgstr "engine %s"
+
+msgid "interface %s"
+msgstr "interface %s"
+
+msgid "Kill switch active"
+msgstr "Kill switch actief"
+
+msgid "Kill switch on"
+msgstr "Kill switch aan"
+
+msgid "Kill switch off"
+msgstr "Kill switch uit"
+
+msgid "IPv6 in the tunnel"
+msgstr "IPv6 in de tunnel"
+
+msgid "IPv6 blocked"
+msgstr "IPv6 geblokkeerd"
+
+msgid "IPv6 untouched"
+msgstr "IPv6 ongemoeid"
+
+msgid "Module %s"
+msgstr "Module %s"
+
+msgid "Check"
+msgstr "Controleren"
+
+msgid "Uptime"
+msgstr "Uptime"
+
+msgid "Rate"
+msgstr "Snelheid"
+
+msgid "Exit address"
+msgstr "Uitgangsadres"
+
+msgid "Start"
+msgstr "Starten"
+
+msgid "Stop"
+msgstr "Stoppen"
+
+msgid "Stop the VPN?"
+msgstr "De VPN stoppen?"
+
+msgid "Traffic then goes out directly, without the tunnel; the kill switch is taken down with it."
+msgstr "Het verkeer gaat dan direct naar buiten, zonder tunnel; de kill switch wordt daarbij ook verwijderd."
+
+msgid "The VPN is on: it starts again by itself after a reboot."
+msgstr "De VPN staat aan: na een herstart start hij vanzelf opnieuw."
+
+msgid "The VPN is off."
+msgstr "De VPN staat uit."
+
+msgid "Kill switch"
+msgstr "Kill switch"
+
+msgid "Setting"
+msgstr "Instelling"
+
+msgid "Active: only the tunnel can reach the internet"
+msgstr "Actief: alleen de tunnel kan het internet op"
+
+msgid "Not active"
+msgstr "Niet actief"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down, so nothing ever leaves without the tunnel. If the tunnel cannot come up (a dead server, an expired account), the device stays offline until you fix the profile or stop the VPN. The panel itself stays reachable from the LAN."
+msgstr "De kill switch blokkeert al het verkeer van het apparaat en van het LAN zolang de VPN uit staat, zodat er nooit iets zonder tunnel naar buiten gaat. Als de tunnel niet omhoog komt (een dode server, een verlopen account), blijft het apparaat offline tot u het profiel herstelt of de VPN stopt. Het paneel zelf blijft bereikbaar vanaf het LAN."
+
+msgid "Choose a profile"
+msgstr "Kies een profiel"
+
+msgid "No profiles yet"
+msgstr "Nog geen profielen"
+
+msgid "engine not installed"
+msgstr "engine niet geïnstalleerd"
+
+msgid "Use"
+msgstr "Gebruiken"
+
+msgid "Switched: the VPN restarts on the new profile"
+msgstr "Omgeschakeld: de VPN herstart met het nieuwe profiel"
+
+msgid "Active profile"
+msgstr "Actief profiel"
+
+msgid "A running VPN restarts on the profile you choose; the kill switch stays up in between."
+msgstr "Een actieve VPN herstart met het gekozen profiel; de kill switch blijft daartussen actief."
+
+msgid "Manage the profiles"
+msgstr "Profielen beheren"
+
+msgid "Automatic: through the tunnel where the engine can carry it"
+msgstr "Automatisch: via de tunnel waar de engine het kan dragen"
+
+msgid "Ask the engine for IPv6 in the tunnel"
+msgstr "Vraag de engine om IPv6 in de tunnel"
+
+msgid "Never through the tunnel (blocked while the VPN is up)"
+msgstr "Nooit via de tunnel (geblokkeerd zolang de VPN aan staat)"
+
+msgid "Saved: it applies from the next start (Restart)"
+msgstr "Opgeslagen: geldt vanaf de volgende start (Herstarten)"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "The tunnel carries IPv6"
+msgstr "De tunnel draagt IPv6"
+
+msgid "Yes"
+msgstr "Ja"
+
+msgid "IPv6 guard"
+msgstr "IPv6-bewaker"
+
+msgid "Active: IPv6 outside the tunnel is refused"
+msgstr "Actief: IPv6 buiten de tunnel wordt geweigerd"
+
+msgid "While the VPN is up, IPv6 never leaves beside a tunnel that does not carry it: it is refused at once, so programs and LAN clients fall back to IPv4 instead of leaking or waiting. Automatic: WireGuard and OpenVPN use the IPv6 addresses of their config; Xray, sing-box and mihomo are asked at every start whether IPv6 works through the tunnel, and carry it only then; dae stays IPv4."
+msgstr "Zolang de VPN aan staat, gaat IPv6 nooit naast een tunnel die het niet draagt naar buiten: het wordt meteen geweigerd, zodat programma's en LAN-clients terugvallen op IPv4 in plaats van te lekken of te wachten. Automatisch: WireGuard en OpenVPN gebruiken de IPv6-adressen uit hun configuratie; bij Xray, sing-box en mihomo wordt bij elke start getest of IPv6 door de tunnel werkt, en alleen dan dragen ze het; dae blijft op IPv4."
+
+msgid "%d ms"
+msgstr "%d ms"
+
+msgid "UDP: not testable"
+msgstr "UDP: niet testbaar"
+
+msgid "blocked by the kill switch"
+msgstr "geblokkeerd door de kill switch"
+
+msgid "A WireGuard or OpenVPN config, a Clash/mihomo YAML, an Xray or sing-box JSON, a dae config"
+msgstr "Een WireGuard- of OpenVPN-configuratie, een Clash/mihomo-YAML, een Xray- of sing-box-JSON, een dae-configuratie"
+
+msgid "After OK, choose the file: a WireGuard .conf, an OpenVPN .ovpn, a Clash/mihomo .yaml, an Xray or sing-box .json or a dae config (at most 1 MiB)."
+msgstr "Kies na OK het bestand: een WireGuard .conf, een OpenVPN .ovpn, een Clash/mihomo .yaml, een Xray- of sing-box .json of een dae-configuratie (maximaal 1 MiB)."
+
+msgid "From the source"
+msgstr "Vanuit de bron"
+
+msgid "Detect"
+msgstr "Detecteren"
+
+msgid "The URL may hold a token: it goes to the device on its own, never into a command line or a log."
+msgstr "De URL kan een token bevatten: die gaat apart naar het apparaat, nooit in een opdrachtregel of een log."
+
+msgid "Share link"
+msgstr "Deellink"
+
+msgid "Paste"
+msgstr "Plakken"
+
+msgid "File"
+msgstr "Bestand"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Not a share link this panel takes"
+msgstr "Geen deellink die dit paneel accepteert"
+
+msgid "The config is empty"
+msgstr "De configuratie is leeg"
+
+msgid "Not an https URL"
+msgstr "Geen https-URL"
+
+msgid "Invalid name: 1-64 characters, no control characters"
+msgstr "Ongeldige naam: 1-64 tekens, geen besturingstekens"
+
+msgid "Add a profile"
+msgstr "Profiel toevoegen"
+
+msgid "Name"
+msgstr "Naam"
+
+msgid "Detect: the module tells the kind from the link or the file. Choose the type for a JSON that could be either Xray or sing-box, or for a link that should run on another engine."
+msgstr "Detecteren: de module herkent het soort aan de link of het bestand. Kies het type voor een JSON die zowel Xray als sing-box kan zijn, of voor een link die op een andere engine moet draaien."
+
+msgid "The profile is added"
+msgstr "Het profiel is toegevoegd"
+
+msgid "Rename the profile"
+msgstr "Profiel hernoemen"
+
+msgid "Delete the profile %s?"
+msgstr "Profiel %s verwijderen?"
+
+msgid "It is the active profile: with the VPN on, the module refuses; stop the VPN or choose another profile first."
+msgstr "Dit is het actieve profiel: met de VPN aan weigert de module; stop eerst de VPN of kies een ander profiel."
+
+msgid "Its config and credentials are deleted from the device."
+msgstr "De configuratie en inloggegevens worden van het apparaat verwijderd."
+
+msgid "Deleted"
+msgstr "Verwijderd"
+
+msgid "The profile passes the check"
+msgstr "Het profiel doorstaat de controle"
+
+msgid "Show the config?"
+msgstr "Configuratie tonen?"
+
+msgid "The config holds the credentials of the profile (keys, passwords, UUIDs). It is shown on this screen only; anyone who can see the screen can read it."
+msgstr "De configuratie bevat de inloggegevens van het profiel (sleutels, wachtwoorden, UUID's). Ze wordt alleen op dit scherm getoond; iedereen die het scherm ziet, kan ze lezen."
+
+msgid "Saving checks the config with the engine first (profile edit); a config that does not pass is not saved and the old one stays."
+msgstr "Bij opslaan wordt de configuratie eerst met de engine gecontroleerd (profile edit); een configuratie die niet door de controle komt, wordt niet opgeslagen en de oude blijft."
+
+msgid "This profile comes from a subscription: its next refresh replaces your changes."
+msgstr "Dit profiel komt uit een abonnement: de volgende vernieuwing vervangt uw wijzigingen."
+
+msgid "Config of %s"
+msgstr "Configuratie van %s"
+
+msgid "Rename"
+msgstr "Hernoemen"
+
+msgid "Show / edit the config"
+msgstr "Configuratie tonen / bewerken"
+
+msgid "Test the latency of all"
+msgstr "Latentie van alle testen"
+
+msgid "No profiles yet: add one from a share link, a config file or a subscription."
+msgstr "Nog geen profielen: voeg er een toe via een deellink, een configuratiebestand of een abonnement."
+
+msgid "Active"
+msgstr "Actief"
+
+msgid "This profile is the active one now"
+msgstr "Dit profiel is nu het actieve"
+
+msgid "More"
+msgstr "Meer"
+
+msgid "active"
+msgstr "actief"
+
+msgid "subscription"
+msgstr "abonnement"
+
+msgid "migrated"
+msgstr "gemigreerd"
+
+msgid "gone from its subscription"
+msgstr "verdwenen uit het abonnement"
+
+msgid "Server"
+msgstr "Server"
+
+msgid "Engine"
+msgstr "Engine"
+
+msgid "Latency"
+msgstr "Latentie"
+
+msgid "The latency is a TCP connection to the server, through the tunnel when the VPN is up. WireGuard and OpenVPN servers usually speak UDP and cannot be tested this way."
+msgstr "De latentie is een TCP-verbinding met de server, via de tunnel als de VPN aan staat. WireGuard- en OpenVPN-servers gebruiken meestal UDP en kunnen zo niet worden getest."
+
+msgid "Enter an IPv4 or IPv6 address"
+msgstr "Voer een IPv4- of IPv6-adres in"
+
+msgid "On: nothing leaves outside the tunnel"
+msgstr "Aan: niets gaat buiten de tunnel om"
+
+msgid "Off: traffic goes out directly while the tunnel is down"
+msgstr "Uit: verkeer gaat direct naar buiten zolang de tunnel down is"
+
+msgid "Yes: Tailscale's own connections go through the tunnel"
+msgstr "Ja: de eigen verbindingen van Tailscale gaan via de tunnel"
+
+msgid "No: Tailscale connects directly"
+msgstr "Nee: Tailscale verbindt direct"
+
+msgid "Routing"
+msgstr "Routering"
+
+msgid "The kill switch blocks all traffic of the device and of the LAN while the VPN is down."
+msgstr "De kill switch blokkeert al het verkeer van het apparaat en van het LAN zolang de VPN uit staat."
+
+msgid "Bypass the tunnel"
+msgstr "Tunnel omzeilen"
+
+msgid "Enter address ranges like 192.168.0.0/16, separated by commas"
+msgstr "Voer adresbereiken in zoals 192.168.0.0/16, gescheiden door komma's"
+
+msgid "Address ranges that never go into the tunnel, besides the LAN itself (which never does). Empty: the LAN only."
+msgstr "Adresbereiken die nooit de tunnel in gaan, naast het LAN zelf (dat nooit gaat). Leeg: alleen het LAN."
+
+msgid "Tailscale through the VPN"
+msgstr "Tailscale via de VPN"
+
+msgid "When Tailscale runs on the device, its WireGuard, DERP and control connections go through whichever tunnel runs (dae catches them like any other)."
+msgstr "Als Tailscale op het apparaat draait, gaan de WireGuard-, DERP- en besturingsverbindingen via de tunnel die draait (dae vangt ze op zoals alle andere)."
+
+msgid "DNS"
+msgstr "DNS"
+
+msgid "DNS through the tunnel"
+msgstr "DNS via de tunnel"
+
+msgid "The resolver the device's and the LAN's lookups go to, through the tunnel. Nothing goes to the carrier's resolver."
+msgstr "De resolver waar de opvragingen van het apparaat en het LAN via de tunnel naartoe gaan. Er gaat niets naar de resolver van de provider."
+
+msgid "Bootstrap DNS"
+msgstr "Bootstrap-DNS"
+
+msgid "Finds the VPN server's own address before the tunnel is up (directly, on the engine's own connection)."
+msgstr "Vindt het eigen adres van de VPN-server voordat de tunnel actief is (direct, op de eigen verbinding van de engine)."
+
+msgid "Empty puts a setting back to its default."
+msgstr "Leeg zet een instelling terug op de standaardwaarde."
+
+msgid "TUN stack"
+msgstr "TUN-stack"
+
+msgid "Default (gvisor)"
+msgstr "Standaard (gvisor)"
+
+msgid "system (not on the 5.4 kernel)"
+msgstr "system (niet op de 5.4-kernel)"
+
+msgid "set (unchanged unless you type a new one)"
+msgstr "ingesteld (ongewijzigd tenzij u een nieuwe typt)"
+
+msgid "not set"
+msgstr "niet ingesteld"
+
+msgid "Upstream HTTP proxy"
+msgstr "Upstream HTTP-proxy"
+
+msgid "TLS certificate pin (SHA-256)"
+msgstr "TLS-certificaatpin (SHA-256)"
+
+msgid "Enter host:port"
+msgstr "Voer host:port in"
+
+msgid "Enter the SHA-256 in hex"
+msgstr "Voer de SHA-256 in hex in"
+
+msgid "Profile options"
+msgstr "Profielopties"
+
+msgid "None of the profiles has options of its type."
+msgstr "Geen van de profielen heeft opties van zijn type."
+
+msgid "mihomo's mode (rule, global, direct), the engines' log levels, dae's groups and routing are part of each profile's own config: VPN > Profiles, Show / edit the config."
+msgstr "De modus van mihomo (rule, global, direct), de logniveaus van de engines, de groepen en routering van dae maken deel uit van de eigen configuratie van elk profiel: VPN > Profielen, Configuratie tonen / bewerken."
+
+msgid "Delete the subscription %s?"
+msgstr "Abonnement %s verwijderen?"
+
+msgid "Its profiles can go with it or stay as profiles of their own. The active profile is never removed while the VPN is on."
+msgstr "De profielen kunnen mee worden verwijderd of als eigen profielen blijven. Het actieve profiel wordt nooit verwijderd zolang de VPN aan staat."
+
+msgid "Keep the profiles"
+msgstr "Profielen behouden"
+
+msgid "Delete with its profiles"
+msgstr "Verwijderen met profielen"
+
+msgid "Only by hand"
+msgstr "Alleen handmatig"
+
+msgid "Every %d h"
+msgstr "Elke %d u"
+
+msgid "Share links: one profile per link"
+msgstr "Deellinks: één profiel per link"
+
+msgid "Clash/mihomo YAML: one mihomo profile"
+msgstr "Clash/mihomo-YAML: één mihomo-profiel"
+
+msgid "dae: one profile with every node in one group"
+msgstr "dae: één profiel met alle nodes in één groep"
+
+msgid "Add a subscription"
+msgstr "Abonnement toevoegen"
+
+msgid "Format"
+msgstr "Formaat"
+
+msgid "The URL usually holds your account token: it is stored on the device readable by root only, and never shown again. The subscription is fetched over the device's own connection: through the tunnel when the VPN is up; with the kill switch up and the tunnel down it cannot be fetched."
+msgstr "De URL bevat meestal uw accounttoken: die wordt op het apparaat opgeslagen, alleen leesbaar voor root, en nooit meer getoond. Het abonnement wordt opgehaald via de eigen verbinding van het apparaat: via de tunnel als de VPN aan staat; met de kill switch actief en de tunnel down kan het niet worden opgehaald."
+
+msgid "Refresh all"
+msgstr "Alles vernieuwen"
+
+msgid "No subscriptions yet."
+msgstr "Nog geen abonnementen."
+
+msgid "Host"
+msgstr "Host"
+
+msgid "Updated"
+msgstr "Bijgewerkt"
+
+msgid "Share links"
+msgstr "Deellinks"
+
+msgid "A refresh keeps the profiles whose name is unchanged, adds the new ones and removes the ones that are gone (the active one stays while the VPN is on, marked as gone). A refresh of the active profile restarts the running VPN."
+msgstr "Bij vernieuwen blijven profielen met een ongewijzigde naam behouden, worden nieuwe toegevoegd en verdwenen verwijderd (het actieve profiel blijft staan zolang de VPN aan staat, gemarkeerd als verdwenen). Het vernieuwen van het actieve profiel herstart de lopende VPN."
+
+msgid "Dashboard info failed"
+msgstr "Dashboardinformatie mislukt"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch): no live signal right now"
+msgstr "The modem is restarting (network locks or a SIM switch): no live signal right now"
+
+msgid "Live signal read failed"
+msgstr "Live signaal lezen mislukt"
+
+msgid "Unknown op"
+msgstr "Onbekende bewerking"
+
+msgid "Invalid argument for this op"
+msgstr "Ongeldig argument voor deze bewerking"
+
+msgid "The radio is busy: the dial or the watchdog is switching it, try again shortly"
+msgstr "De radio is bezet: de inbelprocedure of de watchdog schakelt hem om, probeer het zo opnieuw"
+
+msgid "The action gave no valid reply"
+msgstr "De actie gaf geen geldig antwoord"
+
+msgid "The confirm parameter must be 0 or 1"
+msgstr "De parameter confirm moet 0 of 1 zijn"
+
+msgid "An AT command is one line of printable ASCII, at most 512 characters"
+msgstr "Een AT-commando is één regel afdrukbare ASCII, maximaal 512 tekens"
+
+msgid "Must be an AT command"
+msgstr "Moet een AT-commando zijn"
+
+msgid "No \";\" command chaining"
+msgstr "Geen commandoketens met \";\""
+
+msgid "Denied: this command wedges the AT port until a reboot"
+msgstr "Geweigerd: dit commando blokkeert de AT-poort tot een herstart"
+
+msgid "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+msgstr "Denied: this command moves the SIM selection or the data route; the SIM settings do that"
+
+# Source-language fallback for untranslated new controls.
+msgid "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+msgstr "The modem is restarting (network locks or a SIM switch, about half a minute), try again shortly"
+
+msgid "A long AT command is still running in the background; try again when it has finished"
+msgstr "Er draait nog een lange AT-opdracht op de achtergrond; probeer het opnieuw als die klaar is"
+
+msgid "This command needs confirmation"
+msgstr "Deze opdracht moet bevestigd worden"
+
+msgid "The AT channel is busy; the command was not sent, try again"
+msgstr "Het AT-kanaal is bezet; het commando is niet verzonden, probeer opnieuw"
+
+msgid "The modem did not answer in time; the command may still run, check before sending it again"
+msgstr "De modem antwoordde niet op tijd; het commando kan nog lopen, controleer dit voordat u het opnieuw verzendt"
+
+msgid "The fresh parameter must be 0 or 1"
+msgstr "De parameter fresh moet 0 of 1 zijn"
+
+msgid "Reading the locks from the modem; try again in a few seconds"
+msgstr "De vergrendelingen worden uit de modem gelezen; probeer het over een paar seconden opnieuw"
+
+msgid "Lock read failed"
+msgstr "Vergrendeling lezen mislukt"
+
+msgid "Unknown lock kind"
+msgstr "Onbekend type vergrendeling"
+
+msgid "Invalid value for this lock kind"
+msgstr "Ongeldige waarde voor dit type vergrendeling"
+
+msgid "None of these bands is supported by this modem"
+msgstr "Deze modem ondersteunt geen van deze banden"
+
+msgid "Band, mode and cell locks are not supported for SIM2 yet"
+msgstr "Band-, modus- en celvergrendeling wordt nog niet ondersteund voor SIM2"
+
+msgid "Band, mode and cell locks are not supported while dual-SIM switching manages the radio"
+msgstr "Band-, modus- en celvergrendeling wordt niet ondersteund zolang dubbele-SIM-wisseling de radio beheert"
+
+msgid "Invalid page"
+msgstr "Ongeldige pagina"
+
+msgid "mu300-sms is not available (the SMS service is not installed or not running)"
+msgstr "mu300-sms is niet beschikbaar (de SMS-dienst is niet geïnstalleerd of draait niet)"
+
+msgid "No output"
+msgstr "Geen uitvoer"
+
+msgid "Bad ID"
+msgstr "Ongeldige ID"
+
+msgid "Read failed"
+msgstr "Lezen mislukt"
+
+msgid "The number may only contain digits (and a leading +)"
+msgstr "Het nummer mag alleen cijfers bevatten (en een + aan het begin)"
+
+msgid "The message is empty"
+msgstr "Het bericht is leeg"
+
+msgid "The message is too long (over 480 characters)"
+msgstr "Het bericht is te lang (meer dan 480 tekens)"
+
+msgid "The message contains a control character"
+msgstr "Het bericht bevat een stuurteken"
+
+msgid "The sim parameter must be 0 or 1"
+msgstr "De parameter sim moet 0 of 1 zijn"
+
+msgid "The USB adapter (device-usb) gave no valid reply"
+msgstr "De USB-adapter (device-usb) gaf geen geldig antwoord"
+
+msgid "The auto parameter must be 0 or 1"
+msgstr "De parameter auto moet 0 of 1 zijn"
+
+msgid "Invalid USB role"
+msgstr "Ongeldige USB-rol"
+
+msgid "A USB role takes no scope"
+msgstr "Een USB-rol heeft geen bereik"
+
+msgid "Invalid USB network mode"
+msgstr "Ongeldige USB-netwerkmodus"
+
+msgid "Invalid USB network scope"
+msgstr "Ongeldig bereik voor USB-netwerk"
+
+msgid "Unknown USB setting"
+msgstr "Onbekende USB-instelling"
+
+msgid "Invalid interface name"
+msgstr "Ongeldige interfacenaam"
+
+msgid "The power adapter gave no valid reply"
+msgstr "De voedingsadapter gaf geen geldig antwoord"
+
+msgid "Unknown power operation"
+msgstr "Onbekende voedingsbewerking"
+
+msgid "Unknown power setting"
+msgstr "Onbekende voedingsinstelling"
+
+msgid "Invalid power value"
+msgstr "Ongeldige voedingswaarde"
+
+msgid "Invalid power request"
+msgstr "Ongeldig voedingsverzoek"
+
+msgid "The languages adapter gave no valid reply"
+msgstr "De taaladapter gaf geen geldig antwoord"
+
+msgid "Unknown language operation"
+msgstr "Onbekende taalbewerking"
+
+msgid "Invalid language code"
+msgstr "Ongeldige taalcode"
+
+msgid "Invalid language request"
+msgstr "Ongeldig taalverzoek"
+
+msgid "Unknown source"
+msgstr "Onbekende bron"
+
+msgid "The TTL adapter gave no valid reply"
+msgstr "De TTL-adapter gaf geen geldig antwoord"
+
+msgid "Invalid TTL"
+msgstr "Ongeldige TTL"
+
+msgid "The data usage adapter gave no valid reply"
+msgstr "De dataverbruik-adapter gaf geen geldig antwoord"
+
+msgid "Unknown data usage setting"
+msgstr "Onbekende instelling voor dataverbruik"
+
+msgid "Invalid value for this setting"
+msgstr "Ongeldige waarde voor deze instelling"
+
+msgid "The forwarding adapter gave no valid reply"
+msgstr "De doorstuuradapter gaf geen geldig antwoord"
+
+msgid "The CPU adapter gave no valid reply"
+msgstr "The CPU adapter gave no valid reply"
+
+msgid "Invalid CPU profile"
+msgstr "Invalid CPU profile"
+
+msgid "Invalid CPU core"
+msgstr "Ongeldige CPU-kern"
+
+msgid "Unknown CPU operation"
+msgstr "Unknown CPU operation"
+
+msgid "Unknown CPU voltage operation"
+msgstr "Onbekende CPU-spanningsbewerking"
+
+msgid "Invalid CPU voltage request"
+msgstr "Ongeldig CPU-spanningsverzoek"
+
+msgid "Invalid CPU voltage offset"
+msgstr "Ongeldige CPU-spanningsoffset"
+
+msgid "Type the confirmation word to apply a voltage offset"
+msgstr "Typ het bevestigingswoord om een spanningsoffset toe te passen"
+
+msgid "Invalid stress test length"
+msgstr "Ongeldige duur van de stresstest"
+
+msgid "The packages adapter gave no valid reply"
+msgstr "De pakketadapter gaf geen geldig antwoord"
+
+msgid "Invalid packages operation"
+msgstr "Ongeldige pakketbewerking"
+
+msgid "The sizes parameter must be 0 or 1"
+msgstr "De parameter sizes moet 0 of 1 zijn"
+
+msgid "The update adapter gave no valid reply"
+msgstr "De update-adapter gaf geen geldig antwoord"
+
+msgid "Unknown update operation"
+msgstr "Onbekende updatebewerking"
+
+msgid "Invalid update request"
+msgstr "Ongeldig updateverzoek"
+
+msgid "The backup tool gave no valid reply"
+msgstr "Het back-uphulpmiddel gaf geen geldig antwoord"
+
+msgid "Mobile data integration is not provided by this platform"
+msgstr "Integratie van mobiele data wordt op dit platform niet geboden"
+
+msgid "The SIM settings could not be read"
+msgstr "De SIM-instellingen konden niet worden gelezen"
+
+msgid "Radio control is not provided by this platform"
+msgstr "Dit platform biedt geen radiobediening"
+
+msgid "A SIM radio change is already running"
+msgstr "Er loopt al een wijziging van de SIM-radio"
+
+# Source-language fallback for untranslated new controls.
+msgid "Invalid SIM setting"
+msgstr "Invalid SIM setting"
+
+msgid "The modem did not take the setting; nothing was saved"
+msgstr "De modem nam de instelling niet over; er is niets opgeslagen"
+
+# Source-language fallback for untranslated new controls.
+msgid "SIM control failed"
+msgstr "SIM control failed"
+
+# Source-language fallback for untranslated new controls.
+msgid "Enable hot switching; reboot if channels are unavailable or wait until idle"
+msgstr "Enable hot switching; reboot if channels are unavailable or wait until idle"
+
+msgid "Request too large"
+msgstr "Verzoek te groot"
+
+msgid "The runtime directory is not safe; nothing was run"
+msgstr "De runtimemap is niet veilig; er is niets uitgevoerd"
+
+msgid "No such method"
+msgstr "Methode bestaat niet"
+
+msgid "The VPN module refused the request"
+msgstr "De VPN-module weigerde het verzoek"
+
+msgid "The VPN panel is busy, try again"
+msgstr "Het VPN-paneel is bezig, probeer het opnieuw"
+
+msgid "Another VPN task is still running"
+msgstr "Een andere VPN-taak is nog bezig"
+
+msgid "The exit_ip parameter must be 0 or 1"
+msgstr "De parameter exit_ip moet 0 of 1 zijn"
+
+msgid "The VPN status could not be read"
+msgstr "De VPN-status kon niet worden gelezen"
+
+msgid "The profiles could not be read"
+msgstr "De profielen konden niet worden gelezen"
+
+msgid "The check parameter must be 0 or 1"
+msgstr "De parameter check moet 0 of 1 zijn"
+
+msgid "The engines could not be read"
+msgstr "De engines konden niet worden gelezen"
+
+msgid "The subscriptions could not be read"
+msgstr "De abonnementen konden niet worden gelezen"
+
+msgid "The VPN settings could not be read"
+msgstr "De VPN-instellingen konden niet worden gelezen"
+
+msgid "Unknown VPN operation"
+msgstr "Onbekende VPN-bewerking"
+
+msgid "The VPN could not be switched"
+msgstr "De VPN kon niet worden omgeschakeld"
+
+msgid "The kill switch is on or off"
+msgstr "De kill switch staat aan of uit"
+
+msgid "The kill switch could not be changed"
+msgstr "De kill switch kon niet worden gewijzigd"
+
+msgid "Invalid profile id"
+msgstr "Ongeldige profiel-id"
+
+msgid "The profile could not be made the active one"
+msgstr "Het profiel kon niet actief worden gemaakt"
+
+msgid "Unknown profile source"
+msgstr "Onbekende profielbron"
+
+msgid "Unknown profile type"
+msgstr "Onbekend profieltype"
+
+msgid "The config is empty, too large or holds control characters"
+msgstr "De configuratie is leeg, te groot of bevat besturingstekens"
+
+msgid "Invalid profile request"
+msgstr "Ongeldig profielverzoek"
+
+msgid "A config from a URL takes the type it says"
+msgstr "Een configuratie van een URL neemt het type aan dat ze zelf opgeeft"
+
+msgid "No uploaded file"
+msgstr "Geen geüpload bestand"
+
+msgid "The file is larger than 1 MiB"
+msgstr "Het bestand is groter dan 1 MiB"
+
+msgid "The profile could not be added"
+msgstr "Het profiel kon niet worden toegevoegd"
+
+msgid "The profile could not be renamed"
+msgstr "Het profiel kon niet worden hernoemd"
+
+msgid "The profile could not be removed"
+msgstr "Het profiel kon niet worden verwijderd"
+
+msgid "The profile does not pass the check"
+msgstr "Het profiel doorstaat de controle niet"
+
+msgid "Unknown profile option"
+msgstr "Onbekende profieloptie"
+
+msgid "Invalid value for this option"
+msgstr "Ongeldige waarde voor deze optie"
+
+msgid "The option could not be set"
+msgstr "De optie kon niet worden ingesteld"
+
+msgid "The config could not be read"
+msgstr "De configuratie kon niet worden gelezen"
+
+msgid "The config was not saved"
+msgstr "De configuratie is niet opgeslagen"
+
+msgid "The latency test failed"
+msgstr "De latentietest is mislukt"
+
+msgid "The refresh interval is 1 to 999 hours"
+msgstr "Het vernieuwingsinterval is 1 tot 999 uur"
+
+msgid "Unknown subscription type"
+msgstr "Onbekend abonnementstype"
+
+msgid "Invalid subscription id"
+msgstr "Ongeldige abonnements-id"
+
+msgid "The keep parameter must be 0 or 1"
+msgstr "De parameter keep moet 0 of 1 zijn"
+
+msgid "The subscription could not be removed"
+msgstr "Het abonnement kon niet worden verwijderd"
+
+msgid "The file is too large"
+msgstr "Het bestand is te groot"
+
+msgid "Unknown engine"
+msgstr "Onbekende engine"
+
+msgid "The unverified parameter must be 0 or 1"
+msgstr "De parameter unverified moet 0 of 1 zijn"
+
+msgid "This engine is a system package: it has no file to upload"
+msgstr "Deze engine is een systeempakket: er is geen bestand om te uploaden"
+
+msgid "The engine could not be removed"
+msgstr "De engine kon niet worden verwijderd"
+
+msgid "mu300-extra is not on this system"
+msgstr "mu300-extra is niet aanwezig op dit systeem"
+
+msgid "Unknown VPN setting"
+msgstr "Onbekende VPN-instelling"
+
+msgid "The setting could not be saved"
+msgstr "De instelling kon niet worden opgeslagen"
+
+msgid "The number of lines is 1 to 1000"
+msgstr "Het aantal regels is 1 tot 1000"
+
+msgid "The log could not be read"
+msgstr "Het logboek kon niet worden gelezen"
+
+msgid "The radio of this SIM is switched off in its settings"
+msgstr "De radio van deze SIM staat uit in de instellingen"
+
+# Source-language fallback for untranslated new controls.
+msgid "Use SIM control or reboot for managed dual-SIM radio"
+msgstr "Use SIM control or reboot for managed dual-SIM radio"
+
+msgid "The radio did not follow its setting"
+msgstr "De radio volgde zijn instelling niet"
+
+msgid "The data roaming setting could not be saved"
+msgstr "De instelling voor dataroaming kon niet worden opgeslagen"
+
+msgid "Expected on or off"
+msgstr "on of off verwacht"
+
+msgid "VPN integration is not provided by this platform"
+msgstr "VPN-integratie wordt niet door dit platform geboden"
+
+msgid "Dual-boot integration is not provided by this platform"
+msgstr "Dual-boot-integratie wordt niet door dit platform geboden"
+
+msgid "mu300-next-boot failed"
+msgstr "mu300-next-boot mislukt"
+
+msgid "AT backend did not answer (radio off, modem restarting, or adapter unavailable)"
+msgstr "AT-backend antwoordde niet (radio uit, modem herstart of adapter niet beschikbaar)"
+
+msgid "The CPU profile could not be read"
+msgstr "The CPU profile could not be read"
+
+msgid "The CPU profile could not be set"
+msgstr "The CPU profile could not be set"
+
+msgid "The CPU core could not be switched"
+msgstr "De CPU-kern kon niet worden omgeschakeld"
+
+msgid "Invalid low latency setting"
+msgstr "Ongeldige instelling voor lage latentie"
+
+msgid "The low latency setting could not be applied"
+msgstr "De instelling voor lage latentie kon niet worden toegepast"
+
+msgid "The CPU voltage offset could not be read"
+msgstr "De CPU-spanningsoffset kon niet worden gelezen"
+
+msgid "The CPU voltage offset was refused"
+msgstr "De CPU-spanningsoffset werd geweigerd"
+
+msgid "The CPU voltage offset could not be turned off"
+msgstr "De CPU-spanningsoffset kon niet worden uitgeschakeld"
+
+msgid "The stress test could not be started"
+msgstr "De stresstest kon niet worden gestart"
+
+msgid "USB role adapter is not executable"
+msgstr "USB-roladapter is niet uitvoerbaar"
+
+msgid "USB role adapter failed"
+msgstr "USB-roladapter mislukt"
+
+msgid "USB role switch is unavailable"
+msgstr "Wisselen van USB-rol is niet beschikbaar"
+
+msgid "USB role switch failed"
+msgstr "Wisselen van USB-rol mislukt"
+
+msgid "USB role switch was refused by platform safety checks"
+msgstr "Wisselen van USB-rol is geweigerd door de veiligheidscontroles van het platform"
+
+msgid "Cannot create USB boot settings directory"
+msgstr "Kan map voor USB-opstartinstellingen niet aanmaken"
+
+msgid "Cannot write USB boot settings"
+msgstr "Kan USB-opstartinstellingen niet schrijven"
+
+msgid "Cannot save USB boot settings"
+msgstr "Kan USB-opstartinstellingen niet opslaan"
+
+msgid "Invalid boot-auto value"
+msgstr "Ongeldige boot-auto-waarde"
+
+msgid "Device is the boot default; host auto-apply is the only persistent role"
+msgstr "Apparaatmodus is de opstartstandaard; automatisch toepassen als host is de enige permanente rol"
+
+msgid "Cannot save USB role policy"
+msgstr "Kan USB-rolbeleid niet opslaan"
+
+msgid "Cannot disable USB network boot policy"
+msgstr "Kan opstartbeleid voor USB-netwerk niet uitschakelen"
+
+msgid "Cannot commit USB role policy"
+msgstr "Kan USB-rolbeleid niet doorvoeren"
+
+msgid "USB network mode is unavailable in host role"
+msgstr "USB-netwerkmodus is niet beschikbaar in de hostrol"
+
+msgid "Disable host boot-auto before configuring USB network"
+msgstr "Schakel host-boot-auto uit voordat u het USB-netwerk configureert"
+
+msgid "Cannot save USB network policy"
+msgstr "Kan USB-netwerkbeleid niet opslaan"
+
+msgid "Cannot commit USB network policy"
+msgstr "Kan USB-netwerkbeleid niet doorvoeren"
+
+msgid "USB host mode is required"
+msgstr "USB-hostmodus is vereist"
+
+msgid "Not a USB network interface"
+msgstr "Geen USB-netwerkinterface"
+
+msgid "LAN bridge device section was not found"
+msgstr "Apparaatsectie van de LAN-bridge niet gevonden"
+
+msgid "Cannot bring USB network interface up"
+msgstr "Kan USB-netwerkinterface niet activeren"
+
+msgid "Cannot add interface to LAN bridge"
+msgstr "Kan interface niet aan LAN-bridge toevoegen"
+
+msgid "Cannot save LAN bridge"
+msgstr "Kan LAN-bridge niet opslaan"
+
+msgid "Network reload failed"
+msgstr "Herladen van netwerk mislukt"
+
+msgid "Cannot attach USB interface to LAN bridge"
+msgstr "Kan USB-interface niet aan LAN-bridge koppelen"
+
+msgid "Invalid forwarding setting"
+msgstr "Ongeldige doorstuurinstelling"
+
+msgid "The message template is too long or contains a control character"
+msgstr "Het berichtsjabloon is te lang of bevat een stuurteken"
+
+msgid "Invalid filter list (at most 50 lines)"
+msgstr "Ongeldige filterlijst (hooguit 50 regels)"
+
+msgid "The webhook address must be an http:// or https:// URL"
+msgstr "Het webhookadres moet een http://- of https://-URL zijn"
+
+msgid "The webhook body is too long or contains a control character"
+msgstr "De webhook-body is te lang of bevat een stuurteken"
+
+msgid "The answer check must be key=value, like errcode=0 or ok=true (the value a whole number or lowercase letters, 16 at most)"
+msgstr "De antwoordcontrole moet sleutel=waarde zijn, zoals errcode=0 of ok=true (de waarde een geheel getal of kleine letters, hooguit 16)"
+
+msgid "Invalid header (one \"Name: value\" per line; Host, Content-Type, Content-Length, Transfer-Encoding and Connection are set by the device)"
+msgstr "Ongeldige header (één \"Naam: waarde\" per regel; Host, Content-Type, Content-Length, Transfer-Encoding en Connection stelt het apparaat in)"
+
+msgid "Invalid Telegram bot token"
+msgstr "Ongeldig Telegram-bottoken"
+
+msgid "Invalid Telegram chat (a number, or @channel)"
+msgstr "Ongeldige Telegram-chat (een getal of @kanaal)"
+
+msgid "Invalid e-mail setting"
+msgstr "Ongeldige e-mailinstelling"
+
+msgid "The webhook needs an address"
+msgstr "De webhook heeft een adres nodig"
+
+msgid "Telegram needs a bot token and a chat"
+msgstr "Telegram heeft een bottoken en een chat nodig"
+
+msgid "E-mail needs a server, a sender and a recipient"
+msgstr "E-mail heeft een server, een afzender en een ontvanger nodig"
+
+msgid "SMS forwarding needs a phone number"
+msgstr "SMS doorsturen heeft een telefoonnummer nodig"
+
+msgid "The forwarding settings could not be saved"
+msgstr "De doorstuurinstellingen konden niet worden opgeslagen"
+
+msgid "SMS forwarding is not installed"
+msgstr "SMS doorsturen is niet geïnstalleerd"
+
+msgid "A test was started a moment ago; wait a few seconds"
+msgstr "Er is zojuist een test gestart; wacht een paar seconden"
+
+msgid "The delivery log could not be cleared"
+msgstr "Het afleverlog kon niet worden gewist"
+
+msgid "Unknown forwarding operation"
+msgstr "Onbekende doorstuurbewerking"
+
+msgid "The language pack is not installed"
+msgstr "Het taalpakket is niet geïnstalleerd"
+
+msgid "No language given"
+msgstr "Geen taal opgegeven"
+
+msgid "The language could not be changed"
+msgstr "De taal kon niet worden gewijzigd"
+
+msgid "LuCI does not offer this language"
+msgstr "LuCI biedt deze taal niet aan"
+
+msgid "No uploaded language pack"
+msgstr "Geen geüpload taalpakket"
+
+msgid "An installation is already running"
+msgstr "Er loopt al een installatie"
+
+msgid "The language pack could not be removed"
+msgstr "Het taalpakket kon niet worden verwijderd"
+
+msgid "Lock cache unavailable"
+msgstr "Vergrendelingscache niet beschikbaar"
+
+msgid "The modem refused a write"
+msgstr "De modem weigerde een schrijfopdracht"
+
+msgid "The saved locks could not be cleared"
+msgstr "De opgeslagen vergrendelingen konden niet worden gewist"
+
+msgid "No serving cell to lock to"
+msgstr "Geen serving cell om op te vergrendelen"
+
+msgid "The modem did not answer the mode query; nothing was sent"
+msgstr "De modem antwoordde niet op de modusopvraag; er is niets verzonden"
+
+msgid "The read-back does not match the automatic values"
+msgstr "Het teruglezen komt niet overeen met de automatische waarden"
+
+msgid "The read-back after the stack restart does not match the automatic values"
+msgstr "Het teruglezen na de herstart van de stack komt niet overeen met de automatische waarden"
+
+msgid "The reset was interrupted"
+msgstr "Het resetten is onderbroken"
+
+msgid "Reinstalling packages is not available on this system"
+msgstr "Pakketten opnieuw installeren is op dit systeem niet beschikbaar"
+
+msgid "No packages were written down by an update"
+msgstr "Geen update heeft pakketten genoteerd"
+
+msgid "Reinstalling is running already"
+msgstr "Opnieuw installeren is al bezig"
+
+msgid "The note could not be dropped"
+msgstr "De melding kon niet worden verwijderd"
+
+msgid "Unknown packages operation"
+msgstr "Onbekende pakketbewerking"
+
+msgid "usage: power get|set KEY VALUE|wake|idle"
+msgstr "usage: power get|set KEY VALUE|wake|idle"
+
+msgid "Data usage is not available on this system"
+msgstr "Dataverbruik is op dit systeem niet beschikbaar"
+
+msgid "Unknown data usage operation"
+msgstr "Onbekende bewerking voor dataverbruik"
+
+msgid "The TTL setting could not be read"
+msgstr "De TTL-instelling kon niet worden gelezen"
+
+msgid "The TTL could not be set"
+msgstr "De TTL kon niet worden ingesteld"
+
+msgid "Unknown TTL operation"
+msgstr "Onbekende TTL-bewerking"
+
+msgid "An update task is already running"
+msgstr "Er draait al een updatetaak"
+
+msgid "The task could not be started"
+msgstr "De taak kon niet worden gestart"
+
+msgid "The updater gave no valid reply"
+msgstr "De updater gaf geen geldig antwoord"
+
+msgid "This needs confirmation"
+msgstr "Dit moet worden bevestigd"
+
+msgid "Check for updates first"
+msgstr "Controleer eerst op updates"
+
+msgid "The upload directory is not safe; nothing was changed"
+msgstr "De uploadmap is niet veilig; er is niets gewijzigd"
+
+msgid "Not enough memory for this upload"
+msgstr "Niet genoeg geheugen voor deze upload"
+
+msgid "Not enough free space on the Linux partition"
+msgstr "Niet genoeg vrije ruimte op de Linux-partitie"
+
+msgid "The file was not checked; upload it again"
+msgstr "Het bestand is niet gecontroleerd; upload het opnieuw"
+
+msgid "This file is not for this device"
+msgstr "Dit bestand is niet voor dit apparaat"
+
+msgid "The signature of this file is wrong"
+msgstr "De handtekening van dit bestand is onjuist"
+
+msgid "This file is not signed: that needs confirmation"
+msgstr "Dit bestand is niet ondertekend: dat moet worden bevestigd"
+
+msgid "This file is older than what is installed: that needs confirmation"
+msgstr "Dit bestand is ouder dan wat is geïnstalleerd: dat moet worden bevestigd"
+
+msgid "The release source was not changed"
+msgstr "De releasebron is niet gewijzigd"

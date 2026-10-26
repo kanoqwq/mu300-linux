@@ -1,0 +1,17 @@
+# Docker on the MU300 (docs/FINDINGS.md 130). Its settings are /etc/docker/daemon.json (alt_config_file): what this
+# device needs there has no option in this file -
+#   data-root          outside the system's directory, on the Linux partition (/mnt/mu300-disk/docker/<system>): an
+#                      update or a rollback neither copies the images and containers nor leaves them behind
+#   firewall-backend   nftables: Docker 29's own tables (ip docker-bridges) beside fw4, no iptables-nft translation
+#                      (and no xt_addrtype, which the 5.4 kernel lacks)
+#   containerd-snapshotter false: the classic overlay2 store, no second, compressed copy of every image
+#   default-address-pools 172.16.0.0/12: the range the docker zone of fw4 covers (/etc/uci-defaults/95-mu300-docker):
+#                      containers reach the internet and the LAN reaches their published ports; the cellular side
+#                      (wan) reaches none of them
+# dockerd does not start at boot: "/etc/init.d/dockerd start" starts it, "/etc/init.d/dockerd enable" at every boot.
+# Plain OpenWrt has Docker ready, not installed: "apk add dockerd docker docker-compose" (this file stays).
+# A change to daemon.json (a proxy: "proxies", see docs.docker.com/engine/daemon/proxy) needs
+# "/etc/init.d/dockerd restart".
+config globals 'globals'
+	option alt_config_file '/etc/docker/daemon.json'
+

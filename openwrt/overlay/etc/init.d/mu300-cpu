@@ -1,0 +1,8 @@
+#!/bin/sh /etc/rc.common
+# apply the CPU performance profile saved by mu300-cpu (/etc/mu300/cpu.conf)
+START=95
+
+start() {
+	[ -r /etc/mu300/cpu.conf ] || return 0
+	/opt/mu300/bin/mu300-cpu apply
+}

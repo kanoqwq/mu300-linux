@@ -1,0 +1,85 @@
+#!/bin/sh
+# rpcd's view of mu300-power (mu300dash power_get / power_set): one JSON object for the page, and the three
+# writes. Everything the page shows comes from here; the validation of keys and values is mu300-power's.
+#   power get                 the state, the battery and charger, and the knobs of the three profiles
+#   power set KEY VALUE       KEY as mu300-power set takes it (PROFILE, SAVER_BELOW, CHARGE_TO, POWER_ON_CHARGER,
+#                             battery.CPU ...)
+#   power wake | power idle   the key press and the "idle now" request
+set -u
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+LIB=${0%/*}/../../share/unisoc-modem/lib.sh
+[ -f "$LIB" ] || LIB=/usr/share/unisoc-modem/lib.sh
+. "$LIB"
+
+P=${MU300_POWER_BIN:-/opt/mu300/bin/mu300-power}
+R=${MU300_SYSROOT:-}
+ST=${MU300_RUN:-/run}/mu300/power
+export MU300_POWER_CONF=${MU300_POWER_CONF:-/etc/mu300/power.conf}
+
+rd() { cat "$1" 2>/dev/null || true; }
+# jstr TEXT: one JSON string (quote, backslash and control characters escaped); jnum TEXT: a JSON number (no
+# leading zero: a sysfs "08" is not one) or null
+jstr() { json_str "$1"; }
+jnum() { json_num "$1"; }
+# milli VALUE: VALUE / 1000 as an integer, empty if VALUE is not one
+milli() { case $1 in ''|-|*[!0-9-]*|?*-*) ;; *) echo $(( $1 / 1000 )) ;; esac; }
+lower() { printf '%s' "$1" | tr 'A-Z' 'a-z'; }
+
+# knobs PROFILE: that profile's object, from the status text in $_st (mu300-power has validated the values)
+knobs() {
+    _l=$(printf '%s\n' "$_st" | sed -n "s/^$1: //p")
+    _w=$(echo "$_l" | sed -n 's/.*WIFI_IDLE=\([0-9]*\).*/\1/p'); _r=$(echo "$_l" | sed -n 's/.*RADIO_IDLE=\([a-z0-9]*\).*/\1/p')
+    _d=$(echo "$_l" | sed -n 's/.*LEDS_IDLE=\([a-z0-9]*\).*/\1/p'); _c=$(echo "$_l" | sed -n 's/.*CPU=\([a-z0-9]*\).*/\1/p')
+    printf '{"WIFI_IDLE":%s,"RADIO_IDLE":%s,"LEDS_IDLE":%s,"CPU":%s}' "$(jnum "$_w")" "$(jstr "$_r")" "$(jstr "$_d")" "$(jstr "$_c")"
+}
+get() {
+    _st=$("$P" status 2>/dev/null || true)
+    _prof=$(echo "$_st" | sed -n 's/^profile: \([a-z]*\) (.*)$/\1/p'); _why=$(echo "$_st" | sed -n 's/^profile: [a-z]* (\(.*\))$/\1/p')
+    _state=$(echo "$_st" | sed -n 's/^state: //p'); _reason=$(rd "$ST/reason" | head -n1)
+    _supply=$(echo "$_st" | sed -n 's/^supply: //p')
+    _sb=$(echo "$_st" | sed -n 's/^SAVER_BELOW=\([0-9]*\) .*/\1/p'); _ct=$(echo "$_st" | sed -n 's/.*CHARGE_TO=\([0-9]*\)$/\1/p')
+    _poc=$(echo "$_st" | sed -n 's/^POWER_ON_CHARGER=\([01]\)$/\1/p')
+    _pf=$(echo "$_st" | sed -n 's/^profile: //p')
+    _ign=$(echo "$_st" | sed -n 's/^ignored in power.conf: //p')
+    _since=$(echo "$_st" | sed -n 's/^idle timer: last client \([0-9]*\) s ago$/\1/p')
+    _bat=null
+    # mu300-power decides whether there is a battery (the F50's fuel gauge reports one that is not there)
+    for _d in "$R"/sys/class/power_supply/*; do
+        echo "$_st" | grep -qx 'battery: none' && break
+        [ "$(rd "$_d/type")" = Battery ] || continue
+        [ ! -f "$_d/present" ] || [ "$(rd "$_d/present")" = 1 ] || continue
+        _bat=$(printf '{"capacity":%s,"status":%s,"mv":%s,"ma":%s,"temp":%s}' "$(jnum "$(rd "$_d/capacity")")" \
+            "$(jstr "$(lower "$(rd "$_d/status")")")" "$(jnum "$(milli "$(rd "$_d/voltage_now")")")" \
+            "$(jnum "$(milli "$(rd "$_d/current_now")")")" "$(jnum "$(rd "$_d/temp")")")
+        break
+    done
+    _chg=null
+    for _d in "$R"/sys/class/power_supply/*; do
+        case $(rd "$_d/type") in USB|Mains) ;; *) continue ;; esac
+        _ut=$(rd "$_d/usb_type" | sed -n 's/.*\[\([A-Za-z_]*\)\].*/\1/p')
+        _chg=$(printf '{"status":%s,"online":%s,"usb_type":%s,"input_ma":%s}' "$(jstr "$(lower "$(rd "$_d/status")")")" \
+            "$(jnum "$(rd "$_d/online")")" "$(jstr "$_ut")" "$(jnum "$(milli "$(rd "$_d/input_current_limit")")")")
+        break
+    done
+    _ignj=; _sep=
+    set -f
+    for _k in $_ign; do _ignj="$_ignj$_sep$(jstr "$_k")"; _sep=,; done
+    set +f
+    _confp=$(sed -n 's/^PROFILE=\(.*\)$/\1/p' "$MU300_POWER_CONF" 2>/dev/null | tail -n1)
+    case $_confp in auto|plugged|battery|saver) ;; *) _confp=auto ;; esac
+    printf '{"state":%s,"reason":%s,"profile":%s,"why":%s,"supply":%s,"battery":%s,"charger":%s,"charge_off":%s,"idle_since_s":%s,' \
+        "$(jstr "${_state:-active}")" "$(jstr "$_reason")" "$(jstr "$_prof")" "$(jstr "$_why")" "$(jstr "$_supply")" \
+        "$_bat" "$_chg" "$(jstr "$(rd "$ST/charge-off" | head -n1)")" "$(jnum "$_since")"
+    printf '"conf":{"PROFILE":%s,"SAVER_BELOW":%s,"CHARGE_TO":%s,"POWER_ON_CHARGER":%s,"plugged":%s,"battery":%s,"saver":%s},"ignored":[%s]}\n' \
+        "$(jstr "$_confp")" "$(jnum "$_sb")" "$(jnum "$_ct")" "$(jnum "$_poc")" "$(knobs plugged)" "$(knobs battery)" "$(knobs saver)" "$_ignj"
+}
+case "${1:-}" in
+    get)  get ;;
+    # i18n: Invalid power value
+    set)  if _e=$("$P" set "${2:-}" "${3:-}" 2>&1); then echo '{"ok":1}'; else printf '{"ok":0,"error":%s}\n' "$(jstr "$_e")"; fi ;;
+    # no key name: it also ends a charging boot. In the background: the wake restores whatever is down and can take
+    # longer than rpcd's 30 s (the modem's resume alone is bounded to ~60 s)
+    wake) ( "$P" wake </dev/null >/dev/null 2>&1 & ); echo '{"ok":1}' ;;
+    idle) "$P" idle >/dev/null 2>&1; echo '{"ok":1}' ;;
+    *)    echo '{"ok":0,"error":"usage: power get|set KEY VALUE|wake|idle"}'; exit 2 ;;
+esac

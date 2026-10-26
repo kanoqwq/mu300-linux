@@ -1,0 +1,156 @@
+wlan_combo (5.4): quiet the per-packet TX ring, command response and beacon update lines
+
+docs/FINDINGS.md 191. The softAP's TX path printed seven lines per transmit-complete round (free/data counts,
+"to free list empty", ring reference counts), every command response ("ctx_id 0 recv rsp[CMD_SET_IE]"), every
+multicast frame and every beacon update, and rx.c printed "out of time" with pr_err whenever two TX completions
+were more than a second apart, which is every idle second. About 170 lines a minute on an idle F50 hotspot. Only
+printk levels change, to what the 6.18/7.2 port (upstream/modules/sprd_wlan_combo) already uses; the full-ring
+line in sc2355_pcie_fc_test_send_num() becomes pr_debug_ratelimited there too.
+
+diff --git a/common/cfg80211.c b/common/cfg80211.c
+index 5f777fb..dbd59f6 100755
+--- a/common/cfg80211.c
++++ b/common/cfg80211.c
+@@ -643,7 +643,7 @@ int sprd_cfg80211_change_beacon(struct wiphy *wiphy, struct net_device *ndev,
+ {
+ 	struct sprd_vif *vif = netdev_priv(ndev);
+ 
+-	netdev_info(ndev, "%s\n", __func__);
++	netdev_dbg(ndev, "%s\n", __func__);
+ 
+ 	return cfg80211_set_beacon_ies(vif, beacon);
+ }
+diff --git a/sc2355/cmdevt.c b/sc2355/cmdevt.c
+index 5fe7ae6..5cfd90c 100644
+--- a/sc2355/cmdevt.c
++++ b/sc2355/cmdevt.c
+@@ -4151,7 +4151,7 @@ unsigned short sc2355_rx_rsp_process(struct sprd_priv *priv, u8 *msg)
+ 	spin_lock_bh(&cmd->lock);
+ 	if (!cmd->data && SPRD_GET_LE32(hdr->mstime) == cmd->mstime &&
+ 	    hdr->cmd_id == cmd->cmd_id) {
+-		pr_info("ctx_id %d recv rsp[%s]\n",
++		pr_debug("ctx_id %d recv rsp[%s]\n",
+ 			hdr->common.mode, cmdevt_cmd2str(hdr->cmd_id));
+ 		if (unlikely(hdr->status != 0)) {
+ 			pr_err("%s ctx_id %d recv rsp[%s] status[%s]\n",
+diff --git a/sc2355/pcie.c b/sc2355/pcie.c
+index cfeff72..691efd5 100644
+--- a/sc2355/pcie.c
++++ b/sc2355/pcie.c
+@@ -1410,12 +1410,12 @@ int sc2355_tx_free_pcie_data(unsigned char *data)
+ 	tx_mgmt->txc_num += data_num;
+ 	tmp = (unsigned char *)txc_addr;
+ 	pr_debug("%s: seq_num=0x%x", __func__, *(tmp + 1));
+-	pr_info("%s, total free num:%lu; total tx_num:%lu\n", __func__,
++	pr_debug("%s, total free num:%lu; total tx_num:%lu\n", __func__,
+ 		 tx_mgmt->txc_num, tx_mgmt->tx_num);
+ 
+ 
+ 	if (printk_timed_ratelimit(&caller_jiffies, 1000)) {
+-		pr_info("%s, free_num: %d, to_free_list num: %d\n",
++		pr_debug("%s, free_num: %d, to_free_list num: %d\n",
+ 			__func__, data_num,
+ 			atomic_read(&tx_mgmt->xmit_msg_list.free_num));
+ 	}
+@@ -1496,7 +1496,7 @@ int sc2355_pcie_tx_cmd_pop_list(int channel, struct mbuf_t *head,
+ 	}
+ 
+ 	tx_mgmt->cmd_poped += num;
+-	pr_info("tx_cmd_pop num: %d,cmd_poped=%d, cmd_send=%d\n",
++	pr_debug("tx_cmd_pop num: %d,cmd_poped=%d, cmd_send=%d\n",
+ 		num, tx_mgmt->cmd_poped, tx_mgmt->cmd_send);
+ 	sprdwcn_bus_list_free(channel, head, tail, num);
+ 
+@@ -1775,7 +1775,7 @@ void sc2355_pcie_handle_tx_return(struct sprd_hif *hif,
+ {
+ 	if (ret == -2) {
+ 		atomic_sub(send_num, &list->ref);
+-		pr_info("%s,%d,debug: %d\n", __func__, __LINE__, atomic_read(&list->ref));
++		pr_debug("%s,%d,debug: %d\n", __func__, __LINE__, atomic_read(&list->ref));
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+ 		usleep_range_state(100, 200, TASK_UNINTERRUPTIBLE);
+ #else
+@@ -1790,7 +1790,7 @@ void sc2355_pcie_handle_tx_return(struct sprd_hif *hif,
+ #endif
+ 		return;
+ 	} else {
+-		pr_info("%s,%d,debug: %d\n", __func__, __LINE__, atomic_read(&list->ref));
++		pr_debug("%s,%d,debug: %d\n", __func__, __LINE__, atomic_read(&list->ref));
+ 	}
+ }
+ 
+@@ -1890,14 +1890,14 @@ int sc2355_pcie_fc_get_send_num(struct sprd_hif *hif,
+ 
+ 	free_num = atomic_read(&tx_mgmt->xmit_msg_list.free_num);
+ 	if (printk_timed_ratelimit(&caller_jiffies, 1000)) {
+-		pr_info("%s, free_num=%d, data_num=%d\n", __func__,
++		pr_debug("%s, free_num=%d, data_num=%d\n", __func__,
+ 			free_num, data_num);
+ 		if (list_empty(&tx_mgmt->xmit_msg_list.to_free_list))
+-			pr_info("%s: to free list empty\n", __func__);
++			pr_debug("%s: to free list empty\n", __func__);
+ 	}
+ 
+ 	if ((free_num + data_num) >= tx_buf_max) {
+-		pr_info("%s, free_num=%d, data_num=%d\n", __func__,
++		pr_debug("%s, free_num=%d, data_num=%d\n", __func__,
+ 				   free_num, data_num);
+ 		return (tx_buf_max - free_num);
+ 	} else {
+@@ -1923,14 +1923,14 @@ int sc2355_pcie_fc_test_send_num(struct sprd_hif *hif,
+ 
+ 	free_num = atomic_read(&tx_mgmt->xmit_msg_list.free_num);
+ 	if (printk_timed_ratelimit(&caller_jiffies, 1000)) {
+-		pr_info("%s,%d free_num=%d, data_num=%d\n", __func__,
++		pr_debug("%s,%d free_num=%d, data_num=%d\n", __func__,
+ 			__LINE__, free_num, data_num);
+ 		if (list_empty(&tx_mgmt->xmit_msg_list.to_free_list))
+-			pr_info("%s: to free list empty\n", __func__);
++			pr_debug("%s: to free list empty\n", __func__);
+ 	}
+ 
+ 	if ((free_num + data_num) >= tx_buf_max) {
+-		pr_err("%s,%d free_num=%d, data_num=%d\n",
++		pr_debug_ratelimited("%s,%d free_num=%d, data_num=%d\n",
+ 				   __func__, __LINE__, free_num, data_num);
+ 		return (tx_buf_max - free_num);
+ 	} else {
+diff --git a/sc2355/rx.c b/sc2355/rx.c
+index cc39ae0..55e01c3 100644
+--- a/sc2355/rx.c
++++ b/sc2355/rx.c
+@@ -327,7 +327,7 @@ sc2355_rx_mh_addr_process(struct rx_mgmt *rx_mgmt, void *data,
+ 		pr_debug("%s: Add TX complete code here\n", __func__);
+ 
+ 		if (time != 0 && ((jiffies - time) >= msecs_to_jiffies(1000))) {
+-			pr_err("%s: out of time %d\n",
++			pr_debug("%s: out of time %d\n",
+ 			       __func__, jiffies_to_msecs(jiffies - time));
+ 		}
+ 
+diff --git a/sc2355/sdio.c b/sc2355/sdio.c
+index 0d21612..ff55468 100755
+--- a/sc2355/sdio.c
++++ b/sc2355/sdio.c
+@@ -1002,7 +1002,7 @@ int sc2355_tx_cmd_pop_list(int channel, struct mbuf_t *head,
+ 	}
+ 
+ 	tx_mgmt->cmd_poped += num;
+-	pr_info("tx_cmd_pop num: %d,cmd_poped=%d, cmd_send=%d\n",
++	pr_debug("tx_cmd_pop num: %d,cmd_poped=%d, cmd_send=%d\n",
+ 		num, tx_mgmt->cmd_poped, tx_mgmt->cmd_send);
+ 	sprdwcn_bus_list_free(channel, head, tail, num);
+ 
+diff --git a/sc2355/tx.c b/sc2355/tx.c
+index 46f1b97..10f1397 100644
+--- a/sc2355/tx.c
++++ b/sc2355/tx.c
+@@ -939,7 +939,7 @@ static int tx_mc_pkt(struct sk_buff *skb, struct net_device *ndev)
+ 	}
+ 
+ 	if (tx_is_multicast_mac_addr(hif->skb_da) && vif->mode == SPRD_MODE_AP) {
+-		pr_info
++		pr_debug
+ 		    ("%s,AP mode, multicast bssid: %02x:%02x:%02x:%02x:%02x:%02x\n",
+ 		     __func__, hif->skb_da[0], hif->skb_da[1], hif->skb_da[2],
+ 		     hif->skb_da[3], hif->skb_da[4], hif->skb_da[5]);

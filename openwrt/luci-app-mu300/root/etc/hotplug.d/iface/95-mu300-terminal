@@ -1,0 +1,6 @@
+#!/bin/sh
+# ttyd listens on the LAN bridge's own address only (/etc/config/ttyd: interface @lan) and looks it up once, when it
+# starts: a LAN that came up after it, or a changed LAN address, left System > Terminal without a listener.
+[ "$ACTION" = ifup ] && [ "$INTERFACE" = lan ] || exit 0
+[ -x /etc/init.d/ttyd ] && /etc/init.d/ttyd enabled || exit 0
+/etc/init.d/ttyd restart

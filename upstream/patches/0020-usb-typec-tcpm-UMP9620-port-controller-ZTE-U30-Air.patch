@@ -1,0 +1,1034 @@
+usb: typec: tcpm: the UMP9620's Type-C and PD blocks as a TCPM port controller (ZTE U30 Air, experimental)
+
+A PD dock with a charger behind it (USB-C charger in, USB-A ports and Ethernet out) should charge the U30 Air and
+have it as the USB host at once. Mainline had no driver for the PMIC's Type-C and PD blocks: VBUS from a GPIO,
+the source's Rp read by the charger (0012), and the data role chosen by mu300-usb. kano ported Unisoc's
+sc27xx_pd.c to mainline's TCPM (kanoqwq/mu300-linux 2af101f8, "complete U30 Air power, LED and PD dock support");
+on his unit a computer gave device + sink, and a dock with its charger gave host + sink after a manual data role
+swap, while the automatic switch to host did not, and his last receive fix was not run against the dock again.
+
+This is his driver reviewed and rewritten (FINDINGS 150), one file, Unisoc's register sequences checked against
+sc27xx_pd.c and sc27xx_typec.c of ZTE's U30 Air kernel. Built as a module, and probe does nothing unless the
+module is loaded with enable=1 (mu300-usb pd on); then only where the device tree has the charger policy service
+(the U30 Air, as 0016), the Type-C block's use_pdhub_c2c and the PD block enabled (the F50's is disabled, the V50
+has no charger policy service).
+
+What changed from kano's version, and why:
+
+- VCONN is never sourced, and a cable's Ra is not reported: ZTE's firmware does not source it (the PD node has no
+  vconn-supply, so Unisoc's set_vconn fails), and which CC pin the PMIC's VCONN switch drives is unknown; kano
+  switched the switch on whenever TCPM asked.
+- 5 V out only through the charger's regulator, which refuses an outside supply (0019); a missing vbus-supply is an
+  error, not a dummy regulator (devm_regulator_get gave one).
+- The Type-C block's mode and enable registers are saved at probe and put back at remove and shutdown: the PMIC
+  keeps its registers across a reboot, and a block left source-only would not let a charger see a sink (LK, Android,
+  the next boot). The PD clocks are never switched off again (the module enable covers the Type-C block LK and
+  Android rely on); kano switched them off at shutdown.
+- Clocks and calibration in init, in Unisoc's order (kano calibrated the Type-C trim before the clocks were on).
+- A new PD session (set_pd_rx on) and every hard reset, sent or received, empty both FIFOs and clear both message
+  IDs, as Unisoc does; kano cleared neither the RX ID at a new session nor the TX ID at a hard reset, so a first
+  message could be taken for a repeat.
+- The input current is passed on only for an explicit contract (the partner sent Source_Capabilities); kano passed
+  it on after any received message, Rp-based values included.
+- Unplugged as a host, the data role goes back to device at once: TCPM never hands it back at a detach.
+- The receive-error interrupt is not enabled (nothing is done with it; Unisoc has a storm guard for it).
+- Locking: every callback that touches the PD block holds the driver's lock; TCPM is called with it held only where
+  TCPM merely queues (receive, transmit complete, hard reset).
+- Source PDO 5 V 400 mA (ZTE's own, from the board's connector node), sink 5 V 2 A, Rp default as a source.
+
+Kept from kano's version: the Type-C block's own state machine for attach, detach and the CC pin (open is not
+done: TCPM's port reset at start then does not drop a computer that is plugged in), the FIFO flushed after each
+frame (it holds the CRC behind it), TX_OK and a received GoodCRC completing one transmission once, the VBUS GPIO's
+extcon for VBUS changes without a CC event, TCPM registered last and unregistered first.
+
+Not known yet and to be seen on the device (FINDINGS 150): whether the Type-C block follows a mode change while
+attached (power role swaps, Try.SNK), whether a hard reset sent raises TX_OK, and whether a second frame can sit in
+the FIFO behind the first (the RX FIFO level is logged at debug level).
+
+--- a/drivers/usb/typec/tcpm/Kconfig
++++ b/drivers/usb/typec/tcpm/Kconfig
+@@ -78,6 +78,19 @@
+ 	  To compile this driver as module, choose M here: the module will be
+ 	  called typec_wcove.ko
+ 
++config TYPEC_UMP9620
++	tristate "Unisoc UMP9620 Type-C and PD port controller (ZTE U30 Air)"
++	depends on MFD_SC27XX_PMIC && OF && REGULATOR && NVMEM && EXTCON
++	depends on USB_ROLE_SWITCH && POWER_SUPPLY
++	help
++	  The USB-C port of the UMP9620 PMIC under TCPM: Type-C attach and
++	  detach from the PMIC's own Type-C block, USB Power Delivery through
++	  its PD block, the dwc3 data role and the charger's boost as VBUS.
++	  Experimental: it does nothing unless loaded with enable=1.
++
++	  To compile this driver as a module, choose M here: the module will be
++	  called ump9620-tcpc.
++
+ config TYPEC_QCOM_PMIC
+ 	tristate "Qualcomm PMIC USB Type-C Port Controller Manager driver"
+ 	depends on ARCH_QCOM || COMPILE_TEST
+--- a/drivers/usb/typec/tcpm/Makefile
++++ b/drivers/usb/typec/tcpm/Makefile
+@@ -3,6 +3,7 @@
+ obj-$(CONFIG_TYPEC_FUSB302)		+= fusb302.o
+ obj-$(CONFIG_TYPEC_WCOVE)		+= typec_wcove.o
+ typec_wcove-y				:= wcove.o
++obj-$(CONFIG_TYPEC_UMP9620)		+= ump9620-tcpc.o
+ obj-$(CONFIG_TYPEC_TCPCI)		+= tcpci.o
+ obj-$(CONFIG_TYPEC_RT1711H)		+= tcpci_rt1711h.o
+ obj-$(CONFIG_TYPEC_MT6360)		+= tcpci_mt6360.o
+--- /dev/null
++++ b/drivers/usb/typec/tcpm/ump9620-tcpc.c
+@@ -0,0 +1,952 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * The USB-C port of the Unisoc UMP9620 PMIC (ZTE U30 Air) as a port controller for TCPM: Type-C attach and detach,
++ * USB Power Delivery messages, the data role of the SoC's dwc3, and the 5 V the charger's boost puts out.
++ *
++ * EXPERIMENTAL and off by default: probe does nothing unless the module is loaded with enable=1
++ * (`mu300-usb pd on`). Only the U30 Air binds it: its device tree has the charger policy service, the Type-C block's
++ * use_pdhub_c2c and the PD block enabled; the F50 and the V50 have none of that.
++ *
++ * The register sequences are Unisoc's (sc27xx_pd.c and sc27xx_typec.c of ZTE's U30 Air kernel, GPL); kano put them
++ * under mainline's TCPM first (kanoqwq/mu300-linux 2af101f8). The Type-C block runs its own state machine (DRP
++ * toggling, attach and detach debounce, which CC pin): this driver reads its result and leaves it alone, as Unisoc's
++ * does, except where TCPM has to change what the port presents (a power role swap, a source's Rp).
++ *
++ * What it will not do, whatever TCPM asks:
++ *  - put out 5 V while something else drives VBUS: the charger's "otg-vbus" regulator refuses that itself
++ *    (bq256xx, "ti,bq2560x_chg"), so neither a PD swap nor a missed detach can short two supplies;
++ *  - source VCONN: ZTE's firmware never does (the board's PD node has no vconn-supply), and which CC pin the PMIC's
++ *    VCONN switch drives is not known; a cable's Ra is reported as nothing;
++ *  - ask for more than 5 V or take more than 2 A (the input current the charger takes from a DCP);
++ *  - offer more than 400 mA as a source (ZTE's own source PDO; Rp default current).
++ */
++#include <linux/bitfield.h>
++#include <linux/delay.h>
++#include <linux/extcon.h>
++#include <linux/interrupt.h>
++#include <linux/mfd/syscon.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/nvmem-consumer.h>
++#include <linux/of.h>
++#include <linux/of_irq.h>
++#include <linux/platform_device.h>
++#include <linux/power_supply.h>
++#include <linux/property.h>
++#include <linux/regmap.h>
++#include <linux/regulator/consumer.h>
++#include <linux/slab.h>
++#include <linux/usb/pd.h>
++#include <linux/usb/role.h>
++#include <linux/usb/tcpm.h>
++#include <linux/workqueue.h>
++
++static bool enable;
++module_param(enable, bool, 0644);
++MODULE_PARM_DESC(enable, "drive the U30 Air's USB-C port with TCPM (experimental; default: off)");
++
++/* PMIC global registers */
++#define UMP9620_MODULE_EN		0x2008
++#define UMP9620_TYPEC_PD_EN		BIT(13)
++#define UMP9620_ARM_CLK_EN0		0x200c
++#define UMP9620_CLK_PD_SEL		BIT(10)
++#define UMP9620_CLK_PD_EN		BIT(9)
++#define UMP9620_RESERVED_CORE		0x234c
++#define UMP9620_TRIM_CURRENT_FROM_EFUSE	BIT(4)
++#define UMP9620_XTL_WAIT_CTRL0		0x2378
++#define UMP9620_XTL_EN			BIT(8)
++
++/* the SoC's AON APB: the PMIC's 26 MHz sine driver, which clocks the PD PHY */
++#define UMS9620_AON_MIPI_CSI_POWER_CTRL	0x350
++#define UMS9620_AON_SINDRV_ENA		BIT(5)
++
++/* Type-C block (typec@380) */
++#define TYPEC_EN			0x00
++#define TYPEC_MODE			0x04
++#define TYPEC_MODE_ROLE			GENMASK(1, 0)	/* 0 sink, 1 source, 2 DRP */
++#define TYPEC_MODE_RP			GENMASK(3, 2)	/* 1 default, 2 1.5 A, 3 3 A */
++#define TYPEC_PD_CFG			0x08
++#define TYPEC_PD_SUPPORT		BIT(0)
++#define TYPEC_PD_CONTRACT		BIT(6)
++#define TYPEC_INT_EN			0x0c
++#define TYPEC_INT_CLR			0x10
++#define TYPEC_INT_RAW			0x14
++#define TYPEC_ATTACH_INT		BIT(0)
++#define TYPEC_DETACH_INT		BIT(1)
++#define TYPEC_EVENTS			GENMASK(9, 0)
++#define TYPEC_STATUS			0x1c
++#define TYPEC_STATE			GENMASK(4, 0)
++#define TYPEC_CC1_ACTIVE		BIT(5)
++#define TYPEC_RP_SEEN			GENMASK(7, 6)	/* the source's Rp, attached as a sink */
++#define TYPEC_TCCDE_CNT			0x20
++#define TYPEC_TCC_DEBOUNCE		0xc7f		/* Unisoc: 100 ms, for PD signalling at 150 ms */
++#define TYPEC_RTRIM			0x3c
++#define TYPEC_WC_REG			0x58
++#define TYPEC_PR_SWAP			BIT(2)
++#define TYPEC_DBG1			0x60
++#define TYPEC_VBUS_OK			BIT(8)
++
++enum ump9620_typec_state {
++	TYPEC_DETACHED_SNK,
++	TYPEC_ATTACHWAIT_SNK,
++	TYPEC_ATTACHED_SNK,
++	TYPEC_DETACHED_SRC,
++	TYPEC_ATTACHWAIT_SRC,
++	TYPEC_ATTACHED_SRC,
++	TYPEC_POWERED_CABLE,
++	TYPEC_AUDIO_CABLE,
++	TYPEC_DEBUG_CABLE,
++};
++
++/* PD block (pd@e00) */
++#define PD_TX_BUF			0x00
++#define PD_RX_BUF			0x04
++#define PD_HEAD_CFG			0x08
++#define PD_CTRL				0x0c
++#define PD_TX_START			BIT(0)
++#define PD_HARD_RESET			BIT(2)
++#define PD_TX_FLUSH			BIT(3)
++#define PD_RX_FLUSH			BIT(4)
++#define PD_RX_ID_CLR			BIT(8)
++#define PD_CFG0				0x10
++#define PD_EN_SOP			BIT(8)
++#define PD_SRC_SINK_MODE		BIT(9)		/* set: we are the source */
++#define PD_CTL_EN			BIT(10)
++#define PD_BIST_MODE_EN			BIT(11)
++#define PD_CFG1				0x14
++#define PD_RETRY			GENMASK(2, 1)
++#define PD_EN_SOP_RX			BIT(8)
++#define PD_RX_AUTO_GOOD_CRC		BIT(9)
++#define PD_PHY_13M			BIT(11)
++#define PD_MESG_ID_CFG			0x18
++#define PD_MESS_ID_TX			GENMASK(2, 0)
++#define PD_STS1				0x20
++#define PD_RX_DATA_NUM			GENMASK(8, 0)
++#define PD_INT_FLG			0x28
++#define PD_INT_CLR			0x2c
++#define PD_INT_EN			0x30
++#define PD_HARD_RST_FLAG		BIT(0)
++#define PD_PKG_RV_FLAG			BIT(4)
++#define PD_TX_OK_FLAG			BIT(5)
++#define PD_TX_ERROR_FLAG		BIT(6)
++#define PD_TX_COLLISION_FLAG		BIT(7)
++#define PD_RX_FIFO_OVERFLOW_FLAG	BIT(10)
++#define PD_INT_ALL			GENMASK(13, 0)
++/*
++ * Unisoc enables 0x85ff. Bit 8, a receive error, is left out: nothing is done with it, and on a noisy line it is an
++ * interrupt storm (Unisoc counts them and switches it off after 100 in two minutes).
++ */
++#define PD_INT_USED			0x84ff
++#define PD_PHY_CFG0			0x50
++#define PD_PHY_CFG0_RCCAL		GENMASK(8, 6)
++#define PD_PHY_CFG0_VTL			GENMASK(3, 2)
++#define PD_PHY_CFG0_VTH			GENMASK(1, 0)
++#define PD_PHY_CFG1			0x54
++#define PD_PHY_CFG1_REF_CAL		GENMASK(14, 12)
++#define PD_PHY_CFG1_VREF_SEL		GENMASK(7, 6)
++#define PD_PHY_CFG1_CC1_SW		BIT(3)
++#define PD_PHY_CFG1_CC2_SW		BIT(2)
++#define PD_PHY_CFG2			0x58
++#define PD_PHY_CFG2_RX_REF_CAL		BIT(7)
++#define PD_PHY_CFG2_CLK			BIT(6)
++#define TYPEC_IBIAS			0x70
++#define TYPEC_RX_REF_DECREASE		BIT(7)
++
++/* efuse fields (UMP9620) */
++#define EFUSE_RC_SHIFT			5
++#define EFUSE_REF_SHIFT			6
++#define EFUSE_DELTA_SHIFT		9
++#define EFUSE_CC1_SHIFT			1
++#define EFUSE_CC2_SHIFT			11
++
++#define UMP9620_SINK_MAX_MA		2000	/* what the charger takes from a DCP */
++#define UMP9620_SOURCE_MA		400	/* ZTE's source PDO */
++
++struct ump9620_tcpc {
++	struct device *dev;
++	struct regmap *regmap, *aon;
++	u32 base, typec;
++	struct tcpc_dev tcpc;
++	struct tcpm_port *port;
++	struct fwnode_handle *connector;
++	struct usb_role_switch *role_sw;
++	struct regulator *vbus;
++	struct power_supply *charger;
++	struct extcon_dev *vbus_edev;
++	struct notifier_block vbus_nb;
++	struct delayed_work cc_work;
++	int irq, cc_irq;
++	u32 cal_rc, cal_delta, cal_cc1, cal_cc2;	/* efuse */
++	u32 saved_en, saved_mode;	/* the Type-C block as the bootloader left it: put back at remove/shutdown */
++	struct mutex lock;		/* the PD block's FIFOs and the fields below */
++	enum typec_role power_role;
++	bool attached, vbus_on, tx_pending, source_caps, contract_marked, stopped;
++};
++
++static struct ump9620_tcpc *to_ump(struct tcpc_dev *tcpc)
++{
++	return container_of(tcpc, struct ump9620_tcpc, tcpc);
++}
++
++static int pd_update(struct ump9620_tcpc *u, u32 reg, u32 mask, u32 val)
++{
++	return regmap_update_bits(u->regmap, u->base + reg, mask, val);
++}
++
++/* the CTRL bits are strobes: always written, even when they read back as set */
++static int pd_strobe(struct ump9620_tcpc *u, u32 bits)
++{
++	return regmap_write_bits(u->regmap, u->base + PD_CTRL, bits, bits);
++}
++
++static int typec_update(struct ump9620_tcpc *u, u32 reg, u32 mask, u32 val)
++{
++	return regmap_update_bits(u->regmap, u->typec + reg, mask, val);
++}
++
++/* RX and TX FIFOs emptied, the RX message ID forgotten; at a new session or a reset also the TX one (Unisoc) */
++static int ump9620_pd_reset(struct ump9620_tcpc *u, bool tx_id)
++{
++	int ret = pd_strobe(u, PD_RX_FLUSH | PD_TX_FLUSH | PD_RX_ID_CLR);
++
++	if (!ret && tx_id)
++		ret = pd_update(u, PD_MESG_ID_CFG, PD_MESS_ID_TX, 0);
++	return ret;
++}
++
++/* --- calibration from the efuse, as Unisoc's sc27xx_pd.c and sc27xx_typec.c do it --- */
++
++static int ump9620_efuse(struct device *dev, struct device_node *np, const char *name, u32 *val)
++{
++	struct nvmem_cell *cell = np ? of_nvmem_cell_get(np, name) : nvmem_cell_get(dev, name);
++	size_t len;
++	u8 *buf;
++
++	if (IS_ERR(cell))
++		return PTR_ERR(cell);
++	buf = nvmem_cell_read(cell, &len);
++	nvmem_cell_put(cell);
++	if (IS_ERR(buf))
++		return PTR_ERR(buf);
++	*val = len >= 2 ? buf[0] | buf[1] << 8 : len ? buf[0] : 0;
++	kfree(buf);
++	return len ? 0 : -EINVAL;
++}
++
++/* PHY_CFG1 from the delta calibration: the reference at delta * 2 + 1000 mV, in 10 mV bands down from 1195 mV */
++static const u8 ump9620_delta_cal[20][2] = {	/* { VREF_SEL, REF_CAL } */
++	{ 0, 0 }, { 0, 1 }, { 0, 2 }, { 0, 3 }, { 0, 4 }, { 0, 5 }, { 0, 6 },
++	{ 1, 2 }, { 1, 3 }, { 1, 4 }, { 1, 5 }, { 1, 6 },
++	{ 2, 2 }, { 2, 3 }, { 2, 4 }, { 2, 5 }, { 2, 6 },
++	{ 3, 2 }, { 3, 3 }, { 3, 4 },
++};
++
++/* the RC and reference calibration: PHY_CFG0's RC code by band, and the thresholds by the reference code */
++static const u8 ump9620_ref_cal[5][4] = {	/* { CFG2 RX_REF_CAL, VTH, VTL, IBIAS decrease } */
++	{ 0, 0, 2, 0 }, { 0, 1, 1, 1 }, { 0, 1, 1, 0 }, { 1, 1, 1, 0 }, { 0, 2, 0, 0 },
++};
++
++static int ump9620_read_calibration(struct ump9620_tcpc *u, struct device_node *typec)
++{
++	int ret;
++
++	ret = ump9620_efuse(u->dev, NULL, "pdrc_calib", &u->cal_rc);
++	if (!ret)	/* the reference code is in the same block as the delta (Unisoc) */
++		ret = ump9620_efuse(u->dev, NULL, "pddelta_calib", &u->cal_delta);
++	if (!ret)
++		ret = ump9620_efuse(u->dev, typec, "typec_cc1_cal", &u->cal_cc1);
++	if (!ret)
++		ret = ump9620_efuse(u->dev, typec, "typec_cc2_cal", &u->cal_cc2);
++	return ret ? dev_err_probe(u->dev, ret, "efuse calibration\n") : 0;
++}
++
++/* with the PD block clocked */
++static int ump9620_calibrate(struct ump9620_tcpc *u)
++{
++	u32 rc, delta = u->cal_delta, mv, rc_code, ref, idx;
++	const u8 *d, *r;
++	static const u8 zero[4];
++	int ret;
++
++	mv = ((delta >> EFUSE_DELTA_SHIFT) & 0x7f) * 2 + 1000;
++	idx = mv > 1194 ? 0 : (1194 - mv) / 10;
++	d = mv > 1195 ? zero : ump9620_delta_cal[min_t(u32, idx, ARRAY_SIZE(ump9620_delta_cal) - 1)];
++	ret = pd_update(u, PD_PHY_CFG1, PD_PHY_CFG1_CC1_SW | PD_PHY_CFG1_CC2_SW | PD_PHY_CFG1_VREF_SEL |
++			PD_PHY_CFG1_REF_CAL, PD_PHY_CFG1_CC1_SW | PD_PHY_CFG1_CC2_SW |
++			FIELD_PREP(PD_PHY_CFG1_VREF_SEL, d[0]) | FIELD_PREP(PD_PHY_CFG1_REF_CAL, d[1]));
++	if (ret)
++		return ret;
++
++	rc = (u->cal_rc >> EFUSE_RC_SHIFT) & 0x7f;
++	rc_code = rc <= 26 ? 0 : rc <= 37 ? 1 : rc <= 48 ? 2 : rc <= 59 ? 3 : rc <= 69 ? 4 : rc <= 80 ? 5 :
++		  rc <= 90 ? 6 : 7;
++	ref = (delta >> EFUSE_REF_SHIFT) & 0x7;
++	r = ref < ARRAY_SIZE(ump9620_ref_cal) ? ump9620_ref_cal[ref] : zero;
++	ret = typec_update(u, TYPEC_IBIAS, TYPEC_RX_REF_DECREASE, r[3] ? TYPEC_RX_REF_DECREASE : 0);
++	if (!ret)
++		ret = pd_update(u, PD_PHY_CFG0, PD_PHY_CFG0_RCCAL | PD_PHY_CFG0_VTL | PD_PHY_CFG0_VTH,
++				FIELD_PREP(PD_PHY_CFG0_RCCAL, rc_code) | FIELD_PREP(PD_PHY_CFG0_VTL, r[2]) |
++				FIELD_PREP(PD_PHY_CFG0_VTH, r[1]));
++	if (!ret)
++		ret = pd_update(u, PD_PHY_CFG2, PD_PHY_CFG2_RX_REF_CAL, r[0] ? PD_PHY_CFG2_RX_REF_CAL : 0);
++	if (ret)
++		return ret;
++
++	/* the CC pull-up/pull-down trim, as sc27xx_typec.c's typec_set_rtrim() */
++	return regmap_write(u->regmap, u->typec + TYPEC_RTRIM,
++			    ((u->cal_cc1 >> EFUSE_CC1_SHIFT) & 0x1f) | ((u->cal_cc2 >> EFUSE_CC2_SHIFT) & 0x1f) << 5);
++}
++
++/*
++ * Never switched off again: the module enable covers the Type-C block as well, whose detection LK and Android rely on
++ * (Unisoc's driver leaves it on too, except in suspend, which this device does not use).
++ */
++static int ump9620_clocks(struct ump9620_tcpc *u)
++{
++	int ret;
++
++	ret = regmap_update_bits(u->aon, UMS9620_AON_MIPI_CSI_POWER_CTRL, UMS9620_AON_SINDRV_ENA,
++				 UMS9620_AON_SINDRV_ENA);
++	if (!ret)
++		ret = regmap_update_bits(u->regmap, UMP9620_MODULE_EN, UMP9620_TYPEC_PD_EN, UMP9620_TYPEC_PD_EN);
++	if (!ret)
++		ret = regmap_update_bits(u->regmap, UMP9620_ARM_CLK_EN0, UMP9620_CLK_PD_EN, UMP9620_CLK_PD_EN);
++	if (!ret)
++		ret = regmap_update_bits(u->regmap, UMP9620_XTL_WAIT_CTRL0, UMP9620_XTL_EN, UMP9620_XTL_EN);
++	/* the PD-hub (C to C) clocking: digital and analog at 6 MHz */
++	if (!ret)
++		ret = regmap_update_bits(u->regmap, UMP9620_ARM_CLK_EN0, UMP9620_CLK_PD_SEL, UMP9620_CLK_PD_SEL);
++	if (!ret)
++		ret = pd_update(u, PD_CFG1, PD_PHY_13M, 0);
++	if (!ret)
++		ret = pd_update(u, PD_PHY_CFG2, PD_PHY_CFG2_CLK, 0);
++	return ret;
++}
++
++/* --- TCPM callbacks --- */
++
++static int ump9620_init(struct tcpc_dev *tcpc)
++{
++	struct ump9620_tcpc *u = to_ump(tcpc);
++	int ret;
++
++	/* sc27xx_pd_init(): clocks, calibration, then sc27xx_pd_module_init() */
++	ret = ump9620_clocks(u);
++	if (!ret)
++		ret = ump9620_calibrate(u);
++	if (!ret)
++		ret = pd_update(u, PD_CFG1, PD_RETRY | PD_RX_AUTO_GOOD_CRC, FIELD_PREP(PD_RETRY, 3));
++	if (!ret)
++		ret = typec_update(u, TYPEC_PD_CFG, TYPEC_PD_SUPPORT, TYPEC_PD_SUPPORT);
++	if (!ret)
++		ret = pd_update(u, PD_MESG_ID_CFG, PD_MESS_ID_TX, 0);
++	if (!ret)
++		ret = pd_update(u, PD_CFG0, PD_BIST_MODE_EN, PD_BIST_MODE_EN);
++	if (!ret)
++		ret = regmap_write(u->regmap, u->base + PD_INT_CLR, PD_INT_ALL);
++	if (!ret)
++		ret = regmap_write(u->regmap, u->base + PD_INT_EN, PD_INT_USED);
++	/* sc27xx_typec_enable(), less the mode, which start_toggling sets */
++	if (!ret)
++		ret = regmap_write(u->regmap, u->typec + TYPEC_TCCDE_CNT, TYPEC_TCC_DEBOUNCE);
++	if (!ret)
++		ret = regmap_update_bits(u->regmap, UMP9620_RESERVED_CORE, UMP9620_TRIM_CURRENT_FROM_EFUSE,
++					 UMP9620_TRIM_CURRENT_FROM_EFUSE);
++	if (!ret)
++		ret = regmap_write(u->regmap, u->typec + TYPEC_INT_CLR, TYPEC_EVENTS);
++	if (!ret)
++		ret = typec_update(u, TYPEC_INT_EN, TYPEC_ATTACH_INT | TYPEC_DETACH_INT,
++				   TYPEC_ATTACH_INT | TYPEC_DETACH_INT);
++	return ret;
++}
++
++static int ump9620_get_vbus(struct tcpc_dev *tcpc)
++{
++	struct ump9620_tcpc *u = to_ump(tcpc);
++	u32 dbg;
++	int ret = regmap_read(u->regmap, u->typec + TYPEC_DBG1, &dbg);
++
++	return ret ?: !!(dbg & TYPEC_VBUS_OK);
++}
++
++/* what the Type-C block found, on the CC pin it chose; a cable's Ra is not reported (no VCONN here) */
++static int ump9620_get_cc(struct tcpc_dev *tcpc, enum typec_cc_status *cc1, enum typec_cc_status *cc2)
++{
++	struct ump9620_tcpc *u = to_ump(tcpc);
++	enum typec_cc_status cc = TYPEC_CC_OPEN;
++	u32 st;
++	int ret = regmap_read(u->regmap, u->typec + TYPEC_STATUS, &st);
++
++	if (ret)
++		return ret;
++	switch (FIELD_GET(TYPEC_STATE, st)) {
++	case TYPEC_ATTACHED_SNK:
++		switch (FIELD_GET(TYPEC_RP_SEEN, st)) {
++		case 1:
++			cc = TYPEC_CC_RP_1_5;
++			break;
++		case 2:
++			cc = TYPEC_CC_RP_3_0;
++			break;
++		default:
++			cc = TYPEC_CC_RP_DEF;
++			break;
++		}
++		break;
++	case TYPEC_ATTACHED_SRC:
++	case TYPEC_POWERED_CABLE:
++		cc = TYPEC_CC_RD;
++		break;
++	}
++	*cc1 = st & TYPEC_CC1_ACTIVE ? cc : TYPEC_CC_OPEN;
++	*cc2 = st & TYPEC_CC1_ACTIVE ? TYPEC_CC_OPEN : cc;
++	return 0;
++}
++
++static u32 ump9620_rp(enum typec_cc_status cc)
++{
++	return cc == TYPEC_CC_RP_3_0 ? 3 : cc == TYPEC_CC_RP_1_5 ? 2 : 1;
++}
++
++/*
++ * Open is the Type-C block's own business (detach, error recovery): not done here, as in Unisoc's driver, so TCPM's
++ * port reset at start does not drop a computer that is plugged in already. Rd or Rp change the role the block
++ * presents; attached, that is a power role swap, which the block is told of first.
++ */
++static int ump9620_set_cc(struct tcpc_dev *tcpc, enum typec_cc_status cc)
++{
++	struct ump9620_tcpc *u = to_ump(tcpc);
++	bool sink = cc == TYPEC_CC_RD;
++	int ret = 0;
++
++	if (cc == TYPEC_CC_OPEN || cc == TYPEC_CC_RA)
++		return 0;
++	mutex_lock(&u->lock);
++	if (u->attached && sink == (u->power_role == TYPEC_SOURCE))
++		ret = regmap_write_bits(u->regmap, u->typec + TYPEC_WC_REG, TYPEC_PR_SWAP, TYPEC_PR_SWAP);
++	if (!ret)
++		ret = typec_update(u, TYPEC_MODE, TYPEC_MODE_ROLE | TYPEC_MODE_RP,
++				   FIELD_PREP(TYPEC_MODE_ROLE, sink ? 0 : 1) |
++				   FIELD_PREP(TYPEC_MODE_RP, ump9620_rp(cc)));
++	mutex_unlock(&u->lock);
++	return ret;
++}
++
++static int ump9620_start_toggling(struct tcpc_dev *tcpc, enum typec_port_type type, enum typec_cc_status cc)
++{
++	struct ump9620_tcpc *u = to_ump(tcpc);
++	u32 role = type == TYPEC_PORT_DRP ? 2 : type == TYPEC_PORT_SRC ? 1 : 0;
++	int ret;
++
++	/* the block toggles by itself; Rp at the default current, what 400 mA from the boost allows */
++	ret = typec_update(u, TYPEC_MODE, TYPEC_MODE_ROLE | TYPEC_MODE_RP,
++			   FIELD_PREP(TYPEC_MODE_ROLE, role) | FIELD_PREP(TYPEC_MODE_RP, 1));
++	/* a partner that was there before the toggling started makes no new attach interrupt */
++	if (!ret && !READ_ONCE(u->stopped))
++		mod_delayed_work(system_power_efficient_wq, &u->cc_work, msecs_to_jiffies(10));
++	return ret;
++}
++
++/* the Type-C block picks the CC pin itself (PHY_CFG1's CC switches are calibration, not a polarity mux) */
++static int ump9620_set_polarity(struct tcpc_dev *tcpc, enum typec_cc_polarity polarity)
++{
++	return 0;
++}
++
++static int ump9620_set_vconn(struct tcpc_dev *tcpc, bool on)
++{
++	return on ? -EOPNOTSUPP : 0;
++}
++
++/* the charger's boost; its regulator refuses while an outside supply is on VBUS (bq256xx) */
++static int ump9620_set_vbus(struct tcpc_dev *tcpc, bool on, bool charge)
++{
++	struct ump9620_tcpc *u = to_ump(tcpc);
++	int ret = 0;
++
++	mutex_lock(&u->lock);
++	if (on != u->vbus_on) {
++		ret = on ? regulator_enable(u->vbus) : regulator_disable(u->vbus);
++		if (!ret)
++			u->vbus_on = on;
++		else
++			dev_err(u->dev, "5 V out %s: %d\n", on ? "on" : "off", ret);
++	}
++	mutex_unlock(&u->lock);
++	return ret;
++}
++
++/*
++ * The charger's input current. Only an explicit PD contract (the partner sent Source_Capabilities) is passed on:
++ * the charger then keeps it until released. Otherwise the charger's own BC1.2 and Rp detection stays in charge: in a
++ * PD 3.0 contract a source's Rp only says whether we may talk (SinkTxOk is Rp 3 A whatever it offers).
++ */
++static int ump9620_set_current_limit(struct tcpc_dev *tcpc, u32 ma, u32 mv)
++{
++	struct ump9620_tcpc *u = to_ump(tcpc);
++	union power_supply_propval val;
++	bool contract;
++	int ret;
++
++	mutex_lock(&u->lock);
++	contract = u->source_caps && ma;
++	mutex_unlock(&u->lock);
++	if (mv > 5000)
++		return -EINVAL;
++	val.intval = contract ? POWER_SUPPLY_USB_TYPE_PD : POWER_SUPPLY_USB_TYPE_UNKNOWN;
++	ret = power_supply_set_property(u->charger, POWER_SUPPLY_PROP_USB_TYPE, &val);
++	if (ret || !contract)
++		return ret;
++	val.intval = min_t(u32, ma, UMP9620_SINK_MAX_MA) * 1000;
++	return power_supply_set_property(u->charger, POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT, &val);
++}
++
++/* data role and power role apart: a dock that charges the U30 Air can still have it as its USB host */
++static int ump9620_set_roles(struct tcpc_dev *tcpc, bool attached, enum typec_role role, enum typec_data_role data)
++{
++	struct ump9620_tcpc *u = to_ump(tcpc);
++	enum usb_role usb = attached && data == TYPEC_HOST ? USB_ROLE_HOST : USB_ROLE_DEVICE;
++	int ret;
++
++	mutex_lock(&u->lock);
++	ret = pd_update(u, PD_CFG0, PD_SRC_SINK_MODE, role == TYPEC_SOURCE ? PD_SRC_SINK_MODE : 0);
++	/* (the role as dwc3 has it: mu300-usb may have set host itself, on a hub's power without PD) */
++	if (!ret && usb != usb_role_switch_get_role(u->role_sw))
++		ret = usb_role_switch_set_role(u->role_sw, usb);
++	if (!ret) {
++		u->attached = attached;
++		u->power_role = role;
++		if (!attached)
++			u->source_caps = false;
++	}
++	mutex_unlock(&u->lock);
++	if (!ret)
++		dev_info(u->dev, "%s: USB %s, power %s\n", attached ? "attached" : "detached", usb_role_string(usb),
++			 role == TYPEC_SOURCE ? "source" : "sink");
++	return ret;
++}
++
++static int ump9620_set_pd_rx(struct tcpc_dev *tcpc, bool on)
++{
++	struct ump9620_tcpc *u = to_ump(tcpc);
++	int ret;
++
++	mutex_lock(&u->lock);
++	ret = ump9620_pd_reset(u, on);	/* a new session starts from message ID 0 on both sides */
++	if (!ret)
++		ret = pd_update(u, PD_CFG1, PD_EN_SOP_RX | PD_RX_AUTO_GOOD_CRC,
++				on ? PD_EN_SOP_RX | PD_RX_AUTO_GOOD_CRC : 0);
++	if (!ret)
++		ret = pd_update(u, PD_CFG0, PD_CTL_EN | PD_EN_SOP, on ? PD_CTL_EN | PD_EN_SOP : 0);
++	if (!on)
++		u->tx_pending = false;
++	mutex_unlock(&u->lock);
++	return ret;
++}
++
++static int ump9620_pd_transmit(struct tcpc_dev *tcpc, enum tcpm_transmit_type type, const struct pd_message *msg,
++			       unsigned int rev)
++{
++	struct ump9620_tcpc *u = to_ump(tcpc);
++	int ret, i, n;
++	u32 obj;
++
++	if (type != TCPC_TX_SOP && type != TCPC_TX_HARD_RESET)
++		return -EOPNOTSUPP;
++	mutex_lock(&u->lock);
++	if (type == TCPC_TX_HARD_RESET) {
++		u->source_caps = false;
++		ret = ump9620_pd_reset(u, true);
++		if (!ret)
++			ret = pd_strobe(u, PD_HARD_RESET);
++		goto sent;
++	}
++	n = pd_header_cnt_le(msg->header);
++	ret = pd_update(u, PD_CFG1, PD_RETRY, FIELD_PREP(PD_RETRY, rev >= PD_REV30 ? 1 : 3));
++	if (!ret)
++		ret = pd_strobe(u, PD_TX_FLUSH);
++	if (!ret)
++		ret = regmap_write(u->regmap, u->base + PD_HEAD_CFG, le16_to_cpu(msg->header));
++	/* the FIFO is 16 bits wide: each data object low half first */
++	for (i = 0; !ret && i < n; i++) {
++		obj = le32_to_cpu(msg->payload[i]);
++		ret = regmap_write(u->regmap, u->base + PD_TX_BUF, obj & 0xffff);
++		if (!ret)
++			ret = regmap_write(u->regmap, u->base + PD_TX_BUF, obj >> 16);
++	}
++	if (!ret)
++		ret = pd_strobe(u, PD_TX_START);
++sent:
++	u->tx_pending = !ret;
++	mutex_unlock(&u->lock);
++	return ret;
++}
++
++/* --- interrupts --- */
++
++/* one transmission ends once: the controller may report TX_OK and pass the partner's GoodCRC on as well */
++static void ump9620_tx_done(struct ump9620_tcpc *u, enum tcpm_transmit_status status)
++{
++	if (u->tx_pending) {
++		u->tx_pending = false;
++		tcpm_pd_transmit_complete(u->port, status);
++	}
++}
++
++/*
++ * One frame from the RX FIFO: the header, two 16-bit words per data object. The controller leaves more words behind
++ * the frame (its CRC: kano saw them taken for the next header), so the FIFO is flushed after each frame, as Unisoc
++ * does in the normal case.
++ */
++static int ump9620_receive(struct ump9620_tcpc *u)
++{
++	struct pd_message msg = {};
++	u32 head, lo, hi, sts1 = 0;
++	int ret, i, n;
++
++	ret = regmap_read(u->regmap, u->base + PD_RX_BUF, &head);
++	if (ret)
++		return ret;
++	msg.header = cpu_to_le16(head);
++	n = pd_header_cnt_le(msg.header);
++	for (i = 0; i < n; i++) {
++		ret = regmap_read(u->regmap, u->base + PD_RX_BUF, &lo);
++		if (!ret)
++			ret = regmap_read(u->regmap, u->base + PD_RX_BUF, &hi);
++		if (ret)
++			return ret;
++		msg.payload[i] = cpu_to_le32((lo & 0xffff) | (hi & 0xffff) << 16);
++	}
++	/* what is left behind the frame: two words (the CRC) expected; more would be a second frame lost */
++	regmap_read(u->regmap, u->base + PD_STS1, &sts1);
++	dev_dbg(u->dev, "rx header %#06x, %u words left\n", head & 0xffff, (u32)FIELD_GET(PD_RX_DATA_NUM, sts1));
++
++	if (!n && pd_header_type_le(msg.header) == PD_CTRL_GOOD_CRC) {
++		/* the first GoodCRC tells the Type-C block a contract is there (Unisoc, once) */
++		if (!u->contract_marked &&
++		    !typec_update(u, TYPEC_PD_CFG, TYPEC_PD_CONTRACT, TYPEC_PD_CONTRACT))
++			u->contract_marked = true;
++		ump9620_tx_done(u, TCPC_TX_SUCCESS);
++		return 0;
++	}
++	if (n && pd_header_type_le(msg.header) == PD_DATA_SOURCE_CAP && u->power_role == TYPEC_SINK)
++		u->source_caps = true;
++	tcpm_pd_receive(u->port, &msg, TCPC_TX_SOP);
++	return 0;
++}
++
++static irqreturn_t ump9620_pd_irq(int irq, void *data)
++{
++	struct ump9620_tcpc *u = data;
++	u32 flags;
++	int ret;
++
++	mutex_lock(&u->lock);
++	ret = regmap_read(u->regmap, u->base + PD_INT_FLG, &flags);
++	if (ret)
++		goto out;
++	flags &= PD_INT_ALL;
++	regmap_write(u->regmap, u->base + PD_INT_CLR, flags);
++	if (flags & PD_HARD_RST_FLAG) {
++		u->tx_pending = false;
++		u->source_caps = false;
++		ump9620_pd_reset(u, true);
++		tcpm_pd_hard_reset(u->port);
++	}
++	if (flags & PD_PKG_RV_FLAG) {
++		ret = ump9620_receive(u);
++		pd_strobe(u, PD_RX_FLUSH);
++		if (ret)
++			dev_warn_ratelimited(u->dev, "PD receive: %d\n", ret);
++	}
++	if (flags & (PD_TX_ERROR_FLAG | PD_TX_COLLISION_FLAG))
++		ump9620_tx_done(u, TCPC_TX_FAILED);
++	else if (flags & PD_TX_OK_FLAG)
++		ump9620_tx_done(u, TCPC_TX_SUCCESS);
++	if (flags & PD_RX_FIFO_OVERFLOW_FLAG) {
++		pd_strobe(u, PD_RX_FLUSH);
++		dev_warn_ratelimited(u->dev, "PD receive FIFO overflow\n");
++	}
++out:
++	mutex_unlock(&u->lock);
++	return IRQ_HANDLED;
++}
++
++static void ump9620_cc_work(struct work_struct *work)
++{
++	struct ump9620_tcpc *u = container_of(to_delayed_work(work), struct ump9620_tcpc, cc_work);
++	struct tcpm_port *port = READ_ONCE(u->port);
++	u32 st;
++
++	if (READ_ONCE(u->stopped) || !port)
++		return;
++	/*
++	 * TCPM never hands the data role back on a detach. Unplugged as a host (an OTG adapter, a dock), the port goes
++	 * back to device at once, the default, so the USB network to a computer is there the moment one is plugged in.
++	 */
++	if (!regmap_read(u->regmap, u->typec + TYPEC_STATUS, &st) &&
++	    (FIELD_GET(TYPEC_STATE, st) == TYPEC_DETACHED_SNK || FIELD_GET(TYPEC_STATE, st) == TYPEC_DETACHED_SRC)) {
++		mutex_lock(&u->lock);
++		if (usb_role_switch_get_role(u->role_sw) == USB_ROLE_HOST &&
++		    !usb_role_switch_set_role(u->role_sw, USB_ROLE_DEVICE))
++			dev_info(u->dev, "unplugged: USB device\n");
++		mutex_unlock(&u->lock);
++	}
++	tcpm_cc_change(port);
++	tcpm_vbus_change(port);
++}
++
++static irqreturn_t ump9620_cc_irq(int irq, void *data)
++{
++	struct ump9620_tcpc *u = data;
++	u32 ev;
++
++	if (regmap_read(u->regmap, u->typec + TYPEC_INT_RAW, &ev))
++		return IRQ_NONE;
++	regmap_write(u->regmap, u->typec + TYPEC_INT_CLR, ev & TYPEC_EVENTS);
++	if (!READ_ONCE(u->stopped))
++		mod_delayed_work(system_power_efficient_wq, &u->cc_work, msecs_to_jiffies(10));
++	return IRQ_HANDLED;
++}
++
++/* VBUS can change without a CC event (a power role swap): the VBUS GPIO's extcon, which the USB PHY uses too */
++static int ump9620_vbus_event(struct notifier_block *nb, unsigned long event, void *data)
++{
++	struct ump9620_tcpc *u = container_of(nb, struct ump9620_tcpc, vbus_nb);
++
++	if (!READ_ONCE(u->stopped))
++		mod_delayed_work(system_power_efficient_wq, &u->cc_work, msecs_to_jiffies(10));
++	return NOTIFY_OK;
++}
++
++/* --- probe and teardown --- */
++
++/*
++ * The order matters: nothing may call into TCPM once it is gone, and the boost and the data role must be back to
++ * off and device. The Type-C block gets the mode the bootloader left in it: the PMIC keeps its registers across a
++ * reboot, and a block left as a source-only port would not let a charger see a sink after a crash, nor LK, nor
++ * Android.
++ */
++static void ump9620_stop(struct ump9620_tcpc *u)
++{
++	union power_supply_propval none = { .intval = POWER_SUPPLY_USB_TYPE_UNKNOWN };
++
++	if (u->stopped)
++		return;
++	WRITE_ONCE(u->stopped, true);
++	if (u->vbus_edev)
++		extcon_unregister_notifier(u->vbus_edev, EXTCON_USB, &u->vbus_nb);
++	disable_irq(u->cc_irq);
++	disable_irq(u->irq);
++	cancel_delayed_work_sync(&u->cc_work);
++	tcpm_unregister_port(u->port);
++	WRITE_ONCE(u->port, NULL);
++	mutex_lock(&u->lock);
++	if (u->vbus_on && !regulator_disable(u->vbus))
++		u->vbus_on = false;
++	if (usb_role_switch_get_role(u->role_sw) != USB_ROLE_DEVICE)
++		usb_role_switch_set_role(u->role_sw, USB_ROLE_DEVICE);
++	pd_update(u, PD_CFG0, PD_CTL_EN | PD_EN_SOP, 0);
++	regmap_write(u->regmap, u->base + PD_INT_EN, 0);
++	regmap_write(u->regmap, u->typec + TYPEC_EN, u->saved_en);
++	regmap_write(u->regmap, u->typec + TYPEC_MODE, u->saved_mode);
++	mutex_unlock(&u->lock);
++	power_supply_set_property(u->charger, POWER_SUPPLY_PROP_USB_TYPE, &none);
++}
++
++static void ump9620_put_charger(void *data)
++{
++	power_supply_put(data);
++}
++
++static void ump9620_put_role(void *data)
++{
++	usb_role_switch_put(data);
++}
++
++static void ump9620_remove_swnode(void *data)
++{
++	fwnode_remove_software_node(data);
++}
++
++static int ump9620_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct device_node *np, *typec, *gpio;
++	struct ump9620_tcpc *u;
++	struct extcon_dev *edev;
++	int ret;
++	/* ZTE's own source PDO (400 mA); as a sink 5 V only, at what the charger takes */
++	const u32 src_pdo[] = { PDO_FIXED(5000, UMP9620_SOURCE_MA, PDO_FIXED_DUAL_ROLE | PDO_FIXED_DATA_SWAP |
++					  PDO_FIXED_USB_COMM) };
++	const u32 snk_pdo[] = { PDO_FIXED(5000, UMP9620_SINK_MAX_MA, PDO_FIXED_DUAL_ROLE | PDO_FIXED_DATA_SWAP |
++					  PDO_FIXED_USB_COMM) };
++	const struct property_entry props[] = {
++		PROPERTY_ENTRY_STRING("power-role", "dual"),
++		PROPERTY_ENTRY_STRING("data-role", "dual"),
++		PROPERTY_ENTRY_STRING("try-power-role", "sink"),	/* the board's own connector node says so */
++		PROPERTY_ENTRY_U32_ARRAY("source-pdos", src_pdo),
++		PROPERTY_ENTRY_U32_ARRAY("sink-pdos", snk_pdo),
++		PROPERTY_ENTRY_U32("op-sink-microwatt", 5000 * UMP9620_SINK_MAX_MA),
++		{ }
++	};
++
++	if (!enable) {
++		dev_info(dev, "USB-C power delivery is off (experimental: mu300-usb pd on)\n");
++		return -ENODEV;
++	}
++	/* only a board with a battery: the U30 Air's device tree has the charger policy service (as mu300-device) */
++	np = of_find_node_by_path("/charger_policy_service");
++	of_node_put(np);
++	if (!np)
++		return -ENODEV;
++	typec = of_get_compatible_child(dev->parent->of_node, "sprd,sc27xx-typec");
++	if (!typec || !of_property_read_bool(typec, "use_pdhub_c2c")) {
++		of_node_put(typec);
++		return -ENODEV;
++	}
++
++	u = devm_kzalloc(dev, sizeof(*u), GFP_KERNEL);
++	if (!u) {
++		of_node_put(typec);
++		return -ENOMEM;
++	}
++	u->dev = dev;
++	mutex_init(&u->lock);
++	INIT_DELAYED_WORK(&u->cc_work, ump9620_cc_work);
++	u->regmap = dev_get_regmap(dev->parent, NULL);
++	ret = u->regmap ? of_property_read_u32(dev->of_node, "reg", &u->base) : -ENODEV;
++	if (!ret)
++		ret = of_property_read_u32(typec, "reg", &u->typec);
++	if (!ret) {
++		u->cc_irq = of_irq_get(typec, 0);
++		if (u->cc_irq <= 0)
++			ret = u->cc_irq ?: -ENXIO;
++	}
++	if (!ret)
++		ret = ump9620_read_calibration(u, typec);
++	of_node_put(typec);
++	if (ret)
++		return ret;
++	u->irq = platform_get_irq(pdev, 0);
++	if (u->irq < 0)
++		return u->irq;
++	u->aon = syscon_regmap_lookup_by_phandle(dev->of_node, "sprd,syscon-aon-apb");
++	if (IS_ERR(u->aon))
++		return dev_err_probe(dev, PTR_ERR(u->aon), "AON APB\n");
++	/* the charger's boost: no dummy regulator when the DT has none; a charger not bound yet defers */
++	u->vbus = devm_regulator_get_optional(dev, "vbus");
++	if (IS_ERR(u->vbus))
++		return dev_err_probe(dev, PTR_ERR(u->vbus), "the charger's otg-vbus regulator\n");
++	u->charger = power_supply_get_by_name("bq256xx-charger");
++	if (!u->charger)
++		return dev_err_probe(dev, -EPROBE_DEFER, "the charger\n");
++	ret = devm_add_action_or_reset(dev, ump9620_put_charger, u->charger);
++	if (ret)
++		return ret;
++	np = of_find_compatible_node(NULL, NULL, "snps,sprd-dwc3");
++	u->role_sw = np ? usb_role_switch_find_by_fwnode(of_fwnode_handle(np)) : NULL;
++	of_node_put(np);
++	if (IS_ERR_OR_NULL(u->role_sw))
++		return dev_err_probe(dev, u->role_sw ? PTR_ERR(u->role_sw) : -EPROBE_DEFER, "dwc3 role switch\n");
++	ret = devm_add_action_or_reset(dev, ump9620_put_role, u->role_sw);
++	if (ret)
++		return ret;
++	/* the connector of TCPM's own making, not the board's: no PPS, no other voltage than 5 V */
++	u->connector = fwnode_create_software_node(props, NULL);
++	if (IS_ERR(u->connector))
++		return PTR_ERR(u->connector);
++	ret = devm_add_action_or_reset(dev, ump9620_remove_swnode, u->connector);
++	if (ret)
++		return ret;
++	ret = regmap_read(u->regmap, u->typec + TYPEC_EN, &u->saved_en);
++	if (!ret)
++		ret = regmap_read(u->regmap, u->typec + TYPEC_MODE, &u->saved_mode);
++	if (ret)
++		return ret;
++
++	u->tcpc = (struct tcpc_dev) {
++		.fwnode = u->connector,
++		.init = ump9620_init,
++		.get_vbus = ump9620_get_vbus,
++		.get_cc = ump9620_get_cc,
++		.set_cc = ump9620_set_cc,
++		.start_toggling = ump9620_start_toggling,
++		.set_polarity = ump9620_set_polarity,
++		.set_vconn = ump9620_set_vconn,
++		.set_vbus = ump9620_set_vbus,
++		.set_current_limit = ump9620_set_current_limit,
++		.set_roles = ump9620_set_roles,
++		.set_pd_rx = ump9620_set_pd_rx,
++		.pd_transmit = ump9620_pd_transmit,
++	};
++	ret = devm_request_threaded_irq(dev, u->irq, NULL, ump9620_pd_irq, IRQF_ONESHOT | IRQF_NO_AUTOEN,
++					"ump9620-pd", u);
++	if (!ret)
++		ret = devm_request_threaded_irq(dev, u->cc_irq, NULL, ump9620_cc_irq, IRQF_ONESHOT | IRQF_NO_AUTOEN,
++						"ump9620-cc", u);
++	if (ret)
++		return ret;
++	gpio = of_find_compatible_node(NULL, NULL, "linux,extcon-usb-gpio");
++	edev = gpio ? extcon_find_edev_by_node(gpio) : ERR_PTR(-ENODEV);
++	of_node_put(gpio);
++	if (!IS_ERR(edev)) {
++		u->vbus_nb.notifier_call = ump9620_vbus_event;
++		if (!extcon_register_notifier(edev, EXTCON_USB, &u->vbus_nb))
++			u->vbus_edev = edev;
++	}
++
++	/* TCPM last, and torn down in remove before devres: its workers use the port until it is unregistered */
++	u->port = tcpm_register_port(dev, &u->tcpc);
++	if (IS_ERR(u->port)) {
++		ret = dev_err_probe(dev, PTR_ERR(u->port), "TCPM\n");
++		u->port = NULL;
++		if (u->vbus_edev)
++			extcon_unregister_notifier(u->vbus_edev, EXTCON_USB, &u->vbus_nb);
++		goto restore;
++	}
++	platform_set_drvdata(pdev, u);
++	enable_irq(u->irq);
++	enable_irq(u->cc_irq);
++	mod_delayed_work(system_power_efficient_wq, &u->cc_work, 0);
++	dev_warn(dev, "USB-C power delivery on (EXPERIMENTAL): USB and power roles by TCPM, 5 V only\n");
++	return 0;
++
++restore:	/* TCPM's init may have set the mode already */
++	regmap_write(u->regmap, u->typec + TYPEC_EN, u->saved_en);
++	regmap_write(u->regmap, u->typec + TYPEC_MODE, u->saved_mode);
++	return ret;
++}
++
++static void ump9620_remove(struct platform_device *pdev)
++{
++	ump9620_stop(platform_get_drvdata(pdev));
++}
++
++static void ump9620_shutdown(struct platform_device *pdev)
++{
++	struct ump9620_tcpc *u = platform_get_drvdata(pdev);
++
++	if (u)
++		ump9620_stop(u);
++}
++
++static const struct of_device_id ump9620_tcpc_of_match[] = {
++	{ .compatible = "sprd,ump9620-pd" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, ump9620_tcpc_of_match);
++
++static struct platform_driver ump9620_tcpc_driver = {
++	.probe = ump9620_probe,
++	.remove = ump9620_remove,
++	.shutdown = ump9620_shutdown,
++	.driver = {
++		.name = "ump9620-tcpc",
++		.of_match_table = ump9620_tcpc_of_match,
++	},
++};
++module_platform_driver(ump9620_tcpc_driver);
++
++MODULE_DESCRIPTION("Unisoc UMP9620 USB Type-C and PD port controller (ZTE U30 Air, experimental)");
++MODULE_LICENSE("GPL");

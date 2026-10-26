@@ -1,0 +1,29 @@
+usb: gadget: f_ncm, f_rndis: forget os_desc_table at unbind
+
+ncm_unbind() and rndis_unbind() free f->os_desc_table but keep the pointer, and the next bind allocates a new
+table only when the gadget uses OS descriptors (cdev->use_os_string, from configfs os_desc/use). A gadget bound
+with os_desc/use=1, unbound, bound with use=0 and unbound again frees the same 16-byte table twice.
+mu300-adbd does exactly that on every restart (adb out of the gadget: use=0; adb back in: use=1), and the
+kernel has no SLAB_FREELIST_HARDENED to stop it: on 2026-10-22 the kmalloc-16 freelist came back as "-lan",
+the tail of the kernfs link name "upper_br-lan" written into the twice-freed table, and kstrdup() in
+gadget_dev_desc_UDC_store() oopsed on it. Mainline 7.3 has the same two lines, so this is for every kernel.
+
+--- a/drivers/usb/gadget/function/f_ncm.c
++++ b/drivers/usb/gadget/function/f_ncm.c
+@@ -1749,6 +1749,7 @@
+ 	hrtimer_cancel(&ncm->task_timer);
+
+ 	kfree(f->os_desc_table);
++	f->os_desc_table = NULL;
+ 	f->os_desc_n = 0;
+
+ 	ncm_string_defs[0].id = 0;
+--- a/drivers/usb/gadget/function/f_rndis.c
++++ b/drivers/usb/gadget/function/f_rndis.c
+@@ -949,6 +949,7 @@
+ 	rndis_opts = container_of(f->fi, struct f_rndis_opts, func_inst);
+
+ 	kfree(f->os_desc_table);
++	f->os_desc_table = NULL;
+ 	f->os_desc_n = 0;
+ 	usb_free_all_descriptors(f);

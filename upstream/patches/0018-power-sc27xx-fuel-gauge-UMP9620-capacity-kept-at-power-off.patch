@@ -1,0 +1,93 @@
+power: supply: sc27xx_fuel_gauge: UMP9620's capacity kept at a power-off
+
+After kanoqwq's clean-tf-7.2 2af101f8 (his 0017, "retain live soc before reset") and f59a296 (his 0020); rewritten
+here (FINDINGS 105, 181).
+
+- The capacity a boot starts from (this one's or Android's) is the one in the FGU's always-on user area, and 0011
+  writes it when somebody reads the capacity and its whole percent has changed: the panel, mu300-power. A device
+  powered off or rebooted after the capacity moved and before the next read starts from an older one. A shutdown
+  callback now reads it once more while the PMIC still answers, writes it, and writes the boot mode (normal power-on)
+  with it. Only on UMP9620 with a battery present: the F50 and the V50 have none, and the SC2731 path is mainline's.
+- The user area is written through a CLEAR and a SET register: clear, set, release, 200 us after each of the first
+  two. Unisoc's driver (sc27xx_fgu_save_boot_mode()/save_last_cap() in the U30 Air's 5.4 source, and the U30 Air's
+  stock sc27xx_fuel_gauge.ko at 0x4ba4) waits after the release too; on UMP9620 this one does now, so the boot mode
+  written right after the capacity, and a power-off right after both, come after the registers took the value. The
+  writes stay regmap_update_bits(), as in both (an earlier version of this patch made them regmap_write_bits()).
+
+--- a/drivers/power/supply/sc27xx_fuel_gauge.c
++++ b/drivers/power/supply/sc27xx_fuel_gauge.c
+@@ -266,9 +266,17 @@
+ 	 * make the user area data available, otherwise we can not save the user
+ 	 * area data.
+ 	 */
+-	return regmap_update_bits(data->regmap,
+-				  data->base + SC27XX_FGU_USER_AREA_CLEAR,
+-				  SC27XX_FGU_MODE_AREA_MASK, 0);
++	ret = regmap_update_bits(data->regmap,
++				 data->base + SC27XX_FGU_USER_AREA_CLEAR,
++				 SC27XX_FGU_MODE_AREA_MASK, 0);
++	/*
++	 * UMP9620: and once more after the release, as Unisoc's driver does (its save_boot_mode() and
++	 * save_last_cap(), also in the U30 Air's stock module): the next write to the area, or a power-off, comes
++	 * only after the always-on registers have taken this one.
++	 */
++	if (!ret && data->var == &ump9620_info)
++		udelay(200);
++	return ret;
+ }
+ 
+ static int sc27xx_fgu_save_last_cap(struct sc27xx_fgu_data *data, int cap)
+@@ -316,6 +324,13 @@
+ 	ret = regmap_update_bits(data->regmap,
+ 				 data->base + SC27XX_FGU_USER_AREA_CLEAR,
+ 				 SC27XX_FGU_CAP_AREA_MASK, 0);
++	/*
++	 * UMP9620: and once more after the release, as Unisoc's driver does (its save_boot_mode() and
++	 * save_last_cap(), also in the U30 Air's stock module): the next write to the area, or a power-off, comes
++	 * only after the always-on registers have taken this one.
++	 */
++	if (!ret && data->var == &ump9620_info)
++		udelay(200);
+ 	if (!ret)
+ 		data->saved_cap = cap;
+ 	return ret;
+@@ -1561,7 +1576,31 @@
+ 	return ret;
+ }
+ #endif
++
++/*
++ * UMP9620: the capacity the next boot starts from (Android's or this one's) is the one in the user area, and it is
++ * written when somebody reads the capacity and its whole percent has changed. Nothing has to read it before a
++ * power-off: read it once more here, while the PMIC still answers, and keep it, and the boot mode with it.
++ */
++static void sc27xx_fgu_shutdown(struct platform_device *pdev)
++{
++	struct sc27xx_fgu_data *data = platform_get_drvdata(pdev);
++	int cap, ret;
+ 
++	if (!data || data->var != &ump9620_info || !data->bat_present)
++		return;
++
++	mutex_lock(&data->lock);
++	ret = sc27xx_fgu_get_capacity(data, &cap);
++	if (!ret)
++		ret = sc27xx_fgu_save_last_cap(data, clamp(cap, 0, 100));
++	if (!ret)
++		ret = sc27xx_fgu_save_boot_mode(data, SC27XX_FGU_NORMAIL_POWERTON);
++	mutex_unlock(&data->lock);
++	if (ret)
++		dev_warn(data->dev, "battery capacity not kept for the next boot: %d\n", ret);
++}
++
+ static const struct dev_pm_ops sc27xx_fgu_pm_ops = {
+ 	SET_SYSTEM_SLEEP_PM_OPS(sc27xx_fgu_suspend, sc27xx_fgu_resume)
+ };
+@@ -1575,6 +1614,7 @@
+ 
+ static struct platform_driver sc27xx_fgu_driver = {
+ 	.probe = sc27xx_fgu_probe,
++	.shutdown = sc27xx_fgu_shutdown,
+ 	.driver = {
+ 		.name = "sc27xx-fgu",
+ 		.of_match_table = sc27xx_fgu_of_match,

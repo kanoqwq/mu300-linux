@@ -1,0 +1,35 @@
+name: Installer checks
+
+# The installers' translations (i18n/*.tsv) against the messages the scripts use, and the scripts' syntax -
+# install.ps1 with the PowerShell parser, since a construct Windows PowerShell 5.1 cannot parse only shows up there.
+on:
+  push:
+    branches: [main]
+    paths: ['install.sh', 'install.ps1', 'uninstall.sh', 'uninstall.ps1', 'tools/*.sh', 'tools/*.ps1', 'tools/check-i18n.py', 'i18n/**', 'gui/**', '.github/workflows/installer.yml', 'android/magisk/**']
+  pull_request:
+    paths: ['install.sh', 'install.ps1', 'uninstall.sh', 'uninstall.ps1', 'tools/*.sh', 'tools/*.ps1', 'tools/check-i18n.py', 'i18n/**', 'gui/**', 'android/magisk/**']
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Translations
+        shell: bash
+        run: python tools/check-i18n.py
+      - name: Shell syntax
+        shell: bash
+        run: for f in install.sh uninstall.sh tools/i18n.sh tools/self-update.sh tools/linux-mode.sh tools/answers.sh tools/releases.sh tools/gui-launch.sh tools/package.sh tools/resume.sh android/magisk/computer/start.sh android/magisk/computer/start-gui.sh android/magisk/computer/uninstall-linux.sh android/magisk/installer/mu300-install.sh android/magisk/installer/customize.sh tools/android-boot-image.sh tools/make-magisk-zips.sh; do sh -n "$f"; done
+      - name: PowerShell 5.1 parse
+        shell: powershell
+        run: |
+          $bad = 0
+          foreach ($f in 'install.ps1', 'uninstall.ps1', 'tools/answers.ps1', 'tools/gui-launch.ps1', 'tests/installer.Tests.ps1', 'tests/answers.Tests.ps1') {
+            $e = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f), [ref]$null, [ref]$e) | Out-Null
+            foreach ($x in $e) { Write-Host "$f line $($x.Extent.StartLineNumber): $($x.Message)"; $bad++ }
+          }
+          if ($bad) { exit 1 }

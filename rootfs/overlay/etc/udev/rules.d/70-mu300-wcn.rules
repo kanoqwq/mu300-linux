@@ -1,0 +1,5 @@
+# MU300: the Wi-Fi driver reset the WCN chip after a firmware assert (issue #94). The chip stays off until wlan0 is
+# reopened: wcn-reopen restarts the hotspot (hotspot-start takes wlan0 down and up), or for a client of another
+# network takes wlan0 down and up and joins it again. If Wi-Fi does not come back, sprd_wlan_combo's recovery
+# watchdog reboots the device about a minute later (recovery_reboot).
+ACTION=="change", SUBSYSTEM=="misc", KERNEL=="wlan", ENV{SOURCE}=="unisocwl", ENV{EVENT}=="FW_ERROR", RUN+="/bin/systemctl --no-block start mu300-wcn-reopen.service"

@@ -1,0 +1,41 @@
+From: mu300-linux
+Subject: [PATCH] usb: gadget: ncm: send small latency-sensitive frames immediately
+
+NCM waits 300 us before completing an underfilled NTB, with the flush
+performed by a soft hrtimer callback. On the MU300 USB gadget, this
+turned single short frames into multi-millisecond ping latency. Keep
+aggregation for larger frames, but submit short frames synchronously.
+
+The 6.18.54 TF trial measured 100 Windows-to-gadget pings at 100 ms
+intervals: mean 4.42 ms before, 1.02 ms after, with no loss. Both
+directions sustained over 320 Mbit/s on the existing high-speed link.
+
+On a U30 Air (7.2.9) with a macOS host, 100 pings at 100 ms went from
+4.98 ms to 1.46 ms mean; 200 MiB one way stayed at 333-338 Mbit/s up
+and 266-269 Mbit/s down, and both ways at once went from 190/153 to
+215/148 Mbit/s.
+
+--- a/drivers/usb/gadget/function/f_ncm.c
++++ b/drivers/usb/gadget/function/f_ncm.c
+@@ -1011,6 +1011,7 @@ static struct sk_buff *ncm_wrap_ntb(struct gether *port,
+ 
+ 	if (skb) {
+ 		int		ncb_len = 0;
++		bool		low_latency = skb->len <= 256;
+ 		__le16		*ntb_data;
+ 		__le16		*ntb_ndp;
+ 		int		dgram_pad;
+@@ -1114,6 +1115,13 @@ static struct sk_buff *ncm_wrap_ntb(struct gether *port,
+ 		skb_put_data(ncm->skb_tx_data, skb->data, skb->len);
+ 		dev_consume_skb_any(skb);
+ 		skb = NULL;
++		/* Do not hold interactive, short frames for NTB aggregation.
++		 * Larger frames retain the normal 300 us aggregation window.
++		 * (A short frame that opened a new NTB because the last one
++		 * was full still waits: only one NTB can be returned.)
++		 */
++		if (low_latency && !skb2)
++			skb2 = package_for_tx(ncm);
+ 
+ 	} else if (ncm->skb_tx_data) {
+ 		/* If we get here ncm_wrap_ntb() was called with NULL skb,

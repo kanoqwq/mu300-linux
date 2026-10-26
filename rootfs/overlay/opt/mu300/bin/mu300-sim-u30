@@ -1,0 +1,444 @@
+#!/bin/bash
+# OpenWrt SIM policy and a bounded, broker-only live switch. Public slots are 1/2.
+# U30 Air on OpenWrt only: the cold start and the live switch were validated on that firmware alone; everywhere
+# else every command (status included) answers ok:0, and nothing is written.
+#
+# Nothing a caller passes ever reaches an AT command: the arguments are checked against a fixed list below, and the
+# commands are built from the two slot numbers alone. Replies are never logged (CCID, cell, numbers).
+set -euo pipefail
+export PATH="$PATH:/opt/mu300/busybox-bin"
+umask 077
+R=/run/mu300
+FALLBACK=/etc/mu300-sim-fallback
+AT=/opt/mu300/bin/mu300-at
+MD=/opt/mu300/bin/mobile-data
+DEVICE=/opt/mu300/bin/mu300-device
+REBOOT=${MU300_REBOOT_CMD:-reboot}
+LED=${MU300_LED_CMD:-/opt/mu300/bin/mu300-led}
+SIM_RADIO=${MU300_SIM_RADIO_BIN:-/opt/mu300/bin/mu300-sim-radio}
+# rf_allowed SLOT: that card's radio may be on (mu300-sim-radio, FINDINGS 185; without the tool: yes)
+rf_allowed() { [ ! -x "$SIM_RADIO" ] || "$SIM_RADIO" allowed "$1" 2>/dev/null; }
+supported() { [ -e /etc/openwrt_release ] && [ "$("$DEVICE" 2>/dev/null)" = u30air ]; }
+supported || { printf '{"ok":0,"supported":0,"error":"Dual SIM control is only for the U30 Air on OpenWrt"}\n'; exit 1; }
+SIM_CONFIG_U30=1
+. "${MU300_SIM_CONFIG_LIB:-/opt/mu300/lib/sim-config.sh}"
+LOCKED=${MU300_SIM_LOCKED:-0}
+mkdir -p "$R"
+uptime_s() { cut -d' ' -f1 /proc/uptime 2>/dev/null || date +%s; }
+active() { cat "$R/sim-slot" 2>/dev/null || echo unknown; }
+policy() { sim_cfg_hot; }
+main() { [ "$1" = 0 ] && echo /run/mu300-at || echo /run/mu300-at4; }
+data() { [ "$1" = 0 ] && echo /run/mu300-at2 || echo /run/mu300-at5; }
+bearer() { [ "$1" = 0 ] && echo sipa_eth0 || echo sipa_eth8; }
+owner() {
+    local pid
+    [ -p "$1/cmd" ] && [ -s "$1/owner/pid" ] || return 1
+    pid=$(cat "$1/owner/pid")
+    [[ "$pid" =~ ^[0-9]+$ ]] && kill -0 "$pid" 2>/dev/null
+}
+available() {
+    [ -e /run/mu300-radio-freeze ] || return 1
+    local d
+    for d in /run/mu300-at /run/mu300-at2 /run/mu300-at4 /run/mu300-at5; do owner "$d" || return 1; done
+}
+atomic() { local t; t=$(mktemp "$1.XXXXXX"); printf '%s\n' "$2" > "$t"; mv -f "$t" "$1"; }
+fail() {
+    if [ "${LOCKED:-0}" = 1 ]; then
+        case "$(cat "$R/sim-result" 2>/dev/null || true)" in rolled_back|reboot_required|restarting|no_data|no_data_kept) ;; *) atomic "$R/sim-result" failed;; esac
+    fi
+    printf '{"ok":0,"error":"%s"}\n' "$1"; return 1; }
+status() {
+    local slot boot hot can=0 busy=0 result=idle fallback=null phase=idle radio=null wan=null error=null
+    local check=null left=null word end
+    slot=$(active); boot=$(sim_cfg_default); hot=$(policy)
+    case "$slot" in 0|1) slot=$((slot+1));; *) slot=null;; esac
+    [ ! -e "$R/sim-active-unknown" ] || slot=null
+    case "$boot" in 0|1) boot=$((boot+1));; *) boot=null;; esac
+    [ "$hot" = 1 ] || hot=0
+    if [ "$hot" = 1 ] && available && [ ! -e "$R/sim-switching" ] && [ ! -e "$R/sim-active-unknown" ]; then can=1; fi
+    # Kernel flock is released on exit, including SIGKILL; a leftover file is harmless. The holder of the lock
+    # (this process, reporting after its own change) is not "busy" to itself.
+    if [ "${LOCKED:-0}" != 1 ] && command -v flock >/dev/null; then
+        (exec 9>"$R/sim-control.lock"; flock -n 9) || busy=1
+    fi
+    result=$(cat "$R/sim-result" 2>/dev/null || echo idle)
+    case "$result" in idle|switching|switched|rolled_back|reboot_required|restarting|failed|no_data|no_data_kept) ;; *) result=idle;; esac
+    # A switch marker nobody holds the lock for is a switch that was killed: the radio is where it was left.
+    if [ -e "$R/sim-switching" ] && [ "$busy" = 0 ]; then
+        slot=null
+        [ "$result" = restarting ] || result=reboot_required
+    fi
+    # The last boot's cold start failed and the settings went back to SIM1 (mu300-sim2-warmup): say why until the
+    # user chooses again. Reasons are identifiers, never modem output.
+    if [ -s "$FALLBACK" ]; then
+        fallback=$(head -c 40 "$FALLBACK" | tr -cd 'a-z0-9_-')
+        [ -n "$fallback" ] && fallback="\"$fallback\"" || fallback=null
+    fi
+    phase=$(cat "$R/sim-phase" 2>/dev/null || echo idle)
+    case "$phase" in idle|switching|waiting_for_data|rolling_back) ;; *) phase=idle;; esac
+    [ ! -e "$R/sim-radio-ready" ] || radio=true
+    if [ "$slot" != null ]; then
+        observed_wan=$(ubus call network.interface.wan status 2>/dev/null | tr -d ' \n\t') || observed_wan=
+        if [ -n "$observed_wan" ]; then
+            if wan_up; then wan=true; else wan=false; fi
+        fi
+    fi
+    # The boot check of a second card that never had data (mu300-sim2-warmup): "waiting" with the seconds left,
+    # then confirmed, kept (the connection was off), off (no check) or failed (the device restarts into SIM1).
+    if [ -s "$R/sim-boot-check" ]; then
+        read -r word end < "$R/sim-boot-check" || true
+        case "$word" in
+            waiting)
+                check='"waiting"'
+                case "${end:-}" in ''|*[!0-9]*) ;; *) left=$(( end - $(cut -d. -f1 /proc/uptime 2>/dev/null || echo "$end") )); [ "$left" -gt 0 ] || left=0 ;; esac ;;
+            confirmed|kept|off|failed) check="\"$word\"" ;;
+        esac
+    fi
+    case "$result" in failed|no_data|no_data_kept|reboot_required|restarting|rolled_back) error="\"$result\"";; esac
+    [ "$busy" = 0 ] || can=0
+    printf '{"version":1,"ok":1,"supported":1,"slot1_supported":1,"active":%s,"default":%s,"hot":%s,"available":%s,"busy":%s,"phase":"%s","result":"%s","error":%s,"fallback":%s,"boot_check":%s,"boot_check_left":%s,"capabilities":{"boot_selection":true,"live_switch":true},"radio_ready":%s,"registered":null,"wan_up":%s}\n' \
+        "$slot" "$boot" "$hot" "$can" "$busy" "$phase" "$result" "$error" "$fallback" "$check" "$left" "$radio" "$wan"
+}
+# raw DIRECTORY COMMAND: one command through a persistent owner; prints the answer whatever its result code.
+# 75: not sent at all (the channel's client lock was busy the whole wait); 1: no owner, or no completed answer.
+# MU300_SIM_CONTROL=1 lets these through mu300-at's gate, which keeps every other client off the modem while the
+# sequence runs (see run_sequence).
+raw() {
+    local directory=$1 command=$2 seconds=${3:-8} output rc=0
+    owner "$directory" || return 1
+    # Do not log replies: CCID, subscriber or cell identifiers never belong in switch logs.
+    printf '%s %s %s\n' "$(uptime_s)" "$directory" "$command" >> "$R/sim-switch.log"
+    output=$(MU300_SIM_CONTROL=1 MU300_AT_DIR="$directory" MU300_AT_LOCK_WAIT="${MU300_SIM_AT_LOCK_WAIT:-20}" \
+        MU300_AT_BUDGET=$((seconds + 4)) "$AT" -t "$seconds" "$command" 2>&1) || rc=$?
+    if [ "$rc" != 0 ]; then
+        case "$output" in *'mu300-at: busy'*) return 75 ;; esac
+        return 1
+    fi
+    printf '%s\n' "$output" | tr -d '\r'
+}
+# cmd DIRECTORY COMMAND: raw, and the modem must have said OK
+cmd() {
+    local output rc=0
+    output=$(raw "$@") || rc=$?
+    [ "$rc" = 0 ] || return "$rc"
+    [ "$(printf '%s\n' "$output" | tail -1)" = OK ] || return 1
+    printf '%s\n' "$output"
+}
+# (The answer is taken whole before it is looked at. Piped into a reader that stops at its first match - grep -q,
+# head - the writer can be left with a closed pipe, and under pipefail that reads as "the modem said no": seen in
+# the tests as a switch that rolled back after a radio that had come on.)
+check() {
+    local output
+    output=$(cmd "$(main "$1")" 'AT+CFUN?') || return 1
+    grep -Eq "^\+CFUN: *$2$" <<< "$output"
+}
+ready() {
+    local output
+    output=$(cmd "$(main "$1")" 'AT+CPIN?') || return 1
+    grep -Eq '^\+CPIN: *READY$' <<< "$output"
+}
+# card SLOT: what the card says of itself: ready, sim-pin, no-sim or unknown. "no-sim" (+CME ERROR: 10) is also
+# what a position answers whose SIM power is off: see preflight.
+card() {
+    local output
+    output=$(raw "$(main "$1")" 'AT+CPIN?') || { echo unknown; return 0; }
+    if [[ "$output" == *'+CPIN: READY'* ]]; then echo ready
+    elif [[ "$output" == *'+CPIN: SIM PIN'* || "$output" == *'+CPIN: SIM PUK'* ]]; then echo sim-pin
+    elif [[ "$output" =~ \+CME\ ERROR:\ (10($|[^0-9])|SIM\ not\ inserted) ]]; then echo no-sim
+    else echo unknown; fi
+}
+# preflight TARGET: is there a card to switch to? Asked before the connection in use is touched. The target's SIM
+# power is switched on for the question (AT+SPACTCARD=<target>;+SFUN=2, the sequence's own first command): with it
+# off the position answers "no card" whatever is in it (measured on our U30 Air, whose second position does that at
+# every boot), and SIM power moves no radio - the card in use does not notice (measured, with its data up). A
+# card that still does not answer, or is locked, gets its power switched off again and the switch is refused: one
+# second, and the WAN never went down. Prints the reason when it refuses.
+preflight() {
+    local target=$1 state attempt
+    cmd "$(main "$target")" "AT+SPACTCARD=$target;+SFUN=2" 10 >/dev/null || { echo 'The target SIM could not be powered; nothing was changed'; return 1; }
+    for ((attempt=0; attempt<8; attempt++)); do
+        state=$(card "$target")
+        case "$state" in ready) return 0 ;; sim-pin) break ;; esac
+        sleep 1
+    done
+    cmd "$(main "$target")" "AT+SPACTCARD=$target;+SFUN=3" 10 >/dev/null || true
+    case "$state" in
+        sim-pin) echo 'The target SIM is locked by its PIN; nothing was changed' ;;
+        *) echo 'No card answers in the target SIM position; nothing was changed' ;;
+    esac
+    return 1
+}
+# route SLOT: the card the modem says has the packet-data route (0 or 1), asked on SLOT's command channel; nothing
+# when this firmware does not answer the question.
+route() {
+    local output
+    output=$(cmd "$(main "$1")" 'AT+SPSWDATA?') || return 1
+    sed -n 's/^+SPSWDATA: *\([01]\) *$/\1/p' <<< "$output" | sed -n 1p
+}
+# sequence TARGET: the radio from the other card to TARGET, the card in use first off, then the other one on.
+#
+# The order is the measured one (our U30 Air, 7.2.10, 2026-10-13; docs/FINDINGS.md 74). The factory selector
+# (VendorTelephonyManager.setProtocolStack) and this script's first version switch the target's radio on while the
+# other card is still on, and on the unit the sequence came from that worked in both directions. On ours the
+# target's AT+SFUN=4 then never answered (30 s), the card in use lost its radio meanwhile, and the way back could
+# not be verified. With the card in use switched off first, every step answered within a second, in both
+# directions: it is the cold start's situation, one card on while the other is off, which both units have shown.
+#
+# Every command names its card (AT+SPACTCARD=<card>;+...): the selection holds for that command line only. A
+# line with AT+SPACTCARD=0 alone, which the first version sent "to reset the channel", changes nothing (measured:
+# AT+SPACTCARD? keeps answering the channel's own card, and the channel keeps reading it).
+# The first command alone may say "not sent" (75): after it the radio has been told something.
+sequence() {
+    local target=$1 old=$((1-$1)) got attempt
+    cmd "$(main "$old")" "AT+SPACTCARD=$old;+SFUN=5" 20 >/dev/null || return $?
+    cmd "$(main "$old")" "AT+SPACTCARD=$old;+SFUN=3" 10 >/dev/null || return 1
+    check "$old" 0 || return 1
+    # the target: SIM power, the card, the data route, the radio - the cold start's order (mu300-sim2-start)
+    cmd "$(main "$target")" "AT+SPACTCARD=$target;+SFUN=2" 10 >/dev/null || return 1
+    for ((attempt=0; attempt<8; attempt++)); do
+        if ready "$target"; then break; fi
+        sleep 1
+    done
+    ready "$target" || return 1
+    # the mark that makes a later plain SIM1 dial take the data route back (lib/sim-config.sh)
+    [ "$target" != 1 ] || sim_route_mark_set || return 1
+    cmd "$(data "$target")" 'AT+SPSWDATA' >/dev/null || return 1
+    # Read back which card has the route (after kanoqwq's mu300-data-sim): the other card is a failure; a firmware
+    # that does not answer the question is not.
+    got=$(route "$target") || got=
+    case "$got" in "$target"|'') ;; *) return 1 ;; esac
+    [ "$target:$got" != 0:0 ] || rm -f "$sim_route_mark"
+    cmd "$(data "$target")" 'AT+SFUN=4' 30 >/dev/null || return 1
+    for ((attempt=0; attempt<15; attempt++)); do
+        if check "$target" 1; then break; fi
+        sleep 1
+    done
+    check "$target" 1 && check "$old" 0
+}
+publish() {
+    atomic "$R/sim-slot" "$1"
+    : > "$R/sim-managed"
+    : > "$R/sim-radio-ready"
+    if [ "$1" = 1 ]; then : > "$R/sim2-radio-ready"; else rm -f "$R/sim2-radio-ready"; fi
+    rm -f "$R/sim-active-unknown"
+    # The dashboard caches are shared across cards; identity caches remain per card.
+    rm -f /run/unisoc-modem/cell.json /run/unisoc-modem/sig.json
+}
+# wan_up: netifd applies the selected SIM profile and has an address on that exact bearer. A radio-only
+# transition does not change the next-boot preference; the boot default
+# is saved only once this says yes (MU300_SIM_WAN_WAIT seconds at most, 60 by default), else the switch is undone.
+wan_up() { sim_wan_up "$(bearer "$(active)")"; }
+wan_wait() {
+    local deadline=$(( $(date +%s) + ${MU300_SIM_WAN_WAIT:-60} ))
+    while :; do
+        wan_up && return 0
+        [ "$(date +%s)" -lt "$deadline" ] || return 1
+        sleep 1
+    done
+}
+# unknown_radio: nobody can say which card the radio is on (a sequence that stopped half way and could not be
+# undone, a controller that was killed). Nothing dials or resets a radio in that state, so it would stay without
+# data until somebody restarts the device by hand: the device restarts itself, into the saved boot default, which
+# a failed switch never changes. network.wan.sim_restart '0' leaves it at "reboot required" instead.
+unknown_radio() {
+    : > "$R/sim-active-unknown"
+    if [ "$(sim_cfg_auto_restart)" = 1 ]; then
+        atomic "$R/sim-result" restarting
+        logger -t mu300-sim "the radio state is unknown after a SIM switch: restarting" 2>/dev/null || true
+        ( sleep "${MU300_SIM_RESTART_DELAY:-20}"; sync 2>/dev/null; exec $REBOOT ) 9>&- </dev/null >/dev/null 2>&1 &
+    else
+        atomic "$R/sim-result" reboot_required
+    fi
+}
+SEQPID=
+interrupt_switch() {
+    [ -z "$SEQPID" ] || kill -TERM -- "-$SEQPID" 2>/dev/null || true
+    exit 143
+}
+# run_sequence TARGET: the sequence in a process of its own, under mobile-data's radio lock (the dial's radio-on,
+# the watchdog and the lock helper's SFUN restart take the same one; 75 when it stays busy) and behind mu300-at's
+# gate ($R/sim-sequence: every other AT client is told "busy" meanwhile - SMS, USSD, the panel's terminal).
+run_sequence() {
+    local rc=0
+    : > "$R/sim-sequence"
+    MU300_RADIO_LOCK_WAIT="${MU300_SIM_RADIO_LOCK_WAIT:-20}" setsid "$MD" radio-locked "$0" --sequence "$1" &
+    SEQPID=$!
+    # A shell waiting on a builtin wait runs TERM traps immediately; a foreground child delays them.
+    wait "$SEQPID" || rc=$?
+    SEQPID=
+    rm -f "$R/sim-sequence"
+    return "$rc"
+}
+# roll_back OLD: the one guarded return to the previous card. Only if BOTH brokers still answer: a silent CP must
+# not receive blind restart loops. True when the old card is back; false leaves the radio state unknown.
+roll_back() {
+    local old=$1
+    atomic "$R/sim-phase" rolling_back
+    if cmd "$(main 0)" 'AT+CFUN?' >/dev/null && cmd "$(main 1)" 'AT+CFUN?' >/dev/null && run_sequence "$old"; then
+        publish "$old"
+        atomic "$R/sim-phase" idle
+        return 0
+    fi
+    unknown_radio
+    return 1
+}
+# wan_back: the wan as the user left it before the switch. One taken down on purpose (the panel's button, ifdown, the
+# data cap: netifd's autostart is off then, sim_wan_held_down) stays down, and so does the marker mobile-data's
+# `down` left (/run/mu300-mobile-data-down), which keeps its watchdog from dialling again; only a wan that was meant
+# to be up is brought up. (After kanoqwq's clean-tf-7.2 2d3b6f3f; FINDINGS 104.)
+wan_back() {
+    [ "$held" = 0 ] || return 0
+    rm -f /run/mu300-mobile-data-down
+    ifup wan
+}
+live_switch() {
+    local target=$1 old had_data=0 rc=0 held=0
+    old=$(active); case "$old" in 0|1) ;; *) fail 'Unknown active SIM; reboot first'; return 1;; esac
+    [ ! -e "$R/sim-switching" ] || { fail 'Interrupted switch; reboot first'; return 1; }
+    [ ! -e "$R/sim-active-unknown" ] || { fail 'Unknown radio state; reboot first'; return 1; }
+    [ "$(policy)" = 1 ] || { fail 'Enable hot switching first'; return 1; }
+    available || { fail 'Persistent dual-SIM brokers unavailable; reboot first'; return 1; }
+    [ ! -e /run/mu300-mobile-data.suspend ] || { fail 'Resume the modem before switching'; return 1; }
+    [ ! -d /run/unisoc-modem-lock-apply ] || { fail 'Network locks are being applied'; return 1; }
+    # the target card's radio is switched off in its settings: it stays off, so there is nothing to switch to
+    rf_allowed "$target" || { fail 'The target SIM radio is switched off in its settings; switch it on first'; return 1; }
+    [ ! -d "$R/sim-radio.lock" ] || { fail 'A SIM radio change is running; try again'; return 1; }
+    # Mobile data switched off on purpose? Then it stays off, whichever card ends up in use, and there is no bearer
+    # to wait for before the choice is saved.
+    if sim_wan_held_down; then held=1; fi
+    if [ "$old" = "$target" ]; then
+        [ "$held" = 1 ] || wan_wait || { atomic "$R/sim-result" no_data; fail 'Active SIM has no data; use default for next-boot selection'; return 1; }
+        sim_cfg_save_default "$target" || return 1
+        [ "$held" = 1 ] || sim_seen_add "$target" || true
+        atomic "$R/sim-result" switched
+        rm -f "$FALLBACK"; status; return 0
+    fi
+    # A card whose SIM power is off answers CME ERROR 10 whatever is in its position: the starting RF state is
+    # validated here, the card itself only once its power is on (preflight).
+    # The card in use is on (1), or off because its radio is switched off in its settings (0 or 2 after AT+SFUN=5,
+    # FINDINGS 202; 4, the flight mode of an earlier release): known states, from which the sequence below switches it
+    # off the same way.
+    { check "$old" 1 || { ! rf_allowed "$old" && { check "$old" 0 || check "$old" 2 || check "$old" 4; }; }; } &&
+        check "$target" 0 ||
+        { fail 'Unexpected radio state; reboot first'; return 1; }
+    local refusal
+    refusal=$(preflight "$target") || { fail "$refusal"; return 1; }
+    # Did the card in use have data? It decides what a target without data means, below.
+    if wan_up; then had_data=1; fi
+    # Prevent new dial/watch rounds before netifd cancels the old protocol task.
+    : > "$R/sim-switching"
+    atomic "$R/sim-result" switching
+    atomic "$R/sim-phase" switching
+    # However this ends, the markers go; a result still "switching" then is a switch that was cut short (the
+    # deadline, a TERM): which card the radio is on is not known.
+    trap 'atomic "$R/sim-phase" idle; rm -f "$R/sim-sequence" "$R/sim-switching"; if [ "$(cat "$R/sim-result")" = switching ]; then unknown_radio; fi' EXIT
+    trap interrupt_switch INT TERM
+    ifdown wan || { atomic "$R/sim-result" failed; fail 'Cannot stop WAN'; return 1; }
+    # the network LED blinks the target card's colour, as ZTE's firmware does while it switches (FINDINGS 154);
+    # the next dial's "data on" shows the card that ends up in use, a rollback's too. Cosmetic: never a failure.
+    "$LED" data switching "$target" </dev/null >/dev/null 2>&1 || true
+    # Serialize the whole protocol-stack transaction against radio-on and manual resets.
+    run_sequence "$target" || rc=$?
+    if [ "$rc" = 75 ]; then
+        # nothing was sent: the radio lock or the AT channel stayed busy. The previous card is as it was.
+        atomic "$R/sim-result" failed
+        rm -f "$R/sim-switching"
+        wan_back || true
+        fail 'The modem is busy; nothing was changed, try again'; return 1
+    fi
+    if [ "$rc" != 0 ]; then
+        if roll_back "$old"; then
+            atomic "$R/sim-result" rolled_back
+            rm -f "$R/sim-switching"
+            wan_back || { fail 'Previous SIM restored but WAN could not be started'; return 1; }
+            fail 'Switch failed; previous SIM restored'; return 1
+        fi
+        fail 'Switch failed; radio state unknown, reboot required'; return 1
+    fi
+    # The target card is up: let netifd dial it, and keep the boot default where it was until the bearer is
+    # there. The published slot is this boot's; the saved one is tomorrow's.
+    publish "$target"
+    rm -f "$R/sim-switching"
+    # Mobile data off: the card is in use and, as the user chose it, the boot default. Nothing proves it has data, as
+    # nothing would at the next boot either: a second card whose connection was off is kept there (mu300-sim2-warmup).
+    if [ "$held" = 1 ]; then
+        sim_cfg_save_default "$target" || {
+            atomic "$R/sim-result" failed; fail 'SIM switched but the boot default could not be saved'; return 1; }
+        rm -f "$FALLBACK"
+        atomic "$R/sim-result" switched
+        atomic "$R/sim-phase" idle
+        status; return 0
+    fi
+    atomic "$R/sim-phase" waiting_for_data
+    if wan_back && wan_wait; then
+        if ! sim_cfg_save_default "$target"; then
+            atomic "$R/sim-result" failed
+            fail 'SIM switched but the boot default could not be saved'; return 1
+        fi
+        sim_seen_add "$target" || true
+        rm -f "$FALLBACK"
+        atomic "$R/sim-result" switched
+        atomic "$R/sim-phase" idle
+        # Existing watcher reloads its slot itself; never restart AT owners or the whole mu300-post service.
+        status; return 0
+    fi
+    # No bearer on the target within the time. When the previous card had data, back to it, the boot default
+    # untouched. When it had none either (a first card without a data plan, a boot onto a card with no service),
+    # going back restores nothing and undoes what the user asked for: the target stays, netifd keeps dialling it,
+    # and the boot default is still not saved - "use at next boot" is the user's to press.
+    if [ "$had_data" = 0 ]; then
+        atomic "$R/sim-result" no_data_kept
+        atomic "$R/sim-phase" idle
+        fail 'Target SIM has no data yet and the previous SIM had none either; staying on the target, boot default unchanged'; return 1
+    fi
+    : > "$R/sim-switching"
+    ifdown wan || true
+    if roll_back "$old"; then
+        atomic "$R/sim-result" no_data
+        rm -f "$R/sim-switching"
+        wan_back || { fail 'Target SIM got no data; previous SIM restored but WAN could not be started'; return 1; }
+        fail 'Target SIM got no data within the time; previous SIM restored'; return 1
+    fi
+    fail 'Target SIM got no data and the previous one could not be restored; reboot required'; return 1
+}
+case ${1:-status} in
+    status) status; exit 0;;
+    --sequence)
+        # Only the parent holding BOTH locks may enter this internal operation.
+        [[ ${2:-} =~ ^[01]$ ]] && [ -e "$R/sim-switching" ] &&
+            [ "$(readlink /run/mu300-radio-on.owner 2>/dev/null)" = "$PPID" ] || exit 2
+        sequence "$2"; exit $?;;
+    default|hot|switch) ;;
+    *) fail 'Usage: mu300-sim status | default 1|2 | hot 0|1 | switch 1|2'; exit 2;;
+esac
+[ "$#" = 2 ] || { fail 'Exactly one value is required'; exit 2; }
+case $1:$2 in default:1|default:2|switch:1|switch:2|hot:0|hot:1) ;; *) fail 'Invalid SIM setting'; exit 2;; esac
+command -v flock >/dev/null || { fail 'flock is required for SIM control'; exit 1; }
+exec 9>"$R/sim-control.lock"
+flock -n 9 || { fail 'SIM control is busy'; exit 1; }
+LOCKED=1
+case $1 in
+    # A choice of the user's ends the last fallback's notice: the next boot tries what was chosen.
+    default) sim_cfg_save_default "$(( $2-1 ))"; rm -f "$FALLBACK"; status;;
+    hot) sim_cfg_save_hot "$2"; rm -f "$FALLBACK"; status;;
+    switch)
+        # The whole operation is bounded: switch (about 15 s of AT), the wait for a bearer (60 s), one rollback
+        # (15 s) and two dials fit in 300 s; past it the switch is ended and the radio state declared unknown.
+        # The same guard watches this process: killed outright (SIGKILL, out of memory) it can clean nothing up -
+        # the markers stay, or the radio is left on a card nobody confirmed and nobody will switch back from. A
+        # result still "switching" with this process gone is that case: the guard clears the markers and declares
+        # the radio unknown, as this process's own exit would have.
+        ( trap 'kill "$sleeper" 2>/dev/null || true; exit 0' TERM INT
+          end=$(( $(date +%s) + ${MU300_SIM_DEADLINE:-300} ))
+          while kill -0 "$$" 2>/dev/null && [ "$(date +%s)" -lt "$end" ]; do sleep 2 & sleeper=$!; wait "$sleeper"; done
+          if kill -0 "$$" 2>/dev/null; then kill -TERM "$$" 2>/dev/null
+          elif [ "$(cat "$R/sim-result" 2>/dev/null || true)" = switching ]; then
+              rm -f "$R/sim-sequence" "$R/sim-switching"; atomic "$R/sim-phase" idle; unknown_radio
+          fi
+        ) 9>&- </dev/null >/dev/null 2>&1 &
+        deadline=$!
+        rc=0; live_switch "$(( $2-1 ))" || rc=$?
+        kill "$deadline" 2>/dev/null || true
+        wait "$deadline" 2>/dev/null || true
+        exit "$rc";;
+esac

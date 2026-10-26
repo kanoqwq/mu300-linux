@@ -1,0 +1,209 @@
+#!/bin/bash
+# Choose what the MU300 boots next and keep Linux as default safely.
+#   mu300-next-boot linux          Linux stays the default (re-armed on every successful boot)
+#   mu300-next-boot android        next reboot (and later ones) go to Android
+#   mu300-next-boot attempts [N]   show, or set, how many boots in a row may fail before Android takes over (1-6)
+#   mu300-next-boot --rearm        used by mu300-boot-ok.service after a successful boot
+#   mu300-next-boot lock           Linux stays, whatever happens: no failed boot ever sends it to Android by itself
+#   mu300-next-boot unlock         back to the attempts above
+#   mu300-next-boot --trial        used by mu300-update before it writes a boot image: locked or not, the next boots
+#                                  are the attempts above until one of them gets to mu300-boot-ok (which locks again)
+#   mu300-next-boot status
+# Locked: the Linux slot is armed successful=1. LK never counts a successful slot down, so it never rolls back; the
+# initramfs' backstop and its standalone fallback see the bit in misc and do not go to Android either (the fallback
+# waits on telnet with /run/to-android). Android then only by hand (android here, or the panel). A new kernel is the
+# one thing that could leave a locked device with no Linux at all, so every boot image write unlocks for its first
+# boot (--trial). The wish to stay locked is .mu300/boot-lock on the Linux disk.
+# The Linux slot (b, or a when Android runs from b) is armed with tries=N+1 and successful=0. LK decrements tries on
+# every boot and rolls back to Android's slot when it finds tries=1, so N boots that never reach mu300-boot-ok land
+# in Android on the next one. A boot that does reach it arms N+1 again. N lives in .mu300/boot-attempts on the Linux
+# disk, shared by every system there and by the initramfs; without the file it is 5.
+# What a caller of --trial has to know (mu300-update, which has just written a boot image): nothing is armed, and the
+# exit status says which nothing. 3: the default boot is not linux, so there is no default-Linux boot to protect -
+# every Linux boot is a one-shot trial armed from Android and a reboot goes there. 1: this slot's block cannot be
+# rebuilt here, so the initramfs' own one-shot block went in instead (one boot, not N; FINDINGS 32). 0: armed.
+# OpenWrt: od/timeout come from the static busybox in /opt/mu300/busybox-bin
+export PATH="$PATH:/opt/mu300/busybox-bin"
+set -eu
+CONF=${MU300_CONF:-/etc/mu300/default-boot}
+RUN=${MU300_RUN:-/run/mu300}
+# The initramfs says which slot Linux runs from (Android may be on either); without that (or garbled), the slot LK
+# booted, from the command line or the device tree's bootargs, and b only when nothing says. The blocks it publishes
+# are the pair of that slot; an initramfs from before that publishes only the old names, and only ever for Linux on b.
+# Between the two, the slot the initramfs' Linux block names: it publishes that block with the file, and its first two
+# bytes are the slot suffix (_a/_b) LK reads (kanoqwq's b8d4f222).
+suffix_of() { dd if="$1" bs=1 count=2 2>/dev/null; }
+LINUX_SLOT=$(cat "$RUN/linux-slot" 2>/dev/null || true)
+case $LINUX_SLOT in a|b) ;; *)
+    case $(suffix_of "$RUN/misc-bc-linux-trial.bin") in _a) LINUX_SLOT=a ;; _b) LINUX_SLOT=b ;; esac ;;
+esac
+case $LINUX_SLOT in a|b) ;; *)
+    LINUX_SLOT=$(for f in ${MU300_CMDLINE_SRC:-/proc/cmdline /proc/device-tree/chosen/bootargs}; do
+        [ -r "$f" ] && tr '\000' ' ' < "$f" | sed -n 's/.*androidboot\.slot_suffix=_\([ab]\).*/\1/p'; done | head -n1)
+    LINUX_SLOT=${LINUX_SLOT:-b} ;;
+esac
+case $LINUX_SLOT in a) BYTE=12 ;; *) BYTE=14 ;; esac
+BC_A=$RUN/misc-bc-android.bin
+BC_B=$RUN/misc-bc-linux-trial.bin
+if [ "$LINUX_SLOT" = b ]; then
+    [ -s "$BC_A" ] || BC_A=$RUN/misc-bc-slot-a.bin
+    [ -s "$BC_B" ] || BC_B=$RUN/misc-bc-slot-b-trial.bin
+fi
+# A block that names another slot than the one it is used for is never written: Linux's must name Linux's slot, and
+# Android's the other one. The initramfs never publishes such a pair; this keeps misc unchanged if anything else did
+# (kanoqwq's b8d4f222). A missing block is write_bc's to refuse, as before.
+if [ "$LINUX_SLOT" = a ]; then ANDROID_SLOT=b; else ANDROID_SLOT=a; fi
+pair_ok() {
+    { [ ! -s "$BC_B" ] || [ "$(suffix_of "$BC_B")" = "_$LINUX_SLOT" ]; } &&
+        { [ ! -s "$BC_A" ] || [ "$(suffix_of "$BC_A")" = "_$ANDROID_SLOT" ]; }
+}
+MISC=$(cat "$RUN/misc-dev" 2>/dev/null || readlink -f /dev/block/by-name/misc)
+DEFAULT_ATTEMPTS=5
+
+disk_dir() {
+    for d in "${MU300_DISK:-/mnt/mu300-disk}" ""; do [ -d "$d/.mu300" ] && { printf '%s/.mu300' "$d"; return; }; done
+    return 1
+}
+
+lock_wanted() { d=$(disk_dir) && [ -f "$d/boot-lock" ]; }
+
+attempts() {
+    n=$(cat "$(disk_dir)/boot-attempts" 2>/dev/null || true)
+    case $n in [1-6]) echo "$n" ;; *) echo "$DEFAULT_ATTEMPTS" ;; esac
+}
+
+hex_of() { od -An -tx1 -v "$1" | tr -d ' \n'; }
+bytes_of() { printf "$(printf '%s' "$1" | sed 's/../\\x&/g')"; }
+
+# The Linux slot's block with tries=$1 (and successful=$2, default 0), made from the initramfs' tries=2 block: byte 12 (slot a) or 14 (slot b) is
+# that slot's priority | tries << 4 | successful << 7, and the last four bytes are the CRC-32 of the first 28 - the same
+# CRC-32 gzip ends every stream with, which saves needing anything that computes one.
+make_bc_b() {
+    b=$(hex_of "$BC_B")
+    [ ${#b} = 64 ] || return 1
+    body="${b:0:$((BYTE * 2))}$(printf '%02x' $(( 0x0f | ($1 << 4) | (${2:-0} << 7) )))${b:$((BYTE * 2 + 2)):$((54 - BYTE * 2))}"
+    crc=$(bytes_of "$body" | gzip -c | tail -c 8 | head -c 4 | od -An -tx1 -v | tr -d ' \n')
+    [ ${#crc} = 8 ] || return 1
+    printf '%s%s' "$body" "$crc"
+}
+
+# set_conf WORD: the default boot, written whole - a new file renamed over the old one: never an empty file a power
+# cut left behind, never written through a symlink (the rename replaces one) - and only ever after misc has been
+# written and read back (write_bc), so that the file says what misc does. The initramfs reads it: "linux" makes it
+# skip restoring Android's slot (default-Linux mode), anything else gives the one-shot trial.
+set_conf() {
+    local dir=${CONF%/*} tmp
+    mkdir -p "$dir" || return 1
+    tmp=$dir/.default-boot.$$
+    rm -f "$tmp"
+    ( umask 022; set -C; echo "$1" > "$tmp" ) 2>/dev/null || { rm -f "$tmp"; return 1; }
+    mv -f "$tmp" "$CONF" || { rm -f "$tmp"; return 1; }
+    sync
+}
+
+# write_bc FILE: the 32-byte block into misc, read back; then, and only then, the default boot that goes with it
+# (PENDING_CONF, set by the command). A failed or unverified write leaves the file as it was.
+PENDING_CONF=
+write_bc() {
+    [ -s "$1" ] || { echo "no boot control block $1 (initramfs too old for this slot?)" >&2; exit 1; }
+    dd if="$1" of="$MISC" bs=1 seek=2048 conv=notrunc 2>/dev/null || { echo "writing misc failed" >&2; exit 1; }
+    sync
+    [ "$(dd if="$MISC" bs=1 skip=2048 count=32 2>/dev/null | od -An -tx1 -v | tr -d ' \n')" = "$(hex_of "$1")" ] \
+        || { echo "misc verify failed" >&2; exit 1; }
+    if [ -n "$PENDING_CONF" ]; then
+        set_conf "$PENDING_CONF" || { echo "misc written, but $CONF could not be written" >&2; exit 1; }
+        PENDING_CONF=
+    fi
+}
+
+# The initramfs counts every boot in .mu300/boot-tries; this is where a boot counts as good and clears it.
+clear_boot_tries() {
+    d=$(disk_dir) || return 0
+    echo 0 > "$d/boot-tries" 2>/dev/null && sync
+}
+
+arm_linux() {  # arm_linux [trial]: locked when that is wanted, unless this is the trial of a new boot image
+    n=$(attempts)
+    succ=0
+    if lock_wanted && [ "${1:-}" != trial ]; then succ=1; fi
+    # a new arm starts a new count (like --rearm): a count left from before would let the initramfs' backstop send
+    # an early boot of this arm to Android, before the N failed boots it now promises
+    clear_boot_tries
+    # Rebuilding the tries=2 block has to reproduce the initramfs' own byte for byte, or the arithmetic
+    # above is wrong for this misc and nothing it makes gets written.
+    if [ "$(make_bc_b 2 2>/dev/null)" != "$(hex_of "$BC_B")" ]; then
+        # The arithmetic above is wrong for this misc, so the initramfs' own one-shot block goes in instead: this
+        # image gets one boot to prove itself, not N (FINDINGS 32). A degraded arm, and it fails: a caller that was
+        # promised N attempts would otherwise be promising one and saying nothing.
+        echo "cannot rebuild the slot $LINUX_SLOT block on this system; arming with 1 attempt, not $(attempts)" >&2
+        write_bc "$BC_B"
+        [ "$succ" = 0 ] || { echo "not locked: the slot block cannot be built here" >&2; exit 1; }
+        exit 1
+    fi
+    tmp=$(mktemp); bytes_of "$(make_bc_b $((n + 1)) "$succ")" > "$tmp"
+    write_bc "$tmp"; rm -f "$tmp"
+    if [ "$succ" = 1 ]; then
+        echo "slot $LINUX_SLOT locked: Linux boots until you choose Android (mu300-next-boot android)"
+    else
+        echo "slot $LINUX_SLOT armed: $n failed boot(s) in a row before Android"
+    fi
+}
+
+slot_state() {
+    b=$(dd if="$MISC" bs=1 skip=2048 count=32 2>/dev/null | od -An -tx1 -v | tr -d ' \n')
+    echo "misc bootloader_control: $b"
+    echo "  slot a info: ${b:24:2}  slot b info: ${b:28:2}  (prio | tries<<4 | successful<<7)"
+}
+
+# One change of misc at a time. mu300-boot-ok's --rearm reads the default boot and then writes the Linux block: a
+# "mu300-next-boot android" (the panel's Switch to Android) in between was overwritten by it, and the device booted
+# Linux once more with the file saying android. Every command but status holds the lock from its first read to its
+# last write. flock(1) where there is one (util-linux on Ubuntu, busybox's applet on OpenWrt); without it, or without
+# the runtime directory, nothing is serialised (as before). A lock file that is a symlink is not opened.
+take_lock() {
+    local f=$RUN/next-boot.lock n=0
+    command -v flock >/dev/null 2>&1 || return 0
+    [ -d "$RUN" ] && [ ! -L "$f" ] || return 0
+    exec 9>>"$f" || return 0
+    until flock -n 9; do
+        n=$((n + 1))
+        [ "$n" -lt "${MU300_NEXT_BOOT_WAIT:-60}" ] || { echo "another mu300-next-boot is still running" >&2; exit 1; }
+        sleep 1
+    done
+}
+case "${1:-status}" in status) ;; *) take_lock
+    pair_ok || { echo "the boot control blocks do not match Linux on slot $LINUX_SLOT; boot control unchanged" >&2; exit 1; } ;;
+esac
+
+case "${1:-status}" in
+    linux)   PENDING_CONF=linux; arm_linux; echo "default boot: linux" ;;
+    android) PENDING_CONF=android; write_bc "$BC_A"; echo "next boot: android" ;;
+    attempts)
+        if [ -z "${2:-}" ]; then attempts; exit 0; fi
+        case $2 in [1-6]) ;; *) echo "attempts must be 1-6 (the slot's tries field has room for 7)" >&2; exit 2 ;; esac
+        d=$(disk_dir) || { echo "cannot find the MU300 disk area" >&2; exit 1; }
+        echo "$2" > "$d/boot-attempts.tmp" && mv "$d/boot-attempts.tmp" "$d/boot-attempts" && sync
+        [ "$(cat "$CONF" 2>/dev/null)" = linux ] && arm_linux || echo "saved; used once Linux is the default boot" ;;
+    lock)    d=$(disk_dir) || { echo "cannot find the MU300 disk area" >&2; exit 1; }
+             : > "$d/boot-lock" && sync
+             PENDING_CONF=linux; arm_linux; echo "default boot: linux (locked)" ;;
+    unlock)  d=$(disk_dir) && rm -f "$d/boot-lock" && sync
+             if [ "$(cat "$CONF" 2>/dev/null)" = linux ]; then arm_linux; fi
+             echo "unlocked: $(attempts) failed boot(s) in a row before Android" ;;
+    --trial) # mu300-update, before it writes a boot image. With Android as the default boot there is nothing to
+             # arm - and a reboot then goes to Android by itself - so say that and exit 3 (nothing was done).
+             # --rearm above stays quiet: there, "nothing to do" is the normal state of such a device.
+             if [ "$(cat "$CONF" 2>/dev/null)" = linux ]; then arm_linux trial
+             else echo "default boot is not linux: nothing armed, and a reboot goes to Android by itself" >&2
+                  exit 3
+             fi ;;
+    --rearm) clear_boot_tries
+             [ "$(cat "$CONF" 2>/dev/null)" = linux ] && arm_linux || echo "default boot is not linux, nothing to do" ;;
+    status)  echo "default boot: $(cat "$CONF" 2>/dev/null || echo android)"
+             if lock_wanted; then echo "locked: yes (Android only by hand)"; else echo "locked: no"; fi
+             if lock_wanted; then echo "failed boots in a row before Android: $(attempts) (only while a new boot image is on trial)"
+             else echo "failed boots in a row before Android: $(attempts)"; fi
+             d=$(disk_dir) && [ -f "$d/boot-tries" ] && echo "boots since the last good one: $(cat "$d/boot-tries")"
+             slot_state ;;
+    *) echo "usage: $0 linux|android|lock|unlock|attempts [N]|status" >&2; exit 2 ;;
+esac

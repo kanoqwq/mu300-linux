@@ -1,0 +1,130 @@
+#!/bin/bash
+# Wi-Fi hotspot on wlan0: hostapd (WPA2) + DHCP/DNS; clients are NATed out through the modem by mobile-data.
+# Settings: /etc/mu300/hotspot.conf (SSID, PSK, CHANNEL, COUNTRY). Imported from Android's SoftAP config by the
+# installer when available; otherwise generated once with a random passphrase.
+# (MU300_HOTSPOT_CONF, MU300_WIFI_CHANNELS, MU300_HOSTAPD_CONF and MU300_HOTSPOT_DRYRUN=1, which stops once the hostapd
+# configuration is written, are for tests/)
+set -euo pipefail
+CONF=${MU300_HOTSPOT_CONF:-/etc/mu300/hotspot.conf}
+HOSTAPD_CONF=${MU300_HOSTAPD_CONF:-/run/mu300-hostapd.conf}
+WIFI_CHANNELS=${MU300_WIFI_CHANNELS:-/opt/mu300/lib/wifi-channels.sh}
+[ -r "$WIFI_CHANNELS" ] || WIFI_CHANNELS=$(dirname "$0")/../lib/wifi-channels.sh
+. "$WIFI_CHANNELS"
+if [ ! -s "$CONF" ]; then
+    mac=$(cat /sys/class/net/wlan0/address 2>/dev/null | tr -d : | tail -c 5)
+    psk=$(tr -dc 'A-HJ-NP-Za-km-z2-9' </dev/urandom | head -c 12)
+    umask 077
+    mkdir -p /etc/mu300
+    printf 'SSID=MU300-%s\nPSK=%s\nBAND=5\nCHANNEL=auto\nCOUNTRY=TR\n' "${mac^^}" "$psk" > "$CONF"
+    echo "generated $CONF"
+fi
+# read values literally (never source the file: the passphrase may contain shell metacharacters)
+conf() { sed -n "s/^$1=//p" "$CONF" | head -1; }
+SSID=$(conf SSID); PSK=$(conf PSK); CHANNEL=$(conf CHANNEL); COUNTRY=$(conf COUNTRY); BAND=$(conf BAND)
+# HIDDEN=1: the name is not broadcast (clients join by typing it); the web manager's switch (mu300-api wifi.set)
+HIDE=0; [ "$(conf HIDDEN)" = 1 ] && HIDE=1
+COUNTRY=${COUNTRY:-TR}
+# WPA2-PSK only. WPA3/SAE is disabled on this Wi-Fi chip (the SC2355 of the F50, U30 Air and V50; the U30 Air's firmware
+# SAE offload could let a client in without the password, docs/U30AIR-SAE.md, FINDINGS 80): a hotspot.conf that asks
+# for it is refused, and the hotspot comes up as WPA2-PSK (CCMP) with its password
+for k in ENCRYPTION SECURITY KEY_MGMT; do
+    v=$(conf "$k")
+    case $(printf '%s' "$v" | tr 'A-Z' 'a-z') in
+        *sae*|*wpa3*|*psk3*)
+            m="hotspot.conf: $k=$v refused: WPA3/SAE is disabled on this Wi-Fi chip (FINDINGS 80); the hotspot is WPA2-PSK only"
+            echo "$m" >&2; logger -t mu300-hotspot -p daemon.warn "$m" 2>/dev/null || true ;;
+    esac
+done
+# BAND=5 uses 802.11a/n/ac; this chip supports only one AP at a time, so 2.4 and 5 GHz cannot run together.
+# The firmware offers 5 GHz AP only on the non-DFS channels 36-48 and 149-165, and the driver has no radar detection:
+# a DFS channel, or one the country does not allow, is replaced by the country's default (one line says so), and
+# "auto" is that default (lib/wifi-channels.sh).
+[ -e /run/mu300-hotspot-force-2g ] && BAND=2.4
+EXTRA_2G='ht_capab=[SHORT-GI-20]'
+# ht5: EXTRA for the 5 GHz channel $CHANNEL, as wide as the country allows (80 MHz in 36-48 and 149-161; 165 is 20)
+ht5() {
+    case $CHANNEL in
+        36|44|149|157) HT='[HT40+][SHORT-GI-20][SHORT-GI-40]' ;;
+        *) HT='[HT40-][SHORT-GI-20][SHORT-GI-40]' ;;
+    esac
+    case $CHANNEL in 36|40|44|48) SEG0=42 ;; *) SEG0=155 ;; esac
+    case $(wifi_ap5_width "$COUNTRY" "$CHANNEL") in
+        80) EXTRA=$(printf 'ht_capab=%s\nieee80211ac=1\nvht_capab=[SHORT-GI-80]\nvht_oper_chwidth=1\nvht_oper_centr_freq_seg0_idx=%s' "$HT" "$SEG0") ;;
+        40) EXTRA=$(printf 'ht_capab=%s\nieee80211ac=1\nvht_oper_chwidth=0' "$HT") ;;
+        *) EXTRA=$(printf 'ht_capab=[SHORT-GI-20]\nieee80211ac=1\nvht_oper_chwidth=0') ;;
+    esac
+}
+case "${BAND:-5}" in
+    5)
+        HWMODE=a; CHANNEL=$(wifi_ap5_resolve "$COUNTRY" "$CHANNEL")
+        if [ -n "$CHANNEL" ]; then
+            ht5
+        else
+            echo "no 5 GHz channel without DFS in country $COUNTRY: using 2.4 GHz channel 6" >&2
+            HWMODE=g; CHANNEL=6; EXTRA=$EXTRA_2G
+        fi ;;
+    *) HWMODE=g; case "$CHANNEL" in [1-9]|1[0-3]) ;; *) CHANNEL=6 ;; esac; EXTRA=$EXTRA_2G ;;
+esac
+# cfg80211 tried to load regulatory.db before the rootfs was mounted; reload it, then apply the country
+/opt/mu300/bin/regdb-load >/dev/null 2>&1 || true
+iw reg set "$COUNTRY" 2>/dev/null || true
+for n in $(seq 1 15); do iw reg get 2>/dev/null | grep -q "country $COUNTRY:" && break; sleep 1; done
+# the channel as the kernel has it now: an AP may use it unless it is NO-IR, disabled or radar (DFS)
+# newer kernels report a frequency offset, so iw prints "5180.0 MHz"
+ch_ok() { iw list 2>/dev/null | grep -E "\* [0-9.]+ MHz \[${1:-$CHANNEL}\]" | grep -vqE "no IR|disabled|radar"; }
+# the channel flags follow the country change with a delay (seconds on the mainline kernel)
+if [ "$HWMODE" = a ]; then for n in $(seq 1 20); do ch_ok && break; sleep 0.5; done; fi
+if [ "$HWMODE" = a ] && ! ch_ok; then
+    # another channel of the country that the kernel allows, else 2.4 GHz
+    want=$CHANNEL; CHANNEL=
+    for c in $(wifi_ap5_channels "$COUNTRY"); do ch_ok "$c" && { CHANNEL=$c; break; }; done
+    if [ -n "$CHANNEL" ]; then
+        echo "5 GHz channel $want not allowed for AP here, using channel $CHANNEL" >&2
+        ht5
+    else
+        echo "5 GHz channel $want not allowed for AP here, falling back to 2.4 GHz channel 6" >&2
+        HWMODE=g; CHANNEL=6; EXTRA=$EXTRA_2G
+    fi
+fi
+[ ${#PSK} -ge 8 ] || { echo "PSK must be at least 8 characters" >&2; exit 1; }
+umask 077
+cat > "$HOSTAPD_CONF" <<C
+interface=wlan0
+driver=nl80211
+ssid=${SSID}
+ignore_broadcast_ssid=${HIDE}
+country_code=${COUNTRY}
+bridge=br-lan
+hw_mode=${HWMODE}
+channel=${CHANNEL}
+ieee80211d=1
+${EXTRA}
+ieee80211n=1
+wmm_enabled=1
+auth_algs=1
+wpa=2
+wpa_key_mgmt=WPA-PSK
+rsn_pairwise=CCMP
+wpa_passphrase=${PSK}
+C
+[ -z "${MU300_HOTSPOT_DRYRUN:-}" ] || exit 0
+for n in $(seq 1 60); do [ -e /sys/class/net/wlan0 ] && break; sleep 1; done
+for n in $(seq 1 30); do ip link show br-lan >/dev/null 2>&1 && break; sleep 1; done
+ip addr flush dev wlan0 2>/dev/null || true
+# cfg80211 refuses to bridge a station-mode interface (EOPNOTSUPP); switch to AP first so hostapd can add it
+# the WCN chip can still be busy right after boot (Bluetooth power-cycles the same chip): retry the switch.
+# On a down interface the sprd driver records the AP type but answers EINVAL (its firmware close fails: the interface
+# is closed already); the type is then AP, so that counts as done (it cost a 2 s retry on every boot).
+for n in 1 2 3 4 5 6; do
+    ip link set wlan0 down
+    iw dev wlan0 set type __ap 2>/dev/null && break
+    iw dev wlan0 info 2>/dev/null | grep -q 'type AP$' && break
+    sleep 2
+done
+ip link set wlan0 up
+mkdir -p /run/motd.d && chmod 755 /run/motd.d
+printf 'MU300 hotspot: SSID "%s"  password "%s"  (edit /etc/mu300/hotspot.conf)\n' "$SSID" "$PSK" > /run/motd.d/50-mu300-hotspot
+chmod 640 /run/motd.d/50-mu300-hotspot
+# the U30 Air's NFC tag: the name and password again if that is what it holds (a slow I2C write, in the background)
+[ "$(/opt/mu300/bin/mu300-device)" = u30air ] && { /opt/mu300/bin/mu300-nfc sync 2>&1 | logger -t mu300-nfc & }
+exec hostapd "$HOSTAPD_CONF"

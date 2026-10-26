@@ -1,0 +1,91 @@
+[
+  {
+    "name": "xray",
+    "extra": "vpn-xray",
+    "kind": "extra",
+    "installed": true,
+    "path": "/tmp/rv/disk/extra/vpn-xray/bin/xray",
+    "version": null,
+    "available": null,
+    "size": 16384,
+    "needed_by": [
+      "office",
+      "trojan"
+    ],
+    "usable": true,
+    "reason": null,
+    "install": "mu300-vpn engines install xray (mu300-extra install vpn-xray)"
+  },
+  {
+    "name": "sing-box",
+    "extra": "vpn-singbox",
+    "kind": "extra",
+    "installed": true,
+    "path": "/tmp/rv/disk/extra/vpn-singbox/bin/sing-box",
+    "version": null,
+    "available": null,
+    "size": 12288,
+    "needed_by": [],
+    "usable": true,
+    "reason": null,
+    "install": "mu300-vpn engines install sing-box (mu300-extra install vpn-singbox)"
+  },
+  {
+    "name": "mihomo",
+    "extra": "vpn-mihomo",
+    "kind": "extra",
+    "installed": false,
+    "path": null,
+    "version": null,
+    "available": null,
+    "size": null,
+    "needed_by": [],
+    "usable": false,
+    "reason": null,
+    "install": "mu300-vpn engines install mihomo (mu300-extra install vpn-mihomo)"
+  },
+  {
+    "name": "dae",
+    "extra": "vpn-dae",
+    "kind": "extra",
+    "installed": false,
+    "path": null,
+    "version": null,
+    "available": null,
+    "size": null,
+    "needed_by": [],
+    "usable": false,
+    "reason": null,
+    "install": "mu300-vpn engines install dae (mu300-extra install vpn-dae)"
+  },
+  {
+    "name": "wireguard",
+    "extra": null,
+    "kind": "package",
+    "installed": true,
+    "path": "/usr/bin/wg",
+    "version": null,
+    "available": null,
+    "size": null,
+    "needed_by": [
+      "home-wg"
+    ],
+    "usable": true,
+    "reason": null,
+    "install": "mu300-vpn engines install wireguard (apk add wireguard-tools)"
+  },
+  {
+    "name": "openvpn",
+    "extra": null,
+    "kind": "package",
+    "installed": false,
+    "path": null,
+    "version": null,
+    "available": null,
+    "size": null,
+    "needed_by": [],
+    "usable": false,
+    "reason": null,
+    "install": "mu300-vpn engines install openvpn (apk add openvpn-openssl)"
+  }
+]

@@ -1,0 +1,53 @@
+# The files of this project that go into every Magisk zip as computer/ (tools/make-magisk-zips.sh): the installers
+# for a computer, their tools and the graphical installer - what install.sh, install.ps1, the two uninstallers and gui/
+# use when they install from the zip's own files (tools/package.sh). One path per line, relative to the top of the
+# project; a directory stands for every file in it. Not here: what only --build uses (docker, the kernel, the systems'
+# sources), and nothing of the payload, which the zip has once, in payload/. tests/test_magisk_zip.py checks that every
+# file these scripts name is in the list.
+install.sh
+install.ps1
+install.cmd
+uninstall.sh
+uninstall.ps1
+uninstall.cmd
+LICENSE
+tools/answers.sh
+tools/answers.ps1
+tools/i18n.sh
+tools/storage.sh
+tools/releases.sh
+tools/release_pick.py
+tools/package.sh
+tools/resume.sh
+tools/resume.py
+tools/self-update.sh
+tools/gui-launch.sh
+tools/gui-launch.ps1
+tools/linux-mode.sh
+tools/android-bootchain.sh
+tools/android-install.sh
+tools/android-mount-mu300root.sh
+tools/android-pwcheck.sh
+tools/install-magisk-module.sh
+tools/resize-last-partition.py
+tools/vendor-overlay.py
+tools/sha512crypt.py
+tools/backup-device.sh
+android-vendor/extract-subset.sh
+android-vendor/extract-gpu-subset.sh
+android-vendor/extract_subset.py
+android-vendor/pull_closure.py
+android-vendor/subset-files.txt
+android-vendor/gpu-files.txt
+android-vendor/ueventd-perms.sh
+boot/init
+boot/build-boot-image.py
+boot/module-order.txt
+boot/module-order-u30air.txt
+i18n/tr.tsv
+i18n/zh.tsv
+gui/mu300-gui.py
+gui/mu300gui
+android/magisk/mu300-linux-switch
+android/magisk/installer/module.prop.in
+rootfs/overlay/opt/mu300/lib/vpn-orphan.sh

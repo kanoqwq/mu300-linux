@@ -1,0 +1,104 @@
+wlan_combo (5.4): quiet the per-command, per-packet and ACS survey log lines (issue #68)
+
+By AgentFan0315 (https://github.com/AgentFan0315/f50-openwrt, kernel/patches/wlan_combo-logspam-quiet.patch),
+GPL-2.0 like the code it changes. Only printk levels change: the driver's own level (sprd_dbg_level, which gates its
+wl_* lines and BA hex dumps) starts at L_ERR, the rest become pr_debug/netdev_dbg (CONFIG_DYNAMIC_DEBUG is on).
+Left out of the original: the two "cmd->refcnt" pr_err in the command-response path (an event dropped while the
+driver exits, a failed kmalloc), which are errors and not periodic; 6.18's port keeps them as errors too.
+
+--- a/common/debug.c
++++ b/common/debug.c
+@@ -25,7 +25,7 @@
+ static unsigned int be_ratio = 81;
+ static unsigned int wmmac_ratio = 10;
+ static atomic_t tcp_ack_enable;
+-int sprd_dbg_level = L_WARN;
++int sprd_dbg_level = L_ERR;
+ 
+ int get_max_fw_tx_dscr(void)
+ {
+@@ -561,7 +561,7 @@
+ void sprd_debug_init(struct sprd_debug *dbg)
+ {
+ 	sprd_dbg = dbg;
+-	sprd_dbg_level = L_INFO;
++	sprd_dbg_level = L_ERR;
+ 	/* create debugfs */
+ 	dbg->dir = debugfs_create_dir("sprd_wlan", NULL);
+ 	if (IS_ERR(dbg->dir)) {
+--- a/sc2355/cmdevt.c
++++ b/sc2355/cmdevt.c
+@@ -428,7 +428,7 @@
+ #endif
+ 	if (hif->priv->is_suspending == 0)
+ 		__pm_stay_awake(cmd->wake_lock);
+-	pr_info("cmd->refcnt=%x\n", atomic_read(&cmd->refcnt));
++	pr_debug("cmd->refcnt=%x\n", atomic_read(&cmd->refcnt));
+ 
+ 	return 0;
+ }
+@@ -459,7 +459,7 @@
+ 	if (hdr->common.rsp)
+ 		cmdevt_set_cmd(&priv->cmd, hdr);
+ 
+-	pr_warn("[%u]ctx_id %d send[%s]\n",
++	pr_debug("[%u]ctx_id %d send[%s]\n",
+ 		le32_to_cpu(hdr->mstime),
+ 		hdr->common.mode, cmdevt_cmd2str(hdr->cmd_id));
+ 
+--- a/sc2355/pcie.c
++++ b/sc2355/pcie.c
+@@ -1018,13 +1018,13 @@
+ 			}
+ 		}
+ 		if (vif->mode == SPRD_MODE_AP) {
+-			pr_info("%s,AP mode, group bssid,\n"
++			pr_debug("%s,AP mode, group bssid,\n"
+ 				"lut not found, ctx_id:%d, return lut:4\n",
+ 				__func__, vif->ctx_id);
+ 			return 4;
+ 		}
+ 		if (vif->mode == SPRD_MODE_P2P_GO) {
+-			pr_info("%s,GO mode, group bssid,\n"
++			pr_debug("%s,GO mode, group bssid,\n"
+ 				"lut not found, ctx_id:%d, return lut:5\n",
+ 				__func__, vif->ctx_id);
+ 			return 5;
+--- a/sc2355/sdio.c
++++ b/sc2355/sdio.c
+@@ -715,7 +715,7 @@
+ 			}
+ 		}
+ 		if (vif->mode == SPRD_MODE_AP) {
+-			pr_info("%s,AP mode, group bssid,\n"
++			pr_debug("%s,AP mode, group bssid,\n"
+ 				"lut not found, ctx_id:%d, return lut:4\n",
+ 				__func__, vif->ctx_id);
+ 			return 4;
+--- a/sc2355/acs.c
++++ b/sc2355/acs.c
+@@ -81,7 +81,7 @@
+ 		return err;
+ 	}
+ 
+-	netdev_err(vif->ndev, "%s, idx %d\n", __func__, idx);
++	netdev_dbg(vif->ndev, "%s, idx %d\n", __func__, idx);
+ 	if (!list_empty(&vif->survey_info_list)) {
+ 		info_new = list_first_entry(&vif->survey_info_list,
+ 					    struct survey_info_new_node,
+@@ -127,13 +127,13 @@
+ 				     SURVEY_INFO_TIME_EXT_BUSY);
+ 			}
+ 		}
+-		netdev_err(vif->ndev, "%s, time %llu\n", __func__,
++		netdev_dbg(vif->ndev, "%s, time %llu\n", __func__,
+ 			   s_info->time);
+ 		survey_cnt++;
+ 		kfree(info_new);
+ 
+ 	} else {
+-		netdev_err(vif->ndev, "%s, survey_cnt %d\n", __func__,
++		netdev_dbg(vif->ndev, "%s, survey_cnt %d\n", __func__,
+ 			   survey_cnt);
+ 		ret = -ENOENT;
+ 	}

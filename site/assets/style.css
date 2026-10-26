@@ -1,0 +1,402 @@
+/* MU300 Linux website.
+   The colours come from the device itself: its network LED is blue on 4G, white on 5G and red with no service.
+   Linux is drawn in amber and Android in green, everywhere, so the pictures and the text agree. */
+
+:root {
+  --paper: #f3f6fa;
+  --surface: #ffffff;
+  --ink: #142133;
+  --muted: #526276;
+  --line: #d6dfea;
+  --blue: #2259d6;
+  --sponsor: #bf3989;
+  --blue-soft: #e3ebfb;
+  --amber: #b97700;
+  --amber-fill: #f2b23a;
+  --amber-soft: #fbf0d8;
+  --green: #217a47;
+  --green-fill: #3fae6a;
+  --green-soft: #def2e6;
+  --red: #c4302f;
+  --red-soft: #fbe3e2;
+  --code-bg: #e8eef6;
+  --on-blue: #ffffff;
+  --shadow: 0 1px 2px rgba(20, 33, 51, .06), 0 6px 20px rgba(20, 33, 51, .06);
+  --radius-s: 6px;
+  --radius-m: 12px;
+  --radius-l: 22px;
+  --measure: 42rem;
+  --wide: 68rem;
+  --font-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --font-display: "Bricolage Grotesque", var(--font-body);
+  --font-code: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  color-scheme: light dark;
+}
+
+/* Dark: when the system asks for it and the page has not been switched to light, or when it has been switched
+   to dark (data-theme on <html>, set by the theme button and restored by the script in <head>). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0d1520;
+    --surface: #142031;
+    --ink: #e3ebf5;
+    --muted: #9cabbe;
+    --line: #26364c;
+    --blue: #7ea6ff;
+  --sponsor: #e86fb6;
+    --blue-soft: #1a2a48;
+    --amber: #f2b740;
+    --amber-fill: #f2b23a;
+    --amber-soft: #33290f;
+    --green: #5ccf8a;
+    --green-fill: #3fae6a;
+    --green-soft: #12301f;
+    --red: #ff7b72;
+    --red-soft: #3a1a1a;
+    --code-bg: #1a283b;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .25);
+    --on-blue: #0d1520;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0d1520;
+  --surface: #142031;
+  --ink: #e3ebf5;
+  --muted: #9cabbe;
+  --line: #26364c;
+  --blue: #7ea6ff;
+  --sponsor: #e86fb6;
+  --blue-soft: #1a2a48;
+  --amber: #f2b740;
+  --amber-fill: #f2b23a;
+  --amber-soft: #33290f;
+  --green: #5ccf8a;
+  --green-fill: #3fae6a;
+  --green-soft: #12301f;
+  --red: #ff7b72;
+  --red-soft: #3a1a1a;
+  --code-bg: #1a283b;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .25);
+  --on-blue: #0d1520;
+  color-scheme: dark;
+}
+:root[data-theme="light"] { color-scheme: light; }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: 5rem; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  overflow-wrap: break-word;
+}
+
+:lang(zh) body, body:lang(zh) { line-height: 1.75; }
+
+img, svg { max-width: 100%; height: auto; }
+
+a { color: var(--blue); text-underline-offset: .18em; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+
+:focus-visible { outline: 3px solid var(--amber-fill); outline-offset: 2px; border-radius: 3px; }
+
+.skip {
+  position: absolute; left: -999px; top: .5rem;
+  background: var(--surface); padding: .5rem 1rem; border-radius: var(--radius-s); z-index: 10;
+}
+.skip:focus { left: 1rem; }
+
+/* ------------------------------------------------------------------ type */
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0 0 .5em;
+  text-wrap: balance;
+}
+h1 { font-size: clamp(2.1rem, 1.4rem + 3vw, 3.4rem); font-weight: 700; }
+h2 { font-size: clamp(1.55rem, 1.2rem + 1.4vw, 2.15rem); font-weight: 700; margin-top: 2.2em; }
+h3 { font-size: 1.25rem; font-weight: 650; margin-top: 1.8em; }
+h2 + p, h3 + p { margin-top: 0; }
+p, ul, ol, table, pre, figure, details, .callout { margin: 0 0 1.1em; }
+ul, ol { padding-left: 1.3em; }
+li + li { margin-top: .3em; }
+strong { font-weight: 700; }
+.lede { font-size: 1.2rem; color: var(--muted); max-width: 36rem; }
+.muted { color: var(--muted); }
+small, .small { font-size: .9rem; }
+
+code, kbd, pre { font-family: var(--font-code); font-size: .88em; }
+:not(pre) > code {
+  background: var(--code-bg);
+  padding: .08em .35em;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+kbd {
+  border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px;
+  padding: 0 .35em; background: var(--surface);
+}
+pre {
+  position: relative;
+  background: var(--code-bg);
+  border-radius: var(--radius-m);
+  padding: 1rem 4.6rem 1rem 1.1rem;
+  overflow-x: auto;
+  line-height: 1.5;
+  tab-size: 4;
+}
+pre code { white-space: pre; }
+pre .c { color: var(--muted); }
+.copy {
+  position: absolute; top: .45rem; right: .45rem;
+  font: inherit; font-family: var(--font-body); font-size: .8rem;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: var(--radius-s); padding: .15rem .55rem; cursor: pointer;
+}
+.copy:hover { border-color: var(--blue); }
+
+/* ------------------------------------------------------------------ layout */
+
+.wrap { width: min(100% - 2rem, var(--wide)); margin-inline: auto; }
+.prose { width: min(100% - 2rem, var(--measure)); margin-inline: auto; }
+.prose > figure.wide, .prose > .wide {
+  width: min(100vw - 3rem, var(--wide));
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+main { padding-bottom: 4rem; overflow-x: clip; }
+section { scroll-margin-top: 5rem; }
+
+/* ------------------------------------------------------------------ header */
+
+.site-header {
+  position: sticky; top: 0; z-index: 5;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: saturate(1.4) blur(10px);
+  -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.site-header .wrap {
+  display: flex; align-items: center; gap: .9rem; min-height: 3.75rem; flex-wrap: nowrap;
+}
+.brand {
+  flex: none; display: inline-flex; align-items: center; gap: .55rem;
+  color: var(--ink); text-decoration: none; font-family: var(--font-display); font-weight: 700; font-size: 1.1rem;
+}
+.brand svg { width: 30px; height: 30px; flex: none; }
+.site-nav { display: flex; gap: .2rem .95rem; flex-wrap: nowrap; align-items: center; margin-left: auto; white-space: nowrap; }
+.site-nav a { color: var(--ink); text-decoration: none; font-size: .97rem; padding: .3rem 0; }
+.site-nav a:hover, .site-nav a[aria-current="page"] { color: var(--blue); }
+.site-nav a[aria-current="page"] { box-shadow: inset 0 -2px 0 var(--blue); }
+.langs { display: flex; gap: .15rem; margin-left: .4rem; }
+.langs a {
+  font-size: .85rem; padding: .15rem .45rem; border-radius: var(--radius-s); border: 1px solid transparent;
+  color: var(--muted); text-decoration: none;
+}
+.langs a[aria-current="true"] { border-color: var(--line); color: var(--ink); background: var(--surface); }
+.theme-btn {
+  flex: none; display: inline-grid; place-items: center; width: 2.1rem; height: 2.1rem; padding: 0;
+  color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 50%; cursor: pointer;
+}
+.theme-btn[hidden] { display: none; }
+/* the name of the theme is in the button's label and tooltip; on screen the icon says it */
+.theme-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.theme-btn:hover { border-color: var(--blue); }
+.theme-btn svg { width: 18px; height: 18px; display: none; }
+.theme-btn[data-mode="auto"] .i-auto, .theme-btn[data-mode="light"] .i-light, .theme-btn[data-mode="dark"] .i-dark { display: block; }
+.menu-btn {
+  display: none; margin-left: auto;
+  font: inherit; font-size: .95rem; background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); border-radius: var(--radius-s); padding: .3rem .8rem; cursor: pointer;
+}
+
+/* Below this width the longest menu (Turkish, about 1260 px with the logo and the theme button) no longer fits on
+   one row, so every language switches to the menu button instead of wrapping. */
+@media (max-width: 1290px) {
+  .site-header .wrap { flex-wrap: wrap; }
+  .site-nav { flex-wrap: wrap; }   /* without JavaScript the links simply wrap */
+  .js .menu-btn { display: inline-block; margin-left: 0; }
+  .js .theme-btn { margin-left: auto; }
+  .js .site-nav { order: 3; display: none; width: 100%; flex-direction: column; align-items: flex-start; padding: .4rem 0 1rem; }
+  .js .site-nav.open { display: flex; }
+  .js .site-nav .langs { margin-left: 0; margin-top: .4rem; }
+}
+
+/* ------------------------------------------------------------------ hero */
+
+.hero { padding: clamp(2rem, 6vw, 4.5rem) 0 2rem; }
+.hero .wrap {
+  display: grid; gap: clamp(1.5rem, 4vw, 3.5rem);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: center;
+}
+.hero h1 { max-width: 15ch; }
+.hero .lede { margin-bottom: 1.6rem; }
+.hero-art { justify-self: center; width: min(100%, 440px); height: auto; }
+@media (max-width: 760px) {
+  .hero .wrap { grid-template-columns: 1fr; }
+  .hero-art { order: -1; width: min(100%, 300px); }
+}
+
+.page-head { padding: clamp(2rem, 5vw, 3.5rem) 0 .5rem; }
+.page-head h1 { max-width: 20ch; }
+.crumbs { font-size: .9rem; color: var(--muted); margin-bottom: .8rem; }
+.crumbs a { color: var(--muted); }
+
+.actions { display: flex; flex-wrap: wrap; gap: .7rem; }
+.btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .7rem 1.2rem; border-radius: 999px; font-weight: 700; text-decoration: none;
+  border: 2px solid var(--blue); color: var(--blue); background: transparent;
+}
+.btn.primary { background: var(--blue); color: var(--on-blue); }
+.btn:hover { text-decoration: none; filter: brightness(1.06); }
+.btn.sponsor { border-color: var(--sponsor); color: var(--sponsor); }
+.btn.sponsor svg { flex: none; }
+.btn.sponsor:hover { background: var(--sponsor); color: #fff; filter: none; }
+.btn.small { padding: .35rem .85rem; font-size: .92rem; }
+.sponsor-note { margin-top: .9rem; color: var(--muted); font-size: .95rem; max-width: 52ch; }
+.sponsor-line { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; color: var(--muted); }
+
+/* ------------------------------------------------------------------ blocks */
+
+.callout {
+  border-left: 4px solid var(--blue);
+  background: var(--blue-soft);
+  padding: .9rem 1.1rem;
+  border-radius: 0 var(--radius-m) var(--radius-m) 0;
+}
+.callout > :last-child { margin-bottom: 0; }
+.callout.warn { border-color: var(--red); background: var(--red-soft); }
+.callout.linux { border-color: var(--amber-fill); background: var(--amber-soft); }
+.callout.android { border-color: var(--green-fill); background: var(--green-soft); }
+.callout > strong:first-child { display: block; margin-bottom: .2rem; }
+
+figure { margin-inline: 0; }
+figure img { display: block; margin-inline: auto; }
+figcaption { color: var(--muted); font-size: .95rem; margin-top: .6rem; text-align: center; }
+.panel {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-l);
+  padding: clamp(1rem, 3vw, 2rem); box-shadow: var(--shadow);
+}
+/* On a phone the diagrams would shrink until their labels are unreadable: keep them at a readable size and let
+   the picture itself scroll sideways (never the page). */
+.diagram { overflow-x: auto; }
+.diagram svg { display: block; width: 100%; height: auto; min-width: 620px; margin-inline: auto; }
+.diagram svg[viewBox="0 0 960 860"] { max-width: 720px; }
+
+
+/* tables */
+.table-scroll { overflow-x: auto; margin-bottom: 1.2em; border: 1px solid var(--line); border-radius: var(--radius-m); background: var(--surface); }
+.table-scroll table { margin: 0; }
+table { border-collapse: collapse; width: 100%; font-size: .97rem; }
+th, td { text-align: left; vertical-align: top; padding: .6rem .8rem; border-bottom: 1px solid var(--line); }
+tr:last-child > td { border-bottom: 0; }
+thead th { font-family: var(--font-display); font-weight: 650; background: var(--code-bg); }
+tbody th { font-weight: 700; }
+td.yes::before, td.no::before, td.part::before {
+  content: ""; display: inline-block; width: .7em; height: .7em; border-radius: 50%;
+  margin-right: .45em; vertical-align: .02em;
+}
+td.yes::before { background: var(--green-fill); }
+td.no::before { background: var(--red); }
+td.part::before { background: var(--amber-fill); }
+
+/* the LED dot list: what works, in the device's own colours */
+.dots { list-style: none; padding: 0; display: grid; gap: .8rem 2rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
+.dots li { margin: 0; padding-left: 1.6rem; position: relative; }
+.dots li::before {
+  content: ""; position: absolute; left: .1rem; top: .45em; width: .8rem; height: .8rem; border-radius: 50%;
+  background: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft);
+}
+.dots li.a::before { background: var(--amber-fill); box-shadow: 0 0 0 3px var(--amber-soft); }
+.dots li.g::before { background: var(--green-fill); box-shadow: 0 0 0 3px var(--green-soft); }
+.dots li.r::before { background: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
+.dots strong { display: block; }
+
+/* numbered, illustrated steps: only where the content really is a sequence */
+.steps { list-style: none; padding: 0; counter-reset: step; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14.5rem, 1fr)); }
+.steps > li {
+  counter-increment: step; margin: 0;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-l);
+  padding: 1.1rem 1.2rem 1.2rem; position: relative;
+}
+.steps > li::before {
+  content: counter(step);
+  position: absolute; top: 1rem; right: 1.1rem;
+  font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; color: var(--line);
+}
+.steps svg { width: 56px; height: 56px; display: block; margin-bottom: .6rem; }
+.steps h3 { margin: 0 0 .35rem; font-size: 1.1rem; }
+.steps p { margin: 0; color: var(--muted); font-size: .97rem; }
+
+/* the long guide: big step numbers in the margin */
+.guide-step { position: relative; padding-left: 3.4rem; margin-top: 2.6rem; }
+.guide-step > h2 { margin-top: 0; }
+.guide-step .num {
+  position: absolute; left: 0; top: .1rem;
+  width: 2.5rem; height: 2.5rem; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--blue); color: var(--on-blue); font-family: var(--font-display); font-weight: 700; font-size: 1.2rem;
+}
+@media (max-width: 520px) {
+  .guide-step { padding-left: 0; }
+  .guide-step .num { position: static; margin-bottom: .6rem; }
+}
+
+/* questions the installer asks */
+.qa { border: 1px solid var(--line); border-radius: var(--radius-m); background: var(--surface); margin-bottom: .8rem; padding: .9rem 1.1rem; }
+.qa .ask { font-family: var(--font-code); font-size: .9rem; background: var(--code-bg); padding: .45rem .7rem; border-radius: var(--radius-s); display: block; margin-bottom: .55rem; overflow-wrap: anywhere; }
+.qa p { margin: 0 0 .4rem; }
+.qa p:last-child { margin-bottom: 0; }
+.qa .pick { color: var(--muted); font-size: .95rem; }
+
+/* side-by-side cards with a coloured top edge */
+.cards { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr)); margin-bottom: 1.4rem; }
+.card { background: var(--surface); border: 1px solid var(--line); border-top: 5px solid var(--blue); border-radius: var(--radius-m); padding: 1rem 1.2rem; }
+.card.linux { border-top-color: var(--amber-fill); }
+.card.android { border-top-color: var(--green-fill); }
+.card.red { border-top-color: var(--red); }
+.card h3 { margin-top: 0; }
+.card > :last-child { margin-bottom: 0; }
+
+/* FAQ */
+details.faq { border-bottom: 1px solid var(--line); padding: .2rem 0; margin: 0; }
+details.faq summary {
+  cursor: pointer; list-style: none; padding: .8rem 2rem .8rem 0; font-weight: 700; position: relative;
+}
+details.faq summary::-webkit-details-marker { display: none; }
+details.faq summary::after {
+  content: "+"; position: absolute; right: .3rem; top: .6rem; font-size: 1.3rem; color: var(--muted);
+}
+details.faq[open] summary::after { content: "\2212"; }
+details.faq > div { padding: 0 0 1rem; }
+details.faq > div > :last-child { margin-bottom: 0; }
+
+/* table of contents on long pages */
+.toc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-m); padding: .9rem 1.2rem; }
+.toc h2 { font-size: 1rem; margin: 0 0 .4rem; }
+.toc ol { margin: 0; columns: 2 14rem; }
+
+/* ------------------------------------------------------------------ footer */
+
+.site-footer { border-top: 1px solid var(--line); padding: 2rem 0 3rem; color: var(--muted); font-size: .95rem; }
+.site-footer .wrap { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
+.site-footer h2 { font-size: 1rem; margin: 0 0 .5rem; color: var(--ink); }
+.site-footer ul { list-style: none; padding: 0; margin: 0; }
+.site-footer a { color: var(--muted); }
+.site-footer a:hover { color: var(--blue); }
+.site-footer p { margin: 0 0 .6rem; }
+
+@media print {
+  .site-header, .site-footer, .copy { display: none; }
+  body { background: #fff; color: #000; }
+}

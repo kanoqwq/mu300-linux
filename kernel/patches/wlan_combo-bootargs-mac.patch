@@ -1,0 +1,65 @@
+Use the factory Wi-Fi MAC address that LK passes in /chosen/bootargs.
+
+The vendor driver takes wlan0's address from Android's /mnt/vendor/wifimac.txt (through the firmware's default
+MAC); under Linux there is none, so it fell back to a random 40:45:da address on every boot. LK puts the factory
+address in the bootargs as androidboot.wifimac=<12 hex digits>, which the mainline port already reads
+(upstream/modules/sprd_wlan_combo/common/iface.c); this is the same function for 5.4. wlan1 (the second station
+interface) keeps the old behaviour, as in mainline.
+
+--- a/common/iface.c
++++ b/common/iface.c
+@@ -10,6 +10,7 @@
+ */
+ 
+ #include <linux/ctype.h>
++#include <linux/of.h>
+ #include <linux/moduleparam.h>
+ #include <misc/wcn_bus.h>
+ #include <linux/miscdevice.h>
+@@ -181,6 +182,37 @@
+ 		if (real_vif->ndev)
+ 			netif_stop_queue(real_vif->ndev);
+ 	spin_unlock_bh(&priv->list_lock);
++}
++
++/*
++ * MU300: there is no Android /mnt/vendor/wifimac.txt, so every boot had a new random address; LK puts the factory
++ * one in /chosen/bootargs as androidboot.wifimac=<12 hex digits> (as in the mainline port's iface.c)
++ */
++static bool iface_bootargs_mac(u8 *addr)
++{
++	struct device_node *chosen = of_find_node_by_path("/chosen");
++	const char *args, *p;
++	u8 mac[ETH_ALEN];
++	int i;
++
++	if (!chosen)
++		return false;
++	if (of_property_read_string(chosen, "bootargs", &args) ||
++	    !(p = strstr(args, "androidboot.wifimac="))) {
++		of_node_put(chosen);
++		return false;
++	}
++	p += strlen("androidboot.wifimac=");
++	for (i = 0; i < ETH_ALEN; i++, p += 2)
++		if (hex2bin(&mac[i], p, 1)) {
++			of_node_put(chosen);
++			return false;
++		}
++	of_node_put(chosen);
++	if (!is_valid_ether_addr(mac))
++		return false;
++	ether_addr_copy(addr, mac);
++	return true;
+ }
+ 
+ static void iface_set_mac_addr(struct sprd_vif *vif, u8 *pending_addr,
+@@ -197,6 +229,8 @@
+ 	} else if (priv && (strncmp(vif->name, "wlan1", 5) == 0) &&
+ 				is_valid_ether_addr(priv->default_mac_sta_second)) {
+ 		ether_addr_copy(addr, priv->default_mac_sta_second);
++	} else if (strncmp(vif->name, "wlan1", 5) != 0 && iface_bootargs_mac(addr)) {
++		/* MU300: the factory address that LK passes in /chosen/bootargs */
+ 	} else {
+ 		random_ether_addr(addr);
+ 		netdev_warn(vif->ndev, "%s Warning: use random MAC address\n",
