@@ -6,6 +6,7 @@ import * as rt from 'rtnl';
 import { statvfs } from 'luci.core';
 import { cursor } from 'uci';
 import { connect } from 'ubus';
+import * as uloop from 'uloop';
 import * as hotspot from '/usr/libexec/unisoc-modem/hotspot.uc';
 import * as apn from '/usr/libexec/unisoc-modem/apn.uc';
 
@@ -26,6 +27,22 @@ export function sim_state(slot) {
     if(type(row)!='object' || row.slot!==int(slot) || !exists('/run/mu300-registration/sim-power'+slot) ||
        !(row.state in ['ready','locked','absent']))return 'unknown';
     return row.state;
+};
+// Equipment identity is independent of SIM presence and the selected view.
+// HTTP reads use RAM files; only this bounded background worker uses the AT owner.
+let equipment_job=null;
+function equipment(atd,slots) {
+    let dir='/run/unisoc-modem-equipment', boot_id=rd('/proc/sys/kernel/random/boot_id');
+    let valid=boot_id!='' && rd(dir+'/boot_id')==boot_id;
+    let values=map(['0','1'],n=>valid && match(rd(dir+'/imei'+n),/^[0-9]{15}$/)?rd(dir+'/imei'+n):null);
+    let stamp=fs.stat(ROOT+dir+'/attempt')?.mtime, age=stamp==null?null:time()-stamp;
+    if(atd && boot_id!='' && !equipment_job && (values[0]==null || (slots=='2' && values[1]==null)) &&
+       (!valid || age==null || age<0 || age>=60)) {
+        equipment_job=uloop.process('/bin/sh',['/usr/libexec/unisoc-modem/dashboard-equipment'],{
+            PATH:'/usr/sbin:/usr/bin:/sbin:/bin',MU300_EQUIPMENT_SLOTS:slots
+        },()=>{equipment_job=null;});
+    }
+    return values;
 };
 function call(bus,o,m) { return bus?.call(o,m,{}) || {}; }
 function net(dev) {
@@ -179,6 +196,12 @@ export function info(slot) {
     let private_fw=obj('/etc/unisoc-ota/current.json')?.version || rd('/etc/mu300/image-version');
     if(private_fw)fw=private_fw+' ('+fw+')';
     let data_slot=cfg('data_sim','0')=='1'?'1':'0';
+    let active_slot=rd('/run/mu300-data-sim-actual');
+    if(wan.up) {
+        if(mobile==cfg('sim0_device','sipa_eth0'))active_slot='0';
+        else if(mobile==cfg('sim1_device','sipa_eth8'))active_slot='1';
+    }
+    if(exists('/run/mu300/sim-active-unknown'))active_slot='';
     let selection=apn.status(c,obj('/run/unisoc-apn-sim'+data_slot+'.json') || {}), selected_apn=null;
     if(selection.ok && (slot==null || ''+selection.data_sim==slot) && selection.source in ['sim','auto','network','default'] &&
        type(selection.apn)=='string' && length(selection.apn)<=100 && !match(selection.apn,/[^A-Za-z0-9.-]/))
@@ -205,8 +228,8 @@ export function info(slot) {
             country:text(wifi.country),enc:wifi.enc || 'none',hidden:wifi.hidden ?? null,hostapd:hapd.status=='ENABLED'?1:0,
             clients:stations.rows,clients_n:stations.count},
         lan:{leases:length(leases),ip:address(rows4,lan,false),list:leases},
-        modem:{alive:atd || (urc && now-urc.mtime<240)?1:0,atd:atd?1:0,data_paused:exists('/run/mu300-mobile-data-down')?1:0,
-            sims:map(['0','1'],n=>({slot:int(n),state:atd?sim_state(n):'unknown'}))},
+        modem:{data_sim:active_slot in ['0','1']?int(active_slot):null,alive:atd || (urc && now-urc.mtime<240)?1:0,atd:atd?1:0,data_paused:exists('/run/mu300-mobile-data-down')?1:0,
+            imeis:equipment(atd,cfg('sim_slots','1')),sims:map(['0','1'],n=>({slot:int(n),state:atd?sim_state(n):'unknown'}))},
         boot:boot(),capabilities:{dualboot:executable('/opt/mu300/bin/mu300-next-boot')?1:0},
         conns:conntrack(),traffic:obj('/run/unisoc-modem-traffic/view.json')};
 };

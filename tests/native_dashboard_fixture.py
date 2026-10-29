@@ -16,13 +16,14 @@ class Snapshot:
         self.config=self.root/'config';self.config.mkdir(exist_ok=True)
         self.responses={};self.stations=[];self.addresses=[]
         for name,source in {
+            'loop':"export function process(exe,args,env,cb) {writefile(getenv('DASH_FIXTURE')+'/spawn.json',sprintf('%J',{exe,args,env}));return {pid:999};};",
             'bus':"export function connect(path,timeout) {return {call:(o,m,a)=>{let p=json(readfile(getenv('DASH_FIXTURE')+'/rpc.json'));writefile(getenv('DASH_FIXTURE')+'/last-call.json',sprintf('%J',{o,m,a,timeout}));return p[o+'.'+m] ?? null;}};};",
             'nl':"export const constants={NL80211_CMD_GET_STATION:19,NLM_F_DUMP:768}; export function request(c,f,a) {return json(readfile(getenv('DASH_FIXTURE')+'/stations.json'));};",
             'rt':"export const constants={RTM_GETADDR:22,NLM_F_DUMP:768,AF_INET:2,AF_INET6:10}; export function request(c,f,a) {return filter(json(readfile(getenv('DASH_FIXTURE')+'/addresses.json')),r=>r.family==a.family);};"
         }.items():
             (self.module/(name+'.uc')).write_text("import {readfile,writefile} from 'fs';\n"+source)
         source=DASH.read_text().replace('nl.const.','nl.constants.').replace('rt.const.','rt.constants.')
-        for old,new in [('ubus','bus'),('nl80211','nl'),('rtnl','rt')]:
+        for old,new in [('ubus','bus'),('nl80211','nl'),('rtnl','rt'),('uloop','loop')]:
             source=source.replace("from '"+old+"'","from './"+new+".uc'")
         for name in ['hotspot','apn']:
             source=source.replace("'/usr/libexec/unisoc-modem/"+name+".uc'",json.dumps(str(APP/'usr/libexec/unisoc-modem'/(name+'.uc'))))

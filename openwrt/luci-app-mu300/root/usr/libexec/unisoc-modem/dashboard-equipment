@@ -1,0 +1,32 @@
+#!/bin/sh
+# Read equipment identities once per boot, through the existing slot-aware AT owner.
+# This background job never enables a radio, changes the data SIM or reads NV.
+set -u
+umask 077
+dir=${MU300_EQUIPMENT_DIR:-/run/unisoc-modem-equipment}
+at=${MU300_AT:-/usr/libexec/unisoc-modem/at}
+boot=${MU300_BOOT_ID_FILE:-/proc/sys/kernel/random/boot_id}
+mkdir -p "$dir" || exit 1
+exec 9>"$dir/lock" || exit 1
+flock -n 9 || exit 0
+trap 'exit 1' HUP INT TERM
+boot_id=$(cat "$boot") || exit 1
+[ -n "$boot_id" ] || exit 1
+if [ "$(cat "$dir/boot_id" 2>/dev/null)" != "$boot_id" ]; then
+    rm -f "$dir/imei0" "$dir/imei1"
+    printf '%s\n' "$boot_id" > "$dir/boot_id" || exit 1
+fi
+# A failed query is retried at most once a minute by the snapshot collector.
+touch "$dir/attempt"
+for slot in 0 1; do
+    [ "$slot" = 0 ] || [ "${MU300_EQUIPMENT_SLOTS:-2}" = 2 ] || continue
+    cached=$(cat "$dir/imei$slot" 2>/dev/null)
+    case "$cached" in
+        ''|*[!0-9]*) ;;
+        *) [ "${#cached}" != 15 ] || continue ;;
+    esac
+    imei=$(MU300_SIM_SLOT=$slot "$at" -t 2 'AT+CGSN' 2>/dev/null | tr -d '\r' |
+        awk '/^[0-9]+$/ && length($0)==15 {print; exit}')
+    [ -n "$imei" ] || continue
+    printf '%s\n' "$imei" > "$dir/imei$slot.new" && mv "$dir/imei$slot.new" "$dir/imei$slot"
+done

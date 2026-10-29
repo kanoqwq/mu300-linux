@@ -957,6 +957,9 @@ var DASH_I18N = {
 	'共 ': ['Total ', 'Toplam '],
 	'余 ': ['Free ', 'Boş '],
 	'簇': ['Cluster ', 'Küme '],
+	'数据漫游': ['Data roaming', 'Veri dolaşımı'],
+	'使用中': ['In use', 'Kullanımda'],
+	'是': ['Yes', 'Evet'],
 	'否': ['No', 'Hayır'],
 	'状态看板': ['Dashboard', 'Durum paneli'],
 	'蜂窝': ['Cellular', 'Hücresel'],
@@ -1480,6 +1483,9 @@ html.mud-bootstrap-theme{--surface:var(--background-color-high);--surface-sunken
 .mud-rsrp{font-size:2.3rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
 .mud-rsrp small{font-size:.9rem;font-weight:500}
 .mud-chips{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.mud-imei-label{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mud-imei-active{display:inline-flex;align-items:center;padding:1px 6px;border-radius:99px;font-size:.68rem;font-weight:600;line-height:1.4;color:var(--success,#2fbf71);background:color-mix(in srgb,var(--success,#2fbf71) 14%,transparent);white-space:nowrap}
+.mud-imei-active[hidden]{display:none}
 .mud-tag{display:inline-block;padding:1px 8px;border-radius:99px;background:var(--surface-sunken,rgba(127,127,127,.1));font-size:.74rem;font-weight:600;font-variant-numeric:tabular-nums}
 .mud-q{display:inline-block;min-width:3em;padding:1px 8px;border-radius:99px;font-size:.74rem;font-weight:600;text-align:center}
 .mud-rows{display:grid;gap:2px}

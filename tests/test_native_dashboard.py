@@ -14,6 +14,46 @@ class NativeSnapshot(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
         self.root=Path(self.temp.name);self.snap=Snapshot(self.root)
 
+    def test_active_data_slot_is_not_the_view_or_saved_preference(self):
+        self.snap.write('run/mu300-data-sim-actual','1')
+        self.snap.responses['network.interface.wan.status']['up']=False
+        self.assertEqual(self.snap.run(slot='0')['modem']['data_sim'],1)
+        self.snap.responses['network.interface.wan.status'].update(up=True,l3_device='sipa_eth0')
+        self.assertEqual(self.snap.run(slot='1')['modem']['data_sim'],0)
+        self.snap.write('run/mu300/sim-active-unknown','1')
+        self.assertIsNone(self.snap.run()['modem']['data_sim'])
+
+    def test_equipment_queries_are_background_and_failed_reads_are_throttled(self):
+        self.snap.write('proc/sys/kernel/random/boot_id','fixture-boot')
+        self.snap.write('run/mu300-at/owner/pid','100')
+        self.snap.write('proc/100/cmdline','mu300-modemd')
+        fifo=self.root/'run/mu300-at/cmd'; os.mkfifo(fifo)
+        self.snap.run(slot='1')
+        job=json.loads((self.root/'spawn.json').read_text())
+        self.assertEqual(job['exe'],'/bin/sh')
+        self.assertEqual(job['args'],['/usr/libexec/unisoc-modem/dashboard-equipment'])
+        self.assertEqual(job['env']['MU300_EQUIPMENT_SLOTS'],'2')
+        (self.root/'spawn.json').unlink()
+        self.snap.write('run/unisoc-modem-equipment/boot_id','fixture-boot')
+        attempt=self.snap.write('run/unisoc-modem-equipment/attempt','')
+        self.snap.run(slot='0')
+        self.assertFalse((self.root/'spawn.json').exists(),'failed IMEI reads must not query on every page poll')
+        os.utime(attempt,(1,1))
+        self.snap.run(slot='0')
+        self.assertTrue((self.root/'spawn.json').exists(),'failed reads should eventually retry')
+
+    def test_dual_equipment_cache_and_boot_isolation(self):
+        self.snap.write('proc/sys/kernel/random/boot_id','fixture-boot')
+        self.snap.write('run/unisoc-modem-equipment/boot_id','fixture-boot')
+        self.snap.write('run/unisoc-modem-equipment/imei0','866100000000408')
+        self.snap.write('run/unisoc-modem-equipment/imei1','866100000000409')
+        result=self.snap.run(slot='1')
+        self.assertEqual(result['modem']['imeis'],['866100000000408','866100000000409'])
+        self.snap.write('run/unisoc-modem-equipment/imei1','ERROR')
+        self.assertEqual(self.snap.run(slot='1')['modem']['imeis'],['866100000000408',None])
+        self.snap.write('proc/sys/kernel/random/boot_id','other-boot')
+        self.assertEqual(self.snap.run()['modem']['imeis'],[None,None])
+
     def test_full_snapshot_and_public_apn(self):
         s=self.snap
         s.write('sys/class/thermal/thermal_zone0/type','soc-thmzone\n');s.write('sys/class/thermal/thermal_zone0/temp','42000\n')

@@ -75,15 +75,15 @@ with sync_playwright() as pw:
         show({cell:staged,sig:partial});
         check(document.querySelector('#mud-rat').firstChild.nodeValue==='5G SA','healthy partial read must preserve engineering signal');
         check(text('rsrp').includes('-80.0'),'partial read must not blank healthy engineering metrics');
-        check(text('imei')==='fixture-zero' && text('qci')==='9' && text('neigh').includes('456'),'same SIM must keep completed slow tiers');
+        check(text('imei1')==='fixture-zero' && text('qci')==='9' && text('neigh').includes('456'),'same SIM must keep completed slow tiers');
 
         // A different card at the same slow timestamp must repaint and never inherit identity.
         const switched=freeze({...staged,card:1});
         show({cell:switched,sig:{...partial,card:1}});
-        check(text('imei')==='--' && text('qci')==='--' && !text('neigh').includes('456'),'SIM change must clear previous card details');
+        check(text('imei1')==='--' && text('qci')==='--' && !text('neigh').includes('456'),'SIM change must clear previous card details');
         check(app.lastCell.card===1,'selected card must follow fresh snapshot');
         show({cell:full,sig:{...signal,card:1,ts:203}});
-        check(app.lastCell.card===1 && !app.lastCell.ident && text('imei')==='--','mismatched slow/fast cards must not merge');
+        check(app.lastCell.card===1 && !app.lastCell.ident && text('imei1')==='--','mismatched slow/fast cards must not merge');
 
         show({cell:freeze({ts:204,error:'both failed'}),sig:freeze({ts:205,error:'both failed'})});
         check(document.querySelector('#mud-rat').firstChild.nodeValue==='无应答','continued failure must not reuse last successful signal');
@@ -93,7 +93,7 @@ with sync_playwright() as pw:
         show({info:simInfo('absent'),cell:{...full,ts:220,cfun:0},sig:null});
         check(document.querySelector('#mud-rat').firstChild.nodeValue==='未插卡','confirmed absence must override RF-off and stale RAT');
         check(text('reg')==='未插卡' && text('rsrp')==='--','absence must clear stale network and signal');
-        check(text('imei')==='fixture-zero' && text('fwmodel')==='fixture' && text('fw')==='fixture-fw','equipment identity must remain available without a SIM');
+        check(text('imei1')==='fixture-zero' && text('fwmodel')==='fixture' && text('fw')==='fixture-fw','equipment identity must remain available without a SIM');
         check(text('imsi')==='--' && text('iccid')==='--' && text('msisdn')==='--','removed SIM identifiers must not remain visible');
         check(!app.lastCell.ident.imsi && !app.lastCell.ident.iccid && !app.lastCell.ident.msisdn,'reveal must not restore identifiers from a removed SIM');
         check(full.ident.imsi==='fixture-imsi','absence filtering must not mutate the source cache');
@@ -109,7 +109,7 @@ with sync_playwright() as pw:
         check(document.querySelector('#mud-rat').firstChild.nodeValue==='5G SA','fresh insertion/registration must restore RAT');
         app._slowCell=null; app.lastCell=null; app.lastFullTs=null;
         show({info:simInfo('absent'),cell:{...full,ts:223,cfun:0,ident:{imei:'cold-imei',model:'cold-model',fw:'cold-fw'}},sig:null});
-        check(text('imei')==='cold-imei' && text('fw')==='cold-fw','a fresh no-SIM page must render newly read equipment identity');
+        check(text('imei1')==='cold-imei' && text('fw')==='cold-fw','a fresh no-SIM page must render newly read equipment identity');
         check(document.querySelector('#mud-rat').firstChild.nodeValue==='未插卡','equipment identity must not fabricate registration');
         return {recovery:true,partial_recovery:true,older_signal_rejected:true,
             same_sim_details_preserved:true,sim_isolation:true,real_failures_visible:true,input_immutable:true};
