@@ -350,7 +350,7 @@ def publish_completed(task, common, rows, source):
     print('Verified release: '+str(destination))
 
 
-def add_diff(task,rows,source,repair_installer=False):
+def add_diff(task,rows,source,repair_installer=False,refresh_native=False):
     if source is None:raise ValueError('Supply --source-release')
     source=source.resolve()
     if source.parent!=(TOP/'release').resolve() or source.name.startswith('.'):
@@ -367,16 +367,16 @@ def add_diff(task,rows,source,repair_installer=False):
         if stage_path(task.workspace,profile).exists():raise ValueError('Prior staging retained: '+profile)
     identify=runpy.run_path(str(TOP/'tools/release-identity.py'))['identify']
     before=identify(TOP,'mu300','7.2.8');parent=TOP/'release';pending=parent/('.building-'+task.id);pending.mkdir()
-    task.save(pending_output=str(pending),build_type='installer-entry-repair' if repair_installer else 'diff-tools-only',base_release=str(source))
+    task.save(pending_output=str(pending),build_type='native-installer-refresh' if refresh_native else 'installer-entry-repair' if repair_installer else 'diff-tools-only',base_release=str(source))
     repack=runpy.run_path(str(TOP/'tools/repack-with-diff.py'))['repack'];assets=[]
     for profile,path in selected.items():
         stage=stage_path(task.workspace,profile);stage.mkdir(parents=True)
         write_json(stage/'.build-owner.json',{'owner':OWNER,'profile':profile})
         studio=stage/'assembly'
         task.run(profile+'-diff',[sys.executable,TOP/'tools/package-diff-studio.py','--prepare','--package',studio])
-        tag='-installer-fix-g' if repair_installer else '-tools-g'
+        tag='-installer-g' if refresh_native else '-installer-fix-g' if repair_installer else '-tools-g'
         target=pending/(path.stem+tag+before['source_commit'][:8]+'.zip')
-        repack(path,target,studio,before,repair_installer=repair_installer);verify_archive(target,require_diff=True)
+        repack(path,target,studio,before,repair_installer=repair_installer,refresh_native=refresh_native);verify_archive(target,require_diff=True)
         checksum=digest(target);(pending/(target.name+'.sha256')).write_text(checksum+'  '+target.name+'\n')
         assets.append({'profile':profile,'file':target.name,'bytes':target.stat().st_size,'sha256':checksum})
         clean_stage(task.workspace,profile);task.save(assets=assets)
@@ -389,7 +389,7 @@ def add_diff(task,rows,source,repair_installer=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('plan', 'check', 'package', 'publish-completed', 'add-diff', 'repair-installer', 'run', 'status', 'clean-staging'))
+    parser.add_argument('action', choices=('plan', 'check', 'package', 'publish-completed', 'add-diff', 'repair-installer', 'refresh-installers', 'run', 'status', 'clean-staging'))
     parser.add_argument('--profiles', nargs='+', choices=('all', *PROFILES), default=['all'])
     parser.add_argument('--workspace', type=Path, default=Path.home() / 'openwrt-build')
     parser.add_argument('--config', type=Path, default=TOP / 'tools/build-layout.json')
@@ -422,8 +422,8 @@ def main():
                 task.run('command', command); task.save(state='complete')
             elif args.action == 'publish-completed':
                 publish_completed(task,common,rows,args.source_release)
-            elif args.action in ('add-diff','repair-installer'):
-                add_diff(task,rows,args.source_release,repair_installer=args.action=='repair-installer')
+            elif args.action in ('add-diff','repair-installer','refresh-installers'):
+                add_diff(task,rows,args.source_release,repair_installer=args.action=='repair-installer',refresh_native=args.action=='refresh-installers')
             else:
                 package(task, common, rows)
         except BaseException as error:

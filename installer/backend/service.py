@@ -116,6 +116,7 @@ class Service:
         self.stop = threading.Event()
         self.verification_lock = threading.Lock()
         self.verification_request = None
+        self.reboot_request = None
         self.verification_wake = threading.Event()
         from .ota_desktop import Desktop
         self.ota = Desktop(self.package_root, self.emit, self.store.base)
@@ -167,6 +168,16 @@ class Service:
             return {'accepted': False}
         if command == 'can_close':
             return not self.worker or not self.worker.is_alive()
+        if command == 'reboot_device':
+            context = self.active
+            if (not context or not self.worker or not self.worker.is_alive() or
+                    p.get('transaction') != context.record['id'] or
+                    not self.can_reboot_device(context.record)):
+                raise ValueError('Device restart is unavailable at this stage / 当前阶段不能重启设备')
+            with self.verification_lock:
+                self.reboot_request = context.record['id']
+                self.verification_wake.set()
+            return {'accepted':True}
         if command == 'verify_openwrt':
             context = self.active
             if (not context or not self.worker or not self.worker.is_alive() or
@@ -504,13 +515,60 @@ class Service:
             if self.stop.wait(3):
                 raise Cancelled()
 
+    @staticmethod
+    def can_reboot_device(record):
+        return (not record.get('unsafe') and not record.get('cancel_requested') and
+                record.get('stage') == 'openwrt_boot' and
+                record.get('status') in ('waiting_user','waiting_device') and
+                record.get('choices',{}).get('method') in ('tf','part','reinstall','image','boot') and
+                record.get('details',{}).get('reboot_manually') is True and
+                not record.get('openwrt_confirmed') and not record.get('adb_reboot_requested'))
+
+    def process_device_reboot(self, context, adapter):
+        """Run on the existing device-owning worker, never during an install write."""
+        r = context.record
+        with self.verification_lock:
+            if self.reboot_request != r['id']:
+                return
+        submitted = False
+        try:
+            context.boundary()
+            if not self.can_reboot_device(r):
+                raise ValueError('Device restart is no longer available / 当前阶段已不能重启设备')
+            actual = adapter.probe(r['device']['serial'],'boot')
+            if (actual.get('readiness') != 'ready' or actual.get('system') != 'Android' or
+                    any(actual.get(k) != r['device'].get(k) for k in ('serial','cid','profile','slot'))):
+                raise ValueError('The recorded Android device is unavailable; if already restarting, wait, otherwise restart it manually / 无法确认原 Android 设备；若已重启请等待，否则请手动重启')
+            context.boundary()
+            r['adb_reboot_requested'] = True
+            self.openwrt_wait_stage(context)
+            context.log('Requesting ADB reboot of the verified installation device / 正在请求已核验设备通过 ADB 重启',scope='reboot')
+            submitted = True
+            adapter.adb.call('reboot',timeout=15)
+        except Cancelled:
+            raise
+        except Exception as error:
+            import subprocess
+            lost = submitted and (isinstance(error,(EOFError,subprocess.TimeoutExpired)) or
+                isinstance(error,ConnectionError) and any(word in str(error).lower()
+                    for word in ('closed','offline','not found','no devices','reset','eof','disconnected')))
+            if lost:
+                context.log('ADB disconnected after the reboot request; waiting for OpenWrt / 重启请求后 ADB 已断开，等待 OpenWrt',scope='reboot')
+            else:
+                r['adb_reboot_requested'] = False
+                self.openwrt_wait_stage(context,str(error))
+        finally:
+            with self.verification_lock:
+                if self.reboot_request == r['id']:
+                    self.reboot_request = None
+
     def openwrt_wait_stage(self, context, error=None, connection_state=None):
         r = context.record
         # These entrypoints send their own reboot request. The other install
         # paths finish after verified writes and explicitly leave reboot to the user.
         manual = r['choices']['method'] != 'update' and not (
             r['package']['adapter'] == 'e5' and r['choices']['method'] == 'boot')
-        manual = manual and not r.get('openwrt_confirmed',False)
+        manual = manual and not r.get('openwrt_confirmed',False) and not r.get('adb_reboot_requested',False)
         host = r['choices'].get('host') or ('192.168.9.1' if r['package']['adapter'] == 'e5' else
                 '192.168.77.1')
         context.stage('openwrt_boot', 'waiting_user' if manual or error else 'waiting_device',
@@ -525,6 +583,7 @@ class Service:
         # No network/interface changes and no automatic hotspot connection.
         while True:
             context.boundary()
+            self.process_device_reboot(context,adapter)
             with self.verification_lock:
                 pending = self.verification_request
                 self.verification_request = None

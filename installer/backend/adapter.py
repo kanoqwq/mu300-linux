@@ -182,13 +182,28 @@ class Adapter:
         mapping.update({f'{name}_{slot}.img':f'{name}_{slot}.bin' for name in ('boot','uboot','sml','teecfg','trustos','vbmeta') for slot in ('a','b')})
         if any(name not in sums or sha(source/name)!=sums[name] for name in mapping.values()):
             raise ValueError('Verified backup is incomplete or damaged / 已校验备份缺失或损坏')
+        snapshots = {}
+        if self.ctx.record.get('online_shrink'):
+            from .online_shrink import OnlineShrink
+            names = ('gpt-first.bin', 'gpt-last.bin')
+            original = tuple((source/name).read_bytes() for name in names)
+            snapshots = dict(zip(names, OnlineShrink(self).installation_gpt(original)))
         directory.mkdir(parents=True,exist_ok=False)
         atomic_json(directory/'identity.json',{**storage,'serial':android.serial,'android_slot':android.slot})
+        copied_sums = {}
         for target,name in mapping.items():
             self.ctx.boundary()
-            shutil.copyfile(source/name,directory/target)
-            if sha(directory/target)!=sums[name]:raise ValueError('Legacy backup copy checksum mismatch')
-        (directory/'SHA256SUMS').write_text(''.join(sums[name]+'  '+target+'\n' for target,name in mapping.items()),encoding='utf-8')
+            if name in snapshots:
+                # The legacy preflight needs today's approved GPT; the main
+                # backup remains the pre-resize recovery/uninstall baseline.
+                (directory/target).write_bytes(snapshots[name])
+                expected_sum = hashlib.sha256(snapshots[name]).hexdigest()
+            else:
+                shutil.copyfile(source/name,directory/target)
+                expected_sum = sums[name]
+            if sha(directory/target)!=expected_sum:raise ValueError('Legacy backup copy checksum mismatch')
+            copied_sums[target] = expected_sum
+        (directory/'SHA256SUMS').write_text(''.join(h+'  '+target+'\n' for target,h in copied_sums.items()),encoding='utf-8')
         self.ctx.log('Reused verified computer backups for the compatible installer; no second device backup',scope='backup')
 
     def wait_android(self, *_):

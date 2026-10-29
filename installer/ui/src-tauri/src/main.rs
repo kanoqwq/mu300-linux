@@ -8,7 +8,7 @@ use std::{collections::HashMap, io::{BufRead, BufReader, Write}, path::PathBuf,
 use tauri::{Emitter, Manager, State};
 use tokio::sync::oneshot;
 
-const COMMANDS: &[&str] = &["hello","snapshot","list","package","devices","adb_connect","adb_disconnect","probe","probe_update","plan","start","resume","retry","cancel","can_close","export","import","diagnostics","verify_openwrt","online_fallback","ota_analyze","ota_export","ota_export_index","ota_package","ota_probe","ota_apply","ota_status","ota_reboot"];
+const COMMANDS: &[&str] = &["hello","snapshot","list","package","devices","adb_connect","adb_disconnect","probe","probe_update","plan","start","resume","retry","cancel","can_close","export","import","diagnostics","verify_openwrt","reboot_device","online_fallback","ota_analyze","ota_export","ota_export_index","ota_package","ota_probe","ota_apply","ota_status","ota_reboot"];
 struct Bridge {
     input: Mutex<Option<ChildStdin>>,
     pending: Mutex<HashMap<u64, oneshot::Sender<Result<Value, String>>>>,

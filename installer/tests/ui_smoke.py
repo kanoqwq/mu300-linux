@@ -41,6 +41,7 @@ BRIDGE=r"""
      case 'start':if(window.__fixture.startRace){const older={...tx,stage:'android_setup',status:'waiting_user',revision:1};window.__emitFixture({stage:'complete',status:'completed',revision:2,result:{filesystem_bytes:10737418240,url:'http://192.168.9.1'}});return older;}tx.stage='android_setup';tx.status='waiting_user';return {...tx};
      case 'cancel':return {accepted:window.__fixture.cancelAccepted ?? true,deferred:false};
      case 'verify_openwrt':return {accepted:true};
+     case 'reboot_device':return {accepted:true};
      case 'diagnostics':return {text:'DEBUG fixture diagnostics: commands, traceback and verified bytes (redacted)'};
      default:return null;
     }

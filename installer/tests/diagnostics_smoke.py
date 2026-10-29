@@ -60,7 +60,7 @@ def main():
         page.screenshot(path=str(ROOT/'screenshots/install-activity-debug-zh.png'))
         page.evaluate("window.__emitFixture({stage:'openwrt_boot',status:'waiting_user',revision:13,details:{host:'192.168.9.1',reboot_manually:true}})")
         settle(page);layout(page)
-        assert page.locator('h1').inner_text()=='请现在手动重启设备'
+        assert page.locator('h1').inner_text()=='准备进入 OpenWrt'
         assert '用户名 root，默认密码 root' in page.locator('.login-hint').inner_text()
         guidance=page.locator('.boot-guidance')
         assert '已开始重启或已进入 OpenWrt' in guidance.inner_text()
@@ -74,7 +74,7 @@ def main():
         page.screenshot(path=str(ROOT/'screenshots/manual-restart-log-zh.png'))
         confirm.click();settle(page)
         assert page.evaluate("window.__fixture.calls.filter(c=>c.command==='verify_openwrt').at(-1).params")=={'transaction':'a'*32,'host':'192.168.9.22','password':'fixture-private'}
-        assert page.locator('h1').inner_text()=='请现在手动重启设备'
+        assert page.locator('h1').inner_text()=='准备进入 OpenWrt'
         page.evaluate("window.__emitFixture({stage:'openwrt_boot',status:'waiting_user',revision:14,details:{host:'192.168.9.22',boot_confirmed:true,reboot_manually:false,verification_error:'Management address belongs to another device / 管理地址对应另一台设备'}})")
         settle(page);layout(page)
         assert '另一台设备' in page.locator('.verification-error').inner_text()

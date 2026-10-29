@@ -142,6 +142,25 @@ class OnlineShrink:
                 output[name] = path.read_bytes()
         return output
 
+    def installation_gpt(self, original):
+        """Supply the verified post-resize baseline, retaining recovery originals."""
+        j = self.r['online_shrink']
+        if j.get('state') != 'verified':
+            raise RecoveryRequired('Online resize is not verified / 在线缩容尚未校验完成')
+        files = self.files()
+        if original != (files['old-first'], files['old-last']):
+            raise RecoveryRequired('Original GPT backup differs from the resize record / 原始 GPT 备份与缩容记录不符')
+        s = self.r['device']['storage']
+        data = partition(gpt.gpt_space(*original, s['DISK_SIZE']), 'userdata')
+        updated = tuple(candidate(original, s['DISK_SIZE'], s['NODE'],
+                                  data['end']-data['start']+1, s['SIZE']))
+        if (j['sectors'] != s['DISK_SIZE'] or j['new_sectors'] != s['SIZE'] or
+                self.r['plan'].get('shrink_strategy') != 'online-f2fs' or
+                self.r['plan'].get('gap_start') != data['start']+s['SIZE'] or
+                updated != (files['new-first'], files['new-last'])):
+            raise RecoveryRequired('Installation GPT differs from the verified resize / 安装 GPT 与已校验缩容结果不符')
+        return updated
+
     def prepare(self):
         d = self.r['device']
         actual = self.a.probe(d['serial'],'part')

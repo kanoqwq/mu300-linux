@@ -12,7 +12,7 @@ from unittest.mock import Mock, patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from backend.binary_io import pull_binary
 from backend.adapter import Adapter
-from backend.state import Context, Store, sha
+from backend.state import Context, RecoveryRequired, Store, sha
 from backend.transport import Adb
 
 
@@ -104,6 +104,119 @@ class LegacyGUI(unittest.TestCase):
         self.assertEqual((target/'boot_a.img').read_bytes(),(self.ctx.directory/'backup/boot_a.bin').read_bytes())
         self.assertTrue((target/'SHA256SUMS').is_file())
         self.adapter.adb.read.assert_called_once_with('bounded read')
+
+
+    def online_backup_fixture(self, block=512, slot='a'):
+        from test_online_shrink import device
+        from backend.online_shrink import candidate
+        from backend.service import plan_install
+        d, original, total = device(block)
+        d.update(serial='selected', slot='_'+slot)
+        d['storage']['NODE'] = 'mmcblk0p2' if block == 512 else 'sdb2'
+        plan = plan_install({'adapter':'mu300'}, d, {'method':'part','size_gib':4})
+        updated = tuple(candidate(original,total,d['storage']['NODE'],d['storage']['SIZE'],plan['new_sectors']))
+        source = self.ctx.directory/'backup'
+        (source/'identity.json').write_text(json.dumps(d))
+        for name,raw in zip(('gpt-first.bin','gpt-last.bin'),original):
+            (source/name).write_bytes(raw)
+        sums = {p.name:sha(p) for p in source.iterdir() if p.name != 'checksums.json'}
+        (source/'checksums.json').write_text(json.dumps(sums))
+        folder = self.ctx.directory/'online-shrink'
+        folder.mkdir(exist_ok=True)
+        files = dict(zip(('old-first','old-last','new-first','new-last'),(*original,*updated)))
+        for name,raw in files.items():(folder/name).write_bytes(raw)
+        self.record['online_shrink'] = dict(state='verified',sectors=total,new_sectors=plan['new_sectors'],
+            files={name:sha(folder/name) for name in files})
+        d['storage']['SIZE'] = plan['new_sectors']
+        d['userdata_bytes'] = plan['android_bytes']
+        plan.update(target='GPT unallocated space',two_stage=False,offline=False)
+        self.record.update(device=d,plan=plan)
+        self.storage = d['storage']
+        self.android.slot = slot
+        return original, updated
+
+    def test_online_resize_handoff_preserves_originals_and_uses_verified_new_gpt(self):
+        for block in (512,4096):
+            for slot in ('a','b'):
+                with self.subTest(block=block,slot=slot):
+                    original, updated = self.online_backup_fixture(block,slot)
+                    source = self.ctx.directory/'backup'
+                    before = {p.name:p.read_bytes() for p in source.iterdir()}
+                    target = self.ctx.directory/f'legacy-backups/online-{block}-{slot}'
+                    self.android.backup(target,self.storage)
+                    self.assertEqual(tuple((target/n).read_bytes() for n in ('gpt-first.bin','gpt-last.bin')),updated)
+                    self.assertNotEqual(original,updated)
+                    self.assertEqual({p.name:p.read_bytes() for p in source.iterdir()},before)
+                    for line in (target/'SHA256SUMS').read_text().splitlines():
+                        digest,name = line.split()
+                        self.assertEqual(sha(target/name),digest)
+                    self.assertEqual((target/'boot_a.img').read_bytes(),before['boot_a.bin'])
+        self.adapter.adb.read.assert_not_called()
+
+    def test_online_handoff_refuses_pending_corrupt_or_unrelated_gpt_changes(self):
+        from backend.uninstall import table,with_table
+        for failure in ('pending','corrupt','unrelated','wrong-size','wrong-original'):
+            with self.subTest(failure=failure):
+                self.online_backup_fixture()
+                folder = self.ctx.directory/'online-shrink'
+                j = self.record['online_shrink']
+                if failure == 'pending':j['state']='gpt-committed'
+                elif failure == 'corrupt':(folder/'new-first').write_bytes(b'bad')
+                elif failure == 'wrong-size':j['new_sectors']-=2048
+                else:
+                    names = ('new-first','new-last') if failure == 'unrelated' else ('old-first','old-last')
+                    pair = tuple((folder/n).read_bytes() for n in names)
+                    rows = bytearray(table(pair[0]));rows[48] ^= 1
+                    changed = with_table(pair,rows,self.storage['DISK_SIZE'])
+                    if failure == 'unrelated':
+                        for name,raw in zip(names,changed):
+                            (folder/name).write_bytes(raw);j['files'][name]=sha(folder/name)
+                    else:
+                        source = self.ctx.directory/'backup'
+                        for name,raw in zip(('gpt-first.bin','gpt-last.bin'),changed):(source/name).write_bytes(raw)
+                        sums = json.loads((source/'checksums.json').read_text())
+                        for name in ('gpt-first.bin','gpt-last.bin'):sums[name]=sha(source/name)
+                        (source/'checksums.json').write_text(json.dumps(sums))
+                target = self.ctx.directory/('legacy-backups/reject-'+failure)
+                with self.assertRaises(RecoveryRequired):self.android.backup(target,self.storage)
+                self.assertFalse(target.exists())
+        self.adapter.adb.read.assert_not_called()
+
+    def test_actual_desktop_preflight_after_online_resize(self):
+        import importlib.util
+        from backend import gpt
+        from backend.online_shrink import OnlineShrink
+        original,updated = self.online_backup_fixture(slot='b')
+        entry = Path(__file__).resolve().parents[2]/'desktop/installer.py'
+        spec = importlib.util.spec_from_file_location('handoff_desktop',entry)
+        desktop = importlib.util.module_from_spec(spec);spec.loader.exec_module(desktop)
+        space = gpt.gpt_space(*updated,self.storage['DISK_SIZE'])
+        space.update(first=updated[0],last=updated[1])
+        android = SimpleNamespace(model='F50',slot='b',linux='a',serial='selected',
+            storage=lambda:self.storage,gpt=lambda _:space,
+            backup=lambda path,storage:self.adapter.backup_legacy(android,path,storage),prepare_payload=Mock())
+        args = SimpleNamespace(boot_openwrt=False,tf=False,resume=False,reinstall_part=False,
+            data=False,size='4',format_userdata=False,backup_dir=str(self.ctx.directory/'legacy-backups/reproduce'))
+        with patch.object(desktop,'Android',return_value=android),patch.object(desktop,'module'),\
+                patch.object(desktop,'GUI',self.adapter),patch.object(desktop,'free_write',return_value='verified') as writer:
+            # Reproduce the reported error through the real comparison, rather
+            # than a fake installer which never reads its backup GPT.
+            with patch.object(OnlineShrink,'installation_gpt',return_value=original):
+                with self.assertRaisesRegex(ValueError,'GPT changed during preflight'):
+                    desktop.install(args,self.root,{'kernel':'7.2'})
+            android.prepare_payload.assert_not_called();writer.assert_not_called()
+            args.backup_dir=str(self.ctx.directory/'legacy-backups/fixed')
+            self.assertEqual(desktop.install(args,self.root,{'kernel':'7.2'}),'verified')
+            android.prepare_payload.assert_called_once();writer.assert_called_once()
+            self.assertEqual(tuple((self.ctx.directory/'backup'/n).read_bytes()
+                for n in ('gpt-first.bin','gpt-last.bin')),original)
+            # A real on-disk GPT change must still stop before payload/write.
+            android.prepare_payload.reset_mock();writer.reset_mock()
+            space['first']=original[0];space['last']=original[1]
+            args.backup_dir=str(self.ctx.directory/'legacy-backups/changed')
+            with self.assertRaisesRegex(ValueError,'GPT changed during preflight'):
+                desktop.install(args,self.root,{'kernel':'7.2'})
+            android.prepare_payload.assert_not_called();writer.assert_not_called()
 
     def test_wrong_device_layout_or_corrupted_cache_stops(self):
         target=self.ctx.directory/'legacy-backups/fixture'

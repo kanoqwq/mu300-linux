@@ -123,6 +123,20 @@ python3 tools/build-release.py run --workspace /home/kano/openwrt-build --label 
 工具文件逐项按发布包内 `diff-tool.json` 核验，保留 Mac App 签名内容和可执行权限，
 不解压固件、不重新编译；输出 ZIP 与 SHA256，已有目标不覆盖。
 
+## 仅刷新原生安装器和 Diff Studio
+
+GUI／后端变更时，先按 AGENT-BUILD 规范原生重编 Windows 和 Apple Silicon 交付件，然后执行：
+
+```sh
+python3 tools/build-release.py refresh-installers --workspace /home/kano/openwrt-build \
+  --profiles all --source-release /absolute/repo/release/<verified-task> --label native-installer
+```
+
+该入口验证原发布及当前原生程序指纹，流式替换两平台安装器、共享后端、Diff Studio 和各层清单，
+移除旧运行环境中已淘汰的受管文件；不改 boot、rootfs、Magisk 载荷及系统版本。
+新 ZIP 后缀 `-installer-g<提交>` 标记宿主工具修订，原发布不覆盖。
+仅有外部 Python 入口变化且原生后端未变时，仍使用下面的轻量入口。
+
 ## 仅修复外部安装器 Python 入口
 
 当变更只涉及 `desktop/installer.py` 的外部入口逻辑时，可流式修补已验证发布，
