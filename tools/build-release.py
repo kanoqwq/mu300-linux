@@ -316,8 +316,14 @@ def publish_completed(task, common, rows, source):
             raise ValueError('Archive name or clean source provenance differs')
         commit = record['source_commit']
         if not re.fullmatch('[a-f0-9]{40}', commit): raise ValueError('Invalid source commit')
-        tree = subprocess.check_output(['git', '-c', 'safe.directory='+str(TOP),
-                                       '-C', str(TOP), 'rev-parse', commit+'^{tree}'])
+        git = ['git', '-c', 'safe.directory='+str(TOP), '-C', str(TOP)]
+        marker = TOP / '.git'
+        if marker.is_file():
+            directory = marker.read_text().strip().removeprefix('gitdir:').strip()
+            if re.match(r'^[A-Za-z]:[/\\]', directory):
+                directory = '/mnt/'+directory[0].lower()+'/'+directory[3:].replace('\\','/')
+                git += ['--git-dir='+directory, '--work-tree='+str(TOP)]
+        tree = subprocess.check_output([*git, 'rev-parse', commit+'^{tree}'])
         if hashlib.sha256(tree).hexdigest() != record['source_fingerprint']:
             raise ValueError('Recorded source fingerprint differs from its clean Git tree')
         key = (commit, record['source_fingerprint'], record['private_version'])
