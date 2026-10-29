@@ -97,6 +97,21 @@ ZIP 流式处理，不解压完整 rootfs。新工具纳入原 desktop manifest 
 每个发布包仍只有一份 boot、一份 rootfs 和各平台一份后端；最终通过才发布新目录。
 旧包不覆盖，失败现场按既有 clean-staging 规则处理。
 
+## 中断批次中已完成的包
+
+另一发行线中断后，无需重编或复制已经完成的 ZIP。使用固定入口单独验收发布：
+
+```sh
+python3 tools/build-release.py publish-completed --workspace /home/kano/openwrt-build \
+  --profiles mu300-7.2 --source-release /absolute/repo/release/.building-<old-task> \
+  --label publish-completed
+```
+
+只接受相同工作区中有失败任务记录、且所选构建步骤已完成的本地 pending 目录。
+重新核对 ZIP 完整清单、CRC、SHA256、Diff Studio 和干净 Git 来源；原版本号、
+提交及载荷全部保持，不把旧包冒充当前源码重编。原失败任务日志保留，新的
+BUILD-RUN.json 明确列出已完成的所选发行线。未完成的 staging 不会被发布或清理。
+
 仅导出独立 Diff Studio（两个平台后端各一份，无 boot/rootfs/ADB）：
 
 ```sh

@@ -287,6 +287,63 @@ def package(task, common, rows):
     print('Verified release: ' + str(destination))
 
 
+def publish_completed(task, common, rows, source):
+    """Publish only completed archives from an interrupted local batch."""
+    if source is None:
+        raise ValueError('Supply --source-release for the interrupted batch')
+    if source.is_symlink(): raise ValueError('Symlink pending release directory')
+    parent = (TOP / 'release').resolve()
+    source = source.resolve()
+    if (source.parent != parent or not source.name.startswith('.building-') or
+            source.is_symlink()):
+        raise ValueError('Use an owned pending release directory')
+    old_id = source.name.removeprefix('.building-')
+    status = json.loads((TOP / 'out/build-logs' / old_id / 'status.json').read_text())
+    if (status.get('state') != 'failed' or status.get('task') != old_id or
+            Path(status.get('pending_output', '')).resolve() != source or
+            Path(status.get('workspace', '')).resolve() != task.workspace):
+        raise ValueError('Pending release ownership/state differs')
+    complete = {s['stage'] for s in status['steps'] if s.get('state') == 'complete'}
+    assets, identity = [], None
+    for path in sorted(source.glob('*.zip')):
+        if path.is_symlink(): raise ValueError('Symlink pending archive')
+        with zipfile.ZipFile(path) as archive:
+            record = json.loads(archive.read('desktop/release.json'))
+        profile = 'mu300-' + '.'.join(record['kernel_release'].split('.')[:2])
+        if profile not in rows or profile + '-package' not in complete:
+            raise ValueError('Archive has no completed selected build step: ' + profile)
+        if path.name != record['package_name'] + '.zip' or record.get('source_dirty') is not False:
+            raise ValueError('Archive name or clean source provenance differs')
+        commit = record['source_commit']
+        if not re.fullmatch('[a-f0-9]{40}', commit): raise ValueError('Invalid source commit')
+        tree = subprocess.check_output(['git', '-c', 'safe.directory='+str(TOP),
+                                       '-C', str(TOP), 'rev-parse', commit+'^{tree}'])
+        if hashlib.sha256(tree).hexdigest() != record['source_fingerprint']:
+            raise ValueError('Recorded source fingerprint differs from its clean Git tree')
+        key = (commit, record['source_fingerprint'], record['private_version'])
+        if identity is not None and identity != key: raise ValueError('Mixed pending releases')
+        identity = key
+        wanted = path.with_name(path.name+'.sha256').read_text().split()
+        checksum = digest(path)
+        if wanted != [checksum, path.name]: raise ValueError('Pending archive checksum differs')
+        verify_archive(path, require_diff=True)
+        assets.append({'profile':profile,'file':path.name,'bytes':path.stat().st_size,'sha256':checksum})
+        source_record = record
+    if {a['profile'] for a in assets} != set(rows):
+        raise ValueError('Not every selected profile has a completed archive')
+    allowed = {a['file'] for a in assets} | {a['file']+'.sha256' for a in assets}
+    if {p.name for p in source.iterdir()} != allowed:
+        raise ValueError('Pending directory contains unverified extra files')
+    input_check(common, rows)
+    destination = parent / task.id
+    if destination.exists(): raise ValueError('Publication destination already exists')
+    write_json(source/'BUILD-RUN.json', {**task.data,'state':'verified','source':source_record,
+               'resumed_from':old_id,'selected_profiles':list(rows),'assets':assets})
+    source.rename(destination)
+    task.save(state='complete', output=str(destination), resumed_from=old_id, assets=assets)
+    print('Verified release: '+str(destination))
+
+
 def add_diff(task,rows,source,repair_installer=False):
     if source is None:raise ValueError('Supply --source-release')
     source=source.resolve()
@@ -326,7 +383,7 @@ def add_diff(task,rows,source,repair_installer=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('plan', 'check', 'package', 'add-diff', 'repair-installer', 'run', 'status', 'clean-staging'))
+    parser.add_argument('action', choices=('plan', 'check', 'package', 'publish-completed', 'add-diff', 'repair-installer', 'run', 'status', 'clean-staging'))
     parser.add_argument('--profiles', nargs='+', choices=('all', *PROFILES), default=['all'])
     parser.add_argument('--workspace', type=Path, default=Path.home() / 'openwrt-build')
     parser.add_argument('--config', type=Path, default=TOP / 'tools/build-layout.json')
@@ -357,6 +414,8 @@ def main():
             if args.action == 'run':
                 if not command: raise ValueError('Supply a real compiler/build command after --')
                 task.run('command', command); task.save(state='complete')
+            elif args.action == 'publish-completed':
+                publish_completed(task,common,rows,args.source_release)
             elif args.action in ('add-diff','repair-installer'):
                 add_diff(task,rows,args.source_release,repair_installer=args.action=='repair-installer')
             else:
