@@ -1,7 +1,8 @@
 """Bounded read-only evidence for removing an installation without its old journal.
 
-Only fixed, small files are read from an idle ext4 partition. No mount, repair,
-device-side helper, executable from the installed system or filesystem write.
+Only fixed, small files are read from an idle ext4 partition. During an explicit
+uninstall check, a verified installation may replay its journal using Android's
+e2fsck. No mount, general filesystem repair or partition-table write is used.
 This proves a known installation, not the historical size of Android userdata.
 """
 from . import storage as storage_io
@@ -9,15 +10,16 @@ import hashlib
 import re
 import stat
 import struct
+from contextlib import ExitStack
 
 from .boot_image import inspect_linux_boot
-from .state import RecoveryRequired
+from .state import RecoveryRequired, DeviceLock
 from .uninstall_boot import archives, entries
 
 
 class Ext4Evidence:
     """Minimal ext4 reader for regular marker files and their directories only."""
-    def __init__(self, read, capacity):
+    def __init__(self, read, capacity, *, pending_journal=False):
         self.read = read
         self.capacity = capacity
         self.remaining = 4 << 20
@@ -28,10 +30,16 @@ class Ext4Evidence:
         log = struct.unpack_from('<I', sb, 24)[0]
         incompat = struct.unpack_from('<I', sb, 96)[0]
         state = struct.unpack_from('<H', sb, 58)[0]
-        # Reject recovery-needed, meta_bg, inline data, encryption, compression
-        # and other layouts this deliberately small reader does not implement.
-        if log > 2 or incompat & ~(0x2 | 0x40 | 0x80 | 0x200 | 0x2000) or state != 1:
-            raise ValueError('OpenWrt filesystem is unclean or unsupported; boot and shut it down cleanly first / OpenWrt 文件系统未正常卸载或布局不受支持，请先启动 OpenWrt 并正常切回 Android')
+        self.needs_recovery = bool(incompat & 4)
+        if log > 2 or incompat & ~(0x2 | 4 | 0x40 | 0x80 | 0x200 | 0x2000):
+            raise ValueError('Unsupported ext4 layout / ext4 布局不受支持: incompat=0x%x, block_shift=%d' % (incompat, log))
+        if state != 1:
+            raise ValueError('OpenWrt ext4 reports filesystem errors; journal-only recovery is insufficient / OpenWrt ext4 记录了文件系统错误，不能只靠日志回放修复')
+        if self.needs_recovery and not pending_journal:
+            raise ValueError('OpenWrt ext4 journal needs recovery / OpenWrt ext4 日志需要回放')
+        if self.needs_recovery and (not struct.unpack_from('<I',sb,92)[0] & 4 or
+                not struct.unpack_from('<I',sb,224)[0]):
+            raise ValueError('Missing internal ext4 journal / 缺少 ext4 内部日志')
         self.block_size = 1024 << log
         self.blocks = struct.unpack_from('<I', sb, 4)[0]
         if incompat & 0x80:
@@ -149,7 +157,7 @@ class Ext4Evidence:
         return self.contents(node,stat.S_IFREG,4096)
 
 
-def inspect_installation(adapter, device, root, *, boot_backup=None):
+def inspect_installation(adapter, device, root, *, boot_backup=None, recovery_store=None):
     """Return fresh, device-bound evidence. Caller has already validated both GPTs."""
     try:
         adb = adapter.adb
@@ -213,7 +221,7 @@ def inspect_installation(adapter, device, root, *, boot_backup=None):
             if len(raw) != (end-begin)*512:
                 raise ValueError('Incomplete OpenWrt partition read')
             return raw[offset%512:offset%512+length]
-        fs = Ext4Evidence(read,capacity)
+        fs = Ext4Evidence(read,capacity,pending_journal=recovery_store is not None)
         for path, expected in paths.items():
             value = fs.file(path).strip()
             if expected is not None and value != expected:
@@ -225,6 +233,42 @@ def inspect_installation(adapter, device, root, *, boot_backup=None):
             if path == '.mu300/boot-os' and value not in (b'android',b'openwrt'):
                 raise ValueError('MU300 boot selector is unsupported / MU300 启动选择标记不受支持')
             paths[path] = hashlib.sha256(value).hexdigest()
+        if fs.needs_recovery:
+            # Existing stable markers, Linux boot and GPT ownership were checked
+            # above. Never replay a journal merely because a partition is named
+            # *root. A second full read is mandatory after recovery.
+            with ExitStack() as locks:
+                for identity in sorted({device['serial'],device['cid']}):
+                    locks.enter_context(DeviceLock(recovery_store.base,identity))
+                layout = adapter.read_gpt(storage)
+                matching = [p for p in layout['parts'] if p['n'] == root['n']]
+                if len(matching) != 1 or any(matching[0].get(k) != root.get(k) for k in ('start','end','name')):
+                    raise ValueError('Partition geometry changed before journal recovery / 日志回放前分区边界发生变化')
+                current = read(1024,1024)
+                if current != fs.super:
+                    raise ValueError('OpenWrt metadata changed before journal recovery / 日志回放前 OpenWrt 元数据发生变化')
+                notice = getattr(adapter,'notice',None)
+                if callable(notice):
+                    notice({'code':'uninstall_journal_recovery'})
+                label = 'mu300root' if adapter.kind == 'mu300' else 'e5root'
+                script = ('set -eu; n='+node+'; '
+                          '[ "$(readlink -f /dev/block/by-name/'+label+' 2>/dev/null || true)" = /dev/block/$n ]')
+                script += ('; [ -z "$(ls -A /sys/class/block/$n/holders)" ]; '
+                           'd=$(cat /sys/class/block/$n/dev); '
+                           '! awk -v n="$d" \'$3==n {found=1} END {exit !found}\' /proc/self/mountinfo; '
+                           '[ "$(blockdev --getsize64 /dev/block/$n)" = '+str(capacity)+' ]; '
+                           '[ -x /system/bin/e2fsck ]; '
+                           'rc=0; /system/bin/e2fsck -p -E journal_only /dev/block/$n </dev/null || rc=$?; '
+                           '[ "$rc" = 0 ] || [ "$rc" = 1 ]; sync')
+                try:
+                    adb.shell(script,root=True,timeout=120)
+                except (ConnectionError,OSError,TimeoutError) as error:
+                    raise RecoveryRequired('OpenWrt journal recovery did not complete; no partition layout was changed / '
+                                           'OpenWrt 日志回放未完成，分区布局未修改: '+str(error)) from error
+                after = read(1024,1024)
+                if after[104:120] != fs.super[104:120]:
+                    raise ValueError('Filesystem identity changed during journal recovery / 日志回放期间文件系统身份变化')
+                return inspect_installation(adapter,device,root,boot_backup=boot_backup)
         return {'version':1,'boot_header_sha256':boot['header_sha256'],
                 'ramdisk_sha256':hashlib.sha256(ram[:size]).hexdigest(),
                 'superblock_sha256':hashlib.sha256(fs.super).hexdigest(),'markers':paths}

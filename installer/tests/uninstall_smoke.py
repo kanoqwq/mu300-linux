@@ -23,7 +23,7 @@ window.__TAURI_INTERNALS__.invoke=async(command,args={})=>{
  if(command==='backend_request' && args.command==='plan' && args.params.choices.method==='uninstall'){
    const wipe=window.__fixture.removeWipe;
    const preserve=window.__fixture.removePreserve;
-   const plan={...result.plan,method:'uninstall',wipe,data_action:preserve?'grow-ext4':wipe?'reset':'gap',two_stage:true,offline:true,grow:false,
+   const plan={...result.plan,method:'uninstall',wipe,data_action:preserve==='android'?'grow-android-f2fs':preserve?'grow-ext4':wipe?'reset':'gap',two_stage:true,offline:true,grow:false,
      target:'mmcblk0p5',previous_android_bytes:28*1073741824,android_bytes:((wipe||preserve)?32:28)*1073741824,
      openwrt_bytes:4*1073741824,reclaimed_bytes:(wipe||preserve)?4*1073741824:0,
      layout_source:window.__fixture.layoutSource,released_unallocated_bytes:(wipe||preserve)?0:4*1073741824};
@@ -41,7 +41,7 @@ window.__TAURI_INTERNALS__.invoke=async(command,args={})=>{
 def main(url='http://127.0.0.1:1420'):
     with sync_playwright() as p:
         browser=p.chromium.launch()
-        for language,wipe,theme,preserve,basis in (('zh',True,'dark',False,'original_record'),('en',False,'light',False,'original_record'),('zh',False,'light',True,'original_record'),('en',True,'light',False,'original_record'),('zh',False,'light',True,'device'),('en',False,'dark',False,'device')):
+        for language,wipe,theme,preserve,basis in (('zh',True,'dark',False,'original_record'),('en',False,'light',False,'original_record'),('zh',False,'light',True,'original_record'),('en',True,'light',False,'original_record'),('zh',False,'light',True,'device'),('en',False,'dark',False,'device'),('zh',False,'dark','android','device'),('en',False,'light','android','device')):
             context=fixture_context(browser,viewport={'width':1120,'height':900},device_scale_factor=1)
             context.add_init_script(BRIDGE+UNINSTALL+
                 'localStorage.setItem("language",'+json.dumps(language)+');'+
@@ -80,6 +80,8 @@ def main(url='http://127.0.0.1:1420'):
                 page.get_by_role('button',name='查看卸载计划' if zh else 'Review removal plan',exact=True).click();settle(page)
                 dialog.get_by_role('button',name='选择格式化并查看计划' if zh else 'Choose format and review plan',exact=True).click();settle(page)
                 assert [c for c in page.evaluate('window.__fixture.calls') if c['command']=='plan'][-1]['params']['reset_token']=='fixture-reset-token'
+            if preserve=='android':
+                page.get_by_text('原厂 Android 在解密后' if zh else 'stock Android grow decrypted F2FS',exact=False).wait_for()
             button=page.get_by_role('button',name='确认卸载' if zh else 'Confirm uninstall',exact=True)
             assert button.is_disabled()
             assert page.locator('.plan-list').get_by_text('4.00 GiB',exact=True).count()>=1
@@ -88,7 +90,7 @@ def main(url='http://127.0.0.1:1420'):
                 page.get_by_text('未找到可用的原安装备份' if zh else 'No usable original installation backup',exact=False).wait_for()
             if not wipe and not preserve:
                 page.locator('.plan-list').get_by_text('释放为空闲的空间' if zh else 'Space released as unallocated',exact=True).wait_for()
-            assert page.get_by_text('保留 Android 数据' if preserve else '全部清空' if zh else 'All Android apps' if wipe else 'Android userdata is not enlarged',exact=False).count()>=1
+            assert page.get_by_text(('保留 Android 数据' if zh else 'Preserve Android data') if preserve=='android' else '保留 Android 数据' if preserve else '全部清空' if zh else 'All Android apps' if wipe else 'Android userdata is not enlarged',exact=False).count()>=1
             layout(page)
             page.set_viewport_size({'width':800,'height':650});settle(page)
             layout(page)

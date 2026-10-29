@@ -415,7 +415,7 @@ class BootRequest(unittest.TestCase):
 @unittest.skipUnless(shutil.which('busybox'),'requires Linux BusyBox')
 class OfflineGpt(unittest.TestCase):
     def test_full_worker_reset_gap_resume_and_both_android_slots_on_regular_files(self):
-        for slot,wipe,finished,grow in (('a',True,False,''),('b',True,False,''),('a',False,False,''),('b',False,False,''),('a',True,True,''),('a',False,False,'ok'),('b',False,False,'ok'),('a',False,False,'check-failed'),('a',False,False,'reread-failed'),('b',False,False,'stale-node')):
+        for slot,wipe,finished,grow in (('a',True,False,''),('b',True,False,''),('a',False,False,''),('b',False,False,''),('a',True,True,''),('a',False,False,'ok'),('b',False,False,'ok'),('a',False,False,'check-failed'),('a',False,False,'reread-failed'),('b',False,False,'stale-node'),('a',False,False,'android'),('b',False,False,'android'),('a',False,False,'android-bcb-failed')):
             with self.subTest(slot=slot,wipe=wipe,finished=finished,grow=grow),tempfile.TemporaryDirectory() as directory:
                 folder=Path(directory)
                 for name in ('run','dev','sys/class/block/mmcblk0/device','proc','work'):
@@ -458,8 +458,10 @@ class OfflineGpt(unittest.TestCase):
                 request=[IDENTITY,'mmcblk0','mmcblk0p4','mmcblk0p5','mmcblk0p3',android_node,linux_node,
                          SECTORS,34,SECTORS-33,29*GIB//512,4*GIB//512,int(wipe),4096,boot_sha]
                 if grow:
-                    request+=['grow-ext4',GIB//512,32*GIB//512,28*GIB,'55'*16]
+                    request+=[('grow-android-f2fs' if grow.startswith('android') else 'grow-ext4'),GIB//512,32*GIB//512,28*GIB,'55'*16]
                     (folder/'dev/mmcblk0p4').write_bytes(bytes(1024)+superblock(28*GIB))
+                if grow=='android-bcb-failed':
+                    (folder/'work/before-bcb').write_bytes(b'UNEXPECTED RECOVERY'.ljust(2048,b'\0'))
                 (folder/'work/request').write_text(':'.join(map(str,request))+'\n')
                 sums=''.join(hashlib.sha256(path.read_bytes()).hexdigest()+'  '+path.name+'\n'
                              for path in (folder/'work').iterdir())
@@ -477,19 +479,22 @@ class OfflineGpt(unittest.TestCase):
                     # here; real populated filesystem growth is tested separately.
                     prefix+='fs_tool() { '+('case "$*" in *" -pf "*) return 4;; esac; ' if grow=='check-failed' else '')+':; }\n'
                     prefix+='fs_grow() { echo PRESERVING_GROW; }\n'
+                    if grow.startswith('android'):
+                        prefix+='fs_tool() { echo FORBIDDEN_RAW_CHECK; return 99; }\nfs_grow() { echo FORBIDDEN_RAW_GROW; return 99; }\n'
                     prefix+='kernel_node_matches() { '+('return 1' if grow=='stale-node' else ':')+'; }\n'
                     prefix+='blockdev() { '+('return 16' if grow=='reread-failed' else '[ "$1" = --rereadpt ] && echo '+str(32*GIB//512)+' > '+str(folder/'sys/class/block/mmcblk0p4/size'))+'; }\n'
                     worker=worker.replace('# BEGIN DEVICE WORKER',prefix+'\n# BEGIN DEVICE WORKER',1)
                 result=subprocess.run(['busybox','ash','-c',prefix+worker],capture_output=True,text=True,timeout=10)
                 debug=list((folder/'run').rglob('debug.log'))
                 detail=debug[0].read_text() if debug else result.stderr
-                if grow in ('check-failed','reread-failed','stale-node'):
+                if grow in ('check-failed','reread-failed','stale-node','android-bcb-failed'):
                     self.assertNotEqual(result.returncode,0,detail)
                     self.assertFalse((folder/'rebooted').exists())
-                    with (folder/'dev/mmcblk0').open('rb') as stream:self.assertEqual(stream.read(34*512),before[0] if grow=='check-failed' else after[0])
+                    with (folder/'dev/mmcblk0').open('rb') as stream:self.assertEqual(stream.read(34*512),before[0] if grow in ('check-failed','android-bcb-failed') else after[0])
                     self.assertEqual((folder/'dev/mmcblk0p3').read_bytes(),bytes(misc))
                     self.assertNotIn('PRESERVING_GROW',detail)
                     continue
+                self.assertNotIn('FORBIDDEN_RAW_',detail)
                 self.assertEqual(result.returncode,0,detail)
                 self.assertTrue((folder/'rebooted').exists(),detail)
                 self.assertEqual((folder/'dev'/linux_node).read_bytes(),android)

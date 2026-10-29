@@ -86,9 +86,13 @@ Diff Studio 的旧版输入可选择完整 ZIP，也可选择之前保存的 `.o
 
 **没有原安装记录也可以检查卸载。** 安装器会核验当前分区表、启动镜像和设备上的安装标记。核验通过后，仅将紧邻 userdata 的 OpenWrt 分区容量归还 Android，不合并其他空闲空间；不相邻的 OpenWrt 分区只释放为空闲，不扩大 Android。请以计划中的“Android 容量”“归还 Android 的空间”和“释放为空闲的空间”为准。无法核实安装归属或分区边界时会停止，不能只凭分区名称删除。执行前会为本次卸载新建记录和备份，请保留。
 
+卸载检查遇到已确认属于本机 OpenWrt、未挂载且只有日志待回放的 ext4，会自动执行日志回放并重新核验，无需反复切系统。不会自动执行完整修复或格式化。
+
+FBE＋metadata 加密的 F2FS 不再仅因加密就要求清空：核实完整解密映射和原厂扩容入口后，会先离线归还分区空间，再回 Android 由原厂程序解密并在挂载前扩容。安装器必须核验文件系统 UUID 和最终容量才会报告成功。若容量未达到目标，保留续接状态，不自动格式化；旧式 FDE、非完整映射或缺少原厂扩容能力的设备仍会明确说明原因。
+
 卸载时会重新检查当前 Android 的加密状态、data 所在设备和文件系统工具。**确认未加密、data 直接位于 userdata 且工具支持时，离线检查并扩容 userdata，保留 Android 数据。** OpenWrt 系统及配置仍会删除，请先备份需要保留的内容。
 
-无法确认可保留 Android 数据时，安装器先报出具体原因，再询问“无法保留 Android 数据卸载，是否格式化？”。取消不会写入设备；同意后仅生成新的卸载计划。**格式化会清空 Android 应用、账号、照片和内部存储。** 请备份个人文件，并在最终计划中核对数据影响及容量后再确认执行。安装归属不明、布局不符等错误不能通过同意格式化绕过。
+无法确认可保留 Android 数据时，安装器先报出具体原因，再询问“无法保留 Android 数据卸载，是否格式化？”。取消不会修改分区或清空 Android 数据；同意后仅生成新的卸载计划。**格式化会清空 Android 应用、账号、照片和内部存储。** 请备份个人文件，并在最终计划中核对数据影响及容量后再确认执行。安装归属不明、布局不符等错误不能通过同意格式化绕过。
 
 有原记录证明 OpenWrt 装在未分配空间时，卸载后该空间恢复为空闲，不额外扩大 Android，也不要求重置。没有原记录时不会猜测历史用途，而按上面的相邻分区规则生成计划。TF 卡、userdata 镜像和未列入 GPT 的旧版隐藏区域安装不使用此内置分区卸载入口。TF 卡安装请先回到 Android 并设为默认启动，卸载对应 Magisk 模块（如有），再自行格式化安装 OpenWrt 的目标分区；不必整卡格式化，其他分区的文件可以保留。
 
@@ -226,9 +230,13 @@ First export needed configuration from the OpenWrt management page, then return 
 
 **Original installation records are not mandatory.** Without usable original backups, the installer verifies the current partition table, boot image and installed-system markers. Only an OpenWrt partition immediately after userdata can return its capacity to Android; other free space is not merged. A nonadjacent partition becomes unallocated without enlarging Android. Review Android capacity, Space returned to Android and Space released as unallocated. Uncertain ownership or boundaries stop removal; a partition name alone is insufficient. A new removal record and backups are created before execution. Keep them for recovery.
 
+An owned, idle ext4 installation with a pending journal is recovered and rechecked automatically; no repeated OS switching is required. This does not run general repair or format the filesystem.
+
+FBE plus metadata-encrypted F2FS can preserve Android data when the complete decrypted mapping and stock pre-mount growth route are identified. The offline worker returns the proven partition space, then stock Android decrypts and grows F2FS before mounting. Completion requires the original filesystem UUID and final capacity. A shortfall stays resumable and never silently triggers formatting.
+
 Removal rechecks current Android encryption, the data device and filesystem tools. **Confirmed unencrypted data directly on userdata with supported tools is checked and grown offline while preserving Android data.** OpenWrt and its settings are still deleted. Back up what you need first.
 
-If preservation cannot be confirmed, the installer reports the reason and asks “Cannot preserve Android data. Format instead?”. Cancel writes nothing to the device. Agreeing only creates a new removal plan. **Formatting erases Android apps, accounts, photos and internal storage.** Back up personal files, review the capacity and data impact, then confirm the final plan. Uncertain installation ownership or mismatched layouts cannot be bypassed by agreeing to format.
+If preservation cannot be confirmed, the installer reports the reason and asks “Cannot preserve Android data. Format instead?”. Cancel does not change partitions or erase Android data. Agreeing only creates a new removal plan. **Formatting erases Android apps, accounts, photos and internal storage.** Back up personal files, review the capacity and data impact, then confirm the final plan. Uncertain installation ownership or mismatched layouts cannot be bypassed by agreeing to format.
 
 If original records prove that OpenWrt used previously unallocated space, it becomes free again without enlarging or resetting Android. Without those records, the adjacent-partition rule above applies instead of guessing the historical layout. This option does not remove TF-card, userdata-image or old hidden-area installations outside GPT. For TF, return to Android, set Android as the default, remove the related Magisk module if installed, then format the OpenWrt target partition yourself; other card partitions can be kept.
 

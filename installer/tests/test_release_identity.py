@@ -16,6 +16,7 @@ class ReleaseIdentityTest(unittest.TestCase):
             git('init', '-q')
             git('config', 'user.name', 'fixture')
             git('config', 'user.email', 'fixture@example.invalid')
+            git('config', 'commit.gpgsign', 'false')
             source = repo/'source.py'
             source.write_text('before')
             git('add', '.')

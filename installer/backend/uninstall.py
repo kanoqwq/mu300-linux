@@ -1,7 +1,8 @@
 """Journaled removal of a verified internal OpenWrt partition.
 
-No device writes during planning. All GPT changes run in the existing model's
-initramfs, with stock recovery owning Android reset and encryption.
+Planning never changes GPT, boot or userdata. An owned, idle OpenWrt filesystem
+may replay its journal before evidence is accepted. GPT changes run offline;
+stock Android owns encrypted F2FS growth, and recovery owns explicit resets.
 """
 import hashlib
 import json
@@ -19,7 +20,8 @@ from .boot_image import inspect_linux_boot, trial_control
 from .state import Cancelled, RecoveryRequired, atomic_json, sha
 from .transport import push_chunks
 from .uninstall_boot import build
-from .uninstall_growth import PreservationUnavailable, eligible, growth_tools, base_boot
+from .uninstall_growth import (PreservationUnavailable, eligible, growth_tools, base_boot,
+                               inspect_android_growth, preservation_eligible)
 from .install_evidence import inspect_installation
 
 
@@ -178,7 +180,7 @@ def prepare(adapter, store, device, authorize_reset=None):
         source, after, data, root, expands = matches[0]
     else:
         after, data, root, expands = device_layout(current,total,name)
-        proof = inspect_installation(adapter,device,root)
+        proof = inspect_installation(adapter,device,root,recovery_store=store)
         source = None
     node = storage_io.disk_node(storage['NODE'])
     if (storage['ROOT'] != storage_io.part_node(node,root['n']) or storage['START'] != data['start'] or
@@ -198,10 +200,14 @@ def prepare(adapter, store, device, authorize_reset=None):
         try:
             if reason:
                 raise ValueError(reason)
-            eligible(device,volume)
-            tools = growth_tools(adapter,volume['filesystem'])
+            if device.get('encrypted') is True and volume['filesystem'] == 'f2fs':
+                volume = inspect_android_growth(adapter,device,volume)
+                action = 'grow-android-f2fs'
+            else:
+                eligible(device,volume)
+                tools = growth_tools(adapter,volume['filesystem'])
+                action = 'grow-'+volume['filesystem']
             build(base_boot(adapter),adapter.kind,tools)
-            action = 'grow-'+volume['filesystem']
         except (ValueError,OSError,KeyError) as error:
             reason = str(error)
             evidence = {'cid':device['cid'],'slot':device['slot'],'profile':device['profile'],
@@ -290,14 +296,16 @@ class Uninstaller:
         wipe = expands
         if version >= 2:
             action = self.meta.get('action')
-            if action != self.r['plan'].get('data_action') or action not in ('gap','reset','grow-ext4','grow-f2fs'):
+            if action != self.r['plan'].get('data_action') or action not in ('gap','reset','grow-ext4','grow-f2fs','grow-android-f2fs'):
                 raise RecoveryRequired('Uninstall data action differs / 卸载数据处理方式不一致')
             wipe = action == 'reset'
             if (action == 'gap') != (not expands) or self.meta.get('reset_authorized') is not wipe:
                 raise RecoveryRequired('Uninstall reset was not explicitly authorized / 卸载重置未获得明确授权')
             if action.startswith('grow-'):
-                eligible(self.r['device'],self.meta['volume'])
-                if action != 'grow-'+self.meta['volume']['filesystem'] or not self.meta.get('tool_hashes'):
+                preservation_eligible(self.r['device'],self.meta['volume'],action)
+                if ((action != 'grow-android-f2fs' and
+                     (action != 'grow-'+self.meta['volume']['filesystem'] or not self.meta.get('tool_hashes'))) or
+                        (action == 'grow-android-f2fs' and self.meta.get('tool_hashes'))):
                     raise RecoveryRequired('Uninstall preservation evidence is incomplete / 卸载保数据证据不完整')
         info = gpt.gpt_space(*before,total)
         data = partition(info,'userdata')
@@ -358,10 +366,16 @@ class Uninstaller:
         tools = {}
         if self.meta.get('action','').startswith('grow-'):
             volume = android_volume(adb,device)
-            eligible(device,volume)
+            if self.meta['action'] == 'grow-android-f2fs':
+                volume = inspect_android_growth(self.adapter,device,volume)
+            preservation_eligible(device,volume,self.meta['action'])
             if any(volume.get(k) != self.meta['volume'].get(k) for k in ('uuid','source','filesystem','filesystem_bytes')):
                 raise RecoveryRequired('Android data changed; create a new removal plan / Android data 已变化，请重新生成卸载计划')
-            tools = growth_tools(self.adapter,volume['filesystem'])
+            if self.meta['action'] == 'grow-android-f2fs':
+                if volume['android_growth'] != self.meta['volume']['android_growth']:
+                    raise RecoveryRequired('Stock Android resize tools changed; review removal plan / 原厂 Android 扩容程序已变化，请重新核对卸载计划')
+            else:
+                tools = growth_tools(self.adapter,volume['filesystem'])
             if {name:hashlib.sha256(content).hexdigest() for name,content in tools.items()} != self.meta['tool_hashes']:
                 raise RecoveryRequired('Preservation tools changed; review removal plan / 保数据工具已变化，需重新核对卸载计划')
         slot = device['slot'].removeprefix('_'); other = 'b' if slot == 'a' else 'a'
@@ -503,12 +517,26 @@ class Uninstaller:
         if not self.meta.get('action','').startswith('grow-') or self.layout_state() != 'after':
             raise RecoveryRequired('No verified pending growth / 没有可复核的待完成扩容')
         adb = self.adapter.adb
-        volume = android_volume(adb,device,allow_small=True); eligible(device,volume)
+        volume = android_volume(adb,device,allow_small=True)
+        if self.meta['action'] == 'grow-android-f2fs':
+            volume = inspect_android_growth(self.adapter,device,volume)
+        preservation_eligible(device,volume,self.meta['action'])
         if volume['uuid'] != self.meta['volume']['uuid']:
             raise RecoveryRequired('Android filesystem identity changed / Android 文件系统身份已变化')
         if volume['filesystem_bytes'] >= self.r['plan']['android_bytes']-(4 << 20):
             self.r['uninstall_growth_pending']=False;self.ctx.store.save(self.r)
             return False
+        if self.meta['action'] == 'grow-android-f2fs':
+            # The restored partition is already correct. Retry only Android's
+            # normal pre-mount growth, never GPT removal, raw fsck or recovery.
+            self.r['uninstall_wait_boot_id']=device['boot_id']
+            self.ctx.store.save(self.r)
+            self.ctx.stage('uninstall_offline','waiting_device',reboot_manually=False)
+            try:
+                adb.call('reboot')
+            except (ConnectionError,OSError,subprocess.TimeoutExpired):
+                self.ctx.log('Expected reconnect while Android resumes native F2FS growth',scope='uninstall')
+            return True
         slot = device['slot'].removeprefix('_'); other = 'b' if slot == 'a' else 'a'
         values = adb.shell('sha256sum /dev/block/by-name/boot_'+slot+' /dev/block/by-name/boot_'+other,root=True).splitlines()
         expected = (self.r.get('uninstall_android_sha256'),self.r.get('uninstall_boot_sha256'))
@@ -619,7 +647,9 @@ class Uninstaller:
         self.r['android_capacity_check']['expected_mapped_bytes'] = expected
         self.ctx.log(json.dumps(self.r['android_capacity_check']),scope='capacity')
         if preserving:
-            eligible(device,volume)
+            if self.meta['action'] == 'grow-android-f2fs':
+                volume = inspect_android_growth(self.adapter,device,volume)
+            preservation_eligible(device,volume,self.meta['action'])
             if volume['uuid'] != self.meta['volume']['uuid']:
                 raise RecoveryRequired('Preserved Android filesystem identity differs / 保留的 Android 文件系统身份不符')
             if volume['mapped_bytes']-volume['filesystem_bytes'] > 4 << 20:

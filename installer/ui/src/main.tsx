@@ -154,7 +154,10 @@ function App() {
       else if (event.type === 'activity') setTransfer(undefined);
       else if (event.type === 'notice') {
         const notice = event.data as {code:string; label?:string};
-        if (notice.code === 'mtp_disabled') {
+        if (notice.code === 'uninstall_journal_recovery') {
+          toast.info(t.uninstallJournalRecovery, {id:'uninstall-journal', duration:12000});
+          append(t.uninstallJournalRecovery);
+        } else if (notice.code === 'mtp_disabled') {
           toast.info(t.mtpDisabled, {id:'usb-mtp', description:t.mtpDisabledDesc, duration:10000});
           append(t.mtpDisabled);
         } else if (notice.code === 'mtp_disable_failed') {
@@ -317,7 +320,7 @@ function App() {
     {id:'boot', icon:Usb, title:t.boot, description:t.bootDesc},
     {id:'advanced', icon:Settings2, title:t.advanced, description:t.advancedDesc},
   ] as const;
-  const impact = tx?.choices.method === 'uninstall' ? (tx.plan.wipe ? t.uninstallWipe : tx.plan.data_action?.startsWith('grow-') ? t.uninstallPreserve : t.uninstallKeep) : tx?.plan.wipe ? t.wipe : tx?.choices.method === 'tf' ? t.tfErase : tx?.choices.method === 'reinstall' ? t.reinstallErase : tx?.choices.method === 'image' ? t.imageImpact : tx?.choices.method === 'update' ? t.updateImpact : tx?.choices.method === 'boot' ? t.bootImpact : t.preserve;
+  const impact = tx?.choices.method === 'uninstall' ? (tx.plan.wipe ? t.uninstallWipe : tx.plan.data_action === 'grow-android-f2fs' ? t.uninstallPreserveAndroid : tx.plan.data_action?.startsWith('grow-') ? t.uninstallPreserve : t.uninstallKeep) : tx?.plan.wipe ? t.wipe : tx?.choices.method === 'tf' ? t.tfErase : tx?.choices.method === 'reinstall' ? t.reinstallErase : tx?.choices.method === 'image' ? t.imageImpact : tx?.choices.method === 'update' ? t.updateImpact : tx?.choices.method === 'boot' ? t.bootImpact : t.preserve;
   const impactNotice = tx && <div className={'alert ' + (tx.plan.wipe || tx.plan.experimental || tx.choices.method === 'uninstall' ? 'danger' : '')}><CircleAlert size={20}/><div><strong>{t.impact}</strong><p>{impact}</p>{tx.plan.experimental && <p>{t.experimental}</p>}</div></div>;
   const waitingForOpenwrt = tx?.stage === 'openwrt_boot' && tx.status.startsWith('waiting') && !tx.unsafe;
   const manualRestart = waitingForOpenwrt && tx?.details?.reboot_manually !== false;

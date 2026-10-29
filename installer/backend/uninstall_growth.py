@@ -1,5 +1,6 @@
 """Read-only preservation eligibility and offline filesystem growth primitives."""
 import json
+import hashlib
 import re
 from pathlib import PurePosixPath
 import stat
@@ -23,6 +24,64 @@ def eligible(device, volume):
         raise ValueError('Android data uses a mapping; direct userdata growth is unproven / Android data 存在映射，无法确认可直接扩容 userdata')
     if volume['filesystem'] not in ('ext4','f2fs') or not volume.get('uuid') or volume['uuid'] == '0'*32:
         raise ValueError('Filesystem type or identity is unsupported / 文件系统类型或身份不受支持')
+
+
+def android_shape(device, volume):
+    """Android owns the key and pre-mount F2FS resize; never resize ciphertext."""
+    if (device.get('encrypted') is not True or device.get('encryption_state') != 'encrypted' or
+            device.get('encryption_type') != 'file' or volume.get('filesystem') != 'f2fs' or
+            volume.get('mapping_overhead') != 0 or volume.get('mapped_bytes') != device['userdata_bytes'] or
+            not re.fullmatch(r'/dev/(?:block/)?dm-[0-9]+',volume.get('source','')) or
+            not re.fullmatch('[a-f0-9]{32}',volume.get('uuid','')) or volume['uuid'] == '0'*32):
+        raise ValueError('Encrypted preservation requires FBE F2FS with a complete userdata mapping / 加密保数据扩容要求 FBE F2FS 且解密映射完整覆盖 userdata')
+
+
+def android_eligible(device, volume):
+    android_shape(device,volume)
+    proof = volume.get('android_growth',{})
+    if (proof.get('version') != 1 or proof.get('slave') != device['storage']['NODE'] or
+            proof.get('manager') not in ('/system/lib64/libfs_mgr.so','/system/bin/vold') or
+            any(not re.fullmatch('[a-f0-9]{64}',proof.get(k,'')) for k in ('manager_sha256','resizer_sha256'))):
+        raise ValueError('Stock Android pre-mount resize evidence is missing / 缺少原厂 Android 挂载前扩容证据')
+
+
+def inspect_android_growth(adapter, device, volume):
+    """Read only: inspect the live decrypted mapper and this firmware's tools."""
+    volume = dict(volume)
+    android_shape(device,volume)
+    proof = {'version':1,'slave':device['storage']['NODE']}
+    volume['android_growth'] = proof
+    node = volume['source'].rsplit('/',1)[-1]
+    slaves = adapter.adb.shell('for p in /sys/class/block/'+node+'/slaves/*; do '
+                              '[ ! -e "$p" ] || echo "${p##*/}"; done',root=True).split()
+    if slaves != [device['storage']['NODE']]:
+        raise ValueError('Encrypted userdata mapping is layered or belongs to another partition / 加密映射存在多层或指向其他分区')
+    managers = adapter.adb.shell('if [ -x /system/bin/resize.f2fs ]; then '
+                                'for p in /system/lib64/libfs_mgr.so /system/bin/vold; do '
+                                '[ ! -f "$p" ] || echo "$p"; done; fi',root=True).split()
+    for manager in managers:
+        if manager not in ('/system/lib64/libfs_mgr.so','/system/bin/vold'):
+            raise ValueError('Invalid Android filesystem manager path')
+        data = adapter.adb.read('cat '+manager)
+        if (len(data) >= 20 and data[:6] == b'\x7fELF\x02\x01' and
+                struct.unpack_from('<H',data,18)[0] == 183 and b'/system/bin/resize.f2fs\0' in data):
+            proof.update(manager=manager,manager_sha256=hashlib.sha256(data).hexdigest())
+            break
+    else:
+        raise ValueError('Stock Android has no verified F2FS auto-growth route / 未确认原厂 Android 的 F2FS 自动扩容入口')
+    resizer = adapter.adb.read('cat /system/bin/resize.f2fs')
+    if len(resizer)<20 or resizer[:6] != b'\x7fELF\x02\x01' or struct.unpack_from('<H',resizer,18)[0] != 183:
+        raise ValueError('Stock F2FS resizer is not an ARM64 executable / 原厂 F2FS 扩容程序不是 ARM64 可执行文件')
+    proof['resizer_sha256'] = hashlib.sha256(resizer).hexdigest()
+    android_eligible(device,volume)
+    return volume
+
+
+def preservation_eligible(device, volume, action):
+    if action == 'grow-android-f2fs':
+        android_eligible(device,volume)
+    else:
+        eligible(device,volume)
 
 
 def base_boot(adapter):

@@ -63,7 +63,7 @@ case "$action" in
     '') [ "$wipe" = 1 ] && action=reset || action=gap ;;
     reset) [ "$wipe" = 1 ] ;;
     gap) [ "$wipe" = 0 ] ;;
-    grow-ext4|grow-f2fs)
+    grow-ext4|grow-f2fs|grow-android-f2fs)
         [ "$wipe" = 0 ]
         for n in "$data_start" "$data_size" "$fs_before"; do case "$n" in ''|0*|*[!0-9]*) exit 2 ;; esac; done
         [ "${#fs_uuid}" = 32 ]; case "$fs_uuid" in *[!0-9a-f]*) exit 2 ;; esac
@@ -102,10 +102,12 @@ done
 snapshot_read
 snapshot_known
 case "$action" in grow-*)
-    # Read-only checks and executable compatibility happen before any GPT write.
+    # Both routes check Android's recovery request and userdata boundary before
+    # any GPT write. Encrypted data must not reach the raw filesystem helpers.
     dd if="$misc" of=current-bcb bs=2048 count=1 2>/dev/null
     cmp -s current-bcb before-bcb
     [ "$(cat /sys/class/block/$data_node/start)" = "$data_start" ]
+    if [ "$action" != grow-android-f2fs ]; then
     fs_measure /dev/$data_node
     if [ "$action" = grow-f2fs ]; then
         fs_tool /openwrt-uninstall/tools/sbin/fsck.f2fs -V
@@ -115,7 +117,8 @@ case "$action" in grow-*)
         fs_tool /openwrt-uninstall/tools/usr/sbin/resize2fs -V
     fi
     fs_check /dev/$data_node
-    fs_measure /dev/$data_node ;;
+    fs_measure /dev/$data_node
+    fi ;;
 esac
 finished=0
 if cmp -s check-first after-first && cmp -s check-last after-last; then finished=1; fi
@@ -136,7 +139,7 @@ if [ "$finished" = 0 ]; then
     echo '2/3 restoring the verified partition layout' > /run/openwrt-uninstall/progress.txt
     snapshot_commit
 fi
-case "$action" in grow-*)
+case "$action" in grow-ext4|grow-f2fs)
     echo 'Growing and verifying Android userdata without formatting' > /run/openwrt-uninstall/progress.txt
     # The packaged BusyBox supports BLKRRPART, not losetup --sizelimit.
     # Require the exact restored partition; never expose the remaining disk.
@@ -149,6 +152,14 @@ case "$action" in grow-*)
     idle_partition "$data_node"
     grow_device=/dev/$data_node
     fs_grow ;;
+    grow-android-f2fs)
+    # Metadata encryption keys stay in Android. The raw userdata bytes are
+    # ciphertext: no fsck, resize, mount, key export or wipe is allowed here.
+    echo 'Returning to Android for stock decrypted F2FS growth; preserving data' > /run/openwrt-uninstall/progress.txt
+    blockdev --rereadpt "$disk"
+    [ "$(cat /sys/class/block/$data_node/start)" = "$data_start" ]
+    [ "$(cat /sys/class/block/$data_node/size)" = "$data_size" ]
+    kernel_node_matches "$data_node" ;;
 esac
 echo '3/3 restoring Android boot selection' > /run/openwrt-uninstall/progress.txt
 # The running kernel/ramdisk is in RAM. The current Android boot is never written.
