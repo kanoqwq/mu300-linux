@@ -142,6 +142,41 @@ def android_volume(adb, device, *, allow_small=False):
             'mapping_overhead': device['userdata_bytes']-mapped}
 
 
+def uninstall_bcb(raw):
+    """Keep BCB contents, except a superseded one-shot bootloader command.
+
+    The user has confirmed an uninstall boot, not entry into the bootloader.
+    Recovery/OTA requests remain protected. These are C strings: bytes after
+    the terminating NUL are not a pending command.
+    """
+    if len(raw) != 2048:
+        raise RecoveryRequired('Incomplete Android boot message / Android 启动消息读取不完整')
+    def text(field):
+        return b'' if field == b'\xff'*len(field) else field.split(b'\0',1)[0]
+    command = text(raw[:32])
+    if not command:
+        return raw
+    if command == b'bootonce-bootloader' and not text(raw[64:832]) and not text(raw[832:864]):
+        return bytes(32)+raw[32:]
+    label = command.decode('ascii','backslashreplace')
+    raise RecoveryRequired('Another Android boot operation is pending / Android 另有待执行的启动操作: '+label)
+
+
+def bcb_handoff(before, after):
+    """Compare all 2048 bytes; at most clear the 32-byte command field."""
+    if len(before) != 2048 or after != uninstall_bcb(before):
+        raise RecoveryRequired('Invalid boot message handoff / 启动消息交接内容无效')
+    old, new = (hashlib.sha256(value).hexdigest() for value in (before,after))
+    read = 'dd if=/dev/block/by-name/misc bs=2048 count=1 2>/dev/null | sha256sum | cut -d" " -f1'
+    guard = 'bcb_hash=$('+read+'); [ "$bcb_hash" = '+old+' ] || [ "$bcb_hash" = '+new+' ]; '
+    update = guard
+    if before != after:
+        update += ('if [ "$bcb_hash" != '+new+' ]; then '
+                   'dd if=/dev/zero of=/dev/block/by-name/misc bs=1 count=32 conv=notrunc,fsync; fi; ')
+    update += '[ "$('+read+')" = '+new+' ]; '
+    return guard, update
+
+
 def prepare(adapter, store, device, authorize_reset=None):
     if device.get('readiness') != 'ready' or not device.get('existing'):
         raise RecoveryRequired('Boot rooted Android with an installed internal partition / 请先启动有 root 的 Android，并确认存在内置 OpenWrt 分区')
@@ -388,8 +423,10 @@ class Uninstaller:
             raise RecoveryRequired('Layout changed during backup')
         backup = self.ctx.directory/'backup'
         before = (backup/'misc.bin').read_bytes()[:4096]
-        if len(before) != 4096 or before[:32].strip(b'\0'):
-            raise RecoveryRequired('A recovery operation is already pending / 设备已有待执行的 Recovery 操作')
+        if len(before) != 4096:
+            raise RecoveryRequired('Incomplete misc backup / misc 备份不完整')
+        before_bcb = uninstall_bcb(before[:2048])
+        bcb_guard, bcb_update = bcb_handoff(before[:2048],before_bcb)
         control = before[2048:2080]
         trial = trial_control(control, slot)
         android = bytearray(control); android[:4] = ('_'+slot).encode()+b'\0\0'
@@ -421,7 +458,7 @@ class Uninstaller:
         files.update(tools)
         files['openwrt-uninstall/storage.sh'] = storage_io.library(self.adapter.root).encode()
         files.update({'openwrt-uninstall/request':(':'.join(map(str,request))+'\n').encode(),
-                      'openwrt-uninstall/before-bcb':before[:2048],
+                      'openwrt-uninstall/before-bcb':before_bcb,
                       'openwrt-uninstall/recovery-bcb':bytes(bcb) if self.r['plan']['wipe'] else bytes(2048),
                       'openwrt-uninstall/android-bc':bytes(android)})
         files['openwrt-uninstall/SHA256SUMS'] = ''.join(hashlib.sha256(content).hexdigest()+'  '+name.removeprefix('openwrt-uninstall/')+'\n'
@@ -450,6 +487,7 @@ class Uninstaller:
         script = ('set -eu; set -o pipefail; '
                   '[ "$(getprop ro.boot.slot_suffix)" = "_'+slot+'" ]; '
                   + layout_checks +
+                  bcb_guard +
                   '[ "$(sha256sum /dev/block/by-name/boot_'+slot+' | cut -d" " -f1)" = '+android_sha+' ]; '
                   '[ "$(sha256sum '+bootdev+' | cut -d" " -f1)" = '+self.r.get('uninstall_retry_linux_sha256',sha(backup/('boot_'+other+'.bin')))+' ]; '
                   'dd if='+bootdev+' of='+remote+'/before-boot.img bs=1048576; '
@@ -457,6 +495,7 @@ class Uninstaller:
                   '[ "$(sha256sum '+remote+'/before-bc | cut -d" " -f1)" = '+hashlib.sha256(control).hexdigest()+' ]; '
                   'dd if='+remote+'/boot.img of='+bootdev+' bs=1048576 conv=fsync; '
                   '[ "$(sha256sum '+bootdev+' | cut -d" " -f1)" = '+sha(path)+' ]; '
+                  + bcb_update +
                   'if dd if='+remote+'/trial.bin of=/dev/block/by-name/misc bs=1 seek=2048 count=32 conv=notrunc,fsync && '
                   '[ "$(dd if=/dev/block/by-name/misc bs=1 skip=2048 count=32 | sha256sum | cut -d" " -f1)" = '+hashlib.sha256(trial).hexdigest()+' ]; then :; '
                   'else dd if='+remote+'/before-bc of=/dev/block/by-name/misc bs=1 seek=2048 count=32 conv=notrunc,fsync; exit 1; fi')
@@ -662,9 +701,8 @@ class Uninstaller:
         # enlargement followed by a boot of the previous smaller filesystem.
         adb = self.adapter.adb
         bcb = adb.read('dd if=/dev/block/by-name/misc bs=2048 count=1 2>/dev/null')
-        if len(bcb) != 2048 or bcb[:32].strip(b'\0'):
-            raise RecoveryRequired('Recovery reset is still pending / 原厂 Recovery 重置尚未完成')
-        self.finish_boot(device)
+        uninstall_bcb(bcb)
+        self.finish_boot(device,bcb=bcb)
         self.r['uninstall_growth_pending']=False
         remote = '/data/local/tmp/openwrt-uninstall-'+self.r['id']
         try:
@@ -681,7 +719,7 @@ class Uninstaller:
                             'backup_directory':str(self.ctx.directory/'backup'),'url':'','temporary':False}
         self.ctx.stage('complete','completed')
 
-    def finish_boot(self, device):
+    def finish_boot(self, device, *, bcb=None):
         """Verify/finish only inactive boot and default selection after Android is back."""
         adb = self.adapter.adb
         slot = device['slot'].removeprefix('_'); other = 'b' if slot == 'a' else 'a'
@@ -709,7 +747,8 @@ class Uninstaller:
             checksums = json.loads((self.ctx.directory/'backup/checksums.json').read_text())
             checksums[post_reset.name] = sha(post_reset)
             atomic_json(self.ctx.directory/'backup/checksums.json',checksums)
-        if source_hash == target_hash and bc == desired:
+        normalized_bcb = uninstall_bcb(bcb) if bcb is not None else None
+        if source_hash == target_hash and bc == desired and bcb == normalized_bcb:
             entry = self.r['effects'].get('uninstall-final-boot')
             if entry:
                 entry.update(state='done',result='verified by readback')
@@ -726,10 +765,13 @@ class Uninstaller:
             # Repeating a copy to its inactive slot is safe; no reset is armed.
             self.r['effects'].pop('uninstall-final-boot')
             self.ctx.log('Retrying verified inactive Android boot restoration; no partition/reset replay',scope='recovery')
-        script = ('set -eu; [ "$(getprop ro.boot.slot_suffix)" = "_'+slot+'" ]; '
+        guard, update = bcb_handoff(bcb,normalized_bcb) if bcb is not None else ('','')
+        script = ('set -eu; set -o pipefail; [ "$(getprop ro.boot.slot_suffix)" = "_'+slot+'" ]; '
+                  + guard +
                   '[ "$(sha256sum /dev/block/by-name/boot_'+slot+' | cut -d" " -f1)" = '+source_hash+' ]; '
                   'dd if=/dev/block/by-name/boot_'+slot+' of=/dev/block/by-name/boot_'+other+' bs=1048576 conv=fsync; '
                   '[ "$(sha256sum /dev/block/by-name/boot_'+other+' | cut -d" " -f1)" = '+source_hash+' ]; '
+                  + update +
                   'dd if='+remote+'/android-bc of=/dev/block/by-name/misc bs=1 seek=2048 count=32 conv=notrunc,fsync; '
                   '[ "$(dd if=/dev/block/by-name/misc bs=1 skip=2048 count=32 | sha256sum | cut -d" " -f1)" = '+hashlib.sha256(desired).hexdigest()+' ]')
         self.ctx.effect('uninstall-final-boot',lambda:adb.shell(script,root=True,timeout=None))
