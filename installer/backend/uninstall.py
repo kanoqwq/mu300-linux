@@ -23,6 +23,7 @@ from .uninstall_boot import build
 from .uninstall_growth import (PreservationUnavailable, eligible, growth_tools, base_boot,
                                inspect_android_growth, preservation_eligible)
 from .install_evidence import inspect_installation
+from . import android_growth_boot
 
 
 def partition(info, name):
@@ -236,6 +237,8 @@ def prepare(adapter, store, device, authorize_reset=None):
             if reason:
                 raise ValueError(reason)
             if device.get('encrypted') is True and volume['filesystem'] == 'f2fs':
+                android_growth_boot.capability(adapter.adb)
+                android_growth_boot.identity_helper({'device':device},adapter)
                 volume = inspect_android_growth(adapter,device,volume)
                 action = 'grow-android-f2fs'
             else:
@@ -243,6 +246,9 @@ def prepare(adapter, store, device, authorize_reset=None):
                 tools = growth_tools(adapter,volume['filesystem'])
                 action = 'grow-'+volume['filesystem']
             build(base_boot(adapter),adapter.kind,tools)
+        except (ConnectionError,TimeoutError,subprocess.TimeoutExpired):
+            # A lost ADB connection cannot establish that preservation is impossible.
+            raise
         except (ValueError,OSError,KeyError) as error:
             reason = str(error)
             evidence = {'cid':device['cid'],'slot':device['slot'],'profile':device['profile'],
@@ -545,9 +551,28 @@ class Uninstaller:
                 raise Cancelled()
         # No reboot is expected during final checks/boot cleanup. A command or
         # write failure here must be reported, rather than hidden in a wait loop.
+        if self.r.get('uninstall_android_growth_attempted'):
+            if android_growth_boot.restore(self,device):
+                self.r['uninstall_wait_boot_id']=device['boot_id'];self.ctx.store.save(self.r)
+                self.ctx.stage('uninstall_offline','waiting_device',reboot_manually=False)
+                try:
+                    self.adapter.adb.call('reboot')
+                except (ConnectionError,OSError,TimeoutError,subprocess.TimeoutExpired):
+                    self.ctx.log('Expected ADB loss returning from Android growth maintenance',scope='uninstall')
+                return self.run()
         if self.resume_growth:
             self.resume_growth = False
             if self.rearm_growth(device):
+                return self.run()
+        if (self.meta.get('action') == 'grow-android-f2fs' and
+                not self.r.get('uninstall_android_growth_attempted')):
+            volume = android_volume(self.adapter.adb,device,allow_small=True)
+            if volume['mapped_bytes']-volume['filesystem_bytes'] > 4 << 20:
+                volume = inspect_android_growth(self.adapter,device,volume)
+                preservation_eligible(device,volume,self.meta['action'])
+                if volume['uuid'] != self.meta['volume']['uuid']:
+                    raise RecoveryRequired('Android filesystem identity changed / Android 文件系统身份已变化')
+                android_growth_boot.stage(self,device,volume)
                 return self.run()
         return self.finish(device)
 
@@ -566,15 +591,7 @@ class Uninstaller:
             self.r['uninstall_growth_pending']=False;self.ctx.store.save(self.r)
             return False
         if self.meta['action'] == 'grow-android-f2fs':
-            # The restored partition is already correct. Retry only Android's
-            # normal pre-mount growth, never GPT removal, raw fsck or recovery.
-            self.r['uninstall_wait_boot_id']=device['boot_id']
-            self.ctx.store.save(self.r)
-            self.ctx.stage('uninstall_offline','waiting_device',reboot_manually=False)
-            try:
-                adb.call('reboot')
-            except (ConnectionError,OSError,subprocess.TimeoutExpired):
-                self.ctx.log('Expected reconnect while Android resumes native F2FS growth',scope='uninstall')
+            android_growth_boot.stage(self,device,volume)
             return True
         slot = device['slot'].removeprefix('_'); other = 'b' if slot == 'a' else 'a'
         values = adb.shell('sha256sum /dev/block/by-name/boot_'+slot+' /dev/block/by-name/boot_'+other,root=True).splitlines()
@@ -693,6 +710,9 @@ class Uninstaller:
                 raise RecoveryRequired('Preserved Android filesystem identity differs / 保留的 Android 文件系统身份不符')
             if volume['mapped_bytes']-volume['filesystem_bytes'] > 4 << 20:
                 self.r['uninstall_growth_pending']=True;self.ctx.store.save(self.r)
+                if self.meta['action'] == 'grow-android-f2fs' and self.r.get('uninstall_android_growth_attempted'):
+                    details = android_growth_boot.report(self)
+                    raise RecoveryRequired('Android pre-mount F2FS growth did not complete; data was not formatted. / Android 挂载前 F2FS 扩容未完成，未格式化数据。请查看扩容日志: '+details[-3000:])
                 raise RecoveryRequired('Offline data growth is incomplete. Retry resumes checks/growth only; it never formats. / 离线 data 扩容尚未完成。重试仅继续检查与扩容，不会格式化。')
         if abs(volume['mapped_bytes']-expected) > 4 << 20 or not expected-(4 << 20) <= volume['filesystem_bytes'] <= expected:
             raise RecoveryRequired('Android filesystem has not reached the restored allocation / Android 文件系统尚未达到恢复后的分配容量: '
@@ -706,6 +726,7 @@ class Uninstaller:
         self.r['uninstall_growth_pending']=False
         remote = '/data/local/tmp/openwrt-uninstall-'+self.r['id']
         try:
+            android_growth_boot.cleanup(self)
             # Fixed filenames in this transaction's own staging directories.
             # Never recursively remove userdata paths or other installations.
             adb.shell('rm -f '+remote+'/boot.img '+remote+'/trial.bin '+remote+'/before-boot.img '+remote+'/before-bc '+

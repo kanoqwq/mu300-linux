@@ -1,7 +1,7 @@
 //<script>
 /*
- * OpenWrt system switch v6 — Minikano
- * Android web-panel plugin; all supported E5-family and MU300-family models.
+ * OpenWrt system switch v7 — Minikano
+ * Android web-panel plugin; detect installed boot format without a model whitelist.
  * Select the installed OpenWrt for the next boot, preserving default policy.
  * Write only misc[2048:2080]. No root mount, boot flash or boot-chain sync.
  * Shared with mu300-linux/android/magisk/webui-plugins/mu300-system-switch.js.
@@ -72,6 +72,9 @@
         const raw = head.slice(44, 1580), end = raw.indexOf(0);
         if (end < 0) throw new Error('OpenWrt 启动参数不完整');
         const args = ascii(raw.slice(0, end)).split(/\s+/);
+        // The installed image identifies its format; Android model names are
+        // neither an installation marker nor a reliable compatibility gate.
+        if (family === undefined) family = args.includes('e5.part_v=2') ? 'e5' : 'mu300';
         const recognized = family === 'e5' ? args.includes('e5.part_v=2') : args.includes('loglevel=5') && !args.some(arg => arg.startsWith('e5.'));
         if (!recognized) throw new Error('另一槽未识别到对应机型系列的 OpenWrt 镜像，请用安装器检查');
         if (args.some(arg => arg.startsWith('e5.part_prepare=')) || args.includes('openwrt.uninstall=1')) {
@@ -83,11 +86,11 @@
         const length = qword(28), limit = (family === 'e5' ? 56 : 48) * 1048576;
         if (ascii(footer.slice(0, 4)) !== 'AVBf' || qword(12) !== payloadEnd || qword(20) !== payloadEnd ||
             !length || payloadEnd + length > limit) throw new Error('OpenWrt 启动镜像范围或尾部校验失败');
+        return family;
     };
     const probe = async () => {
         const result = await run('set -e; [ "$(id -u)" = 0 ]; [ -n "$(getprop ro.build.version.release)" ]; ' +
-            'echo SLOT=$(getprop ro.boot.slot_suffix); echo MODEL=$(getprop ro.product.model); ' +
-            'echo DEVICE=$(getprop ro.product.device); echo PLATFORM=$(getprop ro.board.platform)');
+            'echo SLOT=$(getprop ro.boot.slot_suffix)');
         if (!result.ok) throw new Error('请在 Android 中打开插件，并授予网页管理面板 root 权限');
         const values = {};
         for (const line of result.text.split(/\r?\n/)) {
@@ -95,14 +98,7 @@
             if (at > 0) values[line.slice(0, at)] = line.slice(at + 1).trim();
         }
         if (!/^_[ab]$/.test(values.SLOT || '')) throw new Error('无法确定当前 Android 槽位，已取消；不会使用 misc 猜测');
-        const slot = values.SLOT.slice(1), names = [values.MODEL || '', values.DEVICE || ''].map(name => name.toUpperCase());
-        let family;
-        if (['E5', 'T551M', 'VIPME M8', 'T512N', 'ZTE 7546N', 'ANGELCARE K1'].some(model => names.includes(model))) family = 'e5';
-        else if (names.includes('V50') || names.includes('MU3351')) {
-            if (!names.includes('V50') || !names.includes('MU3351') || values.PLATFORM !== 'ums9620') throw new Error('V50 的型号或平台信息不匹配');
-            family = 'mu300';
-        } else if (/U30.?AIR|MU300|F50/i.test(names.join('\n'))) family = 'mu300';
-        else throw new Error('此机型不在两个项目支持范围内，未切换');
+        const slot = values.SLOT.slice(1);
         const live = await readHex(MISC, 2048, 32);
         control(live, slot);
         const other = slot === 'a' ? 'b' : 'a', target = '/dev/block/by-name/boot_' + other;
@@ -111,7 +107,7 @@
         const size = Number(sizeResult.text);
         if (size !== 64 * 1048576) throw new Error('目标启动分区容量不受支持');
         const head = await readHex(target, 0, 1, 4096), tail = await readHex(target, size / 512 - 1, 1, 512);
-        inspectBoot(head, tail, size, family);
+        const family = inspectBoot(head, tail, size);
         const current = await readHex('/dev/block/by-name/boot_' + slot, 0, 1, 4096);
         if (ascii(unhex(current, 4096).slice(0, 8)) !== 'ANDROID!') throw new Error('当前 Android 启动镜像头不完整，未切换');
         if (head === current) throw new Error('两槽启动镜像头相同，未识别到独立 OpenWrt 镜像');

@@ -19,6 +19,7 @@ def repack(source,target,studio,revision,repair_installer=False,refresh_native=F
         removed=set()
         if refresh_native:
             patches,removed=native['replacements'](old,studio)
+            patches['extras/android/openwrt-system-switch-plugin.js']=TOP/'android/magisk/webui-plugins/mu300-system-switch.js'
         manifest=json.loads(old.read('desktop/manifest.json'))
         checks={**manifest['magisk'],**manifest['desktop']}
         for name,wanted in tool['files'].items():

@@ -47,7 +47,7 @@ class AndroidGrowth(unittest.TestCase):
         raise AssertionError('Unexpected read: '+command)
 
     def plan(self):
-        with patch('backend.uninstall.android_volume',return_value=self.volume),patch('backend.uninstall.base_boot'),patch('backend.uninstall.build'),patch('backend.uninstall.growth_tools',side_effect=AssertionError('raw encrypted resize')):
+        with patch('backend.uninstall.android_growth_boot.capability',return_value='a'*64),patch('backend.uninstall.android_volume',return_value=self.volume),patch('backend.uninstall.base_boot'),patch('backend.uninstall.build'),patch('backend.uninstall.growth_tools',side_effect=AssertionError('raw encrypted resize')):
             plan,meta,files=prepare(self.fx.adapter,self.fx.store,self.device)
         record=self.fx.store.create(self.fx.package,self.device,{'method':'uninstall'},plan)
         context=Context(self.fx.store,record,lambda *_:None);persist(context,meta,files)
@@ -92,6 +92,14 @@ class AndroidGrowth(unittest.TestCase):
             changed={**volume,'android_growth':{**volume['android_growth'],key:value}}
             with self.subTest(key=key),self.assertRaises(ValueError):android_eligible(self.device,changed)
 
+    def test_adb_loss_does_not_offer_erase_data_fallback(self):
+        consent=Mock(return_value=True)
+        with patch('backend.uninstall.android_volume',return_value=self.volume),\
+             patch('backend.uninstall.android_growth_boot.capability',side_effect=ConnectionError('offline')):
+            with self.assertRaises(ConnectionError):
+                prepare(self.fx.adapter,self.fx.store,self.device,consent)
+        consent.assert_not_called()
+
     def test_final_capacity_and_uuid_must_match_before_boot_cleanup(self):
         context=self.plan();worker=Uninstaller(None,context,self.fx.adapter)
         device={**self.device,'existing':False,'userdata_bytes':32*fx.GIB}
@@ -108,9 +116,10 @@ class AndroidGrowth(unittest.TestCase):
         with patch('backend.uninstall.android_volume',return_value=short),patch.object(worker,'finish_boot',side_effect=AssertionError('early cleanup')):
             with self.assertRaises(RecoveryRequired):worker.finish(device)
         self.assertTrue(context.record['uninstall_growth_pending'])
-        with patch('backend.uninstall.android_volume',return_value=short),patch.object(worker,'layout_state',return_value='after'):
+        with patch('backend.uninstall.android_volume',return_value=short),patch.object(worker,'layout_state',return_value='after'),patch('backend.uninstall.android_growth_boot.stage') as stage:
             self.assertTrue(worker.rearm_growth(device))
-        self.fx.adb.call.assert_called_once_with('reboot')
+        stage.assert_called_once()
+        self.fx.adb.call.assert_not_called()
         self.assertFalse(any('of=' in c.args[0] for c in self.fx.adb.shell.call_args_list))
 
     def test_changed_filesystem_uuid_cannot_finish_or_restart_growth(self):

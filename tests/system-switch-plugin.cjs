@@ -114,8 +114,40 @@ test('installed E5-family images do not require an orange verified-boot property
     }
 });
 
-test('missing current slot never falls back to misc; unsupported models and identical boots stop', async () => {
-    for (const options of [{slot: ''}, {slot: '_c'}, {model: 'FM_U20', device: 'FM_U20'}, {model: 'V50', device: 'MU3351', platform: 'wrong'}, {identical: true}]) {
+test('model and platform names never gate either installed image format or Android slot', async () => {
+    for (const family of ['e5', 'mu300']) for (const slot of ['a', 'b']) {
+        for (const options of [
+            {model: '畅行60', device: 'unknown', platform: 'new-platform'},
+            {model: 'LYM-10K', device: 'unknown'},
+            {model: 'FM_U20', device: 'FM_U20'},
+            {model: 'V50', device: 'MU3351', platform: 'wrong'},
+            {model: 'MU300', device: 'MU300'},
+            {model: 'E5', device: 'E5'},
+            {model: 'unknown', device: 'unknown'}
+        ]) {
+            const tr = transport(fixture(family, slot), options);
+            const result = await load(tr.fn).probe();
+            assert.equal(result.family, family); assert.equal(result.slot, slot);
+            assert.ok(tr.commands.every(cmd => !cmd.includes('of=') && !cmd.includes('mount ')));
+            assert.ok(tr.commands.every(cmd => !/getprop ro\.(product|board)/.test(cmd)));
+        }
+    }
+});
+
+test('unknown model with stock, corrupt or pending boot still stops before any write', async () => {
+    for (const family of ['e5', 'mu300']) {
+        for (const command of ['androidboot.hardware=stock', 'e5.part_v=2 e5.part_prepare=abc', 'loglevel=5 openwrt.uninstall=1']) {
+            const tr = transport(fixture(family, 'a', command), {model: 'unknown', device: 'unknown'});
+            await assert.rejects(load(tr.fn).probe());
+            assert.ok(tr.commands.every(cmd => !cmd.includes('of=')));
+        }
+        const info = fixture(family); info.tail = '00'.repeat(512);
+        await assert.rejects(load(transport(info, {model: 'unknown'}).fn).probe());
+    }
+});
+
+test('missing current slot never falls back to misc; identical boots stop', async () => {
+    for (const options of [{slot: ''}, {slot: '_c'}, {identical: true}]) {
         const tr = transport(fixture(), options); await assert.rejects(load(tr.fn).probe());
         if ('slot' in options) assert.equal(tr.commands.length, 1);
     }

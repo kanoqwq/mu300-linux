@@ -70,6 +70,8 @@ unset MU300_DEPLOY_ROOT
     shutil.copyfile(TOP/'desktop/README.md',stage/'docs/DESKTOP-INSTALL.md')
     shutil.copyfile(TOP/'desktop/START-HERE.md',stage/'START-HERE.md')
     shutil.copyfile(TOP/'desktop/installer.py',stage/'OpenWrt-Installer.py')
+    extras=stage/'extras/android';extras.mkdir(parents=True,exist_ok=True)
+    shutil.copyfile(TOP/'android/magisk/webui-plugins/mu300-system-switch.js',extras/'openwrt-system-switch-plugin.js')
     # Python source runs from the archive root, so resolve its support files there.
     if exe and not Path(exe).is_dir():
         fingerprint=json.loads(Path(str(exe)+'.json').read_text())
