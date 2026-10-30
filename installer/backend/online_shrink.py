@@ -234,6 +234,82 @@ class OnlineShrink:
         self.ctx.stage('online_fallback','waiting_user')
         raise OnlineDecision()
 
+    def prepare_reclaimed_gap(self, actual):
+        """Erase stale headers only inside this transaction's proven F2FS tail.
+
+        GPT-free does not imply blank: growing userdata over an old OpenWrt
+        root and shrinking it again can leave its ext4 signature intact.
+        Keep normal untracked-filesystem protection everywhere else.
+        """
+        j=self.r['online_shrink']; start=j['gap_start']
+        end=start+self.r['plan']['openwrt_bytes']//512
+        if any(actual.get(k)!=self.r['device'].get(k) for k in ('cid','slot','profile')):
+            raise RecoveryRequired('Reclaimed range belongs to a different device / 回收区域设备身份不符')
+        if not j.get('reclaimed_headers') and any(a<=start and end<=a+n for a,n in actual['gpt']['safe_gaps']):
+            return actual
+        files=self.files();s=self.r['device']['storage']
+        before=(files['old-first'],files['old-last']);after=(files['new-first'],files['new-last'])
+        if tuple(candidate(before,j['sectors'],s['NODE'],s['SIZE'],j['new_sectors']))!=after or self.pair()!=after:
+            raise RecoveryRequired('Reclaimed range does not match the original userdata shrink / 回收范围与原 userdata 缩容记录不符')
+        old=partition(gpt.gpt_space(*before,j['sectors']),'userdata')
+        new=partition(gpt.gpt_space(*after,j['sectors']),'userdata')
+        if (start!=new['end']+1 or end>old['end']+1 or
+                actual['storage']['START']!=new['start'] or actual['storage']['SIZE']!=j['new_sectors'] or
+                actual['boot_id']==j.get('commit_boot_id',j['boot_id'])):
+            raise RecoveryRequired('Reclaimed range is not outside the rebooted Android mapping / 回收范围尚未脱离重启后的 Android 映射')
+        gap=next(((a,n) for a,n in actual['gpt'].get('gaps',[]) if a<=start and end<=a+n),None)
+        signatures={row['offset']:row for row in actual['gpt'].get('gap_signatures',[])
+                    if gap and gap[0]<=row['offset']<gap[0]+gap[1]}
+        for key,row in j.get('reclaimed_headers',{}).items():
+            if not re.fullmatch('[0-9]+',key):raise RecoveryRequired('Invalid reclaimed header record')
+            signatures.setdefault(int(key),{'offset':int(key),'kind':row['kind']})
+        signatures=list(signatures.values())
+        if not gap or not signatures or any(row['offset']%8 or not start<=row['offset'] or row['offset']+16>end for row in signatures):
+            raise RecoveryRequired('Untracked filesystem lies outside the confirmed reclaimed range / 未登记文件系统不在已确认的缩容回收范围内，不会清理')
+        folder=self.directory/'reclaimed-headers';folder.mkdir(exist_ok=True)
+        disk='/dev/block/'+storage.disk_node(s['NODE'])
+        ledger=j.setdefault('reclaimed_headers',{})
+        empty=hashlib.sha256(bytes(8192)).hexdigest()
+        for row in signatures:
+            offset=row['offset'];key=str(offset);path=folder/(key+'.bin')
+            raw=self.a.adb.read(f'dd if={disk} bs=512 skip={offset} count=16 2>/dev/null')
+            if len(raw)!=8192:raise RecoveryRequired('Incomplete reclaimed header read / 回收区域文件系统头读取不完整')
+            digest=hashlib.sha256(raw).hexdigest()
+            if key in ledger:
+                if not path.is_file() or sha(path)!=ledger[key]['sha256']:
+                    raise RecoveryRequired('Reclaimed header backup changed / 回收区域文件系统头备份已变化')
+                saved=path.read_bytes()
+                # A disconnected zeroing write may have completed only some
+                # sectors. Resume only bytes explained by this saved write.
+                if len(saved)!=8192 or any(raw[n:n+512] not in (saved[n:n+512],bytes(512)) for n in range(0,8192,512)):
+                    raise RecoveryRequired('Reclaimed header changed since backup / 回收区域文件系统头与备份不符')
+            else:
+                magic = raw[1080:1082] == b'\x53\xef' if row['kind']=='ext4' else raw[1024:1028] == bytes.fromhex('1020f5f2')
+                if row['kind'] not in ('ext4','f2fs') or not magic:
+                    raise RecoveryRequired('Reclaimed header changed after probing / 回收区域文件系统头在探测后已变化')
+                with path.open('wb') as out:
+                    out.write(raw);out.flush();os.fsync(out.fileno())
+                ledger[key]={'sha256':digest,'kind':row['kind'],'bytes':8192}
+                self.ctx.store.save(self.r)
+            if digest==empty:continue
+            checks=''.join('[ "$(dd if='+disk+' bs=512 skip='+str(at)+' count='+str(count)+
+                          ' 2>/dev/null | sha256sum | cut -d\' \''+' -f1)" = '+hashlib.sha256(data).hexdigest()+' ]; '
+                          for at,count,data in ((0,j['front'],after[0]),(j['tail'],j['sectors']-j['tail'],after[1])))
+            script=('set -eu; set -o pipefail; [ "$(cat /proc/sys/kernel/random/boot_id)" = '+shlex.quote(actual['boot_id'])+' ]; '+
+                    '[ "$(cat /sys/class/block/'+s['NODE']+'/size)" = '+str(j['new_sectors'])+' ]; '+checks+
+                    '[ "$(dd if='+disk+' bs=512 skip='+key+' count=16 2>/dev/null | sha256sum | cut -d\' \''+' -f1)" = '+digest+' ]; '+
+                    'dd if=/dev/zero of='+disk+' bs=4096 seek='+str(offset//8)+' count=2 conv=notrunc,fsync; '+
+                    '[ "$(dd if='+disk+' bs=512 skip='+key+' count=16 2>/dev/null | sha256sum | cut -d\' \''+' -f1)" = '+empty+' ]')
+            self.r['unsafe']=True;self.ctx.store.save(self.r)
+            self.ctx.log('Preparing reclaimed '+row['kind']+' header at sector '+key+' / 清理已确认回收区的旧文件系统头',scope='online-shrink')
+            self.a.adb.shell(script,root=True,timeout=None)
+        verified=self.a.probe(self.r['device']['serial'],'part')
+        if (any(verified.get(k)!=actual.get(k) for k in ('cid','slot','profile','boot_id')) or
+                self.pair()!=after or not any(a<=start and end<=a+n for a,n in verified['gpt']['safe_gaps'])):
+            raise RecoveryRequired('Reclaimed range did not pass final checks / 回收区域清理后的复核未通过')
+        self.r['unsafe']=False;self.ctx.store.save(self.r)
+        return verified
+
     def run(self):
         self.a.bind(self.r['device']['serial'])
         if 'online_shrink' not in self.r:
@@ -277,6 +353,7 @@ class OnlineShrink:
             if actual['storage']['SIZE'] != j['new_sectors'] or info['volume']['mapped_bytes'] != j['new_sectors']*512:
                 raise RecoveryRequired('Android mapping did not adopt the resized partition / Android 未采用缩容后的映射容量')
             actual = self.a.probe(self.r['device']['serial'],'part')
+            actual = self.prepare_reclaimed_gap(actual)
             if not any(start <= j['gap_start'] and start+n >= j['gap_start']+self.r['plan']['openwrt_bytes']//512
                        for start,n in actual['gpt']['safe_gaps']):
                 raise RecoveryRequired('Reclaimed space is not free / 缩容回收范围不是可用空闲区')

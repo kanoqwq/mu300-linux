@@ -339,7 +339,7 @@ class Adapter:
         last = self.adb.read(f'dd if={disk} bs=512 skip={tail} count={sectors-tail} 2>/dev/null')
         space = gpt.gpt_space(first, last, sectors)
         # Retain unlisted old filesystems rather than declaring their gap free.
-        safe = []
+        safe = []; signatures = []
         for start, size in space['gaps']:
             candidates = {start}
             if self.kind == 'mu300':
@@ -353,10 +353,13 @@ class Adapter:
                 raw = self.adb.read(f'dd if={disk} bs=512 skip={offset} count=4 2>/dev/null')
                 if len(raw) != 2048:
                     raise ValueError('Incomplete free-space signature read')
-                occupied |= raw[1080:1082] == b'\x53\xef' or raw[1024:1028] == bytes.fromhex('1020f5f2')
+                kind = 'ext4' if raw[1080:1082] == b'\x53\xef' else 'f2fs' if raw[1024:1028] == bytes.fromhex('1020f5f2') else None
+                if kind:
+                    signatures.append({'offset':offset,'kind':kind})
+                    occupied = True
             if not occupied:
                 safe.append((start, size))
-        space.update(first=first, last=last, safe_gaps=safe,
+        space.update(first=first, last=last, safe_gaps=safe, gap_signatures=signatures,
                      largest=max((size for _, size in safe), default=0) if space['empty'] else 0)
         return space
 

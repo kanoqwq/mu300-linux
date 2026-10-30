@@ -124,10 +124,11 @@ class OnlineTests(unittest.TestCase):
             self.assertFalse(inspect(a,d)['available'])
         self.assertFalse(any(' of=' in str(c) for c in a.adb.mock_calls))
 
-    def job(self,temp):
-        d,pair,total=device();store=Store(Path(temp));plan=plan_install({'adapter':'e5'},d,dict(method='part',size_gib=4))
-        r=store.create({'adapter':'e5'},d,dict(method='part',size_gib=4),plan)
-        ctx=Context(store,r,lambda *_:None);a=SimpleNamespace(ctx=ctx,kind='e5',bind=Mock(),adb=Mock(),probe=Mock(return_value=deepcopy(d)))
+    def job(self,temp,block=4096,kind='e5'):
+        d,pair,total=device(block);store=Store(Path(temp));plan=plan_install({'adapter':kind},d,dict(method='part',size_gib=4))
+        if block==512:d['storage']['NODE']='mmcblk0p2'
+        r=store.create({'adapter':kind},d,dict(method='part',size_gib=4),plan)
+        ctx=Context(store,r,lambda *_:None);a=SimpleNamespace(ctx=ctx,kind=kind,bind=Mock(),adb=Mock(),probe=Mock(return_value=deepcopy(d)))
         a.adb.shell.return_value='busy=0'
         job=OnlineShrink(a);job.directory.mkdir()
         new=tuple(candidate(pair,total,d['storage']['NODE'],d['storage']['SIZE'],plan['new_sectors']))
