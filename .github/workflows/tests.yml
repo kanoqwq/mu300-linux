@@ -20,6 +20,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: shells and lz4
         run: |
           if [ "$RUNNER_OS" = Linux ]; then sudo apt-get install -y -qq dash busybox lz4 >/dev/null; fi
@@ -34,6 +36,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: install.ps1 functions (Windows PowerShell 5.1)
         shell: powershell
         run: powershell -NoProfile -ExecutionPolicy Bypass -File tests\installer.Tests.ps1

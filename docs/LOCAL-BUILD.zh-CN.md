@@ -150,3 +150,10 @@ python3 tools/build-release.py repair-installer --workspace /home/kano/openwrt-b
 新包同步替换根目录和 desktop 的入口及清单；boot、rootfs、Magisk 内容保持相同。
 此入口不用于修补内置后端、驱动或任意其他脚本。此类依赖改变仍应走对应构建。
 发布前通过实际冻结程序加载包内入口、CLI 和 GUI Adapter 的无设备测试，不能只测试 hello。
+
+
+## 公共安装器子模块
+
+installer/ 现在固定引用 https://github.com/kanoqwq/openwrt-tools 的提交。新检出先执行 git submodule update --init --recursive。共享源码、Android 及独立工具构建方法见 installer/docs/BUILD.zh-CN.md；E5/MU300 的 NV、UFS 身份和启动流程继续分开处理。请先在子模块提交，再在父仓库更新 gitlink；不要重新复制一整份安装器。
+
+两个父仓库可通过 OPENWRT_GUI_ARTIFACT 与 OPENWRT_GUI_MACOS_ARTIFACT 复用同一份已校验交付件，无需各编译一次；首次拆分后旧 GUI 指纹应正常拒绝，不能修改旧 build.json 绕过。tools/release-index.py、tools/build-release-index.py、tools/package-diff-studio.py 保留为兼容入口，实际代码由子模块提供。

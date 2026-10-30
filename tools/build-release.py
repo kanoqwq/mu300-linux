@@ -122,6 +122,8 @@ def installer_artifact(platform):
 
 
 def input_check(common, rows):
+    if not (TOP/'installer/package_gui.py').is_file():
+        raise ValueError('Initialize the shared installer submodule / 请先执行 git submodule update --init --recursive')
     missing = [str(p) for p in common.values() if not p.exists()]
     missing += [str(p) for row in rows.values() for p in row.values() if not p.exists()]
     if missing:

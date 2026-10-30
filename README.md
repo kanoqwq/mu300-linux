@@ -1,5 +1,8 @@
 # Linux on the ZTE F50 / MU300 and U30 Air
 
+> 安装器已独立到 [openwrt-tools](https://github.com/kanoqwq/openwrt-tools)，本仓库通过 `installer/` 子模块固定引用。已有检出请执行 `git submodule update --init --recursive`；新检出使用 `git clone --recurse-submodules`。
+
+
 Local builds and packaging: [workspace and release workflow](docs/LOCAL-BUILD.zh-CN.md).
 
 Maintainer notes: [stock behavior and new-device adaptation checklist](docs/NEW-DEVICE-STOCK-ADAPTATION.zh-CN.md),

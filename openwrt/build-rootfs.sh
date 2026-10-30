@@ -145,7 +145,6 @@ docker run --rm --platform linux/arm64 \
   -v "$WIFI_APKS":/in/wifi-sae:ro \
   -v "$TOP/openwrt/luci-app-mu300/root/usr/libexec/unisoc-modem/disable-stock-upgrade":/in/stock-upgrade-policy:ro \
   -v "$TOP/installer":/in/ota-source/installer:ro \
-  -v "$TOP/openwrt/luci-app-unisoc-ota":/in/ota-source/openwrt/luci-app-unisoc-ota:ro \
   -v "$TOP/work/luci-app-aurora-config-1.2.5-r20260920.apk":/in/luci-app-aurora-config.apk:ro \
   -v "$TOP/work/luci-i18n-aurora-config-zh-cn-26.262.58276.362887a.apk":/in/aurora-config-zh-cn.apk:ro \
   -v "$TOP/work/luci-i18n-aurora-config-tr-26.262.58276.362887a.apk":/in/aurora-config-tr.apk:ro \

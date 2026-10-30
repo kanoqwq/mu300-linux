@@ -1,49 +1,13 @@
 #!/usr/bin/env python3
-"""Build the single-file Windows release summary CLI; invoke via build-release.py run."""
-import argparse
-import hashlib
-import json
+"""Compatibility entry into the pinned shared OpenWrt Tools submodule."""
 from pathlib import Path
-import subprocess
+import runpy
 import sys
 
-
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output', type=Path)
-    args = parser.parse_args()
-    if sys.platform != 'win32':
-        raise SystemExit('Build this EXE with native Windows Python, not WSL.')
-    root = Path(__file__).resolve().parents[1]
-    default = root/('out/releases' if (root/'devices/e5').is_dir() else 'release')/'tools/release-index'
-    output = (args.output or default).resolve()
-    work = root/'work/release-index-build'
-    source = root/'tools/release-index.py'
-    modules = root/'installer'
-    engine = root/'openwrt/luci-app-unisoc-ota/root/usr/lib/unisoc-ota/engine.py'
-    inputs = [source, Path(__file__), engine, modules/'backend/ota_engine.py',
-              modules/'backend/release_index.py', modules/'backend/ota_package.py']
-    fingerprint = lambda: {str(p.relative_to(root)).replace('\\', '/'):
-                          hashlib.sha256(p.read_bytes().replace(b'\r\n', b'\n')).hexdigest() for p in inputs}
-    before = fingerprint()
-    output.mkdir(parents=True, exist_ok=True)
-    subprocess.run([sys.executable, '-m', 'PyInstaller', '--noconfirm', '--clean', '--noupx',
-                    '--onefile', '--console', '--name', 'OpenWrt-Release-Index',
-                    '--distpath', str(output), '--workpath', str(work/'objects'), '--specpath', str(work),
-                    '--paths', str(modules), '--collect-all', 'dissect.extfs', '--hidden-import', 'subprocess',
-                    '--add-data', str(engine)+';.', '--icon', str(modules/'ui/src-tauri/icons/icon.ico'),
-                    str(source)], cwd=root, check=True)
-    if fingerprint() != before:
-        raise ValueError('Summary tool inputs changed during compilation')
-    exe = output/'OpenWrt-Release-Index.exe'
-    subprocess.run([str(exe), '--help'], check=True, stdout=subprocess.DEVNULL)
-    checksum = hashlib.sha256(exe.read_bytes()).hexdigest()
-    (output/(exe.name+'.sha256')).write_text(checksum+'  '+exe.name+'\n', encoding='utf-8', newline='\n')
-    (output/'build.json').write_text(json.dumps(dict(platform='windows-x64', source=before,
-                                                  file=exe.name, sha256=checksum, bytes=exe.stat().st_size), indent=2)+'\n',
-                                   encoding='utf-8', newline='\n')
-    print('Built: '+str(exe), flush=True)
-
-
-if __name__ == '__main__':
-    main()
+_SHARED = Path(__file__).resolve().parents[1] / 'installer'
+_SOURCE = _SHARED / 'build-release-index.py'
+if not _SOURCE.is_file():
+    raise RuntimeError('Initialize the installer submodule / 请先执行 git submodule update --init --recursive')
+sys.path.insert(0,str(_SHARED))
+_exports = runpy.run_path(str(_SOURCE),run_name='__main__' if __name__=='__main__' else 'openwrt_tools_entry')
+globals().update({key:value for key,value in _exports.items() if not key.startswith('__')})

@@ -131,3 +131,22 @@ python3 tools/build-release.py run --workspace /home/kano/openwrt-build \
 Windows/macOS 原生打包消费同一受源码哈希绑定的工具，不另找 Android Python，
 不为此重编内核或复制 rootfs。源变化必须重编工具及两个原生安装器；禁止修改
 指纹绕过。工作流、证据及硬件验收边界见 ONLINE-F2FS-INSTALL-20261029.zh-CN.md。
+
+
+## 公共安装器子模块
+
+installer/ 现在固定引用 https://github.com/kanoqwq/openwrt-tools 的提交。新检出先执行 git submodule update --init --recursive。共享源码、Android 及独立工具构建方法见 installer/docs/BUILD.zh-CN.md；E5/MU300 的 NV、UFS 身份和启动流程继续分开处理。请先在子模块提交，再在父仓库更新 gitlink；不要重新复制一整份安装器。
+
+两个父仓库可通过 OPENWRT_GUI_ARTIFACT 与 OPENWRT_GUI_MACOS_ARTIFACT 复用同一份已校验交付件，无需各编译一次；首次拆分后旧 GUI 指纹应正常拒绝，不能修改旧 build.json 绕过。tools/release-index.py、tools/build-release-index.py、tools/package-diff-studio.py 保留为兼容入口，实际代码由子模块提供。
+
+
+### 本机共用安装器交付件
+
+当前统一的原生交付件在 D:/Git/e5-linux/installer/artifacts/windows 与 macos-arm64；MU300 原目录的旧交付件仅保留，不用于本轮打包。Windows/WSL 打包前显式设置下面两项（Windows 对应使用 D:/Git/e5-linux/... 路径）：
+
+```sh
+export OPENWRT_GUI_ARTIFACT=/mnt/d/Git/e5-linux/installer/artifacts/windows
+export OPENWRT_GUI_MACOS_ARTIFACT=/mnt/d/Git/e5-linux/installer/artifacts/macos-arm64
+```
+
+这是已选定的共享输入，不是失败后寻找旧缓存；指纹不匹配仍应停止并重编真正变化的组件。两个子模块提交一致，原生交付件的 sources() 必须与各自检出内容一致。不要复制同一份 SDK、源码、Cargo target 或完整 runtime 到另一个构建目录凑路径。

@@ -23,6 +23,8 @@ jobs:
       MACOSX_DEPLOYMENT_TARGET: '11.0'
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
