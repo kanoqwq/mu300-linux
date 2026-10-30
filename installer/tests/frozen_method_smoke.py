@@ -32,10 +32,10 @@ def child(package):
                 return 'test-boot'
             if script == 'settings get secure user_setup_complete':
                 return '1'
+            if script.startswith('cards=""; for p in /sys/class/block/mmcblk*;'):
+                return ''
             if 'echo NODE=$n' in script:
                 return 'NODE=mmcblk1p16\nCID=' + 'b' * 32 + '\nSTART=2048\nSIZE=33554432\nDISK_SIZE=134217728\nFREE=12582912\nSOURCE=/dev/block/mmcblk1p16\nROOT=mmcblk1p20\n'
-            if script.startswith('cards='):
-                return ''
             if script == 'cat /sys/class/block/mmcblk1p20/start /sys/class/block/mmcblk1p20/size':
                 return '33556480 8388608'
             raise AssertionError('Unexpected simulated read')
@@ -47,6 +47,18 @@ def child(package):
     a.bind = lambda _serial: None
     a.read_gpt = lambda _storage: {'empty': [1], 'safe_gaps': []}
     a.legacy.device_sd = missing_card
+    # UFS discovery stages its small read-only identity executable before
+    # running the storage probe. Keep this transport simulated as well.
+    def helper_push(local, remote, label):
+        if Path(local).name != 'e5-ufs-id' or '/e5-ufs-id-' not in remote:
+            raise AssertionError('Unexpected helper transfer')
+    def helper_command(label, command):
+        if not command.startswith('chmod 755 ') or '/e5-ufs-id-' not in command:
+            raise AssertionError('Unexpected helper command')
+        return ''
+    if not mu:
+        a.legacy.push = helper_push
+        a.legacy.su_checked = helper_command
     for method in ('part', 'reinstall', 'image', 'boot'):
         device = a.probe('test-device', method)
         if not (device['existing'] and device['root']):
