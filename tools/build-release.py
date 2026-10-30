@@ -166,8 +166,10 @@ def digest(path):
     return h.hexdigest()
 
 
-def verify_archive(path, require_diff=False):
+def verify_archive(path, require_diff=False, require_android=False):
     with zipfile.ZipFile(path) as archive:
+        if require_android:
+            runpy.run_path(str(TOP/'installer/package_android.py'))['verify_archive'](archive)
         names = archive.namelist()
         if len(names) != len(set(names)) or archive.testzip():
             raise ValueError('ZIP duplicate entries or CRC failure: ' + str(path))
@@ -269,7 +271,7 @@ def package(task, common, rows):
                'MU300_PACKAGE_WORK': str(assembly), 'MU300_ROOTFS_OUT_DIR': str(assembly),
                'MU300_VERSION': version, 'MU300_DESKTOP_INSTALLER': '1', 'OPENWRT_GUI_OPTIONAL': '0'}
         task.run(model + '-package', ['sh', TOP / 'tools/build-openwrt-tf-magisk.sh', archive], extra_env=env)
-        verify_archive(archive, require_diff=True)
+        verify_archive(archive, require_diff=True,require_android=True)
         release = json.loads((assembly / ('release-' + env['MU300_KERNEL'] + '.json')).read_text())
         target = pending / (release['package_name'] + '.zip')
         shutil.copyfile(archive, target)
@@ -378,7 +380,7 @@ def add_diff(task,rows,source,repair_installer=False,refresh_native=False):
         task.run(profile+'-diff',[sys.executable,TOP/'tools/package-diff-studio.py','--prepare','--package',studio])
         tag='-installer-g' if refresh_native else '-installer-fix-g' if repair_installer else '-tools-g'
         target=pending/(path.stem+tag+before['source_commit'][:8]+'.zip')
-        repack(path,target,studio,before,repair_installer=repair_installer,refresh_native=refresh_native);verify_archive(target,require_diff=True)
+        repack(path,target,studio,before,repair_installer=repair_installer,refresh_native=refresh_native);verify_archive(target,require_diff=True,require_android=refresh_native)
         checksum=digest(target);(pending/(target.name+'.sha256')).write_text(checksum+'  '+target.name+'\n')
         assets.append({'profile':profile,'file':target.name,'bytes':target.stat().st_size,'sha256':checksum})
         clean_stage(task.workspace,profile);task.save(assets=assets)

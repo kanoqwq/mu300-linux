@@ -150,3 +150,12 @@ export OPENWRT_GUI_MACOS_ARTIFACT=/mnt/d/Git/e5-linux/installer/artifacts/macos-
 ```
 
 这是已选定的共享输入，不是失败后寻找旧缓存；指纹不匹配仍应停止并重编真正变化的组件。两个子模块提交一致，原生交付件的 sources() 必须与各自检出内容一致。不要复制同一份 SDK、源码、Cargo target 或完整 runtime 到另一个构建目录凑路径。
+
+
+## 根目录 Android 安装器
+
+完整打包及 refresh-installers 均由公共 installer/package_android.py 校验已签名 ARM64 release APK 的源码、ABI 与哈希，发布包根目录固定放 OpenWrt-Tools.apk，构建清单为 docs/GUI-BUILD-android.json，使用说明为 docs/ANDROID-INSTALLER.md。不要把 APK 塞进 tools 或再复制一份。
+
+本机与两个桌面交付件一样复用 E5 的 Android 构建：WSL 设置 OPENWRT_GUI_ANDROID_ARTIFACT=/mnt/d/Git/e5-linux/installer/artifacts/android；Windows 使用 D:/Git/e5-linux/installer/artifacts/android。过期时只重编 Android，不修改 build.json。
+
+Mac 原生构建使用公共安装器仓库的 macos.yml，手动 dispatch 即可；不再在 E5 仓库新建 build/macos-* 快照分支。下载后仍核对公共 sources()。

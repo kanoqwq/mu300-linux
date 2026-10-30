@@ -41,7 +41,10 @@ def studio(root):
         files[label]=json.dumps({'protocol':1,'platform':platform,'source':{'revision':'new'},
             'files':{n:sha(v) for n,v in groups[platform].items()}}).encode()
     files['diff-tool.json']=json.dumps({'protocol':1,'source':{'revision':'new'},'files':{n:sha(v) for n,v in diff.items()}}).encode()
-    for n in ('START-HERE.md','docs/GUI-GUIDE.md','docs/INSTALLER-PROTOCOL.md','docs/GUI-BUILD.md','docs/GUI-VERIFICATION.md','docs/DIFF-STUDIO.md'):files[n]=b'new guide'
+    files['OpenWrt-Tools.apk']=b'new signed ARM64 APK fixture'
+    files['docs/GUI-BUILD-android.json']=json.dumps({'protocol':1,'platform':'android-aarch64','debug':False,
+        'source':{'revision':'new'},'signing':{'alias':'fixture'},'files':{'OpenWrt-Tools.apk':sha(files['OpenWrt-Tools.apk'])}}).encode()
+    for n in ('START-HERE.md','docs/GUI-GUIDE.md','docs/INSTALLER-PROTOCOL.md','docs/GUI-BUILD.md','docs/GUI-VERIFICATION.md','docs/DIFF-STUDIO.md','docs/ANDROID-INSTALLER.md'):files[n]=b'new guide'
     for n,v in files.items():
         p=root/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(v)
     return files
@@ -81,7 +84,7 @@ class RefreshNative(unittest.TestCase):
                 self.assertIsNone(z.testzip());self.assertEqual(len(z.namelist()),len(set(z.namelist())))
                 self.assertNotIn(obsolete,z.namelist());self.assertEqual(z.read('tools/keep-unowned.txt'),files['tools/keep-unowned.txt'])
                 for n,v in payload.items():self.assertEqual(z.read(n),v)
-                for n in ('OpenWrt-Installer.exe','tools/backend/openwrt-backend.exe','tools/macos/backend/openwrt-backend','OpenWrt-Diff-Studio.exe'):
+                for n in ('OpenWrt-Installer.exe','tools/backend/openwrt-backend.exe','tools/macos/backend/openwrt-backend','OpenWrt-Diff-Studio.exe','OpenWrt-Tools.apk'):
                     self.assertEqual(z.read(n),fresh[n])
                 if mu:sums=json.loads(z.read('desktop/manifest.json'))['desktop']
                 else:sums={n:h for line in z.read('files/SHA256SUMS').decode().splitlines() for h,n in [line.split(None,1)]}
