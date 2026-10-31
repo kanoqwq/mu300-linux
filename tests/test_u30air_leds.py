@@ -36,6 +36,54 @@ esac""")
     def led(self, shell, *args, **extra):
         return self.script(shell, BIN/'mu300-led', *args, **dict(self.extra, **extra))
 
+    def test_charger_gate_revokes_boot_frames_before_waiting_and_restarts_on_power_key(self):
+        # Exercise the actual gate and LED controller together. Only input,
+        # module loading and logging are stubs; no real hardware or shutdown.
+        controller=self.tmp/'charge-led'
+        controller.write_text((BIN/'mu300-led').read_text().replace('#!/bin/sh\n',
+            '#!/bin/sh\n[ "${1:-}" != boot-worker ] || exit 0\n',1))
+        controller.chmod(0o755)
+        self.stub('mu300-device','echo u30air')
+        self.stub('mu300-led','exec "$TEST_LED_CONTROLLER" "$@"')
+        self.stub('extra-modules','exit 0')
+        self.stub('logger','exit 0')
+        self.stub('mu300-keys', '''
+            state="$MU300_SYSROOT/run/mu300/led"
+            [ -f "$MU300_SYSROOT/run/mu300/charging-boot" ] || exit 90
+            [ ! -f "$state/.boot-chase" ] || exit 91
+            "$MU300_BIN/mu300-led" boot-frame charging-test sc27xx:red && exit 92
+            cp "$state/.battery-applied" "$STUBLOG/charging-lamp"
+            for name in red green blue; do
+                cat "$MU300_SYSROOT/sys/class/leds/sc27xx:$name/brightness"
+            done > "$STUBLOG/charging-channels"
+            exit 0
+        ''')
+        (self.root/'tmp').mkdir(exist_ok=True)
+        (self.root/'proc/cmdline').write_text('androidboot.mode=charger\n')
+        chosen=self.root/'proc/device-tree/chosen';chosen.mkdir(parents=True)
+        (chosen/'bootargs').write_bytes(b'androidboot.mode=charger\0')
+        state=self.root/'run/mu300/led';state.mkdir(exist_ok=True)
+        for shell in self.each_shell():
+            for cap,status,marker,channels in (
+                (5,'Charging','red:breathe:1','255\n0\n0\n'),
+                (49,'Charging','blue:breathe:1','0\n0\n255\n'),
+                (50,'Charging','white:breathe:1','0\n255\n0\n'),
+                (100,'Full','white:steady:1','0\n255\n0\n')):
+                (self.battery/'capacity').write_text(str(cap)+'\n')
+                (self.battery/'status').write_text(status+'\n')
+                (state/'.boot-chase').write_text('charging-test\n')
+                result=self.script(shell,BIN/'mu300-charge-mode',MU300_SYSROOT=self.root,
+                    MU300_BIN=self.stubs,TEST_LED_CONTROLLER=controller)
+                self.assertEqual(result.returncode,0,result.stderr)
+                self.assertEqual((self.tmp/'charging-lamp').read_text().strip(),marker)
+                self.assertEqual((self.tmp/'charging-channels').read_text(),channels)
+                self.assertFalse((self.root/'run/mu300/charging-boot').exists())
+                # The power-key handoff may animate normal boot again, but
+                # frames from the old preinit owner remain rejected.
+                self.assertNotEqual((state/'.boot-chase').read_text().strip(),'charging-test')
+                self.assertEqual(self.led(shell,'boot-frame','charging-test','sc27xx:blue').returncode,1)
+                (state/'.boot-chase').unlink()
+
     def test_wifi_event_cannot_acknowledge_an_unapplied_battery_color(self):
         for shell in self.each_shell():
             state=self.root/'run/mu300/led'

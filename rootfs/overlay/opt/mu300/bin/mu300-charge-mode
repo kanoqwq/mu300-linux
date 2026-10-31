@@ -18,6 +18,11 @@ printf '%s\n' "$args" | grep -Eq '(^|[[:space:]])(sprdboot|androidboot)\.mode=ch
 "$BIN/extra-modules" > "$R/tmp/mu300-charge-modules.log" 2>&1
 mkdir -p "$R/run/mu300"
 touch "$R/run/mu300/charging-boot"
+# Preinit starts the RGB boot chase. Normal boot hands it off when mobile-data
+# reaches its initial state, but that service is deliberately deferred here.
+# Revoke the animation token before rendering the charging lamp; a late frame
+# from its worker must not overwrite the battery colour or hardware breathing.
+"$BIN/mu300-led" boot off
 "$BIN/mu300-led" battery
 logger -t mu300-charge-mode 'charging only; hold power for 1.5 seconds to start OpenWrt'
 "$BIN/mu300-keys" -c -l 1500
@@ -26,6 +31,7 @@ if [ "$result" != 3 ]; then
     # An unavailable input or supply must never trap the device in charging.
     [ "$result" = 0 ] || logger -t mu300-charge-mode 'charger wait unavailable; continuing normal boot'
     rm -f "$R/run/mu300/charging-boot"
+    "$BIN/mu300-led" boot on
     exit 0
 fi
 logger -t mu300-charge-mode 'charger removed; powering off'

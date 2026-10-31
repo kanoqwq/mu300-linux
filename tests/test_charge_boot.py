@@ -50,6 +50,9 @@ class ChargeBoot(ShellTest):
                 self.assertEqual(self.call(shell,TEST_KEYS=result).returncode,0)
                 calls=self.calls()
                 self.assertIn('keys -c -l 1500',calls)
+                self.assertLess(calls.index('mu300-led boot off\n'),calls.index('mu300-led battery\n'))
+                self.assertLess(calls.index('mu300-led battery\n'),calls.index('keys -c -l 1500\n'))
+                self.assertGreater(calls.index('mu300-led boot on\n'),calls.index('keys -c -l 1500\n'))
                 self.assertNotIn('poweroff',calls)
                 self.assertNotIn('AT+',calls)
                 self.assertFalse((self.root/'run/mu300/charging-boot').exists())
@@ -67,6 +70,8 @@ class ChargeBoot(ShellTest):
             self.assertLess(calls.index('mount -o remount,ro /\n'),calls.index('mount -o remount,ro /mnt/mu300-disk'))
             self.assertIn('poweroff -f',calls)
             self.assertNotIn('reboot',calls)
+            self.assertIn('mu300-led boot off\n',calls)
+            self.assertNotIn('mu300-led boot on\n',calls)
 
     def test_boot_order_and_enablement(self):
         init=(TOP/'openwrt/overlay/etc/init.d/mu300-charge-mode').read_text()
