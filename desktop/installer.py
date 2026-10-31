@@ -780,7 +780,7 @@ def main(argv=None):
         return Outcome('checked','Read-only device preflight passed / 设备只读预检通过。')
     if not any(getattr(args,n) for n in ('tf','data','part','reinstall_part','resume','update','boot_openwrt')):
         choices=('tf','data','part','reinstall_part','resume','update','boot_openwrt')
-        print('1 TF card / TF 卡\n2 Userdata image [EXPERIMENTAL] / userdata 镜像【实验性：可能损坏 Android F2FS】\n3 Independent internal partition / 独立内置分区\n4 Reinstall internal system / 重装独立分区\n5 Resume after Android reset / 重置后续装\n6 Update OpenWrt / 更新\n7 Boot OpenWrt once / 临时启动 OpenWrt（仅修改 misc）')
+        print('1 TF card / TF 卡\n2 Userdata image [EXPERIMENTAL] / userdata 镜像【实验性：可能损坏 Android F2FS】\n3 Independent internal partition / 独立内置分区\n4 Reinstall internal system / 重装独立分区\n5 Resume after Android reset / 重置后续装\n6 Update OpenWrt / 更新\n7 Boot OpenWrt once / 临时启动 OpenWrt（启动异常可修复，无需重装）')
         selected=input('Choose / 选择 [1]: ').strip() or '1'
         if selected not in tuple(map(str,range(1,8))):raise ValueError('Invalid menu choice')
         setattr(args,choices[int(selected)-1],True)
