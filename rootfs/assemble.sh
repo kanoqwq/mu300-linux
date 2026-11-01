@@ -30,6 +30,10 @@ done
 rm -rf $R && mkdir -p $R
 tar -xf /w/base.tar -C $R
 cp -a /w/overlay/. $R/
+if [ -f /sml-voltage-check ]; then
+    cp /sml-voltage-check $R/opt/mu300/bin/sml-voltage-check
+    chmod 0755 $R/opt/mu300/bin/sml-voltage-check
+fi
 # Retired call helpers must not survive in an older exported base.
 rm -f $R/opt/mu300/bin/mu300-voice $R/opt/mu300/bin/mu300-audio-dsp
 chmod 0755 $R/opt/mu300/bin/mu300-lowlatency

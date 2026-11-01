@@ -24,9 +24,9 @@ function store(path,value) {
     return true;
 }
 function supported(force) {
-    let cache=RUN+'/unisoc-cpu-firmware.json', c=readjson(cache);
+    let cache=RUN+'/unisoc-cpu-capability.json', c=readjson(cache);
     if(!force && BOOT && c?.boot==BOOT) return c.supported===true;
-    // Only the installed platform adapter knows its verified SML hashes.
+    // The installed adapter checks the matching native boot-offset driver ABI.
     // Environment overrides are test-only, never RPC/user configuration.
     if(!fs.access(PLATFORM,'x') || !match(PLATFORM,/^[\/a-zA-Z0-9_.-]+$/)) return false;
     let p=fs.popen(PLATFORM+' check >/dev/null 2>&1','r');

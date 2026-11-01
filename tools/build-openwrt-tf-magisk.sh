@@ -146,7 +146,7 @@ for f in ./lib/netifd/proto/mu300cell.sh ./lib/netifd/proto/mu300cell-v6.sh \
     ./usr/libexec/unisoc-modem/cpu ./usr/libexec/unisoc-modem/cpu.uc \
     ./usr/libexec/unisoc-modem/cpu-thermal.uc \
     ./usr/libexec/unisoc-modem/cpu-voltage ./usr/libexec/unisoc-modem/cpu-voltage.uc \
-    ./opt/mu300/bin/cpu-voltage-platform ./etc/init.d/mu300-cpu-driver \
+    ./opt/mu300/bin/cpu-voltage-platform ./opt/mu300/bin/sml-voltage-check ./etc/init.d/mu300-cpu-driver \
     ./etc/rc.d/S08mu300-cpu-driver ./etc/rc.d/K89unisoc-cpu \
     ./usr/libexec/unisoc-modem/sms-forward ./usr/libexec/unisoc-modem/power-supply.sh ./usr/libexec/unisoc-modem/forward-template.uc \
     ./www/luci-static/resources/view/mu300/forward.js ./etc/init.d/unisoc-sms-forward \

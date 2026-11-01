@@ -18,6 +18,7 @@ ls "$KOUT"/modules-u30air/*.ko >/dev/null 2>&1 || { echo "U30 Air modules missin
 [ -z "$(git -C "$TOP" status --porcelain)" ] || { echo "commit your changes first: the release must match a commit" >&2; exit 1; }
 rm -rf "$D" && mkdir -p "$IN/out" "$IN/tools/logdw" "$IN/tools/bt-init" "$IN/tools/gpu"
 
+SML_CHECK=$(python3 "$TOP/tools/sml-voltage/build.py")
 echo "==> helper binaries"
 cp -R "$KOUT/modules" "$IN/out/modules"
 cp "$KOUT/modules.builtin" "$KOUT/modules.builtin.modinfo" "$IN/out/"
@@ -68,7 +69,7 @@ for u in 24.04 26.04; do
     cid=$(docker create mu300-ubuntu:$u /bin/true); docker export "$cid" > "$B/base.tar"; docker rm "$cid" >/dev/null
     cltest=""; [ -f "$IN/tools/gpu/cltest" ] && cltest="-v $IN/tools/gpu/cltest:/cltest:ro"
     # shellcheck disable=SC2086
-    docker run --rm -v "$B":/w -v "$IN/out/modules":/kmods:ro -v "$IN/out":/kout:ro -v "$IN/tools/logdw/logdw":/logdw:ro \
+    docker run --rm -v "$SML_CHECK":/sml-voltage-check:ro -v "$B":/w -v "$IN/out/modules":/kmods:ro -v "$IN/out":/kout:ro -v "$IN/tools/logdw/logdw":/logdw:ro \
       -v "$IN/tools/bt-init/mu300-bt-init":/bt-init:ro -v "$IN/tools/keys/mu300-keys":/keys:ro -v "$IN/tools/atd-io/mu300-atd-io":/atd-io:ro $cltest \
       -e MU300_VERSION="$TAG" mu300-ubuntu:$u bash /w/assemble.sh >/dev/null
     out=mu300-ubuntu-rootfs.tar.gz; [ $u = 24.04 ] || out=mu300-ubuntu-$u-rootfs.tar.gz
@@ -108,7 +109,7 @@ for f in ./opt/mu300/bin/mu300-at ./opt/mu300/bin/mobile-data \
     ./usr/libexec/unisoc-modem/cpu ./usr/libexec/unisoc-modem/cpu.uc \
     ./usr/libexec/unisoc-modem/cpu-thermal.uc \
     ./usr/libexec/unisoc-modem/cpu-voltage ./usr/libexec/unisoc-modem/cpu-voltage.uc \
-    ./opt/mu300/bin/cpu-voltage-platform ./etc/init.d/mu300-cpu-driver \
+    ./opt/mu300/bin/cpu-voltage-platform ./opt/mu300/bin/sml-voltage-check ./etc/init.d/mu300-cpu-driver \
     ./etc/rc.d/S08mu300-cpu-driver ./etc/rc.d/K89unisoc-cpu \
     ./usr/libexec/unisoc-modem/sms-forward ./usr/libexec/unisoc-modem/power-supply.sh ./usr/libexec/unisoc-modem/forward-template.uc \
     ./www/luci-static/resources/view/mu300/forward.js ./etc/init.d/unisoc-sms-forward \

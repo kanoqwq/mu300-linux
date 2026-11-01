@@ -127,9 +127,11 @@ ls "$IN/out/modules"/*.ko >/dev/null 2>&1 || {
 for o in firmware android-subset android-gpu-subset tools/logdw/logdw tools/bt-init/mu300-bt-init tools/keys/mu300-keys tools/atd-io/mu300-atd-io tools/gpu/cltest busybox upstream/out/modules; do
     [ -e "$IN/$o" ] && echo "  + $o" || echo "  - $o   (missing: the image is built without it)"
 done
+SML_CHECK=$(python3 "$TOP/tools/sml-voltage/build.py")
 # shellcheck disable=SC2046
 docker run --rm --platform linux/arm64 \
   -v "${MU300_RELEASE_JSON:-$TOP/work}":/in/release.json:ro \
+  -v "$SML_CHECK":/in/sml-voltage-check:ro \
   -v "$TOP/rootfs/overlay/opt/mu300":/in/opt-mu300:ro -v "$TOP/rootfs/overlay/usr/share/ucode/mu300":/in/ucode-mu300:ro -v "$TOP/openwrt/overlay":/in/overlay:ro \
   -v "$TOP/openwrt/patches/fw4-sipa-offload.patch":/in/fw4-sipa-offload.patch:ro \
   -v "$TOP/openwrt/patches/wifi-scripts-no-dfs.patch":/in/wifi-scripts-no-dfs.patch:ro \
@@ -189,6 +191,8 @@ ln -sf /tmp/resolv.conf $R/etc/resolv.conf
 printf "127.0.0.1\tlocalhost\n\n::1\tlocalhost ip6-localhost ip6-loopback\nff02::1\tip6-allnodes\nff02::2\tip6-allrouters\n" > $R/etc/hosts
 printf "mu300\n" > $R/etc/hostname   # the real one comes from uci (etc/uci-defaults/90-mu300)
 cp -a /in/opt-mu300 $R/opt/mu300
+cp /in/sml-voltage-check $R/opt/mu300/bin/sml-voltage-check
+chmod 0755 $R/opt/mu300/bin/sml-voltage-check
 cp -a /in/overlay/. $R/
 # Do not retain the retired call helpers from an older base image.
 rm -f $R/opt/mu300/bin/mu300-voice $R/opt/mu300/bin/mu300-audio-dsp

@@ -539,7 +539,8 @@ case " $OSES " in *" ubuntu "*) reuse ubuntu || {
     gpuargs=""
     [ -d "$WORK/android-gpu-subset" ] && gpuargs="-v $WORK/android-gpu-subset:/android-gpu-subset:ro -v $WORK/tools/gpu/cltest:/cltest:ro"
     # shellcheck disable=SC2086
-    docker run --rm -v "$B":/w -v "$WORK/out/modules":/kmods:ro -v "$WORK/out":/kout:ro -v "$WORK/firmware":/firmware:ro \
+    SML_CHECK=$(python3 "$TOP/tools/sml-voltage/build.py")
+    docker run --rm -v "$SML_CHECK":/sml-voltage-check:ro -v "$B":/w -v "$WORK/out/modules":/kmods:ro -v "$WORK/out":/kout:ro -v "$WORK/firmware":/firmware:ro \
       -v "$WORK/android-subset":/android-subset:ro -v "$WORK/tools/logdw/logdw":/logdw:ro \
       -v "$WORK/tools/bt-init/mu300-bt-init":/bt-init:ro -v "$WORK/tools/keys/mu300-keys":/keys:ro -v "$WORK/tools/atd-io/mu300-atd-io":/atd-io:ro -v "$WORK/sing-box":/sing-box:ro -v "$WORK/xray":/xray:ro \
       -v "$WORK/hev-socks5-tunnel":/hev-socks5-tunnel:ro $gpuargs mu300-ubuntu:24.04 bash /w/assemble.sh >/dev/null

@@ -6,8 +6,13 @@ module=sprd_cpufreq_v2_driver
 ko=/lib/modules/$(uname -r)/sprd-cpufreq-v2-driver.ko
 [ -f "$ko" ] || ko=/lib/modules/$(uname -r)/extra/sprd-cpufreq-v2-driver.ko
 helper=/usr/libexec/unisoc-modem/cpu-voltage
+voltage_parameter() {
+    [ -f "$ko" ] && LC_ALL=C grep -aq 'parm=voltage_offset_uv:' "$ko"
+}
+checker=/opt/mu300/bin/sml-voltage-check
 supported() {
     tr '\000' '\n' </sys/firmware/devicetree/base/compatible | grep -qx 'sprd,ums9620' || return 1
+    voltage_parameter || return 1
     for slot in a b; do
         part=/dev/disk/by-partlabel/sml_$slot
         [ -b "$part" ] || part=/dev/block/by-name/sml_$slot
@@ -22,18 +27,15 @@ supported() {
         fi
         [ -b "$part" ] || return 1
         real=$(readlink -f "$part") || return 1
-        [ "$(cat "/sys/class/block/${real##*/}/size")" = 2048 ] || return 1
         hash=$(sha256sum "$part") || return 1
-        # V50 and U30 Air have the same verified executable and DVFS tables as
-        # F50; only the 512-byte authentication area differs. See
-        # docs/U30AIR-CPU-VOLTAGE-20261019.zh-CN.md. Keep an exact whole-image
-        # allowlist, never infer voltage support from the SoC name alone.
+        # Audited images are a fast path. Other firmware builds must match
+        # the linked DVFS_INIT signed-offset/CPU-SRAM selector algorithm.
         case ${hash%% *} in
             ff4782690fd805ff54fe34853ef8ee5c7e51c3259e20077c55373b50a4b259c2|\
             5b3183f17af9b416e71dea61e578c61824e4e1df43737a1179032f4b20466b2b|\
             f27ac16f44e6cdc87a8ee00a9b53c499c8dde0c3b92c771388e256e84ef12e70|\
             6e3b9234525ace117a503925c8f8db0ed05e1679bd773d4731b56334140f5a2f) ;;
-            *) return 1 ;;
+            *) [ -x "$checker" ] && "$checker" "$part" >/dev/null 2>&1 || return 1 ;;
         esac
     done
 }
@@ -54,7 +56,12 @@ case ${1:-load} in
             supported || offsets=0,0,0
             sync # Persist the crash guard BEFORE the one-shot DVFS_INIT.
         fi
-        insmod "$ko" "voltage_offset_uv=$offsets"
+        if voltage_parameter; then
+            insmod "$ko" "voltage_offset_uv=$offsets"
+        else
+            # Old parameterless modules still provide ordinary CPU frequency.
+            insmod "$ko"
+        fi
         ;;
     *) exit 2 ;;
 esac
