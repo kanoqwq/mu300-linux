@@ -76,3 +76,22 @@ Windows/Android/macOS 安装器复用登记目录下同一份经源码指纹和�
 不迁移到 C 盘，不重复 SDK/node_modules/Cargo/根文件系统，不自动删除缓存、
 旧包、设备备份或失败 staging。Mac 安装器需原生 macOS CI 时再使用已获授权的
 上游 CI，不寻找用户不存在的 Mac Agent。
+
+## 2026-11-02 完整安装包构建记录
+
+当前安装器产物登记到本仓库 installer/artifacts，Windows/Android 本机原生构建，
+macOS 使用固定 installer 提交的 Apple Silicon CI，三者均先校验源码指纹，不能
+从旧包复制 EXE/APK 冒充新构建。完整安装包不再使用 preview1 文件名后缀；这不
+等于已完成所有硬件验收。
+
+复用已有 Rust target 时，要确认当前 Android 项目 generated/ 下存在 TauriActivity.kt、
+WryActivity.kt 等官方生成类。切换工作区后若 Cargo 复用了旧目录的生成步骤，可对
+既有生成类更新时间戳，触发原版 build.rs 重生成；不要复制或修改第三方模板。
+Windows C/D 跨盘 Kotlin 缓存报 different roots 时，本次构建通过进程环境设置
+ORG_GRADLE_PROJECT_kotlin.incremental=false 和
+ORG_GRADLE_PROJECT_kotlin.compiler.execution.strategy=in-process，不改全局 Gradle
+设置、不清 SDK/依赖缓存。命令和回执保留在 out/build-logs/。
+
+固定 root-ready staging 重新收录源码用 sources，不用只接受 packaged 状态的
+refresh-sources；随后 finish。Image.wrapped 若属于旧 Image，先检查并运行
+clean-staging，仅清本工具拥有的组包/包装输出，再由 canonical_boot 重生成。

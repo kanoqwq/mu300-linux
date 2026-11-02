@@ -543,6 +543,8 @@ def package():
     runpy.run_path(str(TOP/'desktop/package.py'))['assemble'](package_root,Path(LAYOUT['maintenance']),report['version'])
     (package_root/'desktop/release.json').write_text(json.dumps(release,indent=2)+'\n')
     (package_root/'START-HERE.md').write_text((TOP/'devices/u30pro/START-HERE.md').read_text(),encoding='utf-8')
+    shutil.copyfile(TOP/'docs/U30PRO-INSTALLER-20261102.zh-CN.md',
+                    package_root/'docs/U30PRO-INSTALLER-20261102.zh-CN.md')
     shutil.copyfile(STAGE/'Image.manifest.json',package_root/'docs/KERNEL-WRAPPER.json')
     shutil.copyfile(KERNEL/'u30pro-build.json',package_root/'docs/KERNEL-BUILD.json')
     shutil.copyfile(RUNTIME/'runtime.json',package_root/'docs/HARDWARE-RUNTIME.json')
