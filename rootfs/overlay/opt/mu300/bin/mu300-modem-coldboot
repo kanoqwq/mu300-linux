@@ -25,10 +25,6 @@ case "$probe" in
     *) echo "cannot establish CP offline: $probe" >&2; exit 1 ;;
 esac
 source=$A/vendor/bin/modem_control
-expected=43a3bc8c4730b87431d4fc8d90a3652b2458ef8bc9f59772685d4016cc7819a3
-patched=9e3490f222a312e649dd5273df216b87ca9880a621ea68a0a73df0aa6b37c2ae
-hash=$(sha256sum "$source")
-[ "${hash%% *}" = "$expected" ] || { echo "unsupported U30 Air modem_control: ${hash%% *}" >&2; exit 1; }
 stage=$R/run/mu300/coldboot
 target=$A/tmp/mu300-coldboot
 [ ! -L "$stage" ] && [ ! -L "$target" ] || exit 1
@@ -36,13 +32,9 @@ mkdir -p "$stage" "$target"
 chmod 0755 "$stage" "$target"
 temp=$(mktemp "$stage/.loader.XXXXXX")
 trap 'rm -f "$temp"' EXIT HUP INT TERM
-cp "$source" "$temp"
-# VA=file offset: 0xcf0c mov w19,w0 -> mov w19,wzr; ignore PM-only boot predicate.
-# 0xcf50 mov w0,63 -> mov w0,34; LOAD_CP|LOAD_CH, without stop/load PM bits.
-printf '\363\003\037\052' | dd of="$temp" bs=1 seek=53004 count=4 conv=notrunc 2>/dev/null
-printf '\100\004\200\122' | dd of="$temp" bs=1 seek=53072 count=4 conv=notrunc 2>/dev/null
-hash=$(sha256sum "$temp")
-[ "${hash%% *}" = "$patched" ] || { echo 'selective loader verification failed' >&2; exit 1; }
+# Locate the PM-only predicate and selective load protocol from ELF instructions
+# and call relationships. No stock-build hashes or fixed offsets are used.
+"$BIN/modem-loader-patch" patch "$source" "$temp"
 chmod 0755 "$temp"
 mv "$temp" "$stage/modem_control"
 mountpoint -q "$target" || mount --bind "$stage" "$target"

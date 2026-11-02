@@ -16,6 +16,7 @@ miss=
 ls /kmods/*.ko >/dev/null 2>&1 || miss="$miss\n  /kmods/*.ko        -v \$PWD/out/modules:/kmods:ro  (kernel/build-linux.sh output)"
 [ -f /kout/modules.builtin ] || miss="$miss\n  /kout/modules.*    -v \$PWD/out:/kout:ro           (kernel/build-linux.sh output)"
 [ -f /logdw ] || miss="$miss\n  /logdw             -v \$PWD/tools/logdw/logdw:/logdw:ro"
+[ -f /modem-loader-patch ] || miss="$miss\n  /modem-loader-patch  build tools/modem-loader/build.py and mount its output read-only"
 if [ -n "$miss" ]; then
     printf 'assemble.sh: missing build inputs:%b\n' "$miss" >&2
     echo "see docs/BUILD.md for the full docker run line" >&2
@@ -34,6 +35,9 @@ if [ -f /sml-voltage-check ]; then
     cp /sml-voltage-check $R/opt/mu300/bin/sml-voltage-check
     chmod 0755 $R/opt/mu300/bin/sml-voltage-check
 fi
+# Provided by the tracked release builder, compiled for the target ABI.
+cp /modem-loader-patch $R/opt/mu300/bin/modem-loader-patch
+chmod 0755 $R/opt/mu300/bin/modem-loader-patch
 # Retired call helpers must not survive in an older exported base.
 rm -f $R/opt/mu300/bin/mu300-voice $R/opt/mu300/bin/mu300-audio-dsp
 chmod 0755 $R/opt/mu300/bin/mu300-lowlatency

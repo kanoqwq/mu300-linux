@@ -4,6 +4,7 @@ import hashlib
 import os
 from pathlib import Path
 import shutil
+from test_modem_loader import build_host, compiler
 
 
 class ChargeBoot(ShellTest):
@@ -96,6 +97,9 @@ class ColdModem(ShellTest):
         self.stub('mu300-device','echo "${TEST_MODEL:-u30air}"')
         self.stub('mountpoint','exit 1')
         self.stub('mount','echo "mount $*" >> "$STUBLOG/calls"')
+        if not compiler():
+            self.skipTest('host C compiler unavailable')
+        build_host(self.stubs/'modem-loader-patch')
 
     def call(self,shell,**env):
         return self.script(shell,BIN/'mu300-modem-coldboot',self.android,self.args,
@@ -125,7 +129,7 @@ class ColdModem(ShellTest):
         for shell in self.each_shell():
             result=self.call(shell)
             self.assertNotEqual(result.returncode,0)
-            self.assertIn('unsupported U30 Air',result.stderr)
+            self.assertIn('ELF64 AArch64',result.stderr)
             self.assertEqual(self.loader.read_bytes(),b'unknown stock firmware')
             self.args.write_text('androidboot.mode=charger modem=booting\n')
             self.assertNotEqual(self.call(shell).returncode,0)

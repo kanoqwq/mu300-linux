@@ -116,7 +116,7 @@ for f in ./lib/netifd/proto/mu300cell.sh ./lib/netifd/proto/mu300cell-v6.sh \
     ./opt/mu300/bin/u30air-led-status ./etc/hotplug.d/power_supply/70-mu300-led \
     ./opt/mu300/bin/mu300-data-sim-u30 ./opt/mu300/bin/mu300-sim-u30 \
     ./opt/mu300/bin/mu300-v50-sim ./opt/mu300/lib/v50-card.sh ./opt/mu300/lib/network-led.sh \
-    ./opt/mu300/bin/mu300-charge-mode ./opt/mu300/bin/mu300-modem-coldboot ./etc/rc.d/S09mu300-charge-mode \
+    ./opt/mu300/bin/mu300-charge-mode ./opt/mu300/bin/mu300-modem-coldboot ./opt/mu300/bin/modem-loader-patch ./etc/rc.d/S09mu300-charge-mode \
     ./opt/mu300/bin/mu300-user-packages ./etc/init.d/mu300-user-packages ./etc/mu300/image-packages \
     ./opt/mu300/lib/wifi-channels.sh ./usr/share/ucode/wifi/hostapd.uc \
     ./lib/netifd/hostapd-unisoc.sh ./usr/share/ucode/wifi/unisoc-sae.uc \

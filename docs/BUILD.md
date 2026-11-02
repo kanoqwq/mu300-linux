@@ -114,7 +114,9 @@ python3 boot/build-boot-image.py --stock-boot dumps/boot_a.img --misc-head dumps
 cid=$(docker create mu300-ubuntu:24.04); docker export $cid > rootfs/base.tar; docker rm $cid
 tools/fetch-xray.sh       # optional: xray + hev-socks5-tunnel, mu300-vpn's default engine (pinned, sha256-checked)
 tools/fetch-sing-box.sh   # optional: the sing-box engine for mu300-vpn (pinned release, sha256-checked)
+python3 tools/build-release.py run --workspace /home/kano/openwrt-build --label loader -- python3 tools/modem-loader/build.py
 docker run --rm -v "$PWD/rootfs":/w -v "$PWD/out/modules":/kmods:ro -v "$PWD/out":/kout:ro \
+  -v "$PWD/out/modem-loader/modem-loader-patch":/modem-loader-patch:ro \
   -v "$PWD/firmware":/firmware:ro -v "$PWD/android-subset":/android-subset:ro -v "$PWD/tools/logdw/logdw":/logdw:ro \
   -v "$PWD/tools/bt-init/mu300-bt-init":/bt-init:ro -v "$PWD/sing-box":/sing-box:ro -v "$PWD/xray":/xray:ro -v "$PWD/hev-socks5-tunnel":/hev-socks5-tunnel:ro mu300-ubuntu:24.04 bash /w/assemble.sh
 ```

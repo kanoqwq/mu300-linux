@@ -178,7 +178,8 @@ class TaskState(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder, patch.object(build, 'TOP', Path(folder)), \
              patch.object(build.os, 'geteuid', return_value=0), patch.object(build, 'input_check'), \
              patch.object(build.runpy, 'run_path', return_value={
-                'identify': lambda *a: {'private_version':'r-test','source_fingerprint':'same'}}):
+                'identify': lambda *a: {'private_version':'r-test','source_fingerprint':'same'},
+                'verify_archive': lambda archive: None}):
             task = build.Task(Path(folder) / 'native', 'fixture')
             with patch.object(task, 'run', side_effect=lambda model,args,**kw:self.fake_assembly(task,model,args,**kw)):
                 build.package(task, {'inputs':Path('/input'),'desktop_tools':Path('/tools')}, {'mu300-7.2': {'kernel':Path('/kernel')}, 'mu300-6.18': {'kernel':Path('/kernel2')}})
@@ -196,7 +197,8 @@ class TaskState(unittest.TestCase):
             identify = unittest.mock.Mock(side_effect=[
                 {'private_version':'r-test','source_fingerprint':'before'},
                 {'private_version':'r-test','source_fingerprint':'after'}])
-            with patch.object(build.runpy, 'run_path', return_value={'identify': identify}):
+            with patch.object(build.runpy, 'run_path', return_value={
+                    'identify': identify, 'verify_archive': lambda archive: None}):
                 task = build.Task(Path(folder) / 'native', 'fixture')
                 with patch.object(task, 'run', side_effect=lambda model,args,**kw:self.fake_assembly(task,model,args,**kw)):
                     with self.assertRaisesRegex(ValueError, 'sources changed'):

@@ -31,8 +31,8 @@ power_supply 事件，没有周期查询、后台 SOC 定时器。只认支持 K
 ## “充电启动后无基带”的原厂依据
 
 从连接的 U30 Air 导入目录只读取得本机原厂 `modem_control`。
-该导入目录没有保留完整 build.prop，本次以实际文件 SHA-256 精确识别，
-不把 E5 或 F50 的加载器当作 U30 Air 版本依据：
+该导入目录没有保留完整 build.prop，以下 SHA-256 用来记录当时取得的样本，
+不是生产代码的固件版本白名单。不把 E5 或 F50 的加载器当作 U30 Air 版本依据：
 
 `43a3bc8c4730b87431d4fc8d90a3652b2458ef8bc9f59772685d4016cc7819a3`
 
@@ -55,14 +55,22 @@ U30 专用 `mu300-modem-coldboot` 只在 charger＋modem=shutdown、且 CP
 | 0xcf0c | mov w19,w0 | mov w19,wzr | 不用 PM 已启动推断 CP 已启动 |
 | 0xcf50 | mov w0,63 | mov w0,34 | 仅 LOAD_CP / LOAD_CH，保留运行中的 PM |
 
-副本最终 SHA-256 必须是：
+上述历史样本修改后的 SHA-256 是（仅作回归测试的结果基准）：
 
 `9e3490f222a312e649dd5273df216b87ca9880a621ea68a0a73df0aa6b37c2ae`
 
 副本在 `/run/mu300/coldboot`，只绑定到 Android chroot 的独立 tmp 目录，
 没有修改原可执行文件、Android 分区、固件或 NV。执行文件仍名为
 modem_control，满足驱动的 task comm 检查。CP 已就绪、正常启动及其他
-机型继续使用原始加载器。未知加载器明确拒绝此选择性加载，不尝试猜偏移。
+机型继续使用原始加载器。
+
+2026-11-02 已取消整文件哈希白名单和固定补丁偏移。静态 ARM64 辅助程序
+`modem-loader-patch` 根据 ELF 映射、实际指令与调用关系定位上述路径；
+检查 PM 谓词、cmdline 解析、shutdown 条件，以及三个加载上下文的停止／启动
+配对和位掩码。固件版本字节、代码地址、文件布局变化不再导致直接拒绝。
+支持已核实指令 ABI 的寄存器、栈偏移及 NOP 差异；不承诺任意编译器生成的
+未知 ABI。无法唯一证明加载逻辑时仍明确报告识别失败，不向未知地址写指令。
+详细边界与新增回归见 [U30AIR-MODEM-LOADER-ABI-20261102.zh-CN.md](U30AIR-MODEM-LOADER-ABI-20261102.zh-CN.md)。
 
 ## 验证及尚未验证的内容
 

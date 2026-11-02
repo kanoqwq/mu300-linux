@@ -128,10 +128,12 @@ for o in firmware android-subset android-gpu-subset tools/logdw/logdw tools/bt-i
     [ -e "$IN/$o" ] && echo "  + $o" || echo "  - $o   (missing: the image is built without it)"
 done
 SML_CHECK=$(python3 "$TOP/tools/sml-voltage/build.py")
+MODEM_LOADER_PATCH=$(python3 "$TOP/tools/modem-loader/build.py")
 # shellcheck disable=SC2046
 docker run --rm --platform linux/arm64 \
   -v "${MU300_RELEASE_JSON:-$TOP/work}":/in/release.json:ro \
   -v "$SML_CHECK":/in/sml-voltage-check:ro \
+  -v "$MODEM_LOADER_PATCH":/in/modem-loader-patch:ro \
   -v "$TOP/rootfs/overlay/opt/mu300":/in/opt-mu300:ro -v "$TOP/rootfs/overlay/usr/share/ucode/mu300":/in/ucode-mu300:ro -v "$TOP/openwrt/overlay":/in/overlay:ro \
   -v "$TOP/openwrt/patches/fw4-sipa-offload.patch":/in/fw4-sipa-offload.patch:ro \
   -v "$TOP/openwrt/patches/wifi-scripts-no-dfs.patch":/in/wifi-scripts-no-dfs.patch:ro \
@@ -193,6 +195,8 @@ printf "mu300\n" > $R/etc/hostname   # the real one comes from uci (etc/uci-defa
 cp -a /in/opt-mu300 $R/opt/mu300
 cp /in/sml-voltage-check $R/opt/mu300/bin/sml-voltage-check
 chmod 0755 $R/opt/mu300/bin/sml-voltage-check
+cp /in/modem-loader-patch $R/opt/mu300/bin/modem-loader-patch
+chmod 0755 $R/opt/mu300/bin/modem-loader-patch
 cp -a /in/overlay/. $R/
 # Do not retain the retired call helpers from an older base image.
 rm -f $R/opt/mu300/bin/mu300-voice $R/opt/mu300/bin/mu300-audio-dsp
