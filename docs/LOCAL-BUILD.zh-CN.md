@@ -73,6 +73,12 @@ python3 tools/build-release.py package --label u30pro-preview
 Windows/Android/macOS 安装器复用登记目录下同一份经源码指纹和文件摘要校验的
 产物；变化才重编，绝不调用旧目录的构建 worker。首版限制见包内 START-HERE。
 
+也支持与 E5/MU300 相同的 `OPENWRT_GUI_ARTIFACT`、
+`OPENWRT_GUI_MACOS_ARTIFACT`、`OPENWRT_GUI_ANDROID_ARTIFACT` 显式输入。
+本机三仓库安装器提交一致时，三项均指向 E5 `installer/artifacts/` 下各自的平台目录，
+只构建一次，不复制 SDK、Cargo、Gradle 或整份原生工具。每项仍独立校验当前源码与哈希，
+校验失败不会改选默认目录；未指定的项目才使用 `build-layout.json` 登记的本仓库默认值。
+
 不迁移到 C 盘，不重复 SDK/node_modules/Cargo/根文件系统，不自动删除缓存、
 旧包、设备备份或失败 staging。Mac 安装器需原生 macOS CI 时再使用已获授权的
 上游 CI，不寻找用户不存在的 Mac Agent。

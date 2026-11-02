@@ -505,12 +505,15 @@ def package():
     sys.path.insert(0,str(TOP/'installer'))
     gui = runpy.run_path(str(TOP/'installer/package_gui.py'))
     artifacts = Path(LAYOUT['installer_artifacts'])
-    for platform,name in (('windows-x64','windows'),('macos-arm64','macos-arm64')):
-        gui['validate_artifact'](artifacts/name,platform,gui['sources']())
-    os.environ.update(OPENWRT_GUI_ARTIFACT=str(artifacts/'windows'),
-        OPENWRT_GUI_MACOS_ARTIFACT=str(artifacts/'macos-arm64'),
-        OPENWRT_GUI_ANDROID_ARTIFACT=str(artifacts/'android'))
-    runpy.run_path(str(TOP/'installer/package_android.py'))['artifact'](artifacts/'android')
+    # Select explicit native inputs exactly as the shared E5/MU300 packagers do.
+    # Validate before assembly; a stale artifact never selects another cache.
+    selected = {key:Path(os.environ.get(key,str(artifacts/name))) for key,name in (
+        ('OPENWRT_GUI_ARTIFACT','windows'),('OPENWRT_GUI_MACOS_ARTIFACT','macos-arm64'),
+        ('OPENWRT_GUI_ANDROID_ARTIFACT','android'))}
+    for platform,key in (('windows-x64','OPENWRT_GUI_ARTIFACT'),('macos-arm64','OPENWRT_GUI_MACOS_ARTIFACT')):
+        gui['validate_artifact'](selected[key],platform,gui['sources']())
+    os.environ.update({key:str(path) for key,path in selected.items()})
+    runpy.run_path(str(TOP/'installer/package_android.py'))['artifact'](selected['OPENWRT_GUI_ANDROID_ARTIFACT'])
     canonical_boot()
     report = json.loads((KERNEL/'u30pro-build.json').read_text())
     release = runpy.run_path(str(TOP/'tools/release-identity.py'))['identify'](TOP,'u30pro',report['version'])
