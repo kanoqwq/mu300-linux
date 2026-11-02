@@ -52,6 +52,8 @@ bc_setup() {
     command -v getprop >/dev/null 2>&1 || { bc_refuse "this is not Android: the boot chain is only ever copied from Android"; return 1; }
     _m="$(getprop ro.product.model) / $(getprop ro.product.device)"
     case $_m in
+        *MU5358*|*U30Pro*|*"U30 Pro"*)
+            [ "$(getprop ro.board.platform)" = ums9632 ] || { bc_refuse 'U30 Pro is not the UMS9632 platform'; return 1; } ;;
         'V50 / MU3351')
             [ "$(getprop ro.board.platform)" = ums9620 ] || { bc_refuse 'V50 is not the UMS9620 platform'; return 1; } ;;
         *U30Air*|*U30_Air*|*"U30 Air"*|*MU300*|*F50*|*mu300*) ;;

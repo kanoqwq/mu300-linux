@@ -54,6 +54,14 @@ class NativeSnapshot(unittest.TestCase):
         self.snap.write('proc/sys/kernel/random/boot_id','other-boot')
         self.assertEqual(self.snap.run()['modem']['imeis'],[None,None])
 
+    def test_wan_autostart_distinguishes_user_stop_from_reconnect(self):
+        response=self.snap.responses['network.interface.wan.status']
+        for value in (True,False):
+            response['autostart']=value
+            self.assertIs(self.snap.run()['wan']['autostart'],value)
+        del response['autostart']
+        self.assertIsNone(self.snap.run()['wan']['autostart'])
+
     def test_full_snapshot_and_public_apn(self):
         s=self.snap
         s.write('sys/class/thermal/thermal_zone0/type','soc-thmzone\n');s.write('sys/class/thermal/thermal_zone0/temp','42000\n')
@@ -78,6 +86,27 @@ class NativeSnapshot(unittest.TestCase):
         self.snap.write('tmp/dhcp.leases',f'{expiry} aa:bb:cc:dd:ee:ff 192.168.1.2 client *\n')
         result=self.snap.run()
         self.assertEqual(result['lan']['list'][0]['left'],max(0,expiry-result['ts']))
+
+    def test_u30pro_uses_native_thermal_names(self):
+        s=self.snap;s.write('etc/mu300/platform','u30pro\n')
+        for i,(name,temp) in enumerate([('core0-thmzone',35000),('nr-thmzone',34000),('board-thmzone',31000)]):
+            s.write(f'sys/class/thermal/thermal_zone{i}/type',name)
+            s.write(f'sys/class/thermal/thermal_zone{i}/temp',str(temp))
+        value=s.run()['temps']
+        self.assertEqual((value['cpu'],value['modem'],value['board']),(35,34,31))
+
+    def test_u30pro_fgu_and_charger_have_distinct_roles(self):
+        s=self.snap;s.write('etc/mu300/platform','u30pro\n')
+        s.write('sys/class/power_supply/u30pro-battery/type','Battery')
+        s.write('sys/class/power_supply/u30pro-battery/capacity','76')
+        s.write('sys/class/power_supply/u30pro-battery/current_now','321000')
+        s.write('sys/class/power_supply/u30pro-charger-master/type','USB')
+        s.write('sys/class/power_supply/u30pro-charger-master/status','Charging')
+        s.write('sys/class/power_supply/u30pro-charger-master/online','1')
+        value=s.run('power')
+        self.assertEqual((value['capacity'],value['status'],value['ua'],value['usb']),(76,'Charging',321000,1))
+        s.write('etc/mu300/platform','mu300\n')
+        self.assertIsNone(s.run('power')['status'],'native charger selection must stay model-specific')
 
     def test_status_recognizes_active_owner_arguments_after_nul(self):
         s=self.snap;s.write('tmp/unisoc-modem/collect.lck/pid','123\n')

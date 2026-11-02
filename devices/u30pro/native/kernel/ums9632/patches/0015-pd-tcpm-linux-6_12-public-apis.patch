@@ -1,0 +1,69 @@
+--- a/drivers/unisoc_platform/sprd_charger/power_delivery/sprd_tcpm.c
++++ b/drivers/unisoc_platform/sprd_charger/power_delivery/sprd_tcpm.c
+@@ -1691,7 +1691,7 @@
+ 
+ static int sprd_typec_get_negotiated_svdm_version(struct sprd_tcpm_port *port)
+ {
+-	return port->partner->svdm_version;
++	return typec_get_negotiated_svdm_version(port->typec_port);
+ }
+ 
+ static int sprd_tcpm_pd_svdm(struct sprd_tcpm_port *port,
+@@ -4926,7 +4926,7 @@
+ 	 * USB-PD standard, 6.2.1.4, Port Power Role:
+ 	 * "During the Power Role Swap Sequence, for the initial Source
+ 	 * Port, the Port Power Role field shall be set to Sink in the
+-	 * PS_RDY Message indicating that the initial Source’s power
++	 * PS_RDY Message indicating that the initial Source鈥檚 power
+ 	 * supply is turned off"
+ 	 */
+ 	sprd_tcpm_set_pwr_role(port, TYPEC_SINK);
+@@ -6636,11 +6636,7 @@
+ 	}
+ }
+ 
+-static enum power_supply_usb_type sprd_tcpm_psy_usb_types[] = {
+-	POWER_SUPPLY_USB_TYPE_C,
+-	POWER_SUPPLY_USB_TYPE_PD,
+-	POWER_SUPPLY_USB_TYPE_PD_PPS,
+-};
++
+ 
+ static const char *tcpm_psy_name_prefix = "sprd-tcpm-source-psy-";
+ 
+@@ -6662,8 +6658,8 @@
+ 		 port_dev_name);
+ 	port->psy_desc.name = psy_name;
+ 	port->psy_desc.type = POWER_SUPPLY_TYPE_UNKNOWN;
+-	port->psy_desc.usb_types = sprd_tcpm_psy_usb_types;
+-	port->psy_desc.num_usb_types = ARRAY_SIZE(sprd_tcpm_psy_usb_types);
++	port->psy_desc.usb_types = BIT(POWER_SUPPLY_USB_TYPE_C) |
++		BIT(POWER_SUPPLY_USB_TYPE_PD) | BIT(POWER_SUPPLY_USB_TYPE_PD_PPS);
+ 	port->psy_desc.properties = sprd_tcpm_psy_props;
+ 	port->psy_desc.num_properties = ARRAY_SIZE(sprd_tcpm_psy_props);
+ 	port->psy_desc.get_property = sprd_tcpm_psy_get_prop;
+--- a/drivers/unisoc_platform/sprd_charger/power_delivery/sc27xx_pd.c
++++ b/drivers/unisoc_platform/sprd_charger/power_delivery/sc27xx_pd.c
+@@ -2823,7 +2823,7 @@
+ static const struct typec_altmode_desc sc27xx_alt_modes = {
+ 	.svid = USB_TYPEC_DP_SID,
+ 	.mode = USB_TYPEC_DP_MODE,
+-	.vdo = DP_CAP_CAPABILITY(DP_CAP_DFP_D) | DP_CAP_DP_SIGNALING |
++	.vdo = DP_CAP_CAPABILITY(DP_CAP_DFP_D) | BIT(2) /* Preserve the vendor VDO signaling bit. */ |
+ 		DP_CAP_RECEPTACLE | DP_CAP_PIN_DFP_ASSIGN(DP_PIN_ASSIGN_DP_BR),
+ };
+ 
+@@ -3192,12 +3192,11 @@
+ 	return 0;
+ }
+ 
+-static int sc27xx_pd_remove(struct platform_device *pdev)
++static void sc27xx_pd_remove(struct platform_device *pdev)
+ {
+ 	struct sc27xx_pd *pd = platform_get_drvdata(pdev);
+ 
+ 	sprd_tcpm_unregister_port(pd->sprd_tcpm_port);
+-	return 0;
+ }
+ 
+ static void sc27xx_pd_shutdown(struct platform_device *pdev)

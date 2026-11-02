@@ -1,0 +1,22 @@
+config UNISOC_QOGIRN5_BACKLIGHT
+ bool "U30 Pro PWM backlight (sprd,qogirn5-backlight)"
+ depends on PWM && BACKLIGHT_CLASS_DEVICE
+ help
+  Registers the board's PWM backlight as /sys/class/backlight/sprd_backlight
+  with the stock 0..4095 brightness scale.
+config UNISOC_NV3002C_PANEL
+ bool "U30 Pro NV3002C 240x240 SPI panel (DRM)"
+ depends on DRM && SPI && OF && GPIOLIB
+ select DRM_KMS_HELPER
+ select DRM_GEM_DMA_HELPER
+ select DRM_MIPI_DBI
+ select DRM_FBDEV_DMA_HELPER if DRM_FBDEV_EMULATION
+ help
+  DRM driver for the SPI display of the ZTE U30 Pro, written on top of the
+  mipi-dbi helpers.  The panel description (init sequence, reset timing) is
+  taken from the unmodified stock device tree (/lcds/<spi_panel_name>).
+config UNISOC_TLSC_TOUCH
+ bool "U30 Pro touch controller (tlsc6x / CHSC6448)"
+ depends on I2C && INPUT && OF
+ help
+  Run-time touch reporting for the I2C touch panel (name tlsc6x_touch, 0..239 range).

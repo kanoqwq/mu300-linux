@@ -192,7 +192,106 @@ static size_t dispatch_init(size_t p)
     int64_t target=(int64_t)p+80+(int8_t)code[table-BASE+11]*4;
     return target>=0 && (uint64_t)target<length ? bl((size_t)target) : NONE;
 }
-static int inspect(const uint8_t *image, size_t size)
+/* UMS9632's Clang-built SML decodes two bytes (w0[15:8], w0[23:16]).
+ * Follow the actual SMC dispatch, unchanged w0, flag stores and both signed
+ * selector loops. No firmware hash, absolute file offset or SMC execution. */
+static uint64_t adrp_page(size_t p, unsigned reg)
+{
+    uint32_t a=word(p);
+    if((a&0x9f00001f)!=(0x90000000U|reg)) return 0;
+    uint32_t imm=((a>>5)&0x7ffff)<<2 | ((a>>29)&3);
+    return ((BASE+p)&~UINT64_C(4095))+sx(imm,21)*4096;
+}
+static uint64_t two_decoder(size_t p)
+{
+    static const uint32_t pattern[]={
+        0x528c8008,0x12181809,0x6b08013f,0x54000088,0x53083c08,0,0,
+        0x12101808,0x7159011f,0x54000088,0x53105c08,0,0,0xd65f03c0};
+    if(p>length || length-p<sizeof pattern) return 0;
+    for(unsigned i=0;i<sizeof pattern/4;i++)
+        if(i!=5 && i!=6 && i!=11 && i!=12 && word(p+4*i)!=pattern[i])return 0;
+    uint64_t a=adrp_page(p+20,9),b=adrp_page(p+44,9);
+    uint32_t st0=word(p+24),st1=word(p+48);
+    if(!a || !b || (st0&0xffc003ff)!=0xb9000128U || (st1&0xffc003ff)!=0xb9000128U)return 0;
+    a+=((st0>>10)&4095)*4; b+=((st1>>10)&4095)*4;
+    return state_address(a) && b==a+0x38 ? a : 0;
+}
+static uint64_t two_init(size_t init,size_t *decoder)
+{
+    for(size_t p=init;p<length && p-init<1024;p+=4){
+        uint32_t w=word(p);size_t call=bl(p);
+        if(call!=NONE){
+            uint64_t state=two_decoder(call);
+            if(state){*decoder=call;return state;}
+            return 0; /* An unknown earlier call may have changed w0. */
+        }
+        /* Before that first call the audited setup is straight-line code,
+         * and every instruction leaves x0/w0 intact. Reject unfamiliar control
+         * flow, an x0 destination (including loads) or writes via a pair load. */
+        if((w&31)==0 || (w&0x7c000000)==0x14000000 ||
+           (w&0xff000000)==0x54000000 || (w&0x7e000000)==0x34000000 ||
+           (w&0x7e000000)==0x36000000 || (w&0xff000000)==0xd6000000 ||
+           ((w&0x3a400000)==0x28400000 && ((w>>10)&31)==0)) return 0;
+    }
+    return 0;
+}
+static int two_consumers(uint64_t state, size_t paths[2])
+{
+    static const uint32_t pattern[]={
+        0xb9400128,0x34000548,0xb940052a,0x6b17015f,0x540004e0,
+        0xb940092a,0x6b17015f,0x54000480,0xb9400d29,0x6b17013f,0x54000420,
+        0xf94012c9,0xb40002e9,0xb9402aca,0x5100454b,0x3100417f,0x54000263,
+        0x1200190b,0x52807d0c,0x7219011f,0x1b0c7d6b,0x528b11ec,0x72a9f16c,
+        0x1130d16b,0x9bac7d6c,0xd360fd8c,0x4b0c016b,0x0b4b058b,0x530b7d6b,
+        0x5a8b0568,0x7940012b,0xf100054a,0x0b08016b,0x7800252b,0x54ffff81};
+    unsigned found=0;size_t getter=NONE;
+    for(size_t p=8;p+12+sizeof pattern<=length;p+=4){
+        uint64_t a=adrp_page(p,9);
+        if(!a || word(p+4)!=0xaa0003f6 || (word(p+8)&0xffc003ff)!=0x91000129U)continue;
+        a+=(word(p+8)>>10)&4095;
+        if(a!=state && a!=state+0x38)continue;
+        if((word(p-4)&0xff00001f)!=0xb4000000U || bl(p-8)==NONE)continue;
+        unsigned i;for(i=0;i<sizeof pattern/4;i++)if(word(p+12+4*i)!=pattern[i])break;
+        if(i!=sizeof pattern/4)continue;
+        unsigned bit=a==state?1:2;
+        if((found&bit) || (getter!=NONE && getter!=bl(p-8)))return 0;
+        getter=bl(p-8);paths[bit==1?0:1]=p+12;found|=bit;
+    }
+    return found==3;
+}
+static int inspect_two(void)
+{
+    static const uint32_t dispatch[]={
+        0x529f400a,0x72afbfea,0x0b0a000a,0x7100555f,0,
+        0,0xaa0203e8,0,0xaa0103e9,0x92407c21,0x92407c42,
+        0,0x386a696d,0x8b0d098c,0xd61f0180};
+    for(size_t p=0;p+sizeof dispatch<=length;p+=4){
+        unsigned i;for(i=0;i<sizeof dispatch/4;i++)
+            if(i!=4 && i!=5 && i!=7 && i!=11 && word(p+4*i)!=dispatch[i])break;
+        if(i!=sizeof dispatch/4 || (word(p+16)&0xff00001f)!=0x54000008U)continue;
+        uint64_t table=adrp_page(p+20,11);
+        if(!table || (word(p+28)&0xffc003ff)!=0x9100016bU)continue;
+        table+=(word(p+28)>>10)&4095;
+        if(table<BASE || table-BASE>length || length-(size_t)(table-BASE)<22)continue;
+        uint32_t adr=word(p+44);
+        if((adr&0x9f00001f)!=0x1000000cU)continue;
+        uint32_t imm=((adr>>5)&0x7ffff)<<2 | ((adr>>29)&3);
+        int64_t base=(int64_t)p+44+sx(imm,21);
+        int64_t target=base+code[table-BASE+11]*4;
+        if(target<0 || (uint64_t)target>=length)continue;
+        size_t t=(size_t)target;
+        if(word(t)!=0x2a0903e0 || word(t+4)!=0x2a0803e1 || word(t+8)!=0x2a0303e2)continue;
+        size_t init=bl(t+12),decoder=NONE;
+        uint64_t state=init==NONE?0:two_init(init,&decoder);
+        size_t paths[2]={0};
+        if(state && two_consumers(state, paths)){
+            printf("{\"abi\":\"unisoc-dvfs-init-ums9632\",\"domain_count\":2,\"dispatch\":%zu,\"init\":%zu,\"decoder\":%zu,\"consumers\":[%zu,%zu]}\n",p,init,decoder,paths[0],paths[1]);
+            return 1;
+        }
+    }
+    return 0;
+}
+static int inspect(const uint8_t *image, size_t size, int domains)
 {
     if(size<512 || memcmp(image,"DHTB\1\0\0\0",8)) return 0;
     size_t payload=le32(image+0x30), signed_size=le32(image+0x50);
@@ -200,6 +299,7 @@ static int inspect(const uint8_t *image, size_t size)
     uint8_t digest[32]; sha256(image+512,payload,digest);
     if(memcmp(digest,image+8,32)) return 0;
     code=image+512; length=payload;
+    if(domains==2)return inspect_two();
     size_t adjust=NONE;
     for(size_t p=0;p+sizeof selector<=length;p+=4) if(selector_at(p)) {
         if(adjust!=NONE) return 0;  /* Do not guess between ambiguous routines. */
@@ -220,14 +320,17 @@ static int inspect(const uint8_t *image, size_t size)
 }
 int main(int argc, char **argv)
 {
-    if(argc!=2) { fputs("usage: sml-voltage-check FILE|-\n",stderr); return 2; }
-    FILE *f=strcmp(argv[1],"-") ? fopen(argv[1],"rb") : stdin;
+    int domains=3;const char *path=NULL;
+    if(argc==2)path=argv[1];
+    else if(argc==4 && !strcmp(argv[1],"--domains") && (!strcmp(argv[2],"2") || !strcmp(argv[2],"3"))){domains=atoi(argv[2]);path=argv[3];}
+    if(!path) { fputs("usage: sml-voltage-check [--domains 2|3] FILE|-\n",stderr); return 2; }
+    FILE *f=strcmp(path,"-") ? fopen(path,"rb") : stdin;
     if(!f) { fputs("SML read failed\n",stderr); return 2; }
     uint8_t *data=malloc(MAX_IMAGE+1);
     if(!data) { if(f!=stdin) fclose(f); return 2; }
     size_t size=fread(data,1,MAX_IMAGE+1,f); int failed=ferror(f);
     if(f!=stdin) fclose(f);
-    int supported=!failed && size<=MAX_IMAGE && inspect(data,size);
+    int supported=!failed && size<=MAX_IMAGE && inspect(data,size,domains);
     free(data);
     if(!supported && !failed) fputs("SML voltage ABI could not be established\n",stderr);
     return failed ? 2 : supported ? 0 : 1;

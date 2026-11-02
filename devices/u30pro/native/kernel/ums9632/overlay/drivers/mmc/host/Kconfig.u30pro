@@ -1,0 +1,11 @@
+config U30PRO_SDHCI_R11P3_BOOTSTRAP
+	bool "U30 Pro R11P3 read-only bootstrap"
+	depends on MMC_SDHCI_SPRD && (!SUSPEND || U30PRO_KEXEC_BASE)
+	help
+	  Enable read-only R11P3 enumeration using the upstream SDHCI driver.
+	  Restricts timing to 52 MHz, disables CQE/ICE and denies write/erase.
+	  Runtime suspend is held off until the complete BSP path is validated.
+
+config U30PRO_SDHCI_TRIAL_KUNIT_TEST
+	bool "Test the R11P3 read-only command boundary"
+	depends on KUNIT && U30PRO_SDHCI_R11P3_BOOTSTRAP && MMC_SDHCI_SPRD=y

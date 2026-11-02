@@ -3,7 +3,7 @@
 # Same-board preferences, APNs, SMS and traffic history remain user-owned.
 export PATH="$PATH:/opt/mu300/bin:/usr/sbin:/sbin"
 device=$(mu300-device 2>/dev/null)
-case $device in f50|v50|u30air) slots=2 ;; *) exit 1 ;; esac
+case $device in f50|v50|u30air|u30pro) slots=2 ;; *) exit 1 ;; esac
 [ "$(uci -q get unisoc_modem.main)" = core ] || exit 0
 # Firmware-owned default is shared by all models. The explicit selector is
 # user-owned, so upgrading the default must never rewrite auto_work_mode.
@@ -29,6 +29,7 @@ if [ "$previous" = "$device" ]; then
     case $device in
         f50) version=f50_dual_version ;;
         u30air) version=u30_dual_version ;;
+        u30pro) version=u30pro_dual_version ;;
         *) exit 0 ;;
     esac
     [ "$(uci -q get "unisoc_modem.main.$version")" != 1 ] || exit 0
@@ -50,6 +51,7 @@ fi
     fi
     if [ "$device" = u30air ]; then printf "set unisoc_modem.main.u30_dual_version='1'\n"; fi
     if [ "$device" = f50 ]; then printf "set unisoc_modem.main.f50_dual_version='1'\n"; fi
+    if [ "$device" = u30pro ]; then printf "set unisoc_modem.main.u30pro_dual_version='1'\n"; fi
     printf "set unisoc_modem.main.platform_defaults='%s'\n" "$device"
     printf 'commit unisoc_modem\n'
 } | uci -q batch

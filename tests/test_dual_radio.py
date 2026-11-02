@@ -42,6 +42,27 @@ f.write_text(json.dumps(s));print('OK')
         self.extra=dict(MU300_DUAL_AT_CLIENT=client,MU300_DUAL_RUN=self.run,MU300_SIM_SLOT='1')
         (self.tmp/'sim-radio-policy').write_text('1 1\n')
 
+    def test_u30pro_uses_inline_data_channel_urc_owners(self):
+        for shell in self.each_shell():
+            self.reset([0,0])
+            for directory,n in [('mu300-at2',0),('mu300-at5',3)]:
+                p=self.run/directory/'urc';p.mkdir(parents=True,exist_ok=True)
+                (p/f'stty_nr{n}.ready').write_text(str(os.getpid()))
+            # Legacy URC markers are deliberately gone; they are not U30 Pro owners.
+            for directory,n in [('mu300-at',0),('mu300-at4',3)]:
+                (self.run/directory/'urc'/f'stty_nr{n}.ready').unlink(missing_ok=True)
+            result=self.script(shell,SCRIPT,**dict(self.extra,TEST_DEVICE='u30pro'))
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertTrue((self.run/'mu300-dual-radio-ready').exists())
+            self.assertEqual(json.loads((self.tmp/'radio.json').read_text())['cfun'],[1,1])
+            # One missing native owner must reject before any radio command.
+            self.reset([0,0])
+            (self.run/'mu300-at5/urc/stty_nr3.ready').unlink()
+            result=self.script(shell,SCRIPT,**dict(self.extra,TEST_DEVICE='u30pro'))
+            self.assertNotEqual(result.returncode,0)
+            self.assertIn('URC reader not ready',result.stderr)
+            self.assertEqual((self.tmp/'commands').read_text(),'')
+
     def test_u30_single_standby_boot_closes_peer_and_keeps_both_off_policy(self):
         for shell in self.each_shell():
             for selected in ('0','1'):

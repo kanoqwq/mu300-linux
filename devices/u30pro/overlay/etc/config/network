@@ -1,0 +1,32 @@
+config interface 'loopback'
+    option device 'lo'
+    option proto 'static'
+    option ipaddr '127.0.0.1'
+    option netmask '255.0.0.0'
+
+config globals 'globals'
+    option ula_prefix 'fd77:5358:77::/48'
+
+config device
+    option name 'br-lan'
+    option type 'bridge'
+    list ports 'usb0'
+
+config interface 'lan'
+    option device 'br-lan'
+    option proto 'static'
+    option ipaddr '192.168.77.1'
+    option netmask '255.255.255.0'
+    option ip6assign '64'
+
+config interface 'wan'
+    option proto 'mu300cell'
+    option device 'sipa_eth0'
+    option sim_slot '0'
+    option apn ''
+    option pdptype 'IPV4V6'
+
+config interface 'wwan'
+    option proto 'dhcp'
+    option metric '40'
+

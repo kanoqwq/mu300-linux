@@ -1,0 +1,54 @@
+{
+  "format": 1,
+  "id": "u30pro",
+  "status": "source-port-in-progress",
+  "software_base": {
+    "repository": "https://github.com/kanoqwq/mu300-linux.git",
+    "branch": "minikano-openwrt-feats",
+    "commit": "29061dc8451a7857e6c8c6ecf8c43a04a2970d60"
+  },
+  "hardware_reference": {
+    "repository": "https://github.com/33333s/U30pro-openwrt.git",
+    "commit": "df3b44fce648105aa785204571f8ad6317a95959",
+    "source_manifest": "reference.json"
+  },
+  "hardware": {
+    "soc": "ums9632",
+    "android_model": "MU5358",
+    "kernel": "6.12.94-u30pro-p1",
+    "wifi": "aic8800-sdio",
+    "charger": "sgm41513",
+    "display": "nv3002c-240x240",
+    "touch": "tlsc"
+  },
+  "boot": {
+    "images": [
+      "boot",
+      "vendor_boot",
+      "init_boot"
+    ],
+    "slot_policy": "opposite-verified-android-slot",
+    "root": "mu300-container-ext4",
+    "persistent_partition": "mu300root",
+    "persistent_use": "complete-openwrt-root",
+    "preserve_android": true,
+    "partition_geometry": "per-device",
+    "hardware_trial_verified": false
+  },
+  "management": {
+    "dashboard": "luci-app-mu300",
+    "installer": "shared-submodule-mu300-layout-native-boot-adapter",
+    "screen": "u30pro-panel",
+    "at_broker": "mu300-modemd",
+    "at_port": "/dev/stty_nr2",
+    "dial_owner": "mu300-modemd",
+    "dial_port": "/dev/stty_nr0",
+    "cp_loader": "u30-modemd",
+    "nv_sync": "u30pro-nvsyncd",
+    "cp_notify": "u30pro-refnotifyd",
+    "sim_slots": 2,
+    "sim1_at_port": "/dev/stty_nr5",
+    "sim1_dial_port": "/dev/stty_nr3"
+  },
+  "release_ready": false
+}

@@ -1,0 +1,97 @@
+--- a/arch/arm64/kernel/head.S
++++ b/arch/arm64/kernel/head.S
+@@ -82,6 +82,10 @@
+ 	 *  x21        primary_entry() .. start_kernel()        FDT pointer passed at boot in x0
+ 	 */
+ SYM_CODE_START(primary_entry)
++#if defined(CONFIG_U30PRO_TIMED_RESET) && CONFIG_U30PRO_TIMED_RESET_STAGE == 1
++	b	u30pro_timed_reset
++#endif
++
+ 	bl	record_mmu_state
+ 	bl	preserve_boot_args
+ 
+@@ -119,6 +123,10 @@
+ 	bl	init_kernel_el			// w0=cpu_boot_mode
+ 	mov	x20, x0
+ 
++#if defined(CONFIG_U30PRO_TIMED_RESET) && CONFIG_U30PRO_TIMED_RESET_STAGE == 2
++	b	u30pro_timed_reset
++#endif
++
+ 	/*
+ 	 * The following calls CPU setup code, see arch/arm64/mm/proc.S for
+ 	 * details.
+@@ -126,6 +134,9 @@
+ 	 * the TCR will have been set.
+ 	 */
+ 	bl	__cpu_setup			// initialise processor
++#if defined(CONFIG_U30PRO_TIMED_RESET) && CONFIG_U30PRO_TIMED_RESET_STAGE == 3
++	b	u30pro_timed_reset
++#endif
+ 	b	__primary_switch
+ SYM_CODE_END(primary_entry)
+ 
+@@ -215,6 +226,10 @@
+  *   x0 = __pa(KERNEL_START)
+  */
+ SYM_FUNC_START_LOCAL(__primary_switched)
++#if defined(CONFIG_U30PRO_TIMED_RESET) && CONFIG_U30PRO_TIMED_RESET_STAGE == 4
++	b	u30pro_timed_reset
++#endif
++
+ 	adr_l	x4, init_task
+ 	init_cpu_task x4, x5, x6
+ 
+--- a/arch/arm64/kernel/setup.c
++++ b/arch/arm64/kernel/setup.c
+@@ -18,6 +18,7 @@
+ #include <linux/screen_info.h>
+ #include <linux/init.h>
+ #include <linux/u30pro_early_ramcon.h>
++#include <linux/u30pro_timed_reset.h>
+ #include <linux/kexec.h>
+ #include <linux/root_dev.h>
+ #include <linux/cpu.h>
+@@ -298,6 +299,7 @@
+ 	 * cpufeature code and early parameters.
+ 	 */
+ 	jump_label_init();
++	u30pro_reset_checkpoint(6);
+ 	u30pro_early_ramcon_init();
+ 	u30pro_early_ramcon_checkpoint("before-early-params");
+ 	parse_early_param();
+--- a/init/main.c
++++ b/init/main.c
+@@ -26,6 +26,7 @@
+ #include <linux/ioport.h>
+ #include <linux/init.h>
+ #include <linux/u30pro_early_ramcon.h>
++#include <linux/u30pro_timed_reset.h>
+ #include <linux/initrd.h>
+ #include <linux/memblock.h>
+ #include <linux/acpi.h>
+@@ -917,6 +918,7 @@
+ 	char *command_line;
+ 	char *after_dashes;
+ 
++	u30pro_reset_checkpoint(5);
+ 	set_task_stack_end_magic(&init_task);
+ 	smp_setup_processor_id();
+ 	debug_objects_early_init();
+@@ -1016,6 +1018,7 @@
+ 
+ 	context_tracking_init();
+ 	/* init some links before init_ISA_irqs() */
++	u30pro_reset_checkpoint(7);
+ 	u30pro_early_ramcon_checkpoint("before-irq-init");
+ 	early_irq_init();
+ 	init_IRQ();
+@@ -1585,6 +1588,7 @@
+ 	do_pre_smp_initcalls();
+ 	lockup_detector_init();
+ 
++	u30pro_reset_checkpoint(8);
+ 	u30pro_early_ramcon_checkpoint("before-smp");
+ 	smp_init();
+ 	u30pro_early_ramcon_checkpoint("after-smp");

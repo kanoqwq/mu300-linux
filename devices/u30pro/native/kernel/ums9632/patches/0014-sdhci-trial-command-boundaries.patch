@@ -1,0 +1,111 @@
+--- a/drivers/mmc/host/sdhci-sprd.c
++++ b/drivers/mmc/host/sdhci-sprd.c
+@@ -492,45 +492,80 @@
+ 		host->flags &= ~SDHCI_AUTO_CMD23;
+ }
+ 
+-/* Data writes/erase are denied even through raw MMC ioctl during this trial. */
+-static bool sdhci_sprd_trial_reject(struct mmc_host *mmc, struct mmc_request *mrq)
+-{
+-	struct sdhci_host *host = mmc_priv(mmc);
+-	struct sdhci_sprd_host *sprd_host = TO_SPRD_HOST(host);
++/* A bounded bus-width test writes the controller/card test pattern, not media. */
++static bool sdhci_sprd_trial_forbidden(struct sdhci_sprd_host *sprd_host,
++				     struct mmc_host *mmc, struct mmc_request *mrq)
++{
+ 	u32 op = mrq->cmd->opcode;
+-	bool deny = mrq->data && (mrq->data->flags & MMC_DATA_WRITE);
++	bool bus_test = op == MMC_BUS_TEST_W && mrq->data &&
++		mrq->data->blocks == 1 &&
++		(mrq->data->blksz == 4 || mrq->data->blksz == 8);
+ 
+ 	if (!sprd_host->r11p3_trial || !(mmc->caps2 & MMC_CAP2_NO_SDIO))
+ 		return false;
+-	deny |= op == MMC_ERASE || op == MMC_ERASE_GROUP_START ||
+-		op == MMC_ERASE_GROUP_END || op == MMC_SET_WRITE_PROT ||
+-		op == MMC_CLR_WRITE_PROT;
+-	if (op == MMC_SWITCH) {
++	if (mrq->data && (mrq->data->flags & MMC_DATA_WRITE) && !bus_test)
++		return true;
++	/* Only the native MMC initialization/read command set is admitted. */
++	switch (op) {
++	case MMC_GO_IDLE_STATE:
++	case MMC_SEND_OP_COND:
++	case MMC_ALL_SEND_CID:
++	case MMC_SET_RELATIVE_ADDR:
++	case MMC_SET_DSR:
++	case MMC_SLEEP_AWAKE:
++	case MMC_SELECT_CARD:
++	case MMC_SEND_EXT_CSD:
++	case MMC_SEND_CSD:
++	case MMC_SEND_CID:
++	case MMC_STOP_TRANSMISSION:
++	case MMC_SEND_STATUS:
++	case MMC_BUS_TEST_R:
++	case MMC_GO_INACTIVE_STATE:
++	case MMC_SET_BLOCKLEN:
++	case MMC_READ_SINGLE_BLOCK:
++	case MMC_READ_MULTIPLE_BLOCK:
++	case MMC_SET_BLOCK_COUNT:
++	case MMC_SEND_WRITE_PROT:
++		return false;
++	case MMC_BUS_TEST_W:
++		return !bus_test;
++	case MMC_SWITCH: {
+ 		u8 index = (mrq->cmd->arg >> 16) & 0xff;
+ 
+-		/* Only initialization/runtime settings, never OTP/boot/FFU/sanitize. */
++		if (((mrq->cmd->arg >> 24) & 3) != MMC_SWITCH_MODE_WRITE_BYTE)
++			return true;
++		/* Never OTP/boot-selection/FFU/sanitize/manufacturer commands. */
+ 		switch (index) {
+ 		case EXT_CSD_BUS_WIDTH:
+ 		case EXT_CSD_HS_TIMING:
+ 		case EXT_CSD_POWER_CLASS:
+ 		case EXT_CSD_ERASE_GROUP_DEF:
+-		case EXT_CSD_PART_CONFIG:
+ 		case EXT_CSD_CMDQ_MODE_EN:
+ 		case EXT_CSD_CACHE_CTRL:
+ 		case EXT_CSD_FLUSH_CACHE:
+ 		case EXT_CSD_POWER_OFF_NOTIFICATION:
+ 		case EXT_CSD_EXP_EVENTS_CTRL:
+ 		case EXT_CSD_HPI_MGMT:
+-			break;
++			return false;
++		case EXT_CSD_PART_CONFIG:
++			/* Core may return to user access, preserving boot/ACK bits. */
++			return !sprd_host->trial_card ||
++				((mrq->cmd->arg >> 8) & 0xff) !=
++				(sprd_host->trial_card->ext_csd.part_config & ~7);
+ 		default:
+-			deny = true;
++			return true;
+ 		}
+-		if (index == EXT_CSD_PART_CONFIG && (!sprd_host->trial_card ||
+-		    (mrq->cmd->arg & 0x00ffff00) !=
+-		    (((u32)index << 16) | ((u32)(sprd_host->trial_card->ext_csd.part_config & ~7) << 8))))
+-			deny = true;
+-	}
+-	if (!deny)
++	}
++	default:
++		return true;
++	}
++}
++
++static bool sdhci_sprd_trial_reject(struct mmc_host *mmc, struct mmc_request *mrq)
++{
++	struct sdhci_host *host = mmc_priv(mmc);
++
++	if (!sdhci_sprd_trial_forbidden(TO_SPRD_HOST(host), mmc, mrq))
+ 		return false;
+ 	mrq->cmd->error = -EROFS;
+ 	if (mrq->data)
+@@ -1104,3 +1139,7 @@
+ MODULE_DESCRIPTION("Spreadtrum sdio host controller r11 driver");
+ MODULE_LICENSE("GPL v2");
+ MODULE_ALIAS("platform:sdhci-sprd-r11");
++
++#if IS_ENABLED(CONFIG_U30PRO_SDHCI_TRIAL_KUNIT_TEST)
++#include "sdhci-sprd-trial-test.c"
++#endif

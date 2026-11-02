@@ -1,0 +1,16 @@
+#!/bin/sh
+# Apply the stored CPU core/governor/frequency settings after the system is up (see /usr/share/u30pro/cpu.uc).
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+# The SoC thermal zone (the passive limits that throttle the CPUs) is built for the power_allocator governor: a PID loop on a power budget
+# (stock: sustainable-power 4650 mW).  The kernel default, step_wise, steps one frequency per poll and overshoots: under an 8-core load the
+# SoC passed 90 C in 30 s, with power_allocator it stayed between 76 and 90 C.  Switch only that zone, the others have no passive trip.
+for z in /sys/class/thermal/thermal_zone*; do
+	[ "$(cat $z/type 2>/dev/null)" = soc-thmzone ] || continue
+	grep -q power_allocator $z/available_policies 2>/dev/null && echo power_allocator >$z/policy
+done
+n=0
+while [ ! -e /run/u30pro-native-ready ] && [ "$n" -lt 120 ]; do sleep 1; n=$((n + 1)); done
+# the cpufreq driver (when it is on) registers its policies a little after the root has started
+n=0
+while [ ! -d /sys/devices/system/cpu/cpu0/cpufreq ] && [ "$n" -lt 30 ]; do sleep 1; n=$((n + 1)); done
+exec /usr/bin/ucode /usr/share/u30pro/cpu-apply.uc

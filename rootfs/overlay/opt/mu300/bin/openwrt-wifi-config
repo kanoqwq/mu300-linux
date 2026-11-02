@@ -66,6 +66,10 @@ case "${BAND:-5}" in
 			band=2g; htmode=HT20; CHANNEL=6
 		fi ;;
 esac
+# The native AIC8800 supports Wi-Fi 6; SC2355 defaults are not its capability.
+if [ "$(cat "$R/etc/mu300/platform" 2>/dev/null)" = u30pro ]; then
+    case $htmode in VHT*) htmode=HE${htmode#VHT} ;; esac
+fi
 wifi config >/dev/null 2>&1
 touch "$R/etc/config/wireless"
 radio=$(uci -q show wireless | sed -n "s/^wireless\.\([^.=]*\)=wifi-device$/\1/p" | head -1)

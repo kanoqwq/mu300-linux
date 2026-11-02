@@ -1,0 +1,9 @@
+config U30PRO_SPRD_ASE
+ bool "Unisoc ASE (aging sensor) driver"
+ depends on CPU_FREQ && ARCH_SPRD && MFD_SYSCON && NVMEM
+ help
+   Aging compensation for the CPU cluster voltages (see drivers/unisoc_platform/ase).  Does nothing unless u30pro_ase=1 is on the kernel
+   command line; needs the apcpu cpufreq driver to act on the result.
+config U30PRO_SPRD_ASE_GENERIC
+ bool "Unisoc ASE glue for the PMIC core supply"
+ depends on U30PRO_SPRD_ASE

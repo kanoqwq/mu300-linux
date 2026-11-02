@@ -1,0 +1,57 @@
+--- a/drivers/unisoc_platform/usb/musb/musb_core.c
++++ b/drivers/unisoc_platform/usb/musb/musb_core.c
+@@ -2539,7 +2539,7 @@
+ 	return musb_init_controller(dev, irq, base);
+ }
+ 
+-static int musb_remove(struct platform_device *pdev)
++static void musb_remove(struct platform_device *pdev)
+ {
+ 	struct device	*dev = &pdev->dev;
+ 	struct musb	*musb = dev_to_musb(dev);
+@@ -2575,7 +2575,6 @@
+ 	usb_phy_shutdown(musb->xceiv);
+ 	musb_free(musb);
+ 	device_init_wakeup(dev, 0);
+-	return 0;
+ }
+ 
+ #ifdef	CONFIG_PM
+--- a/drivers/unisoc_platform/usb/musb/musb_sprd.c
++++ b/drivers/unisoc_platform/usb/musb/musb_sprd.c
+@@ -3016,7 +3016,7 @@
+ 	return ret;
+ }
+ 
+-static int musb_sprd_remove(struct platform_device *pdev)
++static void musb_sprd_remove(struct platform_device *pdev)
+ {
+ 	struct sprd_glue *glue = platform_get_drvdata(pdev);
+ 	struct musb *musb = glue->musb;
+@@ -3041,7 +3041,6 @@
+ 
+ 	destroy_workqueue(glue->musb_wq);
+ 	destroy_workqueue(glue->sm_usb_wq);
+-	return 0;
+ }
+ 
+ static void musb_sprd_disable_all_interrupts(struct musb *musb)
+--- a/drivers/unisoc_platform/usb/phy/usb-phy-sprd-hs.c
++++ b/drivers/unisoc_platform/usb/phy/usb-phy-sprd-hs.c
+@@ -1674,7 +1674,7 @@
+ 	return ret;
+ }
+ 
+-static int sprd_hsphy_remove(struct platform_device *pdev)
++static void sprd_hsphy_remove(struct platform_device *pdev)
+ {
+ 	struct sprd_hsphy *phy = platform_get_drvdata(pdev);
+ 
+@@ -1683,7 +1683,6 @@
+ 	if (regulator_is_enabled(phy->vdd))
+ 		regulator_disable(phy->vdd);
+ 
+-	return 0;
+ }
+ 
+ static void sprd_hsphy_drshutdown(struct platform_device *pdev)

@@ -1,0 +1,111 @@
+#!/bin/sh
+# Native USB networking + ACM. Own only this project's gadget.
+# The network address of usb0 belongs to the bridge br-lan (netifd, interface lan 192.168.25.1/24); this script only creates the gadget.
+set -eu
+G=/sys/kernel/config/usb_gadget/u30pro
+STATE=/run/u30pro-usb-interface
+PROFILE=/run/u30pro-usb-profile
+case ${1:-status} in
+    status)
+        [ -f "$G/UDC" ] && cat "$G/UDC" || true
+        [ -f "$STATE" ] && cat "$STATE" || true
+        [ -f "$PROFILE" ] && cat "$PROFILE" || true
+        exit 0 ;;
+    start) ;;
+    stop)
+        [ -d "$G" ] || exit 0
+        printf '\n' >"$G/UDC"
+        if [ -f "$STATE" ]; then
+            rm -f "$STATE"
+        fi
+        rm -f "$G/os_desc/c.1"
+        for function in ecm ncm rndis acm; do
+            rm -f "$G/configs/c.1/$function.usb0"
+        done
+        rmdir "$G/configs/c.1/strings/0x409" "$G/configs/c.1" 2>/dev/null || true
+        for function in ecm ncm rndis acm; do
+            [ ! -d "$G/functions/$function.usb0" ] || rmdir "$G/functions/$function.usb0"
+        done
+        rmdir "$G/strings/0x409" "$G" 2>/dev/null || true
+        rm -f "$PROFILE"
+        exit 0 ;;
+    *) echo 'Usage: u30pro-usb start [ncm|ecm|rndis|acm] | stop | status' >&2; exit 2 ;;
+esac
+# acm: the serial console alone (charger mode, see /usr/sbin/u30pro-charger); never taken from the stored setting
+mode=${2:-$(uci -q get u30pro.usb.mode || echo ncm)}
+case "$mode" in ncm|ecm|rndis|acm) ;; *) echo 'USB: invalid profile' >&2; exit 2;; esac
+set -- /sys/class/udc/*
+[ "$#" -eq 1 ] && [ -e "$1" ] || { echo 'USB: requires exactly one usable UDC' >&2; exit 1; }
+udc=${1##*/}
+mkdir -p /sys/kernel/config
+if ! awk '$2 == "/sys/kernel/config" { f=1 } END { exit !f }' /proc/mounts; then
+    mount -t configfs configfs /sys/kernel/config
+fi
+for owner in /sys/kernel/config/usb_gadget/*/UDC; do
+    [ -f "$owner" ] || continue
+    [ "$owner" = "$G/UDC" ] && continue
+    [ -z "$(cat "$owner")" ] || { echo 'USB: another gadget owns the controller' >&2; exit 1; }
+done
+if [ -d "$G" ]; then
+    if [ "$(cat "$G/UDC")" = "$udc" ] && [ "$(cat "$PROFILE" 2>/dev/null || echo ecm)" = "$mode" ]; then exit 0; fi
+    echo 'USB: existing incomplete u30pro gadget; run stop first' >&2
+    exit 1
+fi
+mkdir "$G"
+trap 'u30pro-usb stop >/dev/null 2>&1 || true' EXIT
+printf '0x1d6b' >"$G/idVendor"
+printf '0x0104' >"$G/idProduct"
+printf '0x0200' >"$G/bcdUSB"
+# IAD composite: Windows binds its native network/serial class drivers.
+printf '0xef' >"$G/bDeviceClass"
+printf '0x02' >"$G/bDeviceSubClass"
+printf '0x01' >"$G/bDeviceProtocol"
+mkdir -p "$G/strings/0x409"
+printf 'U30Pro OpenWrt development' >"$G/strings/0x409/manufacturer"
+if [ "$mode" = acm ]; then
+    printf 'U30 Pro OpenWrt serial' >"$G/strings/0x409/product"
+else
+    printf 'U30 Pro OpenWrt %s + serial' "$mode" >"$G/strings/0x409/product"
+fi
+# Keep the existing ECM instance; distinguish the other profile descriptors.
+serial=u30pro-openwrt-dev
+[ "$mode" = ecm ] || serial=u30pro-openwrt-$mode
+printf '%s' "$serial" >"$G/strings/0x409/serialnumber"
+mkdir -p "$G/configs/c.1/strings/0x409"
+printf '%s + ACM' "$mode" >"$G/configs/c.1/strings/0x409/configuration"
+printf '250' >"$G/configs/c.1/MaxPower"
+if [ "$mode" = acm ]; then
+    # a root shell on ttyGS0 (/etc/inittab), no network function
+    printf 'ACM' >"$G/configs/c.1/strings/0x409/configuration"
+    mkdir "$G/functions/acm.usb0"
+    ln -s "$G/functions/acm.usb0" "$G/configs/c.1/acm.usb0"
+    printf '%s' "$udc" >"$G/UDC"
+    printf 'acm\n' >"$PROFILE"
+    trap - EXIT
+    echo "USB ACM only: serial console"
+    exit 0
+fi
+mkdir "$G/functions/$mode.usb0" "$G/functions/acm.usb0"
+printf '02:79:30:00:00:01' >"$G/functions/$mode.usb0/dev_addr"
+printf '02:79:30:00:00:02' >"$G/functions/$mode.usb0/host_addr"
+if [ "$mode" = rndis ]; then
+    printf 'RNDIS' >"$G/functions/rndis.usb0/os_desc/interface.rndis/compatible_id"
+    printf '5162001' >"$G/functions/rndis.usb0/os_desc/interface.rndis/sub_compatible_id"
+    printf '1' >"$G/os_desc/use"
+    printf '0xcd' >"$G/os_desc/b_vendor_code"
+    printf 'MSFT100' >"$G/os_desc/qw_sign"
+    ln -s "$G/configs/c.1" "$G/os_desc/c.1"
+fi
+ln -s "$G/functions/$mode.usb0" "$G/configs/c.1/$mode.usb0"
+ln -s "$G/functions/acm.usb0" "$G/configs/c.1/acm.usb0"
+printf '%s' "$udc" >"$G/UDC"
+iface=$(cat "$G/functions/$mode.usb0/ifname")
+case "$iface" in *[!A-Za-z0-9_.-]*|'') echo 'USB: invalid network interface' >&2; exit 1 ;; esac
+# Keep the same interface for DHCP/NAT on every profile.
+[ "$iface" = usb0 ] || { echo 'USB: expected usb0' >&2; exit 1; }
+ip link set "$iface" up
+printf '%s\n' "$iface" >"$STATE"
+printf '%s\n' "$mode" >"$PROFILE"
+# This helper also runs before switch_root: HTTP/UCI policy belongs to the rootfs.
+trap - EXIT
+echo "USB $mode + ACM: $iface (address from br-lan)"

@@ -25,7 +25,7 @@ class CpuVoltage(unittest.TestCase):
         self.assertNotIn('sprd-cpufreq-v2', (TOP/'upstream/module-order.txt').read_text())
         loader = (TOP/'rootfs/overlay/opt/mu300/bin/cpu-voltage-platform').read_text()
         self.assertLess(loader.index('sync #'), loader.index('insmod "$ko"'))
-        self.assertIn('sha256sum', loader)
+        self.assertNotIn('sha256sum', loader)
         self.assertIn('sml-voltage-check', loader)
         self.assertIn('parm=voltage_offset_uv:', loader)
         self.assertIn('flock -x 9', loader)
@@ -54,24 +54,24 @@ class DriverVoltageDiscovery(ShellTest):
         source=(TOP/'rootfs/overlay/opt/mu300/bin/cpu-voltage-platform').read_text()
         self.check=source[source.index('voltage_parameter() {'):source.index('case ${1:-load}')]
         self.check=self.check.replace('/sys/',str(self.tmp)+'/sys/').replace('/dev/',str(self.tmp)+'/dev/').replace('/opt/mu300/bin/',str(self.tmp)+'/stubs/').replace('[ -b ','[ -f ').replace('[ ! -b ','[ ! -f ')
-        self.check=self.check.replace('sha256sum "$part"','"$STUBLOG/stubs/sha256sum" "$part"')
         self.compatible=self.tmp/'sys/firmware/devicetree/base/compatible'
         self.compatible.parent.mkdir(parents=True)
         self.compatible.write_bytes(b'zte,f50\0sprd,ums9620\0')
         self.driver=self.tmp/'driver.ko';self.driver.write_bytes(b'\x7fELF\0parm=voltage_offset_uv:Boot offsets\0')
-        self.stub('sha256sum','printf "%s  %s\\n" ff4782690fd805ff54fe34853ef8ee5c7e51c3259e20077c55373b50a4b259c2 "$1"')
+        self.stub('sha256sum','exit 99')  # Firmware version hashes must never be consulted.
+        self.stub('sml-voltage-check','exit 0')
         for slot in ('a','b'):
             part=self.tmp/'dev/disk/by-partlabel'/('sml_'+slot)
             part.parent.mkdir(parents=True,exist_ok=True);part.write_bytes(b'firmware '+slot.encode())
 
     def script(self):return 'ko='+str(self.driver)+'\n'+self.check+'\nsupported'
 
-    def test_whitelist_fast_path_does_not_need_algorithm_helper(self):
+    def test_missing_algorithm_helper_cannot_enable_offsets(self):
+        (self.stubs/'sml-voltage-check').unlink()
         for shell in self.each_shell():
-            result=self.sh(shell,self.script());self.assertEqual(result.returncode,0,result.stderr)
+            result=self.sh(shell,self.script());self.assertNotEqual(result.returncode,0,result.stderr)
 
-    def test_unknown_firmware_uses_algorithm_helper_and_failure_is_not_ignored(self):
-        self.stub('sha256sum','printf "unlisted  %s\\n" "$1"')
+    def test_every_firmware_uses_algorithm_helper_and_failure_is_not_ignored(self):
         self.stub('sml-voltage-check','echo "$1" >> "$STUBLOG/algorithm"; exit 0')
         for shell in self.each_shell():self.assertEqual(self.sh(shell,self.script()).returncode,0)
         self.assertIn('sml_a',(self.tmp/'algorithm').read_text())

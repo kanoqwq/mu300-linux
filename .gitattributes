@@ -11,3 +11,4 @@
 # Patch files contain unified-diff context markers followed by source indentation.
 kernel/patches/*.patch whitespace=-blank-at-eol,-space-before-tab,-blank-at-eof
 upstream/patches/*.patch whitespace=-blank-at-eol,-space-before-tab,-blank-at-eof
+devices/u30pro/overlay/** text eol=lf

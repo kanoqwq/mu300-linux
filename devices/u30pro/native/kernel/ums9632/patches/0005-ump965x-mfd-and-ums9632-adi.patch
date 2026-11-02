@@ -1,0 +1,162 @@
+--- a/drivers/mfd/sprd-sc27xx-spi.c
++++ b/drivers/mfd/sprd-sc27xx-spi.c
+@@ -45,6 +45,7 @@
+ };
+ 
+ struct sprd_pmic_data {
++	u32 slave_id;
+ 	u32 irq_base;
+ 	u32 num_irqs;
+ 	u32 charger_det;
+@@ -67,6 +68,17 @@
+ 	.charger_det = SPRD_SC2731_CHG_DET,
+ };
+ 
++/* UMP965x values from the MU5358 vendor BSP, preserving slave addressing. */
++static const struct sprd_pmic_data ump9650_data = {
++ .slave_id = 0x0000, .irq_base = 0x80, .num_irqs = 12,
++};
++static const struct sprd_pmic_data ump9651_data = {
++ .slave_id = 0x8000, .irq_base = 0x80, .num_irqs = 12,
++};
++static const struct sprd_pmic_data ump9652_data = {
++ .slave_id = 0xc000,
++};
++
+ enum usb_charger_type sprd_pmic_detect_charger_type(struct device *dev)
+ {
+ 	struct spi_device *spi = to_spi_device(dev);
+@@ -75,6 +87,9 @@
+ 	enum usb_charger_type type;
+ 	u32 val;
+ 	int ret;
++
++	if (!pdata->charger_det)
++		return UNKNOWN_TYPE;
+ 
+ 	ret = regmap_read_poll_timeout(ddata->regmap, pdata->charger_det, val,
+ 				       (val & SPRD_PMIC_CHG_DET_DONE),
+@@ -109,7 +124,13 @@
+ 	struct device *dev = context;
+ 	struct spi_device *spi = to_spi_device(dev);
+ 
+-	return spi_write(spi, data, count);
++ struct sprd_pmic *ddata = spi_get_drvdata(spi);
++ u32 words[2];
++ if (count != sizeof(words))
++  return -EINVAL;
++ memcpy(words, data, sizeof(words));
++ words[0] += ddata->pdata->slave_id;
++ return spi_write(spi, words, sizeof(words));
+ }
+ 
+ static int sprd_pmic_spi_read(void *context,
+@@ -127,6 +148,7 @@
+ 
+ 	/* Copy address to read from into first element of SPI buffer. */
+ 	memcpy(rx_buf, reg, sizeof(u32));
++	rx_buf[0] += ((struct sprd_pmic *)spi_get_drvdata(spi))->pdata->slave_id;
+ 	ret = spi_read(spi, rx_buf, 1);
+ 	if (ret < 0)
+ 		return ret;
+@@ -164,6 +186,9 @@
+ 	ddata = devm_kzalloc(&spi->dev, sizeof(*ddata), GFP_KERNEL);
+ 	if (!ddata)
+ 		return -ENOMEM;
++
++	ddata->pdata = pdata;
++	spi_set_drvdata(spi, ddata);
+ 
+ 	ddata->regmap = devm_regmap_init(&spi->dev, &sprd_pmic_regmap,
+ 					 &spi->dev, &sprd_pmic_config);
+@@ -177,6 +202,9 @@
+ 	ddata->dev = &spi->dev;
+ 	ddata->irq = spi->irq;
+ 	ddata->pdata = pdata;
++
++	if (!pdata->num_irqs)
++		goto populate;
+ 
+ 	ddata->irq_chip.name = dev_name(&spi->dev);
+ 	ddata->irq_chip.status_base =
+@@ -204,13 +232,14 @@
+ 		return ret;
+ 	}
+ 
++populate:
+ 	ret = devm_of_platform_populate(&spi->dev);
+ 	if (ret) {
+ 		dev_err(&spi->dev, "Failed to populate sub-devices %d\n", ret);
+ 		return ret;
+ 	}
+ 
+-	device_init_wakeup(&spi->dev, true);
++	device_init_wakeup(&spi->dev, pdata->num_irqs != 0);
+ 	return 0;
+ }
+ 
+@@ -238,6 +267,9 @@
+ 				sprd_pmic_suspend, sprd_pmic_resume);
+ 
+ static const struct of_device_id sprd_pmic_match[] = {
++	{ .compatible = "sprd,ump9650", .data = &ump9650_data },
++	{ .compatible = "sprd,ump9651", .data = &ump9651_data },
++	{ .compatible = "sprd,ump9652", .data = &ump9652_data },
+ 	{ .compatible = "sprd,sc2730", .data = &sc2730_data },
+ 	{ .compatible = "sprd,sc2731", .data = &sc2731_data },
+ 	{},
+@@ -245,6 +277,9 @@
+ MODULE_DEVICE_TABLE(of, sprd_pmic_match);
+ 
+ static const struct spi_device_id sprd_pmic_spi_ids[] = {
++	{ .name = "ump9650", .driver_data = (unsigned long)&ump9650_data },
++	{ .name = "ump9651", .driver_data = (unsigned long)&ump9651_data },
++	{ .name = "ump9652", .driver_data = (unsigned long)&ump9652_data },
+ 	{ .name = "sc2730", .driver_data = (unsigned long)&sc2730_data },
+ 	{ .name = "sc2731", .driver_data = (unsigned long)&sc2731_data },
+ 	{},
+--- a/drivers/spi/spi-sprd-adi.c
++++ b/drivers/spi/spi-sprd-adi.c
+@@ -134,7 +134,11 @@
+ 	u32 wdg_clk;
+ };
+ 
++#define BIT_ARM_WR_FREQ BIT(31)
++#define ADI_WRITE_TIMEOUT 2000
++
+ struct sprd_adi_data {
++	bool write_wait;
+ 	u32 slave_offset;
+ 	u32 slave_addr_size;
+ 	int (*read_check)(u32 val, u32 reg);
+@@ -323,6 +327,14 @@
+ 		dev_err(sadi->dev, "write fifo is full\n");
+ 		ret = -EBUSY;
+ 	}
++
++ if (!ret && sadi->data->write_wait) {
++  u32 left = ADI_WRITE_TIMEOUT;
++  while (readl_relaxed(sadi->base + REG_ADI_ARM_FIFO_STS) & BIT_ARM_WR_FREQ) {
++   if (!--left) { ret = -EBUSY; break; }
++   cpu_relax();
++  }
++ }
+ 
+ out:
+ 	if (sadi->hwlock)
+@@ -608,7 +620,15 @@
+ 	.read_check = sprd_adi_read_check_r3,
+ };
+ 
++/* R5 uses the 15-bit window without the pre-R5 readback address check. */
++static struct sprd_adi_data ums9632_data = {
++ .slave_offset = ADI_15BIT_SLAVE_OFFSET,
++ .slave_addr_size = ADI_15BIT_SLAVE_ADDR_SIZE,
++ .write_wait = true,
++};
++
+ static const struct of_device_id sprd_adi_of_match[] = {
++	{ .compatible = "sprd,ums9632-adi", .data = &ums9632_data },
+ 	{
+ 		.compatible = "sprd,sc9860-adi",
+ 		.data = &sc9860_data,

@@ -1,0 +1,28 @@
+wakemode 0
+page 0
+wait 20000
+shot idle_20s
+wait 20000
+shot idle_40s_dimmed
+tap 120 120
+shot idle_wake_tap_swallowed
+wait 130000
+shot idle_asleep
+tap 120 120
+shot idle_after_wake
+# no PIN: the woken screen is locked softly; a tap, a swipe or a short press leave it locked, a key or a 600 ms press open it
+tap 120 120
+swipe 40 120 200 120 300
+hold 120 120 300
+state
+shot soft_still_locked
+hold 120 120 700
+state
+shot soft_unlocked
+sleep
+key 102
+key 102
+state
+fn 5
+tap 120 174
+shot admin_qr

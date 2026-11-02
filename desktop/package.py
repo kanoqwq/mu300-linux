@@ -45,9 +45,12 @@ MODPATH=$MU300_DEPLOY_ROOT
 unset MU300_DEPLOY_ROOT
 ''',newline='\n')
     dest = stage/'desktop'; assets = dest/'files/boot'; assets.mkdir(parents=True)
-    for n in ('installer.py', 'binary_io.py', 'boot_control.py', 'update_control.py', 'boot_image.py', 'android-image.sh', 'android-write-part.sh', 'android-write-free.sh', 'android-loop.sh', 'local-update.sh', 'configure.sh', 'PORT-SOURCES.json'):
-        shared={'binary_io.py':'binary_io.py','boot_control.py':'boot_image.py','update_control.py':'mu300_update.py'}
+    for n in ('installer.py', 'binary_io.py', 'boot_control.py', 'boot_image.py', 'android-image.sh', 'android-write-part.sh', 'android-write-free.sh', 'android-loop.sh', 'local-update.sh', 'configure.sh', 'PORT-SOURCES.json'):
+        shared={'binary_io.py':'binary_io.py','boot_control.py':'boot_image.py'}
         shutil.copyfile(TOP/'installer/backend'/shared[n] if n in shared else TOP/'desktop'/n, dest/n)
+    if (TOP/'devices/u30pro/profile.json').is_file():
+        shutil.copyfile(TOP/'desktop/native_u30pro.py',dest/'native_u30pro.py')
+        shutil.copyfile(TOP/'installer/runtime/luci-app-unisoc-ota/root/usr/lib/unisoc-ota/boot.py',dest/'boot-runtime.py')
     # Desktop fixes must apply even when augmenting an older Magisk archive;
     # its original scripts stay byte-for-byte unchanged.
     shutil.copyfile(TOP/'tools/android-bootchain.sh', dest/'android-bootchain.sh')
@@ -59,7 +62,9 @@ unset MU300_DEPLOY_ROOT
     shutil.copyfile(TOP/'android/magisk/mu300-linux-switch/bootchain.sh', dest/'bootchain.sh')
     for p in (TOP/'desktop/boot').iterdir():
         if p.is_file(): shutil.copyfile(p, assets/p.name)
-    shutil.copyfile(TOP/'boot/init', assets/'original-init')
+    shutil.copyfile(TOP/'devices/u30pro/init' if (TOP/'devices/u30pro/profile.json').is_file() else TOP/'boot/init', assets/'original-init')
+    if (TOP/'devices/u30pro/profile.json').is_file():
+        (assets/'native-u30pro').write_text('1\n')
     shutil.copyfile(TOP/'boot/internal-ext4.sh', assets/'internal-ext4.sh')
     shutil.copyfile(TOP/'boot/build-boot-image.py', assets/'build-boot-image.py')
     shutil.copyfile(TOP/'rootfs/overlay/opt/mu300/bin/mu300-update', dest/'mu300-update-library.sh')
@@ -112,6 +117,8 @@ unset MU300_DEPLOY_ROOT
     manifest={'format':2,'kernel':kernel,'magisk':relocated,'magisk_layout':layout,
               'desktop':{p.relative_to(stage).as_posix():sha(p) for p in stage.rglob('*') if p.is_file() and p.relative_to(stage).as_posix() not in relocated},
               'source':{n:sha(TOP/'desktop'/n) for n in ('installer.py','boot_image.py')}}
+    if (TOP/'devices/u30pro/profile.json').is_file():
+        manifest['platform']='u30pro'
     (dest/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     return manifest
 

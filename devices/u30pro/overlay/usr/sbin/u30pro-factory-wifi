@@ -1,0 +1,42 @@
+#!/bin/sh
+# Import only this unit's Wi-Fi identity/configuration, never a foreign dump.
+# prodnv is mounted without journal replay; no calibration/NV writes.
+set -eu
+. /opt/mu300/lib/storage.sh
+/usr/sbin/u30pro-nodes --populate-nodes
+disk=$(mu300_storage_disk)
+node=$(mu300_storage_part prodnv "$disk")
+dev=/dev/$node
+[ -b "$dev" ] && [ "$(mu300_storage_parent "$node")" = "$disk" ] || exit 1
+[ "$(blkid -p -s TYPE -o value "$dev")" = ext4 ] || {
+    logger -t u30pro 'Factory Wi-Fi source is not the expected ext4 partition'; exit 1;
+}
+directory=$(mktemp -d /run/u30pro-factory-wifi.XXXXXX)
+mounted=0
+finish() {
+    if [ "$mounted" = 1 ]; then umount "$directory" || return 1; fi
+    rmdir "$directory"
+}
+trap finish EXIT
+mount -t ext4 -o ro,noload,nodev,nosuid,noexec "$dev" "$directory"
+mounted=1
+mkdir -p /lib/firmware
+for name in wifimac.txt aic_userconfig_8800d80x2.txt; do
+    source=$directory/$name
+    [ -f "$source" ] && [ ! -L "$source" ] || {
+        logger -t u30pro "Factory Wi-Fi input missing: $name"; exit 1;
+    }
+    bytes=$(wc -c < "$source")
+    [ "$bytes" -gt 0 ] && [ "$bytes" -le 1048576 ] || exit 1
+    if [ "$name" = wifimac.txt ]; then
+        # Validate an individual unicast MAC without printing the identity.
+        address=$(tr 'A-F' 'a-f' < "$source" | tr -d '\r\n')
+        printf '%s\n' "$address" | grep -Eq '^([0-9a-f]{2}:){5}[0-9a-f]{2}$' || exit 1
+        first=${address%%:*}
+        [ $((0x$first & 1)) = 0 ] && [ "$address" != 00:00:00:00:00:00 ] || exit 1
+    fi
+    cp "$source" "/lib/firmware/$name.new"
+    chmod 600 "/lib/firmware/$name.new"
+    mv "/lib/firmware/$name.new" "/lib/firmware/$name"
+done
+logger -t u30pro 'This unit factory Wi-Fi inputs loaded read-only'

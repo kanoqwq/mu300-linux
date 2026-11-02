@@ -44,3 +44,12 @@ tools/ctlset/ctlset
 upstream/out-*/
 # the user's own list of files the self-update leaves alone (tools/self-update.sh, install.ps1)
 .mu300-keep
+
+# U30 Pro source-only port: reuse registered external caches, never vendor them.
+/.cache/
+/build/
+*.cpio
+*.cpio.gz
+/devices/u30pro/native/build/
+/devices/u30pro/native/.cache/
+!/devices/u30pro/native/kernel/ums9632/overlay/drivers/firmware/

@@ -1,9 +1,9 @@
 #!/usr/bin/ucode
 import * as fs from 'fs';
 import { cursor } from 'uci';
-import { connect } from 'ubus';
+import { connect, error as bus_error } from 'ubus';
 import * as hotspot from './hotspot.uc';
-let action=ARGV[0] || 'status', c=cursor(), bus=connect(null,2);
+let action=ARGV[0] || 'status', c=cursor(), bus=connect(null,10);
 let selected=c.get('unisoc_modem','main','wifi_iface');
 let device=c.get('unisoc_modem','main','wifi_device') || 'wlan0';
 let runtime=bus?.call('network.wireless','status',{}) || {};
@@ -22,8 +22,9 @@ if(action=='on' || action=='off') {
         fs.writefile(lock+'/pid',''+fs.readlink('/proc/self'));
         try {
             r=hotspot.set(c,action=='on',runtime,selected,device,()=>{
-                let result=bus?.call('network','reload',{});
-                return result!=null;
+                if(!bus)return false;
+                bus.call('network','reload',{});
+                return !bus_error(true);
             });
         } catch(e) { r={ok:0,error:'热点配置应用失败'}; }
         fs.unlink(lock+'/pid'); fs.rmdir(lock);

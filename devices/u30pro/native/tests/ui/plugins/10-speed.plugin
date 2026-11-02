@@ -1,0 +1,7 @@
+# info page: shows the output of cmd
+title=测速
+icon=chart
+type=info
+cmd=printf '下行 92 Mbps\n上行 18 Mbps\n延迟 38 ms\n'
+refresh=10
+order=10

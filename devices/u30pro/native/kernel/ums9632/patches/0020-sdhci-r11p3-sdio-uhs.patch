@@ -1,0 +1,254 @@
+--- a/drivers/mmc/host/sdhci-sprd.c
++++ b/drivers/mmc/host/sdhci-sprd.c
+@@ -83,6 +83,8 @@
+ 
+ struct sdhci_sprd_host {
+ 	bool r11p3_trial;
++	bool sdio_host;	/* R11P3 host that only carries SDIO (no-sd, no-mmc: the AIC8800 Wi-Fi), bus mode from sdio_mode */
++	unsigned int sdio_f_uhs;	/* its highest clock in the UHS-I modes */
+ 	struct mmc_card *trial_card;
+ 	struct clk *clk_ap_axi;
+ 	u32 version;
+@@ -292,6 +294,11 @@
+ 			 sdhci_readl(host, SDHCI_SPRD_REG_32_DLL_CFG));
+ 	}
+ }
++
++/* settings of the SDIO host's bus mode, see sdhci_sprd_sdio_apply() */
++static unsigned int sdio_mode;
++static unsigned int sdio_max_hz;
++static struct sdhci_host *sdio_mode_host;
+ 
+ static void sdhci_sprd_set_clock(struct sdhci_host *host, unsigned int clock)
+ {
+@@ -319,8 +326,9 @@
+ 	 * is used to track the clock frequency to make the clock work more
+ 	 * stable. Otherwise deviation may occur of the higher clock.
+ 	 */
+-	/* The R11P3 bootstrap is capped at 52 MHz, outside the DLL path. */
+-	if (sprd_host->r11p3_trial) {
++	/* The R11P3 bootstrap is capped at 52 MHz, outside the DLL path; the SDIO host in a UHS-I mode takes it.  (In high speed
++	 * the AIC8800 driver asks for 150 MHz itself; that stays as it was before sdio_mode.) */
++	if (sprd_host->r11p3_trial && !(sprd_host->sdio_host && READ_ONCE(sdio_mode))) {
+ 		u32 cfg = sdhci_readl(host, SDHCI_SPRD_REG_32_DLL_CFG);
+ 
+ 		cfg &= ~(SDHCI_SPRD_DLL_EN | SDHCI_SPRD_DLL_ALL_CPST_EN);
+@@ -516,6 +524,62 @@
+ };
+ module_param_cb(write_protect, &u30pro_write_protect_ops, &write_protect, 0644);
+ MODULE_PARM_DESC(write_protect, "1 (default): only the write windows of the kernel command line can be written; 0: no protection at all");
++
++/* The R11P3 host that only carries SDIO (no-sd, no-mmc: the AIC8800 Wi-Fi) is not the disk, so the 52 MHz bootstrap clamp of the
++ * eMMC does not have to hold for it.  At 50 MHz high speed the bus carries about 130 Mbit/s, below what the radio and the cellular
++ * link do; SDR104 at 208 MHz (p538) enumerated and tuned but the AIC8800 firmware download then timed out.  So the mode is a
++ * setting: sdio_mode 0 high speed at most 52 MHz (default), 1 SDR50, 2 SDR104, 3 DDR50; sdio_max_hz caps the clock of the UHS-I
++ * modes (0: the host's maximum).  Both can be written at run time and count from the next initialization of the card, which on
++ * this board is when aic8800_bsp powers the chip on (rcS sets them before kmodloader, /usr/sbin/u30pro-wifi-sdio). */
++
++static void sdhci_sprd_sdio_apply(struct sdhci_host *host)
++{
++	struct sdhci_sprd_host *sprd_host = TO_SPRD_HOST(host);
++	struct mmc_host *mmc = host->mmc;
++	unsigned int mode = READ_ONCE(sdio_mode), max_hz = READ_ONCE(sdio_max_hz);
++
++	mmc->caps &= ~(MMC_CAP_UHS | MMC_CAP_DDR);
++	switch (mode) {
++	case 1:
++		mmc->caps |= MMC_CAP_UHS_SDR12 | MMC_CAP_UHS_SDR25 | MMC_CAP_UHS_SDR50;
++		break;
++	case 2:
++		mmc->caps |= MMC_CAP_UHS_SDR12 | MMC_CAP_UHS_SDR25 | MMC_CAP_UHS_SDR50 | MMC_CAP_UHS_SDR104;
++		break;
++	case 3:
++		mmc->caps |= MMC_CAP_UHS_SDR12 | MMC_CAP_UHS_SDR25 | MMC_CAP_UHS_DDR50;
++		break;
++	}
++	mmc->f_max = mode ? sprd_host->sdio_f_uhs : 52000000;
++	if (mode && max_hz && max_hz < mmc->f_max)
++		mmc->f_max = max_hz;
++	dev_info(mmc_dev(mmc), "SDIO bus: %s, up to %u Hz (from the next card initialization)\n",
++		 mode == 1 ? "UHS-I SDR50" : mode == 2 ? "UHS-I SDR104" : mode == 3 ? "UHS-I DDR50" : "high speed", mmc->f_max);
++}
++
++static int sdhci_sprd_sdio_param_set(const char *val, const struct kernel_param *kp)
++{
++	unsigned int v;
++	int ret = kstrtouint(val, 0, &v);
++
++	if (ret)
++		return ret;
++	if (kp->arg == &sdio_mode && v > 3)
++		return -EINVAL;
++	*(unsigned int *)kp->arg = v;
++	if (sdio_mode_host)
++		sdhci_sprd_sdio_apply(sdio_mode_host);
++	return 0;
++}
++
++static const struct kernel_param_ops sdhci_sprd_sdio_param_ops = {
++	.set = sdhci_sprd_sdio_param_set,
++	.get = param_get_uint,
++};
++module_param_cb(sdio_mode, &sdhci_sprd_sdio_param_ops, &sdio_mode, 0644);
++MODULE_PARM_DESC(sdio_mode, "Bus mode of the R11P3 SDIO-only host (Wi-Fi): 0 high speed (default), 1 SDR50, 2 SDR104, 3 DDR50; from the next card initialization");
++module_param_cb(sdio_max_hz, &sdhci_sprd_sdio_param_ops, &sdio_max_hz, 0644);
++MODULE_PARM_DESC(sdio_max_hz, "Highest clock of the SDIO UHS-I modes (0: the host's maximum)");
+ 
+ /*
+  * Optional write windows.  Everything stays read-only except at most two LBA ranges named on the kernel command line:
+@@ -925,6 +989,99 @@
+ static int sdhci_sprd_execute_sd_hs_data_tuning(struct mmc_host *mmc, struct mmc_card *card)
+ {
+ 	return sdhci_sprd_tuning(mmc, card, SDHCI_SPRD_TUNING_SD_HS_DATA);
++}
++
++/*
++ * Tuning of the SDIO host in SDR104, as the vendor driver does it (MU5358 BSP, sdhci-sprd-tuning.c, the default type that SDIO
++ * takes): the standard SDHCI tuning reports success on this controller, but the Wi-Fi then fails at the first transfers.  With
++ * ADMA off, every step of the PHY DLL (command and read-sample delay together) sends CMD19; the steps from dll_cnt on repeat the
++ * first ones, so a step counts when both pass.  The middle of the longest passing run, as a phase of 256 with compensation on,
++ * becomes the delay of SDR104.  Other timings keep the standard path (SDR50 works without tuning).
++ */
++static int sdhci_sprd_sdio_execute_tuning(struct mmc_host *mmc, u32 opcode)
++{
++	struct sdhci_host *host = mmc_priv(mmc);
++	struct sdhci_sprd_host *sprd_host = TO_SPRD_HOST(host);
++	u32 *p = sprd_host->phy_delay;
++	u32 mask = SDHCI_SPRD_CMD_DLY_MASK | SDHCI_SPRD_POSRD_DLY_MASK;
++	u32 dll_cfg, dll_cnt, dly, tmp;
++	unsigned int len, i, run = 0, start = 0, best = 0, best_start = 0, mid, phase;
++	bool adma = false, sdma;
++	u8 *ok;
++
++	if (mmc->ios.timing != MMC_TIMING_UHS_SDR104)
++		return sdhci_execute_tuning(mmc, opcode);
++
++	sdhci_reset(host, SDHCI_RESET_CMD | SDHCI_RESET_DATA);
++	dll_cfg = sdhci_readl(host, SDHCI_SPRD_REG_32_DLL_CFG) & ~SDHCI_SPRD_CPST_EN;
++	sdhci_writel(host, dll_cfg, SDHCI_SPRD_REG_32_DLL_CFG);
++	/* the DLL locks in half mode on R11 */
++	dll_cnt = (sdhci_readl(host, SDHCI_SPRD_REG_32_DLL_STS0) & 0xff) << 1;
++	if (!dll_cnt) {
++		dev_warn(mmc_dev(mmc), "SDIO tuning: DLL count %u\n", dll_cnt);
++		return -EIO;
++	}
++	len = dll_cnt * 3 / 2;
++	ok = kcalloc(len, 1, GFP_KERNEL);
++	if (!ok)
++		return -ENOMEM;
++
++	sdma = host->flags & SDHCI_USE_SDMA;
++	if (host->flags & SDHCI_USE_ADMA) {
++		adma = true;
++		host->flags &= ~SDHCI_USE_ADMA;
++		host->flags |= SDHCI_USE_SDMA;
++	}
++
++	dly = p[mmc->ios.timing];
++	for (i = 0; i < len; i++) {
++		dly = (dly & ~mask) | ((i << 8) & SDHCI_SPRD_CMD_DLY_MASK) | ((i << 16) & SDHCI_SPRD_POSRD_DLY_MASK);
++		sdhci_writel(host, dly, SDHCI_SPRD_REG_32_DLL_DLY);
++		ok[i] = !mmc_send_tuning(mmc, opcode, NULL);
++		if (!ok[i]) {
++			/* a failed read can leave the controller busy: wait for it before the next step */
++			read_poll_timeout(sdhci_readl, tmp, !(tmp & SDHCI_DOING_READ), USEC_PER_MSEC,
++					  100 * USEC_PER_MSEC, false, host, SDHCI_PRESENT_STATE);
++			sdhci_reset(host, SDHCI_RESET_CMD | SDHCI_RESET_DATA);
++		}
++	}
++
++	if (adma)
++		host->flags |= SDHCI_USE_ADMA;
++	if (!sdma)
++		host->flags &= ~SDHCI_USE_SDMA;
++
++	for (i = 0; i + dll_cnt < len; i++)
++		ok[i] = ok[i] && ok[i + dll_cnt];
++	/* the longest run of passing steps, around the end of the range as well */
++	for (i = 0; i < 2 * dll_cnt && best < dll_cnt; i++) {
++		if (!ok[i % dll_cnt]) {
++			run = 0;
++			continue;
++		}
++		if (!run++)
++			start = i;
++		if (run > best) {
++			best = run;
++			best_start = start;
++		}
++	}
++	kfree(ok);
++	if (!best) {
++		sdhci_writel(host, p[mmc->ios.timing], SDHCI_SPRD_REG_32_DLL_DLY);
++		dev_warn(mmc_dev(mmc), "SDIO tuning: no step of %u passes\n", dll_cnt);
++		return -EIO;
++	}
++
++	mid = (best_start + best / 2) % dll_cnt;
++	phase = mid * 256 / dll_cnt;
++	sdhci_writel(host, dll_cfg | SDHCI_SPRD_CPST_EN, SDHCI_SPRD_REG_32_DLL_CFG);
++	p[mmc->ios.timing] = (p[mmc->ios.timing] & ~mask) | ((phase << 8) & SDHCI_SPRD_CMD_DLY_MASK) |
++			     ((phase << 16) & SDHCI_SPRD_POSRD_DLY_MASK);
++	sdhci_writel(host, p[mmc->ios.timing], SDHCI_SPRD_REG_32_DLL_DLY);
++	dev_info(mmc_dev(mmc), "SDIO tuning at %u Hz: %u of %u steps pass from %u, step %u, phase 0x%02x, delay 0x%08x\n",
++		 mmc->ios.clock, best, dll_cnt, best_start % dll_cnt, mid, phase, p[mmc->ios.timing]);
++	return 0;
+ }
+ 
+ static void sdhci_sprd_phy_param_parse(struct sdhci_sprd_host *sprd_host,
+@@ -1002,8 +1159,12 @@
+ 						      "sprd,sdhci-r11p3");
+ 	if (sprd_host->r11p3_trial) {
+ 		host->mmc_host_ops.init_card = sdhci_sprd_trial_init_card;
+-		host->mmc->f_max = 52000000;
+-		host->mmc->caps &= ~(MMC_CAP_UHS | MMC_CAP_DDR);
++		sprd_host->sdio_host = (host->mmc->caps2 & MMC_CAP2_NO_SD) && (host->mmc->caps2 & MMC_CAP2_NO_MMC);
++		/* the SDIO host is set up with the UHS-I modes of its device tree; sdio_mode picks the one used */
++		if (!sprd_host->sdio_host) {
++			host->mmc->f_max = 52000000;
++			host->mmc->caps &= ~(MMC_CAP_UHS | MMC_CAP_DDR);
++		}
+ 		host->mmc->caps2 &= ~(MMC_CAP2_HS200 | MMC_CAP2_HS400 |
+ 					  MMC_CAP2_HS400_ES | MMC_CAP2_CQE |
+ 					  MMC_CAP2_CQE_DCMD);
+@@ -1123,12 +1284,21 @@
+ 	ret = mmc_hsq_init(hsq, host->mmc);
+ 	if (ret)
+ 		goto err_cleanup_host;
++
++	if (sprd_host->sdio_host && !sdio_mode_host) {
++		host->mmc_host_ops.execute_tuning = sdhci_sprd_sdio_execute_tuning;
++		sprd_host->sdio_f_uhs = sdhci_sprd_get_max_clock(host);
++		sdio_mode_host = host;
++		sdhci_sprd_sdio_apply(host);
++	}
+ 
+ 	ret = __sdhci_add_host(host);
+ 	if (ret)
+ 		goto err_cleanup_host;
+ 
+-	if (sprd_host->r11p3_trial) {
++	if (sprd_host->sdio_host) {
++		dev_info(&pdev->dev, "R11P3 SDIO host: bus mode from sdhci_sprd.sdio_mode, UHS-I up to %u Hz\n", sprd_host->sdio_f_uhs);
++	} else if (sprd_host->r11p3_trial) {
+ 		dev_info(&pdev->dev, "R11P3 read-only bootstrap, max 52 MHz; CQE/ICE/HS200/400 disabled\n");
+ 	} else {
+ 		pm_runtime_mark_last_busy(&pdev->dev);
+@@ -1138,6 +1308,8 @@
+ 	return 0;
+ 
+ err_cleanup_host:
++	if (sdio_mode_host == host)
++		sdio_mode_host = NULL;
+ 	sdhci_cleanup_host(host);
+ 
+ pm_runtime_disable:
+@@ -1164,6 +1336,8 @@
+ 	struct sdhci_host *host = platform_get_drvdata(pdev);
+ 	struct sdhci_sprd_host *sprd_host = TO_SPRD_HOST(host);
+ 
++	if (sdio_mode_host == host)
++		sdio_mode_host = NULL;
+ 	sdhci_remove_host(host, 0);
+ 
+ 	clk_disable_unprepare(sprd_host->clk_sdio);

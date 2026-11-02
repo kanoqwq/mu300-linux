@@ -80,7 +80,7 @@ at() {  # at CMD [timeout] -> response lines up to the final result code
         MU300_AT_DIR=$MU300_SIM_SHARED /opt/mu300/bin/mu300-at -t "$t" "$cmd"
         return
     fi
-    [ "$DEVICE" != u30air ] || return 1   # never reopen a failed native SIPC owner
+    case $DEVICE in u30air|u30pro) return 1 ;; esac # never reopen a native SIPC owner
     # No direct tty fallback for SIM 2; in particular never open slot 0.
     [ "$MU300_SIM_SLOT" = 0 ] || return 1
     [ -c "$DEV" ] || return 1   # never let the redirection create a regular file in /dev
@@ -257,14 +257,14 @@ v6_off() {
 #      实测那一步会把刚起来的 CP 又清一次，白等一整轮 CP 启动（12 s 起）。SFUN=4 之后要等
 #      射频真正上来，而不是问一次就走。
 radio_on_locked() {
-    local i=0 out silent=0 answered=0 urclog=/run/mu300-at/urc/stty_nr0.log
+    local i=0 out silent=0 answered=0 urclog=${MU300_SIM_URC:-/run/mu300-at/urc/stty_nr0.log} handshake='AT+SMMSWAP=0'
     local ready_deadline=$((SECONDS + ${MU300_CFUN_WAIT:-30}))
     mark radio-on-enter
 
     # CP readiness is announced on nr0. Wait on that event source before taking
     # the command-channel lock; repeatedly sending CFUN? while CP is still
     # booting only queues timeouts and starves the other AT clients.
-    while [ "$SECONDS" -lt "$ready_deadline" ]; do
+    while [ "$DEVICE" != u30pro ] && [ "$SECONDS" -lt "$ready_deadline" ]; do
         [ -s "$urclog" ] && break
         sleep 0.2 2>/dev/null || sleep 1
     done
@@ -275,15 +275,18 @@ radio_on_locked() {
     # immediately instead of adding another wait or sending recovery commands
     # into a channel that has not completed its RIL handshake.
     if [ ! -e /run/mu300-ril-handshake ]; then
+        # MU5358's native RIL command channel is nr2; it starts with AT, not
+        # the older nr1 SMMSWAP handshake. Keep MU300's serialization/retry.
+        [ "$DEVICE" != u30pro ] || handshake=AT
         # A dashboard/watch probe can own the client mutex for a fraction of a
         # second as nr1 becomes ready. Give that collision one second instead
         # of abandoning this boot attempt and waiting for netifd's next retry.
         out=$(MU300_AT_LOCK_WAIT=1 MU300_AT_DIR=/run/mu300-at \
-            /opt/mu300/bin/mu300-at -t 4 'AT+SMMSWAP=0' 2>&1 || true)
+            /opt/mu300/bin/mu300-at -t 4 "$handshake" 2>&1 || true)
         case "$out" in
             *OK*)
                 : > /run/mu300-ril-handshake
-                radio_say "slot0 RIL 握手完成（AT+SMMSWAP=0）"
+                radio_say "slot0 RIL 握手完成（$handshake）"
                 mark ril-handshake-done
                 ;;
             *)

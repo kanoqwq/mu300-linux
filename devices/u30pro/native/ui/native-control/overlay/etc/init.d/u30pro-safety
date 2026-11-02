@@ -1,0 +1,10 @@
+#!/bin/sh /etc/rc.common
+# Battery and temperature protection (low-battery power off, charge pause when hot); see /usr/share/u30pro/safety.uc.
+START=96
+USE_PROCD=1
+start_service() {
+	procd_open_instance safety
+	procd_set_param command /usr/sbin/u30pro-safety
+	procd_set_param respawn 3600 10 5
+	procd_close_instance
+}

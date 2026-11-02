@@ -1,0 +1,16 @@
+{
+  "u30pro-wallpaper": {
+    "description": "Wallpaper and glass of the U30 Pro screen",
+    "read": {
+      "ubus": { "u30pro-wallpaper": ["get", "image"] },
+      "cgi-io": ["download"],
+      "file": { "/etc/u30pro/wallpaper/web.live": ["read"], "/etc/u30pro/wallpaper/wallpaper.live": ["read"] }
+    },
+    "write": {
+      "ubus": { "u30pro-wallpaper": ["set", "install", "remove"] },
+      "cgi-io": ["upload"],
+      "file": { "/tmp/u30pro-wallpaper.jpg": ["write"], "/tmp/u30pro-wallpaper.live": ["write"],
+        "/tmp/u30pro-wallpaper.web.jpg": ["write"], "/tmp/u30pro-wallpaper.web.live": ["write"] }
+    }
+  }
+}

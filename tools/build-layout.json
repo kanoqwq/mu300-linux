@@ -1,11 +1,16 @@
 {
   "format": 1,
-  "inputs": "{repo}/../mu300-linux/work",
-  "desktop_tools": "{repo}/work/v50-20261014/installer-final/desktop/files/boot/repair",
-  "block_apk": "{repo}/work/block-mount-mu300.apk",
-  "wifi_apks": "{repo}/work/wifi-sae",
-  "profiles": {
-    "mu300-7.2": {"kernel": "{workspace}/kernels/mu300-7.2.8"},
-    "mu300-6.18": {"kernel": "{workspace}/kernels/mu300-6.18.54"}
-  }
+  "family": "u30pro",
+  "workspace": "/home/kano/openwrt-build",
+  "kernel_source": "{workspace}/sources/u30pro-linux-6.12.94",
+  "kernel_objects": "{workspace}/objects/u30pro/release",
+  "input_archive": "/mnt/d/Git/U30pro-openwrt/build/inputs/upstream/u30pro-build-inputs-20261025.tar.xz",
+  "input_manifest": "/mnt/d/Git/U30pro-openwrt/build/inputs/upstream/MANIFEST.sha256",
+  "stock_capture": "/mnt/d/Git/U30pro-openwrt/work/u30pro-stock-reference/MU5358-20260203/native-board",
+  "partition_reference": "/mnt/d/Git/U30pro-openwrt/work/u30pro-stock-reference/MU5358-20260203/loader/capture.json",
+  "busybox": "/mnt/d/Git/mu300-linux/work/busybox",
+  "at_transport": "/mnt/d/Git/mu300-linux/work/tools/atd-io/mu300-atd-io",
+  "maintenance": "/mnt/d/Git/mu300-linux-clean-tf-7.2/work/v50-20261014/installer-final/desktop/files/boot/repair",
+  "theme": "/mnt/d/Git/mu300-linux-clean-tf-7.2/work/luci-theme-aurora-1.4.0-r20260920.apk",
+  "installer_artifacts": "/mnt/d/Git/e5-linux/installer/artifacts"
 }

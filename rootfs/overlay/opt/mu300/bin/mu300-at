@@ -23,6 +23,7 @@ native_gate() {
 }
 native_gate || exit 1
 [ ! -e /run/mu300/u30-native ] || MU300_AT_DAEMON_ONLY=1
+[ "$(cat /etc/mu300/platform 2>/dev/null)" != u30pro ] || MU300_AT_DAEMON_ONLY=1
 DIR=${MU300_AT_DIR:-/run/mu300-at}
 DEV=${MU300_AT_DEV:-/dev/stty_nr1}
 if [ -z "${MU300_AT_DIR:-}" ] && [ -e /run/mu300-radio-freeze ]; then
@@ -74,7 +75,7 @@ final_line() {
 cleanup() {
     [ -n "${answer:-}" ] && rm -f "$answer" "$answer.part"
     if [ "$(cat "$lock/pid" 2>/dev/null)" = "$$" ]; then
-        rm -f "$lock/pid"
+        rm -f "$lock/pid" "$lock/until"
         rmdir "$lock" 2>/dev/null || true
     fi
 }
@@ -97,11 +98,11 @@ if [ -p "$DIR/cmd" ]; then
         # a client killed with SIGKILL cannot clean up after itself; take the lock over when its owner is gone
         owner=$(cat "$lock/pid" 2>/dev/null || true)
         if [ -n "$owner" ] && ! kill -0 "$owner" 2>/dev/null; then
-            rm -f "$lock/pid"; rmdir "$lock" 2>/dev/null || true
+            rm -f "$lock/pid" "$lock/until"; rmdir "$lock" 2>/dev/null || true
         fi
         # a daemon from before the split left its ownership directory here, and it will never release it
         if [ -n "$owner" ] && tr '\0' ' ' < "/proc/$owner/cmdline" 2>/dev/null | grep -q mu300-atd; then
-            rm -f "$lock/pid"; rmdir "$lock" 2>/dev/null || true
+            rm -f "$lock/pid" "$lock/until"; rmdir "$lock" 2>/dev/null || true
         fi
         [ -d "$lock" ] || continue
         clock_cs

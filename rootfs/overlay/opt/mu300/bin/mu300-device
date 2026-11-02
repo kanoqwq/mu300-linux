@@ -2,7 +2,9 @@
 # Which board is physically present. A restored rootfs or old boot-image label
 # cannot override the live device tree. MU300_SYSROOT provides a fake / in tests.
 R=${MU300_SYSROOT:-}
-if [ -d "$R/proc/device-tree/charger_policy_service" ]; then
+if [ "$(cat "$R/etc/mu300/platform" 2>/dev/null)" = u30pro ]; then
+    echo u30pro
+elif [ -d "$R/proc/device-tree/charger_policy_service" ]; then
     echo u30air
 elif [ -d "$R/proc/device-tree/soc/soc:ap-ahb/i2c@2270000/aw9523b_led@5b" ] ||
      [ -d "$R/proc/device-tree/soc/ap-ahb/i2c@2270000/aw9523b_led@5b" ]; then

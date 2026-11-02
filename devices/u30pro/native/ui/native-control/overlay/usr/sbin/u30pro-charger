@@ -1,0 +1,115 @@
+#!/bin/sh
+# Charger power-on.  A unit that is switched off while USB power is present is started again by the bootloader in charger mode
+# (sprdboot.mode=charger on the command line).  The setting u30pro_native_control.settings.charger_mode chooses what follows:
+#   boot (default)  restart at once into the normal mode: switching off and on again is then a full power cycle, which also brings
+#                   the baseband up from cold
+#   stay            a charging system with nothing but the USB serial console (a root shell on ttyGS0), the screen and the
+#                   self-confirmation; holding the power key 2 s restarts into the normal mode (so does "reboot" on the serial
+#                   console, and a 7 s hold resets the unit)
+# A restart only happens while the count of charger power-ons in a row, kept in the data store, is at most STREAK_MAX: a bootloader
+# that keeps choosing charger mode after a restart ends in "stay", not in a reboot loop.  Without the data store the count cannot be
+# kept and "stay" is used (fail closed).
+# usage: u30pro-charger early    rcS, once the data store is mounted; exit 0: normal boot, 1: stay in charger mode
+#        u30pro-charger watch    charger mode only, in the background: the power key held 2 s restarts into the normal mode
+#        u30pro-charger status
+# U30PRO_CHARGER_* variables exist for the offline test (tests/test_charger.py) and are not set on the device.
+set -u
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+P=${U30PRO_CHARGER_ROOT:-}
+S=$P/overlay/u30pro-charger
+LOG=$P/run/u30pro-charger.log
+RESET=${U30PRO_CHARGER_RESET:-/usr/sbin/u30pro-hardreset}
+WAIT=${U30PRO_CHARGER_WAIT:-30}
+STREAK_MAX=3
+HOLD_MS=2000
+
+# a charger power-on in "boot" mode resets within seconds, so the record goes to the data store as well
+log() {
+	line="$(date '+%F %T') $*"
+	echo "$line" >>"$LOG"
+	[ -d "$S" ] && echo "$line" >>"$S/events.log" 2>/dev/null
+	logger -t u30pro-charger "$*" 2>/dev/null
+	return 0
+}
+
+in_charger() {
+	case " $(tr '\n' ' ' <"$P/proc/cmdline") " in *" sprdboot.mode=charger "*|*" androidboot.mode=charger "*) return 0 ;; esac
+	return 1
+}
+
+streak() {
+	k=$(cat "$S/streak" 2>/dev/null)
+	case "$k" in ''|*[!0-9]*) echo 0 ;; *) echo "$k" ;; esac
+}
+
+setting() {
+	case "${U30PRO_CHARGER_SETTING-$(uci -q get u30pro_native_control.settings.charger_mode)}" in stay) echo stay ;; *) echo boot ;; esac
+}
+
+# through the PMIC watchdog: the bootloader starts the next boot in the normal mode
+restart_normal() {
+	sync
+	"$RESET" 5
+}
+
+case "${1:-status}" in
+early)
+	if ! in_charger; then
+		[ "$(streak)" = 0 ] || echo 0 >"$S/streak" 2>/dev/null
+		exit 0
+	fi
+	: >"$P/run/u30pro-charger-mode"
+	mode=$(setting)
+	k=$(($(streak) + 1))
+	if ! grep -q ' /overlay ' "$P/proc/mounts" || ! { mkdir -p "$S" && echo "$k" >"$S/streak"; } 2>/dev/null; then
+		log "charger power-on; the data store is not available for the restart count: staying in charger mode"
+		exit 1
+	fi
+	if [ "$mode" = boot ] && [ "$k" -le "$STREAK_MAX" ]; then
+		log "charger power-on ($k in a row): restarting into the normal mode"
+		restart_normal
+		sleep "$WAIT"
+		log "the restart did not happen: staying in charger mode"
+	elif [ "$mode" = boot ]; then
+		log "charger power-on $k times in a row: staying in charger mode"
+	else
+		log "charger power-on: staying in charger mode (setting stay)"
+	fi
+	exit 1 ;;
+watch)
+	in_charger || exit 0
+	dev=$(awk '/^N: Name="gpio-keys"/ { k = 1 } k && /^H: Handlers=/ { for (i = 2; i <= NF; i++) if ($i ~ /^event[0-9]+$/) { print $i; exit } }' "$P/proc/bus/input/devices")
+	[ -n "$dev" ] || { log "no gpio-keys input device: the power key cannot restart into the normal mode"; exit 1; }
+	exec 3<"$P/dev/input/$dev" || { log "cannot open /dev/input/$dev: the power key cannot restart into the normal mode"; exit 1; }
+	log "charger mode: hold the power key 2 s to start the normal system"
+	# One struct input_event per read (arm64: u64 sec, u64 usec, u16 type, u16 code, s32 value): evdev refuses a read shorter than an
+	# event (busybox hexdump on the device itself gets EINVAL) and a long-lived hexdump would hold its output in a pipe buffer.  The device
+	# stays open on fd 3, so no event is lost between reads.  BusyBox hexdump has no 8-byte conversion: the 64-bit time fields come as
+	# two 32-bit halves (the upper ones are 0).  EV_KEY is 1, KEY_POWER 116; the hold time comes from the event time stamps.  The screen
+	# program reads the same device and takes presses up to 1.8 s (screen on/off), so a 2 s hold is left to this loop.
+	t0=""
+	while :; do
+		ev=$(dd bs=24 count=1 <&3 2>/dev/null | hexdump -v -e '1/4 "%u " 1/4 "%u " 1/4 "%u " 1/4 "%u " 1/2 "%u " 1/2 "%u " 1/4 "%d\n"')
+		[ -n "$ev" ] || { log "the power key stopped delivering events"; exit 1; }
+		set -- $ev
+		[ "$#" = 7 ] && [ "$5" = 1 ] && [ "$6" = 116 ] || continue
+		ms=$(($1 * 1000 + $3 / 1000))
+		case "$7" in
+		1) t0=$ms ;;
+		0)
+			[ -n "$t0" ] || continue
+			held=$((ms - t0))
+			t0=""
+			if [ "$held" -ge "$HOLD_MS" ]; then
+				log "power key held $held ms: restarting into the normal mode"
+				restart_normal
+			fi ;;
+		esac
+	done ;;
+status)
+	if in_charger; then echo "this boot: charger mode"; else echo "this boot: normal mode"; fi
+	echo "setting: $(setting); charger power-ons in a row: $(streak)" ;;
+*)
+	echo 'usage: u30pro-charger early|watch|status' >&2
+	exit 2 ;;
+esac

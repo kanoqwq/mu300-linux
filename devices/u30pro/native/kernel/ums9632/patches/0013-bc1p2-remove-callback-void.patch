@@ -1,0 +1,19 @@
+--- a/drivers/unisoc_platform/sprd_charger/sprd-bc1p2.c
++++ b/drivers/unisoc_platform/sprd_charger/sprd-bc1p2.c
+@@ -951,7 +951,7 @@
+ 	return err;
+ }
+ 
+-static int usb_remove_bc1p2(struct platform_device *pdev)
++static void usb_remove_bc1p2(struct platform_device *pdev)
+ {
+ 	struct sprd_bc1p2_priv *bc1p2 = platform_get_drvdata(pdev);
+ 
+@@ -960,7 +960,6 @@
+ 		kthread_stop(bc1p2->bc1p2_thread);
+ 		bc1p2->bc1p2_thread = NULL;
+ 	}
+-	return 0;
+ }
+ 
+ void usb_shutdown_bc1p2(struct platform_device *pdev)

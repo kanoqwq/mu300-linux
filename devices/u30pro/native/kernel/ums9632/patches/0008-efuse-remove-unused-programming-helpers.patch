@@ -1,0 +1,54 @@
+--- a/drivers/nvmem/sprd-efuse.c
++++ b/drivers/nvmem/sprd-efuse.c
+@@ -120,29 +120,9 @@
+ 	usleep_range(1000, 1200);
+ }
+ 
+-static void sprd_efuse_set_prog_lock(struct sprd_efuse *efuse, bool en)
+-{
+-	u32 val = readl(efuse->base + SPRD_EFUSE_ENABLE);
+-
+-	if (en)
+-		val |= SPRD_EFUSE_LOCK_WR_EN;
+-	else
+-		val &= ~SPRD_EFUSE_LOCK_WR_EN;
+-
+-	writel(val, efuse->base + SPRD_EFUSE_ENABLE);
+-}
+-
+-static void sprd_efuse_set_auto_check(struct sprd_efuse *efuse, bool en)
+-{
+-	u32 val = readl(efuse->base + SPRD_EFUSE_ENABLE);
+-
+-	if (en)
+-		val |= SPRD_EFUSE_AUTO_CHECK_EN;
+-	else
+-		val &= ~SPRD_EFUSE_AUTO_CHECK_EN;
+-
+-	writel(val, efuse->base + SPRD_EFUSE_ENABLE);
+-}
++
++
++
+ 
+ static void sprd_efuse_set_data_double(struct sprd_efuse *efuse, bool en)
+ {
+@@ -156,17 +136,7 @@
+ 	writel(val, efuse->base + SPRD_EFUSE_ENABLE);
+ }
+ 
+-static void sprd_efuse_set_prog_en(struct sprd_efuse *efuse, bool en)
+-{
+-	u32 val = readl(efuse->base + SPRD_EFUSE_PW_SWT);
+-
+-	if (en)
+-		val |= SPRD_EFUSE_PROG_EN;
+-	else
+-		val &= ~SPRD_EFUSE_PROG_EN;
+-
+-	writel(val, efuse->base + SPRD_EFUSE_PW_SWT);
+-}
++
+ 
+ 
+ 

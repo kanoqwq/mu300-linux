@@ -1,0 +1,201 @@
+--- a/drivers/mmc/host/sdhci-sprd.c
++++ b/drivers/mmc/host/sdhci-sprd.c
+@@ -18,6 +18,9 @@
+ #include <linux/pm_runtime.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/slab.h>
++#include <linux/mfd/syscon.h>
++#include <linux/regmap.h>
++#include "../core/card.h"
+ 
+ #include "sdhci-pltfm.h"
+ #include "mmc_hsq.h"
+@@ -79,6 +82,9 @@
+ #define SDHCI_SPRD_CPST_EN		GENMASK(27, 24)
+ 
+ struct sdhci_sprd_host {
++	bool r11p3_trial;
++	struct mmc_card *trial_card;
++	struct clk *clk_ap_axi;
+ 	u32 version;
+ 	struct clk *clk_sdio;
+ 	struct clk *clk_enable;
+@@ -289,6 +295,7 @@
+ 
+ static void sdhci_sprd_set_clock(struct sdhci_host *host, unsigned int clock)
+ {
++	struct sdhci_sprd_host *sprd_host = TO_SPRD_HOST(host);
+ 	bool en = false, clk_changed = false;
+ 
+ 	if (clock == 0) {
+@@ -312,6 +319,15 @@
+ 	 * is used to track the clock frequency to make the clock work more
+ 	 * stable. Otherwise deviation may occur of the higher clock.
+ 	 */
++	/* The R11P3 bootstrap is capped at 52 MHz, outside the DLL path. */
++	if (sprd_host->r11p3_trial) {
++		u32 cfg = sdhci_readl(host, SDHCI_SPRD_REG_32_DLL_CFG);
++
++		cfg &= ~(SDHCI_SPRD_DLL_EN | SDHCI_SPRD_DLL_ALL_CPST_EN);
++		sdhci_writel(host, cfg, SDHCI_SPRD_REG_32_DLL_CFG);
++		return;
++	}
++
+ 	if (clk_changed && clock > SDHCI_SPRD_PHY_DLL_CLK)
+ 		sdhci_sprd_enable_phy_dll(host);
+ }
+@@ -476,8 +492,67 @@
+ 		host->flags &= ~SDHCI_AUTO_CMD23;
+ }
+ 
++/* Data writes/erase are denied even through raw MMC ioctl during this trial. */
++static bool sdhci_sprd_trial_reject(struct mmc_host *mmc, struct mmc_request *mrq)
++{
++	struct sdhci_host *host = mmc_priv(mmc);
++	struct sdhci_sprd_host *sprd_host = TO_SPRD_HOST(host);
++	u32 op = mrq->cmd->opcode;
++	bool deny = mrq->data && (mrq->data->flags & MMC_DATA_WRITE);
++
++	if (!sprd_host->r11p3_trial || !(mmc->caps2 & MMC_CAP2_NO_SDIO))
++		return false;
++	deny |= op == MMC_ERASE || op == MMC_ERASE_GROUP_START ||
++		op == MMC_ERASE_GROUP_END || op == MMC_SET_WRITE_PROT ||
++		op == MMC_CLR_WRITE_PROT;
++	if (op == MMC_SWITCH) {
++		u8 index = (mrq->cmd->arg >> 16) & 0xff;
++
++		/* Only initialization/runtime settings, never OTP/boot/FFU/sanitize. */
++		switch (index) {
++		case EXT_CSD_BUS_WIDTH:
++		case EXT_CSD_HS_TIMING:
++		case EXT_CSD_POWER_CLASS:
++		case EXT_CSD_ERASE_GROUP_DEF:
++		case EXT_CSD_PART_CONFIG:
++		case EXT_CSD_CMDQ_MODE_EN:
++		case EXT_CSD_CACHE_CTRL:
++		case EXT_CSD_FLUSH_CACHE:
++		case EXT_CSD_POWER_OFF_NOTIFICATION:
++		case EXT_CSD_EXP_EVENTS_CTRL:
++		case EXT_CSD_HPI_MGMT:
++			break;
++		default:
++			deny = true;
++		}
++		if (index == EXT_CSD_PART_CONFIG && (!sprd_host->trial_card ||
++		    (mrq->cmd->arg & 0x00ffff00) !=
++		    (((u32)index << 16) | ((u32)(sprd_host->trial_card->ext_csd.part_config & ~7) << 8))))
++			deny = true;
++	}
++	if (!deny)
++		return false;
++	mrq->cmd->error = -EROFS;
++	if (mrq->data)
++		mrq->data->error = -EROFS;
++	sdhci_sprd_request_done(host, mrq);
++	return true;
++}
++
++static void sdhci_sprd_trial_init_card(struct mmc_host *mmc, struct mmc_card *card)
++{
++	struct sdhci_sprd_host *sprd_host = TO_SPRD_HOST(mmc_priv(mmc));
++
++	if (sprd_host->r11p3_trial) {
++		sprd_host->trial_card = card;
++		mmc_card_set_readonly(card);
++	}
++}
++
+ static void sdhci_sprd_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ {
++	if (sdhci_sprd_trial_reject(mmc, mrq))
++		return;
+ 	sdhci_sprd_check_auto_cmd23(mmc, mrq);
+ 
+ 	sdhci_request(mmc, mrq);
+@@ -486,6 +561,8 @@
+ static int sdhci_sprd_request_atomic(struct mmc_host *mmc,
+ 				     struct mmc_request *mrq)
+ {
++	if (sdhci_sprd_trial_reject(mmc, mrq))
++		return 0;
+ 	sdhci_sprd_check_auto_cmd23(mmc, mrq);
+ 
+ 	return sdhci_request_atomic(mmc, mrq);
+@@ -772,6 +849,22 @@
+ 		host->always_defer_done = true;
+ 
+ 	sprd_host = TO_SPRD_HOST(host);
++	sprd_host->r11p3_trial = of_device_is_compatible(pdev->dev.of_node,
++						      "sprd,sdhci-r11p3");
++	if (sprd_host->r11p3_trial) {
++		host->mmc_host_ops.init_card = sdhci_sprd_trial_init_card;
++		host->mmc->f_max = 52000000;
++		host->mmc->caps &= ~(MMC_CAP_UHS | MMC_CAP_DDR);
++		host->mmc->caps2 &= ~(MMC_CAP2_HS200 | MMC_CAP2_HS400 |
++					  MMC_CAP2_HS400_ES | MMC_CAP2_CQE |
++					  MMC_CAP2_CQE_DCMD);
++		/* Keep the AXI provider active until runtime PM is validated. */
++		sprd_host->clk_ap_axi = devm_clk_get_optional_enabled(&pdev->dev, "ap_axi");
++		if (IS_ERR(sprd_host->clk_ap_axi)) {
++			ret = PTR_ERR(sprd_host->clk_ap_axi);
++			goto pltfm_free;
++		}
++	}
+ 	sdhci_sprd_phy_param_parse(sprd_host, pdev->dev.of_node);
+ 
+ 	sprd_host->pinctrl = devm_pinctrl_get(&pdev->dev);
+@@ -824,6 +917,21 @@
+ 	if (ret)
+ 		goto clk_disable2;
+ 
++	if (sprd_host->r11p3_trial &&
++	    of_property_read_bool(pdev->dev.of_node, "need_cache_convert")) {
++		u32 args[2];
++		struct regmap *map = syscon_regmap_lookup_by_phandle_args(
++			pdev->dev.of_node, "sprd-cache-convert", 2, args);
++
++		if (IS_ERR(map)) {
++			ret = PTR_ERR(map);
++			goto clk_2x_disable_probe;
++		}
++		ret = regmap_update_bits(map, args[0], args[1], args[1]);
++		if (ret)
++			goto clk_2x_disable_probe;
++	}
++
+ 	sdhci_sprd_init_config(host);
+ 	host->version = sdhci_readw(host, SDHCI_HOST_VERSION);
+ 	sprd_host->version = ((host->version & SDHCI_VENDOR_VER_MASK) >>
+@@ -871,8 +979,12 @@
+ 	if (ret)
+ 		goto err_cleanup_host;
+ 
+-	pm_runtime_mark_last_busy(&pdev->dev);
+-	pm_runtime_put_autosuspend(&pdev->dev);
++	if (sprd_host->r11p3_trial) {
++		dev_info(&pdev->dev, "R11P3 read-only bootstrap, max 52 MHz; CQE/ICE/HS200/400 disabled\n");
++	} else {
++		pm_runtime_mark_last_busy(&pdev->dev);
++		pm_runtime_put_autosuspend(&pdev->dev);
++	}
+ 
+ 	return 0;
+ 
+@@ -884,6 +996,7 @@
+ 	pm_runtime_disable(&pdev->dev);
+ 	pm_runtime_set_suspended(&pdev->dev);
+ 
++clk_2x_disable_probe:
+ 	clk_disable_unprepare(sprd_host->clk_2x_enable);
+ 
+ clk_disable2:
+@@ -913,6 +1026,9 @@
+ 
+ static const struct of_device_id sdhci_sprd_of_match[] = {
+ 	{ .compatible = "sprd,sdhci-r11", },
++#ifdef CONFIG_U30PRO_SDHCI_R11P3_BOOTSTRAP
++	{ .compatible = "sprd,sdhci-r11p3", },
++#endif
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, sdhci_sprd_of_match);

@@ -1,0 +1,12 @@
+page 3
+plugins
+fnscroll 1
+wait 200
+shot a_before
+tap 64 82
+wait 60
+shot b_60ms
+wait 90
+shot c_150ms
+wait 500
+shot d_settled

@@ -1,0 +1,7 @@
+# AIC8800 (D80X2) SDIO Wi-Fi, imported from the vendor 6.6 BSP for the native 6.12 port.
+# Both modules are always built as loadable modules (the vendor Makefiles force obj-m); Bluetooth (btlpm) is not imported yet.
+config UNISOC_AIC8800
+	tristate "AIC8800 SDIO Wi-Fi (aic8800_bsp + aic8800_fdrv)"
+	depends on U30PRO_BSP && CFG80211 && MMC
+	help
+	  Vendor aic8800_bsp (power, SDIO, firmware download) and aic8800_fdrv (cfg80211 FullMAC) modules.

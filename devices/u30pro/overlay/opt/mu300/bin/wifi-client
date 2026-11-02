@@ -1,0 +1,15 @@
+#!/usr/bin/ucode
+import { cursor } from 'uci';
+import { connect } from 'ubus';
+import * as native from 'mu300.wifi-native';
+let action=ARGV[0] || 'status';
+if(action in ['help','--help','-h']) {
+    print('wifi-client scan|connect SSID [KEY]|status|up|disconnect|forget\n');
+    print('U30 Pro: standard netifd AP + STA, no reboot required.\n');exit(0);
+}
+try {
+    let c=cursor(),bus=connect(null,10);
+    if(!bus)die('ubus is unavailable / ubus 不可用');
+    let result=native.dispatch(c,bus,action,slice(ARGV,1));
+    bus.disconnect();print(sprintf('%J\n',result));
+} catch(e) { warn('wifi-client: '+e+'\n');exit(1); }

@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config REGMAP_MMIO_SETCLR_KUNIT_TEST
+ bool "Test bounded MMIO SET/CLR command windows"
+ depends on KUNIT && REGMAP_MMIO

@@ -1,0 +1,52 @@
+#!/usr/bin/ucode
+/* The feeder of the on-device screen UI: collects what the screen shows (/usr/share/u30pro/ui-feed.uc) every 3 s while the screen is
+ * on, every 15 s while it is off, and hands it over with "ubus call u30pro.panel feed".  It runs at once on a request of the screen
+ * (event u30pro.panel.request: kick when it comes on or opens the signal page, sms_refresh, sms_ack) and on a new-message
+ * notification of the AT broker (event u30pro.at.urc: +CMTI, +CMT, +CDSI). */
+import * as uloop from 'uloop';
+import { connect } from 'ubus';
+import { writefile, rename } from 'fs';
+import { collect } from '/usr/share/u30pro/ui-feed.uc';
+
+uloop.init();
+/* the one connection of the service, also for collect(); calls give up after 5 s */
+let bus = connect(null, 5);
+if (!bus) {
+	warn('u30pro-ui-feed: cannot connect to ubus\n');
+	exit(1);
+}
+let req = {}, timer;
+
+function run() {
+	let st = bus.call('u30pro.panel', 'status', {}) ?? {};
+	let r = req;
+	req = {};
+	r.screen_on = st.screen_on !== false;
+	r.page = st.page;
+	let data = null;
+	try { data = collect(r, bus); }
+	catch (e) { warn(`u30pro-ui-feed: ${e}\n${e.stacktrace?.[0]?.context ?? ''}\n`); }
+	if (data) {
+		bus.call('u30pro.panel', 'feed', { data: data });
+		/* the same data for the dashboard's picture of the screen (/usr/share/u30pro/dashboard.uc), without the hotspot key */
+		let copy = { ...data };
+		delete copy.psk;
+		writefile('/run/u30pro-ui/feed.json.new', sprintf('%J', copy));
+		rename('/run/u30pro-ui/feed.json.new', '/run/u30pro-ui/feed.json');
+	}
+	timer.set(st.screen_on === false ? 15000 : 3000);
+}
+
+timer = uloop.timer(100, run);
+bus.listener('u30pro.panel.request', function(type, msg) {
+	if (msg?.request == 'sms_refresh') req.sms_refresh = true;
+	else if (msg?.request == 'sms_ack') req.sms_ack = true;
+	timer.set(1);
+});
+bus.listener('u30pro.at.urc', function(type, msg) {
+	if (match(msg?.line ?? '', /^\+(CMTI|CMT|CDSI):/)) {
+		req.sms_new = true;
+		timer.set(1);
+	}
+});
+uloop.run();

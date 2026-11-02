@@ -1,0 +1,8 @@
+config U30PRO_SPRD_CPUFREQ_V2
+ tristate "Unisoc apcpu hardware DVFS cpufreq driver (sprd,cpufreq-v2)"
+ depends on ARCH_SPRD && CPU_FREQ && U30PRO_SPRD_SIP
+ select PM_OPP
+ help
+   Scales the voltage and frequency of the two CPU clusters through the hardware DVFS of the secure monitor (SIP SMC calls).  The
+   driver only starts when the kernel command line contains u30pro_cpufreq=1.  ASE aging compensation (u30pro_ase=1) and the data for the
+   software SCU frequency control (u30pro_scufreq=1, see U30PRO_SPRD_SCUFREQ) are optional; the debugfs table is ported read-only.

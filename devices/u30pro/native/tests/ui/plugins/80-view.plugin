@@ -1,0 +1,7 @@
+# a view page (type=view): a finished speed test as feed/packages/better-speedtest's bst screen draws it (the traditional 環電 shows as 环电)
+title=测速图
+icon=chart
+type=view
+cmd=printf '%s\n' 'gauge 153.6 200 ok' 'label 環電 HGC 香港' 'big 153.6 Mbps' 'spark a 200 10 40 80 120 135 150 148 152 160 155 152.3 150' 'spark b 200 2 5 6 6.5 7 6.2 6 5.9' 'row ↑ 上行|6.2 Mbps' 'row 延迟/抖动|193/23 ms' 'text 重进本页再测'
+refresh=2
+order=80

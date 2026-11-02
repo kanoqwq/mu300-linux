@@ -220,7 +220,7 @@ return view.extend({
         controlsFor('frequency', frequency, !!this.inputs.length);
         controlsFor('thermal', thermalSection, !!this.thermalInputs.length);
         var voltage = data.voltage || {}, section = node('section', null, 'mud-card mud-cpu-section');
-        section.append(heading('CPU 电压偏移', '重启生效', '按 CPU 簇设置，步进 3.125 mV。偏移会同时作用于固件对应的 CPU/SRAM 电压表；不增加超频档位。'));
+        section.append(heading('CPU 电压偏移', '重启生效', '按 CPU 簇设置，步进 3.125 mV。偏移会作用于固件对应的电压表；不增加超频档位。'));
         section.append(node('p', M.translate('预设仅填入小幅偏移，不会直接保存；非零偏移仍需验证稳定性，不保证每颗芯片都安全。'), 'mud-note mud-cpu-preset-note'));
         section.dataset.scope = 'voltage';
         root.append(section, thermalSection);
@@ -278,7 +278,8 @@ return view.extend({
         section.append(voltageGrid, actions, node('p', M.translate('调压可能导致死机或数据丢失，请从小幅调整开始。完成启动确认后，直接断电会保留设置；首次应用未完成确认时暂停重试。保存不会立即调压或自动重启。'), 'mud-note mud-cpu-warning'));
         function submitVoltage(defaults) {
             if (self.busy) return;
-            var values = [0, 0, 0];
+            var count = voltage.domain_count || (voltage.offsets || [0, 0, 0]).length;
+            var values = Array(count).fill(0);
             if (!defaults) offsets.forEach(function(x) { values[x.id] = x.input.value.trim() === '' ? NaN : Number(x.input.value) * 1000; });
             if (values.some(function(v) { return !Number.isInteger(v) || v < -50000 || v > 25000 || v % 3125; })) { M.toast(M.translate('CPU 电压配置无效'), { type: 'error' }); return; }
             var confirmation = node('div', null, 'mud-cpu-confirm-values');

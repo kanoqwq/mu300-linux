@@ -3,6 +3,9 @@
 set -eu
 lib=$1
 base=$(mktemp -d /tmp/mu300-voltage-test.XXXXXX)
+trap 'rm -rf -- "$base"' EXIT HUP INT TERM
+printf 'f50\n' > "$base/device"
+export MU300_CPU_DEVICE_FILE="$base/device"
 export MU300_CPU_VOLTAGE_DIR=$base/etc MU300_CPU_VOLTAGE_RUN=$base/run
 export MU300_CPU_SYS=$base/sys MU300_CPU_BOOT_ID=$base/boot
 export MU300_CPU_PLATFORM=$base/platform

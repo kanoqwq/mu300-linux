@@ -1,0 +1,24 @@
+#!/bin/sh
+# Consume MU300's existing gadget policy using the U30 Pro configfs backend.
+# No parallel setting store and no DWC3 role/charger manipulation.
+set -eu
+mode=ncm
+policy=/etc/unisoc-modem/usb-boot.conf
+selected=0
+if [ -f "$policy" ]; then
+    mode= scope=
+    while IFS='=' read -r key value; do
+        case $key in mode) mode=$value ;; scope) scope=$value ;; esac
+    done < "$policy"
+    case $mode:$scope in ncm:once|ecm:once|rndis:once|ncm:permanent|ecm:permanent|rndis:permanent) ;;
+        *) logger -t u30pro 'Invalid saved USB network boot policy'; exit 1 ;;
+    esac
+    selected=1
+fi
+current=$(cat /run/u30pro-usb-profile 2>/dev/null || true)
+if [ -n "$current" ] && [ "$current" != "$mode" ]; then
+    /usr/sbin/u30pro-usb stop
+fi
+/usr/sbin/u30pro-usb start "$mode"
+[ "$selected" = 0 ] || touch /run/unisoc-usb-net-applied
+/usr/libexec/unisoc-modem/device-usb boot

@@ -1,0 +1,80 @@
+#!/usr/bin/ucode
+// Adapt the U30 Pro screen to MU300's existing owners/caches. No tty access.
+import * as fs from 'fs';
+import * as uloop from 'uloop';
+import { connect } from 'ubus';
+import { cursor } from 'uci';
+import { info, status } from 'mu300.dash';
+import * as client from 'mu300.wifi-native';
+import { carrier_name } from 'mu300.carrier';
+
+uloop.init();
+const bus=connect(null,3), config=cursor();
+if(!bus)die('Screen feed: ubus is unavailable\n');
+let requested={}, timer;
+function clean(v) { return replace(''+(type(v)=='bool'?(v?1:0):(v ?? '')) ,/[\r\n\t]/g,' '); }
+function object(path) { try{return json(fs.readfile(path) || '{}');}catch(e){return {}; } }
+function run() {
+    let screen=bus.call('u30pro.panel','status',{}) || {}, req=requested;
+    requested={};
+    for(let name in ['wireless','unisoc_modem','network']) {config.unload(name);config.load(name);}
+    let slot=config.get('unisoc_modem','main','data_sim')=='1'?'1':'0';
+    let view=info(slot,bus,config), cached=status(slot,true,bus,config), cell=cached.cell || {}, sig=cached.sig || {};
+    let lte=cell.lte || {}, nr=cell.nr || {}, relay=client.status(config,bus);
+    // Existing native screen data-toggle add-ons consume this public state.
+    // It reflects the MU300 owner's choice; it never owns a physical channel.
+    fs.mkdir('/run/u30pro-cellular',448);
+    let data_iface=config.get('unisoc_modem','main','data_interface') || 'wan';
+    let wanted=view.wan.autostart!==false && !fs.stat('/run/mu300-mobile-data-manual-down') &&
+        config.get('network',data_iface,'disabled')!='1';
+    let public_status={state:view.wan.up?'connected':'disconnected',connected:!!view.wan.up,
+        interface:view.wan.device,address:view.wan.ip4};
+    // The published screen-data add-on checks the literal compact boolean.
+    // ucode %J adds spaces, so keep this field in its native byte format.
+    // wanted follows explicit user intent, not a temporary netifd teardown.
+    fs.writefile('/run/u30pro-cellular/status.json.new',
+        '{"desired_up":'+(wanted?'true':'false')+','+substr(sprintf('%J',public_status),1)+'\n');
+    fs.rename('/run/u30pro-cellular/status.json.new','/run/u30pro-cellular/status.json');
+    let data={cell_connected:view.wan.up,cell_state:view.wan.up?'connected':'disconnected',
+        ip:view.wan.ip4,iface:view.wan.device,op:carrier_name(cell.operator),
+        rat:nr.band!=null?'5G':lte.band!=null?'4G':'',have_sig:(nr.rsrp ?? lte.rsrp)!=null?1:0,
+        kernel:view.kernel,slot:trim(fs.readfile('/run/mu300/linux-slot') || ''),
+        version:trim(fs.readfile('/etc/mu300/image-version') || ''),
+        ssid:view.wifi.ssid,psk:config.get('wireless',view.wifi.section || 'default_radio0','key') || '',
+        wifi_band:view.wifi.band,channel:view.wifi.channel,wifi_enabled:view.wifi.enabled,
+        wifi_active:view.wifi.up,nclients:view.wifi.clients_n,usb_up:view.net.usb0?.up || 0,
+        // LTE may carry several component widths (e.g. 20M+20M); do not
+        // squeeze that into the native single-carrier bandwidth index.
+        lte_bw:lte.bw ? replace(lte.bw,/M/g,'')+' MHz':'',bw_idx:-1,
+        nr_bw:nr.bw_mhz>0?nr.bw_mhz:0,
+        admin_wifi:1,band:lte.band,pci:lte.pci,earfcn:lte.earfcn,rsrp:lte.rsrp,rsrq:lte.rsrq,
+        nr:nr.band!=null,nr_band:nr.band,nr_pci:nr.pci,nr_arfcn:nr.arfcn,nr_rsrp:nr.rsrp,nr_sinr:nr.sinr,
+        relay_cfg:relay.cfg,relay_on:relay.enabled?1:0,relay_state:relay.state,relay_ssid:relay.ssid};
+    for(let i=0;i<min(6,length(view.wifi.clients || []));i++) {
+        let c=view.wifi.clients[i];data['cl.'+i]=join('\t',map([c.host || c.mac,c.ip,c.signal],clean));
+    }
+    let sms=bus.call('mu300dash','sms_list',{page:'1',slot}) || {};
+    data.sms_total=sms.total || 0;data.sms_unread=sms.unread || 0;
+    for(let i=0;i<min(6,length(sms.msgs || []));i++) {
+        let msg=sms.msgs[i], text=msg.preview, unread=lc(msg.status || '') in ['new','unread'];
+        if(req.sms_ack && unread) {
+            let body=bus.call('mu300dash','sms_show',{id:''+msg.id,slot});
+            text=body?.text || text;
+        }
+        data['sms.'+i]=join('\t',map([msg.peer,msg.time,req.sms_ack?0:unread?1:0,text],clean));
+    }
+    // List fields are already sanitized individually; keep their TAB framing.
+    for(let key in keys(data))if(!match(key,/^(cl|sms)\./))data[key]=clean(data[key]);
+    bus.call('u30pro.panel','feed',{data});
+    timer.set(screen.screen_on===false?15000:3000);
+}
+timer=uloop.timer(100,run);
+const panel_events=bus.listener('u30pro.panel.request',(type,msg)=>{
+    if(msg?.request=='sms_ack')requested.sms_ack=true;
+    timer.set(1);
+});
+const modem_events=bus.listener('mu300.modem.urc',(type,msg)=>{
+    if(match(msg?.line || '',/^\+CMT/))timer.set(100);
+});
+const terminate=uloop.signal(15,()=>uloop.end()), interrupt=uloop.signal(2,()=>uloop.end());
+uloop.run();

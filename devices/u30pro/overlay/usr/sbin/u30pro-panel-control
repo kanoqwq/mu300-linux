@@ -1,0 +1,32 @@
+#!/bin/sh
+# Screen actions enter the same MU300 policy owners as the dashboard.
+set -eu
+case ${1:-} in
+    key-short|key-long)
+        press=${1#key-}
+        action=$(uci -q get "u30pro_native_control.settings.home_${press}_action" || true)
+        case $action in
+            toggle-wifi) exec "$0" wifi-toggle ;;
+            reconnect-cellular) exec "$0" reconnect ;;
+            refresh-status) exec ubus send u30pro.panel.request '{"request":"kick"}' ;;
+            ''|none|page-next) exit 0 ;;
+            *) echo 'Invalid saved key action' >&2; exit 2 ;;
+        esac ;;
+    wifi-toggle)
+        # The installer creates ap0; users may rename the AP section. Resolve
+        # exactly the same selected AP as the dashboard, never a fixed section.
+        fields=$(/usr/libexec/unisoc-modem/hotspot fields)
+        available=$(printf '%s\n' "$fields" | awk '$0 == "available" { getline; print; exit }')
+        up=$(printf '%s\n' "$fields" | awk '$0 == "up" { getline; print; exit }')
+        [ "$available" = 1 ] || { echo 'No selected hotspot is available' >&2; exit 1; }
+        action=on; [ "$up" != 1 ] || action=off
+        exec /usr/libexec/unisoc-modem/hotspot "$action" ;;
+    relay-on) exec /opt/mu300/bin/wifi-client up ;;
+    relay-off) exec /opt/mu300/bin/wifi-client disconnect ;;
+    charge-pause) exec /usr/libexec/unisoc-modem/charge pause ;;
+    charge-resume) exec /usr/libexec/unisoc-modem/charge resume ;;
+    reconnect) exec /usr/sbin/u30pro-celld --ctl reconnect ;;
+    reboot) exec reboot ;;
+    poweroff) exec poweroff ;;
+    *) exit 2 ;;
+esac

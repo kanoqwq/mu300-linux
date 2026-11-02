@@ -1,0 +1,27 @@
+--- a/drivers/pinctrl/sprd-u30pro/pinctrl-sprd.h
++++ b/drivers/pinctrl/sprd-u30pro/pinctrl-sprd.h
+@@ -54,7 +54,7 @@
+ 			    struct sprd_pins_info *sprd_soc_pin_info,
+ 			    int pins_cnt, u32 common_pin_offset,
+ 			    u32 misc_pin_offset);
+-int sprd_pinctrl_remove(struct platform_device *pdev);
++void sprd_pinctrl_remove(struct platform_device *pdev);
+ void sprd_pinctrl_shutdown(struct platform_device *pdev);
+ 
+ #endif /* __PINCTRL_SPRD_H__ */
+--- a/drivers/pinctrl/sprd-u30pro/pinctrl-sprd.c
++++ b/drivers/pinctrl/sprd-u30pro/pinctrl-sprd.c
+@@ -1118,12 +1118,11 @@
+ }
+ EXPORT_SYMBOL_GPL(sprd_pinctrl_core_probe);
+ 
+-int sprd_pinctrl_remove(struct platform_device *pdev)
++void sprd_pinctrl_remove(struct platform_device *pdev)
+ {
+ 	struct sprd_pinctrl *sprd_pctl = platform_get_drvdata(pdev);
+ 
+ 	pinctrl_unregister(sprd_pctl->pctl);
+-	return 0;
+ }
+ EXPORT_SYMBOL_GPL(sprd_pinctrl_remove);
+ 

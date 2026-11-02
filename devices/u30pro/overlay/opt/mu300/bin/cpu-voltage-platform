@@ -1,0 +1,45 @@
+#!/bin/sh
+# Native UMS9632 hardware adapter; shared MU300 voltage policy owns profiles.
+set -eu
+ko=/lib/modules/$(uname -r)/sprd-cpufreq-v2.ko
+scu=/lib/modules/$(uname -r)/u30pro-sprd-scufreq.ko
+checker=/opt/mu300/bin/sml-voltage-check
+helper=/usr/libexec/unisoc-modem/cpu-voltage
+supported() {
+    tr '\000' '\n' </sys/firmware/devicetree/base/compatible | grep -qx 'sprd,ums9632' || return 1
+    [ -f "$ko" ] && grep -aq 'parm=voltage_offset_uv:' "$ko" || return 1
+    [ -x "$checker" ] || return 1
+    # Resolve the kernel's labels, not a reference unit's GPT numbers/LBAs.
+    for slot in a b; do
+        set -- $(grep -l "^PARTNAME=sml_$slot\$" /sys/class/block/*/uevent)
+        [ "$#" = 1 ] || return 1
+        part=${1%/uevent}; part=/dev/${part##*/}
+        [ -b "$part" ] && "$checker" --domains 2 "$part" >/dev/null || return 1
+    done
+}
+case ${1:-load} in
+    check) supported ;;
+    load)
+        # Do not reinitialize a built-in/loaded CPU driver on existing kernels.
+        for policy in /sys/devices/system/cpu/cpufreq/policy*/scaling_driver; do
+            [ "$(cat "$policy" 2>/dev/null)" != sprd-cpufreq-v2 ] || exit 0
+        done
+        [ -d /sys/module/sprd_cpufreq_v2 ] && exit 0
+        [ -f "$ko" ] || exit 0
+        mkdir -p /run
+        exec 9>/run/mu300-cpu-driver.lock
+        flock -x 9
+        [ ! -d /sys/module/sprd_cpufreq_v2 ] || exit 0
+        offsets=0,0
+        if [ -x "$helper" ]; then offsets=$("$helper" boot-args) || offsets=0,0; fi
+        if [ "$offsets" != 0,0 ]; then
+            supported || offsets=0,0
+            sync
+        fi
+        [ -f "$scu" ] || { echo "Native SCU companion module is missing" >&2; exit 1; }
+        insmod "$ko" u30pro_cpufreq=1 u30pro_scufreq=1 "voltage_offset_uv=$offsets"
+        # Preserve native PMU/SCU scaling, under its existing CPU dependency.
+        [ -d /sys/module/u30pro_sprd_scufreq ] || insmod "$scu"
+        ;;
+    *) exit 2 ;;
+esac

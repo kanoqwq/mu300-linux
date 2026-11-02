@@ -7,7 +7,9 @@ const STATE = getenv('MU300_CHARGE_STATE') || '/run/mu300-charge.json';
 const BOARD = getenv('MU300_CHARGE_DEVICE') || trim(fs.readfile('/run/mu300/device') || '');
 const cfg = uci.cursor(getenv('MU300_CHARGE_CONFIG') || '/etc/config');
 const PKG = 'mu300-charge';
-const BAT = ROOT + '/sc27xx-fgu', CHG = ROOT + '/bq256xx-charger';
+const NATIVE = BOARD == 'u30pro';
+const BAT = ROOT + (NATIVE ? '/u30pro-battery' : '/sc27xx-fgu');
+const CHG = ROOT + (NATIVE ? '/u30pro-charger-master' : '/bq256xx-charger');
 let saved = false;
 
 function read(path) { return trim(fs.readfile(path) || ''); }
@@ -33,11 +35,11 @@ function store(values) {
 function previous() {
     try { return json(fs.readfile(STATE)) || {}; } catch (e) { return {}; }
 }
-function supported() { return BOARD == 'u30air'; }
+function supported() { return BOARD in ['u30air','u30pro']; }
 function available() {
     return supported() && read(BAT + '/present') == '1' &&
         !!match(read(BAT + '/capacity'), /^(100|[0-9]{1,2})$/) &&
-        !!(fs.stat(CHG + '/charge_type')?.mode & 128);
+        !!(fs.stat(CHG + (NATIVE ? '/charge_behaviour' : '/charge_type'))?.mode & 128);
 }
 function snapshot(c) {
     let old = previous(), valid = available();
@@ -80,12 +82,12 @@ function apply(c) {
     // Default-disabled policy does not take ownership of the charger.
     if (stopped || owned || old.owned) {
         if (old.stopped !== stopped || !old.owned || old.pending) {
-            let text = stopped ? 'N/A' : 'Fast';
+            let text = NATIVE ? (stopped ? 'inhibit-charge' : 'auto') : (stopped ? 'N/A' : 'Fast');
             if (!stopped && source) {
                 remember({owned, stopped: false, reason: '', pending: false});
                 return snapshot(c);
             }
-            if (fs.writefile(CHG + '/charge_type', text) != length(text)) die('charge_apply_failed');
+            if (fs.writefile(CHG + (NATIVE ? '/charge_behaviour' : '/charge_type'), text) != length(text)) die('charge_apply_failed');
         }
     }
     remember({owned, stopped, reason, pending: false});

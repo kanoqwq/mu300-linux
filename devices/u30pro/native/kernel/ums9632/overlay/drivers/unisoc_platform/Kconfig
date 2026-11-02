@@ -1,0 +1,50 @@
+config U30PRO_BSP
+ bool "U30 Pro UMS9632 vendor BSP components"
+ depends on ARCH_SPRD
+
+if U30PRO_BSP
+source "drivers/unisoc_platform/usb/musb/Kconfig"
+source "drivers/unisoc_platform/usbpinmux/Kconfig"
+config UNISOC_USB_HSPHY
+ bool "UMS9632 USB2 high speed PHY"
+ select USB_PHY
+ depends on USB_GADGET
+config U30PRO_KEXEC_BASE
+ bool "U30 Pro kexec bootstrap with system sleep guarded"
+ depends on KEXEC && SUSPEND
+ help
+   Enables the PM_SLEEP_SMP code needed for arm64 kexec while rejecting
+   system sleep before device suspend. Type-C wake and cross-processor
+   watchdog ownership during sleep remain unvalidated.
+
+config U30PRO_CHARGER_LINK_DIAGNOSTIC
+ bool "DIAGNOSTIC ONLY: bind master charger client without hardware operations"
+ depends on I2C && U30PRO_KEXEC_BASE && !CHARGER_U30PRO_SGM41513
+ help
+   User-authorized test of dangling child-fwnode supplier ownership under
+   strict fw_devlink. Does not access hardware or provide any regulator or
+   charging function. Keep disabled for the base and final adaptation.
+
+config UNISOC_USB_TYPEC
+ bool "Unisoc Type-C support"
+ depends on TYPEC && EXTCON && NVMEM
+config UNISOC_USB_SC27XX_TYPEC
+ bool "UMP9651 Type-C controller"
+ depends on UNISOC_USB_TYPEC && MFD_SC27XX_PMIC && (!SUSPEND || U30PRO_KEXEC_BASE)
+config UNISOC_BC1P2
+ bool "Unisoc BC1.2 charger/data-port detection"
+ depends on USB_PHY && EXTCON
+source "drivers/unisoc_platform/sprd_charger/power_delivery/Kconfig"
+source "drivers/unisoc_platform/modem/Kconfig"
+source "drivers/unisoc_platform/trusty/Kconfig"
+source "drivers/unisoc_platform/net/Kconfig"
+source "drivers/unisoc_platform/aic8800/Kconfig"
+source "drivers/unisoc_platform/display/Kconfig"
+source "drivers/unisoc_platform/thermal_sensor/Kconfig"
+source "drivers/unisoc_platform/sip/Kconfig"
+source "drivers/unisoc_platform/cpufreq/Kconfig"
+source "drivers/unisoc_platform/ase/Kconfig"
+source "drivers/unisoc_platform/pmu/Kconfig"
+source "drivers/unisoc_platform/scufreq/Kconfig"
+source "drivers/unisoc_platform/hw_random/Kconfig"
+endif

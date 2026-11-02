@@ -1,0 +1,6 @@
+config U30PRO_SPRD_TRNG
+ bool "Unisoc true random number generator (public crypto engine)"
+ depends on ARCH_SPRD && HW_RANDOM
+ help
+   Registers the TRNG of the public crypto engine (sprd,sprd-trng) with the hw_random framework.  Written from the register
+   description of the hardware, not copied from the vendor driver (which has its own licence).

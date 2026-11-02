@@ -1,0 +1,32 @@
+#!/bin/sh
+# Bus mode of the Wi-Fi's SDIO host (kernel parameters sdhci_sprd.sdio_mode and sdio_max_hz, docs/KERNEL.md), set by rcS before
+# kmodloader loads the Wi-Fi driver: the driver powers the chip on, and that starts the card's initialization in this mode.
+#   /mnt/data/wifi-sdio.once   "<mode> [<max Hz>]" for this boot only: removed as it is read, so a mode that breaks the Wi-Fi is
+#                              gone again at the next boot
+#   u30pro_native_control.wlan.sdio_mode / sdio_max_hz   the setting for every boot; without one SDR104 at 208 MHz, its top clock
+#                              (measured on the device, to a phone: 600 Mbit/s; 150 MHz 330, SDR50 200, high speed 130)
+# Modes: 0 high speed (at most 52 MHz), 1 SDR50, 2 SDR104, 3 DDR50.   usage: u30pro-wifi-sdio [status]
+# (Not section "wifi": /etc/uci-defaults/30-u30pro-wireless removes the sections "wifi" and "relay" of earlier releases.)
+P=${U30PRO_SDIO_PARAMS:-/sys/module/sdhci_sprd/parameters}
+ONCE=${U30PRO_SDIO_ONCE:-/mnt/data/wifi-sdio.once}
+IOS=${U30PRO_SDIO_IOS:-/sys/kernel/debug/mmc2/ios}
+if [ "$1" = status ]; then
+	[ -e "$IOS" ] || mount -t debugfs none /sys/kernel/debug 2>/dev/null
+	echo "sdio_mode=$(cat $P/sdio_mode 2>/dev/null) sdio_max_hz=$(cat $P/sdio_max_hz 2>/dev/null)"
+	grep -E "^(clock|timing spec|bus width)" "$IOS" 2>/dev/null
+	exit 0
+fi
+[ -w "$P/sdio_mode" ] || exit 0
+src=setting
+mode=$(uci -q get u30pro_native_control.wlan.sdio_mode)
+hz=$(uci -q get u30pro_native_control.wlan.sdio_max_hz)
+[ -n "$mode" ] || { mode=2; hz=${hz:-208000000}; src=default; }
+if [ -f "$ONCE" ]; then
+	read -r mode hz <"$ONCE"
+	rm -f "$ONCE"
+	sync
+	src=once
+fi
+case "$mode" in [0-3]) ;; *) mode=0 ;; esac
+case "$hz" in ''|*[!0-9]*) hz=0 ;; esac
+echo "$hz" >"$P/sdio_max_hz" && echo "$mode" >"$P/sdio_mode" && echo "wifi sdio: mode $mode, max $hz Hz ($src)"

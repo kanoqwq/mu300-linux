@@ -1,0 +1,117 @@
+{
+  "kernel/ums9632/apply_overlay.py": {
+    "source_sha256": "23eaf32671720ae4774749bef34d30bbfe2c226ab5ae621e9a43a8886c6f1602",
+    "sha256": "e9ecf55c439a159da1b7eac41f3ff9073909c8f00d1a07a37b379b45a482d62d",
+    "reason": "Use explicitly registered existing source/object directories in the shared workspace; no author-home fallback or new kernel tree."
+  },
+  "kernel/ums9632/build_linux.py": {
+    "source_sha256": "cbef9e90afb42e0999f4166b1a58b1dc5eb1e08853ae7a975cd604bec1ca7216",
+    "sha256": "17eab8c1a66a95ab49658f17857e07516358c665461336fb3c19bfae74c28423",
+    "reason": "Use the registered existing source/object cache. Carry U30 Pro hardware bring-up flags in compiled CMDLINE_EXTEND while retaining the MU300 boot header and installer/storage ABI; do not inherit the upstream RAM-root write guard."
+  },
+  "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_trace.h": {
+    "source_sha256": "910b376b7ed3b209f6074530029074420c9e302babc1ca8e638d8487ac215674",
+    "sha256": "d68cfc9931be1c22641c09229e47f603fd227a332a2b77b8500f6d1ee64e913b",
+    "reason": "Linux 6.12 trace events use one-argument __assign_str; keep the field source in __string and adapt the vendor 6.6 MUSB trace API."
+  },
+  "tools/u30pro_ui.c": {
+    "source_sha256": "509f50da062d843c0f59d4d2c62ea856925ae103524e14c0b5ba1a2ac3d188a6",
+    "sha256": "7a2045f37cb10c7d4911f307d19ce75c27d6496b70c6b55e65d4c2697d2cdd9a",
+    "reason": "Keep native UI/plugin contracts, persistent wallpaper and MU300 action owners. Present the first boot frame before status reads; add a PIN-preserving power menu with explicit confirmation and isolated touch handling, preserving short power and Wi-Fi key actions."
+  },
+  "tools/u30pro_nvsyncd.c": {
+    "source_sha256": "3ef7fd800ccffe874b3a491da450bb67388f2585aec2cc04ed600d6ac5a6a9c5",
+    "sha256": "b65f4d5898c018f4c33ff212083b624c369bd2d13b0671e4f7051d82c1c3fa0d",
+    "reason": "Use this device named runtime-NV GPT extents, bound for this process lifetime; retain NV container validation and write/readback. Honor the explicit normal-write kernel policy used by the MU300 persistent container, rather than requiring reference-unit fixed-LBA RAM-root windows."
+  },
+  "ui/native-control/overlay/usr/sbin/u30pro-usb": {
+    "source_sha256": "8a014aa8efe14e03b46b81b73ebc9a6a377b12a628c99bc3620adfad8c0984d5",
+    "sha256": "d13e11b2dfa3bb88b525aa1857f2a2c99382610ac8e4579fea64f052a3237074",
+    "reason": "Keep the configfs hardware helper usable in initramfs without UCI/httpd; native MU300 rootfs owns HTTP policy. Avoid EXIT cleanup unbinding a successfully created rescue gadget when UCI is unavailable."
+  },
+  "tools/ui/wall.h": {
+    "source_sha256": "8f508c9dffd87358076ddc4400ae0a105ba51596df5d111bca5c01bc74e7c1bb",
+    "sha256": "8cff83da80594bb09b66d13f41bcedb0071466af4669d5e4e3bb5fe804209711",
+    "reason": "Keep upstream screen/plugin RPC and UCI contracts; route key actions to MU300 policy owners and store wallpaper in the persistent MU300 root rather than the reference /mnt/data layout."
+  },
+  "ui/native-control/overlay/usr/share/u30pro/wallpaper.uc": {
+    "source_sha256": "6c91885b7fa813829fac86ac9d0d1f64b36098788a88263f9ffbbcdfe65963a7",
+    "sha256": "a637b7bbe3b5bb6fae65da5303a0b6be92ee927708b8f107cde30ad1a1b23717",
+    "reason": "Retain native wallpaper RPC and file format, persistent MU300 root path; use shared LuCI theme tokens, responsive controls, zh/en/tr translations and themed confirmation. Guard concurrent operations and release browser video resources."
+  },
+  "ui/native-control/overlay/usr/share/rpcd/acl.d/u30pro-wallpaper.json": {
+    "source_sha256": "150f57004aefc80a5f77056d85ba747d43055b38272503427bfff701567456c4",
+    "sha256": "ce66de62afafc7d9300b54a0842a0e8af9fecf876dbb76af5b148e93dbd6eed4",
+    "reason": "Keep upstream screen/plugin RPC and UCI contracts; route key actions to MU300 policy owners and store wallpaper in the persistent MU300 root rather than the reference /mnt/data layout."
+  },
+  "ui/native-control/overlay/www/luci-static/resources/view/system/u30pro-wallpaper.js": {
+    "source_sha256": "04341b79cf71b57dbe96c8828ecbe5458506b6cafd75618241cec8f0994b2037",
+    "sha256": "86e461d86df85af214ece3ee99dbf8e0fe9540aa9135ad5a0670fcfc3960a649",
+    "reason": "Retain native wallpaper RPC and file format, persistent MU300 root path; use shared LuCI theme tokens, responsive controls, zh/en/tr translations and themed confirmation. Guard concurrent operations and release browser video resources."
+  },
+  "modem-native-re/src/main.c": {
+    "source_sha256": "12aa835da93bf58638286f363190f82c71107cabe4b059b068eda8634f079f75",
+    "sha256": "2ef8aa1f95119ade456c1785d45738893f2c1381287fed3aa096ca610dc48838",
+    "reason": "Charger boot may start PM SYS alone. Check PM, CH and NR control transport readiness before treating shutdown modem firmware as already booted; never read AT or consume monitor events during this probe."
+  },
+  "kernel/ums9632/overlay/drivers/unisoc_platform/cpufreq/sprd-cpufreq-v2.c": {
+    "source_sha256": "ac6011078a7c0b6c99293d3f8d955f7ff9fdea7a9a7009e0caca26f9120df079",
+    "sha256": "18c2b3c48d593ecc7b77cc608fc5610ad59bb6b4f71e99240740f4a2d9eaa823",
+    "reason": "Expose the existing stock UMS9632 two-domain DVFS_INIT offset ABI through MU300 boot-only profiles, readonly voltage sysfs and early persistent-root module loading. Preserve ASE/SCU/thermal logic and available frequencies. No live voltage setter, unload or repeated DVFS_INIT."
+  },
+  "kernel/ums9632/overlay/drivers/unisoc_platform/cpufreq/Kconfig": {
+    "source_sha256": "2e9220a1f9a918149b723d3c1560612de849a5eedff1f2dc22c8cd49bf14a290",
+    "sha256": "f783099755ba275c3535d561a1aa167d8b962c0a8a78f3cbf938d1eedafc3d79",
+    "reason": "Expose the existing stock UMS9632 two-domain DVFS_INIT offset ABI through MU300 boot-only profiles, readonly voltage sysfs and early persistent-root module loading. Preserve ASE/SCU/thermal logic and available frequencies. No live voltage setter, unload or repeated DVFS_INIT."
+  },
+  "kernel/ums9632/overlay/drivers/unisoc_platform/scufreq/Kconfig": {
+    "source_sha256": "d84206a59690a9e67db607fe5ef26b8ff1329e7e1fd9cfec2a78257445ae7929",
+    "sha256": "07dfe8b9742c979b1ca75180dc50bad8d4f05d6cf0d2f10a134cea8d52f3f52d",
+    "reason": "Expose the existing stock UMS9632 two-domain DVFS_INIT offset ABI through MU300 boot-only profiles, readonly voltage sysfs and early persistent-root module loading. Preserve ASE/SCU/thermal logic and available frequencies. No live voltage setter, unload or repeated DVFS_INIT."
+  },
+  "kernel/ums9632/overlay/drivers/unisoc_platform/scufreq/u30pro-sprd-scufreq.c": {
+    "source_sha256": "3ede10b9c8098e90965e9d690c51783f71809d9bca439b003694da4f6e458f16",
+    "sha256": "3025a6acce1f9d31cab0db9390f911d53bf0809e3f1a13693dfcca072d989920",
+    "reason": "Expose the existing stock UMS9632 two-domain DVFS_INIT offset ABI through MU300 boot-only profiles, readonly voltage sysfs and early persistent-root module loading. Preserve ASE/SCU/thermal logic and available frequencies. No live voltage setter, unload or repeated DVFS_INIT."
+  },
+  "kernel/ums9632/native-cpufreq.config": {
+    "source_sha256": "b2c78399564759721e8b30ef1a990a1bec077c30e765b3c44daa748821567ab2",
+    "sha256": "d744809d0f39dcbb538ea2e3255b5d9c9838fb9ab1f193f4db37c5ce2b51de7f",
+    "reason": "Expose the existing stock UMS9632 two-domain DVFS_INIT offset ABI through MU300 boot-only profiles, readonly voltage sysfs and early persistent-root module loading. Preserve ASE/SCU/thermal logic and available frequencies. No live voltage setter, unload or repeated DVFS_INIT."
+  },
+  "kernel/ums9632/overlay/drivers/unisoc_platform/display/u30pro-nv3002c.c": {
+    "source_sha256": "85846b8055597791c01cc4f78734148e1dfa6e4fee20f5bc53158b0b091451b0",
+    "sha256": "84f443551bc7ecd32c030863bfec752efb56335424fe28d4b04b2b6dd9a56e38",
+    "reason": "Preserve firmware panel GPIO state across probe/defer and omit the competing automatic black fbdev modeset. Native KMS takes output GPIO ownership only with its first frame; retain stock reset/init and normal DPMS sleep/wake."
+  },
+  "tools/ui/platform.h": {
+    "source_sha256": "b520e88bce29572a20f84a8b4b2095d2c63246469bcf371ef965f2e740cb9ab6",
+    "sha256": "7cbc2fd6cb316c18fb1bbcbbaa7d23d9825afb575a7244c1c1b25a57c7f534c0",
+    "reason": "Native KMS/DPMS owns display wake. Recognize a held power key once at 1500 ms while still held, suppress its release action and clear state on lost input events; keep all other native input behavior."
+  },
+  "tools/ui/common.h": {
+    "source_sha256": "da701c3e88bec7dd0174ae5405052ccd0dbd647227237787d60edb6ec3f66272",
+    "sha256": "7cb59bb1e9b51e4892ac8c4b7c75280a662086338664492112f80d16eaabe481",
+    "reason": "Add a native LTE component-bandwidth text field to preserve MU300 parsed carrier aggregation widths; retain legacy bw_idx and all upstream plugin fields."
+  },
+  "tools/ui/data.h": {
+    "source_sha256": "866a396e8bb8e07c4f66d2c2060bbd70c165517868d84c63783f545968fc8ef8",
+    "sha256": "c1617ad37c6ef44fee09ee24bff2319e8a9cfc81e5432ec190f9bc73d8b7647c",
+    "reason": "Accept LTE component-bandwidth text from the MU300 screen feeder, keeping native feed keys and other measurements unchanged."
+  },
+  "tools/ui/bus.h": {
+    "source_sha256": "44b1cfa20e3680593217c47f6c17e755188349b2a1e02d31c0d1d70202acfc7e",
+    "sha256": "4484bf6261f835a9bb62b4f66da525e927790ff0e432555e317e839fd4575dae",
+    "reason": "Keep native screen/plugin APIs. Clear absent LTE/NR bandwidth on each feed snapshot and expose additive power-menu status fields for UI verification."
+  },
+  "tools/ui/pages.h": {
+    "source_sha256": "7400d3e1955815170014f86748ea75ab2fc9b6d7f202fe910d050dec9081cb4f",
+    "sha256": "b0dd6e33507e5ca00884db7b60abfa5a19b383b0a34b1ab286e72df7c6559ba2",
+    "reason": "Render LTE CA bandwidth text on the existing serving-cell row with the native index ABI retained. Add rounded themed power choices/confirmation within the round panel; align refresh arrowhead with the actual clockwise arc tangent."
+  },
+  "tools/ui/menu.h": {
+    "source_sha256": "682fc834c362e9353ef4a0015e8c790798270e51635e28b77aed3fef3a10141e",
+    "sha256": "a85832e3dfcefd587b25274e9beea504adcd46a67513284735661571956dc688",
+    "reason": "Open the same themed power menu from the native control centre power tile; no immediate reboot or redundant hold gesture."
+  }
+}

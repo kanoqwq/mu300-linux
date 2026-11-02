@@ -44,6 +44,7 @@ def manifest(stage):
         f'{kib + max(kib // 4, 262144)} {len(members) + 16384}\n', encoding='ascii', newline='\n')
     names = ['mu300-openwrt.tar.gz', 'boot-linux.img', 'rootfs.requirements', 'rootfs-critical.sha256',
              'android-bootchain.sh', 'bootchain.sh']
+    if (stage/'u30pro-map.tsv').is_file():names.append('u30pro-map.tsv')
     with (stage / 'payload.sha256').open('w', newline='\n') as checks:
         for name in names:
             with (stage / name).open('rb') as stream:

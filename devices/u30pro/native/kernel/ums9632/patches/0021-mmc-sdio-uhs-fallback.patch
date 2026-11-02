@@ -1,0 +1,26 @@
+--- a/drivers/mmc/core/sdio.c
++++ b/drivers/mmc/core/sdio.c
+@@ -867,6 +867,23 @@
+ 	/* Only if card supports 1.8v and UHS signaling */
+ 	if ((ocr & R4_18V_PRESENT) && card->sw_caps.sd3_bus_mode) {
+ 		err = mmc_sdio_init_uhs_card(card);
++		if (err && !oldcard) {
++			/*
++			 * U30 Pro: a UHS-I bus that does not come up (tuning fails) loses the card, and with it the Wi-Fi.
++			 * Start again at high speed instead, and leave UHS-I off for this host until the next boot, so that a
++			 * re-initialization does not try it again.
++			 */
++			pr_warn("%s: UHS-I initialization failed (%d), using high speed\n", mmc_hostname(host), err);
++			host->caps &= ~(MMC_CAP_UHS | MMC_CAP_DDR);
++			mmc_set_timing(host, MMC_TIMING_LEGACY);
++			mmc_set_bus_width(host, MMC_BUS_WIDTH_1);
++			mmc_set_clock(host, host->f_init);
++			mmc_set_signal_voltage(host, MMC_SIGNAL_VOLTAGE_330);
++			mmc_sdio_pre_init(host, ocr_card, card);
++			ocr &= ~R4_18V_PRESENT;
++			retries = 0;
++			goto try_again;
++		}
+ 		if (err)
+ 			goto remove;
+ 	} else {

@@ -1,0 +1,99 @@
+--- a/drivers/unisoc_platform/usb/typec/sc27xx_typec.c
++++ b/drivers/unisoc_platform/usb/typec/sc27xx_typec.c
+@@ -20,7 +20,6 @@
+ #include <linux/extcon-provider.h>
+ #include <linux/usb/sprd_typec.h>
+ #include <linux/usb/sprd_tcpm.h>
+-#include <vendor/common/zte_misc.h>
+ 
+ /* registers definitions for controller REGS_TYPEC */
+ #define SC27XX_EN			0x00
+@@ -196,9 +195,11 @@
+ 	ret = of_property_read_string(np, "bootargs", &cmd_line);
+ 	if (ret < 0) {
+ 		pr_err("Fail to find cmdline bootargs property.\n");
++		of_node_put(np);
+ 		return false;
+ 	}
+ 
++	of_node_put(np);
+ 	if (strstr(cmd_line, "aw35615_deviceid = 0x91")) {
+ 		pr_err("aw35615 cc logic property found.\n");
+ 		return true;
+@@ -211,24 +212,6 @@
+ /* Ended by AICoder, pid:ja60fmaab17cc151433a085220ca1927daf7f120 */
+ 
+ /* Started by AICoder, pid:s2676k919d35b9514c510b3d206c84181406fca6 */
+-static int aw35615_get_chipid(char *val, const void *arg)
+-{
+-    pr_info("%s\n", __func__);
+-    if (zte_aw35615_is_valid())
+-        return snprintf(val, PAGE_SIZE, "%d\n", 1);
+-    else
+-        return snprintf(val, PAGE_SIZE, "%d\n", 0);
+-}
+-
+-static struct zte_misc_ops aw35615_chipid_node = {
+-    .node_name = "aw_pd_chipid",
+-    .set = NULL,
+-    .get = aw35615_get_chipid,
+-    .free = NULL,
+-    .arg = NULL,
+-};
+-/* Ended by AICoder, pid:s2676k919d35b9514c510b3d206c84181406fca6 */
+-
+ #ifdef ZTE_FEATURE_PV_AR
+ int c_to_c = 0;
+ int get_c_to_c(void)
+@@ -1702,11 +1685,10 @@
+ 		dev_err(&pdev->dev, "can't register extcon device: %d\n", ret);
+ 		return ret;
+ 	}
+-	zte_misc_register_callback(&aw35615_chipid_node, NULL);
+ 
+ 	if (zte_aw35615_is_valid()) {
+-		dev_err(&pdev->dev, "exit sc27xx_typec_probe\n");
+-		return 0;
++		dev_info(&pdev->dev, "AW35615 controller selected by bootloader\n");
++		return -ENODEV;
+ 	}
+ 
+ 	sc->dev = &pdev->dev;
+@@ -1777,9 +1759,9 @@
+ 		sc->typec_cap.revision = USB_TYPEC_REV_1_2;
+ 		sc->typec_cap.prefer_role = TYPEC_NO_PREFERRED_ROLE;
+ 		sc->port = typec_register_port(&pdev->dev, &sc->typec_cap);
+-		if (!sc->port) {
++		if (IS_ERR(sc->port)) {
+ 			dev_err(sc->dev, "failed to register port!\n");
+-			return -ENODEV;
++			return PTR_ERR(sc->port);
+ 		}
+ 	}
+ 
+@@ -1801,7 +1783,7 @@
+ 
+ 	ret = devm_request_threaded_irq(sc->dev, sc->irq, NULL,
+ 					sc27xx_typec_interrupt,
+-					IRQF_EARLY_RESUME | IRQF_ONESHOT,
++					IRQF_ONESHOT, /* Suspend integration remains gated by Kconfig. */
+ 					dev_name(sc->dev), sc);
+ 	if (ret) {
+ 		dev_err(sc->dev, "failed to request irq %d\n", ret);
+@@ -1864,7 +1846,7 @@
+ 	return ret;
+ }
+ 
+-static int sc27xx_typec_remove(struct platform_device *pdev)
++static void sc27xx_typec_remove(struct platform_device *pdev)
+ {
+ 	struct sc27xx_typec *sc = platform_get_drvdata(pdev);
+ 
+@@ -1873,7 +1855,6 @@
+ 	if (!sc->use_pdhub_c2c)
+ 		typec_unregister_port(sc->port);
+ 
+-	return 0;
+ }
+ 
+ static const struct of_device_id typec_sprd_match[] = {

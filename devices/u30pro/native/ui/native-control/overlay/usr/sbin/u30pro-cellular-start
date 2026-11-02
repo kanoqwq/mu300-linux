@@ -1,0 +1,19 @@
+#!/bin/sh
+# Wait for the CP, then become the single owner of the AT port (u30pro-celld, ubus object u30pro.cell).
+# u30pro-celld reads its settings from /etc/config/u30pro_modem itself (section dial: APN, PAP/CHAP, PDP type; sections pdn: the
+# additional APNs); the APN given here is used when there are no valid settings (/etc/u30pro/cellular.apn, else cmhk).
+umask 077
+APN=$(uci -q get u30pro_modem.dial.apn 2>/dev/null)
+[ -n "$APN" ] || APN=$(cat /etc/u30pro/cellular.apn 2>/dev/null)
+APN=${APN:-cmhk}
+# the netifd interfaces of the additional APNs (cell_<name>, protocol u30cell) and their place in the firewall zone wan
+ucode -e 'import * as d from "/usr/share/u30pro/dial.uc"; d.sync_network_from_uci();'
+n=0
+while [ "$n" -lt 180 ]; do
+ grep -q 'Modem Alive' /run/u30pro-modemd.log 2>/dev/null && break
+ sleep 1
+ n=$((n+1))
+done
+grep -q 'Modem Alive' /run/u30pro-modemd.log 2>/dev/null || { echo 'u30pro-cellular-start: modem did not come alive' >&2; exit 1; }
+# the internet context is the netifd interface wan
+exec /usr/sbin/u30pro-celld --run wan /dev/stty_nr0 "$APN"

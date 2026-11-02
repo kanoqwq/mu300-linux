@@ -18,13 +18,19 @@ absent_pin() { printf '%s\n' "$1" | grep -qxE '\+CME ERROR: (10|SIM not inserted
 # Do not close or steal the old NR3 owner on a live system. Configuration
 # migration requires a clean reboot. The drainer announces readiness on open.
 [ ! -p "$root/mu300-at3/cmd" ] || fail 'NR3 is still a command owner; reboot required'
-for stream in "$root/mu300-at/urc/stty_nr0.ready" "$root/mu300-at4/urc/stty_nr3.ready"; do
+model=$(mu300-device 2>/dev/null)
+if [ "$model" = u30pro ]; then
+    # Native nr0/nr3 carry both data commands and URCs under those owners.
+    set -- "$root/mu300-at2/urc/stty_nr0.ready" "$root/mu300-at5/urc/stty_nr3.ready"
+else
+    set -- "$root/mu300-at/urc/stty_nr0.ready" "$root/mu300-at4/urc/stty_nr3.ready"
+fi
+for stream; do
     reader=$(cat "$stream" 2>/dev/null)
     [ -n "$reader" ] && kill -0 "$reader" 2>/dev/null || fail 'URC reader not ready'
 done
 present0=1; present1=1
 prepared0=0; prepared1=0
-model=$(mu300-device 2>/dev/null)
 for card in 0 1; do
     pin=$(query "$card" 'AT+CPIN?')
     # The previous U30 preflight powered the SIM before deciding absence: an

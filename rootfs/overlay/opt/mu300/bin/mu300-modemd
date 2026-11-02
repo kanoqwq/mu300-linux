@@ -1,4 +1,5 @@
 #!/usr/bin/ucode
+import * as native_channel from 'mu300.native-channel';
 // mu300-modemd -- the modem's AT channels in one event-driven daemon (docs/MODEMD.md, FINDINGS 206).
 //
 // It does what one shell mu300-atd per channel did, for every channel of the boot's layout at once: one request at a
@@ -29,6 +30,7 @@ import * as socket from 'socket';
 import * as ubusmod from 'ubus';
 import { cursor } from 'uci';
 import { readfile, open, stat, lstat, mkdir, unlink, rename, chmod, popen, rmdir, lsdir } from 'fs';
+import * as fs from 'fs';
 import * as cp from 'mu300.cellparse';
 import { cache } from 'mu300.registration';
 
@@ -444,10 +446,14 @@ finish = function(b, clean) {
 
 send_cmd = function(b) {
 	let r = b.cur;
+	// MU5358 keeps one owner per physical bank. SPACTCARD still selects the
+	// firmware SIM context too; keep the scoped prefix and reject wrong-bank requests.
+	let wire = trim(fs.readfile('/etc/mu300/platform') || '') == 'u30pro' ? native_channel.wire(b.dev,r.cmd) : r.cmd;
 	b.phase = 'collect';
 	b.reply = [];
+	if(wire==null) { b.reply=['ERROR'];finish(b,true);return; }
 	// A PDU send ("AT+CMGS=N<CR>PDU<Ctrl-Z>") goes out as one write too (FINDINGS 46)
-	if (!io_send('TX ' + b.chan + ' ' + uc(hexenc(r.cmd + CR)))) {
+	if (!io_send('TX ' + b.chan + ' ' + uc(hexenc(wire + CR)))) {
 		finish(b, false);
 		return;
 	}
@@ -463,7 +469,24 @@ pump = function(b) {
 	start_drain(b, b.clean ? 50 : 1000, (b.silent > 0) ? 25000 : 3000, () => send_cmd(b));
 };
 
+// Stock MU5358 RIL supplies TSX temperature before enabling the stack on
+// crystal=7 boards. Use this existing channel queue, never a second tty owner.
+function u30pro_tsx(command) {
+	if (trim(fs.readfile('/etc/mu300/platform') || '') != 'u30pro' ||
+	    !match(command, /^AT(\+SPACTCARD=[01];)?\+SFUN=4$/) ||
+	    !match(fs.readfile('/proc/cmdline') || '', /(^|\s)crystal=7(\s|$)/)) return null;
+	let value = trim(fs.readfile('/sys/bus/platform/drivers/ump96xx-tsensor/modem_tsen') || '');
+	if (!match(value, /^-?[0-9]+$/)) {
+		for (let zone in fs.glob('/sys/class/thermal/thermal_zone*') || []) {
+			if (trim(fs.readfile(zone + '/type') || '') != 'board-thmzone') continue;
+			value = trim(fs.readfile(zone + '/temp') || ''); break;
+		}
+	}
+	return match(value, /^-?[0-9]+$/) && +value >= -40000 && +value <= 125000 ? 'AT+SPTSXTMP=' + value : null;
+}
 function enqueue(b, r) {
+	let tsx = u30pro_tsx(r.cmd);
+	if (tsx) push(b.queue, {kind:'internal', t:3, cmd:tsx, cb:()=>{}});
 	push(b.queue, r);
 	pump(b);
 }
@@ -488,6 +511,14 @@ function cmd_line(b, c, line) {
 	// echo of a command, which can hold a secret), and thrown away for the next command's purpose
 	if (line != '' && !match(line, /^[Aa][Tt]/)) {
 		log_line(b.cmdlog, line);
+		if (trim(fs.readfile('/etc/mu300/platform') || '') == 'u30pro') {
+			// nr0 carries unsolicited notifications between data commands.
+			let slot=native_channel.slot(b.dev);
+			registration.event(slot, line);
+			// A late CEREG query starts with <n>,<stat>; it is not a URC.
+			if (!match(line, /^\+CEREG:\s*[0-9]+,\s*[0-9]+(,|$)/)) registration.registration(slot, line, false);
+			if (match(line, /^\+(CEREG|ECIND):/)) urc_event(c.name, line);
+		}
 		// a new message's index the modem routed here, between commands, is announced as on the unsolicited
 		// channel (mu300-smsd syncs on it); nothing else from a command channel, where a late reply can hold a secret
 		if (match(line, /^\+C(MT|DS)I:/))
@@ -560,12 +591,13 @@ function hello() {
 // as the channel was its own)
 function chan_open(c) {
 	let b = c.broker;
-	if (c.kind != 'cmd') {
+	let inline_urc=trim(fs.readfile('/etc/mu300/platform') || '')=='u30pro' && c.name in ['stty_nr0','stty_nr3'];
+	if (c.kind != 'cmd' || inline_urc) {
 		// Pin cache lifetime to the descriptor owner, not the restartable ucode process.
 		let marker = c.broker.urcdir + '/' + c.name + '.ready';
-		if (rd(marker) != '' + io_pid) registration.reset(int(c.n / 3));
+		if (rd(marker) != '' + io_pid) registration.reset(inline_urc?native_channel.slot(c.dev):int(c.n / 3));
 		write_small(marker, io_pid + '\n');
-		return;
+		if(c.kind != 'cmd')return;
 	}
 	if (b.phase == 'reopen') {
 		if (b.reopen_timer) b.reopen_timer.cancel();
@@ -1148,6 +1180,8 @@ function stop() {
 	if (stopping)
 		return;
 	stopping = true;
+	if (round) round_end(round, true);
+	for (let b in brokers) lock_drop(b.dir + '/lock');
 	// The descriptor owner survives us. Keep its marker so clients cannot take
 	// a direct fallback if a FIFO is replaced while ucode is restarting.
 	uloop.end();

@@ -1,0 +1,66 @@
+--- a/drivers/watchdog/sprd_wdt.c
++++ b/drivers/watchdog/sprd_wdt.c
+@@ -57,6 +57,7 @@
+ #define SPRD_WDT_LOAD_TIMEOUT		11
+ 
+ struct sprd_wdt {
++	bool u30pro;
+ 	void __iomem *base;
+ 	struct watchdog_device wdd;
+ 	struct clk *enable;
+@@ -167,6 +168,10 @@
+ {
+ 	struct sprd_wdt *wdt = _data;
+ 
++	/* Preserve the trial-boot reset fallback on a failed/unbound U30 Pro driver. */
++	if (wdt->u30pro && watchdog_hw_running(&wdt->wdd))
++		return;
++
+ 	sprd_wdt_unlock(wdt->base);
+ 	writel_relaxed(0x0, wdt->base + SPRD_WDT_CTRL);
+ 	sprd_wdt_lock(wdt->base);
+@@ -188,6 +193,8 @@
+ 	sprd_wdt_unlock(wdt->base);
+ 	val = readl_relaxed(wdt->base + SPRD_WDT_CTRL);
+ 	val |= SPRD_WDT_CNT_EN_BIT | SPRD_WDT_INT_EN_BIT | SPRD_WDT_RST_EN_BIT;
++	if (wdt->u30pro && !wdd->pretimeout)
++		val &= ~SPRD_WDT_INT_EN_BIT;
+ 	writel_relaxed(val, wdt->base + SPRD_WDT_CTRL);
+ 	sprd_wdt_lock(wdt->base);
+ 	set_bit(WDOG_HW_RUNNING, &wdd->status);
+@@ -271,6 +278,7 @@
+ 	if (!wdt)
+ 		return -ENOMEM;
+ 
++	wdt->u30pro = of_device_is_compatible(dev->of_node, "sprd,wdt-r2p0-fiq");
+ 	wdt->base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(wdt->base))
+ 		return PTR_ERR(wdt->base);
+@@ -304,6 +312,7 @@
+ 	wdt->wdd.min_timeout = SPRD_WDT_MIN_TIMEOUT;
+ 	wdt->wdd.max_timeout = SPRD_WDT_MAX_TIMEOUT;
+ 	wdt->wdd.timeout = SPRD_WDT_MAX_TIMEOUT;
++	wdt->wdd.max_hw_heartbeat_ms = SPRD_WDT_MAX_TIMEOUT * 1000;
+ 
+ 	ret = sprd_wdt_enable(wdt);
+ 	if (ret) {
+@@ -318,6 +327,11 @@
+ 
+ 	watchdog_set_nowayout(&wdt->wdd, WATCHDOG_NOWAYOUT);
+ 	watchdog_init_timeout(&wdt->wdd, 0, dev);
++	if (wdt->u30pro) {
++		ret = sprd_wdt_start(&wdt->wdd);
++		if (ret)
++			return dev_err_probe(dev, ret, "cannot take over boot AP watchdog\n");
++	}
+ 
+ 	ret = devm_watchdog_register_device(dev, &wdt->wdd);
+ 	if (ret) {
+@@ -361,6 +375,7 @@
+ };
+ 
+ static const struct of_device_id sprd_wdt_match_table[] = {
++	{ .compatible = "sprd,wdt-r2p0-fiq", },
+ 	{ .compatible = "sprd,sp9860-wdt", },
+ 	{},
+ };

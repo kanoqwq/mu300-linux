@@ -63,7 +63,7 @@ case "$*" in
 esac
 ''')
 
-    def call_usb(self, shell, *args):
+    def call_usb(self, shell, *args, **extra):
         return self.script(shell, USB, *args,
                            MU300_USB_ROLE_FILE=self.role,
                            MU300_USB_BOOT_FILE=self.boot_file,
@@ -74,7 +74,18 @@ esac
                            MU300_USB_RESCAN_DELAY='0',
                            MU300_USB_ROLE_COMMAND=self.helper,
                            MU300_USB_NETWORK_SERVICE=self.reload_script,
-                           MU300_USB_IP_BIN=self.stubs / 'ip')
+                           MU300_USB_IP_BIN=self.stubs / 'ip', **extra)
+
+    def test_native_musb_gadget_reports_device_without_a_role_switch(self):
+        self.role.unlink()
+        gadget=self.tmp/'gadgets/native';gadget.mkdir(parents=True)
+        (gadget/'UDC').write_text('musb-hdrc.0.auto\n')
+        for shell in self.each_shell():
+            native=json.loads(self.call_usb(shell,'get',MU300_USB_DEVICE='u30pro').stdout)
+            self.assertEqual(native['role'],'device')
+            # No role-switch command/host capability is inferred from a gadget.
+            generic=json.loads(self.call_usb(shell,'get',MU300_USB_DEVICE='generic').stdout)
+            self.assertEqual(generic['role'],'unavailable')
 
     def wait_text(self, path, value):
         # Role application is intentionally detached until after the RPC

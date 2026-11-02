@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# Unisoc cellular data path (SIPA) for the native 6.12 port.
+# ims_bridge, seth (SIPC_SETH is off in the stock Qogirn6lite config), sfp and ursp are not imported.
+#
+
+source "drivers/unisoc_platform/net/sipa_v3/Kconfig"
+source "drivers/unisoc_platform/net/sipa_delegate/Kconfig"

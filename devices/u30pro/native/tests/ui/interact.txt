@@ -1,0 +1,41 @@
+wakemode 0
+page 0
+shot i00_home
+swipe 200 120 60 120 240
+shot i01_after_swipe_left
+swipe 60 120 200 120 240
+shot i02_back_home
+key 102
+wait 300
+shot i03_key_next
+key 114
+wait 300
+shot i04_key_prev
+page 0
+swipe 120 12 120 190 240
+wait 300
+shot i05_pulldown_control
+tap 176 78
+shot i06_sleep_timeout_next
+tap 176 78
+tap 176 78
+tap 176 78
+tap 176 78
+shot i07_sleep_timeout_back
+swipe 120 200 120 20 240
+wait 300
+shot i09_control_closed
+swipe 120 228 120 40 240
+wait 300
+shot i10_pullup_sms
+tap 120 80
+shot i11_sms_detail
+swipe 60 120 200 120 240
+swipe 120 50 120 200 240
+wait 300
+shot i12_sms_closed
+page 3
+tap 64 82
+shot i13_function_wifi
+swipe 60 120 200 120 240
+shot i14_back_to_menu

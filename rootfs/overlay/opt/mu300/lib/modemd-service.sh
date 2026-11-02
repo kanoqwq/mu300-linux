@@ -49,6 +49,23 @@ EOF
 
 modemd_single_layout() {
     local reopen=1 ready= n urc live
+    if [ "$(/opt/mu300/bin/mu300-device 2>/dev/null)" = u30pro ]; then
+        # Native UMS9632 uses nr2 for general commands and nr0 for data.
+        # Both belong to this one MU300 bridge; never add a second nr0 reader.
+        MODEMD_BROKERS=
+        live=/run/mu300-at2/urc/stty_nr0.log
+        modemd_broker atd /dev/stty_nr2 /run/mu300-at '' "$live" 0 ''
+        modemd_broker atd2 /dev/stty_nr0 /run/mu300-at2 '' "$live" 0 ''
+        if [ "$(uci -q get unisoc_modem.main.sim_slots)" = 2 ]; then
+            # Stock DSDS RIL owns nr0..2 and nr3..5. Keep our logical adapter
+            # names, but mirror the native general/data roles in the second bank.
+            live=/run/mu300-at5/urc/stty_nr3.log
+            modemd_broker atd4 /dev/stty_nr5 /run/mu300-at4 '' "$live" 0 ''
+            modemd_broker atd5 /dev/stty_nr3 /run/mu300-at5 '' "$live" 0 ''
+        fi
+        modemd_start 0
+        return
+    fi
     if [ "$(/opt/mu300/bin/mu300-device 2>/dev/null)" = u30air ]; then
         reopen=0 ready=sbuf:sbuf_5_006
     fi

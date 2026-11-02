@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+#UNISOC usbpinmux drivers
+#
+
+config UNISOC_USBPINMUX
+	tristate "Spreadtrum USBPINMUX Support"
+	default n
+	depends on ARCH_SPRD
+	help
+	  Say M here to support USBPINMUX.
+	  deault open USBPINMUX function.
+	  the usb can uart or jtag for trace32
+	  dedault n

@@ -1,0 +1,14 @@
+config control 'settings'
+	option home_short_action 'page-next'
+	option home_long_action 'none'
+	option home_long_press_ms '1800'
+	option battery_low_percent '20'
+	option battery_low_voltage_mv '0'
+	option battery_high_temp_c '45'
+	option charger_mode 'boot'
+	# the web interface also from the Wi-Fi hotspot (only once a router password is set)
+	option wifi_admin '1'
+
+config storage 'storage'
+	# the eMMC write protection: 1 on (only the write windows; the default), 0 switched off permanently, also at every boot (System > Storage)
+	option write_protect '1'

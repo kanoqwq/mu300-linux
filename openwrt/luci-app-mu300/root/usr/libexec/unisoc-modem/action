@@ -33,12 +33,12 @@ case "${1:-}:${2:-}" in
         ;;
     data:up)
         "${MU300_RADIO_ALLOWED:-/opt/mu300/bin/mu300-radio-allowed}" "$ACTIVE_SIM" || { fail data 'This SIM radio is disabled by the user'; exit 1; }
-        ifup "$DATA_IFACE" 2>/dev/null
-        ok "data up"
+        if ifup "$DATA_IFACE" 2>/dev/null; then ok "data up"
+        else fail "data up" 'Could not start the data interface'; exit 1; fi
         ;;
     data:down)
-        ifdown "$DATA_IFACE" 2>/dev/null
-        ok "data down"
+        if ifdown "$DATA_IFACE" 2>/dev/null; then ok "data down"
+        else fail "data down" 'Could not stop the data interface'; exit 1; fi
         ;;
     wifi:on|wifi:off)
         exec "${MU300_DASH_BIN:-/usr/libexec/unisoc-modem}/hotspot" "$2"

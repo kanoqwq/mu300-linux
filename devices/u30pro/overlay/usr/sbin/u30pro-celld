@@ -1,0 +1,11 @@
+#!/bin/sh
+# Compatibility CLI for native screen add-ons. No second AT/radio daemon.
+set -eu
+case ${1:-}:${2:-} in
+    --ctl:reconnect)
+        /usr/libexec/unisoc-modem/action data down
+        exec /usr/libexec/unisoc-modem/action data up ;;
+    --ctl:disconnect) exec /usr/libexec/unisoc-modem/action data down ;;
+    --ctl:status) exec cat /run/u30pro-cellular/status.json ;;
+    *) echo 'Use --ctl reconnect|disconnect|status; MU300 owns the modem service' >&2; exit 2 ;;
+esac

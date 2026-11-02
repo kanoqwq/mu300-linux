@@ -1,0 +1,59 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# makefile for the unisoc trusty
+#
+
+menu "Unisoc Trusty"
+
+config UNISOC_TRUSTY
+	tristate "Trusty"
+	default n
+        help
+           This module adds support for trusty device node creat irq ,
+           log ,dynamic TA function depends on this module
+           If you don't need trusty function ,you should close
+           this module
+
+
+config UNISOC_TRUSTY_LOG
+	tristate
+	depends on UNISOC_TRUSTY
+	default m
+
+config UNISOC_TRUSTY_VIRTIO
+	tristate "Trusty virtio support"
+	depends on UNISOC_TRUSTY
+	select VIRTIO
+	default m
+
+config UNISOC_TRUSTY_VIRTIO_IPC
+	tristate "Trusty Virtio IPC driver"
+	depends on UNISOC_TRUSTY_VIRTIO
+	default m
+	help
+	  This module adds support for communications with Trusty Services
+
+	  If you choose to build a module, it'll be called trusty-ipc.
+	  Say N if unsure.
+
+config UNISOC_TRUSTY_TSHM
+	tristate "Trusty TSHM driver"
+	depends on UNISOC_TRUSTY
+	default m
+	help
+	  This provides a simple method to allocate physical share memory
+	  in user space.
+	  Say N here if you are unsure about need this.
+	  Otherwise say Y to select.
+
+config UNISOC_TRUSTY_TUI
+	tristate "Trusty TUI driver"
+	depends on UNISOC_TRUSTY
+	default m
+	help
+	  This module provides a trusty tui driver, used to deal with
+	  conficts of ree tp/display access.
+	  If you choose to build a module, it'll be called trusty-tui.
+	  Say N if no TUI feature.
+
+endmenu

@@ -1,0 +1,14 @@
+wakemode 0
+page 0
+sheet 1
+down 176 78
+wait 150
+shot t_sleep_tile_pressed
+up
+wait 400
+page 0
+down 120 190
+wait 20
+shot r_20
+wait 200
+shot r_220

@@ -1,0 +1,15 @@
+--- a/include/linux/usb/sprd_usbm.h
++++ b/include/linux/usb/sprd_usbm.h
+@@ -34,7 +34,12 @@
+ 	SPRD_USBM_EVENT_MAX,
+ };
+ 
++/* The flag is consumed only by MUSB host audio offload. */
++#if IS_ENABLED(CONFIG_UNISOC_USB_MUSB_HOST) || IS_ENABLED(CONFIG_UNISOC_USB_MUSB_DUAL_ROLE)
+ extern void musb_set_utmi_60m_flag(bool flag);
++#else
++static inline void musb_set_utmi_60m_flag(bool flag) {}
++#endif
+ 
+ #if IS_ENABLED(CONFIG_UNISOC_USBM)
+ extern int call_sprd_usbm_event_notifiers(unsigned int id, unsigned long val, void *v);

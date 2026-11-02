@@ -1,0 +1,8 @@
+{
+  "admin/system/u30pro-wallpaper": {
+    "title": "Screen wallpaper",
+    "order": 65,
+    "action": { "type": "view", "path": "system/u30pro-wallpaper" },
+    "depends": { "acl": ["u30pro-wallpaper"] }
+  }
+}

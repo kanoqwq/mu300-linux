@@ -116,6 +116,15 @@ class ATClientBoundary(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn(b'modem returned no final response', result.stderr)
 
+    def test_dead_daemon_lock_with_deadline_is_fully_reclaimed(self):
+        child=subprocess.Popen(['sh','-c','exit 0']);child.wait()
+        lock=self.root/'lock';lock.mkdir()
+        (lock/'pid').write_text(str(child.pid)+'\n')
+        (lock/'until').write_text('9999999999\n')
+        result=self.exchange('AT',b'OK\n')
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertFalse(lock.exists())
+
     def test_zero_lock_wait_never_steals_a_live_owner(self):
         lock = self.root / 'lock'; lock.mkdir()
         (lock / 'pid').write_text(str(os.getpid()))

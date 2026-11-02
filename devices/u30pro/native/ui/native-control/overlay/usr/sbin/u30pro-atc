@@ -1,0 +1,40 @@
+#!/usr/bin/ucode
+/* u30pro-atc: command-line client of the AT broker (ubus object u30pro.at, /usr/sbin/u30pro-atd).
+ *   u30pro-atc [-t ms] [-p] "AT..." | "!status" | "!urc" | "!sms T<ms> <len> <hexpdu>"
+ * Prints the broker's reply as one line of JSON (-p: the response lines only).  Exit 0 when the command returned OK, 1 when not,
+ * 2 on a usage error, 3 when the broker cannot be reached. */
+import { connect } from 'ubus';
+
+let timeout = 0, plain = false, args = [ ...ARGV ];
+while (length(args) && substr(args[0], 0, 1) == '-' && length(args[0]) == 2) {
+	let o = shift(args);
+	if (o == '-t') timeout = int(shift(args));
+	else if (o == '-p') plain = true;
+	else if (o == '-s') shift(args);   /* the socket of earlier versions, ignored */
+	else exit(2);
+}
+if (length(args) != 1 || length(args[0]) > 900)
+	exit(2);
+let req = args[0], method = 'command', msg = null, m;
+if (req == '!status') method = 'status';
+else if (req == '!urc') method = 'urc';
+else if ((m = match(req, /^!sms +T([0-9]+) +([0-9]+) +([0-9A-Fa-f]+)$/))) {
+	method = 'sms';
+	msg = { timeout: int(m[1]), len: int(m[2]), pdu: m[3] };
+	timeout = int(m[1]);
+} else {
+	msg = { cmd: req };
+	if (timeout) msg.timeout = timeout;
+}
+/* the call waits as long as the command may run, plus the time it may wait for commands before it */
+let bus = connect(null, int(((timeout || 5000) + 999) / 1000) + 30);
+let r = bus ? bus.call('u30pro.at', method, msg ?? {}) : null;
+if (r == null) {
+	warn(`u30pro-atd: ${bus ? bus.error() : 'cannot connect to ubus'}\n`);
+	exit(3);
+}
+if (plain) {
+	for (let l in (r.lines ?? [])) print(l, '\n');
+} else
+	printf('%J\n', r);
+exit(r.ok === true ? 0 : 1);

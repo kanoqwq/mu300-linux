@@ -26,17 +26,9 @@ supported() {
             part=/dev/${part##*/}
         fi
         [ -b "$part" ] || return 1
-        real=$(readlink -f "$part") || return 1
-        hash=$(sha256sum "$part") || return 1
-        # Audited images are a fast path. Other firmware builds must match
-        # the linked DVFS_INIT signed-offset/CPU-SRAM selector algorithm.
-        case ${hash%% *} in
-            ff4782690fd805ff54fe34853ef8ee5c7e51c3259e20077c55373b50a4b259c2|\
-            5b3183f17af9b416e71dea61e578c61824e4e1df43737a1179032f4b20466b2b|\
-            f27ac16f44e6cdc87a8ee00a9b53c499c8dde0c3b92c771388e256e84ef12e70|\
-            6e3b9234525ace117a503925c8f8db0ed05e1679bd773d4731b56334140f5a2f) ;;
-            *) [ -x "$checker" ] && "$checker" "$part" >/dev/null 2>&1 || return 1 ;;
-        esac
+        # Prove the linked DVFS_INIT/CPU-SRAM ABI on this device's firmware.
+        # Firmware build hashes are not compatibility decisions.
+        [ -x "$checker" ] && "$checker" "$part" >/dev/null 2>&1 || return 1
     done
 }
 case ${1:-load} in

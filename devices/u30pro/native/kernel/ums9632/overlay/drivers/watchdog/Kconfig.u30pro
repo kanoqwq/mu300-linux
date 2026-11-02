@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config U30PRO_UMP9650_WATCHDOG
+ bool "U30 Pro UMP9650 native PMIC watchdog"
+ depends on WATCHDOG && ARCH_SPRD && MFD_SC27XX_PMIC && (!SUSPEND || U30PRO_KEXEC_BASE)
+ select WATCHDOG_CORE
+
+config U30PRO_WATCHDOG_TEST
+ bool "Virtual-only U30 Pro watchdog ownership fixtures"
+ depends on KUNIT && ARM64 && WATCHDOG_CORE

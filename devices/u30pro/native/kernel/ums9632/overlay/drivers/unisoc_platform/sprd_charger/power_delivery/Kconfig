@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: GPL-2.0
+
+config UNISOC_PD_TCPM
+	tristate "USB Type-C Port Controller Manager For Sprd"
+	depends on USB
+	select USB_ROLE_SWITCH
+	select POWER_SUPPLY
+	help
+	  If PMIC chip is Unisoc serials platform, select this pd configuration.
+	  Otherwise keep the default value.
+	  The Type-C Port Controller Manager provides a USB PD and USB Type-C
+	  state machine for use with Type-C Port Controllers.
+
+if UNISOC_PD_TCPM
+
+config UNISOC_SC27XX_PD
+	tristate "Unisoc SC27XX Serials PMICs Power Delivery Controller Driver"
+	depends on MFD_SC27XX_PMIC || COMPILE_TEST || UNISOC_PMIC_MFD
+	help
+	  If PMIC chip is Unisoc serials platform, select this configuration.
+	  Otherwise keep the default value.
+	  Sc27xx Power Delivery Driver that works with
+	  Type-C Port Controller Manager to provide USB PD functionalities.
+
+endif # UNISOC_PD_TCPM
+
+config UNISOC_PD_TCPM_FAKE
+	tristate "tcpm fake ko"
+	depends on USB
+	select USB_ROLE_SWITCH
+	select POWER_SUPPLY
+	help
+	  tcpm fake ko
+

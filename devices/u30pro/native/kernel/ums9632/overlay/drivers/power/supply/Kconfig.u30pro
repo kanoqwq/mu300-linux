@@ -1,0 +1,18 @@
+config CHARGER_U30PRO_SGM41513
+ bool "U30 Pro native SGM41513 master charger and OTG regulator"
+ depends on ARCH_SPRD && I2C && POWER_SUPPLY && REGULATOR && OF
+ help
+   Native power_supply and hardware OTG regulator for the detected master
+   SGM41513 at 0x1a behind the original U30 Pro ti,bq2560x_chg DT node.
+   Keeps existing charging limits and protection settings. Battery FGU and
+   temperature policy must be adapted separately before writable limits.
+
+config BATTERY_U30PRO_UMP965X
+ bool "U30 Pro native UMP965x calibrated battery measurements"
+ depends on ARCH_SPRD && OF && POWER_SUPPLY && NVMEM && IIO
+ depends on U30PRO_UMP965X_ADC
+ help
+   Factory-calibrated voltage/current and NTC temperature through the real
+   PMIC FGU and IIO ADCs. Preserves USER areas/counter and measures the
+   current ADC internal zero point into its volatile offset registers.
+   Coulomb SOC initialization/correction is pending and not exposed yet.

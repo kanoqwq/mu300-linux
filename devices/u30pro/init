@@ -1,0 +1,85 @@
+#!/bin/busybox sh
+# U30PRO-MU300 storage bootstrap: hardware adapter, shared MU300 layout/policy.
+/bin/busybox mkdir -p /bin /sbin /proc /sys /dev /run /tmp /disk /newroot /config
+/bin/busybox --install -s /bin
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin HOME=/root TERM=vt100
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev
+mkdir -p /dev/pts
+mount -t devpts devpts /dev/pts
+mount -t tmpfs tmpfs /run
+mount -t tmpfs tmpfs /tmp
+mount -t debugfs debugfs /sys/kernel/debug
+log() { echo "<3>MU300-LINUX: $*" > /dev/kmsg; echo "$*" >> /run/stages; }
+NET=192.168.77
+log 'stage=init platform=u30pro'
+android_slot=$(cat /etc/mu300-android-slot 2>/dev/null)
+case $android_slot in a) linux_slot=b ;; b) linux_slot=a ;; *) log 'unconfirmed Android slot'; exec sh </dev/console >/dev/console 2>&1 ;; esac
+misc=
+restore_android() {
+    [ -b "$misc" ] || return 1
+    local source=/etc/misc-bc-slot-$android_slot.bin
+    [ "$(wc -c < "$source")" = 32 ] || return 1
+    dd if="$source" of="$misc" bs=1 seek=2048 conv=notrunc,fsync || return 1
+    dd if="$misc" bs=1 skip=2048 count=32 2>/dev/null > /run/misc-check
+    cmp -s "$source" /run/misc-check
+}
+setup_usb_gadget() {
+    /usr/sbin/u30pro-usb start ncm || return 1
+    ip link set usb0 up
+    ip addr add "$NET.1/24" dev usb0 2>/dev/null || true
+    if [ ! -s /run/udhcpd.pid ]; then
+        printf 'start %s.2\nend %s.20\ninterface usb0\nopt subnet 255.255.255.0\nopt router %s.1\npidfile /run/udhcpd.pid\nlease_file /run/udhcpd.leases\n' "$NET" "$NET" "$NET" > /run/udhcpd.conf
+        udhcpd /run/udhcpd.conf
+    fi
+}
+read_usb_boot_policy() { :; }
+rescue() {
+    log "stage=rescue reason=$*"
+    # Restore the trial's next boot only when the verified misc node exists.
+    [ -z "$misc" ] || restore_android || log 'Android next-boot restoration failed'
+    setup_usb_gadget || log 'USB rescue gadget unavailable'
+    if [ -c /dev/ttyGS0 ]; then
+        cat /run/stages > /dev/ttyGS0
+        exec setsid cttyhack sh </dev/ttyGS0 >/dev/ttyGS0 2>&1
+    fi
+    exec sh </dev/console >/dev/console 2>&1
+}
+# The platform adapter carries no partition algorithm. These are the very same
+# sources that implement TF/container/image installation on maintained MU300.
+. /etc/mu300-desktop-storage.sh
+. /etc/u30pro-boot-wait.sh
+log 'stage=wait-storage'
+u30pro_wait_storage || rescue 'storage discovery timeout'
+misc=$(readlink -f /dev/block/by-name/misc)
+[ -b "$misc" ] || rescue 'misc alias unavailable'
+log 'stage=storage-ready'
+mkdir -p /disk /newroot
+case $(cat /etc/mu300-desktop-root-mode) in prepare|install-part) setup_usb_gadget || exec sh ;; esac
+desktop_storage_start || rescue 'offline installation failed'
+log 'stage=mount-root'
+desktop_mount_root || rescue 'root filesystem unavailable'
+[ -x /disk/openwrt/sbin/init ] || rescue 'OpenWrt init missing'
+mount --bind /disk/openwrt /newroot || exec sh
+mkdir -p /newroot/mnt/mu300-disk
+mount --move /disk /newroot/mnt/mu300-disk
+mkdir -p /run/mu300
+cp /etc/misc-bc-slot-$android_slot.bin /run/mu300/misc-bc-android.bin
+cp /etc/misc-bc-slot-$linux_slot-trial.bin /run/mu300/misc-bc-linux-trial.bin
+echo "$linux_slot" > /run/mu300/linux-slot
+echo "$android_slot" > /run/mu300/android-slot
+echo "$misc" > /run/mu300/misc-dev
+echo "$rootloop" > /run/mu300/disk-dev
+case $DESKTOP_MODE in
+    part) echo "$(mu300_storage_disk)@mu300root" > /run/mu300-root-dev ;;
+    *) echo "$rootloop" > /run/mu300-root-dev ;;
+esac
+echo u30pro > /run/mu300/device
+[ "$(cat /newroot/etc/mu300/default-boot 2>/dev/null)" = linux ] || restore_android || exec sh
+log 'stage=switch-root platform=u30pro'
+for path in dev proc sys run; do
+    mkdir -p /newroot/$path
+    mount --move /$path /newroot/$path || exec sh
+done
+exec switch_root /newroot /sbin/init

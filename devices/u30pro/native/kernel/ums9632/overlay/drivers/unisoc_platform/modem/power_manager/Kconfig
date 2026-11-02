@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: GPL-2.0
+
+config UNISOC_MODEM_POWER_MANAGER
+	tristate "UNISOC Modem Power Manager"
+	depends on PM_SLEEP
+	default n
+	help
+	  This driver provide modem and sp driver to apply/get/release wakelock
+	  when module business started.
+	  Also it be user for modem power management.
+
+	  Say M here to enable power_manager support in GKI projects, also you
+	  can set Y in none-GKI projects.

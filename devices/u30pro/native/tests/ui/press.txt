@@ -1,0 +1,54 @@
+page 0
+down 60 170
+wait 20
+shot home_rows_20ms
+wait 100
+shot home_rows_ripple
+up
+wait 60
+shot home_rows_release60
+wait 400
+page 0
+sheet 1
+down 64 78
+wait 120
+shot tile_off_pressed
+up
+wait 400
+down 64 78
+move 100 120
+wait 40
+shot tile_slop_cancel
+up
+sheet 0
+fn 4
+down 120 154
+wait 120
+shot display_card_pressed
+up
+wait 400
+fn 4
+down 92 32
+wait 120
+shot back_dot
+up
+wait 400
+overlay 0 0
+sheet 2
+down 120 80
+wait 120
+shot sms_row
+up
+wait 400
+sheet 0
+page 0
+toast 已连接
+wait 60
+shot toast_in60
+wait 140
+shot toast_in200
+wait 2500
+shot toast_out
+page 0
+swipe 200 120 60 120 200
+shot swipe_mid

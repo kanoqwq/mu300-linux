@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config NVMEM_SPRD_SHADOW_EFUSE
+ bool "UMS9632 firmware shadow efuse (read-only)"
+ depends on ARCH_SPRD && OF

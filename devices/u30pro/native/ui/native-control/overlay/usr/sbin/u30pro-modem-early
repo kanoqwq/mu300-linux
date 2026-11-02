@@ -1,0 +1,24 @@
+#!/bin/sh
+# Start the baseband from rcS before the USB deferred-probe wait, not with the services after it.  The CP needs only the restored
+# settings, its partitions, Trusty and the modem/SIPC nodes; started here "Modem Alive" comes about 5 s after power-on instead of
+# about 22 s (registration at about 27 s instead of 43 s, measured 2026-10-23).  The later "u30pro-cellular start" in rcS finds the
+# procd instance unchanged and leaves it running.
+# exit 0: u30pro-cellular was started here; 1: not (no baseband on this boot, or the nodes did not appear: rcS starts it later)
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+L=/run/u30pro-early.log
+case " $(tr '\n' ' ' </proc/cmdline) " in *" u30pro.modem=auto "*) ;; *) exit 1 ;; esac
+n=0
+while [ $n -lt 100 ]; do
+	ready=1
+	for d in /dev/modem /dev/pmsys /dev/chsys /dev/trusty-ipc-dev0 /dev/spipe_nr2 /dev/stty_nr0; do [ -e "$d" ] || { ready=0; break; }; done
+	[ $ready = 1 ] && break
+	# a driver that probed after stage0 populated /dev: create its nodes
+	u30pro-native-stage0 --populate-nodes >/dev/null 2>&1
+	sleep 0.1
+	n=$((n + 1))
+done
+echo "modem-early: nodes ready=$ready after $n polls, uptime $(cut -d' ' -f1 /proc/uptime)" >>$L
+[ $ready = 1 ] || exit 1
+/etc/init.d/u30pro-cellular start >>/run/u30pro-services.log 2>&1 || exit 1
+echo "modem-early: u30pro-cellular started, uptime $(cut -d' ' -f1 /proc/uptime)" >>$L
+exit 0

@@ -1,0 +1,2802 @@
+{
+  "format": 1,
+  "repository": "https://github.com/33333s/U30pro-openwrt.git",
+  "revision": "df3b44fce648105aa785204571f8ad6317a95959",
+  "files": {
+    "LICENSE": {
+      "sha256": "6d4e95be929ed48e42560e2e41218b6b663726da84725e43f637043ae70f729d",
+      "git_blob": "669ff0c9bd7d33eecdc1c978398800aa0394109f",
+      "mode": "100644"
+    },
+    "feed/packages/u30pro-feed-immortalwrt/files/etc/apk/keys/immortalwrt-25.12.pem": {
+      "sha256": "c0da9b5747f3fb16ea64fa37acda4df3723ac22ec30ca0dc6f5c89efc0161f1f",
+      "git_blob": "22f7b14ba8a684953d88913e20e95f4e2844b9bf",
+      "mode": "100644"
+    },
+    "feed/packages/u30pro-feed-immortalwrt/files/etc/apk/repositories.d/immortalwrt.list": {
+      "sha256": "770afe519e1af621bd3c34638eaa507c67a5d07590af97a5e26dc8336a4c6053",
+      "git_blob": "13547ae9a56b0401a14090171e56864a7765997d",
+      "mode": "100644"
+    },
+    "feed/packages/u30pro-feed/files/etc/apk/keys/u30pro-feed.pem": {
+      "sha256": "9cc6a2bf0335f720db885826fbe44cb9e1da87b39d6521e40bc3298508d6a8e4",
+      "git_blob": "b493b305c670224e02c57aea3eeda8158fe0760b",
+      "mode": "100644"
+    },
+    "kernel/ums9632/apply_overlay.py": {
+      "sha256": "23eaf32671720ae4774749bef34d30bbfe2c226ab5ae621e9a43a8886c6f1602",
+      "git_blob": "1dcc4f397352ed1e0ba3024a4e3ebd349a727f99",
+      "mode": "100644"
+    },
+    "kernel/ums9632/build_linux.py": {
+      "sha256": "cbef9e90afb42e0999f4166b1a58b1dc5eb1e08853ae7a975cd604bec1ca7216",
+      "git_blob": "ed245995c6c005b8ddf8619362bf4dc04f6e160f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/build_stage0.py": {
+      "sha256": "a3ed723f15fd54e38540bc877abb73baee48c8c6dd9ab9dacf596c67044e5d9f",
+      "git_blob": "bd599fb39b0596a266cbe38a400cd981af3424ee",
+      "mode": "100644"
+    },
+    "kernel/ums9632/charger-link-diagnostic.config": {
+      "sha256": "db75ae3fb220ef965edb6d19ea4e39e72e32d139d0ac20e19dd5f61560663232",
+      "git_blob": "60f8ee47cc61ac74726658aa2d1afd7bd910db4f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/early-ramcon.config": {
+      "sha256": "ac47d46dc95e60d7632e9a1437eb677f916bf41545c366fd9865e5a17dfd57b9",
+      "git_blob": "ac19175c4e1f39f0a7387922525fd2824d03e760",
+      "mode": "100644"
+    },
+    "kernel/ums9632/i2c-userspace-diagnostic.config": {
+      "sha256": "5e8ee60df9753552f21f19dfd4dff964a4530cb674c7c9afb0406d2702e11c92",
+      "git_blob": "4b93b9a3e9b3c789a90a60d213562d69884e8183",
+      "mode": "100644"
+    },
+    "kernel/ums9632/kexec-base.config": {
+      "sha256": "e130b737cf3b717a038aedccc7e3cf02da64ba870bb766941ef6386e625954d1",
+      "git_blob": "79bc62ea53b4b0b9d0ede80d5aa7820ba98ea4c8",
+      "mode": "100644"
+    },
+    "kernel/ums9632/kunit.config": {
+      "sha256": "8ee9e1a23ef9364e9043203add45ef9dedc2b1d6803e28d0ab6c1e02c8e94da1",
+      "git_blob": "e0769daf2f9edefd203c11304784c44cc0fda725",
+      "mode": "100644"
+    },
+    "kernel/ums9632/minimal.config": {
+      "sha256": "22042bca5f7507d931f0c93f6dad17447547aec337e4e67e6517c3a1fd85073b",
+      "git_blob": "3af7ef1e0cc940cc48752b40c28294a663405d0f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-adc.config": {
+      "sha256": "03ee4d98d7ee38c08db2e69fbdfcb352b23b62fef56e33dfade18fec5c92d970",
+      "git_blob": "bdecb8132d85c228f6ebb56e98286495c96132e0",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-buses.config": {
+      "sha256": "23727f31dd5bf34ea19ab621ec98d052b76cba3dec0e9d859e495ba18208a946",
+      "git_blob": "fc5c1bcdbb3aea0273089c650f260a242a7b59a3",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-charger.config": {
+      "sha256": "0ec9c70a3b6c7e7ad213781b4f077e6ed166b4ccd1b678fd1c8112e84f3d8bbf",
+      "git_blob": "25916456563e294fa1f84efcaf2ab27f26c3565f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-containers.config": {
+      "sha256": "fd7f7cb3e2f88a2695c0589c09c31e1e8713e639c07849a2411d595069d81964",
+      "git_blob": "c3b88d2497d88a7c828e9cfc042b6f389c109701",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-cpufreq.config": {
+      "sha256": "b2c78399564759721e8b30ef1a990a1bec077c30e765b3c44daa748821567ab2",
+      "git_blob": "0a2ee8dd4e189d5fbb1508f061b9eb0a0109a3d3",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-display.config": {
+      "sha256": "ff2b27ad33310cc1dadef2ece0339790e762c6765b3c0a06b7eb4d931ff19d0a",
+      "git_blob": "17f1a79b1c739d053fb54fd47d8360c25fb6349e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-fgu.config": {
+      "sha256": "48f791b69359eed2235976b4fda612b81ea425b69db873c76a0caadf5d54d9dd",
+      "git_blob": "b5ec5ac9136b66273f4b8c73cca6ed92c3546b73",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-fwdiag.config": {
+      "sha256": "d2cdc0569e305c62c214eedde86ac7cb17416ab35e2c048ffa5ed5f87c6f0f0f",
+      "git_blob": "224ffcbb118d3784758c85b94694a011e4b1bec4",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-i2c.config": {
+      "sha256": "7fba26038c6fa62039c7aeb8a1b8e5e2f87b4c90261e8b6b685713bb77323bb4",
+      "git_blob": "6a3a0611da60b3c6ec27e495f3e751378b4871fe",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-idle.config": {
+      "sha256": "72c1965860f9583c0a71ab6183c5876668f1f658793963c1847af7e72df133ac",
+      "git_blob": "b25428da43bd0d9dc3c37e71c2ff3d4abdd5fa22",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-kmods.config": {
+      "sha256": "d93a188deb727be938244a5bc016db8c07a307979bfa410bc2ba95b8b048dc17",
+      "git_blob": "e98a1d0b36fd9a974f87f685dc9f609646dfd682",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-modem.config": {
+      "sha256": "b2e3736fed2f7da67f675651e359b4cb0d4afe9c6cbd77c147f16b3bf12460a7",
+      "git_blob": "b4b487b429d107dae790d99b7e38c9ae530023f1",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-router.config": {
+      "sha256": "dc7d4e74286e4d36d902cbd16cae1db4b7e44d90e3674d4cf581005fd46177a4",
+      "git_blob": "12d4224e2da186b822b64cacb996355aec836f05",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-router2.config": {
+      "sha256": "186bd3f5f3291d084db4a6daa9b5563dade05bff26940d9c2004528daf22ad6b",
+      "git_blob": "ca30113cded49f09553d717597e97b672a065ba7",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-thermal.config": {
+      "sha256": "45b2b9d7e01141e0e5a2b44467b1d6bd8c5ff31b12f013c432362f1b2ceccdcc",
+      "git_blob": "fbe3e0de3ce21f35bb042c39aa1ad5f0ab39ae6b",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native-wifi.config": {
+      "sha256": "37a4917393b54a3002c13cce6139e4c0e774b65004e7efa20c03bf76dcf9efe0",
+      "git_blob": "1dad5976e25455480d1f5825448ebcea4b80ab84",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native/align_image.S": {
+      "sha256": "5aa75ce298271a29deb4ec017a4799baed78ce1c2174fede0d77f75ebaa4cb1c",
+      "git_blob": "ba4d5d3d00b8df45154663875d89beaa4640360f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native/stage0_linux.c": {
+      "sha256": "04148f3152e1aa15d9073f9c4cd557b4732b5e42526f173342071c72a2e50d05",
+      "git_blob": "55712c4030437addcf31949791f9359895d33eb2",
+      "mode": "100644"
+    },
+    "kernel/ums9632/native/u30pro_watchdog_keeper.c": {
+      "sha256": "eb4429b221f77c07520f2423241bff4df5cc91a869f6edd336617d9fc2897311",
+      "git_blob": "4916f5d0b4f7070421797089e3af75ee621ccaf6",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/arch/arm64/Kconfig.u30pro": {
+      "sha256": "0f6e986cb4f421641b0d14f29760746d3d76d58945ffb9b0198c129e705efe11",
+      "git_blob": "6b6a6b3ba6603e752566420d06b7c920d5ae4d45",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/arch/arm64/kernel/u30pro-early-ramcon.c": {
+      "sha256": "60644bffd8b7333304b5c31a1201f940275dd155c94ca68a4c33d5b09880d66d",
+      "git_blob": "8304e35388f6dc66ad490c7f2182362a2cea219c",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/arch/arm64/kernel/u30pro-timed-reset.S": {
+      "sha256": "83a74f115433eb29586405ec2e7f1df253f428567ed0cd9b9010e4710c7077e5",
+      "git_blob": "d6f7cf1ca8f338252571d98161547c38d7499024",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/base/regmap/Kconfig.u30pro": {
+      "sha256": "4f39d131343586843830fb8ca113fb2dddf251382fd1a57dadcc6f6c481cb4bc",
+      "git_blob": "ef0ba46bc5349ac771cfc1c6b468df8e47f6ce00",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/base/regmap/regmap-mmio-setclr-test.c": {
+      "sha256": "b40300edd4e92dfb059b4e3c008e32c790730681d5e64553dc6b53b24ceb1582",
+      "git_blob": "069bc0a6025ae4c5ee149592bc9db2ebd18a8f5d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/base/regmap/regmap-mmio.c": {
+      "sha256": "d297dd70fcded88f3fb845fc5919e96e7d8e716a125e6f745dd45ac6e7fc6e2f",
+      "git_blob": "b6624eef4ba9271289fbb8e7a9daaf7763d05583",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/Kconfig": {
+      "sha256": "858e3ac3859c335157dac711c47c0c3aa3e80c5639ea2c727517f559cc8906d0",
+      "git_blob": "917899c0ea3cefe84b2ad3bbfe1002d852a6de4e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/Makefile": {
+      "sha256": "2419f7c64cfdb0e69193091aadebc260d91e46f7d28cc3cc0d1a1a6205d1a888",
+      "git_blob": "3ddc013afff795db3fe372ca7b693556e88c6d81",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/common.c": {
+      "sha256": "03c07ce81e62143f2410c575fc79125566964ba14c4163f63256ed265e14b97d",
+      "git_blob": "4ddec634844725c85f3e6a248108831d5a54a0cf",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/common.h": {
+      "sha256": "cfec4f6ce7fb87a8591b1deb528126d3f4dc2463f90b472c22a36dbeb9d153b3",
+      "git_blob": "1ac39af6849758f8c6a5768922569c98064af11c",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/composite.c": {
+      "sha256": "7b331fbee72fedd99e4f98b0c877480f27377ada3461d2567dfd389c7797e163",
+      "git_blob": "ad6b6383e21fe58f9dca67bc9422ce60093b51e5",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/composite.h": {
+      "sha256": "2d0d25cedb3cf9c96d746df79d355bc8bc47ca3e110b65699c0189a59305ea48",
+      "git_blob": "15cec97d2aa73e08af38ecb1c502c6c24137f7e2",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/div.c": {
+      "sha256": "a7517f9e422b10de56ec10ff47d20696116baf19cc957e9b100171c5c7b5addc",
+      "git_blob": "936782c241271832c0a1957c99cbecc287351d1b",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/div.h": {
+      "sha256": "5c6752e6eecded6ff5797e112b8638c62ba294c167da0aa7996664f12becd857",
+      "git_blob": "a0bcad80498f895a0d841d6782efa0da64d13fab",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/gate.c": {
+      "sha256": "3ae61beb81eaafdce4440db0f0c1be2b88a0887ff971dc005e2c706294cfc6c0",
+      "git_blob": "56e1714b541eff1d6a59cd313810fe41d8b055c9",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/gate.h": {
+      "sha256": "ad91c85a951208d54ff20d31dde98386d6d7b5802af834552373e60ce2c173d2",
+      "git_blob": "e738dafa4fe910fa96b617fc782551dc3f2806c8",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/mux.c": {
+      "sha256": "ee46b2fdf99ccd65c0916fdc706c4016d379a9d5ae9de3052d2dcf8a44e5715a",
+      "git_blob": "624041b603586765804ce636840261c59c1c0c5d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/mux.h": {
+      "sha256": "f96eea908adf75d6ee4d02cb230744c852c184b4247cb6af79540bc8914c062c",
+      "git_blob": "f3cc31dae06f8b857aacbb133c92fe5b891e0105",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/pll.c": {
+      "sha256": "8a07a42fce022e59961c04e3052fdf8aa99314ff01cee0a90457aa01bff0e901",
+      "git_blob": "605ec5b9e83ff35c25d70d31641b094993cdfc10",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/pll.h": {
+      "sha256": "717b6f6789bc30bbd8db47d51afd70b41267afc71f054bab98051fbd7ba430b2",
+      "git_blob": "a7433dcce6b9b19a857e058d49261355301a95c3",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/reset.c": {
+      "sha256": "5af70cc82d8b95ebf4e6bbeaf424c1b38a266ee9b13f1666007d0ff6c510afab",
+      "git_blob": "92d19465b53145eeef60e7042a866610a380ce3e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/reset.h": {
+      "sha256": "33edb7030c65ab39a282ce6a4e8f3564dcc1e814108ac568c4c7ebc12d05b8e5",
+      "git_blob": "155330b427751ff62de7e71bae565b83c136e10b",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/clk/sprd-u30pro/ums9632-clk.c": {
+      "sha256": "e31b8214ba804d9c0a6a189fd5e11eb28f66bc79e1446e0fb55816d2e376f496",
+      "git_blob": "ef9812800786ff9a6c46badfb97dea94679a7620",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/firmware/psci/psci.c": {
+      "sha256": "d8eefec9ef7408799a5d662bb0b915de381491302632b413da9ee486aad84a98",
+      "git_blob": "b0dc2f9d1ad0d52f5e085131104fc3a5e2e5b297",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/i2c/busses/i2c-sprd.c": {
+      "sha256": "26e9b9ad47e411ffebb304dd9c127f80d700a80c6fca184d0cb55678815f3da2",
+      "git_blob": "a47878efb6c30a28788b7782d4d4f498f020f8b4",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/iio/adc/Kconfig.u30pro": {
+      "sha256": "35a243eb774d81d8d779b1b6f4a2fe251f754b6d8ca7ad2a72a70402f3ce483c",
+      "git_blob": "34e36b43fa1171cd37f9b13ddbd99fed412ada35",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/iio/adc/u30pro-ump965x-adc.c": {
+      "sha256": "6b4e87a6943a6a15c30ecc616d34aeac52541384ceb2aeb330220c5337f08676",
+      "git_blob": "42293abc61992070e47b4f1cb0dfc47de05646c8",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/mfd/sprd-sc27xx-spi.c": {
+      "sha256": "f4d25ec938015cfcf42524e665b419fb406d3df7440c1145996865011ffe5442",
+      "git_blob": "b1f2c4b443ef06249c7a200da2a8c9e4df6cff98",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/mfd/syscon.c": {
+      "sha256": "f1483d1a7013c929982438bd669716071416ed179acc8aeb57cce27bd0ae409a",
+      "git_blob": "2c802904318b98d04c8943c0c19932fadb4abc5a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/mmc/core/sdio.c": {
+      "sha256": "cb0aa6a92e81db41de1d6895e884d284ec4fb80e5fc50e705303cb46e858e874",
+      "git_blob": "48645047165703ce6fd5f64a5975271738f4a8f4",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/mmc/host/Kconfig.u30pro": {
+      "sha256": "5d4da8437549e2017fd57803de79bb4806e0db645237fee8596909d30ce8afc0",
+      "git_blob": "3cf1908682cc7efb537ac1cd884f8cd192cac1fb",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/mmc/host/sdhci-sprd-trial-test.c": {
+      "sha256": "55c9cd16a5e44391a526df331bc09242d08dbd2245c0dd8d5cf4e07e80a88310",
+      "git_blob": "cb1ee30726b35ab3fccd350f8a4bc8441f0c1824",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/mmc/host/sdhci-sprd.c": {
+      "sha256": "ca9e22b338868767b91785064e9e0003c41b0d15537564a865f2c807a983ead6",
+      "git_blob": "77771f7b86a80a64b4070535cca7b106ed4ef764",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/nvmem/Kconfig.u30pro": {
+      "sha256": "d19930d855e87662f3dd990747e34780790ae3081b3ab8bbcc5c024e042677eb",
+      "git_blob": "60941e0394aa29c3ae1e0ae0b9d64b321b66e8be",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/nvmem/sprd-efuse.c": {
+      "sha256": "10d56a26948b6f78b7cc9aacc1734bd9036579123416f2b42e9d6daf83b26b87",
+      "git_blob": "92ed4e2866f6a1f86d751b09ccca79ae0f948859",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/nvmem/sprd-shadow-efuse.c": {
+      "sha256": "4a3b8aa298f7254a120b83efc2052d59519fb2f886c8b29e9e72f41a39d913d4",
+      "git_blob": "9adb3969f5a0d3ad1007593bf3ccfb4e027e6573",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/pinctrl/sprd-u30pro/Kconfig": {
+      "sha256": "edb94bcec882dc4fc63ff060d86676325460d934aa0c6bc25130f88f274f4e9d",
+      "git_blob": "d76b88786cbea62c57a79fa03997841cb5ea1485",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/pinctrl/sprd-u30pro/Makefile": {
+      "sha256": "8643da6d3c12b6ab7892bdfcaec34549790a354493e490d10f5fa83b840df562",
+      "git_blob": "9c998eaee0306d85620580ac12625e425b2fd5b0",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/pinctrl/sprd-u30pro/pinctrl-sprd-ums9632.c": {
+      "sha256": "9b5e506f51e284318f4e65b89533a0f809b7769f963409d4174ad6ce5e217799",
+      "git_blob": "049d27361526526a9e863d4c9be4f15b483a4dec",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/pinctrl/sprd-u30pro/pinctrl-sprd.c": {
+      "sha256": "c1f51f513dc46d88b350dc196240f5054ed8ab13cf26843f66dcde156d3bd650",
+      "git_blob": "ef614719376608c0ffbee282d5aa357046de72f2",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/pinctrl/sprd-u30pro/pinctrl-sprd.h": {
+      "sha256": "8e7451e41bad5df24a252f05df8e34d86462da528bcbba00cc242f6db0089906",
+      "git_blob": "e910fd6ca8144c6288d2a797057f24d0c304caa0",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/power/supply/Kconfig.u30pro": {
+      "sha256": "32fbd94b6b7b90b08f53ead42fae22fb05eac04515dcb0c2e959fd0674ed39b1",
+      "git_blob": "6cdcf0edb46255747121e9844fc2a4f6befea767",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/power/supply/u30pro-sgm41513-values.h": {
+      "sha256": "ec8436c51b11b0f1063dcb4b4b4f4801c7241f1b61bc70a11c4b6e17e90fa8cc",
+      "git_blob": "1c41007be5107ffdc09cd9737079b8928c9895b7",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/power/supply/u30pro-sgm41513.c": {
+      "sha256": "604a09d3c82ecc46610dc401ca871045b23b90b905063e86ca56c367b6726d31",
+      "git_blob": "ccad94e335b2c15f42170610e13455d2025a578a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/power/supply/u30pro-ump965x-fgu.c": {
+      "sha256": "c30e0967b9b05a0c503bd6ff5b20a4665008afd013b9b4c9288dca87bd5b72d2",
+      "git_blob": "4cc8045de532e91d85310a4acf072c90e0f83a3e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/pwm/pwm-sprd.c": {
+      "sha256": "a5fcec55bf8e01b0789ae1ec0a229b7445bd6ae85a417d59b28da94bb1a122db",
+      "git_blob": "f9dff6ce477947912afa95141a842476e44d2b17",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/regulator/Kconfig.u30pro": {
+      "sha256": "f0a5b5d0275f14658ec0fb466f2b2d3a3d310725f462ffded48e875089810368",
+      "git_blob": "58e5437b6bfc4c4f56a8545cea2680fd3e13aad5",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/regulator/ump9650-regulator.c": {
+      "sha256": "323f5b68fa199cdc472ff3a01854b1cfb458b3def9a27297ce4ac00a0ad566e6",
+      "git_blob": "172d4a2b009fee90d8fac1bef9115b63f0961481",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/regulator/ump9650-regulator.h": {
+      "sha256": "b16dd655cb625788c2815642e7c919fe859ed4a9424e3b19df55d677d7313ef6",
+      "git_blob": "4780a8705b8e5f06cbc30403400c53acee5cf5f3",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/regulator/ump9651-regulator.c": {
+      "sha256": "5652f949ad3ac6ecb290777cccfa276b11a262e049d3408df0d0597ebb23c6bf",
+      "git_blob": "fefec5ecb144cc2b5e3eab61e6afc0b5a74dbd2b",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/regulator/ump9651-regulator.h": {
+      "sha256": "67ba240340cc76fb1912fa1aa2ed4222a6155af1ab32ec17d23c81ca6ceb62e9",
+      "git_blob": "93b250af62cffd9830b1c44653e159087519397d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/rtc/rtc-sc27xx.c": {
+      "sha256": "49f03679829bc1b992713269b6421ab77a3e524f293822453e0eb7aa67bc9e69",
+      "git_blob": "aa2ccecee6707690f7052737db31fe29241c56cf",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/spi/spi-sprd-adi.c": {
+      "sha256": "5874f7acf95f7b8d074907389f9f97f37258a31f53baaa1e116be4942263d8ee",
+      "git_blob": "76a5d4cdca36ab8205d324b4c9a75518b1df363e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/spi/spi-sprd.c": {
+      "sha256": "05d1394f3869f34f04c232895fd31bd0f963d80ca16b6d1ba4a63bc5a12f777d",
+      "git_blob": "ef1801ca8eab0d8c466c9fef4788c3848466f74b",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/Kconfig": {
+      "sha256": "be2eeea729c778ef8009779f8b378325f3f0ded2bb5796bad8a4c823a13007ff",
+      "git_blob": "781fa55373b4f7e3347dd7a20d0294baec4eeee6",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/Makefile": {
+      "sha256": "32bbe6fc27f198862235d1db5f06e0ca71557fa7dde8e4f2421aaa9f93bba4e5",
+      "git_blob": "c57ed19c738ac1b6872abe40db7b3d85b09aa829",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/Kconfig": {
+      "sha256": "6c1c6e0f9b30d20141e7c8346715aa096bf966280ecec4f3075c28b36bc58121",
+      "git_blob": "2a6c18d9d88525ed0c8901e51a20408f327ce6bd",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/Makefile": {
+      "sha256": "3049f3a001613805eeccc3083edd0993dd5fe9ea9342e2a95addf327de9aa206",
+      "git_blob": "c935e937af0ee8b91416e3a74b6d816178c43457",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/.gitignore": {
+      "sha256": "0ac2b2016a5db317fbac2c4077bd3dedfa648e2fddf5ffaaf9dcf71097547449",
+      "git_blob": "c3c2d151e157bb0a977cbc7d4e64e83e3dbd205d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/Makefile": {
+      "sha256": "6733028d2d86f1649c51537c92a2a04c75d00a66b3fa98d3e3895de5b4c00625",
+      "git_blob": "bcc462e24da75b03c57b382d75c19d3a23c31ab1",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aic8800d80_compat.c": {
+      "sha256": "43ad158ba93275a1bc66b14a1ef07be1fa0af803c246acd3896f47e62af7899b",
+      "git_blob": "ffa9f75e142571361426948f9e4c636cba187c2d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aic8800d80_compat.h": {
+      "sha256": "f5bd97fa33c2715764becad919f5197830e558f96f22cc797329b2e0a42a9522",
+      "git_blob": "6179c47388576c1254dacb6339d6b254f3803711",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aic8800dc_compat.c": {
+      "sha256": "6d280b1c0c610dee3b2b0db51180c19431b8173b2e657921748212a267d341bb",
+      "git_blob": "8efd2b81e194d7cecd41f760ccece0b7bfbb48da",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aic8800dc_compat.h": {
+      "sha256": "dbf17dbb3cdacfcb3690623aa825d89c8252c6cd7033e1de2058051c08c6a6a2",
+      "git_blob": "23b8185761eb316662f92539699e66769e538614",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aic_bsp_driver.c": {
+      "sha256": "429d0c6455887632a9ff709354c97cb61a0e9819cbea8b9d383631ad9d066a49",
+      "git_blob": "b396ef0506d0a75f560e727201494c7d62b0429f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aic_bsp_driver.h": {
+      "sha256": "c8e3f10dc5c56531cf832faeaa8b71cfc02450a1ae65c645d0e5104783da671c",
+      "git_blob": "2b337dfa4328cf7f921c4bd37bc12dde11f146a8",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aic_bsp_export.h": {
+      "sha256": "ea6f11c24c5c661f1fb4f5df8d91000a8788295ffdafdf149e51a5f99db92a10",
+      "git_blob": "ec08b5b3337baa546720cf5e700163c7636935e4",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aic_bsp_main.c": {
+      "sha256": "cfee93dba37abbc35ea0f791eae561d31fb22cdfe52e19a7259dbd174de941eb",
+      "git_blob": "6ac8d8d6b98898fd42946fbd882869671ef63a15",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aicsdio.c": {
+      "sha256": "656a5b34ca03de7826836ff1a4e69f3bd7bd65b4cbd84f5dea88d5196adee6d7",
+      "git_blob": "60c15b50c3fb67205083bdcd56f69550d7bf4743",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aicsdio.h": {
+      "sha256": "e30aa0b019bbeb12958240d6993d14786bd6aec51bbc82d3659d382b7fe50c31",
+      "git_blob": "45829cf6a8a54ac3a9dc0a786ce0abe190386a56",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aicsdio_txrxif.c": {
+      "sha256": "8842f7b0d745d162ec391a703b79962daea889f2656ac613e99f838d9434fe53",
+      "git_blob": "5ae8f1ca9a80cede824f98084d38b01e36f587c1",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aicsdio_txrxif.h": {
+      "sha256": "d9b41f9e2da025c6941999553b3554347c14b875194664c029bd5c5d7827df17",
+      "git_blob": "f2e75689cd3a4caa0269cef2f313ba6fcd223080",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aicwf_firmware_array.c": {
+      "sha256": "b8af49fbfb8616b7b09ae0d21656803cc1323b00e95bbe33508bc3922ed25771",
+      "git_blob": "77130f76bafa69014da827fe40d6083170d93f90",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aicwf_firmware_array.h": {
+      "sha256": "40ba394ef5d90e23aa849e475bc7fe3954f127c18affa109374ca793dfb77db2",
+      "git_blob": "dcf38e9ba30260c67968a0918b620c6368ff5750",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aicwf_txq_prealloc.c": {
+      "sha256": "9ce8862d5e284eeb01a3ecb639fc908c9b7dd30219a2ccda3d8bf129aab2a29f",
+      "git_blob": "9514c416b5d6013cf7c479ea189d46670f6995ce",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/aicwf_txq_prealloc.h": {
+      "sha256": "4acf72939ed8c8dd4ba709762b1d14995d395f7192c64f47558b8d6609a8a707",
+      "git_blob": "ce4ee07473b3514d461045149fe7609910d10f09",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/md5.c": {
+      "sha256": "e07717fb6b0055e95e9e2fe2db673ad52989b4c3acae05f7f8e9bafb56cea989",
+      "git_blob": "3d7b65375adbf6da6fd28ff2eeee41eaab9cd226",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/md5.h": {
+      "sha256": "435d937562b40bfa2f44e0d0d82f0545d9799557a05afca936ffb0fe9e015937",
+      "git_blob": "6ed5c0f8e88683087e20a8b204c2c92760942143",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_bsp/rwnx_version_gen.h": {
+      "sha256": "a8ea23dd0b2c5fc6d006a297223dc11f3a62d98fae44ad892f934449230f50eb",
+      "git_blob": "33b5c1a95634708889d75d3f83ef45deda5505e7",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/.gitignore": {
+      "sha256": "0ac2b2016a5db317fbac2c4077bd3dedfa648e2fddf5ffaaf9dcf71097547449",
+      "git_blob": "c3c2d151e157bb0a977cbc7d4e64e83e3dbd205d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/Kconfig": {
+      "sha256": "fe2bba896ed398729ba98a736ba785e0b44e12db26b0154432a72ff35d12eff5",
+      "git_blob": "c26f2b4af23cbf8a58eadb3fbebc3b1a2ce7fac3",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/Makefile": {
+      "sha256": "356e0b35b69f5264cd8c7155cfc46cb703d70e281996e98d2729d04790bd81e2",
+      "git_blob": "0ea15763599676e88e38b718ff6d5748f0f1f618",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aic_br_ext.c": {
+      "sha256": "d4d012dc670f0163a16bc818d35e46e2c45894e87fde4187a51f89d058ca0fae",
+      "git_blob": "dd038e39f3fe6fd33c8bf45dcf0f47754a939e30",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aic_br_ext.h": {
+      "sha256": "d63a28313676a1b9db31d451f7f4498c1f482ba4d3a4c75242db0c3822992e12",
+      "git_blob": "71ebeb293b8e975c8c65643c54614eb58423f578",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aic_bsp_export.h": {
+      "sha256": "60bfabe00992dd52fcb7e1ca54488c70c8482c79b46281fe6f23f839e3916db8",
+      "git_blob": "3c1fcf7d5148ef771671571f54d1be5de1111071",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aic_btsdio.c": {
+      "sha256": "ac4c138abf114bca3d1ce0e35b25ef98f8d5a9a3c6b99676ed18a11450ecf908",
+      "git_blob": "ba26a37ef6e71cc5af53235841dbe322e9f0b120",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aic_btsdio.h": {
+      "sha256": "3e51d9bb4b5690923a8be8e965f14846e76b7a43b61381b0b02b864cb709721e",
+      "git_blob": "153ba49d7c55cc31e6abf87fa9554904adb60229",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aic_priv_cmd.c": {
+      "sha256": "e672d6b756701b11fc8bbafeda2745992b802844b1267759952ac2c7fc0fb8d2",
+      "git_blob": "e1a608f503d7aa2ae9456351a8c245e6ff81c248",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aic_priv_cmd.h": {
+      "sha256": "a809086f05e3bf02c5bfef3628521104c2965f0551cea4469f78de9d70aea2a5",
+      "git_blob": "7449190f58ada2c3d0cc5572736958b61a19ba2a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aic_vendor.c": {
+      "sha256": "8ebcf230298d27a71d7cd02abaa227733ce57d3dd3be26730baa53d28f16cbee",
+      "git_blob": "950d0d3d506f7f9f523ff8e5de89a0f4272f0495",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aic_vendor.h": {
+      "sha256": "c45150044136110b79581a50b577683967210a19cbf99dd1dae90d906fc765fe",
+      "git_blob": "aacf526e5081ab2f7b1c1c4cab2cb96ed3653640",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_compat_8800d80.c": {
+      "sha256": "d68df2c6ae313eef0d4834d6f940e6270c8cbdbb1e91e8df94d1b246fd5d980b",
+      "git_blob": "8dee7597efaddd6e0e56316f9adf88d38d06e1cb",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_compat_8800d80.h": {
+      "sha256": "f116744b0f37a70de969c822e9972f1dbd0b54586f808de9bea46f59811284f0",
+      "git_blob": "e7657741483451b551666ffc6702ef3a67c68b9d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_compat_8800dc.c": {
+      "sha256": "6345de82b3dcd2f82005f9c914b6c24d742229247c8df4051af121e622b3c06c",
+      "git_blob": "3e68283f6dc7dbdc9575812375bbd1390de8ac63",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_compat_8800dc.h": {
+      "sha256": "da6f4c028a16963b35bc5d921fb9dcd806703e3d0b65f0bb1eeaefde70f7c2da",
+      "git_blob": "249703b68389976af49126517d8d0cc4fb567912",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_debug.h": {
+      "sha256": "91cbce9066d3733d3a0410f6e12a4033bafd2fa18be5900ea00fa6bf68755914",
+      "git_blob": "25a5766567ebf7f88bb8b9f5279e41614fb11c19",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_rx_prealloc.c": {
+      "sha256": "30ff6a3b15e7b0037042c1f0c91b0c32b59af1a4edf32c1da3a880979c734403",
+      "git_blob": "5d6b0e056ffec5d52835f566598f92b6060d3ca7",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_rx_prealloc.h": {
+      "sha256": "c10b6ba84fe0d3fb5ffa791cb220e699625de1a6cb3aab314d08e6f290f272ba",
+      "git_blob": "64a494aeef1627162fd5edeca843cbe3863d85d6",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_sdio.c": {
+      "sha256": "e8fdab7cc2c01bf61ec5ebd81780503758b6c95c74087f38f259a2b8b49dfb25",
+      "git_blob": "3172b76b334cd3df8839333bbaf7ac67757102b3",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_sdio.h": {
+      "sha256": "da33be0244d3accb9868a13c3c3f07e0ed4767587f1d087e73db77f4fde8bc3b",
+      "git_blob": "2857d9d0e7b2a9a9e3a609a152098a645217493e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_tcp_ack.c": {
+      "sha256": "039b0c639e1c1eb579044a4598fafafd0e2ea84b8326372010d7803fd176f6e5",
+      "git_blob": "ca47b26cd28caf5f01f6504bd13c4081f4cfb0fc",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_tcp_ack.h": {
+      "sha256": "59d9b3839581330e3b3652718102843d9ec6db911d3d0cc20bceebb5fd24d3c7",
+      "git_blob": "542023fc577c7c102c38fa06af7e799c76b852bb",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_txrxif.c": {
+      "sha256": "ad7f7ef34daa5ecfeca4cc438a362976b165660df75a3ccdc0b5e34ecf0db1e5",
+      "git_blob": "da27f542a80e2bca2cbf403b1384794033713e58",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_txrxif.h": {
+      "sha256": "6db30fd80a036e435975869fe6de2ed0fdfbdc9e11111aebed34eef830a2a52c",
+      "git_blob": "a7bb0c7d033472367f23d0d1b274e54138491671",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_usb.c": {
+      "sha256": "ee2b00330594a89669ef6ba2d33fdf09f7b426d84e038a858de43103b91a5b62",
+      "git_blob": "9344217c2256b8470c3437da79cd03d7438d370b",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_usb.h": {
+      "sha256": "c4ffa056bcaa733d63816a0626c5e43e9c4a63c4fbc7de626c7a8fff17488582",
+      "git_blob": "cc3619b2dfe098a47d0ca245969753eea96641e4",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/btsdio.c": {
+      "sha256": "bc0a98d0f19fc2421d8d96e20831a4a3ee02ab28d72b134fe6e4304da4f1f0fa",
+      "git_blob": "81c5c1ae1e98a3c171db9d33763c48f000a12c21",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/hal_desc.h": {
+      "sha256": "c8eda793e69c4d1343e46bbd009e7ca5e66638e49b4fc5195f71bcfafad850b9",
+      "git_blob": "e2429283314be85a2a47097c043632e6a7ea271d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/ipc_compat.h": {
+      "sha256": "be303843cc152af85fc2b05bcee5eaafa64ee78286b6830a01e0fe9d9192d600",
+      "git_blob": "069f69ee5ee0cf1336bf652ebed33a9eb11bdc3e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/ipc_host.c": {
+      "sha256": "ef550a57eb3abfae55406f5d2a4434a2eacaf22fe9d0c8e11d3c2d4b0fc09879",
+      "git_blob": "7746f4097976a5a188b217a3e48c057472ec656f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/ipc_host.h": {
+      "sha256": "33249b941ef33f476054c4569545f865d5d33b0c63045c804afec06ebcd9978c",
+      "git_blob": "583b66889aa4245cb095b0e8e08ab4bb5de2be0a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/ipc_shared.h": {
+      "sha256": "5883fe0961af57323e47e830c6a72ea8ebe9adf460513cf715ae01b60a5ca119",
+      "git_blob": "7e2fedcb1b53f7d120fabc8cbe655d1c9d131cc0",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/lmac_mac.h": {
+      "sha256": "aca9d996c8b29d599584e6dccc0c0d40825c8321140fe8258216bf3290911726",
+      "git_blob": "2753d4d23253bc0c7dd736cb8ca86157fad23169",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/lmac_msg.h": {
+      "sha256": "f9b098b4735f3b9d77bd6b76bb5f5fd81a96f199b1f1b7bce88b8ede1b905294",
+      "git_blob": "cceae54202e35ad56c31c70fe2412e9e895ba191",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/lmac_types.h": {
+      "sha256": "90a8d7471e1f738cfd951c2cc6e362f06261fe4ed848b554d0a8b5fdcb1a209f",
+      "git_blob": "83b112290409130be0bffe64aae9221e08b04f07",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/md5.c": {
+      "sha256": "e07717fb6b0055e95e9e2fe2db673ad52989b4c3acae05f7f8e9bafb56cea989",
+      "git_blob": "3d7b65375adbf6da6fd28ff2eeee41eaab9cd226",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/md5.h": {
+      "sha256": "435d937562b40bfa2f44e0d0d82f0545d9799557a05afca936ffb0fe9e015937",
+      "git_blob": "6ed5c0f8e88683087e20a8b204c2c92760942143",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/reg_access.h": {
+      "sha256": "b5972da5734dbf937624eab4c88bb5de212b29bddf4267d4e6090783c5fc29ea",
+      "git_blob": "568146624ceefcefd9780fab90c7820c3b666441",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/regdb.c": {
+      "sha256": "875bbb9ff9117c40ebfe97af7bb706f0a6c6506a810f98930fd1a876a5ddf600",
+      "git_blob": "260a9d27468ea98b6aceecf7e06cd2454b0641ae",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_bfmer.c": {
+      "sha256": "7ae547965ee140e36f0d031901b2e9d2945d6f63a1ed6d06fe437f8b8175ed25",
+      "git_blob": "b39cf0f205a38f297591a72ce22662f3c22c6a8f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_bfmer.h": {
+      "sha256": "e861fc8456a810a1b6d0fe897402dbf86e8beca5671c587594ef1b37ef85fbdd",
+      "git_blob": "4ce16496ef2e47730a47360355dcbe1c94853eab",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_cfgfile.c": {
+      "sha256": "d327c0e155e23fec097637a2992167dafcf6ebb38456c7807790e2197adae7f2",
+      "git_blob": "39a5a251482abf8512f98899c3c562c45a0618dc",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_cfgfile.h": {
+      "sha256": "54b6bab33a10ce12e3d553330d73ecbc238b21d17a211366bace1d21d90dd72a",
+      "git_blob": "7dc96fe5862bba2949a527f83b4d6b38ee0189db",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_cmds.c": {
+      "sha256": "65b763a1784d5da6dd9271fd789912f0937cb6a830467ca45129022c0e517f36",
+      "git_blob": "927bc5b75c8ff80c2cbe152db66aa50b3749cb19",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_cmds.h": {
+      "sha256": "96d206eb902c818359fa071b1994c785b1775845ffa6466e6572578cf87c5088",
+      "git_blob": "d1ba1199419334718a4639869c7af016e947fad0",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_compat.h": {
+      "sha256": "01da39a81859591e6d44ba552ae91b2bcb60527ae6051af4572cae57525022d8",
+      "git_blob": "49f5cdd032a2e91dea61bdcd5d79d1e3e60d89df",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_debugfs.c": {
+      "sha256": "daf32659eac6d77c93912da1856200e7b62308cee8ee5f78882c20e21345ce77",
+      "git_blob": "8b6481c2aa78196a3a11e29f3af6f4365d7bf3c3",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_debugfs.h": {
+      "sha256": "e675ded631239a082973d5352b02c04d81f52a7c765740b164a32798d38463c4",
+      "git_blob": "7f5c7c9c575d55626bfb8c223780b2370a737c45",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_defs.h": {
+      "sha256": "3d4fde2bb0785897a0e8a154bdacc7c8b4a31b2d2b8edec75ca7c0aaf1a68089",
+      "git_blob": "12fb629f9f26ec5e35e53d349c193ef9aceb786e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_dini.c": {
+      "sha256": "57891d1705466198265c6fa572fb9f52a2b36e9c52a4916f0f58c41cde5b174d",
+      "git_blob": "17d55da1156f4ab43c5db39a719dbdafa3d6bf8d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_dini.h": {
+      "sha256": "34198c6381b404add1269c99a17b4f9aba52e91311aad9aaa28ef53e04cb517e",
+      "git_blob": "d9f57c10ed4f0fa338dffc32a3b280e7201fc46b",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_events.h": {
+      "sha256": "7c579fee62eb4dd38fc65ab29f58ffafaece03921470ef6495e763b9648e2e20",
+      "git_blob": "3bd59807f663d07b5605c367d9f53183adc99ecf",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_fw_trace.c": {
+      "sha256": "57b6fded225ccb4db4ba8289d63203d8760675d9516d48bad230e94a62b566f6",
+      "git_blob": "9151c8b81f5950ac6404eeab56b76b30ee235bff",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_fw_trace.h": {
+      "sha256": "46497245626429922a5787329617b5a20710508993d8fd69a52487b33e5544cf",
+      "git_blob": "7956790957c37d71a1aa6d4af9a6d41be7fb0ebe",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_gki.c": {
+      "sha256": "1dd635ecbf5a84ea1dc00045565d6f3301822c71a64d6848d396956279fb6b32",
+      "git_blob": "7f6333d91e598ccf1573a1da517c78cb257c33f4",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_gki.h": {
+      "sha256": "89017df7efe6471a9cc5846132960ea6160ad1dac18c4f1d93c0e77bfcc346d6",
+      "git_blob": "a41f578322797b253fa400c3ed7a0d476d64d004",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_irqs.c": {
+      "sha256": "efcbb0059f9fbf9ace8ec1fcf4297ee34a31814c07fdd738b7581b43d6df11cb",
+      "git_blob": "8ba95b703f17d5da641a784e5cb9affa00610963",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_irqs.h": {
+      "sha256": "212687d1ccf0813cb160edb064c192063c3ae9028521f8a9aa29e3bdd45e3130",
+      "git_blob": "d3fb4519c615482dc33c38ee10a151c4ce16dff3",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_main.c": {
+      "sha256": "d1627dded9bad9ac35a69489c628d1c978aaad1d8151ac2d7d213cc6f0780b24",
+      "git_blob": "c04a63865baa2ba51e62abf6b34f1b4b4852cf2b",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_main.h": {
+      "sha256": "ebfe5736d13070d13867613c960cf6dec11e0199e6eb099d2a9a9b5f5813f5c9",
+      "git_blob": "16e0f16ea8e87409342531e95f5bd282937d279e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_mesh.c": {
+      "sha256": "e6ad6aaa985adb71c1f4c6980c07ac8fa3168bfaeb5bd23269b9365d9b0d227d",
+      "git_blob": "8773db61a6640e13e0f1ab40c1cb8372f27c94ae",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_mesh.h": {
+      "sha256": "fb4ad26bcbe80d43cb46030ba80f5dd147ec61bac43ec68966e9bec8a213ba68",
+      "git_blob": "db8950f160de00d131a65c3a3cf09b28171d138b",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_mod_params.c": {
+      "sha256": "160c4af1988be2f4ab0bacb3a6e9a8c7b3b6586422688d4c53a07f6c9861687f",
+      "git_blob": "6a7e1f8ff6e30a6003e755b40e5894215757c7bf",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_mod_params.h": {
+      "sha256": "2c7d4c3fcfba4ea8fff1315e404d142a3558ea8e580f4a17547f1a345f26972f",
+      "git_blob": "ef31093fcadba9f8e1a943333b68ec66cd1cfea3",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_msg_rx.c": {
+      "sha256": "fa96000fabede1dbfef7e6d0aff194017563f3352f65ebae608dfb864e94f25e",
+      "git_blob": "8d460921a7772e04b1bdb5847f9e49e20956ba58",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_msg_rx.h": {
+      "sha256": "b90830a08607da0bd441554a64585d4eaf492de038af01a6bcfb3ded25d2c4f1",
+      "git_blob": "b5556d160ff086a459a7215e21ea69941be2b817",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_msg_tx.c": {
+      "sha256": "030b20b74960e5b38fa8ddb9e0ba16c65e4b820b9a4278d8ad7b669404155e0b",
+      "git_blob": "f154ce093607a180c8aa01b7ef1dfa1fb04eec5c",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_msg_tx.h": {
+      "sha256": "496b18fbc6e894f3d21c64ab68ad0c9e947f8e8fa3e44a5da5fa48e1bf546408",
+      "git_blob": "7353f29ac11366cbda9580fbddaab0ee9a8397cc",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_mu_group.c": {
+      "sha256": "14b1af360ab1688b69f28ac31a627a60eb0a6e4fca88d8a3720a72d34352f0d2",
+      "git_blob": "538f14306afb9421627f82828dd665558b0ee58a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_mu_group.h": {
+      "sha256": "483e100c1b7108a8d34cda819f37993896780679209177e747d8ec6f9e9dae97",
+      "git_blob": "c24bb0396e9f5b25ad920e180bc4aebe54f218fa",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_pci.c": {
+      "sha256": "8748fe1dfd5a7c4b92e42c9e0dd57e17575f69b6bc9e7260ba696a529701d7d8",
+      "git_blob": "40dac946536d8c31900c275f9a1ea00dfe6bb6cc",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_pci.h": {
+      "sha256": "8ca56de91235fbabfafa0de3237c17d265ddb439fe1e90bbd241551f839b7053",
+      "git_blob": "d81578cbef484b05f5b618bcb798dee8b4fa1614",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_platform.c": {
+      "sha256": "377ba55c92c1394733a05ef20dcc7252df3e9c8a62b44d63d539f4efcf46ede7",
+      "git_blob": "9a4dfab9efcac690374c8f44bb2d9bb289f859ec",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_platform.h": {
+      "sha256": "6e20b3c8b757d455d230d1235258750e1e096b524887c1e4afc8790fe12c085d",
+      "git_blob": "9fe451978950903bb65f9b07f6f37bf8a2bade15",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_prof.h": {
+      "sha256": "8fcba2325ae323d86105e084e5db076ac5b53647fccd613afc48fe1ce66086d7",
+      "git_blob": "5442f588212febeb02439409e119861d08e81081",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_radar.c": {
+      "sha256": "41bb749fd65cac3e75083a30b9890f6c02372902a122f9f5e3a74fc750dce127",
+      "git_blob": "05cdd25f864c34e26d9dc6df64118779648490f9",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_radar.h": {
+      "sha256": "9f47644fc55897a385597b37376d10e286761b1c07e8b0a20776e7e8404d79bf",
+      "git_blob": "8bc36f527f62f2c83f6f208385ff0910dcdf88ae",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_rx.c": {
+      "sha256": "d94b43e1a5ab14cbe1f8728857ba99184e1b71d75c3ae51e7dc9bdafb5be0139",
+      "git_blob": "adedcc8d51e69ce33be398923ba191a67fc7af62",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_rx.h": {
+      "sha256": "6e38efe3709b24f4d92936ed8bfe1bfc414a679ae167c8dc4163a1c9833394e7",
+      "git_blob": "b831bc8e4012def43e97da1cbde792b66065ff83",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_strs.c": {
+      "sha256": "47b08c6529be6a468ca713c2cdaa0f0a7e0a3417fe90ab959081e54582a013b5",
+      "git_blob": "52ffbf64c6fb821f17e9e4782ecda934bdec24ff",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_strs.h": {
+      "sha256": "85ffb31e5f6444506bd132998fd4b5cd607bd54f206000f4b5a3dd5741ca2aa5",
+      "git_blob": "7dc83aba8beae8aad002ebcddac216979a4df43a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_tdls.c": {
+      "sha256": "896687511fc43fab0eb941c6f7e6647249ff969e42b690c69402223dcf42a09d",
+      "git_blob": "34196edac50894c0a1da4c28214effe85530546e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_tdls.h": {
+      "sha256": "4746e09c4272de3f29c9fd7cf072e99ce140fc7eb5f64cf95226aff6cd9a176c",
+      "git_blob": "590b420f6ec6e5ac13d3daf0a2b49eacf7d7c356",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_testmode.c": {
+      "sha256": "16085a9e8e65ca0c1ffec0cbe00203b88cc916b1d832a5783d893876f2e7f9fa",
+      "git_blob": "ef97354d08df3423391a94fdbea73dd2d89c4774",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_testmode.h": {
+      "sha256": "909f29ed36519b3e6611b5f5f672fd524c88150a5e7969f9dd70aa2e6793d0c0",
+      "git_blob": "9d1bca47eb504d2401153e34a7f88071dd3c2731",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_tx.c": {
+      "sha256": "1897852a935f8a7adff598746be7775fe18a5059e696ef0409274ffb00741bb7",
+      "git_blob": "d930402af512919848452cbc49364a1342268f0d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_tx.h": {
+      "sha256": "9e6c7b7675c0ffd3cd1aa005c591e2b97e92568b7adad45e6bd6797fcbf6817d",
+      "git_blob": "b7c863ff32844aa46412878695b80c27ab4eb29a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_txq.c": {
+      "sha256": "6608237cef9966358b0c6efcaefa784127f6034c6fe9afbb69f59243635dac7f",
+      "git_blob": "5468c3a5e0674b4194e96807e305c4a635b296ff",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_txq.h": {
+      "sha256": "3148955d4e591381ca62199d7a9b3a062764b732acb6e35f928acaa270658c7c",
+      "git_blob": "9653d014bf70595ca1c9a20b81cba7413767bc52",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_utils.c": {
+      "sha256": "67f8d9974584061233f04d6f9f334f4a3537aef70154615db48f456564ae9e1b",
+      "git_blob": "6b3c6f29bf10391b7a78966810cb36a2f3760223",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_utils.h": {
+      "sha256": "4da573b7c2e6d969c7e94502bb2f9d68fa780e4223e8449b49d3095cd63bb174",
+      "git_blob": "f71a601c2af36765b59cd6097f0f5261b38c05c7",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_v7.c": {
+      "sha256": "b476ed8361752af56e62d64b81d46671164061f520df17dcb4fd0155c15439bc",
+      "git_blob": "72e3c850b48e681026335fc16384b0568b9488b4",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_v7.h": {
+      "sha256": "84bf438291770c30ecc012b6aa3f8294dcb343d0db6dd77f003fae31df61953a",
+      "git_blob": "c2e39765ae1ce382fee54d58c62dca012a5cd20c",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_version.h": {
+      "sha256": "f9c102733deed8297c2e985eacd3e585ecfa44c366b3b86e4e6991f8b7cf5aa9",
+      "git_blob": "46ecb5de1ca5c033e82ef887b461d0fc179c9508",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_version_gen.h": {
+      "sha256": "5c8e214a6168826cff06a54aad934810b152f6fefce911f2d84b58e67e02e840",
+      "git_blob": "3707d54858bc1b789829ca0e093ae85e1dce5706",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_wakelock.c": {
+      "sha256": "44183b479451910974bb9b91289de03279c3eac7056e23f7fd60e1f52633bd31",
+      "git_blob": "1d1529627e5eec5d963349e84f8d02a84d1620f5",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_wakelock.h": {
+      "sha256": "fab099ae2d57db7397520a090d088e96a5223363c5a698df4d4880d7b631eb29",
+      "git_blob": "9c9655a46be2fae0382c7432e5836b462f5f60d8",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/sdio_host.c": {
+      "sha256": "7c31708f3ab180a883cceb99952f0471f08de939bd5ba78e577c46bf338f6c64",
+      "git_blob": "f59409946e39fb1719b3125ffa91beaa90b3a695",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/sdio_host.h": {
+      "sha256": "ec88711f70bdbf71b269ed8fa5190921d21f1cde1986feb946ac9415dd9266b4",
+      "git_blob": "670e9e08663d32a28930140f974276dc11620f44",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/usb_host.c": {
+      "sha256": "426657ed84277c360ebe3bff75141c2fb3875f9b8296f02e43f3e20cc25afdc3",
+      "git_blob": "c5c86d0de27b81ea8d592f32346b8a02a592cf9d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/aic8800/aic8800_fdrv/usb_host.h": {
+      "sha256": "d68dce35a96ddd959bfacb16d2c32e23fee8120c50be33900f0a3a183f0334bf",
+      "git_blob": "012b90c9770afbaecb8a96631df60d3d02125370",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/ase/Kconfig": {
+      "sha256": "2b2a2b641a328da7b31f1da4da87fa61897fa4bc55b18d3e38cd5fe6e70641fb",
+      "git_blob": "b9479a0dc4f92e8dba510b5988ddc62b9a48a6c6",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/ase/Makefile": {
+      "sha256": "2638413c10719b27a3b3c53e3fe876fe5be18c64792281d65dc97e4a338352f2",
+      "git_blob": "366ab3807eb436310ea147442e9898e281dceb9a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/ase/sprd-ase-generic.h": {
+      "sha256": "ca7335e17bc0ce6649e86d99a84773d93e0164c3cfa7456bbd40d78d4427c15f",
+      "git_blob": "6a88529f64d3ef09a3931f592b0c0f01f438eef9",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/ase/u30pro-sprd-ase-generic.c": {
+      "sha256": "dbb7c17a2dca14d48f4b33d87e0a231dc715d197e0a02c80e8aced2ae7dd46d6",
+      "git_blob": "82946ddcfd497b4bffd44de257cc011c419eada3",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/ase/u30pro-sprd-ase.c": {
+      "sha256": "eb195dfcce21ca8d0e382a836f4dd11defeab88ac8b36e3f3b4bfef2b2f58c3f",
+      "git_blob": "b60306c7e6bf64a6d822111dba43d1472f719131",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/cpufreq/Kconfig": {
+      "sha256": "2e9220a1f9a918149b723d3c1560612de849a5eedff1f2dc22c8cd49bf14a290",
+      "git_blob": "0644c94a5cb231069910c8e2c3eda10a890f77c3",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/cpufreq/Makefile": {
+      "sha256": "1b4f05dd9bc1ea17590a3b1c02825ca88dca4e9a176e49b3a050ec5696b0da7e",
+      "git_blob": "bf6426b7570af7c9c5b2d93842a299cd24a2ca86",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/cpufreq/sprd-cpufreq-v2.c": {
+      "sha256": "ac6011078a7c0b6c99293d3f8d955f7ff9fdea7a9a7009e0caca26f9120df079",
+      "git_blob": "86fccdb872e584b8fa46229fdbda95c4fed14fb5",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/display/Kconfig": {
+      "sha256": "32fb8a646432ce4d8469d90490df4377383658473dc609d84b48423ed17e63c1",
+      "git_blob": "1c1a2e93339afa2e85bc58fc85bc4c7d036ff457",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/display/Makefile": {
+      "sha256": "7736e461c9552702d30ddc04c584a2510cdf0e558c43c0df664ff695f94dc6a3",
+      "git_blob": "a838ced6a08f4cb6b7ef91f9f0d2b4f129691041",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/display/u30pro-backlight.c": {
+      "sha256": "36de8e5a3f787cc8ca6dcad39ff955201293e91945cadee2e594e4efa8a44d1c",
+      "git_blob": "cdb0420f27185f92ae42ba4abe1e8fd42eec75b8",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/display/u30pro-nv3002c.c": {
+      "sha256": "85846b8055597791c01cc4f78734148e1dfa6e4fee20f5bc53158b0b091451b0",
+      "git_blob": "c1730998ceb26911727bea406a56a26292a3fb01",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/display/u30pro-touch.c": {
+      "sha256": "81856f3c42f78ccbf3c01ed96198f5a392b2a98044c4fba7b16f28595a1ccd4f",
+      "git_blob": "9007de0a99ef96b9ec8db4eba59d61da44b50662",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/hw_random/Kconfig": {
+      "sha256": "e864ceb21e0ffd7a1adbce4022ae6f33762b0762ab1a1af7255578b4b35e5b64",
+      "git_blob": "55d1f441cb7cba5523effe1a02b9003c5dcbd2d2",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/hw_random/Makefile": {
+      "sha256": "abc32526da68abc9b645f8589b8b27f2fc0aaaf730467b78e833e075d0488000",
+      "git_blob": "9cdad30f0f1bf715d501db1ad30d115987b26c44",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/hw_random/u30pro-sprd-trng.c": {
+      "sha256": "5139089a4f94be0ca1f2e633794c7e3223733514ec9fed719354b2db3b338293",
+      "git_blob": "5d31b5bfbc3f2c711e59c3a2084818e3ce06af0f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/Kconfig": {
+      "sha256": "a53ae047185b27bb918c60c105d10164e7b976da823742a0958cf3c0c55773ab",
+      "git_blob": "584a646fbf4c5db64d3627afef2cf0e867bfbbf2",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/Makefile": {
+      "sha256": "33f29a2c54a49953e1f4e89581dd31c4d43ef36940f89a0c2860555d659ac833",
+      "git_blob": "ec771663b8bf4d003c85d4eb36051da8eec6e396",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/mailbox/Kconfig": {
+      "sha256": "c5cc177bf6410839a5d6fb0c9773aebd0ae34615c334fb96f65c38651bf61da1",
+      "git_blob": "eff66b1bbf5385e4ee15c3ba928871b578d2ccba",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/mailbox/Makefile": {
+      "sha256": "3d123a5437c89b3f6e9a3d07499974ba806f54888ce49dbf9ec25d7ea72839fe",
+      "git_blob": "82e64face5d839e98a5678f7d639ca41eebb6f41",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/mailbox/doc/unisoc-mailbox.yaml": {
+      "sha256": "8babc553aa6e32c42c8b8f1ae28f2238901b0e6b68bfc5130b3c014d624c58bc",
+      "git_blob": "e7a8c505d77e000154f9f9deac1927d3f1e37e90",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/mailbox/unisoc-mailbox-hal.c": {
+      "sha256": "d40030c104a079968129eca41e6da48bba4a6861d50275d8fc04b4a49af5b6fc",
+      "git_blob": "e095db7e29f6b986cdf6f6bdbd054985d6b91cbe",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/mailbox/unisoc-mailbox-phy-r1.c": {
+      "sha256": "21b100587ee2bc552d75d21e80ad51e44ef3ef72f72a44e7b0ba113abbce9239",
+      "git_blob": "245cc0bd23417ee5909a12eb0db7d8c2ba4893b2",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/mailbox/unisoc-mailbox-phy-r2.c": {
+      "sha256": "15603381122429f406f40823a1a6ba4fef4580a0076ac6e6bfae20f0b00e0be0",
+      "git_blob": "66f329a4e9500fc983dc14555bd01e22d9b470c4",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/mailbox/unisoc-mailbox.h": {
+      "sha256": "8073572f5adce9ff2832b2af31f74eba0cc355606d3b1408a001c6012bf6b6bb",
+      "git_blob": "7f795b99a0be0a42e53df0e05851abf9b41c0c44",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/modem_loader/Kconfig": {
+      "sha256": "d419e93184d253e7a2f047be05c4ba7bac1db70b50711fc48165cdf12a50caf2",
+      "git_blob": "0c862f740edc246df2fe419219934e688ac7e893",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/modem_loader/Makefile": {
+      "sha256": "9cc53c11b795530ed1b7ae3cc669f2cd9b8a23adbb73a0430c5aea8f48b98591",
+      "git_blob": "501b31f5a690c80ab7d6993b4aeadd75ca2abbd6",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/modem_loader/sprd_modem_loader.c": {
+      "sha256": "d7860173a704849a00909add528515a709f93c2e2b5bd97365e1d48205ff0cfc",
+      "git_blob": "b4edf132422e88481e25803a5b58815055f48444",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/modem_loader/sprd_modem_loader.h": {
+      "sha256": "ba9a7eeb25899bec1f6e186d901d5811f2b8bb481ababb93cd8d9a7d553b91c1",
+      "git_blob": "364da1c8fd9ac8a2e47c45cbd7f9395427689bf7",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/power_manager/Kconfig": {
+      "sha256": "6c3b189607adfe4e4cab9e73efa1e1bcfd9e9843f5c4553c3e36860c263c47b4",
+      "git_blob": "d357da2ec16b234e27912e239ec7557e6439511e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/power_manager/Makefile": {
+      "sha256": "f1650d381f20e9711bcb286683e49eea62d72773a5bea42ac59e3c16efd9e3b4",
+      "git_blob": "2d99a9662d3544188719ac267ea4483c8596a415",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/power_manager/sprd_mpm.h": {
+      "sha256": "4498210d5478221bbbd835b44c1b93338b21545a73da16cac2b13475e9d75758",
+      "git_blob": "a70db3d3f4ba5cfbd0d098f635a33fe10506df4f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/power_manager/sprd_power_manager.c": {
+      "sha256": "8ff645c3cc33527723216ac1f4267a8e413ce9261b7beaa71c8a7132a4aa555d",
+      "git_blob": "73611afcf17a466a7749fabc318b3e0dbf369a12",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/Kconfig": {
+      "sha256": "e01736041f6c3dc22a106951fb61f8e40e91057928403eb06f4df94fd9022df6",
+      "git_blob": "aa4e68a10f1e234a30fa07280d1d4be8d2b237c4",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/Makefile": {
+      "sha256": "241e632573eee611a5e33985136bba612516913032cf06d3bac71e4fd898fa35",
+      "git_blob": "84ca351a399e2ce64cc0086c2eb56ec059bcef04",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/sblock.c": {
+      "sha256": "a70e224537fe0c46bab28cfa3c3898b6372ef2f999792076e803646c07d0a1e8",
+      "git_blob": "9e7e41b577633d0bd9bd0b2a45e7a63d37f32828",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/sblock.h": {
+      "sha256": "d0ea6d5dff7f9fc3a3e74b0ec1e8bbf9ebc6896843c83e2dcc876dbcf203da7c",
+      "git_blob": "37d6471ebc1e85d545daa5b79fa85964a4bfd48d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/sblock_bridge.c": {
+      "sha256": "6fc2475497eec5491091a7a8ec08a23ed8a24773cbdaa28f75fab5fd080b88ba",
+      "git_blob": "f071f316703fc11fd4f2a1c1f9208d055823b258",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/sbuf.c": {
+      "sha256": "8fdca1bc688aea681da9a4cae6ce59189109923da71830c2385997723c124968",
+      "git_blob": "3bb1f36eb9f1fde93d5c262cd19800f51e952d93",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/sbuf.h": {
+      "sha256": "2ebf47fc2cbeb83251f1a3eca4f4cdc385c3ac8fc31ce314c5f4afe5fd28aa11",
+      "git_blob": "56786a86fd8cda902cc8eea7c6bbc94775e74f44",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/sbuf_bridge.c": {
+      "sha256": "ee6f5cde0e80166160308a5b7ae2c5dd48d579520b0a8088a93a60c3edf507b9",
+      "git_blob": "bf2f09a1e460d10f32be2767e3a97bb1e1183f2a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/sipc.c": {
+      "sha256": "523d33a1a5edb53f382ce7c0326cff1e41ebfb5873aa5242833c7736f6d5113b",
+      "git_blob": "742baacf96f8b00c2fdcd80c173a82434482e149",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/sipc_priv.h": {
+      "sha256": "7472b9ff85592e927b64a1caac24a0959e5f2a4cd8c232ba2a3d6cd80d284ebb",
+      "git_blob": "8136c2331831b37a48d5615e9292eae37430a4d0",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/sipx.c": {
+      "sha256": "4c39caa4b01e754db3b6c12a78c68d90fe343b8acb8db4f6d12049e14b845cb6",
+      "git_blob": "1c8b6b39f94d4df1be0c4409bd7b515ef743aab9",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/sipx.h": {
+      "sha256": "acd6b617ca4f9d8b74e30785e755927b375c06ae294fa44fe646433675d0b6f7",
+      "git_blob": "c0e4fa955d259f3aafc965f33cfd7bfb35b544b9",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/slog_bridge.c": {
+      "sha256": "f7cd4f1bc37ecb61c7992dd624f794673854f44a468d9ca1dd66922ed9060d44",
+      "git_blob": "ea1d74ff11f3b494bb531f390311bf02e69c75ce",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/slog_bridge.h": {
+      "sha256": "4e90678e18cb3b37b4c148b719b4aeb425b44413e27d26ce4461579b27ecf88c",
+      "git_blob": "3cd95c1569aa7e0637858a6f8fe3859927be226d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/smem.c": {
+      "sha256": "7e65cd635340cd808a72da1fcacd6b3b86335af06cd204e3a83dcfaabb8a6295",
+      "git_blob": "c84fb519d842eae5ce570a6335e0a7c17b3f0f08",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/smsg.c": {
+      "sha256": "43afd2e59ef5aff06ef2ef53b2441cea50aabc22298941d680b6502bdbd0fb6b",
+      "git_blob": "c1f1f74df48945a9d9b402cd6437c5d00f468099",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/spipe.c": {
+      "sha256": "745f36f87a0068ba9e818a1631f290256e0927ae4847dbc92500d4f3be87aacf",
+      "git_blob": "053af9d3c18f548437a9899167e1414cd476938c",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/spool.c": {
+      "sha256": "5e214acccc11a66882dacf700579437dad0c5debd460d17f86eecd598265f813",
+      "git_blob": "52f9abb1591620e0e9485c6e1fd8842d776259b8",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/sprd_actions_queue.c": {
+      "sha256": "0e4a24704cbe07ef3be3670df13682e85de4798fc63f79744c992d10229377aa",
+      "git_blob": "3255340967c93dd505212bd7b2b8fcea70467e58",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc/sprd_actions_queue.h": {
+      "sha256": "e7a8b0cb88a922963ba0bf30d6c00d710b9d2711ff562975422b100f4093236f",
+      "git_blob": "b7175384080e1ba8cb65a699c36cf47159f9d042",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc_virt_bus/Kconfig": {
+      "sha256": "105db870f414853ac1821d7c684b5b95813fcaa44b579de781475e1e15da611f",
+      "git_blob": "198360bee557b55fc33d35df0da5c9ffb56503dc",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc_virt_bus/Makefile": {
+      "sha256": "60a4b5ae53912a8c56927e5bee16467e66f9e4b59fb53a882022b5593f51abbc",
+      "git_blob": "5e5084657cb29676da1253d8b9b5659d6e5dd430",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/modem/sipc_virt_bus/sprd-sipc-virt-bus.c": {
+      "sha256": "9a850f2ce256a1ea05d1b6649ae205fdf6280d3c3bf635f6953ef63a26379f5a",
+      "git_blob": "d4940e2ace316e4820bde730f9872334b96a7a94",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/Kconfig": {
+      "sha256": "26c929c7049b08c8b26b81ae38245d316e04a5d8034f681d1717e43026ece82e",
+      "git_blob": "828376de50b1f82b678fc46bfad0ec8c8959b10e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/Makefile": {
+      "sha256": "720f5e3616b766553071e03db55b1f6e3335934f34af1d183c39d6a660b9ebe7",
+      "git_blob": "97d0d946c6dcf97e28460f3907c7c6f38a69a951",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_delegate/Kconfig": {
+      "sha256": "2948732d70611180e68645502f522ff559478f8c0f64b15eee09ae7e4b7467a8",
+      "git_blob": "944123d5a9e58f66d51d38eb7a25feae3ee72b7a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_delegate/Makefile": {
+      "sha256": "dc71de8840fee25fb1a616ca15f7a146a94346b50e138ae2d8d46433aae54214",
+      "git_blob": "2e6ee9d80d3c5854d01bf75e52acb47738d90a4e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_delegate/sipa_dele_cmn.c": {
+      "sha256": "ce399da6d6c85e43c9835bb1abe57766afda2bb5006392bceaca58f82986ec94",
+      "git_blob": "c0458da7c01329e6acb6afa23f3670480feda0e7",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_delegate/sipa_dele_cp_in_ap.c": {
+      "sha256": "84dc48ee384224eaaebf3c3f8e61f9f65872a25d96e49179bfd6e11790665559",
+      "git_blob": "39c973f3b124c6f10da265521f18dcb97cad7eb0",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_delegate/sipa_dele_priv.h": {
+      "sha256": "42000981bf9cf9ea837fa63c1097914279f3f2ebf52ca3b64122733d853dfe09",
+      "git_blob": "728b54f8c42812a925176c607f105d794b444e6d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_delegate/sipa_delegate.c": {
+      "sha256": "3d39e2902bfa0c049ee6ac4a0571ca1fdb1646b0e4651a386d1aaf949c799eb1",
+      "git_blob": "43a6ed33ad9e932320147efb92373eaf80e9de28",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_delegate/sipa_delegate.h": {
+      "sha256": "65d027fd98ec61b9808d4bf234343b3308c9b169e6a17088ae3c2e3aec385393",
+      "git_blob": "751bb7ca86b95e0677a586f9e2c4f36ab4e93782",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/Kconfig": {
+      "sha256": "cfce2acde9a41aceb7556d7718565f71c12d7f924394a548bded7b72deee45cf",
+      "git_blob": "fb4b9a93772abfd497eb031e8ccca36aa726b346",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/Makefile": {
+      "sha256": "554873234baeb5acfc9397cfc2a91ce2f45e1d4b4208e3ab1f0d3ae765deb029",
+      "git_blob": "4abe9faf4fb85aba99a147e656045d530d2c7622",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_core.c": {
+      "sha256": "1fc0c09d19a799344d8ed6aaab49640ceab72185c5f3fd2a4531671bba9b832a",
+      "git_blob": "687becf7aa892903245fe0c814d861dfee46523c",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_debug.h": {
+      "sha256": "e654ea973ed3b1ce8ebcf6614b20b0067850dd2b36d74b01d3f09ba5082c4400",
+      "git_blob": "fd60656e3e4f01444b86e2d1a73235a9595677ac",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_debugfs.c": {
+      "sha256": "4ec98f396eef3cbccca0732c0e040ffe2170d7fb8aff412e01155015d9ce9288",
+      "git_blob": "2035cd4861a258612134e0a8238ccb1ea2cd46c5",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_dummy.c": {
+      "sha256": "83c80370117d33dd3340bfbdaa7f5aaf5aa1ce8442b09aebf772f69651b6e6f2",
+      "git_blob": "c4982f09c4bd952b35857403f475bbd3fee25dca",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_dummy.h": {
+      "sha256": "df0cdaf79060c749be52baf02e0be6b67fdedb247518ea25002d2fbc48beca4f",
+      "git_blob": "b6fe1005b8af7e96f55a9a029e2c45c6407161f6",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_eth.c": {
+      "sha256": "7649c43991af5944d499bd70513e67147e9b2297d25a3908d23e5ee8c9aafe45",
+      "git_blob": "111cdfd205279330ab15a2fb5f7d10cfd0900f83",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_eth.h": {
+      "sha256": "c5e244d6fbb67fc41d4733caecadd6df41bf5b97381c5709a839eb5742e6e88d",
+      "git_blob": "52673349d5b21eb10b380b3ea9cedbcd1f653163",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_hal.c": {
+      "sha256": "0e818a28217d9560ee635fdd421ef4628b6d0d2700247368bdc4ae7bc72e214c",
+      "git_blob": "47be1b11d6e9fb528e7f7dcd3f80b407fbfe72ce",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_hal.h": {
+      "sha256": "590b82643ab214ceba70193a4b3d93ed2ce388f4694ee09762f1959c297d889c",
+      "git_blob": "cf2f3660cf60c761fb26a3eb92e2b406aa28e729",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_nic.c": {
+      "sha256": "4800a5aafc668858d402c15714819eebab78d787cc2b019160c3152ac037ecff",
+      "git_blob": "ab3f0226971252f946617464c4aceed688093ed8",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_phy_r3p0/Makefile": {
+      "sha256": "024ef194b041b1b4d443006c96c8448a47879a07f6fe18f3ad60f4229277bc06",
+      "git_blob": "c6d03663013e64baa77bb87a0970a5490d9a5ecd",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_phy_r3p0/sipa_cmn_fifo_phy.c": {
+      "sha256": "a2d1420600db114e407681d01628cadb5a46636136939171cf3d2ac75e25ccf8",
+      "git_blob": "983e2e68a20c38bdf1a6315804afd5cc8f0d5c90",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_phy_r3p0/sipa_glb_phy.c": {
+      "sha256": "876f3d962dde41eab79e3bcd7ab432b7170f3b175d5560d4626a6e0f77bcbdfd",
+      "git_blob": "17513a883242f5880da0e343745be2296721571f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_priv.h": {
+      "sha256": "170e0e051abc46288fd2825d334e3c75f7872576f469675d46677d1276f6c48b",
+      "git_blob": "de119c865f65fc840e0f07c61e478c03596f4d42",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_rm.c": {
+      "sha256": "e7dedfa9d325c3690fbbfe8b4ad69d674e341a32b922e267ead152905688bcb9",
+      "git_blob": "e60ab3fc3533f17d491e0f291fd20dddf3c1313e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_rm.h": {
+      "sha256": "e31930128679c9b4e83883fc224e1cdf721c6bebf2dd4c9b82d41878af5e101b",
+      "git_blob": "817e2c784be58e80a4ef2c83e4290c35c51e35b1",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_rm_dep_graph.c": {
+      "sha256": "ca5ed437b4b474902b933bab869669a859ca18b460157c6452b9c83cdb38ed15",
+      "git_blob": "f41b4c530715ffd18e5d77dc6fe88caf0d55e648",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_rm_dep_graph.h": {
+      "sha256": "c62d3ea882263c4ce6365e8b6f642dc89e3db42b2285da3774b33da7006b9985",
+      "git_blob": "adc0ad70dccd2b86741b5552422910e94bc6b2a2",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_rm_peers_list.c": {
+      "sha256": "db5155afdab4a3e526ae20515e2b101b2c9ba449526ec49dc12f99b1f1739151",
+      "git_blob": "2c3454a1237a7f9ced9fdbf88c0973c83aabe594",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_rm_peers_list.h": {
+      "sha256": "475bec7c361fe3a0ff50f6e0f50674e11796ff7254dbefd2e8c8f8803384a9c9",
+      "git_blob": "d37cc73d71fe19d07fe97c0605ec963acf39f324",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_rm_res.c": {
+      "sha256": "525086b7cb940e2b647c30e061f867807ef785d8fe92a96aa25232ec21b65704",
+      "git_blob": "3ded6ab5555c65638eeacd3a81d15fd66661adcd",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_rm_res.h": {
+      "sha256": "16af3a0aef8ae86e895d83f6d4ca592741c0edc837aaab0108c11929672740f4",
+      "git_blob": "3dccb062f720d14cf84c52162a9c8fd6825cf28a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_skb_recv.c": {
+      "sha256": "f59eadd3eae9ccf0db2d5e2ddb3b6c891aac497e0e3f179ed3f22a5d5c8c35af",
+      "git_blob": "6aac239f43d4718292ddb5327d1824924a083585",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_skb_send.c": {
+      "sha256": "07ea3ab9f900c76c9dd3b60afe01904b965b5e5a65c93acdb5c8d26a30f0e57c",
+      "git_blob": "a438d4066c146097ea7763733e26265143ebf50b",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_test.c": {
+      "sha256": "355a36dfb96d5fb72cbde996e31b6af83dd8fff3b08e9d01f7c3cc6d10c1eb7d",
+      "git_blob": "8943c13b506ab90932f68978ac5ad20611870a30",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_test.h": {
+      "sha256": "90481b2e5b24517de75c1c4b3ce089c8caea2644bf813ed926e764621fea3974",
+      "git_blob": "da721ea527ee99de7d91dc3ff24f47984ddb2896",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_usb.c": {
+      "sha256": "68c00c89e9e323b351aa3d4d53caa29e04e3f57b3645f087ad68643f208115f5",
+      "git_blob": "7ee04d83c17c753ea2fbccded8189be4f0d00caf",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/net/sipa_v3/sipa_usb_cons.c": {
+      "sha256": "4b9c07bd3ba71564ade11d32b6cd4445aca8b9b5dca9ea3ea649d30d58662186",
+      "git_blob": "eab8b707e5962009bc7390ff098f0333faaf4078",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/pmu/Kconfig": {
+      "sha256": "398f2b1152d300d0d40d0f8cfc2f2f84be857d119307dd96363eb8151084491c",
+      "git_blob": "26dfe013aa4fd9660270ac6d72a8d5d4c5388fc6",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/pmu/Makefile": {
+      "sha256": "d065466bea95b0ac4a6d04b06e1b77c508e54f615ef3125a597a458c166d77ce",
+      "git_blob": "2d704ebba36ae0534151cf48baf2f433e3fc5b45",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/pmu/u30pro-sprd-pmu-sample.c": {
+      "sha256": "84e1215cf599217981fd6f2389630be85da103667bbe446177a56f46c360efbd",
+      "git_blob": "5b7bddda98fc4691d30163acbd0037fa9b61f3ff",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/scufreq/Kconfig": {
+      "sha256": "d84206a59690a9e67db607fe5ef26b8ff1329e7e1fd9cfec2a78257445ae7929",
+      "git_blob": "dd12d547807af3e6e22acb0edf03360a8682b9fc",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/scufreq/Makefile": {
+      "sha256": "f95c9185487af644fa312b1cca0246485af7557ae5e67abc0b81b9361bb85216",
+      "git_blob": "3a1f71685b93e5ac4701d0cb978d0026c8c871c8",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/scufreq/u30pro-sprd-scufreq.c": {
+      "sha256": "3ede10b9c8098e90965e9d690c51783f71809d9bca439b003694da4f6e458f16",
+      "git_blob": "95dc71286668f954deae2e3c1e3eecd6b380074c",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/sip/Kconfig": {
+      "sha256": "1cf2e1f17934d68bddf8e776913a409ae47ed9a5786b712b6df430540d91b80e",
+      "git_blob": "b9700a6a00e75a1b4640c857316dc05ee1562913",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/sip/Makefile": {
+      "sha256": "ebd599f02617ce59463439d540e0f40ac5c39198f114a72e61085b9e35a65a3c",
+      "git_blob": "c2fdcbfc9c87bb6f3b3826e0d0afc38d22be497b",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/sip/sprd_sip_svc.c": {
+      "sha256": "e5743c062f7f84febd128d5affb1ea73c572774f50ecc3eaf317370b28bec5f4",
+      "git_blob": "7f62be1c2b5961da601aae65cc4e0f5c7a1fc250",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/sprd_charger/Makefile": {
+      "sha256": "d8dc3f101ad6066275ce3686eb9efb89fbaa882dbfa63587a6c60925b24157d4",
+      "git_blob": "ff2c367b4d9900cb101f25427873fa01fbddf085",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/sprd_charger/power_delivery/Kconfig": {
+      "sha256": "43711ce3187d0525a3a661cfda34dc1cbf173a381c974324518708359a6ba38c",
+      "git_blob": "b1a654626c8c33ec4e48533e07cd22d9eadb556e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/sprd_charger/power_delivery/Makefile": {
+      "sha256": "3f993d690a54c9075f0c668bd811de9a9004c39a22c644eb9e5613f8c8ac1cfa",
+      "git_blob": "d7e20c849cf40794e9ad0ca027a3311a1dfaf8fc",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/sprd_charger/power_delivery/sc27xx_pd.c": {
+      "sha256": "12c53116980b96cea02a3fcfc670a254eb1df8e2cf5be7ad58bfa4e6dd11e9a1",
+      "git_blob": "4702304440b140f28563d5f299f627a7d055beb8",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/sprd_charger/power_delivery/sprd_tcpm.c": {
+      "sha256": "316ff012e0498ab6d7712af0c008c9ae5243e87237d8b43e10f82534ccd5fe9e",
+      "git_blob": "4d68ff71386e071eb49a1f55d3b8d8ece3d5bcc4",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/sprd_charger/sprd-bc1p2.c": {
+      "sha256": "396e30cb8514e4bf30f8b6abb834fa4a5b3839a7face78b8e261171c1727b743",
+      "git_blob": "8386809c0671d23026a8e125aef776c127695943",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/thermal_sensor/Kconfig": {
+      "sha256": "d223087a12766c70ce578d2a808f4135c3a21b4540fdfd52b8848ab59a679d7b",
+      "git_blob": "44ce8b8a99b8af329a2873952058dd9e7bce3fea",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/thermal_sensor/Makefile": {
+      "sha256": "eb37b8d186c4764a8a4571c5242bd0594383fea422db12cbc30eba322bf6456a",
+      "git_blob": "e106d2cff924c7ae25bfd6e690c59d9cedf4d54f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/thermal_sensor/sprd_thm_r5p0.c": {
+      "sha256": "b2f15fb4d1ac4672cca073a45abcb81300c1724481dba6c5d398992fe36c42a2",
+      "git_blob": "dc292a04cab28cdc944a7a00cdde543ea5a93924",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/thermal_sensor/u30pro_sprd_shell_thm.c": {
+      "sha256": "68c7482bd49864a495a2c5c1b95528cf3ae3216a66d9ac635e371d6bb39769a9",
+      "git_blob": "562d805e2aacfb24892106e2048af235d5014c91",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/thermal_sensor/u30pro_sprd_virt_thm.c": {
+      "sha256": "7b4edb54b06eea1944b9ceceae6792c58f5e44f79dd7198a5b0f7515de0b2afd",
+      "git_blob": "5468edc19649ae39f6f2a52833d3f086eecaa5fa",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/thermal_sensor/u30pro_ump96xx_tsensor.c": {
+      "sha256": "19e7ab8d128f97f109dcf514067e09b263c431a95769d1188e515b4b54194c37",
+      "git_blob": "0cc7659f0646c4c90ef8e31685dbb1d846b3da73",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/Kconfig": {
+      "sha256": "672af25d34b28155dde4bdbf18dd27cb3562599a0b7508b969ea2efb736be6fa",
+      "git_blob": "4e5090502790b5047e385059863fce068512d493",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/Makefile": {
+      "sha256": "6550cabb2397d3e1745f728b89ca948a9327fa160b9e2cec13be388b6d948764",
+      "git_blob": "a6aa3cfb5bcac8a1f83a7dde72a917be5b475970",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/sm_err.h": {
+      "sha256": "5f98779ecc1651e859caed282ec59895b8f67ac42c588437f75834e7a4151aa1",
+      "git_blob": "97516b00570b4a26e964a0e962ea8a222b8c0751",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/sprd_shm.c": {
+      "sha256": "f2176a259840705281c00058f14a49872665acde5a7de1a86ed4b3296d82c877",
+      "git_blob": "673b6fef6dc321645ffc688a08d316df93b042fa",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/sprd_shm.h": {
+      "sha256": "9e95e886ad298135077b3736cfeae4e864fe48644584f57789535a0b067ece07",
+      "git_blob": "855e0f4db5d2a570ad5c351f26abc289b2e0db7f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/trusty-core.c": {
+      "sha256": "42c3469e78f31d256fa42e475bc96eb88e275570799cdf3c0fcd0474513008ae",
+      "git_blob": "244259abaa9acb44262120bf007519768869442f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/trusty-ipc.c": {
+      "sha256": "8c1d511a319efdb339212749aa04810cbfb78bdcb4432b816db57c19c789d6de",
+      "git_blob": "e4d0775a2fd19fab36a752eebb709058bc31fb33",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/trusty-irq.c": {
+      "sha256": "5a30f224edb0c8271a6ce41b4673d942615db7f0169b7059f9fb1aaf07f4537f",
+      "git_blob": "a6ab7bf0db1085ad4bc6950ca7e267d7b2e48cc7",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/trusty-log.c": {
+      "sha256": "7ac5635b41f9f11129886174ab6edaa3b494dc5eb39ad35064d3555df9cf0c82",
+      "git_blob": "d4b0c740ac03cd8efa9e17efd46ecdbcdfd70383",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/trusty-log.h": {
+      "sha256": "810b29a9986bbb97efb4e2b7d685001838333821dfc2e0db6a496d302372545e",
+      "git_blob": "77a01ffd01223a57ec5e1da9bea4aa077269bbf1",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/trusty-mem.c": {
+      "sha256": "6c544336c9d86afd01bb2bb1cef467b98de74b522d73f9171eb05fbbcba35716",
+      "git_blob": "9faca5b6a75d15d9c739861065322797faadca3e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/trusty-mem.h": {
+      "sha256": "dab19f587fb3ccbd9595ffeda43de440f1afe6b793a2a25048f0eb9cb13554ce",
+      "git_blob": "b0f191ebe40250e5a99f44b89ff2b64b931b2335",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/trusty-pm.c": {
+      "sha256": "6fe0248e8efe42b5c1a3adb3d147d7b112910774ab1c4bcb71eff247f2e801d2",
+      "git_blob": "827c66d8de115e713b92852b437ab928c62f0c36",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/trusty-tui.c": {
+      "sha256": "a986ae9ebe096c81dc02410ba548abe8566f116311627dea8060abb626e0ba64",
+      "git_blob": "a4128bf609e298aba183ef5ccad762d7a93af392",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/trusty-virtio.c": {
+      "sha256": "8bbc2ec93dfb2addf82790ebb82fff074fe7f44053d084c23d4c34bb67e68cd8",
+      "git_blob": "2b8d0416379dee9d13e128c59e4792630478b471",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/trusty/trusty.h": {
+      "sha256": "2fad47c11897479cad62be8c5179e18dfb5f5154bc247d50763215c56c7e4135",
+      "git_blob": "1373d54e29aa9eacb1b8220e3b1a2591f3ef5dae",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/u30pro-charger-link-diagnostic.c": {
+      "sha256": "413fb1f43e400b04762217cd39ba4347727259654258d67c29d9e8fa7ca0b575",
+      "git_blob": "2aeb0c292742a31966e6eb7f165e6b5293c187b7",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/u30pro-kexec-base.c": {
+      "sha256": "e49453b93f3a856159b913a0bd2841637f5a9b1d04d165262a72470f55e21675",
+      "git_blob": "5ec35c6154342cd6ea46c2610b1adf9f891a3b38",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/Kconfig": {
+      "sha256": "3a354f960af93e81cd964310c6731b17cd2fd34b8b4700cf81d65cefedd34c83",
+      "git_blob": "1d99bd556b888859b941dbbce3604013c0ba150d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/Makefile": {
+      "sha256": "00a0c421e20ad9d2af02be99d159024f11381bcd55eb98a0d9061022f8435cde",
+      "git_blob": "3dbd50f0296715f4529992811afdff3de19adb83",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_core.c": {
+      "sha256": "76a387f8ec5ee6ee5c5e0bad1579f676987a84bd1d2f7f376ba0e541ad3061af",
+      "git_blob": "1507b9e8e5d6e21b74f1d99a148a8b46e4aa80e9",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_core.h": {
+      "sha256": "64cd87752fc4a1062fb49dcfad5747d38adac37319f7e1e1823785eb93bdc4eb",
+      "git_blob": "6c57c7dedbda523ded22df4e15499c1361d782a7",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_debug.h": {
+      "sha256": "fa8a4741349484ccf03b7828560660a46172eef990e8751adbda16a69a786b29",
+      "git_blob": "82d3ed03210833c59c6667a5e64895ba67c130fd",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_debugfs.c": {
+      "sha256": "33b3bfce162953c00d4674f8080ebcebde490ce5bf990b5874c090441eaa6e70",
+      "git_blob": "b6916a91f43153ca9239ab5205f608d6390a9dfa",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_dma.h": {
+      "sha256": "63f19846e9d1dd9f4de994ac9ef8013763dbd2f619a94ae553f9d7c332518e39",
+      "git_blob": "dfd18bcc08652d4ca44d19adc1d6ab3b68442c06",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_gadget.c": {
+      "sha256": "b8b9f6d7edd1bc16c1d66a024fe5298a7078ebd8031014699ac82841cfd49ee3",
+      "git_blob": "bfd1f32a2ec96252c5d06e68dd8a29c27b0a5e2e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_gadget.h": {
+      "sha256": "82561d001907f4e080dd5a62ad38861336875ebca52444d80e2fbe2eabf0b455",
+      "git_blob": "00dbd137cd0ac34b798d0d6e141bad53b700867e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_gadget_ep0.c": {
+      "sha256": "55026070d616e6fffd278d915ea1ab4bc8271af3d31b3759c039d93d863de2b5",
+      "git_blob": "7860a740e288a1fa5f92ce32082669ed5b0f0590",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_host.c": {
+      "sha256": "bd99950c7d59505841823fe75cfb3b3ce3b39b70df2946a1d42e5d68b260d11d",
+      "git_blob": "49061b1f9916349f62a339462606e6d804d6e6a6",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_host.h": {
+      "sha256": "527cfa493c904330fc26e59c6bd15cccfe83f8743302d55aad48e2abd54b4355",
+      "git_blob": "a259f066ded58ec848b945a4f83f69d4ece9831a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_io.h": {
+      "sha256": "e23b626f2bba314e05cbb8b063c510dfc141e4b03c486663e749269ea6b00233",
+      "git_blob": "12874d3b2a646304dabe22acc153507f8987c194",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_regs.h": {
+      "sha256": "4d0f98920c4c44bd56a4711e4aa8139d0b6533fe8aefae78137490b5e20ae931",
+      "git_blob": "68b4c9c7ef54e75f413235f628797200d5d59a04",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_sprd.c": {
+      "sha256": "d567b3277c25ddc7da728b22028bf3aab39bc3ddf0d254530f80a93c3b3986a6",
+      "git_blob": "a09977407785944d9932cdb2f39a0090d781755b",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_trace.c": {
+      "sha256": "680ef02f68a241e2ec75c3bdc4dcea7625f7e3e6c851784d609fe3aa0dec53f9",
+      "git_blob": "476872adce8019eaa5a3d3eaf603ece89e13db72",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_trace.h": {
+      "sha256": "910b376b7ed3b209f6074530029074420c9e302babc1ca8e638d8487ac215674",
+      "git_blob": "f246b14394c4a5c287717909d9ead5f4d5a13322",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_virthub.c": {
+      "sha256": "e75ebe204a3f53880386cf3431ed7d476a8922cc715ff3495724709a2ec71678",
+      "git_blob": "76cb1c76031c4ad965d698b5ba06dca36e5e83b0",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musbhsdma.c": {
+      "sha256": "45ee5dacef39ff755e5bd9b8c4f895b534f5a28014b0ecd7b4f06d527097fc40",
+      "git_blob": "7acd1635850dfb5bb139686da3abb11a84a8d0af",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/sprd_musbhsdma.c": {
+      "sha256": "a327a302b3ad4194c2a3607ab034007fdaef7bd48281ab59f345e4307299c906",
+      "git_blob": "fd55fe90967973008154f2ac13ad6e104035fd51",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/sprd_musbhsdma.h": {
+      "sha256": "9f419685f567af52cc36e82bbb5e75021f1ed73b6f47b021301e76949556ed67",
+      "git_blob": "4f8ef31e9849c0b229e63ac15b70e2f09189371f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/phy/Makefile": {
+      "sha256": "e7e380befb60c0093a5ef6a12d5b7769735e2253ce2b5ee4b66fe4b1354a7d0b",
+      "git_blob": "7aa0626ef9a412e7dd9c9d9da31d6a7e9236f0df",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/phy/usb-phy-sprd-hs.c": {
+      "sha256": "c86940e7798ab70e4d67384c6f9f13c7ab6b1e119df8a8bbe3fa42db8225176e",
+      "git_blob": "eb87483ec7cd59f110979128a69f8db0e7262453",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/phy/usb-phy-sprd-hs.h": {
+      "sha256": "0d2e9cc4326d518898b83b36426c8135f620c3ddf3797b107bcb92530c68e7e4",
+      "git_blob": "b732d376070eb6326d4e3a6e719cb18a7c8c774f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/typec/Makefile": {
+      "sha256": "32e97edf868389f013772e2405a816c248be5c14c2603b6a03a0682c82bb6e65",
+      "git_blob": "b70dbf0b863b724873beafcea4e44e14e482f595",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usb/typec/sc27xx_typec.c": {
+      "sha256": "6f61cc2cbabb4aed634bb5f444eeb77b2cfa506102f218d89758434a4744d972",
+      "git_blob": "b9da014d22a09299dbed1a0086163e88a45bcc5a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usbpinmux/Kconfig": {
+      "sha256": "7a38a384bf4a0f299acfb33cb176b5abc6294a219401ee02aa18c2880c503596",
+      "git_blob": "1232f93601101fd9891d0e825834dd38c7323030",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usbpinmux/Makefile": {
+      "sha256": "800a94c065b8803e2a11e80778ce8ab49899d95f9e749e81c11b98ab3bf4b3ee",
+      "git_blob": "56ecb571e2134ea5a8476ca73c3064dea0184540",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/unisoc_platform/usbpinmux/sprd_usbpinmux.c": {
+      "sha256": "11be90f5d5e194264cccd756031f5bbf8ee3a57e65ccde44446b416e01f606ed",
+      "git_blob": "266b3a7cd3e18d86474b0cf027a54ce4c316b4ea",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/watchdog/Kconfig.u30pro": {
+      "sha256": "40699fefba5eefdf85386f341a5c6a11b81851b964aee238845aad4495b374f1",
+      "git_blob": "5e19824fa393647fcf3d035cca9b2597167b51c7",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/watchdog/sprd_wdt.c": {
+      "sha256": "c5a6dbe2f715bb610bbb9f41cf2d1c352a1d044e26a70dc9594381a216b4e41c",
+      "git_blob": "2eb420cea5fd5d6f9f1560c947f8845fe0586325",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/watchdog/u30pro-ump9650-wdt.c": {
+      "sha256": "f2659c5067740a05d638dfc4b62bd1ddfc4598db66c1fdb4e32c8b4d1c91e323",
+      "git_blob": "f7b0ebda656b48bac31346316a8620d7e786fbd6",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/drivers/watchdog/u30pro-watchdog-test.c": {
+      "sha256": "57010238f9d4b8cef85457a26e0eee84fee952b763366064597727b6794d69f0",
+      "git_blob": "4086c5773b15cd35356227407903bfbcf68f9d20",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/dt-bindings/clock/sprd,ums9632-clk.h": {
+      "sha256": "e4a9a97b6b08dd13cece0faf38ba33d3d70e0736a958f5dbe51fb9e5cbac8244",
+      "git_blob": "61037e4a1776596220df77ff16c5d8b556b77b70",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/dt-bindings/reset/sprd,ums9632-reset.h": {
+      "sha256": "56ffe0342e20ff535ee39b6d575a6128d4d55c657b2528711fd5866cd6ccb2cb",
+      "git_blob": "c003edb302b1ba74163b6191c66cfcf999caf25d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/mfd/ump965x/sprd,ump9650-pmu-ctrl.h": {
+      "sha256": "a48515f04409600669723e391860981350fa19d08143cb60387f6d64e2929589",
+      "git_blob": "08bf567a999d1884c6bfdfa3c999ec7be0e57b20",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/mfd/ump965x/sprd,ump9651-pmu-ctrl.h": {
+      "sha256": "4a48ac18a9e06e541b1f4e3a73031c9a09a1fd4b111d47f042887987cf8b36a9",
+      "git_blob": "9f47fffc29879f295156a5907bcde71db28fb123",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/mfd/ump965x/sprd,ump965x-mask.h": {
+      "sha256": "a9b0a2c7b84b0b1667e1bc87508149496cf306246694292243e1cb97474db0b7",
+      "git_blob": "5abf0b90e3aa39284943fc9da865ebf28ecd1a58",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/mfd/ump965x/sprd,ump965x-regs.h": {
+      "sha256": "006cf38eb8c4120fb1ffb84b75cee9e9bfa6676248082794bf0ff358f271188a",
+      "git_blob": "83f2353fcd491acd8f0a3e02d81eb26e5ef489dc",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/power/sprd-bc1p2.h": {
+      "sha256": "708a1384c4ff99acd1ece5ee376d179dd7293f4974c3785812e07e31837512d4",
+      "git_blob": "a81590e24db3cfc49a774360df5c9ce8493cf762",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/regmap.h": {
+      "sha256": "a083ef2254094b9e479838074b67d77b660c3165268413978b1bc49c66716f5d",
+      "git_blob": "441d675e9356dc1cc127c787f5c82bb87fdcb754",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/sipc.h": {
+      "sha256": "88432395c7da4bde5d07df17fe00546adbd0b499a9f0e95b7db2dabaaf6b27cf",
+      "git_blob": "b0e7d3bedf04358c1e15d3992e8b9973ba3bbb2c",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/soc/sprd/pmu_sample.h": {
+      "sha256": "f2c25f3c9bc0ff31b81e87a481ea7597aa27235bf5be45b94468be1e79fd0617",
+      "git_blob": "c6c180ba8cd4cb013a497eec247a78f81511475e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/soc/sprd/sprd_usbpinmux.h": {
+      "sha256": "ce8a453b783c1343ba2dc5738c36420346a5107f4d42e054ffa8a02321de456e",
+      "git_blob": "f74eb97995f1c20258afb9f4f16174b84ac54302",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/sprd-ase.h": {
+      "sha256": "5e5c306d67ec41f5c6bfc68cf01f4d68819915a0c32a5b57c68e6403d2bb6d62",
+      "git_blob": "7aca52e6a278e1805af6b448c5926f2ff4401760",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/sprd_ase_ops.h": {
+      "sha256": "3f0a48a90154f6f8a14f74762c44e2831b8dd08186bcaaea8bb80a2a09498947",
+      "git_blob": "efe0dc3c7bae1d263cf82d27c3fb04eec5ee7878",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/trusty/smcall.h": {
+      "sha256": "ff583cf95e921610bf0c99442f363586473a2e83ecdc16bcea3ec60ebd325156",
+      "git_blob": "79e2e054f03664302a64a3a71aba46529c51c74a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/trusty/trusty_ipc.h": {
+      "sha256": "bb2c3dc87a118b048d404b0d96d2fa7005af7f0c46ea4ce92608d3b9aa6647eb",
+      "git_blob": "8062ec58911290499c5ae02dff275f9b52366208",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/trusty/trusty_tui.h": {
+      "sha256": "6c24eebecc68ddebe7d775d715bd9865e866d6011d190e4ae47c0037670b54fb",
+      "git_blob": "0b36986a8c95be705c44f74ad0ad1cfbc83dad3d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/u30pro_early_ramcon.h": {
+      "sha256": "d6b79db845b3766dfa0efcab88b7504fe718c81aa348f1b67b0dde658d18be6a",
+      "git_blob": "05644867c2a83a541d2a5e637dade404c56c9255",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/u30pro_psci_hooks.h": {
+      "sha256": "780fc3581e988bd366ae41d8432270e75532052536e7bc45b790df943fc2211a",
+      "git_blob": "3ba5524aad98bbf24ceb87f84e55060402e49efa",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/u30pro_timed_reset.h": {
+      "sha256": "1326603a2c7fb43e7ed104906190cfb33318d35e2e2b6e9c94d18ae31976a218",
+      "git_blob": "6484359c3c8ad8276228a40af97693dac6684f1b",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/usb/sprd_pd.h": {
+      "sha256": "96ad6e8270569578a7cd903fc8beb46d9382de9922792be2987c1995c7be5179",
+      "git_blob": "ef1e6f0e236d94cbdb1a6625a74053de3191c686",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/usb/sprd_pd_ado.h": {
+      "sha256": "5bf9f33f18224ce58e578aae5405186b8bfe47c22c0b2b75f0e377b623299946",
+      "git_blob": "202203a725107adea8c78b05e4723b7a487fd374",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/usb/sprd_pd_bdo.h": {
+      "sha256": "7c46cdd3655d93650dc0b5afd3c1505885e484c8d370806df761cdc6b7456011",
+      "git_blob": "db13bebcad92d580f22426f12758ae4bde15aa9c",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/usb/sprd_pd_ext_sdb.h": {
+      "sha256": "197c221f5d58655ecf8eedac704cb41ef50d3940ad2173ea3ddab2aa0ab5192d",
+      "git_blob": "20364946ecc9698240d9763e63360943897c857a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/usb/sprd_pd_vdo.h": {
+      "sha256": "32a4823b5aae9caf0d8d74aca7f5f2b0874cb65541b72488136b15dc1def34cd",
+      "git_blob": "75cc89e33f0ee76e21fdba1c18af6733358ce8d1",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/usb/sprd_tcpm.h": {
+      "sha256": "2af08e768a2f152e9cd672dac207393ececeb9f98ed2d338dc08385e749091b2",
+      "git_blob": "3a52cdc2222d97b29fcaf598a7f0716834a25557",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/usb/sprd_typec.h": {
+      "sha256": "9401e3e2d9ae0eefe4c14127994bb04603734ea00117f97a240652f66c97416c",
+      "git_blob": "9851c72cecc24b2977765fac9a0e7b263a72f4f8",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/linux/usb/sprd_usbm.h": {
+      "sha256": "d2f0a084ee82e0a89e9190ad28156e991f657e29aa6eeedb16f76f2f263558b3",
+      "git_blob": "976068650f19049d4427191dbcf16f7d8ae7f986",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/soc/unisoc/sipa.h": {
+      "sha256": "c64005a30dce71282e7b76072cd291f586e06c04ade4d2c55b95b0e6bc88657f",
+      "git_blob": "1841e99ae74e04ef82535e8998e1554341a9023f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/soc/unisoc/sprd_dpdm.h": {
+      "sha256": "d16f396617764c2ca4e1fb10475d747ba22a498e2486a6c21bf362a0f39676f9",
+      "git_blob": "f79e72a52fd57ece2a39fefa7fac85898a5735ce",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/soc/unisoc/sprd_dvfs.h": {
+      "sha256": "bc51d2f57f7dfd6717dfc8fa401ba0a0130d655bd0e33be98873ea9644786f78",
+      "git_blob": "90ae3831f5026857d9eeeaa0f641917cc4769786",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/soc/unisoc/sprd_sip_svc.h": {
+      "sha256": "28909dd0806a90014abfd3b041ede6f40190d93cba78c4b3bd247666c10b8536",
+      "git_blob": "72a76a8fdf16469db21139a545b714535ac636e1",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/trace/events/smccall.h": {
+      "sha256": "a43d1fbb76a92bb5859f2965e40c4ec812a9ff72ff3bde4e86d76501fc4950ce",
+      "git_blob": "d337654f40d0c276709989fd8bfed8e2929130a4",
+      "mode": "100644"
+    },
+    "kernel/ums9632/overlay/include/uapi/linux/usb/charger.h": {
+      "sha256": "d62c8563dcdf5fdb0c65997b773f27b7207731fdc9538637a6805999b966ff73",
+      "git_blob": "62b9c4c1619719e646c541815943e2197c454fea",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0001-pinctrl-platform-remove-void.patch": {
+      "sha256": "ebb291300c7d96edd2449cfebd524803f960371853c862e5f82ddcdaa4d325b9",
+      "git_blob": "19187040ce8b084f428464193571aa24e8948120",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0002-usb-platform-remove-void.patch": {
+      "sha256": "76efcc00a9efb7d13ba46f2dd9338c418ef12b5e5157c15893bd465cae98cf67",
+      "git_blob": "828189371777687824e0216658dd4638d00dd901",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0003-usbpinmux-explicit-platform-header.patch": {
+      "sha256": "f8e8c8f8b6f145326524b6d57f4570ade27d79d3bbaf822cba9e08efb7a6f993",
+      "git_blob": "85451b701f02af433c1f18fd5e53cebba823eb0a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0004-usb-host-only-utmi-flag-guard.patch": {
+      "sha256": "d7fc32e3c38a68256fc251f41f29d9f861e8573a8cfbca8ce38202f2df3eb20b",
+      "git_blob": "fb9984a2d5c4b95fa94805a0ba6c1269d7769333",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0005-ump965x-mfd-and-ums9632-adi.patch": {
+      "sha256": "31f91d5f8309be884e09c11be90216a2befbf6ad6ee03cd18d3dafa121af1d9f",
+      "git_blob": "df1ca9d5222355bc5daf50e58aa3b81e4073bec2",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0006-ump965x-regulators-mainline-apis.patch": {
+      "sha256": "d57e1287c646662c939f1ca81e52992644df49a6d8863be5f959ca3153b7271e",
+      "git_blob": "289b59c0bb1be6b84a7f57fa3d6aca83d4c2a0ac",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0007-efuse-readonly-and-ums9632-variant.patch": {
+      "sha256": "815cd31c8e7d929dae1ee4a5bfc227b7483bd23fae366219751b1d2abebf7c03",
+      "git_blob": "438c05f0105725fc390165de18d6ac44d4ac6c85",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0008-efuse-remove-unused-programming-helpers.patch": {
+      "sha256": "39cef1e219cc421a08ff5241d2245fe0ebaf0c6f10d1ef58f8a53031f0477d93",
+      "git_blob": "af746299b1227e059ea12a2c90846d4c8018fab8",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0009-sc27xx-typec-mainline-integration.patch": {
+      "sha256": "215949013f875b274a5800dcec2ac1d5a2ec3538de2550ac79507c7d9bb0a44c",
+      "git_blob": "60a160ecad99222b8d047a2435c1296f7a921a5c",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0010-typec-opaque-partner-and-symbol-names.patch": {
+      "sha256": "8d1bd098cc9a10cd741a40bfca2c9ed918efcf5e1e656f8445e09bdad72ea41f",
+      "git_blob": "780a51b36828be7780b09ad1d6de0d04846a3dfb",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0011-ums9632-ap-watchdog-takeover.patch": {
+      "sha256": "d80d98672d1cb6a5f2cf7f4938434da4238b9de68c242d4afe9aa29735213fbe",
+      "git_blob": "ce7247e9ce69906b2900f1240eb081824d2ccebe",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0012-bc1p2-optional-vendor-ui-dependency.patch": {
+      "sha256": "71e9644fe699e64227581270bc60ecbc34d7fb10063121fe09536efa4a55cc6d",
+      "git_blob": "0fd047bb6dfbd75d33baec2e6416f73cc12a3805",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0013-bc1p2-remove-callback-void.patch": {
+      "sha256": "8d69e24ee15feb7756ffaef370468180ee8e8b0c9f68a7cbced9b4c964aea6c8",
+      "git_blob": "dcbd6be4b23cce39ca155f515bf6fc6bd4491db4",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0013-sdhci-r11p3-readonly-bootstrap.patch": {
+      "sha256": "7559c58d14abbeebfd9550fbb5c0ed5370cb23e0ae67d5315d81fbc929894719",
+      "git_blob": "27c73ab0b5b187f7b02283f0f736a5409110e86a",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0014-native-regmap-mmio-setclr-aliases.patch": {
+      "sha256": "804ab0f518f17ff3865e110da9053ca14093f5d210d74055c65e1fbac8074cc2",
+      "git_blob": "72e3cb6619663f219e5f679c0fa2575833767980",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0014-sdhci-trial-command-boundaries.patch": {
+      "sha256": "8bb662dcbdfec5b1b09cc55fa73207b800812c9084e35f656fa0fd3f51d8fed7",
+      "git_blob": "2dc522923f73adb89f8989ef547275d6be183ead",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0015-pd-tcpm-linux-6_12-public-apis.patch": {
+      "sha256": "9834a0985a5791d40a93fac8c05d33738db7dd228ebad7f5645b59f55239493b",
+      "git_blob": "1ff1c96db766535155ac19c62253f6d22df7403f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0015-wrapper-identity-cache-handoff.patch": {
+      "sha256": "ca1263760f3ad1bd4da097dc424646604307ebe7496201fe935e97cff21f02af",
+      "git_blob": "24cc0407eb1960ab26d3a274285e8f2967fa2006",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0016-wrapper-normalize-raw-handoff.patch": {
+      "sha256": "ac78cfdc94ba1f0c1273982ad7a33df98ba4c3cff1b74a8545f18583016787ef",
+      "git_blob": "abfebaf302afaf1b3d7c8de6a7a5a2798e6fb27e",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0017-arm64-expose-existing-of-cmdline-extend.patch": {
+      "sha256": "a839b69f3ad11a107c4e630b4e31c7a933f485e5405bdcd654466892e2f984f2",
+      "git_blob": "cef918a55e25f178ecbf1a596f673a13c3ce842f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0017-wrapper-guarded-early-ram-journal.patch": {
+      "sha256": "2aa417c332fe97be46d8537c9ccfae22c7d5e8aa9332c7a0d81be333105e5ebf",
+      "git_blob": "5c11946e304f0a1d7f235d2d197e61587763424f",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0018-early-persistent-ram-console-hooks.patch": {
+      "sha256": "24ceebb890edcb46f11ef6b773f3e2b359c83ca7909974531e48b2b434fc02d6",
+      "git_blob": "56c1827f6be13f0287db9b71e43cab2029b1bc00",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0019-timed-reset-checkpoints.patch": {
+      "sha256": "86ab525282c59994ffd9a2a3252b38fae79c7fd3afde44ff6a3f50b98f5735d9",
+      "git_blob": "267b49897d4e26c2ec7476e43b78ca026136fae1",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0020-sdhci-r11p3-sdio-uhs.patch": {
+      "sha256": "119092fa7a3211306bf763ff8d80b6e27ea579bceea1a5e32fff54dba2f048a9",
+      "git_blob": "d8c1014214d34d5f369ad17dd1ce50d8d812d03d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0021-mmc-sdio-uhs-fallback.patch": {
+      "sha256": "504811775f3028af0a6f65c11f8e820ee567f019a73bc55268f0d97735a2dd3e",
+      "git_blob": "fa2d929b329236d645b5dbc6e2a3ebd330e63fdb",
+      "mode": "100644"
+    },
+    "kernel/ums9632/patches/0022-aic8800-uhs-clock-quiet-idle.patch": {
+      "sha256": "c3ef5e98c05c8e6946c380556cbd4898cbf064238eb5d11908103d10ccb617bd",
+      "git_blob": "e690bfec8507571708fbcb7d4fe5d5284080b442",
+      "mode": "100644"
+    },
+    "kernel/ums9632/qemu.config": {
+      "sha256": "d704f57a9b85765de8430747734af1107440fe452fafa71a5ee68844e147a1d2",
+      "git_blob": "7a0595676a4cc75344d06c7d94e45b32775ca5a9",
+      "mode": "100644"
+    },
+    "kernel/ums9632/singlecpu.config": {
+      "sha256": "5483dcd5a4bcfcc3834c1cd2c3300258a292e1bc115e10111bd194feb4fbfaeb",
+      "git_blob": "4c96963ecbf7c91ef91b79e7a34ce99dead699f1",
+      "mode": "100644"
+    },
+    "kernel/ums9632/stock-mm.config": {
+      "sha256": "f41dc7955dabd4dca22d9b5644755bf7fa54429fb415d2d1d6e0df8129462a18",
+      "git_blob": "92be47716fa7fb7e2bd9ab39a6313dd466ff93bc",
+      "mode": "100644"
+    },
+    "kernel/ums9632/timed-reset.config": {
+      "sha256": "2ee923fca9e2b2eb5634f7bf092f9ca54c3124afe04118fe086bfae705fd48f9",
+      "git_blob": "53ac9e703126226f3adda787dcedad54b4b6d976",
+      "mode": "100644"
+    },
+    "kernel/ums9632/upstream-adaptations.json": {
+      "sha256": "686c197d99c44407c3ad3d5371d31431da7682c8d8116c575527176ada0d885d",
+      "git_blob": "ca42d164879e7f19ae55c6622aafc7785ee3afb2",
+      "mode": "100644"
+    },
+    "kernel/ums9632/vendor-origins.json": {
+      "sha256": "d14419021230e6af1cba82c0e8e21e00d623d7d75997a3716a6bcd5195d92819",
+      "git_blob": "6d8dd8e5a6e9fdcadeb876f9bfc2704b2609ec4d",
+      "mode": "100644"
+    },
+    "kernel/ums9632/watchdog-test.config": {
+      "sha256": "b1fefb9ae8095694112c83144b917e61d061c295ebc604c29e3fdc1380769f25",
+      "git_blob": "1943e125ad4298b1380cad5252448203773ba6fd",
+      "mode": "100644"
+    },
+    "kernel/ums9632/wrap_image.py": {
+      "sha256": "eab7eb08c8ef2ed09dd2955e42196e47cdf475e8ed33e02e3d01cd0ad348d3c6",
+      "git_blob": "f50dd3098908b1082b8cf78a867f4abfe5dd5ab8",
+      "mode": "100644"
+    },
+    "modem-native-re/src/boot.c": {
+      "sha256": "d1b1b22c773b9d174bf5ed6cf0782355a0584c196c4dd19bed495c652a1a0629",
+      "git_blob": "2c364c35db6491b5c722302df15ce9457e8e1489",
+      "mode": "100644"
+    },
+    "modem-native-re/src/hw_linux.c": {
+      "sha256": "555746782925b28d8487e07e31d21e55f453c4a8e14d482350d1b3e74a78c0a6",
+      "git_blob": "14c932721e53bca5e8b554e665961d4e76cb7405",
+      "mode": "100644"
+    },
+    "modem-native-re/src/layout.c": {
+      "sha256": "6f8f77ecfc22d5b1785263d18d938231fac8cf19e9a67a58ac6bb8a68ef0248c",
+      "git_blob": "29b89adfd86efc4e35ffc0c6a71d215c45d2c8ba",
+      "mode": "100644"
+    },
+    "modem-native-re/src/logchan.c": {
+      "sha256": "be187f1a31d0760a7cba708e0d13f1d454afc1a8f3799359ccc241811e9a3b5e",
+      "git_blob": "8ddc6bb2446fa0152f3c614eda2f292d6ae4045a",
+      "mode": "100644"
+    },
+    "modem-native-re/src/main.c": {
+      "sha256": "12aa835da93bf58638286f363190f82c71107cabe4b059b068eda8634f079f75",
+      "git_blob": "93254255a923e37b202cdc41cbcfd25aa69e8459",
+      "mode": "100644"
+    },
+    "modem-native-re/src/mc.h": {
+      "sha256": "1463bf5dbf1c55639a052e260ebff42c932f87a4f900216a0e9f7e4ac2c1ba83",
+      "git_blob": "d45e885d0592abac4b847e5fe67f8e3ff6cd6749",
+      "mode": "100644"
+    },
+    "modem-native-re/src/mon.c": {
+      "sha256": "3a384919a13486143fbae282de92dd5c786739b44f38e553dad0cfd176d9fcb8",
+      "git_blob": "cdd92d77858459b0789629af5fb7315ae1aa2798",
+      "mode": "100644"
+    },
+    "modem-native-re/src/mon.h": {
+      "sha256": "68b5866389175e39d1416fcadb30ec0a852a0ee0ce1e5cfaac672e135b686a1b",
+      "git_blob": "9ec48da2a105b25e902a269251865d5ed9ebbe5d",
+      "mode": "100644"
+    },
+    "modem-native-re/src/nv.c": {
+      "sha256": "a490f1bf3cc2c47a6107077746e4afb21336c899495b71490af9c1e279d9c084",
+      "git_blob": "6dc876808a926124df89eae96416524c78e1caa3",
+      "mode": "100644"
+    },
+    "modem-native-re/src/nv.h": {
+      "sha256": "c3e1c9ce4c6be76c619ee38ca9b43f561dc44015b9713721859607687e8c6d05",
+      "git_blob": "d0b785675f071a8c0014b826be920d6955bb89ef",
+      "mode": "100644"
+    },
+    "modem-native-re/src/nvglue.c": {
+      "sha256": "f9292ee719106b5552309aba0a0f2e6fe8461f37018aea7bdbaec2f400e61bca",
+      "git_blob": "853cc11612a340f35288de874ef684bc861c7688",
+      "mode": "100644"
+    },
+    "modem-native-re/src/secure.c": {
+      "sha256": "a3f52df4418ef9fac4ce8fa5e2d82b3f3670d58ca9e4cfd777580ade992186cb",
+      "git_blob": "a438184e02f62420fd1182a1fa3afb96b35dc64f",
+      "mode": "100644"
+    },
+    "modem-native-re/src/util.c": {
+      "sha256": "bbce9606dad6c3f425cc4c1db9bdc9ad83fa7dbbd46b79f1ad0081f706af32e3",
+      "git_blob": "8048a895bc38d10223c407dc966473d8ef0488e2",
+      "mode": "100644"
+    },
+    "tests/test_atd.py": {
+      "sha256": "8e3f824f671c1d416eaf88aa59b074a449432901986a454cfd371c3122324180",
+      "git_blob": "6c8e8edef67986fd9762936a9decfb59f7724a28",
+      "mode": "100644"
+    },
+    "tests/test_battery_log.uc": {
+      "sha256": "8c7ff359958bc64fdf1e60722b398fd415d20ef77a8ae87432396c0ed1cf4115",
+      "git_blob": "6b63c215e7bad1ffdf0e0364f7f481d4915c2780",
+      "mode": "100644"
+    },
+    "tests/test_cellular_native.py": {
+      "sha256": "1890b036df4c6fff9579b1a7d500a45cc3a704ae27d1fb5fd20c27f80998ebe0",
+      "git_blob": "9ecf8bd4697fef072a4209b710125c23b9b49016",
+      "mode": "100644"
+    },
+    "tests/test_charger.py": {
+      "sha256": "af150ac8697a48f959d7109f0e64296a9758f89e7b75f822b37a97984783492c",
+      "git_blob": "bbe2671b08668b06f293f08110c57a67997857de",
+      "mode": "100644"
+    },
+    "tests/test_cpu.uc": {
+      "sha256": "7903db20893a35bfcc5c8532a4b6a340a758255aab8d5503aab94dece614c644",
+      "git_blob": "f224d14cab282954d8c0d75965289e121c8a3eb8",
+      "mode": "100644"
+    },
+    "tests/test_nvsyncd_writeback.py": {
+      "sha256": "c2561224a97918392492db8044cde8be00b6f0cff41096c4d9db9880649dfeed",
+      "git_blob": "bbf2e004c9d429ec2477c30c48b5c789bea1f563",
+      "mode": "100644"
+    },
+    "tests/test_safety.uc": {
+      "sha256": "326403bcaaf848a825eb97ec18376ecc6081ca9d303790da8592dee81218d66e",
+      "git_blob": "a1cd4f9a1dc4aa83cdaf00e4b242cb045b2e2bc6",
+      "mode": "100644"
+    },
+    "tests/ui/build_host.sh": {
+      "sha256": "1f2f10c8b27f6e476a41afeec59920b5ab614ed3945d934a48e88b4651ec20a5",
+      "git_blob": "fb43d719165231402af0d63a4a34ef1f3e6f9709",
+      "mode": "100644"
+    },
+    "tests/ui/fuzz.sh": {
+      "sha256": "02b063d70223800161dde453ee209418fb809b8fb558f34d9449e8ead2bfc832",
+      "git_blob": "05cdfcc47c8a41e0888f131beca1435b9fc4aa20",
+      "mode": "100644"
+    },
+    "tests/ui/homekey.txt": {
+      "sha256": "a210bc5157761c95d5827b197d8b27dbce3ea25427cdc5af0629002e9d8c8953",
+      "git_blob": "79f81f3cc0ae6fc72fa1a26f960dfac977216611",
+      "mode": "100644"
+    },
+    "tests/ui/idle.txt": {
+      "sha256": "d3ebdf38f30af62e895731249f1b9b59d836267f14e16f9008fc144e7176e3ae",
+      "git_blob": "741e3693710dbde3809c1a7cc966685ac19c92a1",
+      "mode": "100644"
+    },
+    "tests/ui/interact.txt": {
+      "sha256": "db54e1e8a131f76c68d9ae1f002f614f3687779d044cdcbd4a5de01c5b823d4a",
+      "git_blob": "e261ae811b708e95f6d23bae24cf85bec63edccc",
+      "mode": "100644"
+    },
+    "tests/ui/lock.txt": {
+      "sha256": "aa144ebd1080df6fc13054a630bd5f6b1584a0fd7d5397b4922bbe2cc9c885f5",
+      "git_blob": "e67642f0c1d238c80d683891c17daf349c8def2e",
+      "mode": "100644"
+    },
+    "tests/ui/plugins/10-speed.plugin": {
+      "sha256": "408a55ca1641b2cb30a0c37ac60df280cc13a0ff3776ac0e3deb7a351a9c52e2",
+      "git_blob": "ab79374056ebbd9f5f7e3dcc3f2a9d5ba2a47de3",
+      "mode": "100644"
+    },
+    "tests/ui/plugins/20-flight.plugin": {
+      "sha256": "69e8973b16e6ebaf687124c8c8dc7b3dfbe730e7d1fcf5f9f6fb3d83ace950cb",
+      "git_blob": "1e6bb5b67f69ea1bb2562e9de64f50005fcfee73",
+      "mode": "100644"
+    },
+    "tests/ui/plugins/30-clean.plugin": {
+      "sha256": "07475e4dd08590b2369edeb94a1c47bd3971305353248cfbb143fcbf564e0daa",
+      "git_blob": "2b2f8c6fdb58b195b11539a382a2611a7617cd30",
+      "mode": "100644"
+    },
+    "tests/ui/plugins/40-share.plugin": {
+      "sha256": "f66ba34ac1077030e4a60ee583ab5b36d893de0806ea7075c40208b6ddceadbf",
+      "git_blob": "869c6a015228a3d27006b16e81acab5857413d08",
+      "mode": "100644"
+    },
+    "tests/ui/plugins/50-note.plugin": {
+      "sha256": "ca7211f98bf0bc277a9d59c4a089518de39198f8f948180c7ffa4262741950d4",
+      "git_blob": "bf0035fbccf9633c0aa55fbe4f3d0bcc55e8e4f0",
+      "mode": "100644"
+    },
+    "tests/ui/plugins/60-gear.plugin": {
+      "sha256": "13aa8e4c3dd95f31d53b4ce126707094f1beef0421467b21e910293479dc3215",
+      "git_blob": "655312734e47636d7c01a1982014dc6508adc8ba",
+      "mode": "100644"
+    },
+    "tests/ui/plugins/70-info.plugin": {
+      "sha256": "031b9aa5a099134747f354689109eff7296999e4d2dce7b3be72df86bdd42efd",
+      "git_blob": "9604a127a99b0dd7e69c28a03b14624e06d7adf7",
+      "mode": "100644"
+    },
+    "tests/ui/plugins/80-view.plugin": {
+      "sha256": "ea3bc6edc894e407bb7084f840a3f7c9beb76641581529fb9ea20155cd759e71",
+      "git_blob": "24e940423b621f2b3349164005f0593003205ce0",
+      "mode": "100644"
+    },
+    "tests/ui/press.txt": {
+      "sha256": "3645f0f7d64d6aa7775a90dda9532acf18c84174252036da6bb047c696417d98",
+      "git_blob": "8f4a8c3a8c4b562338b545beffeac9d6cd0a51a8",
+      "mode": "100644"
+    },
+    "tests/ui/press2.txt": {
+      "sha256": "ecb0503cece65e0bfeeff01a83149ffd5238eccb8803ed5f667aadf40f41c1dd",
+      "git_blob": "e3e2cddaf131e2ffa32dd275601d8917962fb435",
+      "mode": "100644"
+    },
+    "tests/ui/qr_dump.c": {
+      "sha256": "f1aa0c8a75fa80fdada5ebc1f8eb80b0466ecb9337a3cc56c86a2cac4f8e6717",
+      "git_blob": "5ae5ffe6485c57b764ca0e93995c6f0f9684a109",
+      "mode": "100644"
+    },
+    "tests/ui/shots.py": {
+      "sha256": "ddf305bb07647424203682acc014cee489ad4ae8973c8793650d32399dfbd01e",
+      "git_blob": "8e5796f9fe076c80e8b31c938d626b75ec1efe29",
+      "mode": "100644"
+    },
+    "tests/ui/test_qr.py": {
+      "sha256": "33e8cc4d8c286f9626661de613c62af99ba6d1785b773d2224774431ba2942e3",
+      "git_blob": "a73c2085eebaeeb40b6fe433172fd489ec75fc35",
+      "mode": "100644"
+    },
+    "tests/ui/tog.txt": {
+      "sha256": "0de0cbfed6110c094e7f51e3b3ddf6fc8e96582b6e0e154d2db4dbd947f1a69f",
+      "git_blob": "792f4630015e84edea6f7a06e96078b9c31ce003",
+      "mode": "100644"
+    },
+    "tools/build_native_panel.py": {
+      "sha256": "7eae7e725759c33dbaec31ee8457319ed11a772deb1d034d08a7b39cc4dca43d",
+      "git_blob": "d06a5576e86fec017aea0b689701b26dd05b7bbc",
+      "mode": "100644"
+    },
+    "tools/build_static.py": {
+      "sha256": "0a0be051e7f361f26f2698410a1260ce2f1f78cf7507c3d1b67f19824b9e3969",
+      "git_blob": "f43a3199110b19183b06c3a0ee5496d4a6edc051",
+      "mode": "100644"
+    },
+    "tools/build_ui.py": {
+      "sha256": "79542bdac2011ca1f8f9d621a0aa5e9b010151abf35c38efada58e2425880487",
+      "git_blob": "c4d42f60af332fef12d1b8ebeeafe93f505b5cae",
+      "mode": "100644"
+    },
+    "tools/firmware.py": {
+      "sha256": "8f351dc0777ebf82607c9d5aeeee68b564b9a351ec9acd0fbda8927ee7a9bf11",
+      "git_blob": "ed995d2c1fa777210eada2ec7bbbf0e185215997",
+      "mode": "100644"
+    },
+    "tools/gen_t2s.py": {
+      "sha256": "a0ce096aad2b84721e5342977d987f05e7f5c3e334a9254e3a40224bb17fc48b",
+      "git_blob": "da1eadff905933f56ce656cdd7756e31a8db48d5",
+      "mode": "100644"
+    },
+    "tools/gen_ui_font.py": {
+      "sha256": "286cad4dd62af32eba06ba9ce3409b6c009e2145d97e5131999717560b05a6ca",
+      "git_blob": "ec8870df40d05fd0078a6907a6b63eb97748fc95",
+      "mode": "100644"
+    },
+    "tools/u30pro_atc.c": {
+      "sha256": "8a927dc971637e84db09156fb1ba10d45c41fa4237accd29c0753142a1bc46d4",
+      "git_blob": "0e30de876d342e1385691bfbc3d1cab11226fe9e",
+      "mode": "100644"
+    },
+    "tools/u30pro_atcli.c": {
+      "sha256": "98d1291b01f336a959daa60b1796a36ce1e0f1d83824806659b2a61eda89c36d",
+      "git_blob": "8be31b49688279305892283c2d048c29df5016e8",
+      "mode": "100644"
+    },
+    "tools/u30pro_atd.c": {
+      "sha256": "1c69179648a59d6577f3b8261c0aeb28db254448d40ae2972c4048c0133b532b",
+      "git_blob": "574af944d2cea63f36e726405aef2999da0140b9",
+      "mode": "100644"
+    },
+    "tools/u30pro_celld.c": {
+      "sha256": "99f24433f1d1c61ee7cf24535dfcc48ffb4c26811c16952480e67970f9520572",
+      "git_blob": "3de33017176c342cc74a3cede7a21ebd3f0dc3c1",
+      "mode": "100644"
+    },
+    "tools/u30pro_nfc.c": {
+      "sha256": "81fa9e7dcc7c74fef631812ee3061dd02a6edd5fae69947fcd7b32f016a619b4",
+      "git_blob": "ddb25e7ed39920f3ffc1896b3034d0b3afbdf993",
+      "mode": "100644"
+    },
+    "tools/u30pro_nvsyncd.c": {
+      "sha256": "3ef7fd800ccffe874b3a491da450bb67388f2585aec2cc04ed600d6ac5a6a9c5",
+      "git_blob": "dae35fe2052e4e1c89a3d6d25b5490861abccf89",
+      "mode": "100644"
+    },
+    "tools/u30pro_panel.c": {
+      "sha256": "6ab649cad987df79de5139341db7d2b08ce22b52120a6556e7f6a35eb0ef534b",
+      "git_blob": "7b4e6f9a5d9d3551a6efd81d727644ce61a465fe",
+      "mode": "100644"
+    },
+    "tools/u30pro_refnotifyd.c": {
+      "sha256": "2a95b11fb088a8e0b47fa4dfec3bf4b6cd1e39faeed08164e6d91bcd2f989cc1",
+      "git_blob": "00a3c480d919b52c1bac95929659ec1e9f82045c",
+      "mode": "100644"
+    },
+    "tools/u30pro_ui.c": {
+      "sha256": "509f50da062d843c0f59d4d2c62ea856925ae103524e14c0b5ba1a2ac3d188a6",
+      "git_blob": "a36dd5ba92006ff7009df5212cbcb6f12d555270",
+      "mode": "100644"
+    },
+    "tools/ubus_sysroot.py": {
+      "sha256": "21e241578c694d1da1211c647aab03d0567933dd27a1c4b70104eebfb27473e9",
+      "git_blob": "ca28668ae81c3717874b9da2c37963bdcb2a60ec",
+      "mode": "100644"
+    },
+    "tools/ui/bus.h": {
+      "sha256": "44b1cfa20e3680593217c47f6c17e755188349b2a1e02d31c0d1d70202acfc7e",
+      "git_blob": "71f2976cc64886f9ce8099350aa3189dc06bb2ab",
+      "mode": "100644"
+    },
+    "tools/ui/common.h": {
+      "sha256": "da701c3e88bec7dd0174ae5405052ccd0dbd647227237787d60edb6ec3f66272",
+      "git_blob": "b8a01666ace9aec535971b4eeae4825c8367abed",
+      "mode": "100644"
+    },
+    "tools/ui/data.h": {
+      "sha256": "866a396e8bb8e07c4f66d2c2060bbd70c165517868d84c63783f545968fc8ef8",
+      "git_blob": "d98d521ab0a4d80066560f5db666afb7837349f9",
+      "mode": "100644"
+    },
+    "tools/ui/font.h": {
+      "sha256": "994691517f5ea8aa6452e88949fa222eef70123c01ee9bf8e4ba9fef59812da6",
+      "git_blob": "e53edd4efc3c4f3df4bcdd58ba4346b469297ac1",
+      "mode": "100644"
+    },
+    "tools/ui/gfx.h": {
+      "sha256": "2b0db437e8e1667092a8e96973c260a5ed6cd5183f746a2b053cea6ec2acc7e1",
+      "git_blob": "b9f2b367835ddd562405d52b027cba1026fa0f63",
+      "mode": "100644"
+    },
+    "tools/ui/menu.h": {
+      "sha256": "682fc834c362e9353ef4a0015e8c790798270e51635e28b77aed3fef3a10141e",
+      "git_blob": "05179a761f3f750fcf38984a3f644b5eafda7b61",
+      "mode": "100644"
+    },
+    "tools/ui/pages.h": {
+      "sha256": "7400d3e1955815170014f86748ea75ab2fc9b6d7f202fe910d050dec9081cb4f",
+      "git_blob": "e970ef923de4fc1ecde9c92357a0f4aa4dbecc3c",
+      "mode": "100644"
+    },
+    "tools/ui/platform.h": {
+      "sha256": "b520e88bce29572a20f84a8b4b2095d2c63246469bcf371ef965f2e740cb9ab6",
+      "git_blob": "0b7034ae9c7042db79bc8e075c4575c3869083a4",
+      "mode": "100644"
+    },
+    "tools/ui/plugins.h": {
+      "sha256": "717bfe2cdab437ec1a790303d83498af7ebfda88061ee0a5038b292394e406ba",
+      "git_blob": "ed593402bab677d16aee4c2dad86f89aa4db3e56",
+      "mode": "100644"
+    },
+    "tools/ui/qr.h": {
+      "sha256": "752012e704f0f75151aae3251e41cf5fb6c5d9d2d8ebdca5619c54bf807cc9e3",
+      "git_blob": "5d5e119bf444730eee64c24a22945eb94c4417cf",
+      "mode": "100644"
+    },
+    "tools/ui/sha256.h": {
+      "sha256": "249b7fc1aec488f2e8b40212ff1b709ffbd8f0085b7c13467205d8856b331435",
+      "git_blob": "fed95182c7971ab74de0a3f1ece8c8d9f5b383c7",
+      "mode": "100644"
+    },
+    "tools/ui/stb_image.h": {
+      "sha256": "594c2fe35d49488b4382dbfaec8f98366defca819d916ac95becf3e75f4200b3",
+      "git_blob": "9eedabedc45b3e6fd88fae6f14a160b4d53272ec",
+      "mode": "100644"
+    },
+    "tools/ui/t2s.h": {
+      "sha256": "fa0bad9ecb5fc73aab5d34da553d7fddb1388aa58d6a3bc1614e9a13a8555ec2",
+      "git_blob": "8125b175d96081927aeba1da2bf0ae0aaa75b01e",
+      "mode": "100644"
+    },
+    "tools/ui/wall.h": {
+      "sha256": "8f508c9dffd87358076ddc4400ae0a105ba51596df5d111bca5c01bc74e7c1bb",
+      "git_blob": "5664a9ec899a3e84ad66d5a64883512fa2641cfa",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/etc/config/u30pro_modem": {
+      "sha256": "6bc35f3aa30b25434057d09e7a268403187e1cbab1e62437ce68a5a439edc298",
+      "git_blob": "3d6f956e6b11e30fd61dea53f48de80f4ff8b637",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/etc/config/u30pro_native_control": {
+      "sha256": "784b9a101f80a0ce2f132fc9393336ed10005a71c3226adbf93f56c727adc792",
+      "git_blob": "0ec8468a824be64f91df02ebc395e82b43ab5c44",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/etc/init.d/u30pro-atd": {
+      "sha256": "1c0d8ea7d2c0cabcd44cecaa353c4f984a2b4040e065b9f54fdb31af8f53882b",
+      "git_blob": "c5d4100d64bcdaacd3fdbf89585e1a15b1a39e63",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/etc/init.d/u30pro-battlog": {
+      "sha256": "ac1a5c2aae8f37b2b87d8b1ab15e4e094193155f276bfc14c17d1d68e73a02be",
+      "git_blob": "c8b88c5027c0faebb68dc58399b9684d02c654a1",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/etc/init.d/u30pro-cellular": {
+      "sha256": "8dde2b50400d662770ab2004f216b1e55555ca1344dc690e1cdeefd328eaaf3e",
+      "git_blob": "7613726887024dff3dd99b639bc547f68461d312",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/etc/init.d/u30pro-charger-policy": {
+      "sha256": "849751e8f473c60cb4935fb33ffa87cc3ecfcdbc55981a151ceafdeadd6f2eff",
+      "git_blob": "00cc44f09461379f6dd3b845f1f02d5704f9ce23",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/etc/init.d/u30pro-native": {
+      "sha256": "917c219c3dfc1974edfa3679b8cfec6e3d24ccccfc83d1ab1902dbdadcfadb8d",
+      "git_blob": "27d02973365897a27aef3938b9bbd39b61e2e963",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/etc/init.d/u30pro-panel": {
+      "sha256": "857b64448c73aa4a5e28ba6432fa790b61a47ccd52e32f72d95b6b18a5ce34a3",
+      "git_blob": "d50033cf342af100e85f342b063cdfad2cb44841",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/etc/init.d/u30pro-safety": {
+      "sha256": "754b378671276684fc9f79688d398286200494b4099b5f723de6a2c3d28b93d8",
+      "git_blob": "56f7a5660467d282d0b3ea616b814376f5b481a3",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/etc/modules.d/60-aic8800": {
+      "sha256": "5ed2f57553cec79ba6fe80bfe8b6ad7b71710ca1cee511c90316de1a8ecb3468",
+      "git_blob": "db8af4351b01e923c71aaed329c8cc6ca4ba6198",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/lib/netifd/proto/u30cell.sh": {
+      "sha256": "1627c22684c2adabf87f54ac2f9b18e1e09e7e0c921f4514b1c17a824eabadba",
+      "git_blob": "f1464d05e6e6f240ae6056646caa3d7051c46625",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/libexec/rpcd/u30pro-wallpaper": {
+      "sha256": "8d6816b6ae85ac5b8d25907616a866feb28e940bf42e0fa2fce230a38a0c3162",
+      "git_blob": "90a3fb42806c9f12e543defe60c83202dbb7ee79",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/sbin/u30pro-atc": {
+      "sha256": "06e3ecf1ea9c020a6f54e09a3f136f0031efa703eb9d37d6070709bcce567137",
+      "git_blob": "c52ec9d3224bdd55c38f51701622cec11702d721",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/sbin/u30pro-battlog": {
+      "sha256": "e1caaf788baa6e53845f0af6de5005aa470715811bec8632f16e70223868115f",
+      "git_blob": "2ad3dfde79a45a9447f057351aed6bfcaa23caa9",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/sbin/u30pro-cellular-start": {
+      "sha256": "d6901b3177ec635f269051620068fdbc9b0e85ca948cbeef38feef6d6bcf481e",
+      "git_blob": "cabec7061f47dff4585503ff0bb8875e555cb24e",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/sbin/u30pro-charger": {
+      "sha256": "22b74148d5a13e619099c4cdf11d767b7138fea85cb37cc722e1a35dc755a425",
+      "git_blob": "139e4093658eda4d3f08d8466746e2276dbea336",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/sbin/u30pro-cpu-apply": {
+      "sha256": "96d959607e0da2e5d62b873f56dd020bd7df1fdbc0901f813b12c98428e10ddb",
+      "git_blob": "9dede9a002fd79ae4cbb0ee04ba13c37ae03f040",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/sbin/u30pro-cpuidle-limit": {
+      "sha256": "d2053d217a56bae63fffc2042881afb8c0d47363025c54a171a7dfdec064fe50",
+      "git_blob": "ed3a859b632eb80e3d2326f6de43c2f9a6944e7e",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/sbin/u30pro-modem-early": {
+      "sha256": "57dc7fd4a953d03f64f3de97eaa8ed2579247d3bd0186bb4afb621a91242f5d5",
+      "git_blob": "f8832a5e9b807d8a4bda8d4e4c3520578efb3a89",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/sbin/u30pro-safety": {
+      "sha256": "af5d1ebf8a7945c5d2aa9ad791f0fc2b06443add6e7b07610ea6c3fe5c738e94",
+      "git_blob": "f45c247eb4571843fa0cce19f9d611539cb538b2",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/sbin/u30pro-ui-feed": {
+      "sha256": "8e0a696536e366a0b12ab36da7d6e9272d3da61c82c2da1df131a4e7435455dd",
+      "git_blob": "7c1f5af677cdae12fa6c266887dcf0b3b923ad02",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/sbin/u30pro-usb": {
+      "sha256": "8a014aa8efe14e03b46b81b73ebc9a6a377b12a628c99bc3620adfad8c0984d5",
+      "git_blob": "539d56d96aa4640e7feb42629edd73ed63e18638",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/sbin/u30pro-wifi-sdio": {
+      "sha256": "205235a6e924a547b495ff30ab69c4f9f89f8af5c6a0bc04ceefe91013c8ff31",
+      "git_blob": "972db05c8a5966b28f47535359f8348fd032b099",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/sbin/u30pro-wlan-tune": {
+      "sha256": "fcc17782d646a1f4cec49b1f8e36bf85a8bc34fa301a126734f71525c75b04af",
+      "git_blob": "810a90572ab96dbaccb55ed458f7b702a8f26ccc",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/sbin/u30pro-zram": {
+      "sha256": "d3b538362831aaae923c398b1c5229dd281cdd24f246f24a8981b98529a0e004",
+      "git_blob": "98c0bcd1da98f3d20b0a7391adcde17d6890736e",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/share/rpcd/acl.d/u30pro-wallpaper.json": {
+      "sha256": "150f57004aefc80a5f77056d85ba747d43055b38272503427bfff701567456c4",
+      "git_blob": "47d4136f15941a0296a15d17eeecf7901f84e9d1",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/share/u30pro/battery-log.uc": {
+      "sha256": "f1a7dbfebeacfa68954f6e6712c26e1b4b9dd7b7c10ab3e17aad3c875faf1ead",
+      "git_blob": "0786f5625f70682a7add2aa81eaa01180b1f4f85",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/share/u30pro/cpu-apply.uc": {
+      "sha256": "460f2f833ab2383c9ca3cd731c429aad1e5d207db1ed39f3d19ad51eaf0e09fc",
+      "git_blob": "c135ad8a81dfafaa751bb7c92f9267489332d7f6",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/share/u30pro/cpu-rpc.uc": {
+      "sha256": "7aa8a377b57ebcf8e040c6bafccdcf8065bd6087e401c2aeaf8cd3e01000136d",
+      "git_blob": "9f00302ca983598c77ec44f46f3416dcdfe81022",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/share/u30pro/cpu.uc": {
+      "sha256": "2f2b5fd68bb6c80b21a9fa938eb26eddc8e506794e3232b80cb43397ed686bef",
+      "git_blob": "ae31766187af90999adb9e912d0d6ab84fdfedb4",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/share/u30pro/dial.uc": {
+      "sha256": "890b1510a559229953235b6799e091ab3c189a2e549683d7294efb2113d6334b",
+      "git_blob": "be3949aa325f588e4d76f53971ec82c26d182fa5",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/share/u30pro/modem.uc": {
+      "sha256": "df4ae08fd3b0dcf0206528364172510ec7b2efc8709b76259c8de3bcb3a8ba64",
+      "git_blob": "0bdc36c2466321662e411f6f524cde8e29ede0fc",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/share/u30pro/native-modemlog.uc": {
+      "sha256": "ea5548c772d9bff48e7a056e8f2cc144e8d41b5fe4a8c1fa01c3de95eb4a107c",
+      "git_blob": "fb05fe597190e35eba737c0f5d8964af0b3e837b",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/share/u30pro/safety.uc": {
+      "sha256": "eb70e720f8baa7c35cb0437b2699dbdef287d4e5a29855c8ebb3102454540335",
+      "git_blob": "b842bfa16c9d38c74382bb863f8751bbc6abe388",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/share/u30pro/sms.uc": {
+      "sha256": "a199f1e86e1c98c9b20987b09195c56ef1ff7c20bd9f80e958140d7ee41c3154",
+      "git_blob": "0ea8363f4fa6c539cae57a70429181d0c14aa234",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/share/u30pro/ui-feed.uc": {
+      "sha256": "deebcc66c11beb79b8a171eebc3367921d576438ea1fab73037a4672dd2f170d",
+      "git_blob": "8dc1c47b2f77e5042ad1fa9020527234f472c162",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/share/u30pro/wallpaper.uc": {
+      "sha256": "6c91885b7fa813829fac86ac9d0d1f64b36098788a88263f9ffbbcdfe65963a7",
+      "git_blob": "85d7ed66c7e67a985e823917d0d5e74d89c51a5d",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/share/u30pro/wireless-defaults.uc": {
+      "sha256": "fada60ab7a89b8304d9e63c28a4644d9e35b13bbfa066dfef101f3f770bcd6f0",
+      "git_blob": "582fd683ff0e6afa5aeb588c9c43ddd7ea1e57a4",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/usr/share/u30pro/wireless.uc": {
+      "sha256": "884a1b97ddf6b569e8b5ab8e23998e665c4d76b4fd16af244d4233c27dad6cd9",
+      "git_blob": "32101e199a4759ff4b31b67e62f4243f02100b24",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/www/luci-static/resources/u30pro/kit.css": {
+      "sha256": "2bc30d1bd6ee4a520cf8d4b98d0ff9a8a354ad909ec89fbccc3d35349ab171ba",
+      "git_blob": "e2922e2dbde26cf90ddd443605f23e16aeb9cbc6",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/www/luci-static/resources/u30pro/kit.js": {
+      "sha256": "7beb656fcac7b1919b1b9affb9cd2c663a2cd0f14119ed6c7411021b07a98dad",
+      "git_blob": "4a8c5c6159085d9dc1b7e8a750b01107766269bb",
+      "mode": "100644"
+    },
+    "ui/native-control/overlay/www/luci-static/resources/view/system/u30pro-wallpaper.js": {
+      "sha256": "04341b79cf71b57dbe96c8828ecbe5458506b6cafd75618241cec8f0994b2037",
+      "git_blob": "4eea8d801fa03b422fedcd0185fba3b34ddeed89",
+      "mode": "100644"
+    }
+  }
+}

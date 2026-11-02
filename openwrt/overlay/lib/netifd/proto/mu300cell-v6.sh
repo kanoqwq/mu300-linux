@@ -34,10 +34,10 @@ prefix4=$4
 dns1=$5
 dns2=$6
 peerdns=$7
-urclog=${MU300_URC_LOG:-/run/mu300-at/urc/stty_nr0.log}
+urclog=${MU300_URC_LOG:-${10:-${MU300_SIM_URC:-/run/mu300-at/urc/stty_nr0.log}}}
 sim_slot=${9:-${MU300_SIM_SLOT:-0}}
 case "$sim_slot" in 0|1) ;; *) exit 1 ;; esac
-[ "$sim_slot" != 1 ] || urclog=${MU300_URC_LOG:-/run/mu300-at4/urc/stty_nr3.log}
+[ "$sim_slot" != 1 ] || urclog=${MU300_URC_LOG:-${10:-${MU300_SIM_URC:-/run/mu300-at4/urc/stty_nr3.log}}}
 logtag=mu300cell-renew
 
 mask2prefix() {
@@ -278,7 +278,8 @@ exec 3<>"$events"
 	while IFS= read -r _; do printf 'v6\n'; done > "$events" ) & addrmon=$!
 ( ip -6 monitor route dev "$ifname" 2>/dev/null |
 	while IFS= read -r _; do printf 'v6\n'; done > "$events" ) & routemon=$!
-( while [ ! -f "$urclog" ]; do sleep 0.2; done
+( # tail -F waits internally when the owner has not created its log yet.
+	# Do not spawn a sleep process five times per second for a missing path.
 	tail -n 0 -F "$urclog" 2>/dev/null |
 	while IFS= read -r line; do
 		case $line in

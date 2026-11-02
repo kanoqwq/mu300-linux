@@ -1,0 +1,216 @@
+--- a/drivers/regulator/ump9650-regulator.c
++++ b/drivers/regulator/ump9650-regulator.c
+@@ -20,7 +20,6 @@
+ #include <linux/regulator/of_regulator.h>
+ #include <linux/seq_buf.h>
+ #include <linux/sched.h>
+-#include <../drivers/unisoc_platform/sysdump/unisoc_sysdump.h>
+ #include "ump9650-regulator.h"
+ 
+ #define UMP9650_WR_UNLOCK_VALUE			0x6e7f
+@@ -154,6 +153,7 @@
+ 
+ static char *sprd_ump9650_buf;
+ static struct seq_buf *sprd_ump9650_seq_buf;
++static struct debugfs_blob_wrapper ump9650_fault_blob;
+ 
+ static struct sprd_ump9650_eic_dbnc_desc_priv sprd_ump9650_eic_dbnc_desc[] = {
+ 	{"vddvmemufsx_ocp", 0, 0, 0x10, UMP9650_EIC_DBNC5_VMEMUFSX_OCP, 0,
+@@ -1130,35 +1130,21 @@
+ 
+ static void sprd_ump9650_seq_buf_init(void)
+ {
+-	int ret;
+-
+-	sprd_ump9650_buf = kzalloc(SPRD_SOCP_PRINT_BUF_LEN, GFP_KERNEL);
+-	if (IS_ERR_OR_NULL(sprd_ump9650_buf)) {
+-		sprd_ump9650_buf = NULL;
+-		return;
+-	}
+-
+-	sprd_ump9650_seq_buf = kzalloc(sizeof(*sprd_ump9650_seq_buf), GFP_KERNEL);
+-	if (IS_ERR_OR_NULL(sprd_ump9650_seq_buf)) {
+-		kfree(sprd_ump9650_buf);
+-		sprd_ump9650_buf = NULL;
+-		sprd_ump9650_seq_buf = NULL;
+-		return;
+-	}
+-
+-	ret = minidump_save_extend_information("sprd-pmic-ump9650",
+-					       __pa((unsigned long)(sprd_ump9650_buf)),
+-					       __pa((unsigned long)(sprd_ump9650_buf) +
+-						       SPRD_SOCP_PRINT_BUF_LEN));
+-	if (ret) {
+-		kfree(sprd_ump9650_buf);
+-		sprd_ump9650_buf = NULL;
+-		kfree(sprd_ump9650_seq_buf);
+-		sprd_ump9650_seq_buf = NULL;
+-		return;
+-	}
+-
+-	seq_buf_init(sprd_ump9650_seq_buf, sprd_ump9650_buf, SPRD_SOCP_PRINT_BUF_LEN);
++ sprd_ump9650_buf = kzalloc(SPRD_SOCP_PRINT_BUF_LEN, GFP_KERNEL);
++ if (!sprd_ump9650_buf)
++  return;
++ sprd_ump9650_seq_buf = kzalloc(sizeof(*sprd_ump9650_seq_buf), GFP_KERNEL);
++ if (!sprd_ump9650_seq_buf) {
++  kfree(sprd_ump9650_buf);
++  sprd_ump9650_buf = NULL;
++  return;
++ }
++ seq_buf_init(sprd_ump9650_seq_buf, sprd_ump9650_buf, SPRD_SOCP_PRINT_BUF_LEN);
++ /* Keep fault diagnostics using standard debugfs, without Android minidump. */
++ ump9650_fault_blob.data = sprd_ump9650_buf;
++ ump9650_fault_blob.size = SPRD_SOCP_PRINT_BUF_LEN;
++ if (!IS_ERR_OR_NULL(debugfs_root))
++  debugfs_create_blob("fault_log", 0444, debugfs_root, &ump9650_fault_blob);
+ }
+ 
+ static int ump9650_regulator_set_dsc(struct regmap *regmap)
+@@ -1201,8 +1187,8 @@
+ 
+ 	sprd_eic_dbnc_dev->dev = &pdev->dev;
+ 	sprd_eic_dbnc_dev->reg_map = dev_get_regmap(pdev->dev.parent, NULL);
+-	if (IS_ERR(sprd_eic_dbnc_dev->reg_map)) {
+-		err = PTR_ERR(sprd_eic_dbnc_dev->reg_map);
++	if (IS_ERR_OR_NULL(sprd_eic_dbnc_dev->reg_map)) {
++		err = sprd_eic_dbnc_dev->reg_map ? PTR_ERR(sprd_eic_dbnc_dev->reg_map) : -EPROBE_DEFER;
+ 		dev_err(&pdev->dev, "failed to get regmap:%d!\n", err);
+ 		return err;
+ 	}
+@@ -1288,7 +1274,7 @@
+ 
+ 	ret = devm_request_threaded_irq(&pdev->dev, sprd_eic_dbnc_dev->irq, NULL,
+ 					sprd_ump9650_eic_dbnc_handler,
+-					IRQF_ONESHOT | IRQF_EARLY_RESUME,
++					IRQF_ONESHOT, /* Bootstrap profile has system suspend disabled. */
+ 					pdev->name, sprd_eic_dbnc_dev);
+ 	if (ret < 0) {
+ 		dev_err(sprd_eic_dbnc_dev->dev, "failed to request ump9650 eic_dbnc irq\n");
+@@ -1300,17 +1286,15 @@
+ 	return 0;
+ }
+ 
+-static int ump9650_regulator_remove(struct platform_device *pdev)
++static void ump9650_regulator_remove(struct platform_device *pdev)
+ {
+ 	debugfs_remove_recursive(debugfs_root);
+ 
+-	minidump_change_extend_information("sprd-pmic-ump9650", 0, 0);
+ 	kfree(sprd_ump9650_seq_buf);
+ 	sprd_ump9650_seq_buf = NULL;
+ 	kfree(sprd_ump9650_buf);
+ 	sprd_ump9650_buf = NULL;
+ 
+-	return 0;
+ }
+ 
+ static const struct of_device_id ump9650_regulator_match[] = {
+--- a/drivers/regulator/ump9651-regulator.c
++++ b/drivers/regulator/ump9651-regulator.c
+@@ -21,7 +21,6 @@
+ #include <linux/regulator/machine.h>
+ #include <linux/seq_buf.h>
+ #include <linux/sched.h>
+-#include <../drivers/unisoc_platform/sysdump/unisoc_sysdump.h>
+ #include "ump9651-regulator.h"
+ #include "internal.h"
+ 
+@@ -129,6 +128,7 @@
+ 
+ static char *sprd_ump9651_buf;
+ static struct seq_buf *sprd_ump9651_seq_buf;
++static struct debugfs_blob_wrapper ump9651_fault_blob;
+ 
+ static struct sprd_ump9651_eic_dbnc_desc_priv sprd_ump9651_eic_dbnc_desc[] = {
+ 	{"vdd28_1_ocp", 0, 0, 0x10, UMP9651_EIC_DBNC3_VDD28_1_OCP, 0,
+@@ -772,35 +772,21 @@
+ 
+ static void sprd_ump9651_seq_buf_init(void)
+ {
+-	int ret;
+-
+-	sprd_ump9651_buf = kzalloc(SPRD_SOCP_PRINT_BUF_LEN, GFP_KERNEL);
+-	if (IS_ERR_OR_NULL(sprd_ump9651_buf)) {
+-		sprd_ump9651_buf = NULL;
+-		return;
+-	}
+-
+-	sprd_ump9651_seq_buf = kzalloc(sizeof(*sprd_ump9651_seq_buf), GFP_KERNEL);
+-	if (IS_ERR_OR_NULL(sprd_ump9651_seq_buf)) {
+-		kfree(sprd_ump9651_buf);
+-		sprd_ump9651_buf = NULL;
+-		sprd_ump9651_seq_buf = NULL;
+-		return;
+-	}
+-
+-	ret = minidump_save_extend_information("sprd-pmic-ump9651",
+-					       __pa((unsigned long)(sprd_ump9651_buf)),
+-					       __pa((unsigned long)(sprd_ump9651_buf) +
+-						       SPRD_SOCP_PRINT_BUF_LEN));
+-	if (ret) {
+-		kfree(sprd_ump9651_buf);
+-		sprd_ump9651_buf = NULL;
+-		kfree(sprd_ump9651_seq_buf);
+-		sprd_ump9651_seq_buf = NULL;
+-		return;
+-	}
+-
+-	seq_buf_init(sprd_ump9651_seq_buf, sprd_ump9651_buf, SPRD_SOCP_PRINT_BUF_LEN);
++ sprd_ump9651_buf = kzalloc(SPRD_SOCP_PRINT_BUF_LEN, GFP_KERNEL);
++ if (!sprd_ump9651_buf)
++  return;
++ sprd_ump9651_seq_buf = kzalloc(sizeof(*sprd_ump9651_seq_buf), GFP_KERNEL);
++ if (!sprd_ump9651_seq_buf) {
++  kfree(sprd_ump9651_buf);
++  sprd_ump9651_buf = NULL;
++  return;
++ }
++ seq_buf_init(sprd_ump9651_seq_buf, sprd_ump9651_buf, SPRD_SOCP_PRINT_BUF_LEN);
++ /* Keep fault diagnostics using standard debugfs, without Android minidump. */
++ ump9651_fault_blob.data = sprd_ump9651_buf;
++ ump9651_fault_blob.size = SPRD_SOCP_PRINT_BUF_LEN;
++ if (!IS_ERR_OR_NULL(debugfs_root))
++  debugfs_create_blob("fault_log", 0444, debugfs_root, &ump9651_fault_blob);
+ }
+ 
+ int regulator_check_slp_pd(struct regulator *regulator)
+@@ -866,8 +852,8 @@
+ 
+ 	sprd_eic_dbnc_dev->dev = &pdev->dev;
+ 	sprd_eic_dbnc_dev->reg_map = dev_get_regmap(pdev->dev.parent, NULL);
+-	if (IS_ERR(sprd_eic_dbnc_dev->reg_map)) {
+-		err = PTR_ERR(sprd_eic_dbnc_dev->reg_map);
++	if (IS_ERR_OR_NULL(sprd_eic_dbnc_dev->reg_map)) {
++		err = sprd_eic_dbnc_dev->reg_map ? PTR_ERR(sprd_eic_dbnc_dev->reg_map) : -EPROBE_DEFER;
+ 		dev_err(&pdev->dev, "failed to get regmap:%d!\n", err);
+ 		return err;
+ 	}
+@@ -948,7 +934,7 @@
+ 
+ 	ret = devm_request_threaded_irq(&pdev->dev, sprd_eic_dbnc_dev->irq, NULL,
+ 					sprd_ump9651_eic_dbnc_handler,
+-					IRQF_ONESHOT | IRQF_EARLY_RESUME,
++					IRQF_ONESHOT, /* Bootstrap profile has system suspend disabled. */
+ 					pdev->name, sprd_eic_dbnc_dev);
+ 	if (ret < 0) {
+ 		dev_err(sprd_eic_dbnc_dev->dev, "failed to request ump9651 eic_dbnc irq\n");
+@@ -960,17 +946,15 @@
+ 	return 0;
+ }
+ 
+-static int ump9651_regulator_remove(struct platform_device *pdev)
++static void ump9651_regulator_remove(struct platform_device *pdev)
+ {
+ 	debugfs_remove_recursive(debugfs_root);
+ 
+-	minidump_change_extend_information("sprd-pmic-ump9651", 0, 0);
+ 	kfree(sprd_ump9651_seq_buf);
+ 	sprd_ump9651_seq_buf = NULL;
+ 	kfree(sprd_ump9651_buf);
+ 	sprd_ump9651_buf = NULL;
+ 
+-	return 0;
+ }
+ 
+ static const struct of_device_id ump9651_regulator_match[] = {

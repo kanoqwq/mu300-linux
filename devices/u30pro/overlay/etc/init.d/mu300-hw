@@ -1,0 +1,12 @@
+#!/bin/sh /etc/rc.common
+START=12
+boot() {
+    /usr/sbin/u30pro-nodes --populate-nodes
+    /usr/sbin/u30pro-usb-boot || logger -t u30pro 'USB network boot policy failed'
+    /opt/mu300/bin/zram-start >/dev/null 2>&1 &
+    # Same one-time import as MU300; never block CP startup on Wi-Fi discovery.
+    # cfg80211 is built in and queried regdb before the persistent root existed.
+    # Reload the installed database through nl80211, then honor saved country.
+    ( iw reg reload && /opt/mu300/bin/openwrt-wifi-config && /sbin/wifi up ) ||
+        logger -t u30pro 'Wireless initialization failed; inspect regulatory/hostapd logs' &
+}

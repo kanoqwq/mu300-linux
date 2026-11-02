@@ -8,9 +8,15 @@ const CONFIG=DIR+'/cpu-voltage.json', ARMED=DIR+'/cpu-voltage-armed.json';
 const RECOVERY=RUN+'/unisoc-cpu-voltage-recovery.json';
 const BOOT=trim(fs.readfile(getenv('MU300_CPU_BOOT_ID') || '/proc/sys/kernel/random/boot_id') || '');
 const PLATFORM=getenv('MU300_CPU_PLATFORM') || '/opt/mu300/bin/cpu-voltage-platform';
+// Hardware profile chooses the domain count; never infer ABI from a partial
+// sysfs probe or a stale saved setting. UMS9620 retains its three-domain ABI.
+const DEVICE=trim(fs.readfile(getenv('MU300_CPU_DEVICE_FILE') || '/etc/mu300/platform') || '');
+const COUNT=DEVICE=='u30pro'?2:3;
+const ZERO=COUNT==2?[0,0]:[0,0,0];
+const ZERO_TEXT=join(',',ZERO);
 function readjson(path) { try { return json(fs.readfile(path) || 'null'); } catch(e) { return null; } }
 function valid(v) {
-    if(type(v)!='array' || length(v)!=3) return false;
+    if(type(v)!='array' || length(v)!=COUNT) return false;
     for(let n in v) if(type(n)!='int' || n < -50000 || n > 25000 || n%3125) return false;
     return true;
 }
@@ -41,7 +47,7 @@ function current() {
         if(!match(id,/^policy[0-9]+$/)) continue;
         let path=ROOT+'/'+id+'/', d=trim(fs.readfile(path+'scaling_voltage_domain')||''),
             offset=trim(fs.readfile(path+'scaling_voltage_offset')||'');
-        if(!match(d,/^[012]$/) || !match(offset,/^-?[0-9]+$/) || seen[d]) continue;
+        if(!match(d,/^[0-9]+$/) || +d>=COUNT || !match(offset,/^-?[0-9]+$/) || seen[d]) continue;
         seen[d]=true;
         let table=[];
         for(let line in split(trim(fs.readfile(path+'scaling_voltage_table')||''),'\n')) {
@@ -54,8 +60,8 @@ function current() {
 }
 function status() {
     let domains=current(), config=readjson(CONFIG), firmware=supported(false);
-    let next=config?.version==1 && valid(config.offsets)?config.offsets:[0,0,0];
-    return {ok:1,supported:firmware && length(domains)==3,firmware,domains,
+    let next=config?.version==1 && valid(config.offsets)?config.offsets:ZERO;
+    return {ok:1,domain_count:COUNT,supported:firmware && length(domains)==COUNT,firmware,domains,
         offsets:next,min:-50000,max:25000,step:3125,
         pending:length(filter(domains,d=>d.offset!=next[d.id]))>0,
         recovery:readjson(RUN+'/unisoc-cpu-voltage-recovery.json')?.reason || null};
@@ -63,12 +69,12 @@ function status() {
 function save(input) {
     if(!valid(input?.offsets)) return {ok:0,error:'CPU 电压配置无效'};
     let nonzero=length(filter(input.offsets,n=>n!=0))>0;
-    if(nonzero && (!supported(true) || length(current())!=3)) return {ok:0,error:'当前内核或固件不支持电压调整'};
+    if(nonzero && (!supported(true) || length(current())!=COUNT)) return {ok:0,error:'当前内核或固件不支持电压调整'};
     if(!store(CONFIG,{version:1,offsets:input.offsets})) return {ok:0,error:'无法保存 CPU 设置'};
     // Explicit saving retries a paused trial only from observed factory voltage.
     // Saving while an offset is active must not erase its boot evidence.
     let armed=readjson(ARMED), domains=current();
-    if(armed?.phase=='paused' && length(domains)==3 && !length(filter(domains,d=>d.offset!=0))) {
+    if(armed?.phase=='paused' && length(domains)==COUNT && !length(filter(domains,d=>d.offset!=0))) {
         if(!fs.unlink(ARMED)) return {ok:0,error:'无法保存 CPU 设置'};
         fs.unlink(RECOVERY);
     }
@@ -77,14 +83,14 @@ function save(input) {
 function bootargs() {
     let config=readjson(CONFIG), armed=readjson(ARMED);
     if(fs.stat(ARMED)) {
-        if(BOOT && armed?.boot==BOOT) return '0,0,0'; // never apply twice
+        if(BOOT && armed?.boot==BOOT) return ZERO_TEXT; // never apply twice
     }
-    if(config?.version!=1 || !valid(config.offsets)) return '0,0,0';
+    if(config?.version!=1 || !valid(config.offsets)) return ZERO_TEXT;
     if(!length(filter(config.offsets,n=>n!=0))) {
         if(BOOT) { fs.unlink(ARMED); fs.unlink(RECOVERY); }
-        return '0,0,0';
+        return ZERO_TEXT;
     }
-    if(!BOOT || !supported(true)) return '0,0,0';
+    if(!BOOT || !supported(true)) return ZERO_TEXT;
     // Missing shutdown is normal on externally powered F50/V50. Confirmed
     // settings survive any power cut. Only an unfinished NEW trial is paused;
     // it is not evidence of a crash and never rejects or deletes the profile.
@@ -97,10 +103,10 @@ function bootargs() {
     if(reason) {
         store(ARMED,{version:2,boot:BOOT,offsets:config.offsets,phase:'paused'});
         store(RECOVERY,{reason});
-        return '0,0,0';
+        return ZERO_TEXT;
     }
     let confirmed=armed?.version==2 && armed.phase=='confirmed' && same(armed.offsets,config.offsets);
-    if(!store(ARMED,{version:2,boot:BOOT,offsets:config.offsets,phase:confirmed?'confirmed':'pending'})) return '0,0,0';
+    if(!store(ARMED,{version:2,boot:BOOT,offsets:config.offsets,phase:confirmed?'confirmed':'pending'})) return ZERO_TEXT;
     fs.unlink(RECOVERY);
     return join(',',config.offsets);
 }
@@ -109,7 +115,7 @@ function confirm() {
     if(!fs.stat(ARMED) || armed?.phase=='paused') return {ok:1};
     if(!BOOT || armed?.boot!=BOOT || !valid(armed.offsets)) return {ok:0,error:'无法确认 CPU 电压启动状态'};
     let domains=current();
-    if(length(domains)!=3 || length(filter(domains,d=>d.offset!=armed.offsets[d.id])))
+    if(length(domains)!=COUNT || length(filter(domains,d=>d.offset!=armed.offsets[d.id])))
         return {ok:0,error:'CPU 电压读回与启动设置不符'};
     if(armed.version==2 && armed.phase=='confirmed') return {ok:1};
     if(!store(ARMED,{version:2,boot:BOOT,offsets:armed.offsets,phase:'confirmed'}))
@@ -126,7 +132,7 @@ try {
     } else if(action=='confirm' || action=='shutdown') result=confirm();
     else result={ok:0,error:'CPU 电压配置无效'};
 } catch(e) {
-    if(action=='boot-args') { print('0,0,0\n'); exit(0); }
+    if(action=='boot-args') { print(ZERO_TEXT+'\n'); exit(0); }
     result={ok:0,error:'CPU 电压配置无效'};
 }
 print(sprintf('%J\n',result));

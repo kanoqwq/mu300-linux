@@ -17,6 +17,12 @@ mu300_sim_env() {
         MU300_SIM_URC=/run/mu300-at/urc/stty_nr0.log
         device=sipa_eth0
     fi
+    if [ "$(cat /etc/mu300/platform 2>/dev/null)" = u30pro ]; then
+        case $selected in
+            0) MU300_SIM_URC=/run/mu300-at2/urc/stty_nr0.log ;;
+            1) MU300_SIM_URC=/run/mu300-at5/urc/stty_nr3.log ;;
+        esac
+    fi
     MU300_SIM_DEVICE=$(uci -q get "unisoc_modem.main.sim${selected}_device" 2>/dev/null || true)
     MU300_SIM_DEVICE=${MU300_SIM_DEVICE:-$device}
     case "$MU300_SIM_DEVICE" in ''|*[!a-zA-Z0-9_.:-]*) return 1 ;; esac

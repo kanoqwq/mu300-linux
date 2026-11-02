@@ -1,0 +1,24 @@
+--- a/native/align_image.S
++++ b/native/align_image.S
+@@ -1,6 +1,7 @@
+ /* SPDX-License-Identifier: MIT
+  * Position-independent arm64 raw-Image alignment wrapper. No DTB/device writes.
+- * Entry follows the Linux boot ABI: MMU/D-cache off, x0=8-aligned FDT.
++ * Entry: EL1/EL2, x0=8-aligned FDT; MMU off or firmware identity map.
++ * Preserve MMU/cache state for Linux primary_entry to normalize safely.
+  * Reserve the entire relocation arena in the outer Image header; move only
+  * the payload file bytes, backwards when overlapping. Never relocate the DTB.
+  */
+@@ -27,10 +28,8 @@
+ 8:
+  mrs x8, sctlr_el2
+ 9:
+- tst x8, #1                 /* no MMU translation assumed by this raw wrapper */
+- b.ne failure
+- tst x8, #4                 /* require Linux boot ABI D-cache-off handoff */
+- b.ne failure
++ /* Linux head.S handles both MMU-off and identity-mapped MMU/cache-on.
++  * Keep SCTLR unchanged; the copy is cleaned to PoC before entry. */
+  cbz x0, failure
+  tst x0, #7
+  b.ne failure

@@ -1,0 +1,139 @@
+wakemode 0
+page 0
+setpin 4321
+fn 6
+wait 200
+shot lk01_lock_page
+sleep
+state
+tap 120 120
+state
+shot lk02_lockscreen
+tap 120 120
+state
+swipe 120 160 120 60 200
+state
+shot lk03_pad
+tap 120 39
+tap 168 55
+shot lk04_two_digits
+tap 120 120
+tap 120 120
+state
+tap 120 120
+state
+hold 120 120 600
+state
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+state
+shot lk05_wrong
+wait 800
+key 102
+state
+tap 197 145
+tap 197 95
+tap 168 55
+tap 120 39
+state
+shot lk06_unlocked
+sleep
+tap 120 120
+swipe 120 160 120 60 200
+wait 11000
+state
+swipe 120 160 120 60 200
+tap 197 145
+tap 197 95
+tap 168 55
+tap 120 39
+wakemode 1
+sleep
+tap 120 120
+state
+wait 200
+tap 120 120
+state
+swipe 120 160 120 60 200
+tap 197 145
+tap 197 95
+tap 168 55
+tap 120 39
+wakemode 2
+sleep
+tap 120 120
+wait 100
+tap 120 120
+state
+key 102
+state
+swipe 120 160 120 60 200
+tap 197 145
+tap 197 95
+tap 168 55
+tap 120 39
+fn 6
+wait 200
+tap 120 146
+tap 120 96
+state
+tap 120 146
+state
+shot lk07_new_pin
+tap 120 39
+tap 168 55
+tap 197 95
+tap 197 145
+tap 140 146
+shot lk08_again
+tap 120 39
+tap 168 55
+tap 197 95
+tap 120 201
+tap 140 146
+shot lk09_mismatch
+state
+tap 120 39
+tap 168 55
+tap 197 95
+tap 197 145
+tap 140 146
+tap 120 39
+tap 168 55
+tap 197 95
+tap 197 145
+tap 140 146
+state
+wait 300
+shot lk10_pin_changed
+wakemode 0
+sleep
+tap 120 120
+swipe 120 160 120 60 200
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+tap 120 39
+state
+wait 1000
+shot lk11_wait
+fn 4
+state

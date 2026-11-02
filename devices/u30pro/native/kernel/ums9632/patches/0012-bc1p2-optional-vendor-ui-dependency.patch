@@ -1,0 +1,12 @@
+--- a/drivers/unisoc_platform/sprd_charger/sprd-bc1p2.c
++++ b/drivers/unisoc_platform/sprd_charger/sprd-bc1p2.c
+@@ -15,7 +15,9 @@
+ #include <linux/power/sprd-bc1p2.h>
+ #include <linux/extcon.h>
+ #include <linux/usb/sprd_typec.h>
++#if IS_ENABLED(CONFIG_VENDOR_SQC_CHARGER_SPRD)
+ #include <vendor/common/zte_misc.h>
++#endif
+ #if IS_ENABLED(CONFIG_ZTE_POWER_SUPPLY)
+ #include <vendor/common/zte_power_supply.h>
+ #endif

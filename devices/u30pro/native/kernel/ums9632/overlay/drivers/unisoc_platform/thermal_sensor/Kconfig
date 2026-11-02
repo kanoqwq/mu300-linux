@@ -1,0 +1,28 @@
+config U30PRO_SPRD_THM_R5P0
+ bool "UMS9632 SoC thermal sensors (R5P0 IP)"
+ depends on ARCH_SPRD && THERMAL_OF && NVMEM && COMMON_CLK
+ help
+   Reads the on-die temperature sensors (two R5P0 blocks, eight sensors each) with the efuse calibration and registers them
+   with the thermal framework, so the zones of the stock device tree appear in /sys/class/thermal and as hwmon devices.
+   Ported from the vendor driver; the hardware over-temperature shutdown thresholds are programmed as the vendor does.
+
+config U30PRO_SPRD_THM_VIRT
+ bool "UMS9632 virtual thermal sensors (SoC and CPU cluster temperature)"
+ depends on ARCH_SPRD && THERMAL_OF
+ help
+   Provides the "soc-thmzone" (highest of the core and GPU zones) with the passive trips that throttle the CPUs through the cpufreq
+   cooling devices, and the cluster zones the apcpu cpufreq driver reads.  Needed before the cpufreq driver is switched on.
+
+config U30PRO_SPRD_THM_SHELL
+ bool "UMS9632 shell (case surface) temperature estimators"
+ depends on ARCH_SPRD && THERMAL_OF
+ help
+   The frame, front, back and bkchg zones: estimates of the case temperature calculated from the seven board NTC zones (see
+   drivers/unisoc_platform/thermal_sensor/u30pro_sprd_shell_thm.c).  Needs GENERIC_ADC_THERMAL for the NTC zones.
+
+config U30PRO_UMP96XX_TSENSOR
+ bool "UMP96xx PMIC TSX crystal temperature for the modem (modem_tsen)"
+ depends on ARCH_SPRD && MFD_SC27XX_PMIC
+ help
+   Provides /sys/bus/platform/drivers/ump96xx-tsensor/modem_tsen (m°C), the temperature of the TSX crystal that the stock RIL
+   sends to the CP (AT+SPTSXTMP) before every protocol stack start on crystal=7 boards.  Port of the vendor normal-boot path.

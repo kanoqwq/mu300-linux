@@ -1,0 +1,29 @@
+#!/bin/sh
+# Compressed-RAM swap (zram) as a safety margin for package installs and bursts: the system itself runs from RAM and normally uses ~10% of it.
+#   u30pro-zram start    25% of the RAM (at most 512 MiB), lz4, low priority use (vm.swappiness 30); off with u30pro_native_control.zram.enabled=0
+#   u30pro-zram stop
+#   u30pro-zram status
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+Z=/sys/block/zram0
+case "$1" in
+start)
+	[ "$(uci -q get u30pro_native_control.zram.enabled)" = 0 ] && exit 0
+	[ -d $Z ] || exit 0
+	grep -q '^/dev/zram0 ' /proc/swaps && exit 0
+	kb=$(sed -n 's/^MemTotal: *\([0-9]*\) kB/\1/p' /proc/meminfo)
+	mb=$((kb / 4096))
+	[ "$mb" -gt 512 ] && mb=512
+	echo lz4 >$Z/comp_algorithm 2>/dev/null
+	echo "${mb}M" >$Z/disksize || exit 1
+	mkswap /dev/zram0 >/dev/null 2>&1 && swapon -p 10 /dev/zram0 || exit 1
+	sysctl -w vm.swappiness=30 >/dev/null 2>&1
+	;;
+stop)
+	grep -q '^/dev/zram0 ' /proc/swaps && swapoff /dev/zram0
+	[ -d $Z ] && echo 1 >$Z/reset
+	;;
+status)
+	grep '^/dev/zram0 ' /proc/swaps || echo "zram swap is off"
+	;;
+*) echo "usage: u30pro-zram start|stop|status" >&2; exit 2 ;;
+esac

@@ -1,0 +1,7 @@
+config U30PRO_UMP965X_ADC
+ bool "U30 Pro native UMP9650/UMP9651 PMIC ADC"
+ depends on ARCH_SPRD && IIO && MFD_SC27XX_PMIC && NVMEM && HWSPINLOCK
+ help
+   Real UMP9650/1 conversion, factory calibration and channel ratios from
+   the MU5358 source, adapted to Linux 6.12. Declared shared hardware locks
+   are required and conversion errors are propagated to consumers.

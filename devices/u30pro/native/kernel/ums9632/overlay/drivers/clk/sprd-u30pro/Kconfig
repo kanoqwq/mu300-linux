@@ -1,0 +1,9 @@
+config U30PRO_VENDOR_CLK
+	bool "U30 Pro vendor clock/reset infrastructure"
+	depends on ARCH_SPRD && !SPRD_COMMON_CLK
+	select REGMAP_MMIO
+	select RESET_CONTROLLER
+
+config SPRD_UMS9632_CLK
+	bool "Unisoc UMS9632 clocks"
+	depends on U30PRO_VENDOR_CLK

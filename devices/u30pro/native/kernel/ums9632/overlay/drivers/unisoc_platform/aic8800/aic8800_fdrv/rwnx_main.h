@@ -1,0 +1,30 @@
+/**
+ ******************************************************************************
+ *
+ * @file rwnx_main.h
+ *
+ * Copyright (C) RivieraWaves 2012-2019
+ *
+ ******************************************************************************
+ */
+
+#ifndef _RWNX_MAIN_H_
+#define _RWNX_MAIN_H_
+
+#include "rwnx_defs.h"
+
+int rwnx_cfg80211_init(struct rwnx_plat *rwnx_plat, void **platform_data);
+void rwnx_cfg80211_deinit(struct rwnx_hw *rwnx_hw);
+#ifdef CONFIG_AIC_POWER_RESET
+int rwnx_cfg80211_reinit(struct rwnx_hw *rwnx_hw);
+#endif
+
+extern int testmode;
+extern u8 chip_sub_id;
+extern u8 chip_mcu_id;
+extern u8 chip_id;
+
+#define CHIP_ID_H_MASK  0xC0
+#define IS_CHIP_ID_H()  ((chip_id & CHIP_ID_H_MASK) == CHIP_ID_H_MASK)
+
+#endif /* _RWNX_MAIN_H_ */

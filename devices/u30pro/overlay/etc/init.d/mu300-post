@@ -1,0 +1,9 @@
+#!/bin/sh /etc/rc.common
+START=99
+USE_PROCD=1
+start_service() {
+    touch /run/stay
+    if [ "$(cat /etc/mu300/default-boot 2>/dev/null)" = linux ]; then
+        /opt/mu300/bin/mu300-next-boot linux || return 1
+    fi
+}

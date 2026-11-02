@@ -64,6 +64,24 @@ printf 'rc=%s ip=%s/%s dns=%s,%s\n' "$rc" "$ip4" "$prefix4" "$dns1" "$dns2"
         self.assertEqual(r.returncode, 0, r.stderr)
         return r.stdout, self.calls.read_text()
 
+    def test_monitor_uses_exported_native_urc_path_without_shell_polling(self):
+        header=SOURCE[SOURCE.index('config=$1'):SOURCE.index('logtag=')]
+        for shell in self.each_shell():
+            for slot in ('0','1'):
+                path='/run/mu300-at'+('2' if slot=='0' else '5')+'/urc/stty_nr'+('0' if slot=='0' else '3')+'.log'
+                result=self.sh(shell,'set -- wan sipa_eth0 ip 8 dns dns 1 none '+slot+'\n'+header+'\nprintf "%s" "$urclog"',MU300_SIM_URC=path)
+                self.assertEqual(result.stdout,path)
+                explicit=self.sh(shell,'set -- wan sipa_eth0 ip 8 dns dns 1 none '+slot+' '+path+'\n'+header+'\nprintf "%s" "$urclog"',MU300_SIM_URC='/stale/env.log')
+                self.assertEqual(explicit.stdout,path)
+                override=self.sh(shell,'set -- wan sipa_eth0 ip 8 dns dns 1 none '+slot+'\n'+header+'\nprintf "%s" "$urclog"',MU300_SIM_URC=path,MU300_URC_LOG='/custom/urc.log')
+                self.assertEqual(override.stdout,'/custom/urc.log')
+        self.assertNotIn('while [ ! -f "$urclog" ]',SOURCE)
+
+    def test_ra_policy_is_ready_before_addrconf_is_enabled(self):
+        proto=(MONITOR.parent/'mu300cell.sh').read_text()
+        block=proto[proto.index('if [ "${pdptype:-IP}" != IP ]; then'):proto.index('\n\t# Install the bearer')]
+        self.assertLess(block.index('echo 2 >'),block.index('echo 0 >'))
+
     def test_replace_first_preserves_ipv6_lifetimes(self):
         for shell in self.each_shell():
             output, calls = self.refresh(shell)

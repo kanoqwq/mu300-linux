@@ -1,0 +1,6 @@
+config PINCTRL_SPRD_UMS9632
+	bool "Unisoc UMS9632 pin controller"
+	depends on ARCH_SPRD && OF && !PINCTRL_SPRD
+	select PINMUX
+	select PINCONF
+	select GENERIC_PINCONF

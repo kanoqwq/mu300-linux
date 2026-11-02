@@ -1,0 +1,297 @@
+{
+  "source": "MU5358-Android15-kernel-6.6.46/bsp_kernel/kernel6.6/unisoc 6.6.57",
+  "files": {
+    "drivers/clk/sprd-u30pro/common.c": {
+      "vendor_path": "drivers/clk/sprd/common.c",
+      "sha256": "03c07ce81e62143f2410c575fc79125566964ba14c4163f63256ed265e14b97d"
+    },
+    "drivers/clk/sprd-u30pro/common.h": {
+      "vendor_path": "drivers/clk/sprd/common.h",
+      "sha256": "cfec4f6ce7fb87a8591b1deb528126d3f4dc2463f90b472c22a36dbeb9d153b3"
+    },
+    "drivers/clk/sprd-u30pro/composite.c": {
+      "vendor_path": "drivers/clk/sprd/composite.c",
+      "sha256": "7b331fbee72fedd99e4f98b0c877480f27377ada3461d2567dfd389c7797e163"
+    },
+    "drivers/clk/sprd-u30pro/composite.h": {
+      "vendor_path": "drivers/clk/sprd/composite.h",
+      "sha256": "2d0d25cedb3cf9c96d746df79d355bc8bc47ca3e110b65699c0189a59305ea48"
+    },
+    "drivers/clk/sprd-u30pro/div.c": {
+      "vendor_path": "drivers/clk/sprd/div.c",
+      "sha256": "a7517f9e422b10de56ec10ff47d20696116baf19cc957e9b100171c5c7b5addc"
+    },
+    "drivers/clk/sprd-u30pro/div.h": {
+      "vendor_path": "drivers/clk/sprd/div.h",
+      "sha256": "5c6752e6eecded6ff5797e112b8638c62ba294c167da0aa7996664f12becd857"
+    },
+    "drivers/clk/sprd-u30pro/gate.c": {
+      "vendor_path": "drivers/clk/sprd/gate.c",
+      "sha256": "3ae61beb81eaafdce4440db0f0c1be2b88a0887ff971dc005e2c706294cfc6c0"
+    },
+    "drivers/clk/sprd-u30pro/gate.h": {
+      "vendor_path": "drivers/clk/sprd/gate.h",
+      "sha256": "ad91c85a951208d54ff20d31dde98386d6d7b5802af834552373e60ce2c173d2"
+    },
+    "drivers/clk/sprd-u30pro/mux.c": {
+      "vendor_path": "drivers/clk/sprd/mux.c",
+      "sha256": "ee46b2fdf99ccd65c0916fdc706c4016d379a9d5ae9de3052d2dcf8a44e5715a"
+    },
+    "drivers/clk/sprd-u30pro/mux.h": {
+      "vendor_path": "drivers/clk/sprd/mux.h",
+      "sha256": "f96eea908adf75d6ee4d02cb230744c852c184b4247cb6af79540bc8914c062c"
+    },
+    "drivers/clk/sprd-u30pro/pll.c": {
+      "vendor_path": "drivers/clk/sprd/pll.c",
+      "sha256": "8a07a42fce022e59961c04e3052fdf8aa99314ff01cee0a90457aa01bff0e901"
+    },
+    "drivers/clk/sprd-u30pro/pll.h": {
+      "vendor_path": "drivers/clk/sprd/pll.h",
+      "sha256": "717b6f6789bc30bbd8db47d51afd70b41267afc71f054bab98051fbd7ba430b2"
+    },
+    "drivers/clk/sprd-u30pro/reset.c": {
+      "vendor_path": "drivers/clk/sprd/reset.c",
+      "sha256": "5af70cc82d8b95ebf4e6bbeaf424c1b38a266ee9b13f1666007d0ff6c510afab"
+    },
+    "drivers/clk/sprd-u30pro/reset.h": {
+      "vendor_path": "drivers/clk/sprd/reset.h",
+      "sha256": "33edb7030c65ab39a282ce6a4e8f3564dcc1e814108ac568c4c7ebc12d05b8e5"
+    },
+    "drivers/clk/sprd-u30pro/ums9632-clk.c": {
+      "vendor_path": "drivers/clk/sprd/ums9632-clk.c",
+      "sha256": "e31b8214ba804d9c0a6a189fd5e11eb28f66bc79e1446e0fb55816d2e376f496"
+    },
+    "drivers/pinctrl/sprd-u30pro/pinctrl-sprd.c": {
+      "vendor_path": "drivers/pinctrl/sprd/pinctrl-sprd.c",
+      "sha256": "9da167a888b6b269699eae8beb90a55de53d1a75d97c2df28b31c8e005f20488"
+    },
+    "drivers/pinctrl/sprd-u30pro/pinctrl-sprd.h": {
+      "vendor_path": "drivers/pinctrl/sprd/pinctrl-sprd.h",
+      "sha256": "0b60e729083f8d6262aa32b942b901f0fcbf0832e0947347a0742ae3afc10abe"
+    },
+    "drivers/pinctrl/sprd-u30pro/pinctrl-sprd-ums9632.c": {
+      "vendor_path": "drivers/pinctrl/sprd/pinctrl-sprd-ums9632.c",
+      "sha256": "9b5e506f51e284318f4e65b89533a0f809b7769f963409d4174ad6ce5e217799"
+    },
+    "include/dt-bindings/clock/sprd,ums9632-clk.h": {
+      "vendor_path": "include/dt-bindings/clock/sprd,ums9632-clk.h",
+      "sha256": "e4a9a97b6b08dd13cece0faf38ba33d3d70e0736a958f5dbe51fb9e5cbac8244"
+    },
+    "include/dt-bindings/reset/sprd,ums9632-reset.h": {
+      "vendor_path": "include/dt-bindings/reset/sprd,ums9632-reset.h",
+      "sha256": "56ffe0342e20ff535ee39b6d575a6128d4d55c657b2528711fd5866cd6ccb2cb"
+    },
+    "drivers/unisoc_platform/usb/musb/Kconfig": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/Kconfig",
+      "sha256": "3a354f960af93e81cd964310c6731b17cd2fd34b8b4700cf81d65cefedd34c83"
+    },
+    "drivers/unisoc_platform/usb/musb/Makefile": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/Makefile",
+      "sha256": "00a0c421e20ad9d2af02be99d159024f11381bcd55eb98a0d9061022f8435cde"
+    },
+    "drivers/unisoc_platform/usb/musb/musbhsdma.c": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musbhsdma.c",
+      "sha256": "45ee5dacef39ff755e5bd9b8c4f895b534f5a28014b0ecd7b4f06d527097fc40"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_core.c": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_core.c",
+      "sha256": "893d3e57d05ad63526a5879a1a6709e14c42e931a938757480aee2e34460a34c"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_core.h": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_core.h",
+      "sha256": "64cd87752fc4a1062fb49dcfad5747d38adac37319f7e1e1823785eb93bdc4eb"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_debug.h": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_debug.h",
+      "sha256": "fa8a4741349484ccf03b7828560660a46172eef990e8751adbda16a69a786b29"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_debugfs.c": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_debugfs.c",
+      "sha256": "33b3bfce162953c00d4674f8080ebcebde490ce5bf990b5874c090441eaa6e70"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_dma.h": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_dma.h",
+      "sha256": "63f19846e9d1dd9f4de994ac9ef8013763dbd2f619a94ae553f9d7c332518e39"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_gadget.c": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_gadget.c",
+      "sha256": "b8b9f6d7edd1bc16c1d66a024fe5298a7078ebd8031014699ac82841cfd49ee3"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_gadget.h": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_gadget.h",
+      "sha256": "82561d001907f4e080dd5a62ad38861336875ebca52444d80e2fbe2eabf0b455"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_gadget_ep0.c": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_gadget_ep0.c",
+      "sha256": "55026070d616e6fffd278d915ea1ab4bc8271af3d31b3759c039d93d863de2b5"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_host.c": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_host.c",
+      "sha256": "bd99950c7d59505841823fe75cfb3b3ce3b39b70df2946a1d42e5d68b260d11d"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_host.h": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_host.h",
+      "sha256": "527cfa493c904330fc26e59c6bd15cccfe83f8743302d55aad48e2abd54b4355"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_io.h": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_io.h",
+      "sha256": "e23b626f2bba314e05cbb8b063c510dfc141e4b03c486663e749269ea6b00233"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_regs.h": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_regs.h",
+      "sha256": "4d0f98920c4c44bd56a4711e4aa8139d0b6533fe8aefae78137490b5e20ae931"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_sprd.c": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_sprd.c",
+      "sha256": "fa927918d9e2a1402dc03062a1023384b7719b5c5b5b2f6d91a5738f60d02abc"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_trace.c": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_trace.c",
+      "sha256": "680ef02f68a241e2ec75c3bdc4dcea7625f7e3e6c851784d609fe3aa0dec53f9"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_trace.h": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_trace.h",
+      "sha256": "910b376b7ed3b209f6074530029074420c9e302babc1ca8e638d8487ac215674"
+    },
+    "drivers/unisoc_platform/usb/musb/musb_virthub.c": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/musb_virthub.c",
+      "sha256": "e75ebe204a3f53880386cf3431ed7d476a8922cc715ff3495724709a2ec71678"
+    },
+    "drivers/unisoc_platform/usb/musb/sprd_musbhsdma.c": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/sprd_musbhsdma.c",
+      "sha256": "a327a302b3ad4194c2a3607ab034007fdaef7bd48281ab59f345e4307299c906"
+    },
+    "drivers/unisoc_platform/usb/musb/sprd_musbhsdma.h": {
+      "vendor_path": "drivers/unisoc_platform/usb/musb/sprd_musbhsdma.h",
+      "sha256": "9f419685f567af52cc36e82bbb5e75021f1ed73b6f47b021301e76949556ed67"
+    },
+    "drivers/unisoc_platform/usb/phy/usb-phy-sprd-hs.c": {
+      "vendor_path": "drivers/unisoc_platform/usb/phy/usb-phy-sprd-hs.c",
+      "sha256": "d524be6221f5684e27bdf9db69d28ee1432604ce8b488d03e14b9276469e0c8f"
+    },
+    "drivers/unisoc_platform/usb/phy/usb-phy-sprd-hs.h": {
+      "vendor_path": "drivers/unisoc_platform/usb/phy/usb-phy-sprd-hs.h",
+      "sha256": "0d2e9cc4326d518898b83b36426c8135f620c3ddf3797b107bcb92530c68e7e4"
+    },
+    "drivers/unisoc_platform/usbpinmux/sprd_usbpinmux.c": {
+      "vendor_path": "drivers/unisoc_platform/usbpinmux/sprd_usbpinmux.c",
+      "sha256": "d0dd110a79e565edc9acd6ed508e39b89f30618dc8b776a196ad24db17f50054"
+    },
+    "drivers/unisoc_platform/usbpinmux/Makefile": {
+      "vendor_path": "drivers/unisoc_platform/usbpinmux/Makefile",
+      "sha256": "800a94c065b8803e2a11e80778ce8ab49899d95f9e749e81c11b98ab3bf4b3ee"
+    },
+    "drivers/unisoc_platform/usbpinmux/Kconfig": {
+      "vendor_path": "drivers/unisoc_platform/usbpinmux/Kconfig",
+      "sha256": "7a38a384bf4a0f299acfb33cb176b5abc6294a219401ee02aa18c2880c503596"
+    },
+    "include/linux/soc/sprd/sprd_usbpinmux.h": {
+      "vendor_path": "include/linux/soc/sprd/sprd_usbpinmux.h",
+      "sha256": "ce8a453b783c1343ba2dc5738c36420346a5107f4d42e054ffa8a02321de456e"
+    },
+    "include/linux/usb/sprd_typec.h": {
+      "vendor_path": "include/linux/usb/sprd_typec.h",
+      "sha256": "9401e3e2d9ae0eefe4c14127994bb04603734ea00117f97a240652f66c97416c"
+    },
+    "include/linux/usb/sprd_usbm.h": {
+      "vendor_path": "include/linux/usb/sprd_usbm.h",
+      "sha256": "1225c55a00d0baacdee62e44170ddd996649669c5bb875c7f31214c6ecc70ade"
+    },
+    "include/soc/unisoc/sprd_dpdm.h": {
+      "vendor_path": "include/soc/unisoc/sprd_dpdm.h",
+      "sha256": "d16f396617764c2ca4e1fb10475d747ba22a498e2486a6c21bf362a0f39676f9"
+    },
+    "include/linux/power/sprd-bc1p2.h": {
+      "vendor_path": "include/linux/power/sprd-bc1p2.h",
+      "sha256": "708a1384c4ff99acd1ece5ee376d179dd7293f4974c3785812e07e31837512d4"
+    },
+    "drivers/regulator/ump9650-regulator.c": {
+      "vendor_path": "drivers/regulator/ump9650-regulator.c",
+      "sha256": "25b958865617a72d8465e43064b68522e2245b7133ec6aaf3b004f878da65d6d"
+    },
+    "drivers/regulator/ump9650-regulator.h": {
+      "vendor_path": "drivers/regulator/ump9650-regulator.h",
+      "sha256": "b16dd655cb625788c2815642e7c919fe859ed4a9424e3b19df55d677d7313ef6"
+    },
+    "drivers/regulator/ump9651-regulator.c": {
+      "vendor_path": "drivers/regulator/ump9651-regulator.c",
+      "sha256": "73b5e6719a709c65ca63d7c9bb9d68786d3da6e6efca4bc0745949caecdbb51c"
+    },
+    "drivers/regulator/ump9651-regulator.h": {
+      "vendor_path": "drivers/regulator/ump9651-regulator.h",
+      "sha256": "67ba240340cc76fb1912fa1aa2ed4222a6155af1ab32ec17d23c81ca6ceb62e9"
+    },
+    "include/linux/mfd/ump965x/sprd,ump9650-pmu-ctrl.h": {
+      "vendor_path": "include/linux/mfd/ump965x/sprd,ump9650-pmu-ctrl.h",
+      "sha256": "a48515f04409600669723e391860981350fa19d08143cb60387f6d64e2929589"
+    },
+    "include/linux/mfd/ump965x/sprd,ump9651-pmu-ctrl.h": {
+      "vendor_path": "include/linux/mfd/ump965x/sprd,ump9651-pmu-ctrl.h",
+      "sha256": "4a48ac18a9e06e541b1f4e3a73031c9a09a1fd4b111d47f042887987cf8b36a9"
+    },
+    "include/linux/mfd/ump965x/sprd,ump965x-mask.h": {
+      "vendor_path": "include/linux/mfd/ump965x/sprd,ump965x-mask.h",
+      "sha256": "a9b0a2c7b84b0b1667e1bc87508149496cf306246694292243e1cb97474db0b7"
+    },
+    "include/linux/mfd/ump965x/sprd,ump965x-regs.h": {
+      "vendor_path": "include/linux/mfd/ump965x/sprd,ump965x-regs.h",
+      "sha256": "006cf38eb8c4120fb1ffb84b75cee9e9bfa6676248082794bf0ff358f271188a"
+    },
+    "drivers/nvmem/sprd-shadow-efuse.c": {
+      "vendor_path": "drivers/nvmem/sprd-shadow-efuse.c",
+      "sha256": "430470d0d139679b942fb35f94fefc410f156e50b1c14c141e87e4b41c873f2a"
+    },
+    "drivers/unisoc_platform/usb/typec/sc27xx_typec.c": {
+      "vendor_path": "drivers/unisoc_platform/usb/typec/sc27xx_typec.c",
+      "sha256": "70955607f01a56cff1cd1e073512d6d58cfb5cd56e416ba2d60891f06aa9b35c"
+    },
+    "drivers/unisoc_platform/usb/typec/Makefile": {
+      "vendor_path": "drivers/unisoc_platform/usb/typec/Makefile",
+      "sha256": "32e97edf868389f013772e2405a816c248be5c14c2603b6a03a0682c82bb6e65"
+    },
+    "include/linux/usb/sprd_tcpm.h": {
+      "vendor_path": "include/linux/usb/sprd_tcpm.h",
+      "sha256": "82207e18fd4efae606a6192521d88d486584e1cd9fa747e9d56232bfecb21a18"
+    },
+    "include/linux/usb/sprd_pd.h": {
+      "vendor_path": "include/linux/usb/sprd_pd.h",
+      "sha256": "96ad6e8270569578a7cd903fc8beb46d9382de9922792be2987c1995c7be5179"
+    },
+    "include/linux/usb/sprd_pd_ado.h": {
+      "vendor_path": "include/linux/usb/sprd_pd_ado.h",
+      "sha256": "5bf9f33f18224ce58e578aae5405186b8bfe47c22c0b2b75f0e377b623299946"
+    },
+    "include/linux/usb/sprd_pd_bdo.h": {
+      "vendor_path": "include/linux/usb/sprd_pd_bdo.h",
+      "sha256": "7c46cdd3655d93650dc0b5afd3c1505885e484c8d370806df761cdc6b7456011"
+    },
+    "include/linux/usb/sprd_pd_ext_sdb.h": {
+      "vendor_path": "include/linux/usb/sprd_pd_ext_sdb.h",
+      "sha256": "197c221f5d58655ecf8eedac704cb41ef50d3940ad2173ea3ddab2aa0ab5192d"
+    },
+    "include/linux/usb/sprd_pd_vdo.h": {
+      "vendor_path": "include/linux/usb/sprd_pd_vdo.h",
+      "sha256": "32a4823b5aae9caf0d8d74aca7f5f2b0874cb65541b72488136b15dc1def34cd"
+    },
+    "drivers/unisoc_platform/sprd_charger/sprd-bc1p2.c": {
+      "vendor_path": "drivers/unisoc_platform/sprd_charger/sprd-bc1p2.c",
+      "sha256": "e0839301457eccd165b009e254d35c463b97dd4f55c67911edaa25ff598d9548"
+    },
+    "include/uapi/linux/usb/charger.h": {
+      "vendor_path": "include/uapi/linux/usb/charger.h",
+      "sha256": "d62c8563dcdf5fdb0c65997b773f27b7207731fdc9538637a6805999b966ff73"
+    },
+    "drivers/unisoc_platform/sprd_charger/power_delivery/sprd_tcpm.c": {
+      "vendor_path": "drivers/unisoc_platform/sprd_charger/power_delivery/sprd_tcpm.c",
+      "sha256": "6ce35bd520e21d9c9c1f4b99db06680ab19784238792c6d693d6d5c6ebd4347d"
+    },
+    "drivers/unisoc_platform/sprd_charger/power_delivery/sc27xx_pd.c": {
+      "vendor_path": "drivers/unisoc_platform/sprd_charger/power_delivery/sc27xx_pd.c",
+      "sha256": "6d3ce1e36007b84ba4b11bb9b8d4028e73defc92ce1615993de849373ececb23"
+    },
+    "drivers/unisoc_platform/sprd_charger/power_delivery/Kconfig": {
+      "vendor_path": "drivers/unisoc_platform/sprd_charger/power_delivery/Kconfig",
+      "sha256": "43711ce3187d0525a3a661cfda34dc1cbf173a381c974324518708359a6ba38c"
+    }
+  }
+}

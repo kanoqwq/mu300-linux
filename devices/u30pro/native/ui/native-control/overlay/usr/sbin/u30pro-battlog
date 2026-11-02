@@ -1,0 +1,27 @@
+#!/usr/bin/ucode
+/* Battery history (/usr/share/u30pro/battery-log.uc): a reading every 10 s, a record a minute; the ubus object u30pro.battery answers the
+ * web page: history {range: full|charge|24h|7d, points: 10..1000}. */
+import * as uloop from 'uloop';
+import { connect } from 'ubus';
+import * as blog from '/usr/share/u30pro/battery-log.uc';
+
+uloop.init();
+let bus = connect();
+if (!bus) {
+	warn('u30pro-battlog: cannot connect to ubus\n');
+	exit(1);
+}
+blog.init();
+/* ubus_rpc_session: calls through the web server (uhttpd's /ubus) carry it, and ucode refuses a message with a field the policy does not list */
+bus.publish('u30pro.battery', {
+	history: { args: { range: '', points: 0, ubus_rpc_session: '' }, call: function(req) { return blog.history(req.args.range ?? '24h', req.args.points); } }
+});
+
+let timer;
+function run() {
+	try { blog.tick(); }
+	catch (e) { warn(`u30pro-battlog: ${e}\n`); }
+	timer.set(10000);
+}
+timer = uloop.timer(1000, run);
+uloop.run();

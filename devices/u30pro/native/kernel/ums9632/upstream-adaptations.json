@@ -1,0 +1,50 @@
+{
+  "drivers/mfd/sprd-sc27xx-spi.c": {
+    "upstream": "Linux6.12.94",
+    "upstream_sha256": "0f7f711b39bf9d848f4c43d35f0497ab21d4d5e20f88d0f19986da42c2e77cab",
+    "vendor_reference_sha256": "91ca6b3325759c6ebe9e4b1f153b2be12cf9960ab4e4379c886dd3a879fe8eb8"
+  },
+  "drivers/spi/spi-sprd-adi.c": {
+    "upstream": "Linux6.12.94",
+    "upstream_sha256": "a9058f124ea9dde4f815390a3a20505cc9ec7c632de4001b038239561704fe2f",
+    "vendor_reference_sha256": "9a4f3d289a2ed8c0c3d21a26a96fc742761fc12479397c26363fdff5b05632db"
+  },
+  "drivers/nvmem/sprd-efuse.c": {
+    "upstream": "Linux6.12.94",
+    "upstream_sha256": "1615fdf177e4fbab063a7fdc21b4290d86c0fba4869315cfc4d4be7c872cd2c9",
+    "vendor_reference_sha256": "3b9d48fd1bfdd2fb31f90df464a71730a357de6caaa669cb8235cd0192b02031",
+    "note": "UMS9632 read-only normal bank; programming functions removed; bounded multiword reads"
+  },
+  "drivers/watchdog/sprd_wdt.c": {
+    "upstream": "Linux6.12.94",
+    "upstream_sha256": "9662ba3f77088b27323e5a07e6887552a2bb4aeabfc3b9006e16a8f92942f99e",
+    "vendor_reference": "drivers/unisoc_platform/watchdog/sprd_wdt_fiq.c",
+    "note": "Register/bit/key/counter layout compared; U30Pro alias and native watchdog-core takeover; no Android hang-debug feeder"
+  },
+  "include/linux/regmap.h": {
+    "upstream": "Linux6.12.94",
+    "upstream_sha256": "d99c9958fa7e23b5ea1ea0a14aa8ac8b375641b95cd075558ef613b66d3900b9",
+    "note": "Native bounded MMIO SET/CLR backend for UMS9632 glbregs; replaces Android regmap hook"
+  },
+  "drivers/base/regmap/regmap-mmio.c": {
+    "upstream": "Linux6.12.94",
+    "upstream_sha256": "cd2000f230dbf64b53c68e67961f54561d5c7272be025ea84e218682d70d0efb",
+    "note": "Native bounded MMIO SET/CLR backend for UMS9632 glbregs; replaces Android regmap hook"
+  },
+  "drivers/mfd/syscon.c": {
+    "upstream": "Linux6.12.94",
+    "upstream_sha256": "99f1fd968f720cb25b968144105d676e169405066e50a23e6a0460ee9aa4d9a7",
+    "note": "Native bounded MMIO SET/CLR backend for UMS9632 glbregs; replaces Android regmap hook"
+  },
+  "drivers/mmc/host/sdhci-sprd.c": {
+    "upstream": "Linux6.12.94",
+    "upstream_sha256": "7475eafbb34bbd583395dd98c608826c34234db2cbb51f8267eea5f97a51ea92",
+    "vendor_reference_sha256": "5b51fc6c6219bb12f66a16b8eccb174789c1022c45d683979a0edcfad43b2a83",
+    "note": "R11P3 temporary 52 MHz read-only enumeration on upstream driver, no CQE/ICE/high-speed tuning/FFU, runtime suspend held off; the SDIO-only R11P3 host (no-sd, no-mmc: AIC8800 Wi-Fi) has a run-time bus mode (sdio_mode 0 high speed default, 1 SDR50, 2 SDR104, 3 DDR50; sdio_max_hz) and the PHY DLL in the UHS-I modes; SDR104 tuning of that host by a PHY DLL sweep as in the vendor's sdhci-sprd-tuning.c"
+  },
+  "drivers/mmc/core/sdio.c": {
+    "upstream": "Linux6.12.94",
+    "upstream_sha256": "23b66d609bfaea427c72e0d241e94a6f89c441fee77befe81c8e0e747eab57f9",
+    "note": "A failed UHS-I initialization (tuning) retries at high speed and turns UHS-I off for the host until the next boot, instead of losing the card"
+  }
+}

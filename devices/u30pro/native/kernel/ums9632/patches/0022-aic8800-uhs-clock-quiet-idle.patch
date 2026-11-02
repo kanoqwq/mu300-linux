@@ -1,0 +1,59 @@
+--- a/drivers/unisoc_platform/aic8800/aic8800_bsp/aicsdio.c
++++ b/drivers/unisoc_platform/aic8800/aic8800_bsp/aicsdio.c
+@@ -1858,7 +1858,9 @@
+             }
+ #endif
+ 			//if(!wait_for_completion_interruptible(&bus_if->busirq_trgg)){
+-            if(!wait_for_completion_timeout(&bus_if->busirq_trgg, msecs_to_jiffies(rx_thread_wait_to))){
++            /* U30 Pro: an interruptible wait, the same for a kernel thread (no signals), but the idle thread no longer counts
++             * towards the load average (two of these threads kept it near 2 on an idle device) */
++            if (wait_for_completion_interruptible_timeout(&bus_if->busirq_trgg, msecs_to_jiffies(rx_thread_wait_to)) <= 0) {
+                 AICWFDBG(LOGRXPOLL, "%s wait for completion timout \r\n", __func__);
+ 				if(bus_if->state == BUS_HOLD_ST){
+ 					continue;
+@@ -2413,7 +2415,8 @@
+     msleep(1);
+ 	
+ #if 1//SDIO CLOCK SETTING
+-	if ((feature.sdio_clock > 0) && (host->ios.timing != MMC_TIMING_UHS_DDR50)) {
++	/* U30 Pro: not in the UHS-I modes, where the core picked the clock and tuned the bus for it (sdhci_sprd.sdio_mode) */
++	if ((feature.sdio_clock > 0) && (host->ios.timing < MMC_TIMING_UHS_SDR50)) {
+ 		host->ios.clock = feature.sdio_clock;
+ 		host->ops->set_ios(host, &host->ios);
+ 		sdio_dbg("Set SDIO Clock %d MHz\n", host->ios.clock/1000000);
+--- a/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_sdio.c
++++ b/drivers/unisoc_platform/aic8800/aic8800_fdrv/aicwf_sdio.c
+@@ -2552,7 +2552,9 @@
+                 break;
+             }
+ #endif
+-            if(!wait_for_completion_timeout(&bus_if->busirq_trgg, msecs_to_jiffies(rx_thread_wait_to))){
++            /* U30 Pro: an interruptible wait, the same for a kernel thread (no signals), but the idle thread no longer counts
++             * towards the load average (two of these threads kept it near 2 on an idle device) */
++            if (wait_for_completion_interruptible_timeout(&bus_if->busirq_trgg, msecs_to_jiffies(rx_thread_wait_to)) <= 0) {
+                 AICWFDBG(LOGRXPOLL, "%s wait for completion timout \r\n", __func__);
+ 				if(bus_if->state == BUS_HOLD_ST){
+ 					continue;
+@@ -3301,7 +3303,8 @@
+     }
+     msleep(1);
+ #if 1//SDIO CLOCK SETTING
+-	if ((feature.sdio_clock > 0) && (host->ios.timing != MMC_TIMING_UHS_DDR50)) {
++	/* U30 Pro: not in the UHS-I modes, where the core picked the clock and tuned the bus for it (sdhci_sprd.sdio_mode) */
++	if ((feature.sdio_clock > 0) && (host->ios.timing < MMC_TIMING_UHS_SDR50)) {
+ 		host->ios.clock = feature.sdio_clock;
+ 		host->ops->set_ios(host, &host->ios);
+ 		AICWFDBG(LOGINFO, "Set SDIO Clock %d MHz\n", host->ios.clock/1000000);
+--- a/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_platform.c
++++ b/drivers/unisoc_platform/aic8800/aic8800_fdrv/rwnx_platform.c
+@@ -1059,7 +1059,9 @@
+ 	    }
+ 	}
+ 
+-	printk("%s:txpwr_max:%d \r\n",__func__,power);
++	/* U30 Pro: debug level - cfg80211 asks for the tx power at every interface query (iwinfo, the status pages), which made this
++	 * line (a plain printk, so a warning) most of the system log */
++	AICWFDBG(LOGDEBUG, "%s:txpwr_max:%d \r\n",__func__,power);
+ 	return power;
+ }
+ 

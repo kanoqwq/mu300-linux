@@ -1,0 +1,211 @@
+/* The building blocks of the U30 Pro pages (u30pro/kit.js), in the design language of the U30 Pro theme.  The colours are the theme's
+ * --u-* tokens; under another theme the Bootstrap-style variables or plain values stand in. */
+.k-page, .k-card, .k-tiles, .modal {
+	--k-surface: var(--u-surface, var(--background-color-high, #fff));
+	--k-surface-2: var(--u-surface-2, var(--background-color-low, #f1f1f4));
+	--k-surface-3: var(--u-surface-3, var(--border-color-low, #e7e7eb));
+	--k-line: var(--u-line, rgba(0, 0, 0, .08));
+	--k-text: var(--u-text, var(--text-color-high, #111));
+	--k-text-2: var(--u-text-2, var(--text-color-medium, #666));
+	--k-text-3: var(--u-text-3, #a3a3ab);
+	--k-accent: var(--u-accent, var(--primary-color-high, #16a34a));
+	--k-accent-2: var(--u-accent-2, #d97706);
+	--k-on-accent: var(--u-on-accent, #fff);
+	--k-ok: var(--u-ok, #17a35a);
+	--k-warn: var(--u-warn, #c98a00);
+	--k-bad: var(--u-bad, #e0443e);
+	--k-shadow: var(--u-shadow, 0 1px 2px rgba(10, 10, 20, .04), 0 10px 30px rgba(10, 10, 20, .05));
+	--k-radius: var(--u-radius, 20px);
+}
+.k-ic { width: 18px; height: 18px; flex: none; display: inline-block; }
+.k-ic svg { width: 100%; height: 100%; display: block; }
+
+/* ------------------------------------------------------------------ cards */
+.k-card { position: relative; }
+.k-card-h { display: flex; align-items: center; gap: 10px; min-height: 32px; margin: -2px 0 12px; }
+.k-card-h > .k-ic { width: 32px; height: 32px; padding: 7px; border-radius: 10px; background: color-mix(in srgb, var(--k-accent) 13%, transparent); color: var(--k-accent); }
+.k-card-h > h3 { flex: 1; min-width: 0; margin: 0 !important; font-size: 15px; font-weight: 650; color: var(--k-text); letter-spacing: -.005em; padding: 0; border: 0; background: none; }
+.k-card-act { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.k-note { color: var(--k-text-2); font-size: 12.5px; line-height: 1.55; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--k-line); }
+.k-card h4 { font-size: 12.5px; font-weight: 650; color: var(--k-text-2); margin: 18px 0 6px; text-transform: none; letter-spacing: 0; }
+.k-card > .k-tiles { margin: 0 0 4px; }
+.k-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; align-items: center; padding-top: 14px; }
+.k-actions > .cbi-value-description, .k-actions > div:not([class]) { margin-right: auto; }
+.k-card .alert-message { margin: 0 0 12px; box-shadow: none; }
+
+/* ------------------------------------------------------------------ tiles (the overview's tiles) */
+.k-tiles { display: grid; gap: 16px; grid-template-columns: repeat(var(--k-n, 4), minmax(0, 1fr)); margin: 0 0 18px; }
+.k-tiles.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.k-tiles.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.k-tiles .wide { grid-column: 1 / -1; }
+.k-tile {
+	background: var(--k-surface); border-radius: var(--k-radius); box-shadow: var(--k-shadow); border: 1px solid transparent;
+	padding: 16px 18px 15px; min-width: 0; color: var(--k-text); display: flex; flex-direction: column; transition: transform .15s;
+}
+[data-darkmode="true"] .k-tile { border-color: var(--k-line); }
+.k-card .k-tile { background: var(--k-surface-2); box-shadow: none; border-color: transparent; border-radius: 16px; }
+.k-tile.tap { cursor: pointer; }
+.k-tile.tap:hover { transform: translateY(-1px); }
+.k-tile-h { display: flex; align-items: center; gap: 8px; min-height: 24px; margin-bottom: 10px; font-size: 13px; font-weight: 600; color: var(--k-text-2); }
+.k-tile-h > .k-ic { width: 17px; height: 17px; color: var(--k-accent); }
+.k-tile-l { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.k-val { font-size: 24px; font-weight: 650; letter-spacing: -.02em; line-height: 32px; font-variant-numeric: tabular-nums; margin-top: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.k-val small { font-size: 13.5px; font-weight: 550; color: var(--k-text-2); margin-left: 3px; letter-spacing: 0; }
+.k-val.warn { color: var(--k-warn); }
+.k-val.bad { color: var(--k-bad); }
+.k-val.accent { color: var(--k-accent); }
+.k-val.dim { color: var(--k-text-3); }
+.k-meta { display: flex; align-items: center; gap: 6px; min-height: 22px; margin-top: 4px; font-size: 12.5px; color: var(--k-text-2); min-width: 0; }
+.k-meta > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.k-meta .k-ic { width: 14px; height: 14px; }
+.k-tile > .k-meter { margin-top: 12px; margin-bottom: 6px; }
+
+/* ------------------------------------------------------------------ label / value list */
+.k-kv { display: grid; grid-template-columns: minmax(150px, 34%) minmax(0, 1fr); }
+.k-kv-r { display: contents; }
+.k-kv-l, .k-kv-v { padding: 10px 0; border-top: 1px solid var(--k-line); font-size: 13.5px; line-height: 1.5; min-width: 0; }
+.k-kv-r:first-child > .k-kv-l, .k-kv-r:first-child > .k-kv-v { border-top: 0; padding-top: 2px; }
+.k-kv-l { color: var(--k-text-2); padding-right: 16px; }
+.k-kv-v { color: var(--k-text); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.k-kv-v pre { margin: 0; white-space: pre-wrap; }
+.k-kv-v .k-chip { vertical-align: middle; }
+.k-kv-v .k-meter { max-width: 260px; margin-top: 6px; }
+.k-card > .k-chips { margin: 0 0 6px; }
+
+/* ------------------------------------------------------------------ chips, meters, switches, segmented controls */
+.k-chip {
+	display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 13px; white-space: nowrap;
+	background: var(--k-surface-2); color: var(--k-text-2); font-size: 12.5px; font-weight: 600; vertical-align: middle;
+}
+.k-chip > i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+.k-chip .k-ic { width: 14px; height: 14px; }
+.k-chip.ok { background: color-mix(in srgb, var(--k-ok) 14%, transparent); color: var(--k-ok); }
+.k-chip.warn { background: color-mix(in srgb, var(--k-warn) 16%, transparent); color: var(--k-warn); }
+.k-chip.bad { background: color-mix(in srgb, var(--k-bad) 13%, transparent); color: var(--k-bad); }
+.k-chip.accent { background: color-mix(in srgb, var(--k-accent) 14%, transparent); color: var(--k-accent); }
+.k-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.k-meter { height: 8px; border-radius: 4px; background: var(--k-surface-3); overflow: hidden; min-width: 60px; }
+.k-card .k-tile .k-meter { background: color-mix(in srgb, var(--k-text) 9%, transparent); }
+.k-meter > i { display: block; height: 100%; border-radius: 4px; background: var(--k-accent); transition: width .4s; }
+.k-meter > i.ok { background: var(--k-ok); }
+.k-meter > i.warn { background: var(--k-warn); }
+.k-meter > i.bad { background: var(--k-bad); }
+.k-sw { position: relative; display: inline-block; width: 46px; height: 28px; flex: none; margin: 0; vertical-align: middle; }
+.k-sw input { position: absolute; inset: 0; width: 100% !important; height: 100% !important; opacity: 0; margin: 0; cursor: pointer; z-index: 1; }
+.k-sw input::before, .k-sw input::after { display: none !important; }
+.k-sw i { position: absolute; inset: 0; border-radius: 14px; background: var(--k-surface-3); transition: background .2s; }
+.k-sw i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .18s cubic-bezier(.3, .7, .4, 1); }
+.k-sw input:checked + i { background: var(--k-accent); }
+.k-sw input:checked + i::after { transform: translateX(18px); }
+.k-sw input:disabled { cursor: default; }
+.k-sw input:disabled + i { opacity: .45; }
+.k-sw input:focus-visible + i { box-shadow: 0 0 0 3px color-mix(in srgb, var(--k-accent) 28%, transparent); }
+.k-seg { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: 13px; background: var(--k-surface-2); max-width: 100%; }
+.k-seg > button {
+	border: 0; background: none; color: var(--k-text-2); height: 32px; padding: 0 14px; border-radius: 10px; font: inherit; font-size: 13.5px; font-weight: 550;
+	cursor: pointer; white-space: nowrap; box-shadow: none; min-height: 0; line-height: 32px;
+}
+.k-seg > button:hover { color: var(--k-text); }
+.k-seg > button.on { background: var(--k-surface); color: var(--k-text); box-shadow: 0 1px 3px rgba(0, 0, 0, .1); font-weight: 600; }
+[data-darkmode="true"] .k-seg > button.on { background: var(--k-surface-3); }
+.k-seg > button:disabled { opacity: .5; cursor: default; }
+
+/* ------------------------------------------------------------------ form rows inside the kit's cards */
+.k-card .cbi-value { padding: 12px 0; border-bottom: 1px solid var(--k-line); }
+.k-card .cbi-value:last-of-type { border-bottom: 0; }
+.k-card .cbi-value + .k-actions { border-top: 1px solid var(--k-line); }
+.k-pending { color: var(--k-warn); font-size: 12.5px; font-weight: 600; }
+.k-pending:empty { display: none; }
+
+/* ------------------------------------------------------------------ narrow screens */
+@media (max-width: 1279px) {
+	.k-tiles.n4, .k-tiles.n5, .k-tiles.n6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.k-tiles.n5 > :first-child { grid-column: 1 / -1; }
+}
+@media (max-width: 1279px) and (min-width: 860px) {
+	.k-tiles.n6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 859px) {
+	.k-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+	.k-tiles.n1 { grid-template-columns: minmax(0, 1fr); }
+	.k-tiles.n3 > :first-child { grid-column: 1 / -1; }
+	.k-tiles.three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.k-tile { padding: 14px 14px 13px; border-radius: 18px; }
+	.k-val { font-size: 21px; line-height: 28px; }
+	.k-kv { grid-template-columns: minmax(0, 1fr); }
+	.k-kv-l { padding-bottom: 0; }
+	.k-kv-v { border-top: 0; padding-top: 2px; }
+	.k-kv-r:first-child > .k-kv-v { padding-top: 0; }
+	.k-actions { justify-content: stretch; }
+	.k-actions > .cbi-button, .k-actions > .btn { flex: 1 1 auto; }
+}
+@media (max-width: 379px) {
+	.k-tiles, .k-tiles.two, .k-tiles.three { grid-template-columns: minmax(0, 1fr); }
+}
+.k-inline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.k-inline > input, .k-inline > select { flex: 0 1 260px; }
+
+/* ------------------------------------------------------------------ CPU cores: a small tile per core */
+.k-cores { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 10px; margin: 0 0 8px; }
+.k-core { background: var(--k-surface-2); border-radius: 14px; padding: 10px 12px 11px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.k-core-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 600; color: var(--k-text-2); }
+.k-core .k-sw { transform: scale(.82); transform-origin: right center; margin: -2px 0; }
+.k-core-f { font-size: 17px; font-weight: 650; letter-spacing: -.01em; font-variant-numeric: tabular-nums; color: var(--k-text); }
+.k-core-f.off { color: var(--k-text-3); }
+.k-scroll { overflow-x: auto; margin: 0 -2px; padding: 0 2px; }
+.k-scroll .table { min-width: 520px; }
+
+/* ------------------------------------------------------------------ charts (the battery history) */
+.k-charts { position: relative; cursor: crosshair; }
+.k-chart { position: relative; border-radius: 10px; overflow: hidden; background: color-mix(in srgb, var(--k-surface-2) 60%, transparent); }
+.k-chart-l { position: absolute; top: 4px; font-size: 11.5px; color: var(--k-text-2); pointer-events: none; font-weight: 600; }
+.k-chart-mark { position: absolute; top: 0; bottom: 0; width: 1.5px; margin-left: -.75px; background: var(--k-text-2); pointer-events: none; }
+.k-chart-read { min-height: 22px; font-size: 13px; color: var(--k-text-2); margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+.k-chart-axis { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--k-text-3); margin-top: 6px; font-variant-numeric: tabular-nums; }
+.k-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--k-text-2); margin-top: 10px; }
+.k-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+@media (max-width: 859px) { .k-card-h { flex-wrap: wrap; } .k-card-act { width: 100%; justify-content: flex-start; } .k-card-act .k-seg { width: 100%; } .k-card-act .k-seg > button { flex: 1; padding: 0 8px; } }
+.k-bar { display: inline-block; width: 160px; vertical-align: middle; }
+.k-sig { display: inline-flex; align-items: flex-end; gap: 3px; height: 16px; }
+.k-sig > i { width: 4px; border-radius: 2px; background: var(--k-surface-3); }
+.k-sig > i:nth-child(1) { height: 25%; } .k-sig > i:nth-child(2) { height: 50%; } .k-sig > i:nth-child(3) { height: 75%; } .k-sig > i:nth-child(4) { height: 100%; }
+.k-sig > i.on { background: var(--k-accent); }
+.k-sig.warn > i.on { background: var(--k-warn); }
+.k-sig.bad > i.on { background: var(--k-bad); }
+.k-dim { color: var(--k-text-2); font-size: 13px; }
+.k-at > input:first-child { flex: 1 1 320px; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.k-at input[type="number"] { width: 110px; }
+.k-presets { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.k-presets .cbi-button { min-height: 30px; padding: 0 10px; font-size: 12.5px; border-radius: 9px; }
+/* a list row that holds a form field: the label on the field's middle line */
+.k-kv-r:has(input:not([type="checkbox"]), select, textarea, .cbi-dropdown) > .k-kv-l { display: flex; align-items: center; }
+.k-kv-v > input:not([type="checkbox"]), .k-kv-v > select, .k-kv-v > span > input, .k-kv-v > span > select { margin: -1px 0; }
+/* toggle chips: a check box drawn as a chip that is filled when it is on (the band lists) */
+.k-toggles { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.k-toggle {
+	position: relative; display: inline-flex; align-items: baseline; gap: 6px; height: 34px; padding: 0 12px; border-radius: 11px; cursor: pointer;
+	background: var(--k-surface-2); color: var(--k-text-2); font-size: 13px; line-height: 34px; border: 1px solid transparent; transition: background-color .15s, color .15s;
+}
+.k-toggle > input { position: absolute; inset: 0; opacity: 0; width: 100% !important; height: 100% !important; margin: 0; cursor: pointer; }
+.k-toggle > input::before, .k-toggle > input::after { display: none !important; }
+.k-toggle > b { font-weight: 650; color: var(--k-text); }
+.k-toggle > span { font-size: 12px; }
+.k-toggle:has(input:checked) { background: color-mix(in srgb, var(--k-accent) 14%, var(--k-surface)); color: var(--k-accent); border-color: color-mix(in srgb, var(--k-accent) 30%, transparent); }
+.k-toggle:has(input:checked) > b { color: var(--k-accent); }
+.k-toggle:has(input:focus-visible) { outline: 2px solid var(--k-accent); outline-offset: 2px; }
+.k-inline > input[type="text"], .k-inline > input[type="number"] { flex: 0 1 180px; }
+
+/* ------------------------------------------------------------------ messages (SMS): a conversation */
+.k-compose { display: grid; gap: 10px; }
+.k-compose > input { width: 100%; max-width: 320px; }
+.k-compose > textarea { width: 100%; min-height: 110px; resize: vertical; }
+.k-compose > .k-actions { padding-top: 0; }
+.k-msgs { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.k-msg { max-width: min(560px, 88%); padding: 10px 14px 8px; border-radius: 18px; background: var(--k-surface-2); align-self: flex-start; border-bottom-left-radius: 6px; }
+.k-msg.out { align-self: flex-end; background: color-mix(in srgb, var(--k-accent) 14%, var(--k-surface)); border-bottom-left-radius: 18px; border-bottom-right-radius: 6px; }
+.k-msg-h { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; font-size: 12px; color: var(--k-text-2); margin-bottom: 4px; }
+.k-msg-h > b { font-size: 13px; color: var(--k-text); font-weight: 650; }
+.k-msg-b { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.5; color: var(--k-text); }
+.k-msg-a { display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px; }
+.k-msg-a .cbi-button { min-height: 28px; padding: 0 10px; font-size: 12.5px; border-radius: 9px; }
+.k-ussd { margin: 10px 0 0; min-height: 4em; white-space: pre-wrap; }

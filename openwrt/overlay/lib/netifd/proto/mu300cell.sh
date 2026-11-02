@@ -110,14 +110,14 @@ proto_mu300cell_setup() {
 		# route is rebuilt (a bare route flush leaves it missing and stops RA
 		# processing) and a fresh router solicitation goes out, so the global
 		# address returns about a second after the flush above.
-		[ -w "/proc/sys/net/ipv6/conf/$ifname/disable_ipv6" ] && {
-			echo 1 > "/proc/sys/net/ipv6/conf/$ifname/disable_ipv6"
-			echo 0 > "/proc/sys/net/ipv6/conf/$ifname/disable_ipv6"
-		}
-		[ -w "/proc/sys/net/ipv6/conf/$ifname/accept_ra" ] && {
-			echo 0 > "/proc/sys/net/ipv6/conf/$ifname/accept_ra"
-			echo 2 > "/proc/sys/net/ipv6/conf/$ifname/accept_ra"
-		}
+        # Set router mode before enabling addrconf. The first solicitation
+        # must not run with netifd's accept_ra=0 while forwarding is enabled.
+        [ -w "/proc/sys/net/ipv6/conf/$ifname/accept_ra" ] &&
+            echo 2 > "/proc/sys/net/ipv6/conf/$ifname/accept_ra"
+        [ -w "/proc/sys/net/ipv6/conf/$ifname/disable_ipv6" ] && {
+            echo 1 > "/proc/sys/net/ipv6/conf/$ifname/disable_ipv6"
+            echo 0 > "/proc/sys/net/ipv6/conf/$ifname/disable_ipv6"
+        }
 	fi
 	# Install the bearer address ourselves (external updates are never applied by
 	# netifd). Replace-first keeps an unchanged address continuous across
@@ -145,7 +145,7 @@ proto_mu300cell_setup() {
 	# same event owner for both PDP families; IPv6 monitoring blocks while idle.
 	proto_run_command "$config" \
 		/lib/netifd/proto/mu300cell-v6.sh "$config" "$ifname" "$ip" \
-		"${prefix:-32}" "$dns1" "$dns2" "${peerdns:-1}" "" "$slot"
+		"${prefix:-32}" "$dns1" "$dns2" "${peerdns:-1}" "" "$slot" "$MU300_SIM_URC"
 	[ "${pdptype:-IP}" = IP ] && [ -w "/proc/sys/net/ipv6/conf/$ifname/disable_ipv6" ] &&
 		echo 1 > "/proc/sys/net/ipv6/conf/$ifname/disable_ipv6"
 	logger -t mu300cell "connected: $ip/${prefix:-32} on $ifname"

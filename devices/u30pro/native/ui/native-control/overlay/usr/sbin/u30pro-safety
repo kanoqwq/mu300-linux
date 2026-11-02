@@ -1,0 +1,25 @@
+#!/usr/bin/ucode
+/* Battery / temperature protection: one evaluation every 10 s (/usr/share/u30pro/safety.uc); the result is the ubus object
+ * u30pro.safety, method status (level, reasons, charge_paused, counters). */
+import * as uloop from 'uloop';
+import { connect } from 'ubus';
+import * as safety from '/usr/share/u30pro/safety.uc';
+
+uloop.init();
+let bus = connect();
+if (!bus) {
+	warn('u30pro-safety: cannot connect to ubus\n');
+	exit(1);
+}
+bus.publish('u30pro.safety', {
+	status: { args: {}, call: function(req) { return safety.status() ?? { verdict: null }; } }
+});
+
+let timer;
+function run() {
+	try { safety.tick(); }
+	catch (e) { warn(`u30pro-safety: ${e}\n`); }
+	timer.set(10000);
+}
+timer = uloop.timer(1000, run);
+uloop.run();

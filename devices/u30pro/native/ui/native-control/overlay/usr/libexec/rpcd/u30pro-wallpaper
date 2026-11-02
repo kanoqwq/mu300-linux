@@ -1,0 +1,11 @@
+#!/bin/sh
+# Wallpaper of the screen: /usr/share/u30pro/wallpaper.uc
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+umask 022
+case "$1" in
+ list) echo '{"get":{},"image":{},"set":{"dim":0,"glass":0,"blur":0,"tint":0,"live":0},"install":{},"remove":{}}';;
+ call) case "$2" in
+  get|image|set|install|remove) exec /usr/bin/ucode /usr/share/u30pro/wallpaper.uc "$2";;
+  *) echo '{}';;
+ esac;;
+esac

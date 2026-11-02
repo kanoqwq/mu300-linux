@@ -1,0 +1,13 @@
+#!/bin/sh /etc/rc.common
+# Must precede S10boot/kmodloader: AIC8800 reads factory inputs at probe.
+START=08
+boot() {
+    /usr/sbin/u30pro-wifi-sdio || {
+        logger -t u30pro 'Wi-Fi SDIO mode setup failed'
+        return 1
+    }
+    /usr/sbin/u30pro-factory-wifi || {
+        logger -t u30pro 'Factory Wi-Fi input import failed; inspect source before radio use'
+        return 1
+    }
+}

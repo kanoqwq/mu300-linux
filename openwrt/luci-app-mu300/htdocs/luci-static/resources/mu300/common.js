@@ -628,7 +628,7 @@ var DASH_I18N = {
 	'即时生效': ['Applies immediately', 'Hemen uygulanır'],
 	'重启生效': ['Applies after reboot', 'Yeniden başlatmada uygulanır'],
 	'当前频率': ['Current frequency', 'Geçerli frekans'],
-	'按 CPU 簇设置，步进 3.125 mV。偏移会同时作用于固件对应的 CPU/SRAM 电压表；不增加超频档位。': ['Set each CPU cluster in 3.125 mV steps. Firmware adjusts the corresponding CPU/SRAM voltage tables together; no overclock states are added.', 'Her CPU kümesini 3.125 mV adımlarla ayarlayın. Donanım yazılımı ilgili CPU/SRAM voltaj tablolarını birlikte ayarlar; hız aşırtma kademesi eklenmez.'],
+	'按 CPU 簇设置，步进 3.125 mV。偏移会作用于固件对应的电压表；不增加超频档位。': ['Set each CPU cluster in 3.125 mV steps. Firmware adjusts the corresponding voltage tables; no overclock states are added.', 'Her CPU kümesini 3.125 mV adımlarla ayarlayın. Donanım yazılımı ilgili voltaj tablolarını ayarlar; hız aşırtma kademesi eklenmez.'],
 	'已保存，将在下次重启时应用': ['Saved; applies on next reboot', 'Kaydedildi; sonraki yeniden başlatmada uygulanır'],
 	'当前电压偏移与保存值一致': ['Active voltage offsets match the saved values', 'Etkin voltaj ofsetleri kayıtlı değerlerle aynı'],
 	'当前内核或固件不支持电压调整': ['This kernel or firmware does not support voltage adjustment', 'Bu çekirdek veya donanım yazılımı voltaj ayarını desteklemiyor'],

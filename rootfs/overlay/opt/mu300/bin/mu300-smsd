@@ -164,10 +164,17 @@ while :; do
     if sim_absent; then
         sim_configured=0
         rm -f "$DIRECT_FLAG"
+        # No archive was attempted for an empty slot. Retire its old safety
+        # deadline anyway: otherwise an expired deadline makes the ubus wait
+        # return immediately forever, spawning cache checks in a busy loop.
+        sms_clock; sync_due=$((SMS_NOW + SYNC_INTERVAL))
         continue  # no CPIN, CNMI, CMGL or CNMA against a known empty slot
     fi
     if [ "$sim_configured" = 0 ]; then
-        sim_ready || continue
+        if ! sim_ready; then
+            sms_clock; sync_due=$((SMS_NOW + SYNC_INTERVAL))
+            continue
+        fi
         setup_sms
         sim_configured=1
     fi

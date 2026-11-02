@@ -22,7 +22,18 @@ put() { uci -q set "$CFG.$1=$2"; }
 error() { printf '{"ok":0,"error":"%s"}\n' "$1"; exit 1; }
 role_now() {
     current=$(cat "$ROLE_FILE" 2>/dev/null)
-    case $current in host|device) printf '%s\n' "$current" ;; *) echo unavailable ;; esac
+    case $current in host|device) printf '%s\n' "$current" ;;
+        *)
+            # Native U30 Pro MUSB is peripheral-only in this kernel; it has
+            # a live gadget but no DWC3 usb_role file. Report that distinction.
+            if [ "$(device_name)" = u30pro ]; then
+                for gadget in "$GADGET_DIR"/*; do
+                    [ -n "$(cat "$gadget/UDC" 2>/dev/null)" ] || continue
+                    echo device; return 0
+                done
+            fi
+            echo unavailable ;;
+    esac
 }
 role_result() {
     # Only the latest request may publish its asynchronous result.

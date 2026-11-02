@@ -82,9 +82,11 @@ MU300_PREPARED_VENDOR=$MU300_TF_STATE/vendor
 export MU300_PREPARED_VENDOR
 tf_step staging-space 30 "$BB" sh "$0" --staging-space
 tf_step rootfs 1200 "$BB" sh "$P/android-install.sh"
-tf_step boot-write 60 "$BB" sh "$0" --write-boot
-tf_step boot-readback 60 "$BB" sh "$0" --verify-boot
-tf_step arm-slot 60 "$BB" sh "$P/switch.sh" --no-reboot
+if [ "${MU300_TF_DEFER_BOOT:-0}" != 1 ]; then
+    tf_step boot-write 60 "$BB" sh "$0" --write-boot
+    tf_step boot-readback 60 "$BB" sh "$0" --verify-boot
+    tf_step arm-slot 60 "$BB" sh "$P/switch.sh" --no-reboot
+fi
 rmdir "$lock"
 # Logs remain in Android /data for diagnosis; only the private vendor staging
 # directory is disposable. Avoid broad error-path cleanup or global sync.

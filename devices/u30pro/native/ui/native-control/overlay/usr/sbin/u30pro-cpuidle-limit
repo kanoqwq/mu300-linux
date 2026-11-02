@@ -1,0 +1,17 @@
+#!/bin/sh
+# Limit the CPU idle depth: u30pro.idle_max=<N> on the kernel command line keeps the cpuidle states 0..N and disables the deeper ones
+# (state 0 = WFI, 1 = core power down, 2 = cluster power down, 3 = AP subsystem power down on the UMS9632).  Without the parameter every
+# state the device tree describes stays enabled.  It is used to find which state breaks the secure-world (Trusty) channel that the
+# baseband start needs; run before the baseband starts.
+cmd=$(tr '\n' ' ' </proc/cmdline)
+max=$(echo "$cmd" | sed -n 's/.*u30pro\.idle_max=\([0-9][0-9]*\).*/\1/p')
+[ -n "$max" ] || exit 0
+n=0
+for st in /sys/devices/system/cpu/cpu*/cpuidle/state*; do
+	[ -d "$st" ] || continue
+	idx=${st##*/state}
+	if [ "$idx" -gt "$max" ]; then
+		echo 1 >"$st/disable" 2>/dev/null && n=$((n + 1))
+	fi
+done
+echo "u30pro-cpuidle-limit: states above $max disabled on $n cpu/state pairs"

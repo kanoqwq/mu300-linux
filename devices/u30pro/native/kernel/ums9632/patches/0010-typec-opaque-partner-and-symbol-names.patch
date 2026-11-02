@@ -1,0 +1,59 @@
+--- a/include/linux/usb/sprd_tcpm.h
++++ b/include/linux/usb/sprd_tcpm.h
+@@ -452,20 +452,8 @@
+ 	PD_CHUNK_MSG_EXT_GET_BATTERY_CAP_EXT,
+ };
+ 
+-struct typec_partner {
+-	struct device			dev;
+-	unsigned int			usb_pd:1;
+-	struct usb_pd_identity		*identity;
+-	enum typec_accessory		accessory;
+-	struct ida			mode_ids;
+-	int				num_altmodes;
+-	u16				pd_revision; /* 0300H = "3.0" */
+-	enum usb_pd_svdm_ver		svdm_version;
+-
+-	struct usb_power_delivery	*pd;
+-
+-	ANDROID_KABI_RESERVE(1);
+-};
++/* struct typec_partner is owned by the native Type-C core; use its public API. */
++
+ 
+ /* Events from low level driver */
+ 
+--- a/drivers/unisoc_platform/usb/typec/sc27xx_typec.c
++++ b/drivers/unisoc_platform/usb/typec/sc27xx_typec.c
+@@ -434,7 +434,7 @@
+ /* during dr_swap, begin --> 1  end --> 0  */
+ static atomic_t pd_dr_swap_event;
+ /* interrupt, attach --> 1  detach --> 0  */
+-static atomic_t typec_attach;
++static atomic_t sc27xx_attach_state;
+ 
+ static int sc27xx_typec_reset_rp_rd(void);
+ static int sc27xx_typec_set_rp_level(enum sprd_typec_cc_status cc);
+@@ -455,16 +455,16 @@
+ }
+ EXPORT_SYMBOL_GPL(sc27xx_get_dr_swap_executing);
+ 
+-/* set typec_attach */
++/* set sc27xx_attach_state */
+ void sc27xx_set_current_status_detach_or_attach(int event)
+ {
+-	atomic_set(&typec_attach, event);
+-}
+-
+-/* get typec_attach */
++	atomic_set(&sc27xx_attach_state, event);
++}
++
++/* get sc27xx_attach_state */
+ int sc27xx_get_current_status_detach_or_attach(void)
+ {
+-	return atomic_read(&typec_attach);
++	return atomic_read(&sc27xx_attach_state);
+ }
+ EXPORT_SYMBOL_GPL(sc27xx_get_current_status_detach_or_attach);
+ 

@@ -1,0 +1,6 @@
+config U30PRO_SPRD_SCUFREQ
+ tristate "Unisoc software SCU (DSU) frequency scaling"
+ depends on U30PRO_SPRD_CPUFREQ_V2 && U30PRO_SPRD_PMU_SAMPLE
+ help
+   Chooses the frequency of the snoop control unit (DSU) from the PMU samples of the CPUs (load and memory access demand) instead of the
+   firmware's autotune.  Only active with u30pro_scufreq=1 on the kernel command line (see drivers/unisoc_platform/scufreq).

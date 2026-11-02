@@ -196,7 +196,7 @@ vendor_list() {
         ubuntu) echo "opt/mu300/android usr/lib/firmware" ;;
         # lib/modules: the release only ships modules for the kernel it was built with, so a hand-built set for
         # another kernel (the experimental 6.18 port) would be thrown away by an update without this
-        openwrt) echo "opt/mu300/android lib/firmware lib/modules" ;;
+        openwrt) echo "opt/mu300/android opt/mu300/vendor lib/firmware lib/modules" ;;
     esac
 }
 

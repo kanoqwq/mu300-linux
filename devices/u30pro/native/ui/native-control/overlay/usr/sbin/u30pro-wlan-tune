@@ -1,0 +1,39 @@
+#!/bin/sh
+# Scan interval of the Wi-Fi relay (the client interface wlan1) while its network is not around.  wpa_supplicant scans about every
+# 3 s then, each scan takes the shared radio off the hotspot's channel for about 1.7 s, and the hotspot loses most of its throughput
+# (measured: 220 -> 330 Mbit/s to a phone with the scans paused).  Every client interface wpa_supplicant adds (at boot, after each
+# Wi-Fi reload) gets SCAN_INTERVAL u30pro_native_control.wlan.relay_scan_interval (seconds, default 60), so the relay still finds
+# its network within about a minute.   usage: u30pro-wlan-tune [apply]   (apply: only the interfaces there now)
+UBUS=${U30PRO_WLAN_UBUS:-ubus}
+interval() {
+	v=$(uci -q get u30pro_native_control.wlan.relay_scan_interval)
+	case "$v" in ''|*[!0-9]*) v=60 ;; esac
+	[ "$v" -ge 5 ] || v=5
+	echo "$v"
+}
+# a new interface object can refuse commands for a moment (seen at boot): retry for up to 10 s
+apply() {
+	s=$(interval)
+	n=0
+	while [ $n -lt 10 ]; do
+		if $UBUS call "$1" control "{\"command\":\"SCAN_INTERVAL $s\"}" 2>/dev/null | grep -q '"OK"'; then
+			logger -t u30pro-wlan-tune "$1: scan interval $s s"
+			return 0
+		fi
+		n=$((n + 1))
+		sleep 1
+	done
+	logger -t u30pro-wlan-tune "$1: scan interval not accepted"
+}
+if [ "$1" = apply ]; then
+	for o in $($UBUS list 'wpa_supplicant.*' 2>/dev/null); do apply "$o"; done
+	exit 0
+fi
+# listen first, then the interfaces there already, so none added in between is missed
+$UBUS listen ubus.object.add | while read -r line; do
+	o=$(echo "$line" | sed -n 's/.*"path": *"\(wpa_supplicant\.[^"]*\)".*/\1/p')
+	[ -n "$o" ] && apply "$o"
+done &
+sleep 1
+for o in $($UBUS list 'wpa_supplicant.*' 2>/dev/null); do apply "$o"; done
+wait

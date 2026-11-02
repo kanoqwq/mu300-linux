@@ -66,7 +66,13 @@ if [ -n "${PWHASH:-}" ]; then
     rm -f "$R/etc/.mu300-accounts-from-image"
 fi
 [ -x "$R/sbin/init" ] || [ -L "$R/sbin/init" ]
-[ -s "$R/lib/firmware/wcnmodem.bin" ] && [ -x "$R/opt/mu300/android/vendor/bin/modem_control" ]
+if [ "$(cat "$R/etc/mu300/platform" 2>/dev/null)" = u30pro ]; then
+    [ -s "$R/opt/mu300/vendor/u30pro/modem/map.tsv" ] &&
+        [ -s "$R/opt/mu300/vendor/u30pro/modem/modem_cp_info.xml" ] &&
+        [ -x "$R/usr/sbin/u30-modemd" ]
+else
+    [ -s "$R/lib/firmware/wcnmodem.bin" ] && [ -x "$R/opt/mu300/android/vendor/bin/modem_control" ]
+fi
 (cd "$M" && find . -type f -exec sha256sum {} +) > "$T/image.sha256"
 umount "$M"; mounted=0
 losetup -d "$loop"; loop_attached=0

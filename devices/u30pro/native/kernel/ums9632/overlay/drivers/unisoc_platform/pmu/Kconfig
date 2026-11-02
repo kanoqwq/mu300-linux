@@ -1,0 +1,6 @@
+config U30PRO_SPRD_PMU_SAMPLE
+ bool "Unisoc PMU event sampling (data source of scufreq)"
+ depends on ARCH_SPRD && ARM_PMU && PERF_EVENTS && HOTPLUG_CPU
+ help
+   Samples the performance counters of every CPU (instructions, cycles, back-end stalls, L2 refills) and hands the deltas and the measured
+   CPU frequencies to scufreq.  The counters and timers only exist while scufreq is enabled (see drivers/unisoc_platform/pmu).

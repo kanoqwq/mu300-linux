@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: GPL-2.0
+
+config UNISOC_MODEM_LOADER
+	tristate "UNISOC Modem Loader"
+	select UNISOC_MODEM_POWER_MANAGER
+	default n
+	help
+	  UNISOC modem loader driver. It will be used for modem poweron,
+	  modem image load, modem memory dump, modem boot and modem reset.
+	  Say M here to enable modem loader support in GKI projects, also you
+	  can set Y in none-GKI projects.
+
+config UNISOC_MODEM_LOADER_RAM_VMAP
+	bool "Enable modem ram vmap ext in ARM"
+	default n
+	help
+	  This option is use for modem map ram in ARM.
+	  It will be used for modem vmap.
+	  Say M here to enable modem loader ram vmap support in GKI projects, also you
+	  can set Y in none-GKI projects.
+
+config UNISOC_CH_SUPPORT
+	tristate "UNISOC SUPPORT CH SYS"
+	default n
+	depends on UNISOC_MODEM_LOADER
+	help
+	  UNISOC modem loader driver is a common driver for modem
+	  boot, but some SOC don't contain ch（CONTEXT HUB） system,
+	  so config this Macro to control
+	  some code whether support ch sys or not.
+

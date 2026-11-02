@@ -1,0 +1,17 @@
+#
+# UNISOC modem (AP<->CP) drivers, imported from the vendor 6.6 BSP for the
+# native 6.12 port. iq and cp_dump are intentionally not imported yet.
+#
+
+config UNISOC_MODEM
+	tristate "UNISOC modem driver"
+	depends on ARCH_SPRD
+	help
+	  This config control all the module for
+	  Unisoc platform Soc's modem and sp driver.
+
+source "drivers/unisoc_platform/modem/mailbox/Kconfig"
+source "drivers/unisoc_platform/modem/modem_loader/Kconfig"
+source "drivers/unisoc_platform/modem/power_manager/Kconfig"
+source "drivers/unisoc_platform/modem/sipc/Kconfig"
+source "drivers/unisoc_platform/modem/sipc_virt_bus/Kconfig"

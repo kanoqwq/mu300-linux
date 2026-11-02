@@ -1,0 +1,25 @@
+#!/bin/sh
+# U30 Pro hardware-only policy, before S10boot loads AIC8800. No eMMC changes.
+# Same SDIO mode/clock as the native board: SDR104, 208 MHz by default.
+set -eu
+P=${U30PRO_SDIO_PARAMS:-/sys/module/sdhci_sprd/parameters}
+IOS=${U30PRO_SDIO_IOS:-/sys/kernel/debug/mmc2/ios}
+if [ "${1:-}" = status ]; then
+    printf 'sdio_mode=%s sdio_max_hz=%s\n' "$(cat "$P/sdio_mode")" "$(cat "$P/sdio_max_hz")"
+    grep -E '^(clock|timing spec|bus width)' "$IOS"
+    exit
+fi
+[ -w "$P/sdio_mode" ] && [ -w "$P/sdio_max_hz" ] || {
+    echo 'U30 Pro SDIO controller parameters are unavailable' >&2; exit 1;
+}
+mode=$(uci -q get u30pro_native_control.wlan.sdio_mode || true)
+hz=$(uci -q get u30pro_native_control.wlan.sdio_max_hz || true)
+mode=${mode:-2}; hz=${hz:-208000000}
+case $mode in 0|1|2|3) ;; *) echo 'Invalid Wi-Fi SDIO mode' >&2; exit 1 ;; esac
+case $hz in ''|*[!0-9]*) echo 'Invalid Wi-Fi SDIO clock' >&2; exit 1 ;; esac
+[ "${#hz}" -le 9 ] && [ "$hz" -le 208000000 ] || {
+    echo 'Wi-Fi SDIO clock exceeds this board profile' >&2; exit 1;
+}
+printf '%s\n' "$hz" > "$P/sdio_max_hz"
+printf '%s\n' "$mode" > "$P/sdio_mode"
+echo "Wi-Fi SDIO: mode $mode, maximum $hz Hz; effective at card initialization"

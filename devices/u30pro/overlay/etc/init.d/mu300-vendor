@@ -1,0 +1,41 @@
+#!/bin/sh /etc/rc.common
+# U30 Pro hardware backend; MU300 management owns all AT/data state.
+START=13
+USE_PROCD=1
+start_service() {
+    local slot wb
+    slot=$(cat /run/mu300/android-slot 2>/dev/null)
+    case $slot in a|b) ;; *) logger -t u30pro 'Android firmware slot is unconfirmed'; return 1 ;; esac
+    /usr/sbin/u30pro-nodes --populate-nodes || {
+        logger -t u30pro 'Cannot populate native block-device aliases'; return 1;
+    }
+    . /opt/mu300/lib/storage.sh
+    local disk node name
+    disk=$(mu300_storage_disk) || { logger -t u30pro 'Internal storage identity unavailable'; return 1; }
+    for name in nr_runtimenv1 nr_runtimenv2; do
+        node=$(readlink -f /dev/block/by-name/$name) || { logger -t u30pro "Missing native partition: $name"; return 1; }
+        [ -b "$node" ] && [ "$(mu300_storage_parent "${node##*/}")" = "$disk" ] || {
+            logger -t u30pro "Native partition is not on the verified internal disk: $name"; return 1;
+        }
+    done
+    wb=$(uci -q get u30pro_native_control.nvsync.writeback)
+    case $wb in on|dry|off) ;; '') wb=off ;; *) logger -t u30pro 'Invalid NV notification writeback policy'; return 1 ;; esac
+    mkdir -p /run/u30pro-nvwb
+    procd_open_instance nv
+    procd_set_param command /usr/sbin/u30pro-nvsyncd --writeback="$wb" --out-dir /run/u30pro-nvwb --runtimenv1 /dev/block/by-name/nr_runtimenv1 --runtimenv2 /dev/block/by-name/nr_runtimenv2
+    procd_set_param respawn 3600 5 0
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_close_instance
+    procd_open_instance refnotify
+    procd_set_param command /usr/sbin/u30pro-refnotifyd
+    procd_set_param respawn 3600 5 0
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_close_instance
+    procd_open_instance cp
+    procd_set_param command /usr/sbin/u30-modemd --conf-dir /opt/mu300/vendor/u30pro/modem --map /opt/mu300/vendor/u30pro/modem/map.tsv --slot "_$slot"
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_close_instance
+}

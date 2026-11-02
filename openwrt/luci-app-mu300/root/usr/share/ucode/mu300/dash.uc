@@ -59,6 +59,7 @@ function address(rows,dev,global6) {
     return null;
 };
 function board() {
+    if(rd('/etc/mu300/platform')=='u30pro')return 'u30pro';
     // Match mu300-device: live DT outranks a restored rootfs/runtime label.
     if(exists('/proc/device-tree/charger_policy_service'))return 'u30air';
     if(exists('/proc/device-tree/soc/soc:ap-ahb/i2c@2270000/aw9523b_led@5b') ||
@@ -85,8 +86,13 @@ export function power() {
         }
     }
     let volts=battery?num(rd(battery+'/voltage_now')):null;
+    // U30 Pro's FGU accounts charge; its SGM41513 supplies the status, as in
+    // the native panel's collect_battery(). No current-based status guess.
+    let battery_status=battery?text(rd(battery+'/status')):null;
+    if(battery && model=='u30pro' && battery_status==null)
+        battery_status=text(rd(base+'/u30pro-charger-master/status'));
     return {present:battery?1:0,capacity:battery?num(rd(battery+'/capacity')):null,
-        status:battery?text(rd(battery+'/status')):null,
+        status:battery_status,
         volt:volts!=null && volts>0?+sprintf('%.2f',volts/1000000.0):null,
         ua:battery?num(rd(battery+'/current_now')):null,usb};
 };
@@ -148,8 +154,21 @@ export function conntrack() {
     return error?null:count;
 };
 
-export function info(slot) {
-    const c=cursor(CONFIG), bus=connect(null,2), now=time();
+// rpcd/CLI callers own short connections; persistent consumers may lend one.
+// Explicitly release owned connections, including errors, without relying on GC.
+function with_bus(shared, callback) {
+    let bus=shared || connect(null,2), owned=!shared;
+    try {
+        let result=callback(bus);
+        if(owned)bus?.disconnect();
+        return result;
+    } catch(e) {
+        if(owned)bus?.disconnect();
+        die(e);
+    }
+}
+function snapshot(slot,bus,settings) {
+    const c=settings || cursor(CONFIG), now=time();
     function cfg(k,d) { return c.get('unisoc_modem','main',k) || d; }
     let iface=cfg('data_interface','wan'), iface6=cfg('data_interface_v6','wan6');
     let wan=match(iface,/^[A-Za-z0-9_]{1,32}$/)?call(bus,'network.interface.'+iface,'status'):{};
@@ -182,6 +201,7 @@ export function info(slot) {
     }
     let temps={soc:null,cpu:null,modem:null,board:null,hottest:null};
     let labels={'soc-thmzone':'soc','apcpu0-thmzone':'cpu','nr0-thmzone':'modem','board-thmzone':'board'};
+    if(board()=='u30pro')labels={'soc-thmzone':'soc','core0-thmzone':'cpu','nr-thmzone':'modem','board-thmzone':'board'};
     for(let z in fs.glob(ROOT+'/sys/class/thermal/thermal_zone*') || []) {
         let t=num(trim(fs.readfile(z+'/temp') || '')), kind=trim(fs.readfile(z+'/type') || '');
         if(t==null)continue;
@@ -220,7 +240,8 @@ export function info(slot) {
         cpu:{n:length(filter(split(rd('/proc/cpuinfo'),'\n'),line=>!!match(line,/^processor[ \t]*:/))),total,idle:(num(cpu[4]) || 0)+(num(cpu[5]) || 0),freqs},
         mem:{total_kb:mem.MemTotal ?? null,avail_kb:mem.MemAvailable ?? null},storage,temps,power:power(),
         net:{mobile:net(mobile),sipa_eth0:net(mobile),brlan:net(lan),wlan0:net(wd),usb0:net(usb)},
-        wan:{up:wan.up?1:0,uptime:wan.uptime ?? null,proto:text(wan.proto),device:mobile,apn:selected_apn,
+        wan:{up:wan.up?1:0,autostart:type(wan.autostart)=='bool'?wan.autostart:null,
+            uptime:wan.uptime ?? null,proto:text(wan.proto),device:mobile,apn:selected_apn,
             ip4:wan['ipv4-address']?.[0]?.address ?? null,ip6:address(rows6,mobile,true),dns:text(join(', ',dns))},
         wifi:{available:wifi.available?1:0,enabled:wifi.enabled?1:0,pending:wifi.pending?1:0,section:text(wifi.section),radio:text(wifi.radio),
             error:text(wifi.error),up:wifi.up && hapd.status=='ENABLED' && exists('/sys/class/net/'+wd)?1:0,
@@ -233,6 +254,9 @@ export function info(slot) {
         boot:boot(),capabilities:{dualboot:executable('/opt/mu300/bin/mu300-next-boot')?1:0},
         conns:conntrack(),traffic:obj('/run/unisoc-modem-traffic/view.json')};
 };
+export function info(slot,bus,settings) {
+    return with_bus(bus,b=>snapshot(slot,b,settings));
+};
 
 function age(path) { let s=fs.stat(ROOT+path); return s?.size>0?time()-s.mtime:-1; }
 function owner(dir) {
@@ -240,19 +264,19 @@ function owner(dir) {
     return match(pid,/^[1-9][0-9]*$/) && exists('/proc/'+pid) &&
         !!match(join(' ',split(rd('/proc/'+pid+'/cmdline'),'\x00')),/unisoc-modem\/cell|mu300-modemd/);
 };
-export function status(slot,cells) {
-    let c=cursor(CONFIG);
+export function status(slot,cells,bus,settings) {
+    let c=settings || cursor(CONFIG);
     if(!(slot in ['0','1']) || (slot=='1' && c.get('unisoc_modem','main','sim_slots')!='2'))return {error:'SIM 卡槽不可用'};
     let dir='/tmp/unisoc-modem'+(slot=='1'?'/sim1':''), cage=age(dir+'/cell.json'), sage=age(dir+'/sig.json');
     let busy=exists('/run/unisoc-modem-lock-apply') || exists('/run/unisoc-data-sim-switch') || owner(dir+'/collect.lck');
     let fast=busy || owner(dir+'/fast.lck'), failed=false;
     let mode=cage<0 || cage>=5?'full':sage<0 || sage>=1?'fast':null;
     if(mode && !(mode=='full'?busy:fast)) {
-        let r=connect(null,2)?.call('mu300.modem','collect',{slot,mode});
+        let r=with_bus(bus,b=>b?.call('mu300.modem','collect',{slot,mode}));
         failed=!r?.started && !r?.busy;
         if(mode=='full' && (r?.started || r?.busy))busy=true;
     }
-    return {info:cells?null:info(slot),cell:failed?{error:'Unable to read cellular status'}:obj(dir+'/cell.json'),
+    return {info:cells?null:info(slot,bus,c),cell:failed?{error:'Unable to read cellular status'}:obj(dir+'/cell.json'),
         sig:failed?{error:'Unable to read cellular status'}:obj(dir+'/sig.json'),cell_age:cage,sig_age:sage,refreshing:busy?1:0};
 };
 

@@ -80,6 +80,7 @@ def public_rootfs(source,target):
             if name.is_absolute() or '..' in name.parts:raise ValueError('unsafe rootfs path')
             n=str(name)
             if n=='opt/mu300/android' or n.startswith('opt/mu300/android/'):continue
+            if n=='opt/mu300/vendor' or n.startswith('opt/mu300/vendor/'):continue
             if n.startswith('lib/firmware/') and not (n.startswith('lib/firmware/rtl_nic/') or n in ('lib/firmware/regulatory.db','lib/firmware/regulatory.db.p7s')):continue
             dst.addfile(member,src.extractfile(member) if member.isfile() else None)
             now=time.monotonic()
@@ -168,6 +169,8 @@ def encrypted(properties, source, raw_magic):
 
 def android_profile(model,platform=''):
     names=[s.strip().upper() for s in model.splitlines()]
+    if 'MU5358' in names or 'U30PRO' in names or 'U30 PRO' in names:
+        return 'u30pro'
     if 'MU3351' in names or 'V50' in names:
         if 'MU3351' not in names or 'V50' not in names or platform.strip()!='ums9620':
             raise ValueError('V50 requires product MU3351 and the UMS9620 platform')
@@ -339,6 +342,7 @@ class Android:
 
     def prepare_payload(self,root,tf=False,with_rootfs=True):
         names=['storage-lib.sh','busybox','android-bootchain.sh','bootchain.sh','switch.sh','mu300-vendor-from-device.sh','rootfs-critical.sha256','rootfs.requirements']
+        if payload_file(root,'u30pro-map.tsv').is_file():names+=['u30pro-map.tsv']
         if tf:names+=['android-install.sh','tf-install-worker.sh','tf-storage.sh','tf-stage.sh','payload.sha256']
         for n in names:
             source=root/'desktop'/n if n in ('storage-lib.sh','android-bootchain.sh','bootchain.sh') else payload_file(root,n)
@@ -361,6 +365,7 @@ class Android:
         return data
 
     def backup(self,path,s):
+        self.native_backup=path
         path.mkdir(parents=True,exist_ok=False)
         path.joinpath('identity.json').write_text(json.dumps({**s,'serial':self.serial,'android_slot':self.slot},indent=2)+'\n')
         disk='/dev/block/'+_storage.disk_node(s['NODE'])
@@ -394,6 +399,12 @@ class Android:
         return self._flash(image,bc)
 
     def _flash(self,image,bc):
+        native=package_root()/'desktop/native_u30pro.py'
+        if native.is_file():
+            spec=importlib.util.spec_from_file_location('native_u30pro_boot',native)
+            adapter=importlib.util.module_from_spec(spec);spec.loader.exec_module(adapter)
+            if adapter.enabled(package_root()):
+                return adapter.flash(self,image,bc,package_root(),GUI)
         self.put(image,'boot-desktop.img');self.put(bc,'misc-linux.bin')
         self.run('''[ "$(getprop ro.boot.slot_suffix)" = "_'''+self.slot+'''" ]
 "$BB" sh "$P/android-bootchain.sh" sync "$T/bootchain-backup"
@@ -511,6 +522,16 @@ def install(args,root,manifest):
         control=importlib.util.module_from_spec(helper);helper.loader.exec_module(control)
         return control.boot_installed_mu300(globals(),a,root)
     s=a.storage()
+    native_platform=manifest.get('platform')=='u30pro'
+    if native_platform and not GUI:
+        directory=Path(args.backup_dir).expanduser()/('native-'+time.strftime('%Y%m%d-%H%M%S')+'-'+s['CID'][-8:])
+        a.backup(directory,s)
+    if native_platform:
+        spec=importlib.util.spec_from_file_location('u30pro_boot_preflight',root/'desktop/native_u30pro.py')
+        native=importlib.util.module_from_spec(spec);spec.loader.exec_module(native)
+        # Validate this device's three stock containers before any filesystem
+        # formatting/shrink/root replacement, not after installing the root.
+        native.flash(a,payload_file(root,'boot-linux.img').read_bytes(),b'',root,GUI,dry_run=True)
     if args.tf:
         sd=a.shell('if [ -b /dev/block/mmcblk1p1 ]; then echo /dev/block/mmcblk1p1; elif [ -b /dev/block/mmcblk1 ]; then echo /dev/block/mmcblk1; fi').strip()
         if not sd:raise ValueError('No TF card found; choose an internal-storage method instead')
@@ -543,7 +564,9 @@ def install(args,root,manifest):
         a.put(env({'SD_MODE':1,'SD_DEV':sd,'FORMAT':1,'SYNC_BOOTCHAIN':1,'OSES':'openwrt','WIPE_LEGACY':0,'UPDATE':0,'BOOT_OS':'openwrt','DEFAULT_LINUX':1,'BOOT_ATTEMPTS':5,'IMPORT_HOTSPOT':1,'KERNEL':manifest['kernel'],'PWHASH':''}),'mu300-install.env')
         # The original TF worker handles release, formatting and readback.
         # Only its desktop upload has custom settings and fresh A/B blocks.
-        a.run('export MU300_TF_BOOTDEV=/dev/block/by-name/boot_'+a.linux+'\n"$BB" sh "$P/tf-install-worker.sh"',**({'effect':'root-tf-write'} if GUI else {}))
+        native_env='export MU300_PLATFORM=u30pro MU300_TF_DEFER_BOOT=1\n' if native_platform else ''
+        a.run(native_env+'export MU300_TF_BOOTDEV=/dev/block/by-name/boot_'+a.linux+'\n"$BB" sh "$P/tf-install-worker.sh"',**({'effect':'root-tf-write'} if GUI else {}))
+        if native_platform:a.flash(private_boot,m.boot_control(live,a.slot))
         return Outcome('success','TF installation verified / TF 安装和写入校验已完成。','Reboot the device manually / 请手动重启设备。')
     base=Path(args.backup_dir).expanduser()
     if args.resume:
@@ -727,10 +750,13 @@ def ssh_upload(c,path,destination):
 
 def update(args,root):
     # Same implementation as the GUI backend, including older hidden-area roots.
-    helper=Path(__file__).resolve().parent/'update_control.py'
-    if not helper.is_file():helper=Path(root)/'desktop/update_control.py'
-    spec=importlib.util.spec_from_file_location('mu300_update_control',helper)
-    control=importlib.util.module_from_spec(spec);spec.loader.exec_module(control)
+    import importlib
+    source=Path(__file__).resolve().parents[1]/'installer/backend'
+    backend=source if (source/'__init__.py').is_file() else Path(root)/'backend'
+    name='_mu300_cli_backend'
+    spec=importlib.util.spec_from_file_location(name,backend/'__init__.py',submodule_search_locations=[str(backend)])
+    package=importlib.util.module_from_spec(spec);sys.modules[name]=package;spec.loader.exec_module(package)
+    control=importlib.import_module(name+'.mu300_update')
     return control.update_mu300(globals(),args,root)
 
 

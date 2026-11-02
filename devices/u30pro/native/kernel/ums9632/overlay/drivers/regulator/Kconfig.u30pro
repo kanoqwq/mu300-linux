@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config REGULATOR_UMP9650
+ bool "U30 Pro UMP9650 regulators"
+ depends on ARCH_SPRD && MFD_SC27XX_PMIC && (!SUSPEND || U30PRO_KEXEC_BASE)
+config REGULATOR_UMP9651
+ bool "U30 Pro UMP9651 regulators"
+ depends on ARCH_SPRD && MFD_SC27XX_PMIC && (!SUSPEND || U30PRO_KEXEC_BASE)

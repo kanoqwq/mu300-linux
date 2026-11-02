@@ -1,0 +1,15 @@
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -2422,6 +2422,12 @@
+ 	  the boot loader doesn't provide any, the default kernel command
+ 	  string provided in CMDLINE will be used.
+ 
++config CMDLINE_EXTEND
++	bool "Append built-in arguments to the bootloader command line"
++	help
++	  Retain bootloader arguments and append CONFIG_CMDLINE using the
++	  existing generic OF command-line extension implementation.
++
+ config CMDLINE_FORCE
+ 	bool "Always use the default kernel command string"
+ 	help

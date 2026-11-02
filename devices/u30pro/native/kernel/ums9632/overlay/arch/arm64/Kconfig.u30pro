@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config U30PRO_EARLY_RAMCON
+	bool "U30Pro diagnostic pre-SMP persistent boot console"
+	depends on ARM64_4K_PAGES && OF_EARLY_FLATTREE && PRINTK
+	depends on PSTORE_RAM && PSTORE_CONSOLE
+	help
+	  Write a standard persistent_ram_buffer in the first 4 KiB page of
+	  the existing reserved ramoops console, before early UART setup/SMP.
+	  Only the audited UMS9632 and QEMU virt reservations are accepted.
+	  This is an opt-in diagnostic, not enabled in normal hardware builds.
+
+config U30PRO_TIMED_RESET
+	bool "U30Pro diagnostic timed PSCI reset checkpoint"
+	depends on ARM64
+	help
+	  Stop at one selected primary boot checkpoint, wait a fixed physical
+	  counter interval and issue PSCI SYSTEM_RESET over SMC. This deliberately
+	  prevents a normal boot and must never be enabled in a release image.
+	  It does not write RAM logs, storage, UART or board watchdog registers.
+
+config U30PRO_TIMED_RESET_STAGE
+	int "Timed reset checkpoint (1..10)"
+	depends on U30PRO_TIMED_RESET
+	range 1 10
+	default 1
+	help
+	  1 primary_entry, 2 after init_kernel_el, 3 after CPU setup,
+	  4 virtual primary_switched, 5 start_kernel C entry,
+	  6 setup_arch before early params, 7 before IRQ init, 8 before SMP,
+	  9 after SMP, 10 after basic setup. C checkpoints also support
+	  audited image-relative initcall addresses through a read-only selector.
+
+config U30PRO_TIMED_RESET_SECONDS
+	int "Diagnostic delay in physical counter seconds"
+	depends on U30PRO_TIMED_RESET
+	range 10 60
+	default 41

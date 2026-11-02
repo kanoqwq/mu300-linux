@@ -1,0 +1,115 @@
+--- a/native/align_image.S
++++ b/native/align_image.S
+@@ -1,7 +1,7 @@
+ /* SPDX-License-Identifier: MIT
+  * Position-independent arm64 raw-Image alignment wrapper. No DTB/device writes.
+  * Entry: EL1/EL2, x0=8-aligned FDT; MMU off or firmware identity map.
+- * Preserve MMU/cache state for Linux primary_entry to normalize safely.
++ * Normalize the raw non-EFI handoff: clean/invalidate caches, then MMU/C/I off.
+  * Reserve the entire relocation arena in the outer Image header; move only
+  * the payload file bytes, backwards when overlapping. Never relocate the DTB.
+  */
+@@ -18,7 +18,9 @@
+  .long 0                    /* raw Image, no EFI executable entry */
+ wrapper_start:
+  mov x20, x0
++ msr daifset, #0xf
+  mrs x8, CurrentEL
++ mov x22, x8
+  cmp x8, #8
+  b.eq 8f
+  cmp x8, #4
+@@ -28,8 +30,8 @@
+ 8:
+  mrs x8, sctlr_el2
+ 9:
+- /* Linux head.S handles both MMU-off and identity-mapped MMU/cache-on.
+-  * Keep SCTLR unchanged; the copy is cleaned to PoC before entry. */
++ mov x23, x8
++ /* Preserve initial SCTLR until the relocated image and full cache are clean. */
+  cbz x0, failure
+  tst x0, #7
+  b.ne failure
+@@ -86,9 +88,82 @@
+  cmp x16, x17
+  b.lo 2b
+  dsb sy
++ mov x24, x12               /* destination survives cache geometry scratch */
++ /* All dirty firmware data must reach RAM before turning translation/cache off.
++  * Enumerate data/unified cache levels, including FEAT_CCIDX geometry.
++  * Register fields cross-checked against upstream U-Boot armv8 cache.S.
++  */
++ mrs x25, clidr_el1
++ ubfx x26, x25, #24, #3     /* number of coherent cache levels */
++ mrs x28, id_aa64mmfr2_el1
++ ubfx x28, x28, #20, #4     /* CCIDX changes CCSIDR ways/set fields */
++ mrs x29, csselr_el1
++ mov x27, #0
++cache_level:
++ cmp x27, x26
++ b.hs cache_done
++ add x9, x27, x27, lsl #1
++ lsr x9, x25, x9
++ and x9, x9, #7
++ cmp x9, #2                /* skip absent/instruction-only levels */
++ b.lo cache_next_level
++ lsl x9, x27, #1
++ msr csselr_el1, x9
++ isb
++ mrs x9, ccsidr_el1
++ and x10, x9, #7
++ add x10, x10, #4          /* log2(bytes per line) */
++ cbz x28, cache_legacy
++ ubfx x11, x9, #3, #21     /* maximum way index */
++ ubfx x12, x9, #32, #24    /* maximum set index */
++ b cache_geometry_ready
++cache_legacy:
++ ubfx x11, x9, #3, #10
++ ubfx x12, x9, #13, #15
++cache_geometry_ready:
++ clz w13, w11
++ mov x14, #0
++cache_set:
++ mov x15, #0
++cache_way:
++ lsl x16, x15, x13
++ orr x16, x16, x27, lsl #1
++ lsl x17, x14, x10
++ orr x16, x16, x17
++ dc cisw, x16
++ add x15, x15, #1
++ cmp x15, x11
++ b.ls cache_way
++ add x14, x14, #1
++ cmp x14, x12
++ b.ls cache_set
++cache_next_level:
++ add x27, x27, #1
++ b cache_level
++cache_done:
++ msr csselr_el1, x29
++ dsb sy
+  ic iallu
+  dsb sy
+  isb
++ bic x8, x23, #1
++ bic x8, x8, #4
++ bic x8, x8, #0x1000
++ cmp x22, #8
++ b.eq disable_el2
++ msr sctlr_el1, x8
++ isb
++ mrs x8, sctlr_el1
++ b normalized
++ disable_el2:
++ msr sctlr_el2, x8
++ isb
++ mrs x8, sctlr_el2
++normalized:
++ ic iallu
++ dsb sy
++ isb
++ mov x12, x24
+  mov x0, x20
+  mov x1, xzr
+  mov x2, xzr
