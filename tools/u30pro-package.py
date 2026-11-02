@@ -34,6 +34,8 @@ BOARD = WORK / 'package-work/u30pro-board'
 RUNTIME = WORK / 'artifacts/u30pro-runtime'
 KERNEL = WORK / 'objects/u30pro/release'
 LAYOUT = json.loads((TOP / 'tools/build-layout.json').read_text())
+LAYOUT = {key:value.format(repo=str(TOP),workspace=str(WORK)) if isinstance(value,str) else value
+          for key,value in LAYOUT.items()}
 PACKAGES = ('luci', 'luci-i18n-base-zh-cn', 'luci-i18n-firewall-zh-cn',
             'luci-i18n-package-manager-zh-cn', 'bash', 'ip-full', 'iw-full',
             'iwinfo', 'wireless-regdb', 'wifi-scripts', 'wpad-basic-mbedtls', 'openssl-util',
