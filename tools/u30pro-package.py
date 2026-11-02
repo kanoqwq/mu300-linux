@@ -512,7 +512,7 @@ def package():
     canonical_boot()
     report = json.loads((KERNEL/'u30pro-build.json').read_text())
     release = runpy.run_path(str(TOP/'tools/release-identity.py'))['identify'](TOP,'u30pro',report['version'])
-    release['preview'] = 1
+    release['distribution'] = 'full-installer'
     release['storage_layout'] = 'mu300root-container'
     release['hardware_reference'] = json.loads((TOP/'devices/u30pro/profile.json').read_text())['hardware_reference']['commit']
     (ROOT/'etc/mu300/release.json').write_text(json.dumps(release,indent=2)+'\n')
@@ -535,10 +535,10 @@ def package():
         files[name]=TOP/'tools'/name
     for name,path in files.items(): shutil.copyfile(path,package_root/name)
     shutil.copyfile(ROOT/'opt/mu300/vendor/u30pro/modem/map.tsv',package_root/'u30pro-map.tsv')
-    (package_root/'module.prop').write_text('id=u30pro_openwrt_preview\nname=U30 Pro OpenWrt preview (desktop installer)\nversion='+release['image_version']+'\nversionCode='+str(release['build_epoch'])+'\nauthor=minikano\ndescription=Extract and use OpenWrt Installer; no direct Magisk flashing in preview 1\n')
+    (package_root/'module.prop').write_text('id=u30pro_openwrt\nname=U30 Pro OpenWrt (desktop installer)\nversion='+release['image_version']+'\nversionCode='+str(release['build_epoch'])+'\nauthor=minikano\ndescription=Extract and use OpenWrt Installer; native boot containers generated per device\n')
     # A Magisk shell cannot construct U30 Pro's three boot containers. Do not
     # let the legacy MU300 single-boot worker flash an incomplete chain.
-    (package_root/'customize.sh').write_text("#!/system/bin/sh\nabort 'U30 Pro preview: extract ZIP and use OpenWrt Installer; Magisk flashing is not supported in preview 1.'\n")
+    (package_root/'customize.sh').write_text("#!/system/bin/sh\nabort 'U30 Pro: extract ZIP and use OpenWrt Installer; direct Magisk flashing is not supported.'\n")
     runpy.run_path(str(TOP/'tools/tf-payload-manifest.py'))['manifest'](package_root)
     runpy.run_path(str(TOP/'desktop/package.py'))['assemble'](package_root,Path(LAYOUT['maintenance']),report['version'])
     (package_root/'desktop/release.json').write_text(json.dumps(release,indent=2)+'\n')
@@ -558,7 +558,7 @@ def package():
     from backend.package import inspect_package
     inspect_package(package_root)
     output_dir=TOP/'release'; output_dir.mkdir(exist_ok=True)
-    output=output_dir/(release['package_name']+'-preview1.zip')
+    output=output_dir/(release['package_name']+'.zip')
     if output.exists(): raise ValueError('Existing release will not be overwritten')
     from archive_tools import write_member
     candidate=output.with_suffix('.zip.pending')
