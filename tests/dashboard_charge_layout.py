@@ -41,7 +41,7 @@ with sync_playwright() as p:
                 const M=new Function('baseclass','rpc','L',sources.common)(baseclass,rpc,L);
                 const Charge=new Function('baseclass','rpc','M',sources.charge)(baseclass,rpc,M);
                 const NetworkPerformance=new Function('baseclass','rpc','M',sources.network)(baseclass,rpc,M);
-                const app=new Function('view','M','Charge','L','NetworkPerformance',sources.device)({extend:x=>x},M,Charge,L,NetworkPerformance);
+                const app=new Function('view','M','Charge','L','NetworkPerformance','NFC',sources.device)({extend:x=>x},M,Charge,L,NetworkPerformance,{mount:()=>({dispose(){}})});
                 document.querySelector('main').appendChild(app.render({ok:1,role:'device',net_current:'ncm'}));
             }''', dict(sources=sources, lang=lang, dark=dark))
             save = page.locator('[data-charge="save"]')

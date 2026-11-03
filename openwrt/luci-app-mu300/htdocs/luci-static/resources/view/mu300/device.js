@@ -3,6 +3,7 @@
 'require mu300.common as M';
 'require mu300.charge as Charge';
 'require mu300.network-performance as NetworkPerformance';
+'require mu300.nfc as NFC';
 
 return view.extend({
 	load: function() { return L.resolveDefault(M.callUsbGet(), {}); },
@@ -73,11 +74,13 @@ return view.extend({
 		this.refreshAdapters();
 		Charge.mount(root);
 		this._networkPerformance = NetworkPerformance.mount(root);
+		this._nfc = NFC.mount(root);
 		return root;
 	},
 	q: function(id) { return this.root.querySelector('#mud-usb-' + id); },
 	unload: function() {
 		if (this._networkPerformance) this._networkPerformance.dispose();
+		if (this._nfc) this._nfc.dispose();
 		this._disposed = true; this._epoch++;
 		this._timers.forEach(clearTimeout); this._timers.clear();
 		if (this._toast) this._toast.close();

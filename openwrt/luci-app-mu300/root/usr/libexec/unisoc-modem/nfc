@@ -1,0 +1,38 @@
+#!/bin/sh
+# One dashboard contract; hardware and persistence remain with each NFC owner.
+set -u
+export PATH="$PATH:/opt/mu300/bin:/usr/sbin:/sbin"
+DEVICE=${UNISOC_NFC_DEVICE_COMMAND:-/opt/mu300/bin/mu300-device}
+TAG=${UNISOC_NFC_TAG_COMMAND:-/opt/mu300/bin/mu300-nfc}
+NATIVE=${UNISOC_NFC_NATIVE_COMMAND:-/usr/sbin/u30pro-nfc-control}
+LOCK=${UNISOC_NFC_LOCK:-/run/unisoc-nfc.lock}
+error() { printf '{"ok":0,"error":"%s"}\n' "$1"; exit 0; }
+action=${1:-get}
+case $action in
+    get) ;;
+    set)
+        input=$(cat)
+        enabled=$(printf '%s' "$input" | jsonfilter -e '@.enabled' 2>/dev/null)
+        case $enabled in 0|1) ;; *) error nfc_invalid;; esac
+        ;;
+    *) error nfc_invalid;;
+esac
+device=$("$DEVICE" 2>/dev/null)
+case $device in
+    u30pro) owner=$NATIVE;;
+    u30air|v50) owner=$TAG;;
+    *)
+        [ "$action" != get ] || { echo '{"ok":1,"supported":0}'; exit 0; }
+        error nfc_unsupported;;
+esac
+[ -x "$owner" ] && "$owner" supported >/dev/null 2>&1 || error nfc_unavailable
+exec 9>"$LOCK" || error nfc_unavailable
+flock -n 9 || error nfc_busy
+if [ "$action" = set ]; then
+    mode=off; [ "$enabled" != 1 ] || mode=on
+    "$owner" "$mode" >/dev/null 2>&1 || error nfc_apply_failed
+fi
+actual=$("$owner" state 2>/dev/null) || error nfc_read_failed
+case $actual in 0|1) ;; *) error nfc_read_failed;; esac
+[ "$action" != set ] || [ "$actual" = "$enabled" ] || error nfc_apply_failed
+printf '{"ok":1,"supported":1,"enabled":%s}\n' "$actual"

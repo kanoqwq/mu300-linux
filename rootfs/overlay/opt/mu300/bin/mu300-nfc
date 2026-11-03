@@ -220,10 +220,14 @@ case $("${MU300_BIN:-/opt/mu300/bin}/mu300-device") in
 esac
 case ${1:-show} in
     supported) exit 0 ;;
-    show|status|wifi|url|text|clear|sync|on|off) ;;
+    show|status|state|wifi|url|text|clear|sync|on|off) ;;
     *) sed -n '2,10s/^# \{0,1\}//p' "$0" >&2; exit 2 ;;
 esac
 [ -n "$R" ] || [ "$(id -u)" = 0 ] || die "run as root (sudo mu300-nfc ...)"
+# Shared by CLI, boot/config sync and dashboard access. A status read also
+# briefly owns the reset GPIO, so it must not race an EEPROM transaction.
+exec 9>"${MU300_NFC_LOCK:-$R/run/mu300-nfc.lock}" || die "cannot open NFC lock"
+flock -n 9 || die "NFC is busy; retry shortly"
 case ${1:-show} in
     url)  [ -n "${2:-}" ] || die "which URL?"; new=$(tlv "$(uri_record "$2")") ;;
     text) [ -n "${2:-}" ] || die "which text?"; new=$(tlv "$(text_record "$2")") ;;
@@ -236,7 +240,13 @@ EOF
         new=$(tlv "$(wifi_record "$ssid" "$psk")") ;;
 esac
 enable
-case ${1:-show} in on|off) rf "$1"; echo "NFC $(rf)"; exit 0 ;; esac
+case ${1:-show} in
+    on|off) rf "$1"; echo "NFC $(rf)"; exit 0 ;;
+    state)
+        rf_state=$(rf) || exit 1
+        case $rf_state in on) echo 1;; off) echo 0;; *) die "invalid NFC state";; esac
+        exit 0 ;;
+esac
 now=$(describe "$(read_ndef)")
 case ${1:-show} in
     show|status)

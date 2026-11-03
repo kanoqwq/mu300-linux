@@ -48,6 +48,7 @@ define Package/luci-app-mu300/install
 	chmod 0755 $(1)/etc/init.d/unisoc-cpu-cores $(1)/usr/libexec/rpcd/unisoc-cpu-cores $(1)/usr/libexec/unisoc-modem/cpu-cores
 	chmod 0755 $(1)/etc/init.d/unisoc-cpu-idle $(1)/usr/libexec/rpcd/unisoc-cpu-idle $(1)/usr/libexec/unisoc-modem/cpu-idle
 	chmod 0755 $(1)/etc/init.d/unisoc-network-performance $(1)/usr/libexec/rpcd/unisoc-network-performance $(1)/usr/libexec/unisoc-modem/network-performance
+	chmod 0755 $(1)/usr/libexec/rpcd/unisoc-nfc
 	chmod 0600 $(1)/etc/config/unisoc_apn
 	chmod 0755 $(1)/etc/uci-defaults/97-unisoc-upgrade-policy
 	chmod 0600 $(1)/etc/config/mu300-charge

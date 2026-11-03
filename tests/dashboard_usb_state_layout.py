@@ -18,7 +18,7 @@ def main():
                 page.set_content('<html><body><main></main></body></html>')
                 page.evaluate('''([common,device,lang])=>{
                     const base={extend:x=>x},L={env:{lang},resolveDefault:p=>p.catch(()=>({}))};
-                    window.NetworkPerformance={mount:()=>({dispose(){}})};window.calls=[];window.reply={ok:1};window.gets=[];window.scans=[];
+                    window.NetworkPerformance={mount:()=>({dispose(){}})};window.NFC={mount:()=>({dispose(){}})};window.calls=[];window.reply={ok:1};window.gets=[];window.scans=[];
                     window.state={ok:1,role:'device',role_auto:0,host_supported:1,net_mode:'ncm',net_scope:'permanent',net_auto:0,net_current:'ncm',net_next:'ncm'};
                     const rpc={declare:o=>(...args)=>{
                         calls.push([o.method,args]);
