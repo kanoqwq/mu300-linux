@@ -1148,11 +1148,8 @@ static int sc27xx_typec_enable(struct sc27xx_typec *sc)
 		val |= SC27XX_MODE_SNK;
 		break;
 	case TYPEC_PORT_DRP:
-		/*
-		 * U30 Pro: the port starts sink only, so a dual role host (a USB4 PC port) can never make the router
-		 * power it.  User space opts in to dual role through /sys/class/typec/port0/port_type.
-		 */
-		val |= SC27XX_MODE_SNK;
+		/* Honor the stock sprd,mode=DRP and try-power-role=sink policy. */
+		val |= SC27XX_MODE_DRP;
 		break;
 	default:
 		return -EINVAL;

@@ -384,6 +384,7 @@ do_list() {
 	"sim_get": { },
 	"data_sim_get": { },
 	"v50_sim_get": { },
+	"physical_sim_get": { },
 	"data_sim_set": { "target": "String" },
 	"data_sim_status": { "id": "String" },
 	"sim_radio_get": { },
@@ -468,6 +469,7 @@ call)
             esac ;;
         data_sim_get) "$DASH/data-sim" get ;;
         v50_sim_get) /opt/mu300/bin/mu300-v50-sim status ;;
+        physical_sim_get) /opt/mu300/bin/mu300-physical-sim status ;;
         data_sim_set) "$DASH/data-sim" start "$(inp '@.target')" ;;
         data_sim_status) "$DASH/data-sim" status "$(inp '@.id')" ;;
         sim_radio_get) /opt/mu300/bin/mu300-sim-radio get ;;

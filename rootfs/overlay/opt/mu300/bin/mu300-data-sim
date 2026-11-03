@@ -67,7 +67,8 @@ apply)
     if [ "${MU300_DATA_SIM_GATE_HELD:-0}" = 1 ]; then
         # A V50 physical-card transaction already owns this gate. Keep it
         # held while reusing the normal logical data-card transaction.
-        [ "$(mu300-device)" = v50 ] && [ "$(cat "$mutex/pid" 2>/dev/null)" = "$PPID" ] || { echo modem_busy >&2; exit 1; }
+        case "$(mu300-device)" in v50|u30pro) ;; *) echo modem_busy >&2; exit 1;; esac
+        [ "$(cat "$mutex/pid" 2>/dev/null)" = "$PPID" ] || { echo modem_busy >&2; exit 1; }
     else
         mkdir "$mutex" 2>/dev/null || { echo modem_busy >&2; exit 1; }
         echo $$ > "$mutex/pid"

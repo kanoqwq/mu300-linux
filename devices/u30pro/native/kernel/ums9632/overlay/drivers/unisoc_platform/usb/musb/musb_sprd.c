@@ -1411,6 +1411,14 @@ static ssize_t current_speed_show(struct device *dev,
 }
 static DEVICE_ATTR_RO(current_speed);
 
+/* Actual compiled host capability, independent of the current Type-C role. */
+static ssize_t dual_role_capable_show(struct device *dev,
+				    struct device_attribute *attr, char *buf)
+{
+	return sysfs_emit(buf, "%u\n", IS_ENABLED(CONFIG_UNISOC_USB_MUSB_DUAL_ROLE));
+}
+static DEVICE_ATTR_RO(dual_role_capable);
+
 #ifdef CONFIG_P720M01_USB_FEATURE
 static ssize_t zte_usb_datarole_show(struct device *dev,
 				  struct device_attribute *attr, char *buf)
@@ -1471,6 +1479,7 @@ static DEVICE_ATTR_RW(zte_swgpio);
 static struct attribute *musb_sprd_attrs[] = {
 	&dev_attr_maximum_speed.attr,
 	&dev_attr_current_speed.attr,
+	&dev_attr_dual_role_capable.attr,
 	&dev_attr_musb_hostenable.attr,
 	#ifdef CONFIG_P720M01_USB_FEATURE
 	&dev_attr_zte_usb_datarole.attr,

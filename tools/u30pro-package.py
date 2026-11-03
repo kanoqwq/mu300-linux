@@ -55,6 +55,17 @@ def digest(path):
     return h.hexdigest()
 
 
+def verified_kernel():
+    report = json.loads((KERNEL/'u30pro-build.json').read_text())
+    overlay = NATIVE/'kernel/ums9632/overlay'
+    current = {str(p.relative_to(overlay)): digest(p) for p in overlay.rglob('*') if p.is_file()}
+    if (digest(KERNEL/'arch/arm64/boot/Image') != report['image_sha256'] or
+            digest(KERNEL/'.config') != report['config_sha256'] or
+            current != report.get('source_overlay')):
+        raise ValueError('Kernel/Image/config/source receipt mismatch; rebuild current native drivers')
+    return report
+
+
 def owned():
     if STAGE.is_symlink() or not STAGE.resolve().is_relative_to(WORK.resolve()):
         raise ValueError('Invalid U30 Pro staging location')
@@ -246,9 +257,7 @@ def sources(refresh=False):
     shutil.copyfile(usb, ROOT / 'usr/sbin/u30pro-usb')
     (ROOT / 'usr/sbin/u30pro-usb').chmod(0o755)
     # Install exactly the modules selected by this kernel's modules.order.
-    report = json.loads((KERNEL / 'u30pro-build.json').read_text())
-    if digest(KERNEL / 'arch/arm64/boot/Image') != report['image_sha256'] or digest(KERNEL / '.config') != report['config_sha256']:
-        raise ValueError('Kernel/Image/config receipt mismatch')
+    report = verified_kernel()
     module_root = ROOT / 'lib/modules' / report['version']
     module_root.mkdir(parents=True, exist_ok=True)
     old_order=set((module_root/'modules.order').read_text().splitlines()) if (module_root/'modules.order').is_file() else set()
@@ -379,7 +388,7 @@ def finish():
         'mu300-atd','mu300-smsd','mu300-network-recovery','mu300-accounts','mu300-user-packages','ttyd',
         'mu300-ndp','mu300-charge','u30pro-panel','mu300-post','unisoc-modem-ui',
         'unisoc-cpu','unisoc-cpu-cores','unisoc-network-performance','unisoc-sms-forward',
-        'unisoc-traffic','unisoc-ttl')
+        'unisoc-traffic','unisoc-ttl','u30pro-nfc')
     rc = ROOT/'etc/rc.d'; rc.mkdir(exist_ok=True)
     for name in ('S09mu300-vendor', 'S15mu300-wifi-client'):
         old=rc/name
@@ -387,7 +396,7 @@ def finish():
     for name in selected:
         enable_service(ROOT, name)
     apply_alternatives(ROOT)
-    report = json.loads((KERNEL/'u30pro-build.json').read_text())
+    report = verified_kernel()
     subprocess.run(['depmod','-b',str(ROOT),'-F',str(KERNEL/'System.map'),report['version']],check=True)
     sys.path.insert(0,str(TOP/'installer'))
     runpy.run_path(str(TOP/'installer/stage-ota.py'))['stage'](ROOT)
@@ -428,10 +437,8 @@ def canonical_boot():
     check['check_sources']()
     _, paths = check['load_layout'](TOP/'tools/build-layout.json', WORK)
     check['check_inputs'](paths)
-    report = json.loads((KERNEL/'u30pro-build.json').read_text())
+    report = verified_kernel()
     image = KERNEL/'arch/arm64/boot/Image'
-    if digest(image) != report['image_sha256'] or digest(KERNEL/'.config') != report['config_sha256']:
-        raise ValueError('Kernel receipt mismatch')
     wrapped = STAGE/'Image.wrapped'
     if wrapped.is_file():
         proof = json.loads(wrapped.with_suffix('.manifest.json').read_text())
@@ -550,6 +557,8 @@ def package():
     (package_root/'START-HERE.md').write_text((TOP/'devices/u30pro/START-HERE.md').read_text(),encoding='utf-8')
     shutil.copyfile(TOP/'docs/U30PRO-INSTALLER-20261102.zh-CN.md',
                     package_root/'docs/U30PRO-INSTALLER-20261102.zh-CN.md')
+    shutil.copyfile(TOP/'docs/U30PRO-NFC-20261103.zh-CN.md',
+                    package_root/'docs/U30PRO-NFC-20261103.zh-CN.md')
     shutil.copyfile(STAGE/'Image.manifest.json',package_root/'docs/KERNEL-WRAPPER.json')
     shutil.copyfile(KERNEL/'u30pro-build.json',package_root/'docs/KERNEL-BUILD.json')
     shutil.copyfile(RUNTIME/'runtime.json',package_root/'docs/HARDWARE-RUNTIME.json')

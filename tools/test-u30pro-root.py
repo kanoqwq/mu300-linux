@@ -28,6 +28,23 @@ def main():
         'opt/mu300/bin/mu300-dual-radio':'rootfs/overlay/opt/mu300/bin/mu300-dual-radio',
         'opt/mu300/bin/mu300-sim-env':'rootfs/overlay/opt/mu300/bin/mu300-sim-env',
         'opt/mu300/bin/mu300-smsd':'rootfs/overlay/opt/mu300/bin/mu300-smsd',
+        'opt/mu300/bin/mu300-usb':'rootfs/overlay/opt/mu300/bin/mu300-usb',
+        'opt/mu300/bin/mu300-physical-sim':'rootfs/overlay/opt/mu300/bin/mu300-physical-sim',
+        'opt/mu300/bin/mu300-v50-sim':'rootfs/overlay/opt/mu300/bin/mu300-v50-sim',
+        'opt/mu300/bin/mu300-data-sim':'rootfs/overlay/opt/mu300/bin/mu300-data-sim',
+        'opt/mu300/bin/mobile-data':'rootfs/overlay/opt/mu300/bin/mobile-data',
+        'usr/libexec/unisoc-modem/data-sim':'openwrt/luci-app-mu300/root/usr/libexec/unisoc-modem/data-sim',
+        'usr/libexec/unisoc-modem/cell':'openwrt/luci-app-mu300/root/usr/libexec/unisoc-modem/cell',
+        'usr/libexec/rpcd/mu300dash':'openwrt/luci-app-mu300/root/usr/libexec/rpcd/mu300dash',
+        'www/luci-static/resources/view/mu300/sim.js':'openwrt/luci-app-mu300/htdocs/luci-static/resources/view/mu300/sim.js',
+        'usr/libexec/unisoc-modem/device-usb':'openwrt/luci-app-mu300/root/usr/libexec/unisoc-modem/device-usb',
+        'www/luci-static/resources/mu300/common.js':'openwrt/luci-app-mu300/htdocs/luci-static/resources/mu300/common.js',
+        'www/luci-static/resources/view/mu300/device.js':'openwrt/luci-app-mu300/htdocs/luci-static/resources/view/mu300/device.js',
+        'www/luci-static/resources/mu300/nfc.js':'openwrt/luci-app-mu300/htdocs/luci-static/resources/mu300/nfc.js',
+        'usr/libexec/unisoc-modem/nfc':'openwrt/luci-app-mu300/root/usr/libexec/unisoc-modem/nfc',
+        'usr/libexec/rpcd/unisoc-nfc':'openwrt/luci-app-mu300/root/usr/libexec/rpcd/unisoc-nfc',
+        'usr/share/rpcd/acl.d/luci-app-mu300.json':'openwrt/luci-app-mu300/root/usr/share/rpcd/acl.d/luci-app-mu300.json',
+        'opt/mu300/bin/mu300-nfc':'rootfs/overlay/opt/mu300/bin/mu300-nfc',
         'opt/mu300/bin/openwrt-wifi-config':'rootfs/overlay/opt/mu300/bin/openwrt-wifi-config',
         'usr/share/ucode/mu300/native-channel.uc':'rootfs/overlay/usr/share/ucode/mu300/native-channel.uc',
         'usr/share/ucode/mu300/carrier.uc':'rootfs/overlay/usr/share/ucode/mu300/carrier.uc',
@@ -66,15 +83,44 @@ def main():
     # checks actual ELF relocation/library resolution, including non-PIE ELF.
     run('set +e; output=$(chroot /target /opt/u30pro/bin/u30pro-panel 2>&1); rc=$?; '
         'set -e; [ "$rc" = 2 ]; case "$output" in *"Usage: u30pro-panel"*) ;; *) printf "%s\\n" "$output"; exit 1;; esac')
-    for service in ('mu300-vendor','mu300-hw','mu300-atd','mu300-charge','u30pro-panel','u30pro-watchdog','u30pro-factory','mu300-cpu-driver'):
+    for service in ('mu300-vendor','mu300-hw','mu300-atd','mu300-charge','u30pro-panel','u30pro-watchdog','u30pro-factory','mu300-cpu-driver','u30pro-nfc'):
         run('chroot /target /bin/sh -n /etc/init.d/'+service)
     assert 'iproute2' in run('chroot /target /sbin/ip -V')
+    for script in ('/usr/sbin/u30pro-usb-role', '/usr/libexec/unisoc-modem/device-usb', '/opt/mu300/bin/mu300-usb',
+                   '/opt/mu300/bin/mu300-physical-sim','/opt/mu300/bin/mu300-u30pro-sim',
+                   '/usr/sbin/u30pro-nfc-control','/etc/hotplug.d/net/95-u30pro-nfc',
+                   '/usr/libexec/rpcd/unisoc-nfc','/usr/libexec/unisoc-modem/nfc','/opt/mu300/bin/mu300-nfc'):
+        assert os.access(ROOT/script.lstrip('/'), os.X_OK), script+' is not executable'
+        run('chroot /target /bin/sh -n '+script)
     run('chroot /target /bin/sh -n /opt/mu300/bin/cpu-voltage-platform')
     assert (ROOT/'etc/rc.d/S14u30pro-panel').is_symlink()
     assert not (ROOT/'etc/rc.d/S95u30pro-panel').is_symlink()
     assert (ROOT/'etc/rc.d/S08mu300-cpu-driver').is_symlink()
+    assert (ROOT/'etc/rc.d/S95u30pro-nfc').is_symlink()
+    assert (ROOT/'usr/share/u30pro/ui-plugins/nfc.plugin').is_file()
+    import hashlib
+    runtime=json.loads(Path('/home/kano/openwrt-build/artifacts/u30pro-runtime/runtime.json').read_text())
+    nfc=ROOT/'usr/sbin/u30pro-nfc'
+    assert hashlib.sha256(nfc.read_bytes()).hexdigest()==runtime['files']['u30pro-nfc']['sha256']
+    encoded=bytes.fromhex(run('chroot /target /usr/sbin/u30pro-nfc encode OpenWrt open').strip())
+    assert encoded[0]==3 and encoded[1]==len(encoded)-3
+    assert b'application/vnd.wfa.wsc' in encoded and b'OpenWrt' in encoded
+    schema=json.loads(run('chroot /target /usr/libexec/rpcd/unisoc-nfc list'))
+    assert schema=={'get':{},'set':{'enabled':'String'}}
+    # /run is created during real boot. This chroot has not booted; use an
+    # owned temporary lock, not the host's runtime directory.
+    try:
+        assert json.loads(run('chroot /target /usr/bin/env UNISOC_NFC_LOCK=/tmp/u30pro-nfc-rpc-test.lock /usr/libexec/unisoc-modem/nfc get'))=={'ok':1,'supported':1,'enabled':1}
+    finally:
+        (ROOT/'tmp/u30pro-nfc-rpc-test.lock').unlink(missing_ok=True)
+    assert 'title=NFC\n' in (ROOT/'usr/share/u30pro/ui-plugins/nfc.plugin').read_text()
     version=(ROOT/'lib/modules').iterdir()
     modules=next(version)
+    # OpenWrt does not load arbitrary USB modaliases in this native root.
+    # Validate the profile's boot-loaded OTG drivers and depmod metadata.
+    for driver in (ROOT/'etc/modules.d/60-u30pro-host').read_text().splitlines():
+        assert (modules/(driver+'.ko')).is_file(), 'Missing host driver: '+driver
+        assert driver+'.ko:' in (modules/'modules.dep').read_text(), 'Missing module dependencies: '+driver
     assert (modules/'sprd-cpufreq-v2.ko').is_file()
     assert (modules/'u30pro-sprd-scufreq.ko').is_file()
     assert 'voltage_offset_uv:array of int' in subprocess.check_output(['modinfo','-F','parmtype',str(modules/'sprd-cpufreq-v2.ko')],text=True)
@@ -117,6 +163,8 @@ def main():
     subprocess.run([sys.executable,str(TOP/'tests/u30pro_display_handoff.py')],check=True)
     subprocess.run([sys.executable,str(TOP/'tests/u30pro_screen_bandwidth.py')],check=True)
     subprocess.run([sys.executable,str(TOP/'tests/u30pro_power_menu.py')],check=True)
+    subprocess.run([sys.executable,'-m','unittest','discover','-s',str(TOP/'tests'),
+                    '-p','test_u30pro_nfc.py'],check=True)
     # Execute the real target ucode/UCI module with an isolated configuration
     # and mocked ubus, never attach a physical wireless interface.
     for source in ('u30pro_wifi_native.uc','u30pro_channels.uc','u30pro_carrier.uc'):

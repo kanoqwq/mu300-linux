@@ -4,10 +4,10 @@ import os
 from helpers import BIN, TOP, ShellTest
 
 LIB = TOP/'rootfs/overlay/opt/mu300/lib/v50-card.sh'
-CONTROL = BIN/'mu300-v50-sim'
+CONTROL = BIN/'mu300-physical-sim'
 
 
-class V50Cards(ShellTest):
+class PhysicalCardsFixture(ShellTest):
     def setUp(self):
         super().setUp()
         self.root=self.tmp/'root'; (self.root/'proc/device-tree/chosen').mkdir(parents=True)
@@ -93,6 +93,8 @@ else:sys.exit(2)
     def call(self,shell,*args,**env):
         return self.script(shell,self.controller,*args,**dict(self.extra,**env))
 
+
+class V50Cards(PhysicalCardsFixture):
     def test_stock_board_map_and_reject_unfitted_cards(self):
         for shell in self.each_shell():
             for board,ids in [(0,[0,1,2]),(1,[0,1,2,3]),(2,[0,1,3]),(3,[0,1])]:

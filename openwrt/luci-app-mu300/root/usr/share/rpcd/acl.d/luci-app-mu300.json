@@ -31,6 +31,7 @@
           "sim_radio_get",
           "sim_radio_status",
           "v50_sim_get",
+          "physical_sim_get",
           "ttl_get"
         ],
         "mu300-charge": [
@@ -46,6 +47,9 @@
           "signal"
         ],
         "unisoc-network-performance": [
+          "get"
+        ],
+        "unisoc-nfc": [
           "get"
         ]
       },
@@ -71,6 +75,9 @@
         ],
         "unisoc-network-performance": [
           "apply"
+        ],
+        "unisoc-nfc": [
+          "set"
         ]
       },
       "uci": {

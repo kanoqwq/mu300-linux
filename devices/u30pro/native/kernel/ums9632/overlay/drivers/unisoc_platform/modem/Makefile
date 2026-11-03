@@ -5,3 +5,4 @@ obj-$(CONFIG_UNISOC_MODEM_LOADER)					+= modem_loader/
 obj-$(CONFIG_UNISOC_MODEM_POWER_MANAGER)				+= power_manager/
 obj-$(CONFIG_UNISOC_SIPC)						+= sipc/
 obj-$(CONFIG_UNISOC_SIPC_VIRT_BUS)					+= sipc_virt_bus/
+obj-$(CONFIG_U30PRO_SIM_MUX) += u30pro-sim-mux.o

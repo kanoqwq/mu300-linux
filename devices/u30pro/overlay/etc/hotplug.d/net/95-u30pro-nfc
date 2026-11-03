@@ -1,0 +1,8 @@
+#!/bin/sh
+# netifd can recreate an AP without a UCI commit. Handle that event too.
+[ "$(cat /etc/mu300/platform 2>/dev/null)" = u30pro ] || exit 0
+case ${ACTION:-} in add|remove|move) ;; *) exit 0;; esac
+iface=${INTERFACE:-${DEVICENAME:-}}
+selected=$(uci -q get unisoc_modem.main.wifi_device 2>/dev/null || true)
+case $iface in wlan*|"${selected:-wlan0}") ;; *) exit 0;; esac
+(/usr/sbin/u30pro-nfc-control sync </dev/null >/dev/null 2>&1) &

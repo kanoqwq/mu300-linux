@@ -72,13 +72,13 @@ const tick=async()=>{for(let i=0;i<30;i++)await Promise.resolve();};
         assert.equal(common.selectedSlot(),'1');
         view.unload();
     }
-    for(const [board,cards,target] of [[0,[0,1,2],2],[1,[0,1,2,3],3],[2,[0,1,3],3],[3,[0,1],1]]) {
+    for(const [model,board,cards,target] of [['v50',0,[0,1,2],2],['v50',1,[0,1,2,3],3],['v50',2,[0,1,3],3],['v50',3,[0,1],1],['u30pro',0,[0,1,2,3],3],['u30pro',1,[0,1,2],2],['u30pro',2,[0,1],1],['u30pro',3,[0,1,3],3],['u30pro',4,[0,1,2,3],2],['u30pro',5,[3],3],['u30pro',6,[0,2],2]]) {
         common.selectViewedSlot('0');const requests=[];
-        const physical={ok:1,supported:true,ready:true,board_id:board,cards,active_card:0,saved_card:0};
+        const physical={ok:1,supported:true,ready:true,model,board_id:board,cards,active_card:0,saved_card:0};
         const M={injectCss(){},localizeMenu(){},translate:s=>s,selectViewedSlot:common.selectViewedSlot,
             confirmBox:()=>Promise.resolve(true),busy(){},toast:()=>({close(){}})};
         const rpc={declare:o=>arg=>{
-            if(o.method==='v50_sim_get')return Promise.resolve({...physical});
+            if(o.method==='physical_sim_get')return Promise.resolve({...physical});
             if(o.method==='data_sim_set') {
                 requests.push(arg);physical.active_card=physical.saved_card=target;
                 return Promise.resolve({ok:1,id:'abcdefghij'});
@@ -93,10 +93,10 @@ const tick=async()=>{for(let i=0;i<30;i++)await Promise.resolve();};
         const select=all(root,'select').find(n=>n.id==='mud-v50-card');
         assert.deepEqual(select.children.map(n=>Number(n.value)),cards,'board-specific physical choices');
         const button=all(root,'button')[1];select.value=String(target);button.onclick();await tick();
-        assert.deepEqual(requests,['v50-card-'+target]);
+        assert.deepEqual(requests,[model+'-card-'+target]);
         assert.equal(common.selectedSlot(),target===0||target===3?'0':'1','physical IDs never become AT slot IDs');
         physical.ready=false;await view.refresh();assert(button.disabled);
         view.unload();
     }
-    console.log('SIM UI: scoped RPC, shared U30 controls and four V50 hardware variants pass');
+    console.log('SIM UI: scoped RPC, shared controls, four V50 and seven U30 Pro hardware variants pass');
 })().catch(e=>{console.error(e);process.exitCode=1;});

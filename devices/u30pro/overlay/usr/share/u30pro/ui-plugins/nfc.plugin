@@ -1,0 +1,6 @@
+title=NFC
+glyph=N
+type=toggle
+state_cmd=/usr/sbin/u30pro-nfc-control state
+cmd=/usr/sbin/u30pro-nfc-control toggle
+order=25

@@ -55,6 +55,13 @@ setbits() {  # setbits REG MASK VALUE
 
 # A native PD controller owns the boost and negotiates data-role changes.
 # Do not force I2C bits behind it: USB host may legitimately remain a sink.
+if [ "$(mu300-device)" = u30pro ]; then
+    case ${1:-status} in
+        boot) exit 0 ;; # device-usb applies the saved Type-C policy later
+        auto|host|device|status) exec /usr/sbin/u30pro-usb-role "${1:-status}" ;;
+        *) die 'usage: mu300-usb auto|host|device|status' ;;
+    esac
+fi
 if [ "$(mu300-device)" = u30air ]; then
     for native_port in "$R"/sys/class/typec/port*; do
         [ -w "$native_port/data_role" ] || continue

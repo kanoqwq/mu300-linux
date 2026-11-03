@@ -10,6 +10,13 @@ config UNISOC_MODEM
 	  This config control all the module for
 	  Unisoc platform Soc's modem and sp driver.
 
+config U30PRO_SIM_MUX
+	bool "U30 Pro native SIM GPIO routing"
+	depends on GPIOLIB && OF
+	help
+	  Follow the board's SIM mux GPIOs and boot choices. The maintained
+	  userspace modem owner handles all power, replay and data switching.
+
 source "drivers/unisoc_platform/modem/mailbox/Kconfig"
 source "drivers/unisoc_platform/modem/modem_loader/Kconfig"
 source "drivers/unisoc_platform/modem/power_manager/Kconfig"

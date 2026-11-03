@@ -16,8 +16,8 @@
   },
   "tools/u30pro_ui.c": {
     "source_sha256": "509f50da062d843c0f59d4d2c62ea856925ae103524e14c0b5ba1a2ac3d188a6",
-    "sha256": "7a2045f37cb10c7d4911f307d19ce75c27d6496b70c6b55e65d4c2697d2cdd9a",
-    "reason": "Keep native UI/plugin contracts, persistent wallpaper and MU300 action owners. Present the first boot frame before status reads; add a PIN-preserving power menu with explicit confirmation and isolated touch handling, preserving short power and Wi-Fi key actions."
+    "sha256": "7708153564329913926e82b9581ebf1937c460582cb71a4224a839204214229f",
+    "reason": "Keep native UI/plugin contracts, persistent wallpaper and MU300 action owners. Present the first boot frame before status reads; add a PIN-preserving power menu with explicit confirmation and isolated touch handling, preserving short power and Wi-Fi key actions. Complete an in-flight page destination before the next swipe/key; rebuild destination hit boxes for a new touch and discard an older drag superseded by a page key. Keep the normal animation duration and native input APIs. Wake the still-locked screen on validated kernel power_supply ONLINE edges through a nonblocking netlink FD; startup baseline and repeated/full/limit status changes do not wake or extend idle time. No new polling or timer."
   },
   "tools/u30pro_nvsyncd.c": {
     "source_sha256": "3ef7fd800ccffe874b3a491da450bb67388f2585aec2cc04ed600d6ac5a6a9c5",
@@ -101,8 +101,8 @@
   },
   "tools/ui/bus.h": {
     "source_sha256": "44b1cfa20e3680593217c47f6c17e755188349b2a1e02d31c0d1d70202acfc7e",
-    "sha256": "4484bf6261f835a9bb62b4f66da525e927790ff0e432555e317e839fd4575dae",
-    "reason": "Keep native screen/plugin APIs. Clear absent LTE/NR bandwidth on each feed snapshot and expose additive power-menu status fields for UI verification."
+    "sha256": "326c58a2b5223b21b1f4b67a73c23faba621c805acd3835d16c048aa78b54aa8",
+    "reason": "Keep native screen/plugin APIs. Clear absent LTE/NR bandwidth on each feed snapshot and expose additive power-menu status fields for UI verification. Expose additive power-event listener and external-power state for read-only deployment verification."
   },
   "tools/ui/pages.h": {
     "source_sha256": "7400d3e1955815170014f86748ea75ab2fc9b6d7f202fe910d050dec9081cb4f",
@@ -113,5 +113,55 @@
     "source_sha256": "682fc834c362e9353ef4a0015e8c790798270e51635e28b77aed3fef3a10141e",
     "sha256": "a85832e3dfcefd587b25274e9beea504adcd46a67513284735661571956dc688",
     "reason": "Open the same themed power menu from the native control centre power tile; no immediate reboot or redundant hold gesture."
+  },
+  "kernel/ums9632/overlay/drivers/power/supply/u30pro-sgm41513.c": {
+    "source_sha256": "604a09d3c82ecc46610dc401ca871045b23b90b905063e86ca56c367b6726d31",
+    "sha256": "dadf03129042e43873e58e96265bf4bff97afab8b91241d8e96af1e4038de4ea",
+    "reason": "Use the stock USB2 PHY/PMIC BC1.2 result, not SGM41513 PN0 PSEL bits, to select the existing stock SDP/DCP/CDP tables and report USB type. Atomic notifications queue process-context policy, probe defers for its provider and cleanup unregisters before cancelling workers. Preserve PD negotiation, user limits, JEITA, bypass, CV and OTG guards."
+  },
+  "kernel/ums9632/overlay/drivers/power/supply/Kconfig.u30pro": {
+    "source_sha256": "32fbd94b6b7b90b08f53ead42fae22fb05eac04515dcb0c2e959fd0674ed39b1",
+    "sha256": "2dae02583f68ff0884e1a4b22de5553be939336963a0e6a8e2e7e5490db3a3f8",
+    "reason": "Declare the USB_PHY provider dependency for the native SGM BC1.2 policy consumer; no generic board or other family changes."
+  },
+  "kernel/ums9632/overlay/drivers/unisoc_platform/usb/typec/sc27xx_typec.c": {
+    "source_sha256": "6f61cc2cbabb4aed634bb5f444eeb77b2cfa506102f218d89758434a4744d972",
+    "sha256": "755f5d6877bf98882e2a999b89322f05ff30eba6e642045e0139fc4ef33dca7a",
+    "reason": "Honor stock sprd,mode=DRP and try-power-role=sink instead of silently programming sink-only. Native CC attachment events and TCPM own source/boost transitions."
+  },
+  "kernel/ums9632/overlay/drivers/unisoc_platform/sprd_charger/power_delivery/sprd_tcpm.c": {
+    "source_sha256": "316ff012e0498ab6d7712af0c008c9ae5243e87237d8b43e10f82534ccd5fe9e",
+    "sha256": "758d1ef8a9f9886989040c473b783f3b183517623e425009e9482c117dd9a209",
+    "reason": "Remove the reference sink-only override and retain the stock dual-role Type-C capability/preferred sink policy; class port_type controls explicit user choices. Keep PD negotiation and VBUS safety."
+  },
+  "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_sprd.c": {
+    "source_sha256": "d567b3277c25ddc7da728b22028bf3aab39bc3ddf0d254530f80a93c3b3986a6",
+    "sha256": "1699b69d02cde3d9627ebb969252c9fc54ef958fdf2fd031f5537fb7ad358d81",
+    "reason": "Expose a read-only dual_role_capable attribute from the actual compiled native MUSB configuration, so the dashboard cannot offer host mode on an older gadget-only kernel. Preserve extcon-driven host/gadget transitions."
+  },
+  "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_virthub.c": {
+    "source_sha256": "e75ebe204a3f53880386cf3431ed7d476a8922cc715ff3495724709a2ec71678",
+    "sha256": "6e212fe3e8f71ec05dd7eef168ce9541432acbc17f1bdc591e8f1dca7433b012",
+    "reason": "Use Linux 6.12 linux/unaligned.h for the previously uncompiled virtual host root hub."
+  },
+  "kernel/ums9632/overlay/drivers/unisoc_platform/usb/musb/musb_host.c": {
+    "source_sha256": "bd99950c7d59505841823fe75cfb3b3ce3b39b70df2946a1d42e5d68b260d11d",
+    "sha256": "0f0e07fe4cc95dc75e7ca3d94adaa36646e4ea0b3b8ac5f1361c5fd355a1e1a3",
+    "reason": "Only include the optional vendor USB audio offload API when that existing optional configuration is enabled. The native release disables offload and uses the already supplied host stubs; ordinary host transfers stay enabled."
+  },
+  "kernel/ums9632/overlay/drivers/unisoc_platform/modem/Kconfig": {
+    "source_sha256": "a53ae047185b27bb918c60c105d10164e7b976da823742a0958cf3c0c55773ab",
+    "sha256": "f51d6a1c598a94c015708b03d5bcd0a1aa72ef5cebcca1dfe31b9b8c0dd3c859",
+    "reason": "Enable the native U30 Pro SIM GPIO mux from its stock DT mapping; all AT/RF/data switching remains under the maintained MU300 owners."
+  },
+  "kernel/ums9632/overlay/drivers/unisoc_platform/modem/Makefile": {
+    "source_sha256": "33f29a2c54a49953e1f4e89581dd31c4d43ef36940f89a0c2860555d659ac833",
+    "sha256": "d153e202a6b30b48912588811af7b385be78d75d64155d97671816714826fe92",
+    "reason": "Enable the native U30 Pro SIM GPIO mux from its stock DT mapping; all AT/RF/data switching remains under the maintained MU300 owners."
+  },
+  "tools/u30pro_nfc.c": {
+    "source_sha256": "81fa9e7dcc7c74fef631812ee3061dd02a6edd5fae69947fcd7b32f016a619b4",
+    "sha256": "0a9646c4f463362b8b0857831ec905fae642c007cdb11c39809e7cdf094cbbb8",
+    "reason": "Integrate native FM11NT08x Wi-Fi provisioning with a persistent native function-menu switch and event-only synchronization. Validate tag permissions and WSC bounds, publish NDEF length last, reject truncated or multiline keys, skip unchanged EEPROM pages and verify readback. No AT, NV or modem ownership changes."
   }
 }

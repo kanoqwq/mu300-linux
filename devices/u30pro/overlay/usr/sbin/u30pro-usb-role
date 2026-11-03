@@ -1,0 +1,43 @@
+#!/bin/sh
+# Native U30 Pro Type-C policy. TCPM/MUSB own boost, extcon and attachment;
+# never write charger I2C registers or replace the gadget from this helper.
+set -eu
+R=${U30PRO_USB_SYSROOT:-}
+fail() { echo "u30pro-usb-role: $*" >&2; exit 1; }
+[ "$(cat "$R/etc/mu300/platform" 2>/dev/null)" = u30pro ] || fail 'not U30 Pro'
+port=
+for node in "$R"/sys/class/typec/port*; do
+    [ -r "$node/data_role" ] && [ -w "$node/port_type" ] || continue
+    [ -z "$port" ] || fail 'more than one Type-C port'
+    port=$node
+done
+[ -n "$port" ] || fail 'Type-C port unavailable'
+selected() {
+    # The selected class value is bracketed when alternatives are advertised.
+    sed -n 's/.*\[\([^]]*\)\].*/\1/p; /^[a-z][a-z]*$/p' "$1" | head -n1
+}
+capable() {
+    count=0
+    for node in "$R"/sys/bus/platform/drivers/musb-sprd/*/dual_role_capable; do
+        [ -f "$node" ] || continue
+        [ "$(cat "$node")" = 1 ] || return 1
+        count=$((count + 1))
+    done
+    [ "$count" = 1 ]
+}
+case ${1:-status} in
+    capable) capable ;;
+    status) selected "$port/data_role" ;;
+    policy)
+        case $(selected "$port/port_type") in
+            dual) echo auto ;; source) echo host ;; sink) echo device ;; *) exit 1 ;;
+        esac ;;
+    host|device|auto)
+        capable || fail 'kernel lacks dual-role MUSB support'
+        case $1 in host) type=source ;; device) type=sink ;; auto) type=dual ;; esac
+        # Changing port_type makes TCPM detach/re-evaluate safely. It never
+        # enables boost blindly onto a connected charger/another source.
+        printf '%s\n' "$type" > "$port/port_type" || fail 'Type-C role request failed'
+        ;;
+    *) fail 'usage: u30pro-usb-role {host|device|auto|status|policy|capable}' ;;
+esac

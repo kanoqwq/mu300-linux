@@ -16,7 +16,9 @@
 #include <linux/errno.h>
 #include <linux/list.h>
 #include <linux/dma-mapping.h>
+#if IS_ENABLED(CONFIG_UNISOC_USB_OFFLOAD)
 #include <linux/soc/sprd/sprd_musb_offload.h>
+#endif
 
 #include "musb_core.h"
 #include "musb_host.h"

@@ -6901,13 +6901,9 @@ struct sprd_tcpm_port *sprd_tcpm_register_port(struct device *dev, struct tcpc_d
 
 	port->partner_desc.identity = &port->partner_ident;
 	port->port_type = port->typec_caps.type;
-	/*
-	 * U30 Pro: never source power unless user space asks for it.  The class still advertises dual role, so
-	 * "echo dual > /sys/class/typec/port0/port_type" (after the boot time "sink" write) enables sourcing;
-	 * until then PR_Swap/DR_Swap requests are rejected and the CC hardware only presents Rd.
-	 */
-	if (port->port_type == TYPEC_PORT_DRP)
-		port->port_type = TYPEC_PORT_SNK;
+	/* Honor the board's stock dual-role capability. The Type-C state machine
+	 * controls source enable and role changes; userspace may explicitly pin a
+	 * role later through the class interface. Do not silently force sink-only. */
 
 	port->role_sw = usb_role_switch_get(port->dev);
 	if (IS_ERR(port->role_sw)) {

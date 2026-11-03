@@ -138,6 +138,9 @@ static int m_status(struct ubus_context *c, struct ubus_object *o, struct ubus_r
 	blobmsg_add_u32(&bus_b, "theme", (uint32_t)theme_idx);
 	blobmsg_add_u8(&bus_b, "locked", locked);
 	blobmsg_add_u8(&bus_b, "feed_ok", D.feed_ok);
+	blobmsg_add_u8(&bus_b, "power_events_ready", powerfd >= 0);
+	blobmsg_add_u8(&bus_b, "external_power_known", power_known);
+	blobmsg_add_u8(&bus_b, "external_power_online", power_online);
 	ubus_send_reply(c, req, bus_b.head);
 	return 0;
 }

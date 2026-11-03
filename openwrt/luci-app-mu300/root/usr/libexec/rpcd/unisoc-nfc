@@ -1,0 +1,6 @@
+#!/bin/sh
+case ${1:-}:${2:-} in
+    list:) echo '{"get":{},"set":{"enabled":"String"}}';;
+    call:get|call:set) exec "${UNISOC_NFC_ADAPTER:-/usr/libexec/unisoc-modem/nfc}" "$2";;
+    *) echo '{"ok":0,"error":"nfc_invalid"}';;
+esac

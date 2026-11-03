@@ -17,6 +17,7 @@
 #pragma GCC diagnostic ignored "-Wformat-truncation"
 #endif
 #include <ctype.h>
+#include <errno.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -24,6 +25,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <linux/netlink.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -61,6 +64,7 @@ static struct { int down, x0, y0, x, y, dir, swallow, hold_fired, base_scroll, z
 static float sheet_from, sheet_to;
 static long sheet_t0;
 static int sheet_anim;
+static int powerfd = -1, power_known, power_online;
 
 #define SETTINGS_PATH UI_RUN "/settings.kv"
 
@@ -328,6 +332,89 @@ static void go_sleep(void)
 	state_write();
 }
 
+/* External power is an ONLINE edge, not Charging -> Full/Not charging. Read
+ * once after subscribing, then consume kernel power_supply uevents even while
+ * asleep. Neither the feeder nor the periodic battery refresh owns wakeups. */
+static void power_observe(int online)
+{
+	if (online != 0 && online != 1) return;
+	int changed = power_known && online != power_online;
+
+	power_known = 1;
+	power_online = D.chg_online = online;
+	if (!changed) return;
+	collect_battery();
+	toast_show(online ? "已连接外部电源" : "已断开外部电源", online ? C_OK : C_WARN, 3000);
+	wake(); /* preserves the PIN/soft lock and starts its normal screen timeout */
+}
+
+static void power_snapshot(void)
+{
+	long online = rd_long(UI_SYSFS "/sys/class/power_supply/u30pro-charger-master/online", -1);
+
+	if (online == 0 || online == 1) power_observe((int)online);
+}
+
+static int power_uevent(const char *data, size_t len, unsigned sender, int truncated)
+{
+	int action = 0, subsystem = 0, supply = 0, online = -1;
+
+	/* Userspace netlink packets, truncated records and non-NUL-terminated
+	 * properties are not authoritative charger notifications. */
+	if (sender || truncated || !len || data[len - 1]) return 0;
+	for (size_t pos = 0; pos < len;) {
+		const char *item = data + pos;
+		size_t n = strnlen(item, len - pos);
+
+		if (n == len - pos) return 0;
+		if (!strcmp(item, "ACTION=change")) action = 1;
+		else if (!strcmp(item, "SUBSYSTEM=power_supply")) subsystem = 1;
+		else if (!strcmp(item, "POWER_SUPPLY_NAME=u30pro-charger-master")) supply = 1;
+		else if (!strcmp(item, "POWER_SUPPLY_ONLINE=0")) online = 0;
+		else if (!strcmp(item, "POWER_SUPPLY_ONLINE=1")) online = 1;
+		pos += n + 1;
+	}
+	if (!action || !subsystem || !supply || online < 0) return 0;
+	power_observe(online);
+	return 1;
+}
+
+static void power_events_open(void)
+{
+	struct sockaddr_nl address = { .nl_family = AF_NETLINK, .nl_groups = 1 };
+
+	powerfd = socket(AF_NETLINK, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, NETLINK_KOBJECT_UEVENT);
+	if (powerfd < 0) { perror("screen power uevent socket"); return; }
+	if (bind(powerfd, (struct sockaddr *)&address, sizeof address) < 0) {
+		perror("screen power uevent bind"); close(powerfd); powerfd = -1; return;
+	}
+	/* Subscribe before taking the baseline so an edge cannot fall between
+	 * the initial sysfs read and installing the event listener. */
+	power_snapshot();
+}
+
+static void power_events_read(void)
+{
+	/* Bound each drain so an unrelated kernel event burst cannot starve input. */
+	for (int i = 0; i < 64; i++) {
+		char data[8192];
+		struct sockaddr_nl sender = {0};
+		struct iovec vector = { .iov_base = data, .iov_len = sizeof data };
+		struct msghdr msg = { .msg_name = &sender, .msg_namelen = sizeof sender,
+			.msg_iov = &vector, .msg_iovlen = 1 };
+		ssize_t n = recvmsg(powerfd, &msg, MSG_DONTWAIT);
+
+		if (n < 0) {
+			if (errno == EINTR) continue;
+			/* Reconcile a lost-event notification once; never poll for changes. */
+			if (errno == ENOBUFS) power_snapshot();
+			return;
+		}
+		if (msg.msg_namelen == sizeof sender && sender.nl_family == AF_NETLINK)
+			power_uevent(data, (size_t)n, sender.nl_pid, msg.msg_flags & MSG_TRUNC);
+	}
+}
+
 /* the settings changed behind our back (the web interface): adopt them; a lock that was switched off or lost its PIN opens the screen */
 static void settings_apply(void)
 {
@@ -364,6 +451,22 @@ static void apply_idle(long now)
 }
 
 /* ------------------------------------------------------------------ navigation */
+/* A new input owns a new transition. Complete the previous destination first:
+ * restarting its timer or cancelling it against the old page replays the same
+ * pair forever when input arrives faster than the 240 ms animation. */
+static void nav_finish(void)
+{
+	if (!anim_on) return;
+	int commit = anim_commit;
+
+	if (commit) page = wrap_page(page + commit);
+	tx_off = 0;
+	anim_on = 0;
+	anim_commit = 0;
+	dirty = 1;
+	if (commit) state_write();
+}
+
 static void nav_anim(float to, int commit)
 {
 	anim_from = tx_off;
@@ -508,6 +611,13 @@ static void go_home(void)
 
 static void page_step(int dir)
 {
+	nav_finish();
+	/* A physical page key supersedes a finger already dragging the old page. */
+	if (tc.down) {
+		tc.swallow = 1;
+		hold_id = hold_pct = 0;
+		press_kill();
+	}
 	if (ov != OV_NONE) ov = OV_NONE;
 	tx_off = 0;
 	nav_anim(dir > 0 ? -SCREEN : SCREEN, dir);
@@ -524,12 +634,7 @@ static void nav_tick(long now)
 
 	tx_off = anim_from + (anim_to - anim_from) * e;
 	dirty = 1;
-	if (t >= 1.f) {
-		if (anim_commit) { page = wrap_page(page + anim_commit); state_write(); }
-		tx_off = 0;
-		anim_on = 0;
-		anim_commit = 0;
-	}
+	if (t >= 1.f) nav_finish();
 }
 
 /* ------------------------------------------------------------------ function menu */
@@ -778,6 +883,12 @@ static void ui_touch(int type, int x, int y, long ms)
 			if (wake_idx == WAKE_TAP || (wake_idx == WAKE_DOUBLE && first_tap && now - first_tap <= 450)) { first_tap = 0; wake(); }
 			else if (wake_idx == WAKE_DOUBLE) first_tap = now;
 			return;
+		}
+		if (anim_on) {
+			nav_finish();
+			/* In-between frames have no page hit boxes. Rebuild for the settled
+			 * destination before resolving a tap, scroll or another swipe. */
+			compose();
 		}
 		if (pin_mode && !power_menu) {
 			/* the ring pad has wedge-shaped keys: found by angle and radius, not by the rectangle hits */
@@ -1142,11 +1253,11 @@ static void compose(void)
 /* ------------------------------------------------------------------ events -> toasts */
 static void detect_events(void)
 {
-	static struct { int init, conn, chg, low, clients, unread, relay; } p;
+	static struct { int init, conn, low, clients, unread, relay; } p;
 
 	if (!D.feed_ok) return;
 	if (!p.init) {
-		p.init = 1; p.conn = D.cell_connected; p.chg = D.charging; p.clients = D.nclients; p.unread = D.sms_unread; p.relay = D.relay_state;
+		p.init = 1; p.conn = D.cell_connected; p.clients = D.nclients; p.unread = D.sms_unread; p.relay = D.relay_state;
 		return;
 	}
 	if (D.cell_connected != p.conn) {
@@ -1159,10 +1270,6 @@ static void detect_events(void)
 		if (D.relay_state == 2) { snprintf(m, sizeof m, "中继已连接 %.20s", D.relay_ssid); toast_show(m, C_OK, 3000); }
 		else if (p.relay == 2) toast_show("Wi-Fi 中继已断开", C_WARN, 3000);
 		p.relay = D.relay_state;
-	}
-	if (D.charging != p.chg) {
-		toast_show(D.charging ? "开始充电" : "已断开外部电源", D.charging ? C_OK : C_WARN, 3000);
-		p.chg = D.charging;
 	}
 	if (D.bat_pct >= 0 && D.bat_pct <= 15 && !D.charging && !p.low) {
 		char m[48];
@@ -1567,6 +1674,7 @@ int main(int argc, char **argv)
 		present(&scr);
 		backlight_level(bright_max);
 	}
+	if (!test) power_events_open();
 	while (running) {
 		now = now_ms();
 		g_ms = now;
@@ -1624,12 +1732,16 @@ int main(int argc, char **argv)
 		}
 		/* wake on input, on the completion of the flip in flight (DRM fd), on a ubus request, or when the next frame is due */
 		struct pollfd p[] = { { .fd = keyfd, .events = POLLIN }, { .fd = touchfd, .events = POLLIN }, { .fd = flip_pending ? fd : -1, .events = POLLIN },
-				      { .fd = bus_fd(now), .events = POLLIN } };
+				      { .fd = bus_fd(now), .events = POLLIN }, { .fd = powerfd, .events = POLLIN } };
 		long wait = asleep ? 200 : 30;
 
 		if (!asleep && !flip_pending && next_frame - now < wait) wait = next_frame - now < 1 ? 1 : next_frame - now;
-		if (poll(p, 4, (int)wait) > 0 && (p[3].revents & POLLIN)) bus_handle();
+		if (poll(p, 5, (int)wait) > 0) {
+			if (p[3].revents & POLLIN) bus_handle();
+			if (p[4].revents & (POLLIN | POLLERR)) power_events_read();
+		}
 	}
+	if (powerfd >= 0) close(powerfd);
 	if (keyfd >= 0) close(keyfd);
 	if (touchfd >= 0) close(touchfd);
 	backlight_level(bright_max);

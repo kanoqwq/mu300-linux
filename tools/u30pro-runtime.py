@@ -23,6 +23,7 @@ SOURCES = {
     'u30pro-nodes': ['kernel/ums9632/native/stage0_linux.c'],
     'u30pro-watchdog-keeper': ['kernel/ums9632/native/u30pro_watchdog_keeper.c'],
     'u30pro-panel': ['tools/u30pro_ui.c'],
+    'u30pro-nfc': ['tools/u30pro_nfc.c'],
     'sml-voltage-check': [],
 }
 

@@ -15,17 +15,22 @@ RESCAN_MARKER=${MU300_USB_RESCAN_MARKER:-/run/unisoc-usb-host-rescan-done}
 GADGET_DIR=${MU300_USB_GADGET_DIR:-/sys/kernel/config/usb_gadget}
 ROLE_STATE=${MU300_USB_ROLE_STATE:-/run/unisoc-usb-role-state}
 NETWORK_SERVICE=${MU300_USB_NETWORK_SERVICE:-/etc/init.d/network}
+NATIVE_ROLE=${MU300_USB_NATIVE_ROLE_COMMAND:-/usr/sbin/u30pro-usb-role}
 IP=${MU300_USB_IP_BIN:-ip}
 NET_LOCK=${MU300_USB_NET_LOCK:-/var/lock/unisoc-usb-net.lock}
 get() { uci -q get "$CFG.$1" 2>/dev/null || true; }
 put() { uci -q set "$CFG.$1=$2"; }
 error() { printf '{"ok":0,"error":"%s"}\n' "$1"; exit 1; }
 role_now() {
+    if [ "$(device_name)" = u30pro ] && [ -x "$NATIVE_ROLE" ]; then
+        current=$("$NATIVE_ROLE" status 2>/dev/null)
+        case $current in host|device) echo "$current"; return 0 ;; esac
+    fi
     current=$(cat "$ROLE_FILE" 2>/dev/null)
     case $current in host|device) printf '%s\n' "$current" ;;
         *)
-            # Native U30 Pro MUSB is peripheral-only in this kernel; it has
-            # a live gadget but no DWC3 usb_role file. Report that distinction.
+            # A pre-dual-role U30 Pro kernel may still expose a live gadget.
+            # That alone does not grant host capability.
             if [ "$(device_name)" = u30pro ]; then
                 for gadget in "$GADGET_DIR"/*; do
                     [ -n "$(cat "$gadget/UDC" 2>/dev/null)" ] || continue
@@ -77,11 +82,28 @@ device_name() {
     elif command -v mu300-device >/dev/null 2>&1; then mu300-device
     else echo generic; fi
 }
+role_available() {
+    if [ "$(device_name)" = u30pro ]; then
+        [ -x "$NATIVE_ROLE" ] && "$NATIVE_ROLE" capable
+    else
+        [ -e "$ROLE_FILE" ]
+    fi
+}
+role_policy() {
+    if [ "$(device_name)" = u30pro ]; then "$NATIVE_ROLE" policy 2>/dev/null
+    else role_now; fi
+}
+role_matches() {
+    if [ "$(device_name)" = u30pro ]; then [ "$(role_policy)" = "$1" ]
+    else [ "$(role_now)" = "$1" ]; fi
+}
 role_command() {
     cmd=${MU300_USB_ROLE_COMMAND:-$(get role_command)}
     if [ -n "$cmd" ]; then
         [ -x "$cmd" ] || error 'USB role adapter is not executable'
         "$cmd" "$1" || error 'USB role adapter failed'
+    elif [ "$(device_name)" = u30pro ]; then
+        "$NATIVE_ROLE" "$1" || error 'Native Type-C role request failed'
     elif [ "$(device_name)" = f50 ] || [ "$(device_name)" = v50 ]; then
         [ -w "$ROLE_FILE" ] || error 'USB role switch is unavailable'
         printf '%s\n' "$1" > "$ROLE_FILE" || error 'USB role switch failed'
@@ -232,29 +254,43 @@ case ${1:-} in
         [ "$role" != host ] || net_auto=0
         available=1
         if [ "$role" = host ] || [ "$role_auto" = 1 ]; then available=0; fi
-        host_supported=1
-        [ -e "$ROLE_FILE" ] || host_supported=0
+        host_supported=0; role_available && host_supported=1
+        role_native=0; role_persist=$role_auto; role_saved=device
+        policy=$(role_now)
+        if [ "$(device_name)" = u30pro ]; then
+            role_native=1; policy=$(role_policy)
+            case $policy in auto|host|device) ;; *) policy=unavailable ;; esac
+            role_persist=$(get native_role_persist); case $role_persist in 1) ;; *) role_persist=0 ;; esac
+            role_saved=$(get native_role_policy); case $role_saved in auto|host|device) ;; *) role_saved=auto ;; esac
+        fi
         network_status
         role_target=$(sed -n '2p' "$ROLE_STATE" 2>/dev/null)
-        case $role_target in host|device) ;; *) role_target= ;; esac
+        case $role_target in host|device) ;; auto) [ "$role_native" = 1 ] || role_target= ;; *) role_target= ;; esac
         role_error=0; role_pending=0
-        if [ -n "$role_target" ] && [ "$role" != "$role_target" ]; then
+        if [ -n "$role_target" ] && ! role_matches "$role_target"; then
             case $(sed -n '3p' "$ROLE_STATE" 2>/dev/null) in pending) role_pending=1 ;; error) role_error=1 ;; esac
         fi
-        printf '{"ok":1,"role":"%s","role_auto":%s,"host_supported":%s,"role_target":"%s","role_pending":%s,"role_error":%s,"net_mode":"%s","net_scope":"%s","net_auto":%s,"net_available":%s,"net_current":"%s","net_next":"%s","net_policy_error":%s,"lan_auto":%s}\n' \
-            "$role" "$role_auto" "$host_supported" "$role_target" "$role_pending" "$role_error" "$mode" "$scope" "$net_auto" "$available" "$net_current" "$net_next" "$net_policy_error" "$lan_auto"
+        printf '{"ok":1,"role":"%s","role_auto":%s,"host_supported":%s,"role_target":"%s","role_pending":%s,"role_error":%s,"net_mode":"%s","net_scope":"%s","net_auto":%s,"net_available":%s,"net_current":"%s","net_next":"%s","net_policy_error":%s,"lan_auto":%s,"role_native":%s,"role_policy":"%s","role_persist":%s,"role_saved":"%s"}\n' \
+            "$role" "$role_auto" "$host_supported" "$role_target" "$role_pending" "$role_error" "$mode" "$scope" "$net_auto" "$available" "$net_current" "$net_next" "$net_policy_error" "$lan_auto" "$role_native" "$policy" "$role_persist" "$role_saved"
         ;;
     set-role)
         role=${2:-}; auto=${3:-}
-        case $role in host|device) ;; *) error 'Invalid USB role' ;; esac
+        case $role in host|device) ;; auto) [ "$(device_name)" = u30pro ] || error 'Invalid USB role' ;; *) error 'Invalid USB role' ;; esac
         case $auto in 0|1) ;; *) error 'Invalid boot-auto value' ;; esac
-        [ "$role" = host ] || [ "$auto" = 0 ] || error 'Device is the boot default; host auto-apply is the only persistent role'
-        [ -e "$ROLE_FILE" ] || error 'USB role switch is unavailable'
+        if [ "$(device_name)" != u30pro ]; then
+            [ "$role" = host ] || [ "$auto" = 0 ] || error 'Device is the boot default; host auto-apply is the only persistent role'
+        fi
+        role_available || error 'USB role switch is unavailable'
         # Persist and acknowledge before dropping the USB management link.
         # A synchronous role write can tear down the very RPC carrying its
         # response, leading the browser to report failure after success.
         ensure_section
-        put role_auto "$auto" || error 'Cannot save USB role policy'
+        if [ "$(device_name)" = u30pro ]; then
+            saved=auto; [ "$auto" = 0 ] || saved=$role
+            put native_role_policy "$saved" && put native_role_persist "$auto" || error 'Cannot save native USB role policy'
+            host_auto=0; [ "$role:$auto" != host:1 ] || host_auto=1
+            put role_auto "$host_auto" || error 'Cannot save USB role policy'
+        else put role_auto "$auto" || error 'Cannot save USB role policy'; fi
         if [ "$role" = host ] && [ "$auto" = 1 ]; then
             put net_auto 0 || error 'Cannot disable USB network boot policy'
             rm -f "$BOOT_FILE"
@@ -263,7 +299,7 @@ case ${1:-} in
         request="$(date +%s)-$$"
         printf '%s\n%s\npending\n\n' "$request" "$role" > "$ROLE_STATE.$$" && mv "$ROLE_STATE.$$" "$ROLE_STATE" || error '无法记录 USB 角色切换结果'
         pending=0
-        if [ "$(role_now)" != "$role" ]; then
+        if ! role_matches "$role"; then
             pending=1
             # Give rpcd/uhttpd a brief chance to flush the acknowledgement
             # before the USB gadget carrying that response disappears.
@@ -276,14 +312,14 @@ case ${1:-} in
     apply-role)
         role=${2:-}
         request=${3:-}
-        case $role in host|device) ;; *) exit 2 ;; esac
+        case $role in host|device) ;; auto) [ "$(device_name)" = u30pro ] || exit 2 ;; *) exit 2 ;; esac
         [ -z "$request" ] || [ "$request" = "$(sed -n '1p' "$ROLE_STATE" 2>/dev/null)" ] || exit 0
-        [ "$(role_now)" = "$role" ] || ( role_command "$role" ) || {
+        role_matches "$role" || ( role_command "$role" ) || {
             role_result "$role" error '' "$request"
             logger -t unisoc-usb "role switch to $role failed"
             exit 1
         }
-        [ "$(role_now)" != "$role" ] || role_result "$role" done '' "$request"
+        ! role_matches "$role" || role_result "$role" done '' "$request"
         if [ "$role" = host ]; then
             start_host_rescan
             "$0" net-sync >/dev/null 2>&1 || true
@@ -318,7 +354,13 @@ case ${1:-} in
             put net_auto 0 && uci commit unisoc_modem
             rm -f "$BOOT_FILE"
         fi
-        if [ "$(get role_auto)" = 1 ]; then
+        if [ "$(device_name)" = u30pro ]; then
+            policy=$(get native_role_policy)
+            case $policy in auto|host|device) ;; *) policy=auto; [ "$(get role_auto)" != 1 ] || policy=host ;; esac
+            role_available || error 'Native dual-role kernel is unavailable'
+            role_matches "$policy" || role_command "$policy"
+            [ "$policy" != host ] || start_host_rescan
+        elif [ "$(get role_auto)" = 1 ]; then
             [ "$(role_now)" = host ] || role_command host
             start_host_rescan
         fi

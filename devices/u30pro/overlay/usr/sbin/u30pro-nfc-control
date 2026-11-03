@@ -1,0 +1,86 @@
+#!/bin/sh
+# One event-driven NFC configuration owner. No polling or AT access.
+set -eu
+export PATH="$PATH:/usr/sbin:/usr/bin:/sbin:/bin"
+NFC=${U30PRO_NFC_TOOL:-/usr/sbin/u30pro-nfc}
+HOTSPOT=${U30PRO_NFC_HOTSPOT:-/usr/libexec/unisoc-modem/hotspot}
+RUN=${U30PRO_NFC_RUN:-/run/u30pro-nfc}
+SELF=${U30PRO_NFC_CONTROL:-/usr/sbin/u30pro-nfc-control}
+PLATFORM=${U30PRO_NFC_PLATFORM:-/etc/mu300/platform}
+[ "$(cat "$PLATFORM" 2>/dev/null)" = u30pro ] || exit 2
+desired() { [ "$(uci -q get u30pro_native_control.nfc.enabled 2>/dev/null || true)" = 0 ] && echo 0 || echo 1; }
+case ${1:-sync} in
+    state) desired; exit;;
+    supported) [ -x "$NFC" ]; exit;;
+    sync|toggle|on|off) action=${1:-sync};;
+    --locked) action=${2:-sync};;
+    *) exit 2;;
+esac
+mkdir -p "$RUN"
+chmod 700 "$RUN"
+if [ "${1:-}" != --locked ]; then
+    # Kernel locks are released on process exit; no stale PID-directory gate.
+    exec flock -x "$RUN/lock" "$SELF" --locked "$action"
+fi
+fail() {
+    printf '%s\n' error > "$RUN/result"
+    logger -t u30pro-nfc 'NFC synchronization failed; Wi-Fi settings were not changed'
+    [ "$action" = sync ] || ubus call u30pro.panel command '{"cmd":"toast NFC 同步失败，请重试"}' >/dev/null 2>&1 || true
+    echo 'NFC synchronization failed' >&2
+    exit 1
+}
+case $action in
+    sync) ;;
+    toggle|on|off)
+        enabled=1
+        case $action in off) enabled=0;; toggle) [ "$(desired)" = 0 ] || enabled=0;; esac
+        uci -q set u30pro_native_control.nfc=nfc || fail
+        uci -q set "u30pro_native_control.nfc.enabled=$enabled" || fail
+        uci -q commit u30pro_native_control || fail
+        ;;
+    *) exit 2;;
+esac
+enabled=$(desired)
+auth=; section=; ssid=; reason=disabled
+field() { printf '%s\n' "$fields" | awk -v key="$1" 'NR % 2 == 1 && $0 == key { getline; print; exit }'; }
+if [ "$enabled" = 1 ]; then
+    # An unavailable RPC is not evidence that the AP was disabled. Retain the
+    # last valid token; a later real configuration/net event will retry.
+    fields=$("$HOTSPOT" fields) || fail
+    if [ "$(field available)" = 1 ]; then
+        section=$(field section)
+        case $section in ''|*[!a-zA-Z0-9_]*) fail;; esac
+        ssid=$(uci -q get "wireless.$section.ssid") || fail
+        reason=hotspot_disabled
+        if [ "$(field enabled)" = 1 ]; then
+            enc=$(field enc); reason=unsupported_encryption
+            case $enc in
+                none|'') auth=open;;
+                psk2|psk2+ccmp|psk2+aes|psk2+tkip+ccmp|sae-mixed|sae-mixed+ccmp) auth=wpa2;;
+            esac
+        fi
+    else reason=no_selected_hotspot; fi
+fi
+err=$RUN/error.$$
+trap 'rm -f "$err"' EXIT
+rc=0
+if [ -z "$auth" ]; then
+    "$NFC" clear >"$err" 2>&1 || rc=$?
+elif [ "$auth" = open ]; then
+    "$NFC" wifi "$ssid" open >"$err" 2>&1 || rc=$?
+else
+    # Only the selected AP's saved key, passed over stdin, never argv/logs.
+    key=$(uci -q get "wireless.$section.key") || fail
+    printf '%s' "$key" | "$NFC" wifi "$ssid" wpa2 >"$err" 2>&1 || rc=$?
+    unset key
+fi
+if [ "$rc" != 0 ]; then
+    fail
+fi
+printf '%s\n' "${auth:-$reason}" > "$RUN/result"
+if [ "$action" != sync ]; then
+    if [ "$enabled" = 0 ]; then message='{"cmd":"toast NFC 已关闭"}'
+    elif [ -n "$auth" ]; then message='{"cmd":"toast NFC 已开启"}'
+    else message='{"cmd":"toast 当前热点暂不支持 NFC"}'; fi
+    ubus call u30pro.panel command "$message" >/dev/null 2>&1 || true
+fi

@@ -298,6 +298,9 @@ radio_on_locked() {
     if [ "$DEVICE" = v50 ] && [ -n "$(uci -q get unisoc_modem.main.v50_card 2>/dev/null || true)" ]; then
         /opt/mu300/bin/mu300-v50-sim boot || return 1
     fi
+    if [ "$DEVICE" = u30pro ]; then
+        /opt/mu300/bin/mu300-u30pro-sim boot || return 1
+    fi
     if [ "$(uci -q get unisoc_modem.main.sim_slots 2>/dev/null || true)" = 2 ]; then
         /opt/mu300/bin/mu300-dual-radio
         local dual_rc=$?
@@ -1049,13 +1052,14 @@ case "${1:-status}" in
         ;;
     radio-locked)
         shift
-        if [ "$DEVICE" = v50 ]; then
+        case "$DEVICE" in v50|u30pro)
             case "$*" in
-                '/opt/mu300/bin/mu300-v50-sim --route '[0-3]) radio_locked "$@" ;;
+                "/opt/mu300/bin/mu300-$DEVICE-sim --route "[0-3]) radio_locked "$@" ;;
                 *) exit 2;;
             esac
             exit $?
-        fi
+            ;;
+        esac
         exit 2 ;;
     up) up "${2:-}" ;;
     data-priority) data_priority ;;

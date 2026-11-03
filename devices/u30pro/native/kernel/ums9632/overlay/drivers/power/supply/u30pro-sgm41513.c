@@ -18,6 +18,7 @@
 #include <linux/regulator/of_regulator.h>
 #include <linux/workqueue.h>
 #include <linux/slab.h>
+#include <linux/usb/phy.h>
 #include "u30pro-sgm41513-values.h"
 
 #define SGM_CONTROL 0x01
@@ -41,6 +42,9 @@ struct u30_sgm {
  struct power_supply_desc psy_desc;
  struct regulator_desc vbus_desc;
  struct delayed_work poll;
+ struct usb_phy *usb_phy;
+ struct notifier_block usb_nb;
+ struct work_struct source_work;
  bool stopping;
  int legacy_id_result;
  int last_error;
@@ -143,6 +147,29 @@ static int sgm_band(struct u30_sgm *s, int t)
  return s->jeita_n;
 }
 
+/* SGM41513 PN0's PSEL indication is not a BC1.2 DCP/CDP result. The stock
+ * Unisoc PHY/PMIC already owns D+/D- detection and notifies its final type. */
+static int sgm_source_type(struct u30_sgm *s)
+{
+ if (READ_ONCE(s->usb_phy->chg_state) != USB_CHARGER_PRESENT) return 3;
+ switch (READ_ONCE(s->usb_phy->chg_type)) {
+ case SDP_TYPE: return 0;
+ case DCP_TYPE: return 1;
+ case CDP_TYPE: return 2;
+ default: return 3;
+ }
+}
+
+static int sgm_usb_type(struct u30_sgm *s)
+{
+ switch (sgm_source_type(s)) {
+ case 0: return POWER_SUPPLY_USB_TYPE_SDP;
+ case 1: return POWER_SUPPLY_USB_TYPE_DCP;
+ case 2: return POWER_SUPPLY_USB_TYPE_CDP;
+ default: return POWER_SUPPLY_USB_TYPE_UNKNOWN;
+ }
+}
+
 /* Called with s->lock held, from the 5 s poll and after any user change. */
 static void sgm_policy(struct u30_sgm *s)
 {
@@ -158,12 +185,7 @@ static void sgm_policy(struct u30_sgm *s)
  if (status < 0 || control < 0) return;
  if ((control & SGM_OTG) || !(status & BIT(2))) return;	/* OTG source mode, or no valid input */
 
- switch (status >> 5) {
- case 1: type = 0; break;	/* USB host (SDP) */
- case 3: type = 1; break;	/* DCP */
- case 2: type = 2; break;	/* CDP */
- default: type = 3; break;
- }
+ type = sgm_source_type(s);
  iin = s->tbl_iin[type];
  ichg = s->tbl_ichg[type];
 
@@ -224,6 +246,36 @@ static void sgm_policy(struct u30_sgm *s)
  sgm_update_reg(s, 0x01, BIT(4), charge ? BIT(4) : 0);
  s->pol_type = type; s->pol_temp = temp == INT_MIN ? -9999 : temp;
  s->pol_iin = iin; s->pol_ichg = ichg; s->pol_cv = cv; s->pol_charge = charge;
+}
+
+static void sgm_source_work(struct work_struct *work)
+{
+ struct u30_sgm *s = container_of(work, struct u30_sgm, source_work);
+
+ if (READ_ONCE(s->stopping)) return;
+ mutex_lock(&s->lock);
+ if (!s->stopping) sgm_policy(s);
+ mutex_unlock(&s->lock);
+ power_supply_changed(s->psy);
+}
+
+/* USB PHY uses an atomic notifier. Never do I2C, lock a mutex or run a new
+ * charger detection from it; defer policy to normal process context. */
+static int sgm_source_notify(struct notifier_block *nb, unsigned long event, void *data)
+{
+ struct u30_sgm *s = container_of(nb, struct u30_sgm, usb_nb);
+
+ (void)event;
+ if (data != s->usb_phy || READ_ONCE(s->stopping)) return NOTIFY_DONE;
+ schedule_work(&s->source_work);
+ return NOTIFY_OK;
+}
+
+static void sgm_unregister_source(void *data)
+{
+ struct u30_sgm *s = data;
+
+ usb_unregister_notifier(s->usb_phy, &s->usb_nb);
 }
 
 static int sgm_set_property(struct power_supply *psy, enum power_supply_property property,
@@ -297,9 +349,8 @@ static int sgm_get_property(struct power_supply *psy,
   if (property == POWER_SUPPLY_PROP_ONLINE)
    value->intval = !!(reg & BIT(2)) && !(control & SGM_OTG);
   else if (property == POWER_SUPPLY_PROP_USB_TYPE)
-   /* PN0 has PSEL detection: only SDP is unambiguous. */
-   value->intval = ((reg >> 5) == 1) ? POWER_SUPPLY_USB_TYPE_SDP :
-                                        POWER_SUPPLY_USB_TYPE_UNKNOWN;
+   value->intval = (reg & BIT(2)) && !(control & SGM_OTG) ?
+       sgm_usb_type(s) : POWER_SUPPLY_USB_TYPE_UNKNOWN;
   else if (!(reg & BIT(2)) || control & SGM_OTG)
    value->intval = property == POWER_SUPPLY_PROP_STATUS ?
        POWER_SUPPLY_STATUS_NOT_CHARGING : POWER_SUPPLY_CHARGE_TYPE_NONE;
@@ -423,6 +474,7 @@ static void sgm_cancel_poll(void *data)
 {
  struct u30_sgm *s = data;
  WRITE_ONCE(s->stopping, true);cancel_delayed_work_sync(&s->poll);
+ cancel_work_sync(&s->source_work);
 }
 
 static ssize_t register_snapshot_show(struct device *dev,
@@ -446,12 +498,13 @@ static ssize_t native_state_show(struct device *dev,
  int len;
  mutex_lock(&s->lock);
  len = sysfs_emit(buf, "hw_address=%02x legacy_id_result=%d data_writes=%lu watchdog_pings=%lu poll_errors=%lu last_error=%d "
-                  "policy=%d type=%d temp_dC=%d band=%d pd_mA=%d iin_uA=%u ichg_uA=%u cv_uV=%u charge=%d behaviour=%d user_iin=%u user_ichg=%u\n",
+                  "policy=%d type=%d temp_dC=%d band=%d pd_mA=%d iin_uA=%u ichg_uA=%u cv_uV=%u charge=%d behaviour=%d user_iin=%u user_ichg=%u phy_present=%d phy_type=%d\n",
                   s->hw->addr, s->legacy_id_result, s->data_writes,
                   s->watchdog_pings, s->poll_errors, s->last_error,
                   s->policy_on, s->pol_type, s->pol_temp, s->jeita_idx, s->pol_pd_ma,
                   s->pol_iin, s->pol_ichg, s->pol_cv, s->pol_charge, s->behaviour,
-                  s->user_iin, s->user_ichg);
+                  s->user_iin, s->user_ichg,
+                  READ_ONCE(s->usb_phy->chg_state), READ_ONCE(s->usb_phy->chg_type));
  mutex_unlock(&s->lock);return len;
 }
 static DEVICE_ATTR(register_snapshot, 0400, register_snapshot_show, NULL);
@@ -480,6 +533,13 @@ static int sgm_probe(struct i2c_client *client)
  s = devm_kzalloc(dev, sizeof(*s), GFP_KERNEL);
  if (!s) return -ENOMEM;
  s->dev = dev;mutex_init(&s->lock);INIT_DELAYED_WORK(&s->poll, sgm_poll);
+ INIT_WORK(&s->source_work, sgm_source_work);
+ s->usb_phy = devm_usb_get_phy(dev, USB_PHY_TYPE_USB2);
+ if (IS_ERR(s->usb_phy)) {
+  ret = PTR_ERR(s->usb_phy);
+  return dev_err_probe(dev, ret == -ENODEV ? -EPROBE_DEFER : ret,
+                       "USB2 BC1.2 provider is not ready\n");
+ }
  /* Fixed legacy DT ID read is also an observable negative-address control.
   * It does not select the eventual hardware backend or write any data. */
  s->legacy_id_result = i2c_smbus_read_byte_data(client, SGM_ID);
@@ -494,7 +554,9 @@ static int sgm_probe(struct i2c_client *client)
 
  s->psy_desc.name = "u30pro-charger-master";
  s->psy_desc.type = POWER_SUPPLY_TYPE_USB;
- s->psy_desc.usb_types = BIT(POWER_SUPPLY_USB_TYPE_UNKNOWN) | BIT(POWER_SUPPLY_USB_TYPE_SDP);
+ s->psy_desc.usb_types = BIT(POWER_SUPPLY_USB_TYPE_UNKNOWN) |
+                       BIT(POWER_SUPPLY_USB_TYPE_SDP) | BIT(POWER_SUPPLY_USB_TYPE_DCP) |
+                       BIT(POWER_SUPPLY_USB_TYPE_CDP);
  s->psy_desc.properties = sgm_properties;
  s->psy_desc.num_properties = ARRAY_SIZE(sgm_properties);
  s->psy_desc.get_property = sgm_get_property;
@@ -527,6 +589,13 @@ static int sgm_probe(struct i2c_client *client)
  if (IS_ERR(vbus)) return dev_err_probe(dev, PTR_ERR(vbus), "real OTG regulator registration failed\n");
  ret = devm_add_action_or_reset(dev, sgm_cancel_poll, s);
  if (ret) return ret;
+ s->usb_nb.notifier_call = sgm_source_notify;
+ ret = usb_register_notifier(s->usb_phy, &s->usb_nb);
+ if (ret) return ret;
+ /* LIFO devres: unregister first, cancel both workers before psy/PHY release. */
+ ret = devm_add_action_or_reset(dev, sgm_unregister_source, s);
+ if (ret) return ret;
+ schedule_work(&s->source_work);
  schedule_delayed_work(&s->poll, 5 * HZ);
  dev_info(dev, "native SGM41513 hw=1a id=%02x legacy6b=%d; charge policy %s (boot VREG %02x)\n",
           id, s->legacy_id_result, s->policy_on ? "active" : "OFF (no battery tables)", s->boot_vreg);

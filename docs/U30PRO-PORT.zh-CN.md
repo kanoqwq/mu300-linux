@@ -1,5 +1,43 @@
 # U30 Pro 独立移植记录
 
+## 2026-11-03：插拔外部电源亮屏（事件驱动）
+
+屏幕进程订阅 `NETLINK_KOBJECT_UEVENT` 的内核组播，并把非阻塞 socket
+接入现有 `poll()`。只接受内核发来的 `power_supply` / 本机
+`u30pro-charger-master` / `ONLINE=0|1` 变化；不依赖 feeder、充电电流、
+`Charging` 状态或周期电池刷新，不新增定时器/轮询。订阅后读取一次在线
+状态作为基线；接电、拔电边沿调用原有 `wake()`，不解除 PIN/软锁。
+满电、限充、温控停充、同状态重复通知不会亮屏或延长息屏时间。
+
+原来把 `Charging -> Full/Not charging` 当作拔电提示的判断已经移除，避免
+电源没拔却显示断电。事件丢失的 `ENOBUFS` 错误只触发一次状态重新读取，
+不是定时兜底。socket 创建失败会明确记录，屏幕状态的
+`power_events_ready` 可只读核对是否订阅成功。
+
+`tests/u30pro_power_events.py` 的8项离线用例覆盖启动基线、双向插拔、锁屏
+保留、无 feeder、满电/限充、重复/无效/非内核消息及真正的内核 socket。
+与切页、电源菜单、频宽合计19项回归通过；消息模拟不等于实际插拔验收。
+随后沿用用户本轮屏幕热修授权更新实机，仅重启屏幕服务；回读二进制摘要、
+触摸/按键/feed状态均正常，并将屏幕进程 socket inode 与内核 netlink 表
+交叉核对，确认仅一个 protocol=15、group=1 的事件订阅。整机 boot ID、
+基带进程和屏幕持久配置未变；实际充电器插拔亮屏效果仍待用户观察。
+
+## 2026-11-03：快速连续切页的动画重入
+
+已在真实屏幕 C 源码的主机模拟器复现：240 ms 动画结束前 `page` 仍指向
+旧页；第二次滑动会取消未提交的动画，连续翻页键会重置它，导致反复播放
+同一对页面。修复后，新相对切页先完成上一笔目标，再从该页继续；新触摸
+同时重建目标页的命中区域，避免动画中途没有按钮区域或操作到旧页。
+实体翻页键接管尚未松开的拖动时，会消费该旧触摸剩余事件，防止重复提交。
+普通动画仍为 240 ms，没有增加延时或屏蔽连续翻页。
+
+`tests/u30pro_navigation.py` 使用原生产 UI 和虚拟时钟，覆盖双向连续按键、
+双向连续滑动、反向及取消拖动、动画中点按、按键接管拖动、普通动画只提交
+一次；已接入 `tools/test-u30pro-native.sh`。改动来源摘要登记在
+`devices/u30pro/adaptations.json`，原生二进制仍由
+`tools/u30pro-runtime.py` 编译、`tools/u30pro-package.py` 收入正式根。
+这是离线复现与回归，不代表已授权部署或完成本轮实屏验收。
+
 ## 来源和范围
 
 本仓库从用户维护的 `kanoqwq/mu300-linux` **minikano-openwrt-feats**
@@ -129,3 +167,48 @@ U30 Pro 实机仍默认只读；新的刷写、重启、
 - 本轮始终 NV writeback=off，原始 runtimenv1/2 哈希不变。新安装未配置通知写回时默认 off，保留用户显式选择。
 
 安装器本轮范围与离线验证见 [U30PRO-INSTALLER-20261102.zh-CN.md](U30PRO-INSTALLER-20261102.zh-CN.md)。
+
+board_id 版本、物理 SIM mux 及公共切卡事务适配见
+[U30PRO-SIM-TOPOLOGY-20261103.zh-CN.md](U30PRO-SIM-TOPOLOGY-20261103.zh-CN.md)。
+
+## 2026-11-03 屏幕输入、充电来源及原生 OTG
+
+### 已部署与已确认
+
+- 快速连续翻页不再取消尚未提交的目标页；新的按键、触摸先完成上一个目标，再按新页计算。保留原有动画时长，不用输入节流掩盖状态错误。
+- 插拔供电亮屏由 `NETLINK_KOBJECT_UEVENT` 驱动，仅接收内核发出的 `u30pro-charger-master` ONLINE 边沿。启动基线、重复通知及充满状态变化不亮屏，不新增轮询定时器。
+- SGM41513 的充电来源改为读取本机 USB2 PHY 的 BC1.2 结果，而非用 PN0 的 PSEL 位猜测 SDP。原厂 DT 表为 SDP 输入 500 mA、DCP 输入 3000 mA、CDP 输入 1500 mA；保留各自充电电流表、PD、JEITA、用户限充和 CV 规则，不统一强制大电流。
+- 上述屏幕和 BC1.2 版本已获授权部署。本机用户反馈 A-C/C-C 充电正常；此前临时记录因设备缺少 nohup 未启动，因此没有该次插拔的实际功率/BC1.2 事件曲线，不能将软件表值当成实测电流。用户随后补充 OTG 不可用，OTG 不算通过。
+
+### OTG 确认缺口及修补
+
+在该机运行配置中确认只编译了 MUSB gadget，没有 host/dual-role；同时导入源码把 Type-C DRP 分别强制改成 SNK 和 sink-only。这些限制在 BC1.2 修补前已存在。网页又只检查 DWC3 的 usb_role 文件，不能控制本机 MUSB，因此 USB 模式灰色。
+
+本机原厂派生运行 DT 的 Type-C 为 DRP、preferred sink，USB/PD 使用 `use_pdhub_c2c`，VBUS supply 连接本机 SGM OTG regulator。现在：
+
+- 配置启用原生 MUSB dual-role；恢复 Type-C/TCPM 的 DT 双角色能力。修正此前未编译过的主机代码在 Linux 6.12 上的 unaligned 头及可选 audio-offload 头引用。
+- 机型模块清单接入常见 RTL8152、ASIX、CDC 网卡及 USB 存储驱动；本根没有通用 USB modalias 热加载钩子，仅编译模块而不加载仍无法识别外设。组包校验同时核对清单、模块及 depmod 依赖。
+- MUSB 提供只读 `dual_role_capable`，网页依据实际运行内核判断能力，旧 gadget-only 内核继续明确显示不支持，不能靠存在 Type-C 目录假报能力。
+- 新增 `u30pro-usb-role`，只使用 Type-C class 的 `port_type` 控制自动/设备/主机；TCPM 和 MUSB 继续负责识别、VBUS 及 extcon。不使用 U30 Air/F50 的固定 I2C 寄存器路径，不强行对已有外部 VBUS 开升压。
+- 网页对 U30 Pro 显示自动、设备、主机三项及“开机应用所选 USB 角色”。默认自动；未勾选持久化的临时选择下次开机恢复自动。其他平台保留原行为。当前没有额外提供未经验证的“主机＋外部供电”强制选项。
+
+双角色 Image 与配套完整模块已在登记缓存编译成功。31 项 USB 后端回归及 6 组语言/视口浏览器用例通过；后者同时覆盖持久化、角色应用、错误和旧内核能力。**经用户“接回来吧，允许刷入”授权后已部署并重启；随后用户确认自动/主机模式“一切正常一切可用”，本轮 OTG 实测通过。未据此声称所有充电器与扩展坞组合均兼容。**
+
+完整原生回归 116 项通过；最后一次根检查核对 45 项当前源码/适配文件、主机模块加载清单与依赖，并通过目标环境语法、服务、双卡映射、屏幕及充电控制检查。当前测试 boot 保留本机可用 ramdisk，与配套 245 个模块的摘要在上述诊断目录 `readiness.json`；它不是可给其他设备直接刷入的通用启动包。
+
+本次实机确认 Linux A / Android B，刷入前比较当前 kernel/ramdisk 与本机捕获记录一致。只更新 Linux A boot、245 个配套模块及六项 USB 运行时文件；原 boot、模块和 USB 配置/程序留存电脑。写入后 boot 全分区即时回读通过，Android boot 与两槽 vendor_boot/init_boot 摘要未变。重启后双角色能力为 1，默认策略 auto，电脑连接时为 device/sink；258 项模块及元数据摘要逐项通过，常用 USB 外设驱动已加载，蜂窝 IPv4/IPv6、5 GHz 热点、屏幕和 NCM 管理恢复。只清理本轮设备端 staging 和旧模块目录，电脑备份保留。记录位于 `work/u30pro-runtime/otg-adaptation/deploy-20261103-074441/`。
+
+物理复测后日志确认两种 RTL8153 网卡实例完成枚举并出现 carrier on，扩展坞上的 USB Mass Storage 被识别，切回自动并接电脑后恢复 device/NCM；同一 boot 内蜂窝 IPv4/IPv6 与热点仍正常。网卡驱动另有可选 `rtl8153a-4.fw`、`rtl8153b-2.fw` 缺失提示：当前无补丁固件也实际连通，记录为独立的固件收录缺口，不将它说成已修复或 OTG 失败。原始日志和用户结果存于上述目录 `physical-validation.json`。
+
+只读资料已保存到 `work/u30pro-runtime/otg-adaptation/`，包括运行 FDT/DTS、配置、电源/USB/调节器状态、完整 dmesg、模块和当前 Linux A boot，`capture.json` 记录摘要。设备离开后可继续编译，不需要重复采集。该目录是诊断与本机测试镜像保存位置，不是正式生产输入。
+
+本机 boot 的 48 MiB 位置以后含早期诊断日志，启动后整分区哈希会变化。已离线比较确认当前 boot 的 kernel/ramdisk 与已部署 BC1.2 版本相同，变化仅在该日志尾部；不要以启动后的整分区摘要变化判断内核损坏。刷写前即时回读仍须精确校验。
+
+## NFC 配网与功能菜单（2026-11-03）
+
+本机只读确认 FM11NT08x 标签在 I2C4/0x57，原有 WSC 内容匹配当前热点，
+但原生工具此前没有接入正式构建。现已添加静态工具编译、一次性启动服务、
+无线配置/netdev 事件同步及屏幕“功能 → NFC”持久化开关。
+关闭后保持空 NDEF，热点变更不重新启用；相同内容不重复写 EEPROM。
+这不是新增轮询、基带服务或门禁读卡功能。机制、测试和实机验收边界见
+[NFC 适配记录](U30PRO-NFC-20261103.zh-CN.md)。

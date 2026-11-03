@@ -168,7 +168,7 @@ static unsigned encode(unsigned char *out, const char *ssid, int wpa2, const cha
 	return n;
 }
 
-static int open_tag(unsigned *size)
+static int open_tag(unsigned *size, int writing)
 {
 	unsigned char cc[4];
 
@@ -177,7 +177,8 @@ static int open_tag(unsigned *size)
 		fprintf(stderr, "u30pro-nfc: no tag on %s at 0x%02x: %s\n", BUS, ADDR, strerror(errno));
 		return -1;
 	}
-	if (cc[0] != 0xe1 || (cc[3] & 0xf0)) {
+	if (cc[0] != 0xe1 || (cc[1] >> 4) != 1 || (cc[3] & 0xf0) ||
+	    cc[2] == 0 || (writing && (cc[3] & 0x0f))) {
 		fprintf(stderr, "u30pro-nfc: capability container %02x %02x %02x %02x: not a writable NDEF tag\n", cc[0], cc[1], cc[2], cc[3]);
 		return -1;
 	}
@@ -189,7 +190,7 @@ static int open_tag(unsigned *size)
 static int store(const unsigned char *msg, unsigned n, unsigned size)
 {
 	unsigned char cur[MAXMSG + PAGE], page[PAGE];
-	unsigned len = (n + PAGE - 1) / PAGE * PAGE, a, changed = 0;
+	unsigned len = (n + PAGE - 1) / PAGE * PAGE, a;
 
 	if (len > size || len > MAXMSG) {
 		fprintf(stderr, "u30pro-nfc: %u bytes do not fit the tag (%u)\n", n, size);
@@ -197,7 +198,18 @@ static int store(const unsigned char *msg, unsigned n, unsigned size)
 	}
 	if (tag_read(DATA, cur, len))
 		return -1;
-	for (a = 0; a < len; a += PAGE) {
+	memset(page, 0, PAGE);
+	memcpy(page, msg, n < PAGE ? n : PAGE);
+	if (!memcmp(cur, msg, n)) {
+		puts("unchanged");
+		return 0;
+	}
+	/* Publish an empty NDEF while changing its body, then commit the first
+	 * page last. A power cut must not expose a half-updated Wi-Fi key. */
+	page[1] = 0;
+	if (memcmp(page, cur, PAGE) && tag_write(DATA, page, PAGE))
+		return -1;
+	for (a = PAGE; a < len; a += PAGE) {
 		memset(page, 0, PAGE);
 		memcpy(page, msg + a, a + PAGE <= n ? PAGE : n - a);
 		if (!memcmp(page, cur + a, PAGE))
@@ -206,13 +218,16 @@ static int store(const unsigned char *msg, unsigned n, unsigned size)
 			fprintf(stderr, "u30pro-nfc: write at 0x%03x failed: %s\n", DATA + a, strerror(errno));
 			return -1;
 		}
-		changed = 1;
 	}
+	memset(page, 0, PAGE);
+	memcpy(page, msg, n < PAGE ? n : PAGE);
+	if (tag_write(DATA, page, PAGE))
+		return -1;
 	if (tag_read(DATA, cur, n) || memcmp(cur, msg, n)) {
 		fprintf(stderr, "u30pro-nfc: the tag does not read back what was written\n");
 		return -1;
 	}
-	puts(changed ? "written" : "unchanged");
+	puts("written");
 	return 0;
 }
 
@@ -233,7 +248,7 @@ static int show(unsigned size)
 	if (!tag_read(SAK_CTL, &sak, 1))
 		printf(", SAK 0x%02x%s", sak, sak ? " (phones do not read it)" : "");
 	putchar('\n');
-	if (m[0] != 0x03) {
+	if (n < 2 || m[0] != 0x03) {
 		printf("no NDEF message (first TLV 0x%02x)\n", m[0]);
 		return 0;
 	}
@@ -242,16 +257,24 @@ static int show(unsigned size)
 		puts("empty NDEF message");
 		return 0;
 	}
+	if (n < 5 || len > n - 2 || len < 3) {
+		puts("truncated NDEF message");
+		return 0;
+	}
 	tl = m[3];
 	pl = m[4];
-	if (!(m[2] & 0x10) || 5 + tl + pl > n || tl != sizeof WSC_TYPE - 1 || memcmp(m + 5, WSC_TYPE, tl)) {
+	if (!(m[2] & 0x10) ||
+	    (m[2] & 0x08) || 3 + tl + pl > len ||
+	    tl != sizeof WSC_TYPE - 1 || memcmp(m + 5, WSC_TYPE, tl)) {
 		printf("NDEF message of %u bytes, not a Wi-Fi credential\n", len);
 		return 0;
 	}
-	for (w = m + 5 + tl, e = w + pl; w + 4 <= e; w += 4 + get16(w + 2)) {
+	for (w = m + 5 + tl, e = w + pl; e - w >= 4; w += 4 + get16(w + 2)) {
+		if (get16(w + 2) > (unsigned)(e - (w + 4)))
+			break;
 		if (get16(w) != 0x100e)
 			continue;
-		for (const unsigned char *c = w + 4, *ce = c + get16(w + 2); c + 4 <= ce && c + 4 + get16(c + 2) <= ce; c += 4 + get16(c + 2)) {
+		for (const unsigned char *c = w + 4, *ce = c + get16(w + 2); ce - c >= 4 && get16(c + 2) <= (unsigned)(ce - c - 4); c += 4 + get16(c + 2)) {
 			unsigned t = get16(c), l = get16(c + 2);
 
 			if (t == 0x1045) {
@@ -295,6 +318,8 @@ int main(int argc, char **argv)
 	int wpa2;
 
 	if (argc >= 4 && !strcmp(argv[1], "encode") && (wpa2 = auth_arg(argv[3])) >= 0) {
+		if (wpa2 && !key_ok(argc > 4 ? argv[4] : ""))
+			return 2;
 		n = encode(msg, argv[2], wpa2, argc > 4 ? argv[4] : "");
 		if (!n)
 			return 1;
@@ -304,17 +329,22 @@ int main(int argc, char **argv)
 		return 0;
 	}
 	if (argc == 2 && !strcmp(argv[1], "show"))
-		return open_tag(&size) || show(size) ? 1 : 0;
+		return open_tag(&size, 0) || show(size) ? 1 : 0;
 	if (argc == 2 && !strcmp(argv[1], "clear")) {
 		static const unsigned char empty[3] = { 0x03, 0x00, 0xfe };
 
-		return open_tag(&size) || rf_type2() || store(empty, sizeof empty, size) ? 1 : 0;
+		return open_tag(&size, 1) || rf_type2() || store(empty, sizeof empty, size) ? 1 : 0;
 	}
 	if (argc == 4 && !strcmp(argv[1], "wifi") && (wpa2 = auth_arg(argv[3])) >= 0) {
 		if (wpa2) {
-			if (!fgets(key, sizeof key, stdin))
-				key[0] = 0;
-			key[strcspn(key, "\r\n")] = 0;
+			n = fread(key, 1, sizeof key - 1, stdin);
+			if (ferror(stdin) || !feof(stdin) || memchr(key, 0, n))
+				return 2;
+			if (n && key[n - 1] == '\n') n--;
+			if (n && key[n - 1] == '\r') n--;
+			key[n] = 0;
+			if (strpbrk(key, "\r\n"))
+				return 2;
 			if (!key_ok(key)) {
 				fprintf(stderr, "u30pro-nfc: the key must have 8-63 characters or 64 hex digits\n");
 				return 2;
@@ -325,7 +355,7 @@ int main(int argc, char **argv)
 			fprintf(stderr, "u30pro-nfc: the SSID must have 1-32 bytes\n");
 			return 2;
 		}
-		return open_tag(&size) || rf_type2() || store(msg, n, size) ? 1 : 0;
+		return open_tag(&size, 1) || rf_type2() || store(msg, n, size) ? 1 : 0;
 	}
 	fprintf(stderr, "usage: u30pro-nfc show | clear | wifi <ssid> open|wpa2 (key on stdin) | encode <ssid> open|wpa2 [key]\n");
 	return 2;

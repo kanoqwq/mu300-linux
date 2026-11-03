@@ -61,12 +61,14 @@ IDENT_MAXAGE=21600   # seconds; a SIM change goes through a reboot, 6 h is plent
 BOOT_ID=
 [ ! -r /proc/sys/kernel/random/boot_id ] || IFS= read -r BOOT_ID < /proc/sys/kernel/random/boot_id
 
-# Only the V50 mux driver exposes this node. Capture before AT collection,
+# Physical SIM muxes expose this node. Capture before AT collection,
 # including the first physical switch (when there is no epoch file yet).
 # A stale worker exits without replacing the newly selected card's cache.
 CARD_EPOCH_PATH=${MU300_CARD_EPOCH_PATH:-}
 if [ -r /sys/bus/platform/devices/sim_gpio_ctl/chip_select ]; then
-    CARD_EPOCH_PATH=/run/mu300/v50-generation${MU300_SIM_SLOT:-0}
+    card_profile=v50
+    [ "$(cat /etc/mu300/platform 2>/dev/null)" != u30pro ] || card_profile=u30pro
+    CARD_EPOCH_PATH=/run/mu300/$card_profile-generation${MU300_SIM_SLOT:-0}
 fi
 CARD_EPOCH=
 [ -z "$CARD_EPOCH_PATH" ] || CARD_EPOCH=$(cat "$CARD_EPOCH_PATH" 2>/dev/null || true)

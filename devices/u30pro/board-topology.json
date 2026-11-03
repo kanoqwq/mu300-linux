@@ -1,0 +1,101 @@
+{
+  "format": 1,
+  "scope": "U30 Pro board-specific card routing; source hashes are provenance only, never a runtime firmware allowlist",
+  "apk": {
+    "path": "D:\\111\\ZteWebServerPlus.apk",
+    "sha256": "a9240f3912e15a3a8f2d6fdf1e6bccb61fe93f7907e85ed8bec092a7ce1bb02f",
+    "package": "com.zte.web",
+    "version_name": "15.0.000.2601301518",
+    "version_code": "2025"
+  },
+  "stock_framework": {
+    "path": "D:\\\u968f\u8eabWiFi\\U30Pro\u76f8\u5173\\AI\u7248\\system_a\\system\\framework\\vendor-telephony-common.jar",
+    "sha256": "1fd263b4afd2b86b7f5aa6ce34e7116bcff672e4992b1f2aa203e56e2b2bf8a4",
+    "class": "com.android.vts.VendorSubInfoUpdater",
+    "methods": [
+      "dealWithFourSimSwitch",
+      "dealWithThreeSimSwitch",
+      "dealWithTwoEsimAndOnePsimSwitch",
+      "handleFourSimBootAction"
+    ]
+  },
+  "stock_kernel": {
+    "archive": "D:\\\u968f\u8eabWiFi\\U30Pro\u76f8\u5173\\MU5358_Android15_kernel(6.6.46).tar.gz",
+    "files": [
+      {
+        "archive_path": "bsp_kernel/kernel6.6/unisoc/drivers/vendor/soc/sprd/sim_gpio_ctl/sim_gpio_ctl.c",
+        "file": "work\\u30pro-board-topology\\stock-kernel\\sim_gpio_ctl.c",
+        "sha256": "3f5508dc15105c057a716b2ad52a7920682a1fe805e51f89d6acc7e13ae77195"
+      },
+      {
+        "archive_path": "bsp_kernel/kernel6.6/unisoc/drivers/vendor/common/zcard_det/zte_card_holder_det.c",
+        "file": "work\\u30pro-board-topology\\stock-kernel\\zte_card_holder_det.c",
+        "sha256": "5b191e067f6278df4910c3b925e4188a6fc94d8d12d6227fb41bf42facad3333"
+      }
+    ]
+  },
+  "logical_mapping": {
+    "0": {
+      "slot": 0,
+      "attribute": "psim_select",
+      "value": 0
+    },
+    "1": {
+      "slot": 1,
+      "attribute": "chip_select",
+      "value": 0
+    },
+    "2": {
+      "slot": 1,
+      "attribute": "chip_select",
+      "value": 1
+    },
+    "3": {
+      "slot": 0,
+      "attribute": "psim_select",
+      "value": 1
+    }
+  },
+  "board_cards": {
+    "0": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "1": [
+      0,
+      1,
+      2
+    ],
+    "2": [
+      0,
+      1
+    ],
+    "3": [
+      0,
+      1,
+      3
+    ],
+    "4": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "5": [
+      3
+    ],
+    "6": [
+      0,
+      2
+    ]
+  },
+  "hardware_validation": "User-authorized board2 deployment passed driver binding, both CPIN READY, unchanged SIM0 data, WAN IPv4/IPv6 and USB/hotspot startup; physical switching and other board IDs remain untested",
+  "evidence_dir": "work/u30pro-board-topology",
+  "port_driver": {
+    "path": "devices/u30pro/native/kernel/ums9632/overlay/drivers/unisoc_platform/modem/u30pro-sim-mux.c",
+    "derived_behavior": "Stock DT GPIO names/polarities and boot selectors; bounds-checked devm/IRQ lifetime port, no cdev or unsafe module-parameter interface."
+  },
+  "validation_record": "work/u30pro-board-topology/deploy-20261103-092916/"
+}

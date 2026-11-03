@@ -1047,7 +1047,8 @@ function start_round(mode, requested_slot, reply) {
 	write_small(LOCK + '/pid', MYPID + '\n');
 	let R = { mode: mode, dir: DIR, ident: IDENT, ident_dir: ident_dir, slot: slot, held: [ LOCK ], cands: [],
 		deadline: time() + ((mode == 'fast') ? 12 : 25), live, reply };
-	R.epoch_path = env('MU300_CARD_EPOCH_PATH', exists('/sys/bus/platform/devices/sim_gpio_ctl/chip_select') ? RUN + '/mu300/v50-generation' + slot : '');
+	let card_profile = trim(fs.readfile('/etc/mu300/platform') || '') == 'u30pro' ? 'u30pro' : 'v50';
+	R.epoch_path = env('MU300_CARD_EPOCH_PATH', exists('/sys/bus/platform/devices/sim_gpio_ctl/chip_select') ? RUN + '/mu300/' + card_profile + '-generation' + slot : '');
 	R.epoch = R.epoch_path ? rd(R.epoch_path) : '';
 	// one of the dashboard's channels, claimed without waiting (the pool the collector program uses too)
 	let POOL = env('MU300_DASH_POOL_DIR', RUN + '/unisoc-modem-at-pool');

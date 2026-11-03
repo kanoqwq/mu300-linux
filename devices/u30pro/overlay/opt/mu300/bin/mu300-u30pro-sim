@@ -1,0 +1,4 @@
+#!/bin/sh
+# Hardware-specific mapping; RF/data ownership remains MU300's common engine.
+[ "$("${MU300_BIN:-/opt/mu300/bin}/mu300-device")" = u30pro ] || exit 2
+exec "${MU300_PHYSICAL_SIM_ENGINE:-/opt/mu300/bin/mu300-physical-sim}" "$@"

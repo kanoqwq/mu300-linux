@@ -18,7 +18,7 @@ def main():
                 page.set_content('<html><body><main></main></body></html>')
                 page.evaluate('''([common,device,lang])=>{
                     const base={extend:x=>x},L={env:{lang},resolveDefault:p=>p.catch(()=>({}))};
-                    window.NetworkPerformance={mount:()=>({dispose(){}})};window.calls=[];window.reply={ok:1};window.gets=[];window.scans=[];
+                    window.NetworkPerformance={mount:()=>({dispose(){}})};window.NFC={mount:()=>({dispose(){}})};window.calls=[];window.reply={ok:1};window.gets=[];window.scans=[];
                     window.state={ok:1,role:'device',role_auto:0,host_supported:1,net_mode:'ncm',net_scope:'permanent',net_auto:0,net_current:'ncm',net_next:'ncm'};
                     const rpc={declare:o=>(...args)=>{
                         calls.push([o.method,args]);
@@ -99,6 +99,27 @@ def main():
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),(lang,width,'NIC overflow')
                 if lang!='zh':
                     assert not page.locator('main').evaluate("e=>/[\\u4e00-\\u9fff]/.test(e.textContent)"),page.locator('main').inner_text()
+                # U30 Pro has a native Type-C policy, not a fabricated DWC3
+                # role file. Auto/device persistence is selectable and i18n.
+                page.evaluate("state={...state,role:'device',role_auto:0,role_native:1,role_policy:'auto',role_persist:0,role_saved:'auto',host_supported:1,net_current:'ncm',net_next:'ncm'};v.state=state;v.paint()")
+                assert page.input_value('#mud-usb-role')=='auto'
+                assert not page.is_disabled('#mud-usb-role')
+                assert not page.is_disabled('#mud-usb-role-auto')
+                page.select_option('#mud-usb-role','device');page.check('#mud-usb-role-auto')
+                page.evaluate("state={...state,role_policy:'device',role_persist:1,role_saved:'device'}")
+                page.click('#mud-usb-role-apply');page.wait_for_function('!v._busy && !v._confirming && !v._stateReq')
+                assert page.evaluate("calls.filter(c=>c[0]==='usb_set').at(-1)[1]")==['role','device','','1']
+                page.select_option('#mud-usb-role','auto')
+                page.evaluate("state={...state,role_policy:'auto',role_saved:'auto'};reply={ok:1,pending:1}")
+                page.click('#mud-usb-role-apply');page.wait_for_function('!v._busy && !v._confirming && !v._stateReq')
+                assert page.input_value('#mud-usb-role')=='auto'
+                assert page.evaluate("calls.filter(c=>c[0]==='usb_set').at(-1)[1]")==['role','auto','','1']
+                if lang!='zh':
+                    assert not page.locator('main').evaluate("e=>/[\\u4e00-\\u9fff]/.test(e.textContent)")
+                page.evaluate("state={...state,host_supported:0};v.state=state;v.paint()")
+                assert page.is_disabled('#mud-usb-role')
+                page.evaluate("state={...state,role:'host',role_auto:1,role_native:0,host_supported:1};v.state=state;v.paint()")
+                assert not page.locator('#mud-usb-role option[value=auto]').count()
                 page.evaluate('holdScan=true')
                 # One scan in flight, and late results after unload cannot repaint.
                 page.evaluate('void v.refreshAdapters();void v.refreshAdapters()')

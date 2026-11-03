@@ -646,6 +646,29 @@ elif op.startswith('w'):
             self.assertEqual(self.nfc(shell, 'off').stdout.strip(), 'NFC off')
             self.assertEqual((self.tmp / 'tag.bin').read_bytes()[0x3bf], 0x20)
 
+    def test_state_is_read_only_and_sync_preserves_disabled_rf(self):
+        for shell in self.each_shell():
+            self.blank()
+            self.assertEqual(self.nfc(shell, 'off').returncode, 0)
+            before=(self.tmp/'tag.bin').read_bytes(); writes=self.writes()
+            r=self.nfc(shell, 'state')
+            self.assertEqual((r.returncode,r.stdout.strip()), (0,'0'),r.stderr)
+            self.assertEqual((self.tmp/'tag.bin').read_bytes(),before)
+            self.assertEqual(self.writes(),writes)
+            self.assertEqual(self.nfc(shell,'sync').returncode,0)
+            self.assertEqual(self.nfc(shell,'state').stdout.strip(),'0')
+            self.assertEqual(self.nfc(shell,'on').returncode,0)
+            self.assertEqual(self.nfc(shell,'state').stdout.strip(),'1')
+
+    def test_failed_state_read_does_not_become_disabled_success(self):
+        self.blank()
+        self.stub('i2ctransfer','exit 1')
+        for shell in self.each_shell():
+            r=self.nfc(shell,'state')
+            self.assertNotEqual(r.returncode,0,r.stderr)
+            self.assertNotEqual(r.stdout.strip(),'0')
+            self.assertFalse(self.writes())
+
     def test_refusals(self):
         for shell in self.each_shell():
             self.blank()
