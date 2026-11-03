@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-mu300
 PKG_VERSION:=1.2.0
-PKG_RELEASE:=23
+PKG_RELEASE:=24
 PKG_LICENSE:=MIT
 PKG_MAINTAINER:=MU300 Linux contributors
 PKGARCH:=all
@@ -44,11 +44,13 @@ define Package/luci-app-mu300/install
 	$(INSTALL_DIR) $(1)/www
 	$(CP) ./htdocs/. $(1)/www/
 	$(CP) ./root/. $(1)/
+	chmod 0755 $(1)/etc/init.d/unisoc-battery-history $(1)/usr/libexec/unisoc-modem/battery-history
 	chmod 0644 $(1)/usr/share/rpcd/ucode/*.uc $(1)/usr/share/ucode/mu300/*.uc
 	chmod 0755 $(1)/etc/init.d/unisoc-cpu-cores $(1)/usr/libexec/rpcd/unisoc-cpu-cores $(1)/usr/libexec/unisoc-modem/cpu-cores
 	chmod 0755 $(1)/etc/init.d/unisoc-cpu-idle $(1)/usr/libexec/rpcd/unisoc-cpu-idle $(1)/usr/libexec/unisoc-modem/cpu-idle
 	chmod 0755 $(1)/etc/init.d/unisoc-network-performance $(1)/usr/libexec/rpcd/unisoc-network-performance $(1)/usr/libexec/unisoc-modem/network-performance
 	chmod 0755 $(1)/usr/libexec/rpcd/unisoc-nfc
+	chmod 0755 $(1)/usr/libexec/rpcd/unisoc-roaming
 	chmod 0600 $(1)/etc/config/unisoc_apn
 	chmod 0755 $(1)/etc/uci-defaults/97-unisoc-upgrade-policy
 	chmod 0600 $(1)/etc/config/mu300-charge
@@ -79,6 +81,8 @@ define Package/luci-app-mu300/postinst
 	rm -f /tmp/luci-indexcache /tmp/luci-modulecache/* 2>/dev/null
 	uci -q get luci.languages.tr >/dev/null || uci set luci.languages.tr='Türkçe'
 	uci commit luci
+	/etc/init.d/unisoc-battery-history enable
+	/etc/init.d/unisoc-battery-history start
 	/etc/init.d/unisoc-ttl enable
 	/etc/init.d/unisoc-ttl start || exit 1
 	/etc/init.d/rpcd restart 2>/dev/null || true

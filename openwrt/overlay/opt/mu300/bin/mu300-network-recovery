@@ -5,6 +5,7 @@ import * as ubus from 'ubus';
 import * as uci from 'uci';
 import * as uloop from 'uloop';
 import * as policy from '../lib/network-recovery.uc';
+import * as roaming from '../lib/roaming.uc';
 
 const wan = getenv('MU300_WAN') || 'wan';
 if (!match(wan, /^[A-Za-z0-9_]+$/))
@@ -61,6 +62,17 @@ function evaluate() {
     let wait = trim(fs.readfile('/run/mu300cell-' + wan + '.registration-wait') || '');
     let wait_slot = wait == '0' ? 0 : wait == '1' ? 1 : null;
     let sim = read_json(root + '/sim' + slot + '.json');
+    let registration=roaming.registration(read_json(root+'/slot'+slot+'.json'),read_json(root+'/slot'+slot+'-nr.json'),slot);
+    let denied=roaming.blocked(registration,cfg.get('unisoc_modem','main','allow_roaming'+slot)=='1');
+    if (denied && !blocked()) {
+        previous.key=null; previous.attempted=false;
+        roaming.suspend((method,data)=>{
+            if (method=='notify_proto' && data.action==5)
+                fs.writefile('/run/mu300cell-'+wan+'.registration-wait',''+slot+'\n');
+            return bus.call('network.interface.'+wan,method,data);
+        },registration,false,false);
+        return;
+    }
     // A late CPIN completion must not turn a deliberately powered-off SIM
     // into a physical-removal verdict and block its next power-on.
     if (sim?.state == 'absent' && !fs.stat(root + '/sim-power' + slot)) sim = null;
@@ -70,7 +82,7 @@ function evaluate() {
                 fs.writefile('/run/mu300cell-' + wan + '.registration-wait', '' + slot + '\n');
             return bus.call('network.interface.' + wan, method, data);
         },
-        read_json(root + '/slot' + slot + '.json'), wait_slot, slot, blocked(), previous,
+        registration, wait_slot, slot, blocked() || denied, previous,
         sim
     );
 }
@@ -84,6 +96,7 @@ function schedule() {
     if (!pending) { pending = true; deferred.set(50); }
 }
 const registration = bus.listener('mu300.registration', (name, data) => schedule());
+const roaming_policy = bus.listener('mu300.roaming-policy', (name, data) => schedule());
 const sim_state = bus.listener('mu300.sim-state', (name, data) => schedule());
 const sim_change = bus.listener('mu300.sim-change', (name, data) => {
     if (data?.slot === 0 || data?.slot === 1) {
@@ -94,7 +107,7 @@ const sim_change = bus.listener('mu300.sim-change', (name, data) => {
 const network = bus.listener('network.interface', (name, data) => {
     if (data?.interface == wan) schedule();
 });
-if (!registration || !network || !sim_state || !sim_change) die('Cellular recovery: event subscription failed\n');
+if (!registration || !network || !sim_state || !sim_change || !roaming_policy) die('Cellular recovery: event subscription failed\n');
 const term = uloop.signal(15, () => uloop.end());
 const intr = uloop.signal(2, () => uloop.end());
 evaluate();

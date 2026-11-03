@@ -505,12 +505,14 @@ is_registered() {
     # Query <n>,<stat> and URC <stat> are distinct grammars. In particular,
     # query "1,8" is NOT registered. Only the newest record may decide state.
     awk -F, -v query="${1:-query}" '
-        /^\+CEREG:/ {
-            sub(/^\+CEREG:[[:space:]]*/, "", $1)
+        /^\+(CEREG|C5GREG):/ {
+            domain=$1; sub(/:.*/, "", domain)
+            sub(/^\+(CEREG|C5GREG):[[:space:]]*/, "", $1)
             stat = query == "query" ? $2 : $1
             gsub(/[[:space:]]/, "", stat)
+            states[domain]=stat
         }
-        END { exit !(stat == "1" || stat == "5") }'
+        END { for(d in states) if(states[d]=="1" || states[d]=="5" || states[d]=="9" || states[d]=="10") exit 0; exit 1 }'
 }
 
 wait_registered() {
@@ -536,7 +538,15 @@ wait_registered() {
         fi
         start=$((size + 1))
         if [ "$SECONDS" -ge "$next_query" ]; then
-            out=$(at 'AT+CEREG?' 3 2>&1 || true)
+            out=$(at 'AT+CEREG?;+C5GREG?' 3 2>&1 || true)
+            # Same reads individually if this CP rejects combined queries.
+            local domain reply
+            for domain in CEREG C5GREG; do
+                if ! printf '%s\n' "$out" | grep -q "^+$domain:"; then
+                    reply=$(at "AT+$domain?" 3 2>&1 || true)
+                    out="$out"$'\n'"$reply"
+                fi
+            done
             ! command -v mu300_registration_reply >/dev/null 2>&1 ||
                 mu300_registration_reply "${MU300_SIM_SLOT:-0}" "$out"
             echo "$out" | is_registered && return 0
@@ -700,6 +710,11 @@ up_locked() {
     fi
     mark dial-registered
     radio_say "注册完成"
+    # Data roaming is host policy, as on Android. Keep RF, IMS and the
+    # registered SIM running; netifd waits for the existing state event.
+    local roaming_rc=0
+    /usr/libexec/unisoc-modem/roaming check "$MU300_SIM_SLOT" >/dev/null || roaming_rc=$?
+    [ "$roaming_rc" = 0 ] || return "$roaming_rc"
 
     # sipa_dele must probe after the CP packet domain exists but before the PDP
     # resource graph becomes active. Loading it later raced CGACT and produced

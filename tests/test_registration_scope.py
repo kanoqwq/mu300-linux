@@ -66,3 +66,22 @@ wait_registered
 ''', MU300_SIM_URC=log)
         self.assertEqual(r.returncode,1,r.stderr)
         self.assertEqual(r.stdout,'')
+
+    def test_cp_rejecting_combined_read_still_registers(self):
+        source=(BIN/'mobile-data').read_text()
+        functions=source[source.index('is_registered() {'):source.index('\n# The modem needs')]
+        log=self.tmp/'urc';log.write_text('')
+        code=functions+'''
+at() {
+    printf '%s\\n' "$1" >> "$STUBLOG/queries"
+    case "$1" in
+      'AT+CEREG?;+C5GREG?') echo ERROR;;
+      'AT+CEREG?') printf '+CEREG: 2,1\\nOK\\n';;
+      'AT+C5GREG?') echo ERROR;;
+    esac
+}
+wait_registered
+'''
+        result=self.sh(['bash'],code,MU300_SIM_URC=log,MU300_SIM_SLOT='0',MU300_REGISTER_WAIT='2')
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertEqual((self.tmp/'queries').read_text().splitlines(),['AT+CEREG?;+C5GREG?','AT+CEREG?','AT+C5GREG?'])

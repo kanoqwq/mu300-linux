@@ -153,6 +153,10 @@ for f in ./lib/netifd/proto/mu300cell.sh ./lib/netifd/proto/mu300cell-v6.sh \
     ./usr/libexec/unisoc-modem/data-sim ./www/luci-static/resources/view/mu300/sim.js \
     ./usr/libexec/unisoc-modem/operator.uc ./usr/libexec/unisoc-modem/refresh-config \
     ./www/luci-static/resources/view/mu300/device.js \
+    ./www/luci-static/resources/view/mu300/battery.js \
+    ./usr/share/ucode/mu300/battery-history.uc ./usr/share/unisoc-battery-history/profile.json \
+    ./usr/libexec/unisoc-modem/battery-history ./etc/init.d/unisoc-battery-history \
+    ./etc/rc.d/S96unisoc-battery-history ./etc/rc.d/K12unisoc-battery-history \
     ./usr/libexec/unisoc-modem/device-usb \
     ./etc/hotplug.d/net/90-unisoc-usb-host \
     ./etc/hotplug.d/iface/90-unisoc-usb-host \

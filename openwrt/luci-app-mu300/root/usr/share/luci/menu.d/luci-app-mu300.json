@@ -1,6 +1,6 @@
 {
   "admin/home": {
-    "title": "状态看板",
+    "title": "\u72b6\u6001\u770b\u677f",
     "order": 5,
     "action": {
       "type": "view",
@@ -13,7 +13,7 @@
     }
   },
   "admin/modem": {
-    "title": "蜂窝",
+    "title": "\u8702\u7a9d",
     "order": 25,
     "action": {
       "type": "firstchild"
@@ -25,7 +25,7 @@
     }
   },
   "admin/modem/apn": {
-    "title": "接入点 APN",
+    "title": "\u63a5\u5165\u70b9 APN",
     "order": 10,
     "action": {
       "type": "view",
@@ -38,7 +38,7 @@
     }
   },
   "admin/modem/locks": {
-    "title": "网络锁定",
+    "title": "\u7f51\u7edc\u9501\u5b9a",
     "order": 1,
     "action": {
       "type": "view",
@@ -51,7 +51,7 @@
     }
   },
   "admin/modem/sms": {
-    "title": "短信",
+    "title": "\u77ed\u4fe1",
     "order": 2,
     "action": {
       "type": "view",
@@ -64,7 +64,7 @@
     }
   },
   "admin/modem/forward": {
-    "title": "短信转发",
+    "title": "\u77ed\u4fe1\u8f6c\u53d1",
     "order": 3,
     "action": {
       "type": "view",
@@ -77,7 +77,7 @@
     }
   },
   "admin/modem/at": {
-    "title": "AT 终端",
+    "title": "AT \u7ec8\u7aef",
     "order": 4,
     "action": {
       "type": "view",
@@ -90,7 +90,7 @@
     }
   },
   "admin/modem/settings": {
-    "title": "适配设置",
+    "title": "\u9002\u914d\u8bbe\u7f6e",
     "order": 7,
     "action": {
       "type": "view",
@@ -103,7 +103,7 @@
     }
   },
   "admin/modem/device": {
-    "title": "设备管理",
+    "title": "\u8bbe\u5907\u7ba1\u7406",
     "order": 6,
     "action": {
       "type": "view",
@@ -116,7 +116,7 @@
     }
   },
   "admin/modem/sim": {
-    "title": "SIM 卡管理",
+    "title": "SIM \u5361\u7ba1\u7406",
     "order": 9,
     "action": {
       "type": "view",
@@ -129,7 +129,7 @@
     }
   },
   "admin/modem/cpu": {
-    "title": "CPU 设置",
+    "title": "CPU \u8bbe\u7f6e",
     "order": 8,
     "action": {
       "type": "view",
@@ -142,7 +142,7 @@
     }
   },
   "admin/modem/traffic": {
-    "title": "流量池",
+    "title": "\u6d41\u91cf\u6c60",
     "order": 5,
     "action": {
       "type": "view",
@@ -165,6 +165,22 @@
       "acl": [
         "luci-app-mu300"
       ]
+    }
+  },
+  "admin/modem/battery": {
+    "title": "\u7535\u6c60\u4e0e\u7535\u91cf",
+    "order": 7,
+    "action": {
+      "type": "view",
+      "path": "mu300/battery"
+    },
+    "depends": {
+      "acl": [
+        "luci-app-mu300"
+      ],
+      "fs": {
+        "/run/unisoc-battery-history/present": "file"
+      }
     }
   }
 }

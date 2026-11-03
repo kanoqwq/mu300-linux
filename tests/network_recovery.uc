@@ -23,10 +23,11 @@ let registered = { slot: 1, stat: 1, rat: 7 };
 check(policy.recovery(call, registered, 1, 1, false, previous), 'registered slot resumes');
 check(!policy.recovery(call, registered, 1, 1, false, previous), 'netifd echo does not loop');
 check(notifications == 1, 'one notification per transition');
-for (let stat in [0, 2, 3, 4, 6, 7, 8, 9, 10])
+for (let stat in [0, 2, 3, 4, 6, 7, 8])
     check(policy.registration_key({slot: 1, stat, rat: 7}, 1) == null, 'non PS state ' + stat);
 check(policy.registration_key({slot: 0, stat: 1, rat: 7}, 1) == null, 'other SIM ignored');
 check(policy.registration_key({slot: 1, stat: 5, rat: null}, 1) != null, 'EPS roaming without optional RAT');
+check(policy.registration_key({slot:1,stat:10,rat:11},1)!=null,'registered 5GS roaming');
 check(policy.registration_key({slot: 1, stat: 1, rat: 255}, 1) == null, 'invalid RAT');
 for (let field in ['autostart', 'available', 'pending', 'up', 'proto']) {
     let broken = status();

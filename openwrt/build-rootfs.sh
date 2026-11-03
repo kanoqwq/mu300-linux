@@ -252,6 +252,7 @@ if [ -d /in/luci-plugin ]; then
     cp -a /in/luci-plugin/root/. $R/
     cp -a /in/luci-plugin/htdocs/. $R/www/
     chmod 0600 $R/etc/config/mu300-charge
+    chmod 0755 $R/etc/init.d/unisoc-battery-history $R/usr/libexec/unisoc-modem/battery-history
     chmod 0755 $R/etc/init.d/mu300-charge $R/etc/hotplug.d/power_supply/75-mu300-charge $R/usr/libexec/rpcd/mu300-charge
     ucode $R/usr/libexec/unisoc-modem/disable-channel-analysis $R
     ucode $R/usr/libexec/unisoc-modem/filter-wifi-ciphers $R
@@ -259,6 +260,7 @@ if [ -d /in/luci-plugin ]; then
     chmod 0755 $R/etc/init.d/unisoc-cpu-idle $R/usr/libexec/rpcd/unisoc-cpu-idle
     chmod 0755 $R/etc/init.d/unisoc-network-performance $R/usr/libexec/rpcd/unisoc-network-performance
     chmod 0755 $R/usr/libexec/rpcd/unisoc-nfc
+    chmod 0755 $R/usr/libexec/rpcd/unisoc-roaming
     chmod 0600 $R/etc/config/unisoc_apn
     chmod 0755 $R/etc/init.d/unisoc-ttl $R/etc/hotplug.d/iface/92-unisoc-ttl $R/etc/uci-defaults/98-unisoc-ttl
     chmod 0755 $R/etc/uci-defaults/97-unisoc-upgrade-policy
@@ -320,11 +322,12 @@ unset root_hash
 # enable the services (rc.common "enable" needs ubus, which is not running in the build container)
 # accounts still those of the image until an installer or mu300-update puts the device ones in place
 : > $R/etc/.mu300-accounts-from-image
-for s in mu300-accounts mu300-cpu-driver mu300-service-cpus mu300-vendor mu300-charge-mode mu300-hw mu300-post mu300-toolkit mu300-atd mu300-network-recovery mu300-modem-log mu300-wifi-client mu300-sysd mu300-ndp mu300-smsd mu300-user-packages unisoc-battery ttyd; do
+for s in mu300-accounts mu300-cpu-driver mu300-service-cpus mu300-vendor mu300-charge-mode mu300-hw mu300-post mu300-toolkit mu300-atd mu300-network-recovery mu300-modem-log mu300-wifi-client mu300-sysd mu300-ndp mu300-smsd mu300-user-packages unisoc-battery ttyd unisoc-battery-history; do
     n=$(sed -n "s/^START=//p" $R/etc/init.d/$s)
     ln -sf ../init.d/$s $R/etc/rc.d/S$n$s
 done
 ln -sf ../init.d/unisoc-battery $R/etc/rc.d/K08unisoc-battery
+ln -sf ../init.d/unisoc-battery-history $R/etc/rc.d/K12unisoc-battery-history
 if [ -d /in/luci-plugin ]; then
     n=$(sed -n "s/^START=//p" $R/etc/init.d/unisoc-modem-ui)
     ln -sf ../init.d/unisoc-modem-ui $R/etc/rc.d/S$n"unisoc-modem-ui"

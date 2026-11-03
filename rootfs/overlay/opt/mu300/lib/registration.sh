@@ -99,9 +99,9 @@ mu300_sim_absent() {
 
 mu300_registration_save() {
     local slot=$1 line=$2 kind=${3:-urc} body stat rat a b c d e rest
-    local root=${MU300_REGISTRATION_DIR:-/run/mu300-registration} old= value tmp
+    local root=${MU300_REGISTRATION_DIR:-/run/mu300-registration} old= value tmp suffix=
     case "$slot" in 0|1) ;; *) return 0 ;; esac
-    case "$line" in +CEREG:*) body=${line#*:} ;; *) return 0 ;; esac
+    case "$line" in +CEREG:*) body=${line#*:} ;; +C5GREG:*) body=${line#*:}; suffix=-nr ;; *) return 0 ;; esac
     IFS=, read -r a b c d e rest <<EOF
 $body
 EOF
@@ -114,14 +114,14 @@ EOF
     case "$stat" in 0|1|2|3|4|5|6|7|8|9|10) ;; *) return 0 ;; esac
     case "$rat" in 0|[1-9]|[1-9][0-9]|[1-9][0-9][0-9]) ;; *) rat=null ;; esac
     value="{\"slot\":$slot,\"stat\":$stat,\"rat\":$rat}"
-    [ ! -f "$root/slot$slot.json" ] || IFS= read -r old < "$root/slot$slot.json" || true
+    [ ! -f "$root/slot$slot$suffix.json" ] || IFS= read -r old < "$root/slot$slot$suffix.json" || true
     [ "$value" != "$old" ] || return 0
     mkdir -p "$root" || return 0
     # The URC owner is the only writer for its physical group; the selected
     # dialer's scoped query may also provide a newer state atomically.
-    tmp="$root/.slot$slot.$$"
+    tmp="$root/.slot$slot$suffix.$$"
     (umask 077; printf '%s\n' "$value" > "$tmp") &&
-        mv -f "$tmp" "$root/slot$slot.json" || { rm -f "$tmp"; return 0; }
+        mv -f "$tmp" "$root/slot$slot$suffix.json" || { rm -f "$tmp"; return 0; }
     # A slow or absent ubus cannot stall an AT drainer. Only state/RAT
     # transitions fork this bounded notifier, not repeated signal/cell URCs.
     ( ubus -t 1 send mu300.registration "{\"slot\":$slot}" ) \
@@ -132,7 +132,7 @@ EOF
 mu300_registration_reply() {
     local slot=$1 reply=$2 line
     while IFS= read -r line; do
-        case "$line" in +CEREG:*) mu300_registration_save "$slot" "$line" query ;; esac
+        case "$line" in +CEREG:*|+C5GREG:*) mu300_registration_save "$slot" "$line" query ;; esac
     done <<EOF
 $reply
 EOF

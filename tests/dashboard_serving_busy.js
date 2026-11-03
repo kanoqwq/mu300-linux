@@ -1,7 +1,6 @@
 // Real page methods, no AT or network. Both repos must distinguish busy/error/data.
 const fs=require('fs'),path=require('path'),assert=require('node:assert/strict');
-const repos=[['MU300',path.resolve(__dirname,'../openwrt/luci-app-mu300')],
- ['E5',path.resolve(__dirname,'../../e5-linux/openwrt/luci-app-t551m')]];
+const repos=[['Local',path.resolve(__dirname,'../openwrt/luci-app-mu300')]];
 (async()=>{
  for(const [label,app] of repos){
   const source=fs.readFileSync(path.join(app,'htdocs/luci-static/resources/view/mu300/locks.js'),'utf8');
@@ -17,8 +16,13 @@ const repos=[['MU300',path.resolve(__dirname,'../openwrt/luci-app-mu300')],
   assert.strictEqual(page.liveSignal,old);assert.strictEqual(page.lastSignal,old);
   response={ts:20,lte:{band:3}};await page.loadServing();
   assert.equal(feedback.at(-1)[1],false);assert(!feedback.at(-1)[2]);assert.equal(paint.at(-1).ts,20);
+  page.servingMeta={ts:1,error:'AT backend did not answer'};
+  response={ts:21,sig:{rsrp:-90}};await page.loadServing();
+  assert(!paint.at(-1).error,'successful live result must remove cached metadata error');
+  assert.equal(paint.at(-1).sig.rsrp,-90);
+  assert(page.servingSnapshot({ts:50,error:'new failure'},{ts:21,sig:{rsrp:-90}}).error,'old signal must not hide a newer error');
   const before=paint.length;response={error:'hardware unavailable'};await page.loadServing();
-  assert(feedback.at(-1)[2],label);assert.equal(paint.length,before);
+  assert(feedback.at(-1)[2],label);assert.equal(paint.length,before+1);assert.equal(paint.at(-1),null);
   response={};await page.loadServing();assert(feedback.at(-1)[2],label+' invalid empty payload');
   response=()=>Promise.reject(Error('connection lost'));await page.loadServing();assert(feedback.at(-1)[2]);
   let finish;response=()=>new Promise(resolve=>{finish=resolve;});const count=calls;

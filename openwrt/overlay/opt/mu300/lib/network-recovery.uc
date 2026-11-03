@@ -8,7 +8,7 @@ export function radio_blocked(frozen, ready) {
 
 export function registration_key(state, slot) {
     if (type(state) != 'object' || state.slot !== slot ||
-        (state.stat !== 1 && state.stat !== 5))
+        index([1,5,9,10],state.stat) < 0)
         return null;
     if (state.rat != null && (type(state.rat) != 'int' || state.rat < 0 || state.rat >= 255))
         return null;
@@ -21,7 +21,7 @@ export function can_resume(status, wait_slot, selected, blocked) {
         status.available !== false || wait_slot !== selected)
         return false;
     for (let error in status.errors ?? [])
-        if (error.code != 'REGISTRATION_WAIT' && error.code != 'SIM_MISSING')
+        if (error.code != 'REGISTRATION_WAIT' && error.code != 'SIM_MISSING' && error.code != 'ROAMING_DISABLED')
             return false;
     return true;
 };

@@ -35,22 +35,36 @@ function cache(root, notify) {
     }
     function registration(slot, line, query) {
         if (slot != 0 && slot != 1) return false;
-        let m = match(line, /^\+CEREG:\s*(.*)$/);
+        let m = match(line, /^\+(CEREG|C5GREG):\s*(.*)$/);
         if (!m) return false;
-        let f = split(m[1], ','), s = trim(f[query ? 1 : 0] ?? ''), r = trim(f[query ? 4 : 3] ?? '');
+        let name='slot'+slot+(m[1]=='C5GREG' ? '-nr' : '')+'.json';
+        let f = split(m[2], ','), s = trim(f[query ? 1 : 0] ?? ''), r = trim(f[query ? 4 : 3] ?? '');
         if (!match(s, /^([0-9]|10)$/)) return false;
         let rat = match(r, /^(0|[1-9][0-9]{0,2})$/) ? +r : null;
         let value = sprintf('{"slot":%d,"stat":%d,"rat":%J}\n', slot, +s, rat);
-        if (!put('slot' + slot + '.json', value)) return false;
+        if (!put(name, value)) return false;
         notify('mu300.registration', {slot});
         return true;
     }
     function sim(slot, state) {
+        if (state=='absent') {
+            unlink(root+'/slot'+slot+'.json'); unlink(root+'/slot'+slot+'-nr.json');
+        }
         if (put('sim' + slot + '.json', sprintf('{"slot":%d,"state":%J}\n', slot, state)))
             notify('mu300.sim-state', {slot});
     }
     function reply(command, text) {
-        let m = match(command, /^AT\+SPACTCARD=([01]);(\+CPIN\?|\+SFUN=[234]|\+CFUN=0|\+CFUN\?)$/);
+        // Only query replies with an explicit firmware SIM context may update
+        // registration. Unscoped replies must never be assigned to data_sim.
+        let query=match(command,/^AT\+SPACTCARD=([01]);(.+)$/);
+        if (query) {
+            for (let domain in ['CEREG','C5GREG']) {
+                if (index(split(query[2],';'),'+'+domain+'?')<0) continue;
+                for (let line in split(replace(text,/\r/g,''),'\n'))
+                    if (index(line,'+'+domain+':')==0) registration(+query[1],line,true);
+            }
+        }
+        let m = match(command, /^AT\+SPACTCARD=([01]);(\+CPIN\?|\+SFUN=[2345]|\+CFUN=0|\+CFUN\?)$/);
         if (!m) return;
         let slot = +m[1], cmd = m[2], state = null, power = root + '/sim-power' + slot;
         for (let line in split(replace(text, /\r/g, ''), '\n')) {
@@ -64,8 +78,9 @@ function cache(root, notify) {
             }
             else if (line == 'OK') {
                 if (cmd == '+SFUN=2' || cmd == '+SFUN=4' || (cmd == '+CFUN?' && state == 'powered')) put('sim-power' + slot, '');
-                else if (cmd == '+SFUN=3' || cmd == '+CFUN=0') {
+                else if (cmd == '+SFUN=3' || cmd == '+SFUN=5' || cmd == '+CFUN=0') {
                     unlink(power); unlink(root + '/sim' + slot + '.json');
+                    unlink(root+'/slot'+slot+'.json'); unlink(root+'/slot'+slot+'-nr.json');
                 }
                 else if (cmd == '+CPIN?' && index(['ready', 'locked', 'absent'], state) >= 0) {
                     if (state == 'absent' && !lstat(power)) return;
@@ -77,7 +92,7 @@ function cache(root, notify) {
     }
     function reset(slot) {
         if (slot != 0 && slot != 1) return;
-        for (let name in ['slot' + slot + '.json', 'sim' + slot + '.json', 'sim-power' + slot]) unlink(root + '/' + name);
+        for (let name in ['slot' + slot + '.json', 'slot'+slot+'-nr.json', 'sim' + slot + '.json', 'sim-power' + slot]) unlink(root + '/' + name);
     }
     return {event, registration, reply, reset};
 }

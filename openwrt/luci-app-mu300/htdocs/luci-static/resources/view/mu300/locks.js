@@ -3,6 +3,7 @@
 'require mu300.refresh as R';
 'require mu300.common as M';
 'require mu300.auto-mode as AutoMode';
+'require mu300.roaming as Roaming';
 
 /* 网络锁定 -- 模式 / 频段 / 小区 / EN-DC，全部经 ubus mu300dash lock_set -> 后端
  * mu300-dash-lock（编码按 ufi_tools 权威实现），应用后 SFUN 重启协议栈并落盘，
@@ -57,6 +58,7 @@ return view.extend({
   <div class="mud-note">关闭后只停止下次开机回放，已保存的网络、VoLTE 和 VoNR 设置不会被删除。</div>
 </div>
 
+<div id="mud-roaming"></div>
 <div class="mud-sec">
   <h3>VoLTE · VoNR</h3>
   <div class="mud-note">VoLTE 用于 4G 通话，VoNR 用于 5G SA 通话。设置按当前查看的 SIM 保存，并跟随“开机自动应用”。</div>
@@ -138,6 +140,7 @@ return view.extend({
 		this.lockSel = { nr: {}, lte: {} };
 		this.lockCand = { nr: [], lte: [] };
 		this.Q = function(id) { return root.querySelector('#mud-' + id); };
+		this._roaming = Roaming.mount(this.Q('roaming'));
 
 		/* 主题化确认框替代浏览器 confirm；确认后再进入实际执行 */
 		var apply = function(kind, val, what, opts) {
@@ -378,6 +381,7 @@ return view.extend({
 
 	unload: function() {
 		this._disposed = true;
+		if (this._roaming) this._roaming.dispose();
 		if (this._stopMeta) this._stopMeta();
 		if (this._stopSignal) this._stopSignal();
 		(this._timers || []).forEach(clearTimeout);
@@ -416,7 +420,7 @@ return view.extend({
 			var signal = self.liveSignal || st.sig;
 			if (signal && signal.partial && self.servingMeta.ts)
 				signal = { ts: signal.ts, cfun: signal.cfun, reg: signal.reg, reg5g: signal.reg5g };
-			self.paintServing(Object.assign({}, self.servingMeta, signal || {}));
+			self.paintServing(self.servingSnapshot(self.servingMeta, signal));
 			self.loading('neighbor', !st.cell || !!st.cell.neigh_pending || !!st.refreshing,
 				!!(st.cell && st.cell.error));
 		}, function() { self.loading('neighbor', false, true); }).finally(function() {
@@ -439,24 +443,39 @@ return view.extend({
 			}
 			if (!live || live.error || !live.ts) {
 				self.loading('serving', false, true);
+				self.liveSignal = null;
+				self.paintServing(null);
 				var progress = self.Q('serving-progress');
 				if (progress) progress.title = live && live.error ? M.translate(live.error) : M.translate('模组尚未返回有效的实时信号');
 				return;
 			}
 			self.liveSignal = live;
-			self.paintServing(Object.assign({}, self.servingMeta || {}, live));
+			self.paintServing(self.servingSnapshot(self.servingMeta, live));
 			self.loading('serving', false);
-		}, function() { self.loading('serving', false, true); }).finally(function() {
+		}, function() { if (self._disposed) return; self.liveSignal = null; self.paintServing(null); self.loading('serving', false, true); }).finally(function() {
 			self._signalRequest = null;
 		});
 		return this._signalRequest;
+	},
+	servingSnapshot: function(meta, signal) {
+		// Error-only metadata must not poison a successful live observation.
+		// Conversely, never show old dBm values alongside a failed AT read.
+		if (signal && signal.ts && !signal.error) {
+			if (meta && meta.error && Number(meta.ts) > Number(signal.ts)) return meta;
+			var cell = Object.assign({}, meta && !meta.error ? meta : {}, signal);
+			delete cell.error;
+			return cell;
+		}
+		return meta;
 	},
 
 	paintServing: function(c) {
 		var e = this.Q('srv'); if (!e || this._disposed) return;
 		this.lastCell = c;
 		if (!c || !c.ts || c.error) {
-			this.Q('srv-rat').textContent = c && c.error ? c.error : M.translate('暂无驻网数据');
+			this.Q('srv-rat').textContent = M.translate('暂无驻网数据');
+			this.Q('srv-rsrp').textContent = '--';
+			this.Q('srv-chips').innerHTML = '';
 			e.innerHTML = '';
 			return;
 		}

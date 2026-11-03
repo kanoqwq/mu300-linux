@@ -1,7 +1,6 @@
 'use strict';
 'require view';
 'require mu300.common as M';
-'require mu300.charge as Charge';
 'require mu300.network-performance as NetworkPerformance';
 'require mu300.nfc as NFC';
 
@@ -72,7 +71,6 @@ return view.extend({
 		this.wire();
 		this.paint();
 		this.refreshAdapters();
-		Charge.mount(root);
 		this._networkPerformance = NetworkPerformance.mount(root);
 		this._nfc = NFC.mount(root);
 		return root;

@@ -1,6 +1,6 @@
 {
   "luci-app-mu300": {
-    "description": "MU300 控制中心：状态看板、网络锁定、AT 终端与短信",
+    "description": "MU300 \u63a7\u5236\u4e2d\u5fc3\uff1a\u72b6\u6001\u770b\u677f\u3001\u7f51\u7edc\u9501\u5b9a\u3001AT \u7ec8\u7aef\u4e0e\u77ed\u4fe1",
     "read": {
       "ubus": {
         "mu300rates": [
@@ -48,8 +48,14 @@
         "unisoc-network-performance": [
           "get"
         ],
+        "unisoc-roaming": [
+          "get"
+        ],
         "unisoc-nfc": [
           "get"
+        ],
+        "unisoc-battery-history": [
+          "history"
         ]
       },
       "uci": {
@@ -74,6 +80,9 @@
         ],
         "unisoc-network-performance": [
           "apply"
+        ],
+        "unisoc-roaming": [
+          "set"
         ],
         "unisoc-nfc": [
           "set"

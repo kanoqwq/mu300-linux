@@ -1,0 +1,29 @@
+#!/usr/bin/ucode
+// Persistent per-SIM data policy. Never changes RF, IMS, APNs or NV.
+import * as fs from 'fs';
+import * as uci from 'uci';
+import * as ubus from 'ubus';
+import * as policy from '/opt/mu300/lib/roaming.uc';
+
+function fail(error) { print(sprintf('%J\n', {ok:0,error})); exit(mode=='check' ? 1 : 0); }
+function read(path) { try { return json(fs.readfile(path)); } catch(e) { return null; } }
+const mode=ARGV[0] || 'get';
+let input;
+try { input=mode=='check' ? {slot:ARGV[1]} : json(fs.stdin.read(4097) || '{}'); }
+catch(e) { fail('roaming_invalid'); }
+if (type(input)!='object' || (input.slot!='0' && input.slot!='1')) fail('roaming_invalid');
+const slot=+input.slot, cfg=uci.cursor(getenv('MU300_ROAMING_CONFIG'));
+if (slot==1 && cfg.get('unisoc_modem','main','sim_slots')!='2') fail('roaming_invalid');
+if (mode=='set') {
+    if (input.enabled!='0' && input.enabled!='1') fail('roaming_invalid');
+    if (!cfg.set('unisoc_modem','main','allow_roaming'+slot,input.enabled) || !cfg.commit('unisoc_modem'))
+        fail('roaming_save_failed');
+    let bus=ubus.connect(getenv('MU300_ROAMING_SOCKET'), 2);
+    if (!bus || !bus.event('mu300.roaming-policy',{slot})) fail('roaming_notify_failed');
+} else if (mode!='get' && mode!='check') fail('roaming_invalid');
+const root=getenv('MU300_REGISTRATION_DIR') || '/run/mu300-registration';
+const state=policy.registration(read(root+'/slot'+slot+'.json'),read(root+'/slot'+slot+'-nr.json'),slot);
+const enabled=cfg.get('unisoc_modem','main','allow_roaming'+slot)=='1';
+if (mode=='check') exit(policy.blocked(state,enabled) ? 8 : state ? 0 : 5);
+print(sprintf('%J\n',{ok:1,slot,enabled:+enabled,roaming:state ? +policy.blocked(state,false) : null,
+    blocked:+policy.blocked(state,enabled)}));

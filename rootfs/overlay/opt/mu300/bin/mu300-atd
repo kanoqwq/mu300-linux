@@ -181,7 +181,7 @@ for n in ${MU300_AT_URC_CHANNELS-0}; do
                 0:+ECIND:*|3:+ECIND:*)
                     ! command -v mu300_sim_changed >/dev/null 2>&1 ||
                         mu300_sim_changed "$((n / 3))" "$urc" ;;
-                0:+CEREG:*|3:+CEREG:*)
+                0:+CEREG:*|3:+CEREG:*|0:+C5GREG:*|3:+C5GREG:*)
                     ! command -v mu300_registration_save >/dev/null 2>&1 ||
                         mu300_registration_save "$((n / 3))" "$urc" ;;
             esac

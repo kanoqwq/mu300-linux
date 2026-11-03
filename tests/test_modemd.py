@@ -780,7 +780,7 @@ class ModemdUbus(Base):
         self.assertTrue(wait_for(lambda:not list((self.tmp/'dash').glob('live.*')),4))
         self.assertEqual(len(self.bridge.tx),1,'no later AT steps after the deadline')
 
-    def test_live_signal_pool_rejects_excess_overlap(self):
+    def test_live_signal_shares_concurrent_same_sim_observation(self):
         self.table['AT+CFUN?']=[0.4,'+CFUN: 1','OK']
         self.start(*[f'name=atd{n},dev=/dev/stty_nr{n},dir={self.run_root}/mu300-at{n}' for n in (6,7)])
         self.ready('stty_nr6');self.ready('stty_nr7');self.wait_object()
@@ -789,8 +789,8 @@ class ModemdUbus(Base):
             for _ in range(3):
                 requests.append(subprocess.Popen([UBUS,'-s',str(self.ubus_sock),'-t','20','call','mu300.modem','signal','{"slot":"0"}'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True))
             replies=[json.loads(p.communicate(timeout=20)[0]) for p in requests]
-            self.assertEqual(sum('sig' in r for r in replies),2,replies)
-            self.assertEqual(sum(r.get('busy')==1 for r in replies),1,replies)
+            self.assertEqual(sum('sig' in r for r in replies),3,replies)
+            self.assertEqual(sum(r.get('busy')==1 for r in replies),0,replies)
             self.assertFalse(list((self.tmp/'dash').glob('live.*')))
         finally:
             for p in requests:

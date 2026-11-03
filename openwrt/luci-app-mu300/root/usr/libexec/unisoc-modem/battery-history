@@ -1,0 +1,34 @@
+#!/usr/bin/ucode
+import * as uloop from 'uloop';
+import { connect } from 'ubus';
+import { mkdir, writefile, unlink, readfile, glob } from 'fs';
+import * as blog from '/usr/share/ucode/mu300/battery-history.uc';
+const ROOT = getenv('UNISOC_BATTERY_ROOT') || '';
+function publish_presence() {
+    let path = ROOT + '/run/unisoc-battery-history/present', present = blog.present();
+    if ((readfile(path) != null) == present) return present;
+    if (present) { mkdir(ROOT + '/run/unisoc-battery-history', 0755); writefile(path, '1\n'); }
+    else unlink(path);
+    for (let cache in glob(ROOT + '/tmp/luci-indexcache.*.json')) unlink(cache);
+    return present;
+}
+if (ARGV[0] == 'probe') exit(publish_presence() ? 0 : 1);
+if (!publish_presence()) exit(0);
+uloop.init();
+let bus = connect();
+if (!bus) die('battery-history: ubus unavailable\n');
+blog.init();
+bus.publish('unisoc-battery-history', {
+    history: { args: {range:'', points:0, ubus_rpc_session:''}, call:function(req) {
+        return blog.history(req.args.range || '24h', req.args.points);
+    }}
+});
+let timer;
+function run() {
+    if (!publish_presence()) { uloop.end(); return; }
+    try { blog.tick(); } catch (e) { warn(`battery-history: ${e}\n`); }
+    timer.set(10000);
+}
+timer = uloop.timer(1000, run);
+const term = uloop.signal(15, () => uloop.end()), interrupt = uloop.signal(2, () => uloop.end());
+uloop.run(); bus.disconnect();

@@ -1,0 +1,6 @@
+#!/bin/sh
+case ${1:-}:${2:-} in
+ list:) echo '{"get":{"slot":"String"},"set":{"slot":"String","enabled":"String"}}';;
+ call:get|call:set) exec /usr/libexec/unisoc-modem/roaming "$2";;
+ *) echo '{"ok":0,"error":"roaming_invalid"}';;
+esac

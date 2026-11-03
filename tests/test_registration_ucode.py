@@ -39,6 +39,17 @@ class RegistrationCache(unittest.TestCase):
         self.assertEqual(json.loads((self.root/'slot1.json').read_text()), dict(slot=1, stat=5, rat=11))
         self.assertEqual((self.root/'slot0.json').stat().st_mode & 0o777, 0o600)
 
+    def test_nr_registration_query_and_reset(self):
+        events=self.run_cache('''c.reply('AT+SPACTCARD=1;+CEREG?;+C5GREG?',
+            '+CEREG: 2,1,"a","b",7\\n+C5GREG: 2,5,"a","b",11\\nOK');
+            c.registration(0,'+C5GREG: 10,"a","b",11',false)''')
+        self.assertEqual(len(events),3)
+        self.assertEqual(json.loads((self.root/'slot1-nr.json').read_text())['stat'],5)
+        self.assertEqual(json.loads((self.root/'slot1.json').read_text())['stat'],1)
+        self.run_cache('c.reset(1)')
+        self.assertFalse((self.root/'slot1-nr.json').exists())
+        self.assertTrue((self.root/'slot0-nr.json').exists())
+
     def test_stock_sim_events_are_hints_and_reject_malformed(self):
         events = self.run_cache('''for (let line in ['+ECIND: 3,0,0,1', '+ECIND:3,1,34',
             '+ECIND: 3,100', '+ECIND: 3,2', '+ECIND: 3,4', '+ECIND: 3,1',

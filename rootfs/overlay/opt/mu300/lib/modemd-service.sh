@@ -2,7 +2,7 @@
 # OpenWrt native modem service and model-specific channel layouts.
 modemd_require() {
     [ -x /opt/mu300/bin/mu300-atd-io ] && [ -r /opt/mu300/bin/mu300-modemd ] &&
-        /usr/bin/ucode -e "import * as a from 'uloop'; import * as b from 'socket'; import * as c from 'ubus'; import * as d from 'mu300.registration'; import * as e from 'mu300.cellparse'; import * as f from 'uci';" || {
+        /usr/bin/ucode -e "import * as a from 'uloop'; import * as b from 'socket'; import * as c from 'ubus'; import * as d from 'mu300.registration'; import * as e from 'mu300.cellparse'; import * as f from 'uci'; import * as g from 'mu300.signal-queue';" || {
         echo 'mu300-atd: native modem runtime is incomplete' >&2; return 1;
     }
     # Refuse an unsafe in-place transition from an old physical owner. Repair

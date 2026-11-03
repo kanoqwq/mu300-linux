@@ -67,11 +67,12 @@ proto_mu300cell_setup() {
 		proto_block_restart "$config"
 		return 1
 	fi
-	if [ "$rc" = 5 ] || [ "$rc" = 6 ]; then
+	if [ "$rc" = 5 ] || [ "$rc" = 6 ] || [ "$rc" = 8 ]; then
 		# Out of PS coverage is transient. Keep autostart and wait for the
 		# existing owner's registration event, rather than blocking restart.
 		printf '%s\n' "$slot" > "/run/mu300cell-$config.registration-wait"
-		if [ "$rc" = 6 ]; then proto_notify_error "$config" SIM_MISSING
+		if [ "$rc" = 8 ]; then proto_notify_error "$config" ROAMING_DISABLED
+		elif [ "$rc" = 6 ]; then proto_notify_error "$config" SIM_MISSING
 		else proto_notify_error "$config" REGISTRATION_WAIT; fi
 		proto_set_available "$config" 0
 		return 1
