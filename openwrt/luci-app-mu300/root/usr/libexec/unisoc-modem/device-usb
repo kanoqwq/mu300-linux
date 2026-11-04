@@ -230,8 +230,11 @@ case ${1:-} in
         if [ -n "$role_target" ] && [ "$role" != "$role_target" ]; then
             case $(sed -n '3p' "$ROLE_STATE" 2>/dev/null) in pending) role_pending=1 ;; error) role_error=1 ;; esac
         fi
-        printf '{"ok":1,"role":"%s","role_auto":%s,"host_supported":%s,"role_target":"%s","role_pending":%s,"role_error":%s,"net_mode":"%s","net_scope":"%s","net_auto":%s,"net_available":%s,"net_current":"%s","net_next":"%s","net_policy_error":%s,"lan_auto":%s}\n' \
-            "$role" "$role_auto" "$host_supported" "$role_target" "$role_pending" "$role_error" "$mode" "$scope" "$net_auto" "$available" "$net_current" "$net_next" "$net_policy_error" "$lan_auto"
+        link=$("${MU300_USB_UCODE:-ucode}" "${MU300_USB_LINK_HELPER:-/usr/libexec/unisoc-modem/usb-link.uc}" \
+            "$role" "$ROLE_FILE" "$GADGET_DIR" "$USB_BUS" \
+            "${MU300_USB_UDC_CLASS:-/sys/class/udc}" "${MU300_USB_ROLE_CLASS:-/sys/class/usb_role}" 2>/dev/null) || link='{"state":"unavailable","links":[]}'
+        printf '{"ok":1,"role":"%s","role_auto":%s,"host_supported":%s,"role_target":"%s","role_pending":%s,"role_error":%s,"net_mode":"%s","net_scope":"%s","net_auto":%s,"net_available":%s,"net_current":"%s","net_next":"%s","net_policy_error":%s,"lan_auto":%s,"usb_link":%s}\n' \
+            "$role" "$role_auto" "$host_supported" "$role_target" "$role_pending" "$role_error" "$mode" "$scope" "$net_auto" "$available" "$net_current" "$net_next" "$net_policy_error" "$lan_auto" "$link"
         ;;
     set-role)
         role=${2:-}; auto=${3:-}

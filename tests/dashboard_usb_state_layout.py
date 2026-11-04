@@ -35,6 +35,15 @@ def main():
                 }''',[(RES/'mu300/common.js').read_text(encoding='utf-8'),
                       (RES/'view/mu300/device.js').read_text(encoding='utf-8'),lang])
                 assert page.inner_text('#mud-usb-net-current')=='NCM'
+                # Actual negotiated rate, no throughput/maximum guessing, and
+                # both USB2/USB3 upstream peers of a dock remain visible.
+                for link,expected in (({'state':'connected','links':[{'mbps':480}]},'480 Mbit/s'),
+                                      ({'state':'connected','links':[{'mbps':1.5}]},'1.5 Mbit/s'),
+                                      ({'state':'connected','links':[{'mbps':5000},{'mbps':480}]},'5 Gbit/s · 480 Mbit/s'),
+                                      ({'state':'connected','links':[{'mbps':None,'speed':'super-speed-plus'}]},'SuperSpeedPlus'),
+                                      ({'state':'disconnected','links':[]},None)):
+                    page.evaluate('(link)=>{state.usb_link=link;v.state=state;v.paint();}',link)
+                    assert page.inner_text('#mud-usb-link-speed')==(expected or page.evaluate("M.translate('链路未连接')"))
                 page.select_option('#mud-usb-net-mode','rndis')
                 page.select_option('#mud-usb-net-scope','once')
                 assert not page.is_checked('#mud-usb-net-auto')

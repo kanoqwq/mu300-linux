@@ -38,6 +38,7 @@ return view.extend({
  <section class="mud-card">
   <h3>USB 角色</h3>
   <div class="mud-r"><span class="mud-k">当前角色</span><span class="mud-v" id="mud-usb-role-now">--</span></div>
+  <div class="mud-r"><span class="mud-k">USB 链路速率</span><span class="mud-v" id="mud-usb-link-speed">--</span></div>
   <div class="mud-r"><span class="mud-k">开机角色策略</span><span class="mud-v" id="mud-usb-role-policy">--</span></div>
   <div class="mud-device-field"><label for="mud-usb-role">切换 USB 角色</label>
    <select id="mud-usb-role"><option value="device">设备模式</option><option value="host">主机模式</option></select></div>
@@ -102,6 +103,13 @@ return view.extend({
 		this.q('role-policy').textContent = s.ok ? M.translate(s.role_auto ? '开机自动启用主机模式' : '设备模式（默认）') : '--';
 		this.q('state-error').textContent = M.translate(!s.ok ? 'USB 状态读取失败，请刷新重试' : s.role_error ? 'USB 角色后台切换失败，请重试' : s.net_policy_error ? '启动协议文件与保存设置不一致，请重新保存' : s.role_pending ? '切换请求已接收，USB 连接可能短暂中断。' : '');
 		this.q('role-now').textContent = s.role === 'host' ? M.translate('主机模式') : s.role === 'device' ? M.translate('设备模式') : M.translate('不可用');
+		var link = s.usb_link || {}, rates = [];
+		(link.links || []).forEach(function(l) {
+			var n = Number(l.mbps), label = isFinite(n) && n > 0 ? (n >= 1000 ? n / 1000 + ' Gbit/s' : n + ' Mbit/s') : l.speed === 'super-speed-plus' ? 'SuperSpeedPlus' : '';
+			if (label && rates.indexOf(label) < 0) rates.push(label);
+		});
+		this.q('link-speed').textContent = link.state === 'connected' && rates.length ? rates.join(' · ') : M.translate(link.state === 'disconnected' ? '链路未连接' : '未能确认');
+		this.q('link-speed').title = M.translate('当前协商的 USB 数据链路速率，不代表实时传输速度；接入扩展坞时显示与扩展坞的链路。');
 		this.q('role').querySelector('option[value="host"]').disabled = s.host_supported === 0;
 		if (fill !== false) {
 		this.q('role').value = s.role === 'host' || s.role_auto ? 'host' : 'device';

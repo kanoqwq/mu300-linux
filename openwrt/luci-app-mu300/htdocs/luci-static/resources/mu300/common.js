@@ -30,27 +30,46 @@ function scopedRpc(options) {
     };
 }
 var callSimGet = rpc.declare({ object: 'mu300dash', method: 'sim_get', expect: { '': {} } });
-function simSelector(root) {
+var simSelectorCleanup = null, simSelectorGeneration = 0;
+function simSelector(root, layout) {
+    var generation = ++simSelectorGeneration;
+    if (simSelectorCleanup) simSelectorCleanup();
     callSimGet().then(function(info) {
-        if (!root.isConnected) return;
+        if (!root.isConnected || generation !== simSelectorGeneration) return;
         if (info.slots !== 2) {
             if (selectedSlot() !== '0') { sessionStorage.removeItem('mu300-view-slot'); location.reload(); }
             return;
         }
-        var panel = document.createElement('details'); panel.className = 'mud-card mud-sim-selector';
-        panel.style.marginBottom = '14px';
-        var summary = document.createElement('summary');
-        summary.className = 'mud-sim-toggle';
-        summary.textContent = translate('正在查看') + ' SIM ' + (Number(selectedSlot()) + 1);
-        var label = document.createElement('label'), select = document.createElement('select');
-        label.textContent = translate('查看卡槽') + ' ';
-        ['0','1'].forEach(function(v) { var o=document.createElement('option'); o.value=v; o.textContent='SIM '+(Number(v)+1); select.appendChild(o); });
-        select.value = selectedSlot(); label.appendChild(select);
-        var body=document.createElement('div'); body.style.cssText='padding-top:12px;animation:mudfade-in .2s ease';
-        var note=document.createElement('p'); note.className='mud-note';
+        var anchor=layout==='hero' && root.querySelector('.mud-hero-meta');
+        var panel=document.createElement('details');
+        panel.className=anchor?'mud-sim-selector mud-sim-hero':'mud-card mud-sim-selector';
+        if (!anchor) panel.style.marginBottom='14px';
+        var summary=document.createElement('summary');
+        summary.className='mud-sim-toggle';
+        var caption=translate('正在查看')+' SIM '+(Number(selectedSlot())+1);
+        summary.textContent=anchor?'SIM '+(Number(selectedSlot())+1):caption;
+        summary.title=caption;summary.setAttribute('aria-label',caption);
+        var label=document.createElement('label'), select=document.createElement('select');
+        label.className='mud-sim-select-label';label.textContent=translate('查看卡槽')+' ';
+        ['0','1'].forEach(function(v) { var o=document.createElement('option');o.value=v;o.textContent='SIM '+(Number(v)+1);select.appendChild(o); });
+        select.value=selectedSlot();label.appendChild(select);
+        var body=document.createElement('div');body.className='mud-sim-options';
+        var note=document.createElement('p');note.className='mud-note';
         note.textContent=translate('仅切换查看与控制对象，不切换上网卡。');
-        body.append(label,note); panel.append(summary,body); root.prepend(panel);
-        select.onchange=function() { selectViewedSlot(select.value); location.reload(); };
+        body.append(label,note);panel.append(summary,body);
+        if(anchor)anchor.appendChild(panel);else root.prepend(panel);
+        select.onchange=function() {if(selectViewedSlot(select.value))location.reload();else select.value=selectedSlot();};
+        function outside(event) {if(anchor && !panel.contains(event.target))panel.open=false;}
+        function keydown(event) {if(event.key==='Escape' && panel.open){panel.open=false;summary.focus();event.preventDefault();}}
+        var lifetime=new MutationObserver(function(){if(!root.isConnected)cleanup();});
+        function cleanup() {
+            lifetime.disconnect();panel.remove();
+            document.removeEventListener('click',outside);document.removeEventListener('keydown',keydown);
+            if(simSelectorCleanup===cleanup)simSelectorCleanup=null;
+        }
+        simSelectorCleanup=cleanup;
+        document.addEventListener('click',outside);document.addEventListener('keydown',keydown);
+        lifetime.observe(document.body,{childList:true,subtree:true});
     }).catch(function() {});
 }
 var callRates = rpc.declare({ object: 'mu300rates', method: 'rates', nobatch: true, expect: { '': {} } });
@@ -720,6 +739,8 @@ var DASH_I18N = {
 	'设备管理': ['Device management', 'Cihaz yönetimi'],
 	'USB 角色': ['USB role', 'USB rolü'],
 	'当前角色': ['Current role', 'Geçerli rol'],
+	'USB 链路速率': ['USB link speed', 'USB bağlantı hızı'],
+	'当前协商的 USB 数据链路速率，不代表实时传输速度；接入扩展坞时显示与扩展坞的链路。': ['Negotiated USB data link speed, not current throughput. With a dock, this is the link to the dock.', 'Anlaşılan USB veri bağlantı hızı; anlık aktarım hızı değildir. Çoklayıcı takılıysa çoklayıcıya olan bağlantı gösterilir.'],
 	'切换 USB 角色': ['Switch USB role', 'USB rolünü değiştir'],
 	'设备模式': ['Device mode', 'Cihaz modu'],
 	'主机模式': ['Host mode', 'Ana makine modu'],
@@ -1464,6 +1485,23 @@ var CSS = `
  * Bootstrap's data-darkmode switch updates these aliases without a reload. */
 html.mud-bootstrap-theme{--surface:var(--background-color-high);--surface-sunken:var(--background-color-low);--brand-subtle:color-mix(in srgb,var(--primary-color-high) 10%,var(--background-color-high));--hairline:var(--border-color-low);--text:var(--text-color-high);--text-muted:var(--text-color-medium);--text-subtle:var(--text-color-low);--brand:var(--primary-color-high);--success:var(--success-color-high);--warning:var(--warn-color-high);--danger:var(--error-color-high);--info:var(--primary-color-high);--on-brand:var(--on-primary-color);--hover-faint:var(--background-color-medium)}
 .mud{color:var(--text,#222);font-size:.85rem;line-height:1.45}
+.mud-sim-selector{color:var(--text,#222)}
+.mud-sim-options{padding-top:12px}
+.mud-sim-select-label{display:flex;flex-direction:column;gap:8px;font-weight:600}
+.mud-sim-select-label select{width:100%;min-height:36px}
+.mud-sim-options>.mud-note{margin:12px 0 0;font-size:.78rem}
+.mud-hero{position:relative}
+.mud-hero-meta{display:flex;align-items:center;flex-wrap:wrap;gap:5px}
+.mud-sim-hero{position:relative;display:inline-block;margin-left:7px;font-size:.74rem;line-height:1.3;z-index:10}
+.mud-sim-hero>.mud-sim-toggle{display:flex;align-items:center;gap:7px;list-style:none;cursor:pointer;white-space:nowrap;padding:4px 9px;border:1px solid var(--hairline,var(--border,#ddd));border-radius:999px;background:var(--surface,var(--background,#fff));font-weight:600;user-select:none}
+.mud-sim-hero>.mud-sim-toggle::-webkit-details-marker{display:none}
+.mud-sim-hero>.mud-sim-toggle::after{content:'';width:5px;height:5px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);margin-top:-3px}
+.mud-sim-hero>.mud-sim-toggle:focus-visible{outline:2px solid var(--brand,var(--primary,#2f7bf6));outline-offset:3px}
+.mud-sim-hero[open]>.mud-sim-toggle{border-color:var(--brand,var(--primary,#2f7bf6))}
+.mud-sim-hero[open]>.mud-sim-toggle::after{transform:rotate(225deg);margin-top:3px}
+.mud-sim-hero>.mud-sim-options{position:absolute;top:calc(100% + 8px);left:0;box-sizing:border-box;width:280px;max-width:calc(100vw - 32px);padding:16px;border:1px solid var(--hairline,var(--border,#ddd));border-radius:calc(var(--radius-base,.5rem) + .375rem);background:var(--surface,var(--background,#fff));box-shadow:var(--app-shadow-md,0 8px 28px rgba(0,0,0,.15))}
+@media(max-width:600px){.mud-hero-meta{padding-right:78px}.mud-sim-hero{position:absolute;right:14px;top:12px;margin:0}.mud-sim-hero>.mud-sim-options{left:auto;right:0}}
+
 .mud *{box-sizing:border-box}
 .mud-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:10px;margin-top:6px}
 .mud-card{background:var(--surface,var(--background-alt,var(--background,#fff)));border:1px solid var(--hairline,var(--border,#e3e6ea));border-radius:calc(var(--radius-base,.5rem) + .375rem);padding:14px 16px;box-shadow:var(--app-shadow-sm,0 1px 3px rgba(0,0,0,.04));transition:border-color .15s}
