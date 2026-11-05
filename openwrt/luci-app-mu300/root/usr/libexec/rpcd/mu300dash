@@ -456,7 +456,8 @@ call)
         sim_get)
             slots=$(uci -q get unisoc_modem.main.sim_slots); [ "$slots" = 2 ] || slots=1
             card=$(uci -q get unisoc_modem.main.data_sim); [ "$card" = 1 ] || card=0
-            printf '{"ok":1,"slots":%s,"saved_sim":%s}\n' "$slots" "$card"
+            physical=$(/opt/mu300/bin/mu300-v50-sim status) || physical='{}'
+            printf '{"ok":1,"slots":%s,"saved_sim":%s,"physical":%s}\n' "$slots" "$card" "$physical"
             ;;
         ttl_get) "$DASH/ttl" get ;;
         ttl_set) "$DASH/ttl" set "$(inp '@.value')" ;;

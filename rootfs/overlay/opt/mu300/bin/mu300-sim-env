@@ -9,7 +9,7 @@ mu300_sim_env() {
         [ "$(uci -q get unisoc_modem.main.sim_slots 2>/dev/null)" = 2 ] || return 1
         MU300_SIM_DIAL=/run/mu300-at5
         MU300_SIM_SHARED=/run/mu300-at4
-        MU300_SIM_URC=/run/mu300-at4/urc/stty_nr3.log
+        MU300_SIM_URC=/run/mu300-at/urc/stty_nr0.log
         device=sipa_eth8
     else
         MU300_SIM_DIAL=/run/mu300-at2

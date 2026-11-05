@@ -1,0 +1,80 @@
+#!/bin/sh
+# Set both V50 card sources without changing the data SIM or RF permissions.
+# Physical switching remains inside the existing modem/RF owner transaction.
+set -eu
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+BIN=${MU300_BIN:-/opt/mu300/bin}
+R=${MU300_V50_RUN:-/run}
+HW=${MU300_V50_MUX:-/sys/bus/platform/devices/sim_gpio_ctl}
+CONTROL=${MU300_V50_CONTROL:-/opt/mu300/bin/mu300-v50-sim}
+[ "$("$BIN/mu300-device")" = v50 ] || exit 2
+. "${MU300_V50_CARD_LIB:-/opt/mu300/lib/v50-card.sh}"
+cfg() { uci -q get "unisoc_modem.main.$1" 2>/dev/null || true; }
+fail() { echo "$1" >&2; exit 1; }
+board=$(v50_board_id) || fail v50_board_unknown
+first=${2:-}; second=${3:-}
+case $(v50_card_map "$board" "$first") in '0 '*) ;; *) fail v50_card_unavailable;; esac
+case $(v50_card_map "$board" "$second") in '1 '*) ;; *) fail v50_card_unavailable;; esac
+"$CONTROL" validate "$first" && "$CONTROL" validate "$second" || fail v50_mux_unavailable
+case ${1:-} in validate) exit 0;; apply) ;; *) exit 2;; esac
+[ -e "$R/mu300-dual-radio-ready" ] && [ ! -e "$R/mu300/v50-switch-incomplete" ] || fail dual_boot_required
+
+gate=${MU300_SIM_MUTEX:-$R/unisoc-data-sim-switch}
+mkdir "$gate" 2>/dev/null || fail modem_busy
+echo $$ > "$gate/pid"
+trap 'rm -f "$gate/pid"; rmdir "$gate" 2>/dev/null || true' EXIT
+[ ! -d "$R/unisoc-modem-lock-apply" ] || fail modem_busy
+chip=$(cat "$HW/chip_select"); psim=$(cat "$HW/psim_select")
+old_first=$(v50_active_card 0 "$chip" "$psim") || fail sim_read_failed
+old_second=$(v50_active_card 1 "$chip" "$psim") || fail sim_read_failed
+v50_card_map "$board" "$old_first" >/dev/null && v50_card_map "$board" "$old_second" >/dev/null || fail sim_read_failed
+saved=$(cfg data_sim); actual=$(cat "$R/mu300-data-sim-actual" 2>/dev/null || true)
+case "$saved:$actual" in 0:0|0:1|1:0|1:1) ;; *) fail sim_read_failed;; esac
+old0=$(cfg v50_route0); old1=$(cfg v50_route1); old_card=$(cfg v50_card)
+wan=$(cfg data_interface); wan=${wan:-wan}
+case $wan in ''|*[!A-Za-z0-9_]*) exit 2;; esac
+
+disrupted=0; autostart=false
+resume_wan() { [ "$autostart" != true ] || ifup "$wan" || :; }
+if { [ "$actual" = 0 ] && [ "$first" != "$old_first" ]; } ||
+   { [ "$actual" = 1 ] && [ "$second" != "$old_second" ]; }; then
+    status=$(ubus -t 3 call "network.interface.$wan" status) || fail sim_read_failed
+    autostart=$(printf '%s' "$status" | jsonfilter -e '@.autostart')
+    case $autostart in true|false) ;; *) fail sim_read_failed;; esac
+    if ! ifdown "$wan"; then resume_wan; fail data_disconnect_failed; fi
+    n=0
+    while :; do
+        if ! status=$(ubus -t 3 call "network.interface.$wan" status); then resume_wan; fail sim_read_failed; fi
+        if ! up=$(printf '%s' "$status" | jsonfilter -e '@.up'); then resume_wan; fail sim_read_failed; fi
+        if ! pending=$(printf '%s' "$status" | jsonfilter -e '@.pending'); then resume_wan; fail sim_read_failed; fi
+        [ "$up" != false ] || [ "$pending" = true ] || break
+        if [ "$n" -ge 10 ]; then resume_wan; fail data_disconnect_failed; fi
+        sleep 1; n=$((n+1))
+    done
+    disrupted=1
+fi
+route() { "$BIN/mobile-data" radio-locked "$CONTROL" --pair-route "$1"; }
+put_old() {
+    if [ -n "$2" ]; then uci -q set "unisoc_modem.main.$1=$2";
+    else uci -q delete "unisoc_modem.main.$1" || :; fi
+}
+restore() {
+    route "$old_second" && route "$old_first" || return 1
+    put_old v50_route0 "$old0" && put_old v50_route1 "$old1" &&
+        put_old v50_card "$old_card" && uci -q commit unisoc_modem || return 1
+    rm -f "$R/mu300/v50-switch-incomplete"
+    [ "$disrupted:$autostart" != 1:true ] || ifup "$wan"
+}
+mkdir -p "$R/mu300"; : > "$R/mu300/v50-switch-incomplete"
+trap 'restore || echo sim_rollback_failed >&2; exit 143' INT TERM
+preferred=$first; [ "$saved" != 1 ] || preferred=$second
+if route "$first" && route "$second" &&
+   uci -q set "unisoc_modem.main.v50_route0=$first" &&
+   uci -q set "unisoc_modem.main.v50_route1=$second" &&
+   uci -q set "unisoc_modem.main.v50_card=$preferred" && uci -q commit unisoc_modem; then
+    rm -f "$R/mu300/v50-switch-incomplete"
+    [ "$disrupted:$autostart" != 1:true ] || ifup "$wan" || logger -t mu300-v50-sim 'Sources saved; netifd start failed'
+    exit 0
+fi
+restore || fail sim_rollback_failed
+fail sim_switch_failed_restored

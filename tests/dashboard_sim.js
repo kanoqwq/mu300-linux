@@ -12,7 +12,7 @@ assert.equal(common.selectViewedSlot(2),false); assert.equal(common.selectedSlot
 common.callAt('AT'); common.selectViewedSlot(0);
 assert.deepEqual(called[0],['at',['AT','1']]);
 
-function element(tag) {return {tag,children:[],style:{},isConnected:true,append(...n){this.children.push(...n);}};}
+function element(tag) {return {tag,children:[],get options(){return this.children;},style:{},isConnected:true,append(...n){this.children.push(...n);}};}
 function find(root,tag){return root.tag===tag?root:root.children.map(n=>find(n,tag)).find(Boolean);}
 const tick=async()=>{for(let i=0;i<30;i++)await Promise.resolve();};
 (async()=>{

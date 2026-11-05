@@ -14,6 +14,10 @@ validate_apply() {
             [ "$(mu300-device 2>/dev/null)" = v50 ] || { echo v50_card_unsupported >&2; return 1; }
             /opt/mu300/bin/mu300-v50-sim validate "${2#v50-card-}" || return 1
             return 0;;
+        v50-pair-[0-3]-[0-3])
+            value=${2#v50-pair-}
+            /opt/mu300/bin/mu300-v50-card-pair validate "${value%-*}" "${value#*-}" || return 1
+            return 0;;
         radio-[01]-[01])
             [ -x /opt/mu300/bin/mu300-sim-radio ] || { echo dual_sim_unavailable >&2; return 1; }
             case "$2" in radio-1-*)
@@ -39,6 +43,7 @@ apply)
         radio-[01]-[01]) value=${3#radio-}; exec /opt/mu300/bin/mu300-sim-radio apply "${value%-*}" "${value#*-}";;
         dsds-[01]) exec /opt/mu300/bin/mu300-sim-radio dsds "${3#dsds-}";;
         v50-card-[0-3]) exec /opt/mu300/bin/mu300-v50-sim apply "${3#v50-card-}";;
+        v50-pair-[0-3]-[0-3]) value=${3#v50-pair-}; exec /opt/mu300/bin/mu300-v50-card-pair apply "${value%-*}" "${value#*-}";;
         *) exec "$adapter" apply "$3";;
     esac;;
 *) exit 2 ;;

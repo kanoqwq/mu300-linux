@@ -179,7 +179,7 @@ esac
 trap ndp_events_stop EXIT
 trap 'exit 0' INT TERM
 ndp_events_start || exit 1
-ndp_seen= ndp_heal_at=0
+ndp_seen=
 while :; do
     ndp_previous_iface=$IFACE
     if ndp_iface_refresh; then :
@@ -189,7 +189,7 @@ while :; do
         sleep 10
         continue
     fi
-    [ "$IFACE" = "$ndp_previous_iface" ] || { ndp_seen=; ndp_heal_at=0; NDP_FULL_AT=0; }
+    [ "$IFACE" = "$ndp_previous_iface" ] || { ndp_seen=; NDP_FULL_AT=0; }
     if ! ndp_snapshot 2>/dev/null; then
         echo "ndp-learn: kernel IPv6 tables unavailable" >&2
         exit 1
@@ -208,12 +208,7 @@ while :; do
         ndp_seen=$NDP_SNAPSHOT
         NDP_FULL_AT=$((NDP_NOW + 10))
     fi
-    # Preserve the original ten-second no-address solicitation cadence.
-    if [ "$NDP_GLOBAL" = 0 ] && [ "$NDP_NOW" -ge "$ndp_heal_at" ]; then
-        echo 0 > "/proc/sys/net/ipv6/conf/$IFACE/accept_ra" 2>/dev/null
-        sleep 1
-        echo 2 > "/proc/sys/net/ipv6/conf/$IFACE/accept_ra" 2>/dev/null
-        ndp_heal_at=$((NDP_NOW + 10))
-    fi
+    # unisoc-ra-renew owns RS acquisition and lifetime deadlines. Never toggle
+    # accept_ra here: it can race an incoming RA or ignore IPv4-only intent.
     ndp_events_wait || exit 1
 done

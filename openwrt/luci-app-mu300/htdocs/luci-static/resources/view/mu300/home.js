@@ -85,7 +85,13 @@ return view.extend({
 		});
 		this._disposed = false;
 		var active = function() { return !self._disposed && root.isConnected; };
-		this._stopStatus = R.poll(M.callStatus, function(st) { self.update(st || {}); },
+		// Refresh routing with the existing visible-page status cycle, without AT.
+        // A card switched by another client must not keep an old IMEI caption.
+        var homeStatus=function() {
+            return Promise.all([M.callStatus(),M.callSimGet().catch(function(){return null;})])
+                .then(function(rows){return rows[0];});
+        };
+        this._stopStatus = R.poll(homeStatus, function(st) { self.update(st || {}); },
 			function() { return intervalMs; }, null, null, active);
 		this._stopRates = R.poll(M.callRates, function(sample) { self.updateRates(sample); },
 			function() { return 1000; }, function() { self.updateRates(null); },
@@ -228,8 +234,8 @@ return view.extend({
         <div class="mud-r"><span class="mud-k">调制解调器</span><span class="mud-v" id="mud-modem">--</span></div>
         <div class="mud-r"><span class="mud-k">运营商</span><span class="mud-v" id="mud-carr">--</span></div>
         <div class="mud-r"><span class="mud-k">PLMN</span><span class="mud-v" id="mud-plmn">--</span></div>
-        <div class="mud-r"><span class="mud-k mud-imei-label">IMEI1 (SIM1)<span class="mud-imei-active" id="mud-imei-active1" hidden></span></span><span class="mud-v" id="mud-imei1">--</span></div>
-        <div class="mud-r"><span class="mud-k mud-imei-label">IMEI2 (SIM2)<span class="mud-imei-active" id="mud-imei-active2" hidden></span></span><span class="mud-v" id="mud-imei2">--</span></div>
+        <div class="mud-r"><span class="mud-k mud-imei-label"><span id="mud-imei-slot1">IMEI1</span><span class="mud-imei-active" id="mud-imei-active1" hidden></span></span><span class="mud-v" id="mud-imei1">--</span></div>
+        <div class="mud-r"><span class="mud-k mud-imei-label"><span id="mud-imei-slot2">IMEI2</span><span class="mud-imei-active" id="mud-imei-active2" hidden></span></span><span class="mud-v" id="mud-imei2">--</span></div>
         <div class="mud-r"><span class="mud-k">IMSI</span><span class="mud-v" id="mud-imsi">--</span></div>
         <div class="mud-r"><span class="mud-k">ICCID</span><span class="mud-v" id="mud-iccid">--</span></div>
         <div class="mud-r"><span class="mud-k">本机号码</span><span class="mud-v" id="mud-msisdn">--</span></div>
@@ -419,6 +425,7 @@ return view.extend({
 		var modem = (this.lastInfo && this.lastInfo.modem) || {};
 		var imeis = modem.imeis || [];
 		[0, 1].forEach(function(slot) {
+			M.set('imei-slot' + (slot + 1), 'IMEI' + (slot + 1) + ' (' + M.slotName(slot) + ')');
 			// A same-slot full snapshot can arrive before the background identity job.
 			var value = imeis[slot] || (cell && Number(cell.card != null ? cell.card : M.selectedSlot()) === slot && id && id.imei);
 			M.set('imei' + (slot + 1), mask(value));

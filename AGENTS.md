@@ -1,5 +1,12 @@
 # Hardware and modem fixes
 
+- NR0 is the sole ingress for automatic modem URC events. Do not select an
+  event channel by SIM number or wait on NR3 for SIM2 notifications. The
+  ingress channel does not identify the event's SIM; confirm the target using
+  the existing explicit SIM-selection/query mechanism. This rule concerns
+  unsolicited reception only: preserve each control/data operation's existing
+  AT owner, command channel, queue and ordering. Never move all AT/control
+  traffic onto NR0 or add a competing reader to its existing owner.
 - Before adapting UFS hardware, read `docs/UFS-PORTING.zh-CN.md`. It records
   the U30 Air investigation, 512/4K geometry contract, trial boot recovery,
   and the separate E5/Changxing 60 follow-up. Do not use fastboot.

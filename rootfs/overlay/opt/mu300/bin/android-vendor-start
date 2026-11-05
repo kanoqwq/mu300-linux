@@ -76,4 +76,9 @@ fi
 unset LD_PRELOAD
 export LD_LIBRARY_PATH=/apex/com.android.runtime/lib64/bionic:/system/lib64:/vendor/lib64
 mark vendor-chroot-ready
+if [ "$(/opt/mu300/bin/mu300-device)" = v50 ]; then
+    # Restore saved wiring before modem_control initializes the SIM/SMS stacks.
+    /opt/mu300/bin/mu300-v50-sim preinit
+    : > /run/mu300-v50-cp-started
+fi
 exec chroot $A "$modem_exe"

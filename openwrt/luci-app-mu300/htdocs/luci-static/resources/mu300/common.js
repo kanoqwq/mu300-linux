@@ -29,7 +29,24 @@ function scopedRpc(options) {
         return call.apply(null, args);
     };
 }
-var callSimGet = rpc.declare({ object: 'mu300dash', method: 'sim_get', expect: { '': {} } });
+var simInfo=null;
+var rpcSimGet = rpc.declare({ object: 'mu300dash', method: 'sim_get', expect: { '': {} } });
+var simRequest=null;
+function callSimGet() {
+    if(simRequest)return simRequest;
+    simRequest=rpcSimGet().then(function(info){simInfo=info;return info;},function(error){simInfo=null;throw error;})
+        .finally(function(){simRequest=null;});
+    return simRequest;
+}
+function slotName(slot,info) {
+    var physical=(info || simInfo || {}).physical;
+    if(physical && physical.model==='v50' && physical.supported!==false) {
+        var id=(physical.logical_cards || [])[Number(slot)];
+        if(id===3)return translate('外置 SIM')+' 1';
+        if(id===0 || id===1 || id===2)return translate('内置 SIM')+' '+(id+1);
+    }
+    return 'SIM '+(Number(slot)+1);
+}
 var simSelectorCleanup = null, simSelectorGeneration = 0;
 function simSelector(root, layout) {
     var generation = ++simSelectorGeneration;
@@ -135,6 +152,13 @@ var callUsbNetAdd = rpc.declare({ object: 'mu300dash', method: 'usb_net_add', pa
  * standalone package works in any OpenWrt buildroot without po2lmo or extra
  * language packages. Chinese remains the source/fallback language. */
 var DASH_I18N = {
+    '卡源组合': ['SIM source combination', 'SIM kaynak birleşimi'],
+    '卡源': ['SIM source', 'SIM kaynağı'],
+    '分别选择两个逻辑栈接入的卡源，重启后保留。卡源选择不改变默认上网卡或射频开关。': ['Choose the SIM source for each logical stack. Saved across reboots; this does not change the default data SIM or radio switches.', 'Her mantıksal yığının SIM kaynağını seçin. Yeniden başlatmada korunur; varsayılan veri SIM’i veya radyo anahtarları değişmez.'],
+    '应用卡源组合': ['Apply SIM sources', 'SIM kaynaklarını uygula'],
+    '应用卡源组合？': ['Apply SIM sources?', 'SIM kaynakları uygulansın mı?'],
+    '正在应用卡源组合…': ['Applying SIM sources…', 'SIM kaynakları uygulanıyor…'],
+    '卡源组合已保存': ['SIM sources saved', 'SIM kaynakları kaydedildi'],
 	"电池与电量": ["Battery & power", "Pil ve güç"],
 	"电池历史": ["Battery history", "Pil geçmişi"],
 	"电池使用时间": ["On battery", "Pilde geçen süre"],
@@ -1545,6 +1569,8 @@ html.mud-bootstrap-theme{--surface:var(--background-color-high);--surface-sunken
 .mud-rsrp small{font-size:.9rem;font-weight:500}
 .mud-chips{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
 .mud-imei-label{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mud-k.mud-imei-label{flex:1 1 0;min-width:0;overflow-wrap:anywhere}
+.mud-imei-label + .mud-v{flex:0 0 auto;white-space:nowrap}
 .mud-imei-active{display:inline-flex;align-items:center;padding:1px 6px;border-radius:99px;font-size:.68rem;font-weight:600;line-height:1.4;color:var(--success,#2fbf71);background:color-mix(in srgb,var(--success,#2fbf71) 14%,transparent);white-space:nowrap}
 .mud-imei-active[hidden]{display:none}
 .mud-tag{display:inline-block;padding:1px 8px;border-radius:99px;background:var(--surface-sunken,rgba(127,127,127,.1));font-size:.74rem;font-weight:600;font-variant-numeric:tabular-nums}
@@ -2013,7 +2039,7 @@ return baseclass.extend({
 	callSmsList: callSmsList, callSmsShow: callSmsShow, callSmsSend: callSmsSend, callSmsJob: callSmsJob,
 	callSmsDel: callSmsDel, callSmsSync: callSmsSync,
 	callForwardGet: callForwardGet, callForwardStatus: callForwardStatus,
-	callSimGet: callSimGet, simSelector: simSelector, selectedSlot: selectedSlot, selectViewedSlot: selectViewedSlot,
+	callSimGet: callSimGet, simSelector: simSelector, slotName: slotName, selectedSlot: selectedSlot, selectViewedSlot: selectViewedSlot,
 	callForwardSet: callForwardSet, callForwardTest: callForwardTest, callForwardClear: callForwardClear,
 	callTrafficGet: callTrafficGet, callTrafficSet: callTrafficSet,
 	callTrafficClear: callTrafficClear,

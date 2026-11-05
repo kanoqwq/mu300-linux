@@ -1,0 +1,382 @@
+#!/usr/bin/python3
+"""Solicit fresh carrier RAs before their real lifetimes expire.
+
+Only sends RS. Kernel/odhcp6c retain address, route, DNS and withdrawal ownership.
+No AT, link reset, synthetic RA, permanent route or periodic status/AT polling.
+"""
+import ipaddress
+import errno
+import json
+import logging
+import os
+from pathlib import Path
+import random
+import re
+import selectors
+import signal
+import socket
+import struct
+import subprocess
+import time
+
+INFINITE = 0xffffffff
+MIN_RS_GAP = 4.0
+MAX_BACKOFF = 300.0
+SIPA = re.compile(r'sipa_eth[0-9]+\Z')
+LOG = logging.getLogger('unisoc-ra-renew')
+
+
+def boottime():
+    # RA validity includes suspend time; NTP/RTC corrections are irrelevant.
+    return time.clock_gettime(time.CLOCK_BOOTTIME)
+
+
+def ra_lifetimes(packet, source, hoplimit):
+    """Validate ND framing, return per-router/option lifetimes, or reject.
+
+    Linux's ICMPv6 raw socket validates the checksum before delivering packets.
+    Omitted options are not withdrawals. Zero lifetimes remove only that entry.
+    """
+    try:
+        router = ipaddress.IPv6Address(source.split('%', 1)[0])
+    except ValueError:
+        return None
+    if not router.is_link_local or hoplimit != 255 or len(packet) < 16 or packet[:2] != b'\x86\0':
+        return None
+    entries = {(router.packed, 'router'): struct.unpack_from('!H', packet, 6)[0]}
+    offset = 16
+    while offset < len(packet):
+        if offset + 2 > len(packet):
+            return None
+        kind, units = packet[offset:offset + 2]
+        size = units * 8
+        if not units or offset + size > len(packet):
+            return None
+        option = packet[offset:offset + size]
+        if kind == 3:  # Prefix Information: valid and preferred may differ.
+            if size != 32:
+                return None
+            plen, flags = option[2:4]
+            valid, preferred = struct.unpack_from('!II', option, 4)
+            if plen <= 128 and preferred <= valid:
+                prefix = ipaddress.IPv6Network((int.from_bytes(option[16:32], 'big'), plen), strict=False)
+                key = (router.packed, 'prefix', str(prefix))
+                if flags & 0xc0:
+                    entries[key + ('valid',)] = valid
+                if flags & 0x40:
+                    entries[key + ('preferred',)] = preferred
+        elif kind == 24:  # Route Information, including an explicit ::/0.
+            plen = option[2]
+            if units not in (1, 2, 3) or plen > 128 or (plen > 0 and units < 2) or (plen > 64 and units < 3):
+                return None
+            prefix = ipaddress.IPv6Network((int.from_bytes(option[8:].ljust(16, b'\0'), 'big'), plen), strict=False)
+            entries[(router.packed, 'route', str(prefix))] = struct.unpack_from('!I', option, 4)[0]
+        elif kind == 25:  # RDNSS
+            if units < 3 or units % 2 != 1:
+                return None
+            ttl = struct.unpack_from('!I', option, 4)[0]
+            for pos in range(8, size, 16):
+                entries[(router.packed, 'dns', option[pos:pos + 16])] = ttl
+        offset += size
+    return entries
+
+
+class LeaseState:
+    def __init__(self, name, index, now, jitter=0):
+        self.name, self.index = name, index
+        self.leases = {}
+        self.next_probe = now + jitter
+        self.last_send = float('-inf')
+        self.attempts, self.backoff = 0, 30.0
+        self.last_error = None
+
+    def receive(self, entries, now):
+        self.leases = {k: v for k, v in self.leases.items() if v[0] > now}
+        for key, ttl in entries.items():
+            if ttl in (0, INFINITE):
+                self.leases.pop(key, None)
+            elif key in self.leases or len(self.leases) < 512:
+                self.leases[key] = (now + ttl, now + ttl / 2.0)
+        deadlines = [v[1] for v in self.leases.values()]
+        # A partial RA must not postpone an older prefix/DNS renewal deadline.
+        if deadlines and min(deadlines) <= now:
+            future = [d for d in deadlines if d > now]
+            due = self.next_probe if self.next_probe is not None else now
+            self.next_probe = min([due] + future)
+        else:
+            self.attempts, self.backoff = 0, 30.0
+            self.next_probe = min(deadlines) if deadlines else now + MAX_BACKOFF
+
+    def due(self):
+        return max(self.next_probe, self.last_send + MIN_RS_GAP)
+
+    def sent(self, now):
+        self.last_send = now
+        self.attempts += 1
+        if self.attempts < 3:
+            self.next_probe = now + MIN_RS_GAP
+        else:
+            self.next_probe = now + self.backoff
+            self.backoff = min(MAX_BACKOFF, self.backoff * 2)
+            self.attempts = 0
+
+
+def selected_interfaces(snapshot, read_knob):
+    """netifd owns selection and ifdown intent; never solicit on LAN/USB/Wi-Fi.
+
+    MM's IPv6 method is DHCP: its dynamic dhcpv6 child owns RA even when the
+    kernel's accept_ra is 0. MU300's kernel-owned RA requires accept_ra=2.
+    """
+    rows = snapshot.get('interface', [])
+    byname = {r.get('interface'): r for r in rows if isinstance(r, dict)}
+
+    def device(row, depth=0):
+        name = row.get('l3_device') or row.get('device') or ''
+        if isinstance(name, str) and name.startswith('@') and depth < 4:
+            return device(byname.get(name[1:], {}), depth + 1)
+        return name if isinstance(name, str) else ''
+
+    def willing(row):
+        return row.get('autostart') is not False and row.get('available') is not False
+
+    live = set()
+    mm = {device(r) for r in byname.values() if r.get('proto') == 'modemmanager' and
+          (r.get('up') or r.get('pending')) and willing(r)}
+    for row in byname.values():
+        name = device(row)
+        if not SIPA.fullmatch(name) or not willing(row) or read_knob(name, 'disable_ipv6') != '0':
+            continue
+        proto = row.get('proto')
+        if proto == 'mu300cell' and row.get('up') and read_knob(name, 'accept_ra') == '2':
+            live.add(name)
+        elif proto == 'dhcpv6' and name in mm:
+            live.add(name)
+    return live
+
+
+def knob(name, key):
+    try:
+        return Path('/proc/sys/net/ipv6/conf', name, key).read_text().strip()
+    except OSError:
+        return None
+
+
+def interface_index(name):
+    if knob(name, 'disable_ipv6') != '0':
+        return None
+    try:
+        flags = int(Path('/sys/class/net', name, 'flags').read_text().strip(), 16)
+        return socket.if_nametoindex(name) if flags & 1 else None
+    except (OSError, ValueError):
+        return None
+
+
+def raw_socket():
+    sock = socket.socket(socket.AF_INET6, socket.SOCK_RAW, socket.IPPROTO_ICMPV6)
+    mask = [INFINITE] * 8
+    mask[134 // 32] &= ~(1 << (134 % 32))
+    sock.setsockopt(socket.IPPROTO_ICMPV6, 1, struct.pack('=8I', *mask))  # ICMP6_FILTER
+    sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_RECVPKTINFO, 1)
+    sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_RECVHOPLIMIT, 1)
+    sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_MULTICAST_HOPS, 255)
+    sock.setblocking(False)
+    return sock
+
+
+def send_rs(sock, index):
+    # SIPA is point-to-point: no synthetic Ethernet source-address option.
+    # The kernel selects its existing link-local and computes ICMPv6 checksum.
+    packet = struct.pack('!BBHI', 133, 0, 0, 0)
+    info = struct.pack('=16sI', b'\0' * 16, index)
+    sock.sendmsg([packet], [(socket.IPPROTO_IPV6, socket.IPV6_PKTINFO, info)],
+                 0, ('ff02::2', 0, 0, index))
+
+
+def receive_ra(sock):
+    packet, control, flags, source = sock.recvmsg(65535, 256)
+    if flags & (socket.MSG_TRUNC | socket.MSG_CTRUNC):
+        return None
+    index = hoplimit = None
+    for level, kind, value in control:
+        if level != socket.IPPROTO_IPV6:
+            continue
+        if kind == socket.IPV6_PKTINFO and len(value) >= 20:
+            index = struct.unpack_from('=I', value, 16)[0]
+        elif kind == socket.IPV6_HOPLIMIT and len(value) >= 4:
+            hoplimit = struct.unpack_from('=i', value)[0]
+    entries = ra_lifetimes(packet, source[0], hoplimit)
+    return (index, entries) if index and entries is not None else None
+
+
+def netlink_changes(data):
+    """Return (ifindex, link deleted, default route expired) notifications."""
+    offset = 0
+    while offset + 16 <= len(data):
+        size, kind = struct.unpack_from('=IH', data, offset)
+        if size < 16 or offset + size > len(data):
+            break
+        body = data[offset + 16:offset + size]
+        if kind in (16, 17) and len(body) >= 16:  # NEWLINK / DELLINK
+            yield struct.unpack_from('=i', body, 4)[0], kind == 17, False
+        elif kind in (20, 21) and len(body) >= 8 and body[0] == socket.AF_INET6:
+            yield struct.unpack_from('=I', body, 4)[0], False, False
+        elif kind == 25 and len(body) >= 12 and body[0] == socket.AF_INET6 and body[1] == 0:
+            pos = 12
+            while pos + 4 <= len(body):
+                length, attr = struct.unpack_from('=HH', body, pos)
+                if length < 4 or pos + length > len(body):
+                    break
+                if attr == 4 and length >= 8:  # RTA_OIF
+                    yield struct.unpack_from('=I', body, pos + 4)[0], False, True
+                pos += (length + 3) & ~3
+        offset += (size + 3) & ~3
+
+
+class Renewer:
+    def __init__(self, clock=None, sender=None):
+        self.clock, self.sender = clock or boottime, sender or send_rs
+        self.states = {}
+
+    def reconcile(self, snapshot, read_knob=None, get_index=None, jitter=None):
+        read_knob, get_index = read_knob or knob, get_index or interface_index
+        now = self.clock()
+        active = {}
+        for name in selected_interfaces(snapshot, read_knob):
+            index = get_index(name)
+            if not index:
+                continue
+            state = self.states.get(index)
+            if state is None or state.name != name:
+                state = LeaseState(name, index, now, random.uniform(0, 1) if jitter is None else jitter)
+                LOG.info('tracking RA lifetimes on %s', name)
+            active[index] = state
+        self.states = active
+
+    def packet(self, index, entries):
+        if index in self.states:
+            self.states[index].receive(entries, self.clock())
+
+    def timeout(self):
+        return max(0.0, min(s.due() for s in self.states.values()) - self.clock()) if self.states else None
+
+    def tick(self, sock, get_index=None):
+        get_index = get_index or interface_index
+        now = self.clock()
+        for index, state in list(self.states.items()):
+            if state.due() > now:
+                continue
+            # Do not send after ifdown, IPv6 disable, removal or index reuse.
+            if get_index(state.name) != index:
+                del self.states[index]
+                continue
+            try:
+                self.sender(sock, index)
+                state.last_error = None
+            except OSError as error:
+                if state.last_error != error.errno:
+                    LOG.warning('%s: RS send failed: %s', state.name, error)
+                    state.last_error = error.errno
+            state.sent(now)
+
+
+def snapshot():
+    result = subprocess.run(['ubus', '-S', 'call', 'network.interface', 'dump'],
+                            check=True, capture_output=True, text=True, timeout=3)
+    result = json.loads(result.stdout)
+    if not isinstance(result, dict) or not isinstance(result.get('interface'), list):
+        raise ValueError('invalid netifd snapshot')
+    return result
+
+
+def main():
+    logging.basicConfig(level=logging.INFO, format='unisoc-ra-renew: %(message)s')
+    # Singleton in this network namespace, with no persistent lock/cache files.
+    singleton = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+    singleton.bind('\0unisoc-ra-renew')
+    selector = selectors.DefaultSelector()
+    raw = netlink = bus = timer = None
+    engine = Renewer()
+    def stop(*_):
+        raise SystemExit(0)
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGINT, stop)
+    scan_at, scan_backoff = boottime(), 1
+    try:
+        raw = raw_socket()
+        selector.register(raw, selectors.EVENT_READ, 'ra')
+        # OpenWrt 25.12 supplies Python 3.13. BOOTTIME timerfd remains due
+        # across suspend, without adding a periodic poll or a wake alarm.
+        timer = os.timerfd_create(time.CLOCK_BOOTTIME, flags=os.TFD_NONBLOCK)
+        selector.register(timer, selectors.EVENT_READ, 'timer')
+        netlink = socket.socket(socket.AF_NETLINK, socket.SOCK_RAW, socket.NETLINK_ROUTE)
+        netlink.bind((0, 1 | 0x100 | 0x400))  # LINK, IPv6 IFADDR and ROUTE
+        netlink.setblocking(False)
+        selector.register(netlink, selectors.EVENT_READ, 'link')
+        bus = subprocess.Popen(['ubus', '-S', 'listen', 'network.interface'], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        os.set_blocking(bus.stdout.fileno(), False)
+        selector.register(bus.stdout, selectors.EVENT_READ, 'bus')
+        while True:
+            now = boottime()
+            if scan_at is not None and now >= scan_at:
+                try:
+                    engine.reconcile(snapshot())
+                    scan_at, scan_backoff = None, 1
+                except (ValueError, OSError, subprocess.SubprocessError) as error:
+                    LOG.debug('netifd state not ready: %s', error)
+                    scan_at = boottime() + scan_backoff
+                    scan_backoff = min(30, scan_backoff * 2)
+            engine.tick(raw)
+            due = [state.due() for state in engine.states.values()]
+            if scan_at is not None:
+                due.append(scan_at)
+            os.timerfd_settime(timer, flags=os.TFD_TIMER_ABSTIME,
+                               initial=max(boottime()+0.000001, min(due)) if due else 0)
+            for key, _ in selector.select():
+                if key.data == 'timer':
+                    os.read(timer, 8)
+                elif key.data == 'ra':
+                    try:
+                        received = receive_ra(raw)
+                    except BlockingIOError:
+                        continue
+                    if received is not None:
+                        engine.packet(*received)
+                elif key.data == 'bus':
+                    if not os.read(bus.stdout.fileno(), 65536):
+                        return 1  # procd reconnects after ubus listener loss.
+                    # Coalesce a burst, without allowing traffic to postpone it.
+                    if scan_at is None:
+                        scan_at = boottime() + 0.1
+                else:
+                    data, source = netlink.recvfrom(65536)
+                    if source[0] != 0:
+                        continue
+                    for index, deleted, expired in netlink_changes(data):
+                        state = engine.states.get(index)
+                        if deleted:
+                            engine.states.pop(index, None)
+                        elif state and expired:
+                            state.next_probe = min(state.next_probe, boottime())
+                        elif state and state.last_error in (errno.EADDRNOTAVAIL, errno.ENETUNREACH, errno.ENODEV):
+                            state.next_probe = min(state.next_probe, boottime())
+                        if scan_at is None:
+                            scan_at = boottime() + 0.1
+    finally:
+        selector.close()
+        for sock in (raw, netlink, singleton):
+            if sock is not None:
+                sock.close()
+        if timer is not None:
+            os.close(timer)
+        if bus is not None:
+            if bus.poll() is None:
+                bus.terminate()
+            try:
+                bus.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                bus.kill(); bus.wait()
+            bus.stdout.close()
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

@@ -115,6 +115,16 @@ EOF
     case "$rat" in 0|[1-9]|[1-9][0-9]|[1-9][0-9][0-9]) ;; *) rat=null ;; esac
     value="{\"slot\":$slot,\"stat\":$stat,\"rat\":$rat}"
     [ ! -f "$root/slot$slot$suffix.json" ] || IFS= read -r old < "$root/slot$slot$suffix.json" || true
+    # A newly registered stack contradicts a stale no-SIM snapshot. Recheck
+    # through the existing event consumer, including repeated registration URCs.
+    case "$stat" in
+        1|5|9|10)
+            if mu300_sim_is "$slot" absent; then
+                rm -f "$root/sim$slot.json"
+                ( ubus -t 1 send mu300.sim-change "{\"slot\":$slot}" ) \
+                    3<&- 4<&- </dev/null >/dev/null 2>&1 &
+            fi ;;
+    esac
     [ "$value" != "$old" ] || return 0
     mkdir -p "$root" || return 0
     # The URC owner is the only writer for its physical group; the selected

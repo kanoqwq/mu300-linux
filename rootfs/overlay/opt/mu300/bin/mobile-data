@@ -292,7 +292,11 @@ radio_on_locked() {
                 ;;
         esac
     fi
-    if [ "$DEVICE" = v50 ] && [ -n "$(uci -q get unisoc_modem.main.v50_card 2>/dev/null || true)" ]; then
+    if [ "$DEVICE" = v50 ] && {
+        [ -n "$(uci -q get unisoc_modem.main.v50_card 2>/dev/null || true)" ] ||
+        [ -n "$(uci -q get unisoc_modem.main.v50_route0 2>/dev/null || true)" ] ||
+        [ -n "$(uci -q get unisoc_modem.main.v50_route1 2>/dev/null || true)" ];
+    }; then
         /opt/mu300/bin/mu300-v50-sim boot || return 1
     fi
     if [ "$(uci -q get unisoc_modem.main.sim_slots 2>/dev/null || true)" = 2 ]; then
@@ -520,7 +524,8 @@ wait_registered() {
     local deadline=$((SECONDS + ${MU300_REGISTER_WAIT:-60}))
     local next_query=$SECONDS
 
-    # The selected card's URC stream reports registration changes. Watch bytes
+    # NR0 reports changes for both cards. Use each new batch as a hint for
+    # a scoped query, never as proof that this SIM registered. Watch bytes
     # after this point so an old registered URC cannot be mistaken for the
     # current state. A low-rate query is the fallback for a carrier that emits
     # no URC; this replaces the old 0.3 s AT+CEREG? flood.
@@ -534,7 +539,7 @@ wait_registered() {
         # is an unchanged log, not truncation (which would replay old URCs).
         [ "$((size + 1))" -lt "$start" ] && start=1
         if [ -f "$urclog" ] && tail -c +"$start" "$urclog" 2>/dev/null | is_registered urc; then
-            return 0
+            next_query=$SECONDS
         fi
         start=$((size + 1))
         if [ "$SECONDS" -ge "$next_query" ]; then
@@ -1064,6 +1069,7 @@ case "${1:-status}" in
         if [ "$DEVICE" = v50 ]; then
             case "$*" in
                 '/opt/mu300/bin/mu300-v50-sim --route '[0-3]) radio_locked "$@" ;;
+                '/opt/mu300/bin/mu300-v50-sim --pair-route '[0-3]) radio_locked "$@" ;;
                 *) exit 2;;
             esac
             exit $?

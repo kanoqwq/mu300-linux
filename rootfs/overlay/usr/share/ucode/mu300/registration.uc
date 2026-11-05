@@ -42,6 +42,14 @@ function cache(root, notify) {
         if (!match(s, /^([0-9]|10)$/)) return false;
         let rat = match(r, /^(0|[1-9][0-9]{0,2})$/) ? +r : null;
         let value = sprintf('{"slot":%d,"stat":%d,"rat":%J}\n', slot, +s, rat);
+        // Registration after hot insertion supersedes an earlier CPIN absence.
+        // Ask the existing owner to confirm CPIN; do not infer a card from RSSI.
+        let previous = readfile(root+'/sim'+slot+'.json');
+        if (+s in [1, 5, 9, 10] && previous == sprintf('{"slot":%d,"state":"absent"}\n',slot)) {
+            unlink(root+'/sim'+slot+'.json');
+            notify('mu300.sim-state', {slot});
+            notify('mu300.sim-change', {slot});
+        }
         if (!put(name, value)) return false;
         notify('mu300.registration', {slot});
         return true;

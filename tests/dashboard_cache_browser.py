@@ -13,7 +13,8 @@ with sync_playwright() as pw:
     browser=pw.chromium.launch(executable_path='C:/Program Files/Google/Chrome/Application/chrome.exe')
     page=browser.new_page(viewport={'width':390,'height':844})
     errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-    page.set_content('<main></main>')
+    page.route('http://sim-cache.test/**', lambda route: route.fulfill(content_type='text/html', body='<main></main>'))
+    page.goto('http://sim-cache.test/')
     page.evaluate('''([source,sharedSource])=>{
         window.neighborPaints=0;
         const shared=new Function('rpc','baseclass','L',sharedSource)(

@@ -40,12 +40,9 @@ watch_event_decode() {
         *'"mu300.modem.urc"'*) ;;
         *) return ;;
     esac
-    # Only physical unsolicited channels. Query answers on nr1/nr4 must not
-    # feed our own CEREG checks back into an infinite refresh loop.
-    case "${MU300_SIM_SLOT:-0}:$1" in
-        0:*'"channel":"stty_nr0"'*|1:*'"channel":"stty_nr3"'*) ;;
-        *) return ;;
-    esac
+    # NR0 is the only unsolicited ingress, shared by both SIMs. Command
+    # replies from other channels must not feed our own checks back as events.
+    case "$1" in *'"channel":"stty_nr0"'*) ;; *) return ;; esac
     case "$1" in
         *'"line":"+CGEV:'*|*'"line":"NO CARRIER'*|\
         *'"line":"+CREG:'*|*'"line":"+CGREG:'*|\

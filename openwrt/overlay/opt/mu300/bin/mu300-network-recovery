@@ -83,7 +83,8 @@ function evaluate() {
             return bus.call('network.interface.' + wan, method, data);
         },
         registration, wait_slot, slot, blocked() || denied, previous,
-        sim
+        sim,
+        !!fs.stat('/sys/class/net/'+(cfg.get('unisoc_modem','main',slot==1?'sim1_device':'sim0_device') || (slot==1?'sipa_eth8':'sipa_eth0')))
     );
 }
 // The short one-shot only coalesces event bursts. No timer runs while idle.

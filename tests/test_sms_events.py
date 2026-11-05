@@ -21,7 +21,7 @@ class SmsEventFilter(ShellTest):
                         own=(nr in [0,1,2,6,7]) if slot==0 else nr in [3,4,5]
                         r=self.sh(shell,'. '+str(LIB)+'\nsms_event_decode "$EVENT"; printf "%s" "$sms_event"',MU300_SIM_SLOT=slot,EVENT=event)
                         self.assertEqual(r.returncode,0,r.stderr)
-                        self.assertEqual(r.stdout,expected if own else '',(slot,nr,line))
+                        self.assertEqual(r.stdout,('sync' if nr==0 else '') if line.startswith('+CMTI:') else expected if own else '',(slot,nr,line))
 
     def test_native_sim_state_and_object_removal(self):
         for shell in self.each_shell():
@@ -54,7 +54,8 @@ class SmsEventBus(Base):
             '\ntrap sms_events_stop EXIT\n'+\
             'sms_events_start || exit 9\n'+\
             'printf "%s" "$sms_event_pid" > "$STARTED"\n'+\
-            'sms_clock\nsms_events_wait "$((SMS_NOW + SMS_TEST_WAIT))" || exit 1\n'+\
+            'sms_clock; printf \'%s\' \"$SMS_NOW\" > \"$RESULT.start\"\nsms_events_wait "$((SMS_NOW + SMS_TEST_WAIT))" || exit 1\n'+\
+            'printf "%s" "$SMS_NOW" > "$RESULT.end"\n'+\
             'printf "%s|%s" "$sms_event" "$sms_events" > "$RESULT"\n'
         env=dict(self.env,PATH=str(self.stubdir)+':'+os.environ['PATH'],MU300_UBUS_SOCKET=str(self.ubus_sock),MU300_SIM_SLOT=str(slot),LOCK=str(lock),SMS_TEST_WAIT=str(seconds),STARTED=str(self.started),RESULT=str(self.result))
         p=subprocess.Popen(['/bin/sh','-c',code],env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
@@ -129,13 +130,14 @@ class SmsEventBus(Base):
         self.finish(p,'spool|1')
 
     def test_other_slot_and_radio_events_do_not_move_deadline(self):
-        t=time.monotonic();p=self.receiver(slot=0,seconds=2)
+        p=self.receiver(slot=0,seconds=2)
         for i in range(4):
             self.send('mu300.modem.urc',{'channel':'stty_nr3','line':'+CMT (PDU spooled)'})
             self.send('mu300.modem.urc',{'channel':'stty_nr0','line':'+CEREG: 1'})
             time.sleep(.1)
         self.finish(p,'|1')
-        self.assertLess(time.monotonic()-t,3.5)
+        elapsed=int(Path(str(self.result)+'.end').read_text())-int(Path(str(self.result)+'.start').read_text())
+        self.assertIn(elapsed,(2,3))
 
     def test_listener_death_is_reported_without_polling(self):
         p=self.receiver()

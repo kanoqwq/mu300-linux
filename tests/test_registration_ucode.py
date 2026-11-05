@@ -29,6 +29,14 @@ class RegistrationCache(unittest.TestCase):
         self.assertEqual(p.returncode, 0, p.stderr)
         return json.loads(p.stdout)
 
+    def test_new_registration_invalidates_old_absence_even_when_registration_did_not_change(self):
+        self.run_cache("c.registration(1,'+CEREG: 1,\"a\",\"b\",11',false); c.reply('AT+SPACTCARD=1;+SFUN=4','OK'); c.reply('AT+SPACTCARD=1;+CPIN?','+CME ERROR: 10')")
+        self.assertEqual(json.loads((self.root/'sim1.json').read_text())['state'],'absent')
+        events=self.run_cache("c.registration(1,'+CEREG: 1,\"a\",\"b\",11',false)")
+        self.assertFalse((self.root/'sim1.json').exists())
+        self.assertIn(dict(name='mu300.sim-change',data=dict(slot=1)),events)
+        self.assertFalse((self.root/'sim0.json').exists())
+
     def test_registration_changes_only_and_no_identity_fields(self):
         events = self.run_cache('''c.registration(0, '+CEREG: 1,"A","secret",7', false);
             c.registration(0, '+CEREG: 1,"B","other",7', false);

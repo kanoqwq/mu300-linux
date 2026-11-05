@@ -189,6 +189,9 @@ let bus = null;
 const registration = cache(env('MU300_REGISTRATION_DIR', RUN + '/mu300-registration'),
 	(name, data) => { if (bus) bus.event(name, data); });
 function urc_event(chan, line) {
+	// NR0 is the sole unsolicited ingress. A spool completion is an internal
+	// notification, carrying the existing pool owner for its one importer/ACK.
+	if (chan != 'stty_nr0' && index(['+CMT (PDU spooled)', '+CMT (not spooled)'], line) < 0) return;
 	if (bus)
 		bus.event('mu300.modem.urc', { channel: chan, line: line });
 }

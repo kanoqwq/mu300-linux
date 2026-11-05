@@ -85,3 +85,21 @@ wait_registered
         result=self.sh(['bash'],code,MU300_SIM_URC=log,MU300_SIM_SLOT='0',MU300_REGISTER_WAIT='2')
         self.assertEqual(result.returncode,0,result.stderr)
         self.assertEqual((self.tmp/'queries').read_text().splitlines(),['AT+CEREG?;+C5GREG?','AT+CEREG?','AT+C5GREG?'])
+
+    def test_nr0_registration_hint_cannot_register_the_other_sim(self):
+        source=(BIN/'mobile-data').read_text()
+        functions=source[source.index('is_registered() {'):source.index('\n# The modem needs')]
+        log=self.tmp/'shared-urc';log.write_text('')
+        code=functions+"""
+at() {
+    echo query >>"$STUBLOG/queries"
+    printf '+CEREG: 1\\n' >>"$MU300_SIM_URC"
+    printf '+CEREG: 2,0\\n+C5GREG: 2,0\\nOK\\n'
+}
+sleep() { SECONDS=$((SECONDS+1)); }
+unset SECONDS; SECONDS=0
+wait_registered
+"""
+        result=self.sh(['bash'],code,MU300_SIM_URC=log,MU300_SIM_SLOT='1',MU300_REGISTER_WAIT='2')
+        self.assertEqual(result.returncode,1,result.stderr)
+        self.assertEqual((self.tmp/'queries').read_text().splitlines(),['query','query'])

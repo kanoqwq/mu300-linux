@@ -34,10 +34,9 @@ prefix4=$4
 dns1=$5
 dns2=$6
 peerdns=$7
-urclog=${MU300_URC_LOG:-/run/mu300-at/urc/stty_nr0.log}
+urclog=${MU300_URC_LOG:-${10:-${MU300_SIM_URC:-/run/mu300-at/urc/stty_nr0.log}}}
 sim_slot=${9:-${MU300_SIM_SLOT:-0}}
 case "$sim_slot" in 0|1) ;; *) exit 1 ;; esac
-[ "$sim_slot" != 1 ] || urclog=${MU300_URC_LOG:-/run/mu300-at4/urc/stty_nr3.log}
 logtag=mu300cell-renew
 
 mask2prefix() {
@@ -243,6 +242,42 @@ refresh_bearer() {
 	fi
 }
 
+# Retain an unresolved event across busy/failed AT reads. This deadline exists
+# only while that event is pending, never as an idle polling timer. Absolute
+# uptime deadlines prevent unrelated IPv6 events from postponing the retry.
+retry_due=0 retry_step=0 MONITOR_NOW=0
+monitor_clock() {
+	local up rest
+	IFS=' ' read -r up rest < /proc/uptime || return 1
+	MONITOR_NOW=${up%.*}
+}
+refresh_event() {
+	local result=0 delay
+	refresh_bearer "$1" || result=$?
+	case $result in
+		0) retry_due=0; retry_step=0 ;;
+		1)
+			case $retry_step in 0) delay=1;; 1) delay=3;; 2) delay=5;; *) delay=7;; esac
+			retry_step=$(((retry_step + 1) % 4))
+			monitor_clock || return 1
+			retry_due=$((MONITOR_NOW + delay))
+			;;
+	esac
+	return "$result"
+}
+read_event() {
+	event=
+	[ "$retry_due" != 0 ] || { IFS= read -r event <&3; return $?; }
+	while :; do
+		monitor_clock || return 1
+		if [ "$MONITOR_NOW" -ge "$retry_due" ]; then event=pdp-retry; return 0; fi
+		IFS= read -r -t "$((retry_due - MONITOR_NOW))" event <&3 && return 0
+		# A renew signal interrupts read before the deadline. Let the main
+		# loop handle it, retaining this pending event until a confirmed read.
+		[ "$renew_pending" != 1 ] || return 1
+	done
+}
+
 last_v6=$(v6_snapshot)
 report
 [ "${8:-}" = --once ] && exit 0
@@ -266,6 +301,7 @@ reap "mu300cell-v6.sh $config $ifname"
 reap "ip -6 monitor address dev $ifname"
 reap "ip -6 monitor route dev $ifname"
 reap "tail -n 0 -F $urclog"
+reap "ubus -S listen mu300.modem.urc mu300cell-$config"
 
 events=/run/mu300cell-${config}.events
 pdp_pending=$events.pdp
@@ -278,14 +314,16 @@ exec 3<>"$events"
 	while IFS= read -r _; do printf 'v6\n'; done > "$events" ) & addrmon=$!
 ( ip -6 monitor route dev "$ifname" 2>/dev/null |
 	while IFS= read -r _; do printf 'v6\n'; done > "$events" ) & routemon=$!
-( while [ ! -f "$urclog" ]; do sleep 0.2; done
-	tail -n 0 -F "$urclog" 2>/dev/null |
+( # NR0 is the shared unsolicited source. Physical bank identity does not
+    # identify the event's SIM. The existing owner publishes the hint; only
+    # this monitor's SPACTCARD-scoped CID check can decide to reconnect.
+    ubus -S listen mu300.modem.urc "mu300cell-$config" |
 	while IFS= read -r line; do
 		case $line in
 			# Besides standard PDN/MODIFY reports, Unisoc emits abbreviated
 			# "NW ACT <p_cid>,<cid>" and +SPPCODATA (PCO updates).
 			# All are hints to perform one coalesced CGCONTRDP refresh.
-			*+CGEV:*PDN*|*+CGEV:*ACT*|*+CGEV:*DETACH*|*+CGEV:*MODIFY*|*+SPPCODATA:*)
+			*+CGEV:*PDN*|*+CGEV:*ACT*|*+CGEV:*DETACH*|*+CGEV:*MODIFY*|*+SPPCODATA:*|*NO\ CARRIER*)
 				# One queued hint covers the entire burst. A hint arriving during
 				# an AT read queues another refresh, so cooldown never loses it.
 				[ -e "$pdp_pending" ] || { : >"$pdp_pending"; printf 'pdp\n'; }
@@ -303,6 +341,7 @@ cleanup() {
 	reap "ip -6 monitor address dev $ifname"
 	reap "ip -6 monitor route dev $ifname"
 	reap "tail -n 0 -F $urclog"
+	reap "ubus -S listen mu300.modem.urc mu300cell-$config"
 	exec 3>&-
 	rm -f "$events" "$pdp_pending"
 	exit "$rc"
@@ -311,11 +350,14 @@ trap 'cleanup 0' INT TERM
 trap 'cleanup $?' EXIT
 trap 'renew_pending=1' USR1
 
+# Close the setup/subscription gap with one scoped state read. There is no
+# timer: all subsequent refreshes are driven by modem/netlink/renew events.
+: >"$pdp_pending"; printf 'pdp\n' >&3
 last_pdp=0
 while :; do
 	if [ "$renew_pending" = 1 ]; then
 		renew_pending=0
-		refresh_bearer manual-renew
+		refresh_event manual-renew
 		[ "$?" != 2 ] || exit 2
 		last_pdp=$(date +%s)
 	fi
@@ -324,7 +366,7 @@ while :; do
 	# consuming fifo data. Continue, not break - leaving the loop would kill
 	# the protocol task and netifd would tear the interface down. This fd is
 	# an O_RDWR fifo, so a real EOF cannot occur.
-	IFS= read -r event <&3 || continue
+	read_event || continue
 	case $event in
 		v6)
 			now=$(v6_snapshot)
@@ -333,7 +375,7 @@ while :; do
 			last_v6=$now
 			logger -t "$logtag" "IPv6 RA address/route state refreshed"
 			;;
-		pdp)
+		pdp|pdp-retry)
 			now=$(date +%s)
 			gap=$((now - last_pdp))
 			# A backward NTP correction must not turn cooldown into a long stall.
@@ -343,7 +385,7 @@ while :; do
 			# transition. Let the burst settle, then perform exactly one AT read.
 			sleep 1
 			rm -f "$pdp_pending"
-			refresh_bearer cgev
+			refresh_event cgev
 			[ "$?" != 2 ] || exit 2
 			last_pdp=$(date +%s)
 			;;

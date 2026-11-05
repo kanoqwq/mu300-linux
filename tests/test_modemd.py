@@ -530,7 +530,7 @@ class ModemdUbus(Base):
         self.assertIn({'channel': 'stty_nr0', 'line': '+CMT (PDU spooled)'}, events)
         self.assertNotIn('0791', out)
         self.assertNotIn('+CMT: ,23', out)
-        self.assertIn({'channel': 'stty_nr1', 'line': '+CMTI: "SM",3'}, events)
+        self.assertNotIn({'channel': 'stty_nr1', 'line': '+CMTI: "SM",3'}, events)
         self.assertNotIn('+CPIN', out)
 
     def collector_program(self, mode, tag):

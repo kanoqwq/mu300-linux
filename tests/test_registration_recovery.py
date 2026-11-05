@@ -30,6 +30,25 @@ wait
             for file in cache.iterdir():
                 file.unlink()
 
+    def test_registration_rechecks_stale_absence_once_without_polling(self):
+        library = TOP/'rootfs/overlay/opt/mu300/lib/registration.sh'
+        self.stub('ubus', 'printf "%s\\n" "$*" >> "$STUBLOG/events"')
+        for i,shell in enumerate(self.each_shell()):
+            cache=self.tmp/f'hotplug-{i}'
+            (self.tmp/'events').unlink(missing_ok=True)
+            code='. '+shlex.quote(str(library))+"""
+mu300_sim_save 1 absent
+mu300_registration_save 1 '+CEREG: 1,"a","b",11'
+mu300_registration_save 1 '+CEREG: 1,"a","b",11'
+wait
+"""
+            result=self.sh(shell,code,MU300_REGISTRATION_DIR=cache)
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertFalse((cache/'sim1.json').exists())
+            self.assertFalse((cache/'sim0.json').exists())
+            events=(self.tmp/'events').read_text().splitlines()
+            self.assertEqual(sum('mu300.sim-change' in e for e in events),1)
+
     def test_all_states_and_unknown_rat_are_preserved_for_policy(self):
         library = TOP / 'rootfs/overlay/opt/mu300/lib/registration.sh'
         self.stub('ubus', 'exit 1')  # an unavailable bus must not fail AT owner

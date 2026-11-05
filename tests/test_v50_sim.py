@@ -37,7 +37,10 @@ if name=='uci':
   if k=='state_dir':print(p/'identity/lock-state.d')
   else:print(s.get(k,''))
  elif a[:2]==['-q','set']:
-  k,v=a[2].split('=',1);s[k.split('.')[-1]]=int(v);save()
+  k,v=a[2].split('=',1);key=k.split('.')[-1]
+  if key==os.environ.get('FAIL_SAVE_KEY') and not (p/'save-failed-once').exists():
+   (p/'save-failed-once').touch();sys.exit(1)
+  s[key]=int(v);save()
  elif a[:2]==['-q','delete']:s.pop(a[2].split('.')[-1],None);save()
 elif name=='ubus':print(json.dumps(dict(up=s['up'],pending=False,autostart=s['autostart'])))
 elif name=='jsonfilter':
@@ -58,7 +61,7 @@ elif name=='mu300-at':
   print('+CPIN: READY')
  else:
   f=int(cmd.rsplit('=',1)[-1]);s['cfun'][slot]=1 if f==4 else 0;save()
-  if f==2 and os.environ.get('FAIL_POWER_ON')=='1' and not (p/'failed-once').exists():
+  if f==2 and os.environ.get('FAIL_POWER_ON')=='1' and str(slot)==os.environ.get('FAIL_POWER_SLOT',str(slot)) and not (p/'failed-once').exists():
    (p/'failed-once').touch();print('ERROR');sys.exit(1)
  print('OK')
 elif name=='mobile-data':
@@ -89,6 +92,212 @@ else:sys.exit(2)
         self.stub('mu300-v50-sim',f'exec /bin/sh "{self.controller}" "$@"')
         self.extra=dict(MU300_SYSROOT=self.root,MU300_BIN=self.stubs,MU300_V50_CARD_LIB=LIB,
                         MU300_V50_RUN=self.run,MU300_V50_MUX=self.hw,MU300_DASH_CACHE_ROOT=self.tmp/'cache',MU300_DASH_BIN=self.dash)
+        self.pair=self.tmp/'v50-pair'
+        self.pair.write_text((BIN/'mu300-v50-card-pair').read_text().replace('#!/bin/sh\n','#!/bin/sh\n'+shims+'\n',1))
+        self.extra['MU300_V50_CONTROL']=self.stubs/'mu300-v50-sim'
+
+    def run_pair(self,shell,*args,**env):
+        return self.script(shell,self.pair,*args,**dict(self.extra,**env))
+
+    def test_preinit_restores_pair_before_cp_without_at_or_config_changes(self):
+        for shell in self.each_shell():
+            state=dict(self.initial,v50_route0=3,v50_route1=2)
+            self.state.write_text(json.dumps(state));before=self.state.read_bytes()
+            for name in ('chip_select','psim_select'):(self.hw/name).write_text('0\n')
+            result=self.call(shell,'preinit');self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual([int((self.hw/n).read_text()) for n in ('chip_select','psim_select')],[1,1])
+            self.assertEqual(self.state.read_bytes(),before)
+            self.assertFalse((self.tmp/'commands').exists())
+            (self.run/'mu300-v50-cp-started').touch()
+            self.assertEqual(self.call(shell,'preinit').returncode,0)
+            (self.run/'mu300-v50-cp-started').unlink()
+
+    def test_preinit_preserves_unsaved_and_legacy_peer_selector(self):
+        for shell in self.each_shell():
+            for state,want in [({},[1,0]),(dict(self.initial,v50_card=3),[1,1])]:
+                self.state.write_text(json.dumps(state))
+                (self.hw/'chip_select').write_text('1\n');(self.hw/'psim_select').write_text('0\n')
+                result=self.call(shell,'preinit');self.assertEqual(result.returncode,0,result.stderr)
+                self.assertEqual([int((self.hw/n).read_text()) for n in ('chip_select','psim_select')],want)
+            self.assertFalse((self.tmp/'commands').exists())
+
+    def test_preinit_rejects_invalid_pair_and_live_changes_before_gpio_write(self):
+        for shell in self.each_shell():
+            before={p.name:p.read_bytes() for p in self.hw.iterdir()}
+            for state in (dict(self.initial,v50_route0=3),dict(self.initial,v50_route0=3,v50_route1=3)):
+                self.state.write_text(json.dumps(state))
+                self.assertNotEqual(self.call(shell,'preinit').returncode,0)
+                self.assertEqual(before,{p.name:p.read_bytes() for p in self.hw.iterdir()})
+            self.state.write_text(json.dumps(dict(self.initial,v50_route0=3,v50_route1=2)))
+            (self.run/'mu300-v50-cp-started').touch()
+            result=self.call(shell,'preinit');self.assertIn('modem_busy',result.stderr)
+            self.assertEqual(before,{p.name:p.read_bytes() for p in self.hw.iterdir()})
+            (self.run/'mu300-v50-cp-started').unlink()
+
+    def test_preinit_unknown_board_keeps_stock_and_non_v50_cannot_write(self):
+        for shell in self.each_shell():
+            before={p.name:p.read_bytes() for p in self.hw.iterdir()}
+            self.args.write_bytes(b'androidboot.zte_boardid=99\0')
+            self.assertEqual(self.call(shell,'preinit').returncode,0)
+            self.args.write_bytes(b'androidboot.zte_boardid=1\0')
+            for model in ('f50','u30air'):
+                self.assertNotEqual(self.call(shell,'preinit',TEST_MODEL=model).returncode,0)
+                self.assertNotEqual(self.run_pair(shell,'apply','3','2',TEST_MODEL=model).returncode,0)
+            self.assertEqual(before,{p.name:p.read_bytes() for p in self.hw.iterdir()})
+            self.assertFalse((self.tmp/'commands').exists())
+
+    def test_preinit_is_in_the_common_loader_before_modem_control_exec(self):
+        loader=(BIN/'android-vendor-start').read_text()
+        self.assertLess(loader.index('mu300-v50-sim preinit'),loader.index('exec chroot $A "$modem_exe"'))
+        self.assertLess(loader.index('mu300-v50-cp-started'),loader.index('exec chroot $A "$modem_exe"'))
+        self.assertIn('CONFIG_ZTE_V50_SIM=y',(TOP/'upstream/mu300-mainline.config').read_text())
+        assembly=(TOP/'openwrt/build-rootfs.sh').read_text()
+        self.assertIn('chmod 0755 $R/opt/mu300/bin/mu300-v50-card-pair',assembly)
+
+    def test_production_shell_syntax(self):
+        import subprocess
+        for shell in self.each_shell():
+            for path in (BIN/'mu300-v50-sim',BIN/'mu300-v50-card-pair',BIN/'android-vendor-start',BIN/'mobile-data',
+                         TOP/'openwrt/build-rootfs.sh',TOP/'openwrt/luci-app-mu300/root/usr/libexec/unisoc-modem/data-sim'):
+                if path.read_text().startswith('#!/bin/bash') and os.path.basename(shell[0])!='bash':
+                    continue
+                result=subprocess.run(shell+['-n',str(path)],capture_output=True,text=True,timeout=15)
+                self.assertEqual(result.returncode,0,(str(path),result.stderr))
+
+    def test_saved_source_status_rejects_wrong_bank_and_multiline_values(self):
+        for shell in self.each_shell():
+            for a,b,want in [(3,2,[3,2]),(1,3,[None,None]),('0\n3','1\n2',[None,None])]:
+                self.state.write_text(json.dumps(dict(self.initial,v50_route0=a,v50_route1=b)))
+                result=self.call(shell,'status');self.assertEqual(result.returncode,0,result.stderr)
+                self.assertEqual(json.loads(result.stdout)['saved_routes'],want)
+
+    def test_pair_validates_every_stock_board_without_any_at(self):
+        allowed={0:([0],[1,2]),1:([0,3],[1,2]),2:([0,3],[1]),3:([0],[1])}
+        for shell in self.each_shell():
+            for board,(first,second) in allowed.items():
+                self.args.write_bytes(f'androidboot.zte_boardid={board}\0'.encode())
+                for a,b in [(0,1),(0,2),(3,1),(3,2),(1,0),(3,3),(99,1)]:
+                    result=self.run_pair(shell,'validate',str(a),str(b))
+                    self.assertEqual(result.returncode==0,a in first and b in second,(board,a,b,result.stderr))
+        self.assertFalse((self.tmp/'commands').exists())
+
+    def test_pair_changes_only_peer_and_keeps_data_and_rf_intent(self):
+        for shell in self.each_shell():
+            state=dict(self.initial,radio=[1,0]);self.state.write_text(json.dumps(state))
+            (self.hw/'chip_select').write_text('0\n');(self.hw/'psim_select').write_text('0\n')
+            (self.tmp/'commands').unlink(missing_ok=True)
+            result=self.run_pair(shell,'apply','0','2');self.assertEqual(result.returncode,0,result.stderr)
+            after=json.loads(self.state.read_text())
+            self.assertEqual([after['v50_route0'],after['v50_route1']],[0,2])
+            self.assertEqual((after['data_sim'],after['radio'],after['up']),(0,[1,0],True))
+            calls=(self.tmp/'commands').read_text()
+            self.assertNotIn('ifdown',calls);self.assertNotIn('ifup',calls)
+            self.assertNotIn('logical',calls);self.assertNotIn('SFUN=4',calls)
+
+    def test_pair_routes_both_stacks_restores_before_cp_and_runtime_boot_is_noop(self):
+        for shell in self.each_shell():
+            self.state.write_text(json.dumps(self.initial))
+            (self.hw/'chip_select').write_text('0\n');(self.hw/'psim_select').write_text('0\n')
+            (self.tmp/'commands').unlink(missing_ok=True)
+            result=self.run_pair(shell,'apply','3','2');self.assertEqual(result.returncode,0,result.stderr)
+            calls=(self.tmp/'commands').read_text()
+            self.assertEqual((calls.count('ifdown'),calls.count('ifup')),(1,1))
+            self.assertNotIn('logical',calls)
+            self.assertEqual(json.loads(self.state.read_text())['data_sim'],0)
+            for name in ('chip_select','psim_select'):(self.hw/name).write_text('0\n')
+            (self.tmp/'commands').unlink()
+            self.assertEqual(self.call(shell,'preinit').returncode,0)
+            result=self.sh(shell,'"$MU300_BIN/mobile-data" radio-locked "$MU300_BIN/mu300-v50-sim" boot',**self.extra)
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertFalse((self.tmp/'commands').exists())
+
+    def test_pair_failed_second_route_restores_both_gpio_settings_and_wan(self):
+        for shell in self.each_shell():
+            self.state.write_text(json.dumps(self.initial))
+            for name in ('chip_select','psim_select'):(self.hw/name).write_text('0\n')
+            # Fail the second bank specifically, after the first one changed.
+            (self.tmp/'failed-once').unlink(missing_ok=True)
+            result=self.run_pair(shell,'apply','3','2',FAIL_POWER_ON='1',FAIL_POWER_SLOT='1')
+            self.assertNotEqual(result.returncode,0)
+            self.assertIn('sim_switch_failed_restored',result.stderr)
+            self.assertEqual([int((self.hw/n).read_text()) for n in ('chip_select','psim_select')],[0,0])
+            state=json.loads(self.state.read_text());self.assertTrue(state['up'])
+            self.assertNotIn('v50_route0',state);self.assertNotIn('v50_route1',state)
+            self.assertFalse((self.run/'mu300/v50-switch-incomplete').exists())
+
+    def test_single_card_switch_updates_the_saved_pair_instead_of_reverting_next_boot(self):
+        for shell in self.each_shell():
+            self.state.write_text(json.dumps(dict(self.initial,v50_route0=0,v50_route1=1)))
+            (self.hw/'chip_select').write_text('0\n');(self.hw/'psim_select').write_text('0\n')
+            result=self.call(shell,'apply','2');self.assertEqual(result.returncode,0,result.stderr)
+            state=json.loads(self.state.read_text())
+            self.assertEqual([state['v50_route0'],state['v50_route1'],state['v50_card'],state['data_sim']],[0,2,2,1])
+
+    def test_ui_job_adapter_dispatches_valid_pair_and_rejects_invalid_board_pair(self):
+        (self.dash/'lock-jobs.sh').write_text((TOP/'openwrt/luci-app-mu300/root/usr/libexec/unisoc-modem/lock-jobs.sh').read_text())
+        adapter=self.tmp/'job-adapter'
+        adapter.write_text((TOP/'openwrt/luci-app-mu300/root/usr/libexec/unisoc-modem/data-sim').read_text().replace('/opt/mu300/bin/',str(self.stubs)+'/'))
+        self.stub('mu300-v50-card-pair',f'exec /bin/sh "{self.pair}" "$@"')
+        for shell in self.each_shell():
+            self.state.write_text(json.dumps(self.initial))
+            for name in ('chip_select','psim_select'):(self.hw/name).write_text('0\n')
+            result=self.script(shell,adapter,'apply','data','v50-pair-3-2',**self.extra)
+            self.assertEqual(result.returncode,0,result.stderr)
+            state=json.loads(self.state.read_text())
+            self.assertEqual([state['v50_route0'],state['v50_route1']],[3,2])
+            (self.tmp/'commands').unlink(missing_ok=True)
+            for bad in ('v50-pair-3-3','v50-pair-9-1','v50-pair-3-2;reboot'):
+                result=self.script(shell,adapter,'apply','data',bad,**self.extra)
+                self.assertNotEqual(result.returncode,0,bad)
+            self.assertFalse((self.tmp/'commands').exists())
+
+    def test_noop_pair_keeps_manual_data_off_and_runtime_boot_restores_both_routes(self):
+        for shell in self.each_shell():
+            self.state.write_text(json.dumps(dict(self.initial,autostart=False,up=False)))
+            for name in ('chip_select','psim_select'):(self.hw/name).write_text('0\n')
+            (self.tmp/'commands').unlink(missing_ok=True)
+            result=self.run_pair(shell,'apply','0','1');self.assertEqual(result.returncode,0,result.stderr)
+            self.assertFalse((self.tmp/'commands').exists())
+            self.state.write_text(json.dumps(dict(self.initial,v50_route0=3,v50_route1=2)))
+            result=self.sh(shell,'"$MU300_BIN/mobile-data" radio-locked "$MU300_BIN/mu300-v50-sim" boot',**self.extra)
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual([int((self.hw/n).read_text()) for n in ('chip_select','psim_select')],[1,1])
+            calls=(self.tmp/'commands').read_text()
+            self.assertIn('AT+SPACTCARD=0;+SFUN=2',calls)
+            self.assertIn('AT+SPACTCARD=1;+SFUN=2',calls)
+            self.assertNotIn('SFUN=4',calls);self.assertNotIn('ifdown',calls)
+
+    def test_save_failure_restores_pair_and_same_source_data_selection(self):
+        for shell in self.each_shell():
+            for same_source in (False,True):
+                self.state.write_text(json.dumps(dict(self.initial,v50_route0=0,v50_route1=1)))
+                for name in ('chip_select','psim_select'):(self.hw/name).write_text('0\n')
+                (self.tmp/'save-failed-once').unlink(missing_ok=True)
+                if same_source:result=self.call(shell,'apply','1',FAIL_SAVE_KEY='v50_route1')
+                else:result=self.run_pair(shell,'apply','3','2',FAIL_SAVE_KEY='v50_route1')
+                self.assertNotEqual(result.returncode,0)
+                state=json.loads(self.state.read_text())
+                self.assertEqual([state['v50_route0'],state['v50_route1'],state['v50_card'],state['data_sim']],[0,1,0,0])
+                self.assertEqual([int((self.hw/n).read_text()) for n in ('chip_select','psim_select')],[0,0])
+
+    def test_pair_busy_and_not_ready_never_touch_gpio_at_or_existing_owner(self):
+        for shell in self.each_shell():
+            for reason in ('data','lock','not-ready'):
+                gate=self.run/('unisoc-data-sim-switch' if reason=='data' else 'unisoc-modem-lock-apply')
+                if reason=='not-ready':(self.run/'mu300-dual-radio-ready').unlink()
+                else:gate.mkdir();(gate/'pid').write_text('existing-owner')
+                before=self.state.read_bytes()
+                gpio={p.name:p.read_bytes() for p in self.hw.iterdir()}
+                try:
+                    result=self.run_pair(shell,'apply','3','2')
+                    self.assertNotEqual(result.returncode,0)
+                    self.assertEqual(self.state.read_bytes(),before)
+                    self.assertEqual(gpio,{p.name:p.read_bytes() for p in self.hw.iterdir()})
+                    self.assertFalse((self.tmp/'commands').exists())
+                    if reason!='not-ready':self.assertEqual((gate/'pid').read_text(),'existing-owner')
+                finally:
+                    if reason=='not-ready':(self.run/'mu300-dual-radio-ready').touch()
+                    else:(gate/'pid').unlink();gate.rmdir()
 
     def call(self,shell,*args,**env):
         return self.script(shell,self.controller,*args,**dict(self.extra,**env))
@@ -103,6 +312,20 @@ else:sys.exit(2)
                     r=self.call(shell,'validate',str(n))
                     self.assertEqual(r.returncode==0,n in ids,(board,n,r.stderr))
         self.assertFalse((self.tmp/'commands').exists(),'status/validation sent a modem command')
+
+    def test_identity_slot_names_follow_live_mux_and_only_fitted_positions(self):
+        for shell in self.each_shell():
+            for board,cards in [(0,[0,1,2]),(1,[0,1,2,3]),(2,[0,1,3]),(3,[0,1])]:
+                self.args.write_bytes(f'androidboot.zte_boardid={board}\0'.encode())
+                for chip in (0,1):
+                    for psim in (0,1):
+                        (self.hw/'chip_select').write_text(str(chip))
+                        (self.hw/'psim_select').write_text(str(psim))
+                        status=json.loads(self.call(shell,'status').stdout)
+                        routes=[3 if psim else 0,2 if chip else 1]
+                        self.assertEqual(status['logical_cards'],[r if r in cards else None for r in routes])
+                        self.assertEqual(status['model'],'v50')
+        self.assertFalse((self.tmp/'commands').exists())
 
     def test_board_source_precedence_and_unknown_hardware_do_not_write(self):
         for shell in self.each_shell():

@@ -59,7 +59,7 @@ modemd_single_layout() {
         [ "$n" != 3 ] || [ "$(uci -q get unisoc_modem.main.sim_slots)" != 2 ] || continue
         urc= live=/run/mu300-at/urc/stty_nr0.log
         if [ "$n" = 4 ] && [ "$(uci -q get unisoc_modem.main.sim_slots)" = 2 ]; then
-            urc=3 live=/run/mu300-at4/urc/stty_nr3.log
+            urc=3 live=/run/mu300-at/urc/stty_nr0.log
         fi
         modemd_broker atd$n /dev/stty_nr$n /run/mu300-at$n "$urc" "$live" "$reopen" "$ready"
     done
@@ -69,7 +69,7 @@ modemd_sim2_layout() {
     MODEMD_BROKERS=
     modemd_broker atd /dev/stty_nr1 /run/mu300-at 0 /run/mu300-at/urc/stty_nr0.log 0 sbuf:sbuf_5_006
     modemd_broker atd2 /dev/stty_nr2 /run/mu300-at2 '' /run/mu300-at/urc/stty_nr0.log 0 sbuf:sbuf_5_006
-    modemd_broker atd4 /dev/stty_nr4 /run/mu300-at4 3 /run/mu300-at4/urc/stty_nr3.log 0 sbuf:sbuf_5_006
-    modemd_broker atd5 /dev/stty_nr5 /run/mu300-at5 '' /run/mu300-at4/urc/stty_nr3.log 0 sbuf:sbuf_5_006
+    modemd_broker atd4 /dev/stty_nr4 /run/mu300-at4 3 /run/mu300-at/urc/stty_nr0.log 0 sbuf:sbuf_5_006
+    modemd_broker atd5 /dev/stty_nr5 /run/mu300-at5 '' /run/mu300-at/urc/stty_nr0.log 0 sbuf:sbuf_5_006
     modemd_start 0
 }

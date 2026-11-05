@@ -15,18 +15,19 @@ export function registration_key(state, slot) {
     return sprintf('%d:%d:%s', slot, state.stat, state.rat ?? 'eps');
 };
 
-export function can_resume(status, wait_slot, selected, blocked) {
+export function can_resume(status, wait_slot, selected, blocked, device_ready) {
     if (blocked || type(status) != 'object' || status.proto != 'mu300cell' ||
         status.autostart !== true || status.up === true || status.pending === true ||
         status.available !== false || wait_slot !== selected)
         return false;
     for (let error in status.errors ?? [])
-        if (error.code != 'REGISTRATION_WAIT' && error.code != 'SIM_MISSING' && error.code != 'ROAMING_DISABLED')
+        if (error.code != 'REGISTRATION_WAIT' && error.code != 'SIM_MISSING' && error.code != 'ROAMING_DISABLED' &&
+            !(error.code == 'NO_DEVICE' && device_ready === true))
             return false;
     return true;
 };
 
-export function recovery(call, state, wait_slot, selected, blocked, previous, sim) {
+export function recovery(call, state, wait_slot, selected, blocked, previous, sim, device_present) {
     let status = call('status', {});
     let same_sim = type(sim) == 'object' && sim.slot === selected;
     if (same_sim && sim.state == 'absent') {
@@ -48,7 +49,8 @@ export function recovery(call, state, wait_slot, selected, blocked, previous, si
     if (status?.up === true)
         previous.attempted = false;
     if (key == null || previous.attempted ||
-        !can_resume(status, wait_slot, selected, blocked))
+        !can_resume(status, wait_slot, selected, blocked,
+                    device_present === true && same_sim && sim.state == 'ready' && registration_key(state, selected) != null))
         return false;
     // Set before notifying: the resulting netifd event must not loop.
     previous.attempted = true;

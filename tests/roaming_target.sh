@@ -4,6 +4,7 @@
 set -eu
 ucode /src/tests/roaming.uc
 ucode /src/tests/network_recovery.uc
+ucode /src/tests/dashboard_sim_presence.uc
 ucode -e "import * as checked from '/usr/share/ucode/mu300/registration.uc';"
 for script in /opt/mu300/bin/mu300-modemd /opt/mu300/bin/mu300-network-recovery /usr/libexec/unisoc-modem/roaming; do
  ucode -c -o /dev/null "$script"

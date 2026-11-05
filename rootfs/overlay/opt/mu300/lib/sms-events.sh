@@ -38,13 +38,20 @@ sms_event_decode() {
         *'"mu300.modem.urc"'*) ;;
         *) return ;;
     esac
+    # NR0 can announce a stored message for either card. Wake a scoped list
+    # query on both receivers; direct PDU spool/ACK ownership stays unchanged.
+    case "$1" in
+        *'"channel":"stty_nr0"'*'"line":"+CMTI:'*) sms_event=sync; return ;;
+    esac
+    # Spool completions are internal notifications, not another URC ingress.
+    # Preserve the pool owner so the same frame cannot be ACKed twice.
     case "${MU300_SIM_SLOT:-0}:$1" in
         0:*'"channel":"stty_nr0"'*|0:*'"channel":"stty_nr1"'*|0:*'"channel":"stty_nr2"'*|0:*'"channel":"stty_nr6"'*|0:*'"channel":"stty_nr7"'*|1:*'"channel":"stty_nr3"'*|1:*'"channel":"stty_nr4"'*|1:*'"channel":"stty_nr5"'*) ;;
         *) return ;;
     esac
     case "$1" in
         *'"line":"+CMT (PDU spooled)"'*|*'"line":"+CMT (not spooled)"'*) sms_event=spool ;;
-        *'"line":"+CMTI:'*) sms_event=sync ;;
+
     esac
 }
 # Wait until a relevant event or the real monotonic deadline. Unrelated radio

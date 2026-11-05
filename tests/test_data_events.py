@@ -5,6 +5,7 @@ import signal
 import subprocess
 import time
 import unittest
+from pathlib import Path
 from helpers import TOP, ShellTest, ucode
 from test_modemd import Base, has_modules, wait_for, UBUS, UBUSD
 import test_cellular_mobility as original
@@ -20,7 +21,7 @@ class DataEventFilter(ShellTest):
                         event=json.dumps({'mu300.modem.urc':{'channel':f'stty_nr{nr}','line':line}},separators=(',',':'))
                         r=self.sh(shell,'. '+str(LIB)+'\nwatch_event_decode "$EVENT"; printf "%s" "$watch_event"',MU300_SIM_SLOT=slot,EVENT=event)
                         self.assertEqual(r.returncode,0,r.stderr)
-                        self.assertEqual(r.stdout,'modem' if nr==slot*3 and not line.startswith('+CMTI') else '')
+                        self.assertEqual(r.stdout,'modem' if nr==0 and not line.startswith('+CMTI') else '')
 
     def test_only_selected_wan_but_sim_transaction_wakes_to_reresolve_slot(self):
         for shell in self.each_shell():
@@ -54,7 +55,9 @@ class DataEventBus(Base):
 trap 'exit 0' TERM INT
 watch_events_start || exit 9
 printf '%s' "$watch_event_pid" > "$STARTED"
+watch_clock; printf '%s' "$WATCH_NOW" > "$RESULT.start"
 watch_next
+printf '%s' "$WATCH_NOW" > "$RESULT.end"
 printf '%s|%s' "$watch_event" "$watch_events" > "$RESULT"
 '''
         env=dict(self.event_env,MU300_WATCH_INTERVAL=str(interval),fails=str(fails),STARTED=str(self.started),RESULT=str(self.result))
@@ -80,9 +83,13 @@ printf '%s|%s' "$watch_event" "$watch_events" > "$RESULT"
         self.send('network.interface',{'interface':'wan'});self.finish(p,'network|1')
 
     def test_unrelated_event_stream_does_not_extend_original_safety_deadline(self):
-        start=time.monotonic();p=self.receiver(interval=2)
+        p=self.receiver(interval=2)
         for _ in range(6):self.send('network.interface',{'interface':'other'});time.sleep(.2)
-        self.finish(p,'|1');self.assertLess(time.monotonic()-start,3.2)
+        self.finish(p,'|1')
+        # Measure inside the receiver; CLI/process startup under QEMU is not
+        # part of the event wait and must not be charged to its deadline.
+        elapsed=int(Path(str(self.result)+'.end').read_text())-int(Path(str(self.result)+'.start').read_text())
+        self.assertIn(elapsed,(2,3))
 
     def test_detach_confirmation_interval_is_not_shortened_by_burst(self):
         start=time.monotonic();p=self.receiver(interval=2,fails=1)

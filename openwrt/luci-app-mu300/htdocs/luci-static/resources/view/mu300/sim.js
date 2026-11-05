@@ -63,6 +63,7 @@ return view.extend({
         }
         paint(data[1],true);
         var v50=data[2]||{}, physicalSelect=null, physicalButton=null, physicalNote=null;
+        var pairSelects=[],pairButton=null;
         function physicalName(n) {
             return M.translate(n===3?'外置 SIM':'内置 SIM')+(n===3?'':' '+(n+1));
         }
@@ -71,6 +72,16 @@ return view.extend({
             if(!physicalButton)return;
             physicalButton.disabled=!r.ready||!!self.busy;
             physicalSelect.disabled=!r.ready||!!self.busy;
+            if(pairButton) {
+                pairButton.disabled=!r.ready||!!self.busy;
+                pairSelects.forEach(function(select,slot){
+                    select.disabled=!r.ready||!!self.busy;
+                    if(initial) {
+                        var saved=(r.saved_routes||[])[slot],current=saved==null?(r.logical_cards||[])[slot]:saved;
+                        if(current!=null&&Array.from(select.options).some(function(o){return o.value===String(current);}))select.value=String(current);
+                    }
+                });
+            }
             if(initial) {
                 var current=r.saved_card==null?r.active_card:r.saved_card;
                 if(current!=null)physicalSelect.value=String(current);
@@ -94,6 +105,37 @@ return view.extend({
             physicalRow.append(physicalLabel,physicalSelect,physicalButton);
             physicalNote=el('p',null,'mud-note');physicalBox.append(physicalNote);
             physicalBox.append(el('p',M.translate('内置 SIM 3 与内置 SIM 2 共用逻辑卡槽 SIM2；外置 SIM 与内置 SIM 1 共用 SIM1。射频、锁定及 AT 查看仍按两个逻辑卡槽控制。'),'mud-note'));
+            if((v50.cards||[]).length>2) {
+                var pairBox=el('div',null,'mud-data-sim');physicalBox.append(pairBox);
+                pairBox.append(el('h3',M.translate('卡源组合')));
+                pairBox.append(el('p',M.translate('分别选择两个逻辑栈接入的卡源，重启后保留。卡源选择不改变默认上网卡或射频开关。'),'mud-note'));
+                [0,1].forEach(function(slot){
+                    var row=el('div',null,'mud-data-sim-controls'),label=el('label','IMEI'+(slot+1)+' · '+M.translate('卡源'));
+                    var select=el('select');select.id='mud-v50-source'+slot;label.htmlFor=select.id;
+                    (v50.cards||[]).filter(function(id){return (id===0||id===3?0:1)===slot;}).forEach(function(id){
+                        var option=el('option',physicalName(id));option.value=String(id);select.append(option);
+                    });
+                    row.append(label,select);pairBox.append(row);pairSelects.push(select);
+                });
+                pairButton=el('button',M.translate('应用卡源组合'),'mud-btn');pairButton.type='button';pairButton.id='mud-v50-pair-apply';pairBox.append(pairButton);
+                pairButton.onclick=function(){
+                    if(self.busy)return;
+                    var first=Number(pairSelects[0].value),second=Number(pairSelects[1].value);
+                    self.busy=true;paintV50(v50,false);
+                    M.confirmBox('应用卡源组合？','IMEI1: '+physicalName(first)+' · IMEI2: '+physicalName(second),{danger:true}).then(function(yes){
+                        if(!yes||!root.isConnected)return;
+                        var toast=M.toast('正在应用卡源组合…',{type:'busy',timeout:0});
+                        return start('v50-pair-'+first+'-'+second).then(function(r){
+                            if(!r.ok||!r.id)throw new Error(r.error||'网络设置提交失败');return wait(r.id);
+                        }).then(function(){M.toast('卡源组合已保存',{type:'success'});})
+                          .catch(function(e){if(root.isConnected)M.toast(message(e.message),{type:'error'});})
+                          .finally(function(){toast.close();});
+                    }).finally(function(){
+                        self.busy=false;
+                        if(root.isConnected)getV50().then(function(r){if(root.isConnected)paintV50(r,true);}).catch(function(){paintV50(v50,false);});
+                    });
+                };
+            }
             paintV50(v50,true);
             physicalButton.onclick=function(){
                 if(self.busy)return;

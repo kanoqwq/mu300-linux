@@ -154,6 +154,23 @@ echo "$ip4/$prefix4"
             self.assertEqual(r.returncode, 0, r.stderr)
             self.assertEqual(r.stdout.splitlines(), ['pdp', 'pdp'])
 
+    def test_native_event_source_observes_either_bank_without_waiting_for_nr3_log(self):
+        start=SOURCE.index('( # NR0 is the shared unsolicited source.')
+        producer=SOURCE[start:SOURCE.index('\nrenew_pending=0',start)]
+        self.stub('ubus', '''
+echo "listen $*" >>"$STUBLOG/calls"
+printf '%s\\n' '{"mu300.modem.urc":{"channel":"stty_nr0","line":"+CGEV: NW PDN DEACT 1"}}' '{"mu300.modem.urc":{"channel":"stty_nr3","line":"+CGEV: ME PDN ACT 11"}}'
+''')
+        self.stub('tail','echo tail >>"$STUBLOG/calls"; exit 1')
+        for shell in self.each_shell():
+            self.calls.unlink(missing_ok=True)
+            r=self.sh(shell,'native_events=1; config=wan; events="$STUBLOG/events"; pdp_pending="$STUBLOG/pending"\n'+producer+'\nwait "$urcmon"; cat "$events"; rm -f "$pdp_pending"')
+            self.assertEqual(r.returncode,0,r.stderr)
+            self.assertEqual(r.stdout.splitlines(),['pdp'])
+            calls=self.calls.read_text()
+            self.assertIn('listen -S listen mu300.modem.urc mu300cell-wan',calls)
+            self.assertNotIn('tail',calls)
+
     def test_setup_starts_one_monitor_for_each_pdp_family(self):
         proto = (MONITOR.parent / 'mu300cell.sh').read_text()
         setup = proto[proto.index('proto_mu300cell_setup() {'):proto.index('\nproto_mu300cell_renew()')]
@@ -177,6 +194,51 @@ proto_mu300cell_setup wan
                 commands = [line for line in self.calls.read_text().splitlines() if line.startswith('run ')]
                 self.assertEqual(len(commands), 1)
                 self.assertIn('mu300cell-v6.sh wan mob_sipa 10.0.0.2 8 1.1.1.1 8.8.8.8 1  0', commands[0])
+
+
+class PendingEvent(ShellTest):
+    def setUp(self):
+        super().setUp()
+        self.code=SOURCE[SOURCE.index('retry_due=0 retry_step=0'):SOURCE.index('\nlast_v6=$(v6_snapshot)')] + '\nexec 3</dev/null\n'
+
+    def test_busy_event_retries_then_success_clears_deadline(self):
+        for shell in self.each_shell():
+            r=self.sh(shell,self.code+'''
+monitor_clock() { MONITOR_NOW=100; }
+refresh_bearer() { return "$RESULT"; }
+RESULT=1
+for i in 1 2 3 4 5; do refresh_event cgev || :; echo "$retry_due"; done
+RESULT=0; refresh_event cgev; echo "$retry_due:$retry_step"
+RESULT=2; rc=0; refresh_event cgev || rc=$?; echo "$rc:$retry_due"
+''')
+            self.assertEqual(r.returncode,0,r.stderr)
+            self.assertEqual(r.stdout.splitlines(),['101','103','105','107','101','0:0','2:0'])
+
+    def test_other_events_do_not_postpone_pending_retry(self):
+        for shell in self.each_shell():
+            r=self.sh(shell,self.code+'''
+retry_due=103; ticks=0; renew_pending=0
+monitor_clock() { ticks=$((ticks+1)); MONITOR_NOW=$((99+ticks)); }
+read() { event=v6; return 0; }
+for i in 1 2 3 4; do read_event; echo "$event:$retry_due"; done
+''')
+            self.assertEqual(r.returncode,0,r.stderr)
+            self.assertEqual(r.stdout.splitlines(),['v6:103','v6:103','v6:103','pdp-retry:103'])
+
+    def test_renew_interrupt_retains_pending_event_and_idle_read_has_no_deadline(self):
+        for shell in self.each_shell():
+            r=self.sh(shell,self.code+'''
+retry_due=103; renew_pending=0
+monitor_clock() { MONITOR_NOW=100; }
+read() { renew_pending=1; return 1; }
+rc=0; read_event || rc=$?; echo "$rc:$retry_due"
+retry_due=0
+monitor_clock() { echo unexpected-clock; return 1; }
+read() { event=v6; return 0; }
+read_event; echo "$event:$retry_due"
+''')
+            self.assertEqual(r.returncode,0,r.stderr)
+            self.assertEqual(r.stdout.splitlines(),['1:103','v6:0'])
 
 
 class Watchdog(ShellTest):

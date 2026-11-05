@@ -135,7 +135,8 @@ docker run --rm --platform linux/arm64 \
   -v "$SML_CHECK":/in/sml-voltage-check:ro \
   -v "$MODEM_LOADER_PATCH":/in/modem-loader-patch:ro \
   -v "$TOP/rootfs/overlay/opt/mu300":/in/opt-mu300:ro -v "$TOP/rootfs/overlay/usr/share/ucode/mu300":/in/ucode-mu300:ro -v "$TOP/openwrt/overlay":/in/overlay:ro \
-  -v "$TOP/openwrt/patches/fw4-sipa-offload.patch":/in/fw4-sipa-offload.patch:ro \
+  -v "$TOP/tools/stage-flow-offload.py":/in/stage-flow-offload.py:ro \
+  -v "$TOP/tools/stage-ra-renew.py":/in/stage-ra-renew.py:ro \
   -v "$TOP/openwrt/patches/wifi-scripts-no-dfs.patch":/in/wifi-scripts-no-dfs.patch:ro \
   -v "$TOP/boot/module-order.txt":/in/module-order.txt:ro -v "$IN/out/modules":/in/modules:ro \
   $(opt out/modules.builtin modules.builtin) $(opt out/modules.builtin.modinfo modules.builtin.modinfo) \
@@ -198,6 +199,7 @@ chmod 0755 $R/opt/mu300/bin/sml-voltage-check
 cp /in/modem-loader-patch $R/opt/mu300/bin/modem-loader-patch
 chmod 0755 $R/opt/mu300/bin/modem-loader-patch
 cp -a /in/overlay/. $R/
+python3 /in/stage-ra-renew.py --root $R --overlay /in/overlay
 # Do not retain the retired call helpers from an older base image.
 rm -f $R/opt/mu300/bin/mu300-voice $R/opt/mu300/bin/mu300-audio-dsp
 mkdir -p $R/usr/share/ucode/mu300
@@ -227,6 +229,7 @@ chmod 0755 $R/opt/mu300/bin/mu300-network-recovery $R/etc/init.d/mu300-network-r
 chmod 0755 $R/etc/uci-defaults/92-mu300-uhttpd-key
 chmod 0755 $R/opt/mu300/bin/v50-led-status
 chmod 0755 $R/opt/mu300/bin/mu300-v50-sim
+chmod 0755 $R/opt/mu300/bin/mu300-v50-card-pair
 chmod 0755 $R/opt/mu300/bin/mu300-charge-mode $R/opt/mu300/bin/mu300-modem-coldboot $R/etc/init.d/mu300-charge-mode
 chmod 0755 $R/opt/mu300/bin/openwrt-board-check
 chmod 0755 $R/opt/mu300/bin/ra-deprecate $R/opt/mu300/bin/wcn-reopen
@@ -241,11 +244,10 @@ done
 grep -q "mediaurlbase .*/luci-static/aurora" $R/etc/config/luci || {
     echo "Aurora theme is not the LuCI default" >&2; exit 1;
 }
-# mu300cell reports sipa_eth0 as l3_device only. fw4 otherwise omits it from
-# its software flowtable, leaving cellular downlink on the slow forwarding path.
-# Fail the build if a changed fw4 version no longer matches this targeted patch.
+# Resolve bridge/VLAN ports and active zone L3 devices for both kernel series.
+# No fixed SIPA index; preserve user software/hardware offload choices.
+python3 /in/stage-flow-offload.py --root $R
 apk_retry add patch >/dev/null
-patch --batch --fuzz=0 -d $R -p1 -i /in/fw4-sipa-offload.patch
 patch --batch --fuzz=0 -d $R -p1 -i /in/wifi-scripts-no-dfs.patch
 grep -q "device_no_dfs(config);" $R/usr/share/ucode/wifi/hostapd.uc || { echo "wifi-scripts DFS patch not applied" >&2; exit 1; }
 if [ -d /in/luci-plugin ]; then
