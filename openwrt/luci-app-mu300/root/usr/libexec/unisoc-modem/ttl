@@ -8,22 +8,28 @@ json_str() { ucode -e 'import * as fs from "fs"; print(sprintf("%J", fs.readfile
 TTL_CMD=${MU300_TTL_CMD:-/usr/libexec/unisoc-modem/ttl-engine}
 
 error() { printf '{"ok":0,"error":%s}\n' "$(printf '%s' "$1" | json_str)"; exit 0; }
-num() { case $1 in ''|*[!0-9]*) return 1 ;; esac; }
+num() { case $1 in ''|0*|*[!0-9]*) return 1 ;; esac; }
 
 do_get() {
     st=$("$TTL_CMD" state 2>/dev/null) || error '无法读取 TTL 设置'
     v=$(printf '%s\n' "$st" | sed -n 's/^TTL=//p' | head -n1)
     b=$(printf '%s\n' "$st" | sed -n 's/^BACKEND=//p' | head -n1)
     o=$(printf '%s\n' "$st" | sed -n 's/^OFFLOAD=//p' | head -n1)
+    mode=$(printf '%s\n' "$st" | sed -n 's/^MODE=//p' | head -n1)
+    hw=$(printf '%s\n' "$st" | sed -n 's/^OFFLOAD_HW=//p' | head -n1)
+    paused=$(printf '%s\n' "$st" | sed -n 's/^HW_PAUSED=//p' | head -n1)
+    case $mode in egress|legacy) ;; *) mode=none ;; esac
+    case $hw in 0|1) ;; *) hw=null ;; esac
+    case $paused in 1) ;; *) paused=0 ;; esac
     ifs=$(printf '%s\n' "$st" | sed -n 's/^IFACES=//p' | head -n1)
     case $b in nft) ;; *) b=none ;; esac
-    if num "$v" && [ "$v" -ge 1 ] && [ "$v" -le 255 ]; then en=1; else en=0; v=null; fi
+    if num "$v" && [ "${#v}" -le 3 ] && [ "$v" -ge 1 ] && [ "$v" -le 255 ]; then en=1; else en=0; v=null; fi
     case $o in 0|1) ;; *) o=null ;; esac
     list= sep=
     for i in $ifs; do
         case $i in sipa_eth[0-9]|sipa_eth[0-9][0-9]) list="$list$sep\"$i\""; sep=, ;; esac
     done
-    printf '{"ok":1,"enabled":%s,"value":%s,"backend":"%s","offload":%s,"iface":[%s]}\n' "$en" "$v" "$b" "$o" "$list"
+    printf '{"ok":1,"enabled":%s,"value":%s,"backend":"%s","mode":"%s","offload":%s,"offload_hw":%s,"hw_paused":%s,"iface":[%s]}\n' "$en" "$v" "$b" "$mode" "$o" "$hw" "$paused" "$list"
 }
 
 do_set() {

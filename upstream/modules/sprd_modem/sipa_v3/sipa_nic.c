@@ -345,10 +345,16 @@ static int sipa_nic_rm_res_request(struct sipa_nic *nic)
 		ret = sipa_rm_request_resource(nic->rm_res.cons);
 		spin_lock_irqsave(&res->lock, flags);
 		res->need_request = false;
-		if (ret == -EINPROGRESS)
-			res->request_in_progress = true;
-		else
+		if (ret != -EINPROGRESS) {
 			res->request_in_progress = false;
+			res->rm_flow_ctrl = 0;
+			if (ret)
+				res->need_request = true;
+		} else if (!res->request_in_progress) {
+			/* GRANTED may complete before request_resource returns.
+			 * Never re-arm a wait after its wakeup has already run. */
+			ret = 0;
+		}
 
 		spin_unlock_irqrestore(&res->lock, flags);
 	}

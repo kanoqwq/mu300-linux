@@ -62,12 +62,16 @@ return view.extend({
 		}
 
 		var rule = st.backend === 'nft' ? 'nftables' : '--';
+		if (st.enabled && st.mode === 'egress' && !ifs.length) rule = _('等待蜂窝接口，出现后自动应用。');
+		else if (st.enabled && st.mode === 'legacy') rule = _('旧规则，请重新应用 TTL');
 		var rows = [
 			[ _("当前设置"), st.enabled ? _("固定为 %d").format(st.value) : _("保持不变（默认）") ],
 			[ _("生效规则"), rule ]
 		];
 		if (st.offload === 0 || st.offload === 1)
-			rows.push([ _("流量卸载"), st.offload ? _("已启用") : _("已禁用") ]);
+			rows.push([ _("软件流量卸载"), st.offload ? _("已启用") : _("已禁用") ]);
+		if (st.hw_paused === 1)
+			rows.push([ _('硬件流量卸载'), _('固定 TTL 期间暂停') ]);
 		var card = E('section', { 'class': 'mud-card', 'id': 'mud-ttl' }, [
 			E('h3', {}, _("蜂窝网络 TTL")),
 			E('div', { 'class': 'mud-note' },
@@ -76,7 +80,7 @@ return view.extend({
 			return E('div', { 'class': 'mud-r' }, [ E('span', { 'class': 'mud-k' }, [ r[0] ]), E('span', { 'class': 'mud-v' }, [ r[1] ]) ]);
 		})));
 		card.appendChild(E('div', { 'class': 'mud-note', 'id': 'mud-ttl-nft' },
-				_("启用后会关闭防火墙流量卸载，可能降低转发性能；关闭 TTL 后恢复由本功能修改的卸载设置。")));
+				_("固定 TTL 可与软件流量卸载同时使用；IPv6 邻居发现等控制报文保持原值。启用期间暂停硬件流量卸载，关闭 TTL 后恢复原设置。")));
 
 		var actions = E('div', { 'style': 'display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0' });
 		[ 64, 65, 128 ].forEach(function(n) {

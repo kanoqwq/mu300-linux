@@ -51,14 +51,16 @@ static void sipa_eth_flowctrl_handler(void *priv, int flowctrl)
 	struct net_device *dev = sipa_eth->netdev;
 	unsigned long flags;
 
+	/* Share the same lock as TX's final RM-state check and stop. The
+	 * queue-stopped test must be inside it, or an early grant can miss stop. */
+	spin_lock_irqsave(&queue_lock, flags);
 	if (flowctrl) {
 		netif_stop_queue(dev);
 	} else if (netif_queue_stopped(dev)) {
-		spin_lock_irqsave(&queue_lock, flags);
 		netif_wake_queue(dev);
-		spin_unlock_irqrestore(&queue_lock, flags);
 		pr_info("wakeup queue on dev %s\n", dev->name);
 	}
+	spin_unlock_irqrestore(&queue_lock, flags);
 }
 
 static void sipa_eth_notify_cb(void *priv, enum sipa_evt_type evt,

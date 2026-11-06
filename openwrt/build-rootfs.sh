@@ -264,7 +264,7 @@ if [ -d /in/luci-plugin ]; then
     chmod 0755 $R/usr/libexec/rpcd/unisoc-nfc
     chmod 0755 $R/usr/libexec/rpcd/unisoc-roaming
     chmod 0600 $R/etc/config/unisoc_apn
-    chmod 0755 $R/etc/init.d/unisoc-ttl $R/etc/hotplug.d/iface/92-unisoc-ttl $R/etc/uci-defaults/98-unisoc-ttl
+    chmod 0755 $R/etc/init.d/unisoc-ttl $R/etc/hotplug.d/iface/92-unisoc-ttl $R/etc/hotplug.d/net/92-unisoc-ttl $R/etc/uci-defaults/98-unisoc-ttl
     chmod 0755 $R/etc/uci-defaults/97-unisoc-upgrade-policy
     chmod 0755 $R/etc/init.d/unisoc-modem-ui $R/etc/init.d/unisoc-sms-forward $R/etc/init.d/unisoc-traffic $R/etc/hotplug.d/net/90-unisoc-usb-host $R/etc/hotplug.d/iface/90-unisoc-usb-host $R/usr/libexec/rpcd/mu300dash $R/usr/libexec/unisoc-modem/*
     # rpcd refuses world-writable plugins from a Windows bind mount.

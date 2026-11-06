@@ -1,0 +1,6 @@
+#!/bin/sh
+# Egress bindings follow real cellular devices, including after CP reset.
+case "${ACTION:-}:${INTERFACE:-${DEVICENAME:-}}" in
+    add:sipa_eth[0-9]|add:sipa_eth[0-9][0-9]|remove:sipa_eth[0-9]|remove:sipa_eth[0-9][0-9]|move:sipa_eth[0-9]|move:sipa_eth[0-9][0-9])
+        /usr/libexec/unisoc-modem/ttl-engine apply || logger -t unisoc-ttl 'Failed to refresh cellular TTL hooks';;
+esac

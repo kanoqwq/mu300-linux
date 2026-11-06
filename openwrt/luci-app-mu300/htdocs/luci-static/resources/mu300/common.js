@@ -204,7 +204,12 @@ var DASH_I18N = {
 	"无法应用 TTL 设置": ["Cannot apply TTL settings", "TTL ayarı uygulanamadı"],
 	"TTL 无效": ["Invalid TTL", "Geçersiz TTL"],
 	"设置蜂窝出口数据包的 TTL 和 IPv6 跳数限制；仅影响蜂窝网络，不改变 Wi-Fi 或 USB 局域网。": ["Set the TTL and IPv6 hop limit of cellular outbound packets. Local Wi-Fi and USB traffic are unchanged.", "Hücresel çıkışın TTL ve IPv6 atlama sınırını ayarlar. Yerel Wi-Fi ve USB trafiğini değiştirmez."],
-	"启用后会关闭防火墙流量卸载，可能降低转发性能；关闭 TTL 后恢复由本功能修改的卸载设置。": ["Enabling TTL disables firewall flow offloading and may reduce forwarding performance. Turning TTL off restores offloading settings changed by this feature.", "TTL etkinleştirilince akış hızlandırması kapatılır; performans düşebilir. Kapatıldığında bu özelliğin değiştirdiği ayarlar geri yüklenir."],
+	"固定 TTL 可与软件流量卸载同时使用；IPv6 邻居发现等控制报文保持原值。启用期间暂停硬件流量卸载，关闭 TTL 后恢复原设置。": ["Fixed TTL works with software flow offloading. IPv6 neighbor discovery and other control packets keep their original hop limit. Hardware flow offloading is paused while fixed TTL is enabled, then restored when TTL is turned off.", "Sabit TTL, yazılımsal akış hızlandırmasıyla birlikte çalışır. IPv6 komşu keşfi ve diğer kontrol paketlerinin atlama sınırı korunur. Sabit TTL açıkken donanımsal akış hızlandırması duraklatılır; TTL kapatılınca geri yüklenir."],
+	"软件流量卸载": ["Software flow offloading", "Yazılımsal akış hızlandırma"],
+	"硬件流量卸载": ["Hardware flow offloading", "Donanımsal akış hızlandırma"],
+	"固定 TTL 期间暂停": ["Paused while fixed TTL is enabled", "Sabit TTL açıkken duraklatıldı"],
+	"等待蜂窝接口，出现后自动应用。": ["Waiting for a cellular interface; applies automatically when it appears.", "Hücresel arayüz bekleniyor; oluştuğunda otomatik uygulanır."],
+	"旧规则，请重新应用 TTL": ["Legacy rules; apply TTL again", "Eski kurallar; TTL ayarını yeniden uygulayın"],
 
     "自动模式兼容性": ["Automatic mode compatibility", "Otomatik mod uyumluluğu"],
     "机型默认": ["Model default", "Model varsayılanı"],

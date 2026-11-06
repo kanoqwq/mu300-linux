@@ -38,12 +38,18 @@
 static struct dentry *root;
 #endif
 
+static DEFINE_SPINLOCK(queue_lock);
+
 static void sipa_usb_flowctrl_handler(void *priv, int flowctrl)
 {
 	struct sipa_usb *usb = (struct sipa_usb *)priv;
 
+	unsigned long flags;
+
+	spin_lock_irqsave(&queue_lock, flags);
 	if (netif_queue_stopped(usb->ndev))
 		netif_wake_queue(usb->ndev);
+	spin_unlock_irqrestore(&queue_lock, flags);
 }
 
 static void sipa_usb_notify_cb(void *priv, enum sipa_evt_type evt,
@@ -70,6 +76,7 @@ static netdev_tx_t sipa_usb_start_xmit(struct sk_buff *skb,
 	struct net_device_stats *stats;
 	int ret = 0;
 	int netid;
+	unsigned long flags;
 
 	stats = usb->stats;
 	if (usb->state != DEV_ON) {
@@ -86,7 +93,7 @@ static netdev_tx_t sipa_usb_start_xmit(struct sk_buff *skb,
 	if (unlikely(ret)) {
 		stats->tx_dropped++;
 		dev_kfree_skb_any(skb);
-		return ret;
+		return NETDEV_TX_OK;
 	}
 
 	ret = sipa_nic_tx(usb->nic_id, pdata->src_id, netid, skb);
@@ -95,10 +102,17 @@ static netdev_tx_t sipa_usb_start_xmit(struct sk_buff *skb,
 		if (ret == -EAGAIN || ret == -EINPROGRESS) {
 			stats->tx_dropped++;
 			stats->tx_errors++;
-			netif_stop_queue(ndev);
+			spin_lock_irqsave(&queue_lock, flags);
+			if (ret == -EAGAIN || sipa_nic_check_flow_ctrl(usb->nic_id))
+				netif_stop_queue(ndev);
+			spin_unlock_irqrestore(&queue_lock, flags);
 			sipa_nic_trigger_flow_ctrl_work(usb->nic_id, ret);
 			return NETDEV_TX_BUSY;
 		}
+		/* Hard failure leaves ownership with us; do not leak/count success. */
+		stats->tx_dropped++;
+		dev_kfree_skb_any(skb);
+		return NETDEV_TX_OK;
 	}
 
 	/* update netdev statistics */

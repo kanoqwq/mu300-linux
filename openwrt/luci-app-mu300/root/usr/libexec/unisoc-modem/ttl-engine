@@ -1,62 +1,112 @@
 #!/bin/sh
-# Explicit nftables backend. One transaction replaces only our cellular table.
-# fw4 offloading bypasses postrouting, so it must be off while TTL rewriting is on.
+# Cellular TTL at netdev egress: both routed and software-offloaded packets.
+# Keep software offloading/user choices; only hardware bypass must be paused.
 set -eu
 CONF=${MU300_TTL_CONF:-/etc/mu300/ttl.conf}
 LOCK=${MU300_TTL_LOCK:-/var/lock/unisoc-ttl.lock}
+NET=${MU300_TTL_SYS_NET:-/sys/class/net}
 MARK=${CONF%/*}/ttl.offload-off
-TABLE='inet mu300_ttl'
+PENDING=${CONF%/*}/ttl.offload-pending
 saved() { sed -n 's/^TTL=\([0-9]*\)$/\1/p' "$CONF" 2>/dev/null | tail -n1; }
 valid() { case ${1:-} in ''|0*|*[!0-9]*) return 1;; esac; [ ${#1} -le 3 ] && [ "$1" -le 255 ]; }
-offload_restore() {
-    [ -f "$MARK" ] || return 0
-    while IFS= read -r key; do
-        case "$key" in flow_offloading|flow_offloading_hw) ;; *) return 1;; esac
-        uci set "firewall.@defaults[0].$key=1" || return 1
-    done < "$MARK"
-    uci commit firewall || return 1
-    fw4 -q reload || return 1
-    rm -f "$MARK"
+cellular() { case "$1" in sipa_eth[0-9]|sipa_eth[0-9][0-9]) return 0;; *) return 1;; esac; }
+interfaces() {
+    for path in "$NET"/sipa_eth*; do
+        [ -d "$path" ] || continue
+        name=${path##*/}
+        cellular "$name" && printf '%s\n' "$name"
+    done
+    return 0
 }
-offload_disable() {
-    changed=0
+marked() { grep -qx "$1" "$MARK" 2>/dev/null; }
+validate_offload() {
+    if [ -f "$MARK" ]; then
+        while IFS= read -r key || [ -n "$key" ]; do
+            case "$key" in flow_offloading|flow_offloading_hw) ;; *) echo 'Invalid saved offload record' >&2; return 1;; esac
+        done < "$MARK"
+    fi
     for key in flow_offloading flow_offloading_hw; do
         v=$(uci -q get "firewall.@defaults[0].$key" || true)
-        case "$v" in 1)
-            # Record ownership before changing a persistent firewall setting.
-            grep -qx "$key" "$MARK" 2>/dev/null || { printf '%s\n' "$key" >> "$MARK" || return 1; }
-            uci set "firewall.@defaults[0].$key=0" || return 1
-            changed=1;;
-        ''|0) ;; *) echo 'Invalid firewall offloading setting' >&2; return 1;; esac
+        case "$v" in ''|0|1) ;; *) echo 'Invalid firewall offloading setting' >&2; return 1;; esac
     done
-    if [ "$changed" = 1 ] || [ -f "$MARK" ]; then uci commit firewall && fw4 -q reload; fi
+}
+reload_pending() {
+    [ -f "$PENDING" ] || return 0
+    uci commit firewall && fw4 -q reload || return 1
+    rm -f "$PENDING"
+}
+pause_hardware() {
+    v=$(uci -q get 'firewall.@defaults[0].flow_offloading_hw' || true)
+    if [ "$v" = 1 ]; then
+        # Record ownership before changing the persistent firewall option.
+        marked flow_offloading_hw || printf '%s\n' flow_offloading_hw >> "$MARK" || return 1
+        : > "$PENDING" || return 1
+        uci set 'firewall.@defaults[0].flow_offloading_hw=0' || return 1
+    fi
+    reload_pending
+}
+restore_legacy_software() {
+    marked flow_offloading || return 0
+    # New egress rules must already exist before restoring the old fast path.
+    : > "$PENDING" || return 1
+    uci set 'firewall.@defaults[0].flow_offloading=1' || return 1
+    reload_pending || return 1
+    sed '/^flow_offloading$/d' "$MARK" > "$MARK.tmp" || return 1
+    if [ -s "$MARK.tmp" ]; then mv "$MARK.tmp" "$MARK"; else rm -f "$MARK.tmp" "$MARK"; fi
+}
+restore_offload() {
+    if [ -f "$MARK" ]; then
+        : > "$PENDING" || return 1
+        while IFS= read -r key || [ -n "$key" ]; do
+            uci set "firewall.@defaults[0].$key=1" || return 1
+        done < "$MARK"
+    fi
+    reload_pending || return 1
+    rm -f "$MARK"
+}
+render_rules() {
+    value=$1
+    # One atomic batch also retires the previous postrouting implementation.
+    printf '%s\n' 'add table inet mu300_ttl' 'delete table inet mu300_ttl' \
+        'add table netdev mu300_ttl' 'delete table netdev mu300_ttl'
+    [ -n "$value" ] || return 0
+    printf '%s\n' 'table netdev mu300_ttl {'
+    for name in $(interfaces); do
+        printf ' chain egress_%s {\n  type filter hook egress device "%s" priority 0; policy accept;\n' "$name" "$name"
+        # Link-local/multicast control traffic keeps its protocol-defined TTL.
+        printf '%s\n' '  ip daddr { 169.254.0.0/16, 224.0.0.0/4, 255.255.255.255 } return'
+        printf '  ip ttl set %s counter\n' "$value"
+        printf '%s\n' '  ip6 daddr { fe80::/10, ff00::/8 } return' \
+            '  meta l4proto ipv6-icmp icmpv6 type { 130, 131, 132, 133, 134, 135, 136, 137, 143 } return'
+        printf '  ip6 hoplimit set %s counter\n }\n' "$value"
+    done
+    printf '}\n'
 }
 clear_rule() {
-    if nft list table $TABLE >/dev/null 2>&1; then nft delete table $TABLE || return 1; fi
+    if nft list table netdev mu300_ttl >/dev/null 2>&1 || nft list table inet mu300_ttl >/dev/null 2>&1; then
+        render_rules '' | nft -f - || return 1
+    fi
+    return 0
 }
 apply_value() {
     value=$1
-    if [ -z "$value" ]; then clear_rule || return 1; offload_restore; return; fi
+    validate_offload || return 1
+    if [ -z "$value" ]; then clear_rule || return 1; restore_offload; return; fi
     valid "$value" || { echo 'Invalid saved TTL' >&2; return 2; }
-    offload_disable || { echo 'Cannot disable firewall offloading; TTL was not applied' >&2; return 1; }
-    # add + delete + create in one batch also handles the first application.
-    nft -f - <<EOF
-add table $TABLE
-delete table $TABLE
-table $TABLE {
- chain postrouting {
-  type filter hook postrouting priority mangle; policy accept;
-  oifname "sipa_eth*" ip ttl set $value counter
-  oifname "sipa_eth*" ip6 hoplimit set $value counter
- }
-}
-EOF
+    pause_hardware || { echo 'Cannot pause hardware offloading; TTL was not applied' >&2; return 1; }
+    render_rules "$value" | nft -f - || return 1
+    restore_legacy_software
 }
 state() {
-    v=$(saved)
-    if nft list table $TABLE >/dev/null 2>&1; then backend=nft; else backend=none; fi
-    offload=$(uci -q get 'firewall.@defaults[0].flow_offloading' || true)
-    printf 'TTL=%s\nBACKEND=%s\nIFACES=\nOFFLOAD=%s\n' "$v" "$backend" "$offload"
+    v=$(saved); backend=none; mode=none; ifaces=
+    if rules=$(nft list table netdev mu300_ttl 2>/dev/null); then
+        backend=nft; mode=egress
+        ifaces=$(printf '%s\n' "$rules" | sed -n 's/^[[:space:]]*chain egress_\(sipa_eth[0-9][0-9]*\)[[:space:]]*{.*/\1/p' | tr '\n' ' ' | sed 's/ $//')
+    elif nft list table inet mu300_ttl >/dev/null 2>&1; then backend=nft; mode=legacy; fi
+    sw=$(uci -q get 'firewall.@defaults[0].flow_offloading' || true)
+    hw=$(uci -q get 'firewall.@defaults[0].flow_offloading_hw' || true)
+    paused=0; marked flow_offloading_hw && paused=1
+    printf 'TTL=%s\nBACKEND=%s\nMODE=%s\nIFACES=%s\nOFFLOAD=%s\nOFFLOAD_HW=%s\nHW_PAUSED=%s\n' "$v" "$backend" "$mode" "$ifaces" "$sw" "$hw" "$paused"
 }
 case ${1:-state} in
 state|status) state; exit;;
@@ -66,13 +116,15 @@ off|apply) ;;
 esac
 mkdir -p "${CONF%/*}" "${LOCK%/*}"
 exec 9>"$LOCK"
-flock -n -x 9 || { echo 'TTL operation is busy; retry shortly' >&2; exit 75; }
+# Hotplug waits and enumerates again, so the last new interface is not lost.
+if [ "$1" = apply ]; then flock -w 10 -x 9; else flock -n -x 9; fi || {
+    echo 'TTL operation is busy; retry shortly' >&2; exit 75;
+}
 old=$(saved)
 case $1 in
 set)
-    apply_value "$2" || exit $?
     printf 'TTL=%s\n' "$2" > "$CONF.tmp"
-    mv "$CONF.tmp" "$CONF";;
+    if apply_value "$2"; then mv "$CONF.tmp" "$CONF"; else code=$?; rm -f "$CONF.tmp"; exit "$code"; fi;;
 off) apply_value ''; rm -f "$CONF";;
 apply) apply_value "$old";;
 esac
