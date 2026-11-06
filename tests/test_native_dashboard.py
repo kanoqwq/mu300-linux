@@ -10,6 +10,21 @@ from helpers import TOP, ucode
 from native_dashboard_fixture import Snapshot
 
 class NativeSnapshot(unittest.TestCase):
+    def test_traffic_ledger_follows_view_and_actual_data_card(self):
+        with tempfile.TemporaryDirectory() as temp:
+            s=Snapshot(Path(temp))
+            first={'slot':0,'today_used':10,'month_used':20,'remaining':None,'plan_name':'first'}
+            second={'slot':1,'today_used':12000000,'month_used':99000000,'remaining':501000000,'plan_name':'second'}
+            s.write('run/unisoc-modem-traffic/view.json',json.dumps(first))
+            s.write('run/unisoc-modem-traffic/sim1/view.json',json.dumps(second))
+            s.write('run/mu300-data-sim-actual','1')
+            s.responses['network.interface.wan.status'].update(up=True,l3_device='sipa_eth8')
+            self.assertEqual(s.run(slot='1')['traffic'],second)
+            self.assertEqual(s.run(slot='0')['traffic'],first)
+            self.assertEqual(s.run()['traffic'],second)
+            (s.root/'run/unisoc-modem-traffic/sim1/view.json').unlink()
+            self.assertIsNone(s.run(slot='1')['traffic'])
+
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
         self.root=Path(self.temp.name);self.snap=Snapshot(self.root)

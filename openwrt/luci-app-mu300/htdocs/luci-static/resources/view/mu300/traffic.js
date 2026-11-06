@@ -4,14 +4,16 @@
 'require mu300.common as M';
 
 function formatUsage(n) { return M.fmtTrafficBytes(n); }
+function trafficSlot() { return String(M.selectedSlot()); }
 var ERRORS = { invalid_config: '配置无效', traffic_unavailable: '流量统计服务暂不可用',
 	storage_failed: '统计数据保存失败', clock_unsynced: '系统时间尚未同步', confirmation_required: '请先确认清空操作' };
 
 return view.extend({
-	load: function() { return L.resolveDefault(M.callTrafficGet(), {}); },
+	load: function() { return L.resolveDefault(M.callTrafficGet(trafficSlot()), {}); },
 	render: function(data) {
 		M.injectCss(); M.localizeMenu();
 		this._disposed = false; this._epoch = 0; this._mutating = false; this._confirming = false;
+		this._slot = data && data.config ? String(data.status && data.status.slot != null ? data.status.slot : trafficSlot()) : null; this._dirty = false;
 		var root = document.createElement('div'); root.className = 'mud';
 		root.innerHTML = `
 <style>
@@ -90,6 +92,18 @@ return view.extend({
 		this.q('reset_day').value = c.reset_day || 1; this.q('count_mode').value = c.count_mode || 'total';
 		this.q('used_gb').value = '';
 	},
+	accept: function(d, slot) {
+		if (slot !== trafficSlot()) return;
+		var actual = d && (d.slot != null ? d.slot : d.status && d.status.slot);
+		if (actual != null && String(actual) !== slot) return;
+		var changed = this._slot !== slot;
+		this.data = d || {};
+		if (this.data.config) {
+			this._slot = slot;
+			if (changed || !this._dirty) { this.fill(this.data.config); this._dirty = false; }
+		}
+		this.paint();
+	},
 	paint: function() {
 		var d = this.data, s = d.status || {}, c = d.config || {}, self = this;
 		this.q('today').textContent = formatUsage(s.today_used); this.q('month').textContent = formatUsage(s.month_used);
@@ -123,16 +137,17 @@ return view.extend({
 	},
 	refresh: function() {
 		if (this._disposed || this._mutating) return Promise.resolve();
-		var self = this, epoch = this._epoch;
-		if (this._refresh && this._refresh.epoch === epoch) return this._refresh.promise;
-		var request = { epoch: epoch }; this._refresh = request;
-		request.promise = L.resolveDefault(M.callTrafficGet(), {}).then(function(d) {
+		var self = this, slot = trafficSlot();
+		if (this._refresh && this._refresh.epoch === this._epoch && this._refresh.slot === slot) return this._refresh.promise;
+		if (this._slot !== slot) { this._slot = null; this._dirty = false; this.data = {}; this.fill({}); this.paint(); }
+		var epoch = ++this._epoch, request = { epoch: epoch, slot: slot }; this._refresh = request;
+		request.promise = L.resolveDefault(M.callTrafficGet(slot), {}).then(function(d) {
 			if (self._disposed || self._epoch !== epoch) return;
-			self.data = d; self.paint();
+			self.accept(d, slot);
 		}).finally(function() { if (self._refresh === request) self._refresh = null; });
 		return request.promise;
 	},
-	mutate: function(button, invoke, clearing) {
+	mutate: function(button, invoke, clearing, slot) {
 		if (this._disposed || this._mutating) return Promise.resolve();
 		var self = this;
 		this._mutating = true; this._epoch++;
@@ -144,8 +159,11 @@ return view.extend({
 			if (self._disposed) return;
 			if (!r || !r.ok) toast.update(ERRORS[r && r.error] || (clearing ? '清空失败' : '保存失败'), 'error');
 			else {
-				self.q('used_gb').value = '';
-				if (r.data) { self.data = r.data; self.paint(); }
+				if (slot === trafficSlot()) {
+					self.q('used_gb').value = '';
+					if (!clearing) self._dirty = false;
+					if (r.data) self.accept(r.data, slot);
+				}
 				toast.update(clearing ? '流量记录已清空' : '已保存', 'success');
 			}
 		}, function() {
@@ -161,18 +179,23 @@ return view.extend({
 	},
 	wire: function() {
 		var self = this;
+		this.root.querySelectorAll('input,select').forEach(function(input) { input.addEventListener('input', function() { self._dirty = true; }); });
 		this.q('refresh').onclick = function() { self.refresh(); };
 		this.q('clear').onclick = function() {
 			if (self._mutating || self._confirming) return;
+			var slot = self._slot;
+			if (slot !== trafficSlot()) { self.refresh(); return; }
 			self._confirming = true;
-			M.confirmBox('清空所有流量记录？',
+			M.confirmBox(M.translate('清空流量记录') + ' · ' + M.slotName(slot),
 				'将清空今日、每月历史和套餐周期校准，并从当前网卡计数重新开始。已保存的套餐额度、结算日、计量方式和统计网卡保持不变。此操作不可撤销。',
 				{danger:true, okText:'清空'}).then(function(yes) {
-				if (yes && !self._disposed) return self.mutate(self.q('clear'), function() { return M.callTrafficClear(true); }, true);
+				if (yes && !self._disposed) return self.mutate(self.q('clear'), function() { return M.callTrafficClear(true, slot); }, true, slot);
 			}).finally(function() { self._confirming = false; });
 		};
 		this.q('save').onclick = function() {
 			if (self._mutating || self._confirming) return;
+			var slot = self._slot;
+			if (slot !== trafficSlot()) { self.refresh(); return; }
 			var p = { plan_name:self.q('plan_name').value.trim(), device:self.q('device').value.trim(), count_mode:self.q('count_mode').value,
 				monthly_gb:Number(self.q('monthly_gb').value), daily_gb:Number(self.q('daily_gb').value), reset_day:Number(self.q('reset_day').value) };
 			if (self.q('used_gb').value.trim() !== '') p.used_gb = Number(self.q('used_gb').value);
@@ -184,7 +207,7 @@ return view.extend({
 			var confirmed = p.used_gb == null ? Promise.resolve(true) :
 				M.confirmBox('校准本周期已用流量？', '这会将当前套餐周期已用值调整为输入值，每日和自然月记录不变。', {okText:'保存'});
 			confirmed.then(function(yes) {
-				if (yes && !self._disposed) return self.mutate(self.q('save'), function() { return M.callTrafficSet(JSON.stringify(p)); }, false);
+				if (yes && !self._disposed) return self.mutate(self.q('save'), function() { return M.callTrafficSet(JSON.stringify(p), slot); }, false, slot);
 			}).finally(function() { self._confirming = false; });
 		};
 	}

@@ -78,6 +78,7 @@ try {
           'browser request saves the reported SIM 1 plan');
     forwarded(['payload', 'slot']);
     let saved = get(0).config;
+    check(get(0).status.plan_name == plan.plan_name, 'SIM 1 snapshot publishes its own plan name');
     for (let key, value in plan) check(saved[key] == value, 'SIM 1 plan field ' + key);
     check(get(1).config.monthly_gb == 0, 'SIM 1 save leaves SIM 2 unchanged');
     plan = {plan_name:'SIM 2 "quoted" 套餐',device:'sipa_eth8',count_mode:'rx',monthly_gb:55,daily_gb:2.5,reset_day:31};
@@ -85,6 +86,7 @@ try {
           'browser SIM 2 save');
     forwarded(['payload', 'slot']);
     check(get(1).config.plan_name == plan.plan_name && get(0).config.monthly_gb == 1000, 'independent plans');
+    check(get(1).status.plan_name == plan.plan_name, 'SIM 2 snapshot publishes its own plan name');
     check(rpc('traffic_set', {payload:'invalid-json',slot:'0',ubus_rpc_session:session}).error == 'invalid_config',
           'validation error survives browser forwarding');
     counters(0, 1123, 109); counters(1, 2456, 228); call('flush');

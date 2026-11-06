@@ -130,7 +130,7 @@ export function status(db, now) {
         device: db.last?.device ?? '', today: day, month: month, period: period,
         today_used: daily_used, month_used: counted(month, c.count_mode),
         cycle_used: used, cycle_adjustment: offset, cycle_start: range.start, cycle_end: range.end,
-        monthly_limit: quota, daily_limit: daily_quota,
+        plan_name: c.plan_name, monthly_limit: quota, daily_limit: daily_quota,
         remaining: quota ? (quota > used ? quota - used : 0) : null,
         daily_remaining: daily_quota ? (daily_quota > daily_used ? daily_quota - daily_used : 0) : null,
         over_limit: quota > 0 && used >= quota, daily_over_limit: daily_quota > 0 && daily_used >= daily_quota };

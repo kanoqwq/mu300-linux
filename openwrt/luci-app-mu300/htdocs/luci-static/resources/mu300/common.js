@@ -138,9 +138,14 @@ var callForwardStatus = rpc.declare({ object: 'mu300dash', method: 'forward_stat
 var callForwardSet = rpc.declare({ object: 'mu300dash', method: 'forward_set', params: [ 'payload' ], expect: { '': {} } });
 var callForwardClear = rpc.declare({ object: 'mu300dash', method: 'forward_log_clear', expect: { '': {} } });
 var callForwardTest = rpc.declare({ object: 'mu300dash', method: 'forward_test', params: [ 'profile' ], expect: { '': {} } });
-var callTrafficGet = scopedRpc({ object: 'mu300dash', method: 'traffic_get', expect: { '': {} } });
-var callTrafficSet = scopedRpc({ object: 'mu300dash', method: 'traffic_set', params: [ 'payload' ], expect: { '': {} } });
-var callTrafficClear = scopedRpc({ object: 'mu300dash', method: 'traffic_clear', nobatch: true, params: [ 'confirm' ], expect: { '': {} } });
+// Bind mutations to the ledger which supplied the form, including a dialog
+// that remains open while the viewed slot changes.
+var trafficGetRpc = rpc.declare({object:'mu300dash',method:'traffic_get',params:['slot'],expect:{'':{}},nobatch:true});
+var trafficSetRpc = rpc.declare({object:'mu300dash',method:'traffic_set',params:['payload','slot'],expect:{'':{}},nobatch:true});
+var trafficClearRpc = rpc.declare({object:'mu300dash',method:'traffic_clear',params:['confirm','slot'],expect:{'':{}},nobatch:true});
+function callTrafficGet(slot) { return trafficGetRpc(slot == null ? selectedSlot() : String(slot)); }
+function callTrafficSet(payload, slot) { return trafficSetRpc(payload, slot == null ? selectedSlot() : String(slot)); }
+function callTrafficClear(confirm, slot) { return trafficClearRpc(confirm, slot == null ? selectedSlot() : String(slot)); }
 var callTtlGet = rpc.declare({ object: 'mu300dash', method: 'ttl_get', expect: { '': {} } });
 var callTtlSet = rpc.declare({ object: 'mu300dash', method: 'ttl_set', params: [ 'value' ], expect: { '': {} }, nobatch: true });
 var callUsbGet = rpc.declare({ object: 'mu300dash', method: 'usb_get', expect: { '': {} } });

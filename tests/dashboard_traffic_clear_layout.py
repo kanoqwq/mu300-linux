@@ -55,7 +55,7 @@ def main():
                 assert page.locator('#mud-tr-save').is_disabled()
                 assert page.locator('#mud-tr-clear').is_disabled()
                 assert page.locator('#mud-tr-clear .mud-spin').count() == 1
-                assert page.evaluate("calls.filter(c=>c[0]==='traffic_clear')") == [['traffic_clear', [True]]]
+                assert page.evaluate("calls.filter(c=>c[0]==='traffic_clear')") == [['traffic_clear', [True, '0']]]
                 page.evaluate('complete({ok:1,data:cleared})')
                 page.wait_for_function('!v._mutating && !v._confirming')
                 assert page.locator('#mud-tr-clear .mud-spin').count() == 0

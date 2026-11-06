@@ -221,6 +221,7 @@ class NativeRoleHelper(ShellTest):
         port.mkdir(parents=True)
         (port/'data_role').write_text('device\n')
         (port/'power_role').write_text('sink\n')
+        (port/'power_operation_mode').write_text('usb_power_delivery\n')
         self.stub('mu300-device','echo u30air')
         self.stub('id','echo 0')
         self.stub('i2cget','echo unexpected >> "$STUBLOG/i2c"; exit 1')
@@ -231,3 +232,34 @@ class NativeRoleHelper(ShellTest):
                 self.assertEqual(result.returncode,0,result.stderr)
             self.assertEqual((port/'power_role').read_text(),'sink\n')
             self.assertFalse((self.tmp/'i2c').exists())
+
+    def test_non_pd_and_unattached_requests_set_cc_policy_not_pd_swap(self):
+        root=self.tmp/'native-root';port=root/'sys/class/typec/port0';port.mkdir(parents=True)
+        (port/'data_role').write_text('host [device]\n')
+        (port/'power_role').write_text('source [sink]\n')
+        (port/'port_type').write_text('[dual] source sink\n')
+        self.stub('mu300-device','echo u30air');self.stub('id','echo 0')
+        self.stub('i2cget','echo unexpected >> "$STUBLOG/i2c"; exit 1')
+        self.stub('i2cset','echo unexpected >> "$STUBLOG/i2c"; exit 1')
+        for shell in self.each_shell():
+            for mode in ('default','1.5A','3.0A',''):
+                (port/'power_operation_mode').write_text(mode+'\n')
+                for role,policy in [('host','source'),('device','sink'),('boot','dual')]:
+                    result=self.script(shell,BIN/'mu300-usb',role,MU300_SYSROOT=root)
+                    self.assertEqual(result.returncode,0,result.stderr)
+                    self.assertEqual((port/'port_type').read_text(),policy+'\n')
+                    self.assertEqual((port/'data_role').read_text(),'host [device]\n')
+                    self.assertEqual((port/'power_role').read_text(),'source [sink]\n')
+            self.assertFalse((self.tmp/'i2c').exists())
+
+    def test_pd_swap_rejection_is_not_hidden_by_forcing_source(self):
+        root=self.tmp/'pd-root';port=root/'sys/class/typec/port0';port.mkdir(parents=True)
+        (port/'data_role').mkdir() # readable control missing; write must fail
+        (port/'port_type').write_text('dual\n')
+        (port/'power_operation_mode').write_text('usb_power_delivery\n')
+        self.stub('mu300-device','echo u30air');self.stub('id','echo 0')
+        for shell in self.each_shell():
+            result=self.script(shell,BIN/'mu300-usb','host',MU300_SYSROOT=root)
+            self.assertNotEqual(result.returncode,0)
+            self.assertIn('refused the data-role swap',result.stderr)
+            self.assertEqual((port/'port_type').read_text(),'dual\n')

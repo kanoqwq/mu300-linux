@@ -24,6 +24,12 @@ role_now() {
     current=$(cat "$ROLE_FILE" 2>/dev/null)
     case $current in host|device) printf '%s\n' "$current" ;; *) echo unavailable ;; esac
 }
+role_apply_needed() {
+    # An unattached Type-C port can still report DWC3's old data role. U30 Air
+    # must apply the requested CC/PD policy even if that readback matches it,
+    # e.g. cancelling a pending source-only request back to device/sink.
+    [ "$(role_now)" != "$1" ] || [ "$(device_name)" = u30air ]
+}
 role_result() {
     # Only the latest request may publish its asynchronous result.
     [ "${4:-}" = "$(sed -n '1p' "$ROLE_STATE" 2>/dev/null)" ] || return 0
@@ -255,7 +261,7 @@ case ${1:-} in
         request="$(date +%s)-$$"
         printf '%s\n%s\npending\n\n' "$request" "$role" > "$ROLE_STATE.$$" && mv "$ROLE_STATE.$$" "$ROLE_STATE" || error '无法记录 USB 角色切换结果'
         pending=0
-        if [ "$(role_now)" != "$role" ]; then
+        if role_apply_needed "$role"; then
             pending=1
             # Give rpcd/uhttpd a brief chance to flush the acknowledgement
             # before the USB gadget carrying that response disappears.
@@ -270,7 +276,7 @@ case ${1:-} in
         request=${3:-}
         case $role in host|device) ;; *) exit 2 ;; esac
         [ -z "$request" ] || [ "$request" = "$(sed -n '1p' "$ROLE_STATE" 2>/dev/null)" ] || exit 0
-        [ "$(role_now)" = "$role" ] || ( role_command "$role" ) || {
+        ! role_apply_needed "$role" || ( role_command "$role" ) || {
             role_result "$role" error '' "$request"
             logger -t unisoc-usb "role switch to $role failed"
             exit 1

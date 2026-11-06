@@ -202,6 +202,9 @@ export function info(slot) {
         else if(mobile==cfg('sim1_device','sipa_eth8'))active_slot='1';
     }
     if(exists('/run/mu300/sim-active-unknown'))active_slot='';
+    // Each ledger has its own snapshot. A viewed SIM is not necessarily the
+    // data SIM; never substitute SIM1's plan or totals for an absent SIM2 view.
+    let traffic_slot=slot in ['0','1']?slot:active_slot in ['0','1']?active_slot:data_slot;
     let selection=apn.status(c,obj('/run/unisoc-apn-sim'+data_slot+'.json') || {}), selected_apn=null;
     if(selection.ok && (slot==null || ''+selection.data_sim==slot) && selection.source in ['sim','auto','network','default'] &&
        type(selection.apn)=='string' && length(selection.apn)<=100 && !match(selection.apn,/[^A-Za-z0-9.-]/))
@@ -231,7 +234,7 @@ export function info(slot) {
         modem:{data_sim:active_slot in ['0','1']?int(active_slot):null,alive:atd || (urc && now-urc.mtime<240)?1:0,atd:atd?1:0,data_paused:exists('/run/mu300-mobile-data-down')?1:0,
             imeis:equipment(atd,cfg('sim_slots','1')),sims:map(['0','1'],n=>({slot:int(n),state:atd?sim_state(n):'unknown'}))},
         boot:boot(),capabilities:{dualboot:executable('/opt/mu300/bin/mu300-next-boot')?1:0},
-        conns:conntrack(),traffic:obj('/run/unisoc-modem-traffic/view.json')};
+        conns:conntrack(),traffic:obj('/run/unisoc-modem-traffic/'+(traffic_slot=='1'?'sim1/':'')+'view.json')};
 };
 
 function age(path) { let s=fs.stat(ROOT+path); return s?.size>0?time()-s.mtime:-1; }

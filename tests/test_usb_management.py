@@ -416,6 +416,52 @@ esac
             self.call_usb(shell,'set-role','device','0')
             self.assertEqual(json.loads(self.call_usb(shell,'get').stdout)['role_error'],0)
 
+    def test_native_non_pd_policy_waits_for_attach_without_reporting_swap_failure(self):
+        root=self.tmp/'native-root';port=root/'sys/class/typec/port0';port.mkdir(parents=True)
+        (port/'data_role').write_text('host [device]\n')
+        (port/'port_type').write_text('[dual] source sink\n')
+        (port/'power_operation_mode').write_text('default\n')
+        self.stub('mu300-device','echo u30air');self.stub('id','echo 0')
+        self.helper.write_text('#!/bin/sh\nexec "'+str(TOP/'rootfs/overlay/opt/mu300/bin/mu300-usb')+'" "$@"\n')
+        for shell in self.each_shell():
+            self.role.write_text('device\n')
+            result=self.script(shell,USB,'set-role','host','0',MU300_SYSROOT=root,
+                MU300_USB_ROLE_COMMAND=self.helper,MU300_USB_ROLE_FILE=self.role,
+                MU300_USB_BOOT_FILE=self.boot_file,MU300_USB_NET_CLASS=self.net_class,
+                MU300_USB_BUS=self.usb_bus,MU300_USB_DEVICE='u30air')
+            self.assertEqual(json.loads(result.stdout),{'ok':1,'pending':1})
+            for _ in range(100):
+                if (port/'port_type').read_text()=='source\n':break
+                time.sleep(.02)
+            self.assertEqual((port/'port_type').read_text(),'source\n')
+            state=json.loads(self.call_usb(shell,'get').stdout)
+            self.assertEqual((state['role_pending'],state['role_error']),(1,0))
+            # DWC3 still reports device while the source policy waits for an
+            # OTG cable. Cancelling must actually restore sink policy, not
+            # merely declare success because the old role reads device.
+            result=json.loads(self.script(shell,USB,'set-role','device','0',MU300_SYSROOT=root,
+                MU300_USB_ROLE_COMMAND=self.helper,MU300_USB_ROLE_FILE=self.role,
+                MU300_USB_BOOT_FILE=self.boot_file,MU300_USB_NET_CLASS=self.net_class,
+                MU300_USB_BUS=self.usb_bus,MU300_USB_DEVICE='u30air').stdout)
+            self.assertEqual(result,{'ok':1,'pending':1})
+            for _ in range(100):
+                if (port/'port_type').read_text()=='sink\n':break
+                time.sleep(.02)
+            self.assertEqual((port/'port_type').read_text(),'sink\n')
+            self.assertEqual(json.loads(self.call_usb(shell,'get').stdout)['role_error'],0)
+            self.script(shell,USB,'set-role','host','0',MU300_SYSROOT=root,
+                MU300_USB_ROLE_COMMAND=self.helper,MU300_USB_ROLE_FILE=self.role,
+                MU300_USB_BOOT_FILE=self.boot_file,MU300_USB_NET_CLASS=self.net_class,
+                MU300_USB_BUS=self.usb_bus,MU300_USB_DEVICE='u30air')
+            for _ in range(100):
+                if (port/'port_type').read_text()=='source\n':break
+                time.sleep(.02)
+            self.assertEqual((port/'port_type').read_text(),'source\n')
+            # The kernel's attach event, not a user-space timer, completes it.
+            self.role.write_text('host\n')
+            state=json.loads(self.call_usb(shell,'get').stdout)
+            self.assertEqual((state['role'],state['role_pending'],state['role_error']),('host',0,0))
+
 
 class USBIntegration(unittest.TestCase):
     def test_tf_early_policy_precedes_gadget_enumeration(self):

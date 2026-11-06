@@ -59,11 +59,35 @@ if [ "$(mu300-device)" = u30air ]; then
     for native_port in "$R"/sys/class/typec/port*; do
         [ -w "$native_port/data_role" ] || continue
         case ${1:-status} in
-            boot) exit 0 ;;
+            boot)
+                # Manual source/sink requests are session policy. Normal boot
+                # restores stock automatic Type-C detection before saved policy.
+                if [ -w "$native_port/port_type" ]; then
+                    echo dual > "$native_port/port_type" || die "cannot restore automatic Type-C detection"
+                fi
+                exit 0 ;;
             host|device)
                 [ "$(id -u)" = 0 ] || die "run as root"
-                echo "$1" > "$native_port/data_role" || die "the Type-C partner refused the data-role swap"
-                echo "USB data role requested: $1 (power role is negotiated separately)"
+                if [ "$(cat "$native_port/power_operation_mode" 2>/dev/null)" = usb_power_delivery ]; then
+                    # A PD dock can be data host and power sink. Do not replace
+                    # this with a source-only policy or direct charger writes.
+                    if [ -w "$native_port/port_type" ]; then
+                        echo dual > "$native_port/port_type" || die "cannot select dual-role Type-C policy"
+                    fi
+                    current=$(cat "$native_port/data_role" 2>/dev/null)
+                    case "$current" in "$1"|*"[$1]"*) ;; *)
+                        echo "$1" > "$native_port/data_role" || die "the Type-C partner refused the data-role swap" ;;
+                    esac
+                else
+                    # data_role is a negotiated swap, not a manual port-mode
+                    # setter. A non-PD PC/OTG cable (or no cable) cannot perform
+                    # that swap. Let TCPM re-evaluate CC using the requested
+                    # source/sink policy; it alone owns VBUS and charger boost.
+                    [ -w "$native_port/port_type" ] || die "the Type-C port-mode control is unavailable"
+                    case $1 in host) policy=source ;; device) policy=sink ;; esac
+                    echo "$policy" > "$native_port/port_type" || die "cannot set the Type-C port policy"
+                fi
+                echo "USB data role requested: $1 (Type-C attach/PD controls power)"
                 exit 0 ;;
             status)
                 printf 'data role: '; cat "$native_port/data_role"
