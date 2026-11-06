@@ -121,6 +121,7 @@ if DEVICE=$(mu300_android_profile "$android_model" "$android_device" "$android_p
     :
 else
     profile_error=$?
+    [ "$profile_error" != 3 ] || die "M3 requires MU5352 / MU5352 on ums9620; refusing installation."
     [ "$profile_error" != 2 ] || die "$(t 'V50 requires product V50 / MU3351 on ums9620; refusing installation.')"
     ask go "$(t 'This does not look like a ZTE F50/MU300, V50 or U30 Air. Continue anyway? (yes/no)')" no
     [ "$go" = yes ] || exit 1

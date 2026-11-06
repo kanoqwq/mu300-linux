@@ -203,6 +203,7 @@ describe() {  # describe HEX: the NDEF message in words (hex on stdin as words)
 }
 
 # --- main -------------------------------------------------------------------------------------------------------
+[ "$("${MU300_BIN:-/opt/mu300/bin}/mu300-device" --model)" != m3 ] || die "M3 has no supported NFC tag"
 case $("${MU300_BIN:-/opt/mu300/bin}/mu300-device") in
     u30air) ;;
     v50)

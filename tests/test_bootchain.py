@@ -111,6 +111,19 @@ class Fixture(ShellTest):
 
 
 class Check(Fixture):
+    def test_m3_uses_existing_slots_and_rejects_inconsistent_identity(self):
+        for shell in self.each_shell():
+            for slot in ('_a','_b'):
+                for product,platform,valid in [('MU5352','ums9620',True),
+                                                ('MU5352','ums9632',False),
+                                                ('F50','ums9620',False)]:
+                    self.device(slot=slot,model='MU5352',product=product)
+                    with self.props.open('a') as stream:stream.write('ro.board.platform='+platform+'\n')
+                    before=self.snapshot()
+                    result=self.run_bc(shell,'check')
+                    self.assertEqual(result.returncode==0,valid,result.stdout+result.stderr)
+                    self.assertEqual(self.snapshot(),before)
+
     def test_v50_platform_guard_and_read_only_plan(self):
         for shell in self.each_shell():
             self.device(model='V50',product='MU3351',differ=('teecfg',))

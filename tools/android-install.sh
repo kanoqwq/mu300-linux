@@ -165,6 +165,18 @@ if [ "$IMPORT_HOTSPOT" = 1 ]; then
                                                     "no usable Android hotspot config, a random password will be generated"; ssid=; psk=; }
 fi
 
+# Derive the product label from this Android, after any restored settings.
+# The generic image never embeds a device's identity.
+device_model_save() {
+    local root=$1 identity
+    identity="$(getprop ro.product.model)/$(getprop ro.product.device)/$(getprop ro.board.platform)"
+    if [ "$identity" = MU5352/MU5352/ums9620 ]; then
+        printf '%s\n' m3 > "$root/etc/mu300/device-model"
+    elif [ "$(cat "$root/etc/mu300/device-model" 2>/dev/null)" = m3 ]; then
+        rm -f "$root/etc/mu300/device-model"
+    fi
+}
+
 # --- user-packages begin
 # Packages installed on the device are not in the release's image, and an update puts the image in place while it
 # keeps /etc/config (OpenWrt) and /etc/mu300: their programs were gone and their settings stayed - an absent DNS extension left
@@ -540,6 +552,7 @@ openwrt) keep="etc/config etc/mu300 etc/unisoc-modem etc/dropbear etc/rc.local e
     [ "${SD_MODE:-0}" = 1 ] && [ -f $R/etc/fstab ] && \
         sed -i 's|LABEL=mu300root|LABEL=mu300sd|' $R/etc/fstab
     mkdir -p $R/etc/mu300
+    device_model_save "$R"
     if [ -n "$ssid" ] && ! { [ "${UPDATE:-0}" = 1 ] && [ -s $R/etc/mu300/hotspot.conf ]; }; then
         umask 077
         printf 'SSID=%s\nPSK=%s\nBAND=5\nCHANNEL=auto\nCOUNTRY=TR\n' "$ssid" "$psk" > $R/etc/mu300/hotspot.conf
