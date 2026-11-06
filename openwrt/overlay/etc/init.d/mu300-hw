@@ -19,6 +19,10 @@ hw_bringup() {
 	# covers direct service starts; mu300-post or WAN success hands it off.
 	/opt/mu300/bin/led-status boot 2>/dev/null
 	/opt/mu300/bin/openwrt-board-check >>/tmp/mu300-wifi-start.log 2>&1 || return 1
+	if [ "$(/opt/mu300/bin/mu300-device --model)" = m3 ]; then
+		mkdir -p /tmp/sysinfo
+		printf '%s\n' 'ZTE M3 (MU5352)' > /tmp/sysinfo/model
+	fi
 	[ ! -x /opt/mu300/bin/bootmark ] || /opt/mu300/bin/bootmark wifi-board-ready
 	# Set regulatory rules before the PHY appears and netifd starts APs.
 	/opt/mu300/bin/regdb-load >>/tmp/mu300-wifi-start.log 2>&1

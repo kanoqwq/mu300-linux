@@ -419,3 +419,5 @@ The kernel source used here is mirrored at
   with one exception: [`stock/`](stock/) holds the stock `trustos` (TEE) image for firmware `ZYV1.0.0B09`, as a
   last-resort repair for devices whose own TEE is damaged; all rights to it remain with ZTE/Unisoc. Read
   [`stock/README.md`](stock/README.md) before touching it — it can make a non-booting device worse.
+
+M3 (MU5352) uses the U30 Air hardware profile; exact identity and test scope: [M3 support](docs/M3-MU5352.md).

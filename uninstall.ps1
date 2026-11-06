@@ -55,7 +55,7 @@ function SelectDevice([switch]$Quiet) {
     if ($env:ANDROID_SERIAL) { return }
     $all = @((Quiet { adb devices -l }) | Where-Object { $_ -match '^\S+\s+device\b' })
     if ($all.Count -eq 0) { return }
-    $f50 = @($all | Where-Object { $_ -match 'model:F50|product:MU300|device:MU300|device:U30Air' })
+    $f50 = @($all | Where-Object { $_ -match 'model:F50|product:MU300|device:MU300|device:U30Air|product:MU5352|device:MU5352' })
     # the only adb device, and an F50/U30 Air: nothing to ask
     if ($all.Count -eq 1 -and $f50.Count -eq 1) { $env:ANDROID_SERIAL = ($all[0] -split '\s+')[0]; return }
     # -Quiet (waiting for the device to come back): only the one F50/U30 Air. Otherwise always ask: a phone or
@@ -107,7 +107,7 @@ Say 'Checking host tools and device'
 FindAdb
 if (-not (Get-Command adb -ErrorAction SilentlyContinue)) { Die 'adb not found' }
 # the device in Linux, and only a phone or tablet in Android: that is not the one to touch - reboot the device first
-$target = @((Quiet { adb devices -l }) | Where-Object { $_ -match '^\S+\s+device\b' -and $_ -match 'model:F50|product:MU300|device:MU300|device:U30Air' })
+$target = @((Quiet { adb devices -l }) | Where-Object { $_ -match '^\S+\s+device\b' -and $_ -match 'model:F50|product:MU300|device:MU300|device:U30Air|product:MU5352|device:MU5352' })
 $linuxFirst = (-not $env:ANDROID_SERIAL) -and $target.Count -eq 0 -and (LinuxRunning)
 if (-not $linuxFirst) { SelectDevice }
 if ($linuxFirst -or (AdbState) -notmatch 'device') {
@@ -141,7 +141,9 @@ if ((SuDo 'for u in /sys/class/block/mmcblk*p*/uevent; do grep -qx PARTNAME=mu30
 }
 $model = "$(SuDo 'getprop ro.product.model') / $(SuDo 'getprop ro.product.device')"
 Write-Host "device: $model"
-if ($model -notmatch 'MU300|F50|mu300|U30Air|U30_Air') { Die 'this does not look like a ZTE F50/MU300 or U30 Air' }
+if ($model -match 'MU5352') {
+    if ($model.Trim() -ne 'MU5352 / MU5352' -or (SuDo 'getprop ro.board.platform') -ne 'ums9620') { Die 'M3 requires MU5352 / MU5352 on ums9620' }
+} elseif ($model -notmatch 'MU300|F50|mu300|U30Air|U30_Air') { Die 'this does not look like a ZTE F50/MU300 or U30 Air' }
 if ((SuDo 'getprop ro.boot.slot_suffix') -ne '_a') { Die 'Android must be running from slot a (boot Android first: mu300-next-boot android)' }
 
 Say 'Looking for the Linux installation'

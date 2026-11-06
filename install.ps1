@@ -216,7 +216,7 @@ function SelectDevice([switch]$Quiet) {
     if ($env:ANDROID_SERIAL) { return }
     $all = @((Quiet { adb devices -l }) | Where-Object { $_ -match '^\S+\s+device\b' })
     if ($all.Count -eq 0) { return }
-    $f50 = @($all | Where-Object { $_ -match 'model:F50|product:MU300|device:MU300|device:U30Air' })
+    $f50 = @($all | Where-Object { $_ -match 'model:F50|product:MU300|device:MU300|device:U30Air|product:MU5352|device:MU5352' })
     # the only adb device, and an F50/U30 Air: nothing to ask
     if ($all.Count -eq 1 -and $f50.Count -eq 1) { $env:ANDROID_SERIAL = ($all[0] -split '\s+')[0]; return }
     # -Quiet (waiting for the device to come back as Android): only the one F50/U30 Air, never a question.
@@ -369,7 +369,7 @@ if (-not $Check) {
 Quiet { adb start-server } | Out-Null
 # The device in Linux, and only a phone or tablet in Android: that is not the one to install to - offer to send the
 # device back to Android first
-$target = @((Quiet { adb devices -l }) | Where-Object { $_ -match '^\S+\s+device\b' -and $_ -match 'model:F50|product:MU300|device:MU300|device:U30Air' })
+$target = @((Quiet { adb devices -l }) | Where-Object { $_ -match '^\S+\s+device\b' -and $_ -match 'model:F50|product:MU300|device:MU300|device:U30Air|product:MU5352|device:MU5352' })
 $linuxFirst = (-not $env:ANDROID_SERIAL) -and $target.Count -eq 0 -and (LinuxRunning)
 if (-not $linuxFirst) { SelectDevice }
 if ($linuxFirst -or (AdbState) -notmatch 'device') {
@@ -411,7 +411,10 @@ Write-Host (T 'device: {1}' $model)
 # The U30 Air is the F50's board with a battery: the same kernel and images, a few modules of its own (init
 # loads them; the boot image says which device it is for)
 $DEVICE = 'f50'
-if ($model -match 'U30Air|U30_Air|U30 Air') {
+if ($model -match 'MU5352') {
+    if ($model.Trim() -ne 'MU5352 / MU5352' -or (SuDo 'getprop ro.board.platform') -ne 'ums9620') { Die 'M3 requires MU5352 / MU5352 on ums9620' }
+    $DEVICE = 'u30air'
+} elseif ($model -match 'U30Air|U30_Air|U30 Air') {
     $DEVICE = 'u30air'
 } elseif ($model -notmatch 'MU300|F50|mu300') {
     if ((Ask (T 'This does not look like a ZTE F50/MU300 or U30 Air. Continue anyway? (yes/no)') 'no') -ne 'yes') { exit 1 }

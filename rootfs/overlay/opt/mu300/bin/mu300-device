@@ -2,6 +2,7 @@
 # Which board is physically present. A restored rootfs or old boot-image label
 # cannot override the live device tree. MU300_SYSROOT provides a fake / in tests.
 R=${MU300_SYSROOT:-}
+device() {
 if [ -d "$R/proc/device-tree/charger_policy_service" ]; then
     echo u30air
 elif [ -d "$R/proc/device-tree/soc/soc:ap-ahb/i2c@2270000/aw9523b_led@5b" ] ||
@@ -14,3 +15,13 @@ else
     device=$(cat "$R/run/mu300/device" 2>/dev/null)
     case $device in f50|v50|u30air) echo "$device" ;; *) echo f50 ;; esac
 fi
+}
+# The product marker only refines a detected U30 Air board, never hardware dispatch.
+case ${1:-} in
+    --model)
+        profile=$(device)
+        if [ "$profile" = u30air ] && [ "$(cat "$R/etc/mu300/device-model" 2>/dev/null)" = m3 ]; then
+            echo m3
+        else echo "$profile"; fi ;;
+    *) device ;;
+esac

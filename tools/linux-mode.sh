@@ -55,7 +55,7 @@ select_device() {  # select_device [quiet]: quiet never asks, it only picks what
     [ -n "${ANDROID_SERIAL:-}" ] && return 0
     _sd_all=$(adb devices -l 2>/dev/null | awk 'NR > 1 && $2 == "device"')
     [ -n "$_sd_all" ] || return 0
-    _sd_f50=$(printf '%s\n' "$_sd_all" | grep -E '(model:F50|product:MU300|device:MU300|device:U30Air|model:V50|product:MU3351|device:MU3351)([[:space:]]|$)' | awk '{print $1}')
+    _sd_f50=$(printf '%s\n' "$_sd_all" | grep -E '(model:F50|product:MU300|device:MU300|device:U30Air|product:MU5352|device:MU5352|model:V50|product:MU3351|device:MU3351)([[:space:]]|$)' | awk '{print $1}')
     _sd_one=
     [ -n "$_sd_f50" ] && [ "$(printf '%s\n' "$_sd_f50" | wc -l | tr -d ' ')" = 1 ] && _sd_one=$_sd_f50
     # the only adb device, and an F50/U30 Air: nothing to ask
@@ -81,7 +81,7 @@ select_device() {  # select_device [quiet]: quiet never asks, it only picks what
 
 # call before anything else that needs adb
 # is one of the adb devices an F50/U30 Air?
-target_attached() { adb devices -l 2>/dev/null | awk 'NR > 1 && $2 == "device"' | grep -q -E '(model:F50|product:MU300|device:MU300|device:U30Air|model:V50|product:MU3351|device:MU3351)([[:space:]]|$)'; }
+target_attached() { adb devices -l 2>/dev/null | awk 'NR > 1 && $2 == "device"' | grep -q -E '(model:F50|product:MU300|device:MU300|device:U30Air|product:MU5352|device:MU5352|model:V50|product:MU3351|device:MU3351)([[:space:]]|$)'; }
 
 require_android() {
     # The device in Linux, and only a phone or tablet in Android: that is not the one to install to - offer to
