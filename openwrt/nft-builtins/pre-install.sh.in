@@ -1,0 +1,31 @@
+#!/bin/sh
+# A live install declares only a capability this kernel really has. Image builds validate
+# the selected kernel configuration on the host and install the packages with --no-scripts instead.
+set -eu
+config=$(gzip -dc /proc/config.gz 2>/dev/null) || {
+    echo 'Cannot verify this kernel; built-in nft compatibility package was not installed.' >&2
+    exit 1
+}
+for key in @SYMBOLS@; do
+    printf '%s\n' "$config" | grep -qx "$key=y" || {
+        echo "$key is not built in; nft compatibility package was not installed." >&2
+        exit 1
+    }
+done
+case @FEATURE@ in
+    socket) rules='meta l4proto tcp socket transparent 1' ;;
+    tproxy) rules='meta l4proto tcp tproxy to :1041
+meta l4proto udp tproxy to :1041' ;;
+    *) exit 1 ;;
+esac
+name=mu300_nft_@FEATURE@_$$
+{
+    printf 'create table inet %s\n' "$name"
+    printf 'add chain inet %s prerouting { type filter hook prerouting priority mangle; policy accept; }\n' "$name"
+    printf '%s\n' "$rules" | while IFS= read -r rule; do
+        printf 'add rule inet %s prerouting %s\n' "$name" "$rule"
+    done
+} | nft --check -f - || {
+    echo 'Kernel rejected the nft capability check; compatibility package was not installed.' >&2
+    exit 1
+}
