@@ -76,15 +76,15 @@ struct bq256xx_device {
 };
 static struct power_supply_battery_info battery;
 static unsigned regs[12];
-static int io_error,info_error,voltage_requests;
+static int io_error,info_error,voltage_requests,info_gets,info_puts,fail_reg=-1;
 static int regmap_update_bits(int map,int reg,unsigned mask,unsigned value) {
- (void)map;if(io_error)return io_error;regs[reg]=(regs[reg]&~mask)|(value&mask);return 0;
+ (void)map;if(io_error)return io_error;if(reg==fail_reg)return -EIO;regs[reg]=(regs[reg]&~mask)|(value&mask);return 0;
 }
 static int regmap_read(int map,int reg,unsigned *value){(void)map;if(io_error)return io_error;*value=regs[reg];return 0;}
 static int power_supply_get_battery_info(int chg,struct power_supply_battery_info **p) {
- (void)chg;*p=&battery;return info_error;
+ (void)chg;if(info_error)return info_error;*p=&battery;info_gets++;return 0;
 }
-static void power_supply_put_battery_info(int chg,struct power_supply_battery_info*p){(void)chg;(void)p;}
+static void power_supply_put_battery_info(int chg,struct power_supply_battery_info*p){(void)chg;assert(p==&battery);info_puts++;}
 static int unchanged(struct bq256xx_device*b,int val){(void)b;(void)val;return 0;}
 '''
 tests = r'''
@@ -99,12 +99,13 @@ static int actual_voltage(void){unsigned code=(regs[4]&0xf8)>>3;return code==15?
 static void reset(void){
  memset(regs,0,sizeof(regs));regs[4]=0x5b;regs[5]=0xcf;regs[1]=0x1a;regs[0]=0x04;regs[2]=0xa1;
  battery=(struct power_supply_battery_info){3000000,4300000,180000,300000};
- io_error=info_error=voltage_requests=0;
+ io_error=info_error=voltage_requests=info_gets=info_puts=0;fail_reg=-1;
 }
 int main(void){
  struct bq256xx_device b={.chip_info=&chip,.bq2560x_chg=true};
  reset();assert(!bq256xx_hw_init(&b));
  assert(b.init_data.vbatreg_max==4304000&&actual_voltage()==4304000);
+ assert(info_gets==1&&info_puts==1);
  assert(b.init_data.ichg_max==3000000&&regs[2]==0xb2);
  assert(regs[5]==0xc7); /* TERM on, timer off, TS bit and other bits retained. */
  assert((regs[4]&7)==3&&regs[1]==0x1a&&regs[0]==0x04);
@@ -139,8 +140,13 @@ int main(void){
  assert(!bq256xx_hw_init(&b));assert(actual_voltage()==4208000);
  /* Missing battery information keeps the default rather than chip maximum. */
  reset();info_error=-ENODEV;assert(!bq256xx_hw_init(&b));assert(actual_voltage()==4208000);
+ assert(info_gets==0&&info_puts==0);
  assert(b.init_data.ichg_max==1980000&&regs[2]==0xa1);
  reset();info_error=-ENOMEM;assert(bq256xx_hw_init(&b)==-ENOMEM&&!voltage_requests);
+ assert(!info_gets&&!info_puts);
+ /* Success allocates battery metadata; later write failures must release it. */
+ reset();fail_reg=4;assert(bq256xx_hw_init(&b)==-EIO);
+ assert(info_gets==1&&info_puts==1);
  reset();io_error=-EIO;assert(bq256xx_hw_init(&b)==-EIO&&!voltage_requests);
  /* Generic bq users do not inherit the U30 policy or battery CV request. */
  reset();b.bq2560x_chg=false;assert(!bq256xx_hw_init(&b));

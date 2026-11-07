@@ -1,0 +1,91 @@
+power: supply: bq256xx: handle missing battery info without dereferencing garbage
+
+The core writes info_out only on success. Use local defaults on the existing
+missing-info path and free only successfully acquired metadata, including
+post-lookup programming failures. Keep stock CV/timer/current policy intact.
+
+--- a/drivers/power/supply/bq256xx_charger.c
++++ b/drivers/power/supply/bq256xx_charger.c
+@@ -1962,7 +1962,8 @@
+ 
+ static int bq256xx_hw_init(struct bq256xx_device *bq)
+ {
+-	struct power_supply_battery_info *bat_info;
++	struct power_supply_battery_info fallback = { };
++	struct power_supply_battery_info *bat_info = &fallback;
+ 	int wd_reg_val = BQ256XX_WATCHDOG_DIS;
+ 	int ret = 0;
+ 	int i;
+@@ -1988,6 +1989,8 @@
+ 		return ret;
+ 
+ 	if (ret) {
++		/* A failed lookup does not initialize its output pointer. */
++		bat_info = &fallback;
+ 		dev_warn(bq->dev, "battery info missing, default values will be applied\n");
+ 
+ 		bat_info->constant_charge_current_max_ua =
+@@ -2036,48 +2039,50 @@
+ 					 BQ256XX_EN_TERM | BQ2560X_CHG_EN_TIMER,
+ 					 BQ256XX_EN_TERM);
+ 		if (ret)
+-			return ret;
++			goto out_put_battery_info;
+ 	}
+ 
+ 	ret = bq->chip_info->bq256xx_set_vindpm(bq, bq->init_data.vindpm);
+ 	if (ret)
+-		return ret;
++		goto out_put_battery_info;
+ 
+ 	ret = bq->chip_info->bq256xx_set_iindpm(bq, bq->init_data.iindpm);
+ 	if (ret)
+-		return ret;
++		goto out_put_battery_info;
+ 
+ 	ret = bq->chip_info->bq256xx_set_ichg(bq,
+ 				bq->bq2560x_chg ? bq->init_data.ichg_max :
+ 				bq->chip_info->bq256xx_def_ichg);
+ 	if (ret)
+-		return ret;
++		goto out_put_battery_info;
+ 
+ 	ret = bq->chip_info->bq256xx_set_iprechg(bq,
+ 				bat_info->precharge_current_ua);
+ 	if (ret)
+-		return ret;
++		goto out_put_battery_info;
+ 
+ 	ret = bq->chip_info->bq256xx_set_vbatreg(bq,
+ 			bq->bq2560x_chg ? bq->init_data.vbatreg_max :
+ 			bq->chip_info->bq256xx_def_vbatreg);
+ 	if (ret)
+-		return ret;
++		goto out_put_battery_info;
+ 
+ 	ret = bq->chip_info->bq256xx_set_iterm(bq,
+ 				bat_info->charge_term_current_ua);
+ 	if (ret)
+-		return ret;
++		goto out_put_battery_info;
+ 
+ 	if (bq->chip_info->bq256xx_set_ts_ignore) {
+ 		ret = bq->chip_info->bq256xx_set_ts_ignore(bq, bq->init_data.ts_ignore);
+ 		if (ret)
+-			return ret;
+-	}
+-
+-	power_supply_put_battery_info(bq->charger, bat_info);
+-
+-	return 0;
++			goto out_put_battery_info;
++	}
++
++out_put_battery_info:
++	if (bat_info != &fallback)
++		power_supply_put_battery_info(bq->charger, bat_info);
++
++	return ret;
+ }
+ 
+ static int bq256xx_parse_dt(struct bq256xx_device *bq,
