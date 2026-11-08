@@ -57,7 +57,7 @@ define Package/luci-app-mu300/install
 	chmod 0600 $(1)/etc/config/mu300-charge
 	chmod 0755 $(1)/etc/init.d/mu300-charge $(1)/etc/hotplug.d/power_supply/75-mu300-charge $(1)/usr/libexec/rpcd/mu300-charge
 	chmod 0755 $(1)/etc/init.d/unisoc-cpu
-	chmod 0755 $(1)/etc/init.d/unisoc-modem-ui $(1)/etc/init.d/unisoc-sms-forward $(1)/etc/init.d/unisoc-traffic $(1)/etc/hotplug.d/net/90-unisoc-usb-host $(1)/etc/hotplug.d/iface/90-unisoc-usb-host $(1)/usr/libexec/rpcd/mu300dash $(1)/usr/libexec/unisoc-modem/*
+	chmod 0755 $(1)/etc/init.d/unisoc-modem-ui $(1)/etc/init.d/unisoc-sms-forward $(1)/etc/init.d/unisoc-call-forward $(1)/etc/init.d/unisoc-traffic $(1)/etc/hotplug.d/net/90-unisoc-usb-host $(1)/etc/hotplug.d/iface/90-unisoc-usb-host $(1)/usr/libexec/rpcd/mu300dash $(1)/usr/libexec/unisoc-modem/*
 	chmod 0755 $(1)/etc/init.d/unisoc-ttl $(1)/etc/hotplug.d/iface/92-unisoc-ttl $(1)/etc/hotplug.d/net/92-unisoc-ttl $(1)/etc/uci-defaults/98-unisoc-ttl
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/i18n
 	$(CP) ./lmo/. $(1)/usr/lib/lua/luci/i18n/
@@ -93,6 +93,8 @@ define Package/luci-app-mu300/postinst
 	/etc/init.d/mu300-charge start 2>/dev/null || true
 	/etc/init.d/unisoc-sms-forward enable 2>/dev/null || true
 	/etc/init.d/unisoc-sms-forward start 2>/dev/null || true
+	/etc/init.d/unisoc-call-forward enable 2>/dev/null || true
+	/etc/init.d/unisoc-call-forward start 2>/dev/null || true
 	/etc/init.d/unisoc-traffic enable 2>/dev/null || true
 	/etc/init.d/unisoc-traffic start 2>/dev/null || true
 	/etc/init.d/unisoc-cpu enable 2>/dev/null || true
@@ -122,6 +124,8 @@ define Package/luci-app-mu300/postrm
 		/etc/init.d/unisoc-modem-ui disable 2>/dev/null || true
 		/etc/init.d/unisoc-sms-forward stop 2>/dev/null || true
 		/etc/init.d/unisoc-sms-forward disable 2>/dev/null || true
+		/etc/init.d/unisoc-call-forward stop 2>/dev/null || true
+		/etc/init.d/unisoc-call-forward disable 2>/dev/null || true
 		/etc/init.d/unisoc-traffic stop 2>/dev/null || true
 		/etc/init.d/unisoc-traffic disable 2>/dev/null || true
 		/etc/init.d/unisoc-cpu disable 2>/dev/null || true

@@ -1,0 +1,392 @@
+#!/bin/sh
+# Opt-in call notifications. Polls the modem adapter for the current call
+# listing (AT+CLCC) and forwards ringing / answered / ended / missed to one
+# webhook, using the same delivery path and template placeholders as the SMS
+# forwarder.
+#
+# The AT adapter is the only thing that touches the modem; this script never
+# opens a tty itself and never answers or rejects a call.
+umask 077
+export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
+. /usr/share/libubox/jshn.sh
+
+DIR=${MU300_CALL_DIR:-/etc/unisoc-modem/call}
+CONFIG=$DIR/config.json
+STATE=${MU300_CALL_STATE:-/run/mu300-call-state}
+HISTORY=${MU300_CALL_HISTORY:-/run/mu300-call-history}
+INFO=${MU300_CALL_INFO:-/run/mu300-call-info}
+AT=${MU300_AT:-/usr/libexec/unisoc-modem/at}
+HISTORY_MAX=30
+INFO_TTL=300
+NL='
+'
+
+reply_error() {
+    json_init
+    json_add_int ok 0
+    json_add_string error "$1"
+    json_dump
+}
+reply_ok() { printf '{"ok":1}\n'; }
+
+num() { case "$1" in ''|*[!0-9]*) return 1 ;; *) return 0 ;; esac; }
+
+# ---------------------------------------------------------------- configuration
+defaults() {
+    cfg_enabled=0
+    cfg_inherit_sms=1
+    cfg_url=''
+    cfg_method=POST
+    cfg_content_type=application/json
+    cfg_timeout=12
+    cfg_expect=''
+    cfg_headers=''
+    cfg_device=MU300
+    cfg_body='{"title":"来自{device}-来电","content":"来电号码: {number}\n来电时间: {time}\n{tag}\n\n本机号码: {self}\n开机时长: {uptime}\n运营商: {operator}\n信号: {signal}","template":"txt"}'
+    cfg_notify_ringing=1
+    cfg_notify_answered=0
+    cfg_notify_ended=1
+    cfg_notify_missed=1
+    cfg_poll=2
+}
+
+load_config() {
+    defaults
+    [ -r "$CONFIG" ] || return 0
+    json_load_file "$CONFIG" 2>/dev/null || return 0
+    json_get_var cfg_enabled enabled
+    json_get_var cfg_inherit_sms inherit_sms
+    json_get_var cfg_url url
+    json_get_var cfg_method method
+    json_get_var cfg_content_type content_type
+    json_get_var cfg_timeout timeout
+    json_get_var cfg_expect expect
+    json_get_var cfg_headers headers
+    json_get_var cfg_device device_name
+    json_get_var cfg_body body
+    json_get_var cfg_notify_ringing notify_ringing
+    json_get_var cfg_notify_answered notify_answered
+    json_get_var cfg_notify_ended notify_ended
+    json_get_var cfg_notify_missed notify_missed
+    json_get_var cfg_poll poll
+    for v in cfg_enabled cfg_inherit_sms cfg_notify_ringing cfg_notify_answered \
+             cfg_notify_ended cfg_notify_missed; do
+        eval "[ -n \"\$$v\" ] || $v=0"
+    done
+    num "$cfg_timeout" || cfg_timeout=12
+    num "$cfg_poll" || cfg_poll=2
+    [ -n "$cfg_device" ] || cfg_device=MU300
+}
+
+# One webhook serves both SMS and calls unless the user configures a separate
+# one here. Only the transport fields are inherited; the body stays call-specific.
+resolve_channel() {
+    [ "$cfg_inherit_sms" = 1 ] || return 0
+    [ -n "$cfg_url" ] && return 0
+    cfg_url=$(uci -q get e5-notify.forward.webhook_url 2>/dev/null)
+    [ -n "$cfg_url" ] || return 0
+    [ -n "$cfg_method" ] || cfg_method=$(uci -q get e5-notify.forward.webhook_method 2>/dev/null)
+    [ -n "$cfg_content_type" ] || cfg_content_type=$(uci -q get e5-notify.forward.webhook_content_type 2>/dev/null)
+    [ -n "$cfg_expect" ] || cfg_expect=$(uci -q get e5-notify.forward.webhook_expect 2>/dev/null)
+    [ -n "$cfg_headers" ] || cfg_headers=$(uci -q get e5-notify.forward.webhook_headers 2>/dev/null)
+    _t=$(uci -q get e5-notify.forward.webhook_timeout 2>/dev/null)
+    [ -n "$_t" ] && num "$_t" && cfg_timeout=$_t
+}
+
+save_config() {  # reads a JSON object from stdin
+    _c=$(cat)
+    mkdir -p "$DIR" || { reply_error storage_failed; return; }
+    printf '%s\n' "$_c" | ucode -e '
+        import * as fs from "fs";
+        let i = json(fs.readfile("/dev/stdin"));
+        let o = {
+            enabled: int(i.enabled) ? 1 : 0,
+            inherit_sms: int(i.inherit_sms) ? 1 : 0,
+            url: "" + (i.url ?? ""),
+            method: (i.method == "GET") ? "GET" : "POST",
+            content_type: (i.content_type ?? "application/json"),
+            timeout: int(i.timeout ?? 12),
+            expect: "" + (i.expect ?? ""),
+            headers: "" + (i.headers ?? ""),
+            device_name: "" + (i.device_name ?? "MU300"),
+            body: "" + (i.body ?? ""),
+            notify_ringing: int(i.notify_ringing) ? 1 : 0,
+            notify_answered: int(i.notify_answered) ? 1 : 0,
+            notify_ended: int(i.notify_ended) ? 1 : 0,
+            notify_missed: int(i.notify_missed) ? 1 : 0,
+            poll: int(i.poll ?? 2)
+        };
+        print(sprintf("%J\n", o));
+    ' > "$CONFIG.tmp" 2>/dev/null || { rm -f "$CONFIG.tmp"; reply_error invalid_config; return; }
+    mv "$CONFIG.tmp" "$CONFIG" || { reply_error storage_failed; return; }
+    reply_ok
+}
+
+config_json() {
+    json_add_object config
+    json_add_int enabled "$cfg_enabled"
+    json_add_int inherit_sms "$cfg_inherit_sms"
+    json_add_string url "$cfg_url"
+    json_add_string method "$cfg_method"
+    json_add_string content_type "$cfg_content_type"
+    json_add_int timeout "$cfg_timeout"
+    json_add_string expect "$cfg_expect"
+    json_add_string headers "$cfg_headers"
+    json_add_string device_name "$cfg_device"
+    json_add_string body "$cfg_body"
+    json_add_int notify_ringing "$cfg_notify_ringing"
+    json_add_int notify_answered "$cfg_notify_answered"
+    json_add_int notify_ended "$cfg_notify_ended"
+    json_add_int notify_missed "$cfg_notify_missed"
+    json_add_int poll "$cfg_poll"
+    json_close_object
+}
+
+# ------------------------------------------------------------------ device info
+fetch_info() {
+    _co=$(MU300_SIM_SLOT=0 "$AT" -t 6 'AT+COPS?' 2>/dev/null | tr -d '\r')
+    _operator=$(printf '%s' "$_co" | sed -n 's/^+COPS: *[0-9],[0-9],"\(.*\)",[0-9]*$/\1/p' | head -1)
+    _cs=$(MU300_SIM_SLOT=0 "$AT" -t 6 'AT+CSQ' 2>/dev/null | tr -d '\r')
+    _rssi=$(printf '%s' "$_cs" | sed -n 's/^+CSQ: *([0-9][0-9]*),.*/\1/p' | head -1)
+    if num "$_rssi" && [ "$_rssi" -le 31 ]; then
+        _signal="$(( -113 + 2 * _rssi ))dBm"
+    else
+        _signal=未知
+    fi
+    _cn=$(MU300_SIM_SLOT=0 "$AT" -t 6 'AT+CNUM' 2>/dev/null | tr -d '\r')
+    _self=$(printf '%s' "$_cn" | sed -n 's/^+CNUM: *[^,]*,"\([^"]*\)".*/\1/p' | head -1)
+    _up=$(awk '{s=int($1); printf "%02d:%02d:%02d", s/3600, (s%3600)/60, s%60}' /proc/uptime 2>/dev/null)
+    {
+        printf 'INFO_SELF=%s\n' "$(quote "${_self:-未知}")"
+        printf 'INFO_OPERATOR=%s\n' "$(quote "${_operator:-未知}")"
+        printf 'INFO_SIGNAL=%s\n' "$(quote "${_signal:-未知}")"
+        printf 'INFO_UPTIME=%s\n' "$(quote "${_up:-00:00:00}")"
+        printf 'INFO_TS=%s\n' "$(date +%s)"
+    } > "$INFO" 2>/dev/null
+}
+
+quote() { printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"; }
+
+refresh_info() {
+    [ -r "$INFO" ] && . "$INFO" 2>/dev/null
+    _age=$(( $(date +%s) - ${INFO_TS:-0} ))
+    if [ "$_age" -ge "$INFO_TTL" ]; then fetch_info; fi
+}
+
+# ------------------------------------------------------------- template render
+event_tag() {
+    case "$1" in
+    ringing)  printf '#CALL #CALL_IN' ;;
+    answered) printf '#CALL #CALL_ANSWER' ;;
+    ended)    printf '#CALL #CALL_END' ;;
+    missed)   printf '#CALL #CALL_MISSED' ;;
+    esac
+}
+
+tpl() {
+    printf '%s' "$1" \
+    | sed "s|{tag}|$(event_tag "$2")|g" \
+    | sed "s|{event}|$2|g" \
+    | sed "s|{number}|$3|g" \
+    | sed "s|{state}|$4|g" \
+    | sed "s|{time}|$5|g" \
+    | sed "s|{device}|$cfg_device|g" \
+    | sed "s|{self}|${INFO_SELF:-}|g" \
+    | sed "s|{operator}|${INFO_OPERATOR:-}|g" \
+    | sed "s|{signal}|${INFO_SIGNAL:-}|g" \
+    | sed "s|{uptime}|${INFO_UPTIME:-}|g"
+}
+
+record() {  # record <kind> <result> <code>
+    printf '%s|%s|%s|%s\n' "$(date +%s)" "$1" "$2" "${3:-}" >> "$HISTORY" 2>/dev/null
+    _n=$(wc -l < "$HISTORY" 2>/dev/null || echo 0)
+    if [ "${_n:-0}" -gt "$HISTORY_MAX" ]; then
+        tail -n "$HISTORY_MAX" "$HISTORY" > "$HISTORY.tmp" 2>/dev/null &&
+            mv "$HISTORY.tmp" "$HISTORY"
+    fi
+}
+
+expect_match() {
+    [ -n "$1" ] || return 0
+    _k=${1%%=*}; _w=${1#*=}
+    _g=$(printf '%s' "$2" | sed -n 's/.*"'"$_k"'":[[:space:]]*"\{0,1\}\(-*[0-9a-zA-Z]*\)"\{0,1\}.*/\1/p' | head -1)
+    [ "$_g" = "$_w" ]
+}
+
+send_event() {  # send_event <kind> <number> <state>
+    _kind=$1; _number=$2; _state=$3
+    if [ -z "$cfg_url" ]; then record "$_kind" invalid_destination ''; return 1; fi
+    _body=$(tpl "$cfg_body" "$_kind" "$_number" "$_state" "$(date '+%Y-%m-%d %H:%M:%S')")
+    set -- -s -m "$cfg_timeout" -o /tmp/mu300-call.body -w '%{http_code}'
+    [ "$cfg_method" = GET ] || set -- "$@" -X "$cfg_method"
+    if [ -n "$cfg_headers" ]; then
+        _old=$IFS; IFS=$NL
+        for _h in $cfg_headers; do [ -n "$_h" ] && set -- "$@" -H "$_h"; done
+        IFS=$_old
+    fi
+    set -- "$@" -H "Content-Type: $cfg_content_type"
+    set -- "$@" --data "$_body" "$cfg_url"
+    _code=$(curl "$@" 2>/dev/null)
+    _resp=$(cat /tmp/mu300-call.body 2>/dev/null)
+    case "$_code" in 2*|3*) _result=sent ;; *) _result=service_rejected ;; esac
+    if [ "$_result" = sent ] && ! expect_match "$cfg_expect" "$_resp"; then
+        _result=service_answer_missing
+    fi
+    record "$_kind" "$_result" "$_code"
+    [ "$_result" = sent ] || logger -t mu300-call "forward $_kind failed (${_code:-no-connection})" 2>/dev/null
+    [ "$_result" = sent ]
+}
+
+# ------------------------------------------------------------------ call watch
+# AT+CLCC rows look like: +CLCC: 1,1,4,0,0,"+8613800000000",145
+# dir 0 = mobile originated, 1 = mobile terminated
+# stat 0 = active, 1 = held, 2 = dialing, 3 = alerting, 4 = incoming, 5 = waiting
+parse_calls() {
+    : > /tmp/mu300-clcc.$$
+    _slots=$(uci -q get unisoc_modem.main.sim_slots 2>/dev/null)
+    num "$_slots" || _slots=1
+    _slot=0
+    while [ "$_slot" -lt "$_slots" ]; do
+        MU300_SIM_SLOT=$_slot "$AT" -t 6 'AT+CLCC' 2>/dev/null | tr -d '\r' |
+            sed -n 's/^+CLCC: */'"$_slot"'|&/p' |
+            sed 's/|+CLCC: /|/' >> /tmp/mu300-clcc.$$
+        _slot=$(( _slot + 1 ))
+    done
+}
+
+poll_once() {
+    parse_calls
+    _prev=$(cat "$STATE" 2>/dev/null)
+    _phase=$(printf '%s' "$_prev" | cut -d'|' -f1)
+    _prev_number=$(printf '%s' "$_prev" | cut -d'|' -f2)
+
+    # Only incoming calls matter here; outgoing ones are the user's own doing.
+    _cur=''
+    _oldifs=$IFS; IFS=$NL
+    for _row in $(cat /tmp/mu300-clcc.$$ 2>/dev/null); do
+        IFS=$_oldifs
+        _slot=${_row%%|*}; _rest=${_row#*|}
+        IFS=',' read -r _idx _dir _stat _mode _mpty _number _type <<EOF
+$_rest
+EOF
+        IFS=$NL
+        [ "$_dir" = 1 ] || continue
+        _number=$(printf '%s' "$_number" | tr -d '"' | tr -d ' ')
+        case "$_stat" in
+        4|5) _cur="ringing|$_number" ;;
+        0)   [ -n "$_cur" ] || _cur="active|$_number" ;;
+        esac
+    done
+    IFS=$_oldifs
+    rm -f /tmp/mu300-clcc.$$
+
+    _new_phase=${_cur%%|*}
+    _new_number=${_cur#*|}
+    [ -n "$_new_phase" ] || _new_number=''
+
+    if [ "$_new_phase" = ringing ] && [ "$_phase" != ringing ]; then
+        [ "$cfg_notify_ringing" = 1 ] && send_event ringing "$_new_number" ringing
+    elif [ "$_new_phase" = active ] && [ "$_phase" != active ]; then
+        [ "$cfg_notify_answered" = 1 ] && send_event answered "$_new_number" active
+    elif [ -z "$_new_phase" ] && [ -n "$_phase" ]; then
+        if [ "$_phase" = ringing ]; then
+            [ "$cfg_notify_missed" = 1 ] && send_event missed "$_prev_number" ended
+        else
+            [ "$cfg_notify_ended" = 1 ] && send_event ended "$_prev_number" ended
+        fi
+    fi
+
+    printf '%s|%s\n' "$_new_phase" "$_new_number" > "$STATE" 2>/dev/null
+}
+
+status_json() {
+    json_add_object status
+    json_add_int enabled "$cfg_enabled"
+    json_add_int running "$(pgrep -f 'unisoc-modem/call-forward run' >/dev/null 2>&1 && echo 1 || echo 0)"
+    json_add_int inherit_sms "$cfg_inherit_sms"
+    json_add_string channel "$([ -n "$cfg_url" ] && echo own || echo none)"
+    _sms=$(uci -q get e5-notify.forward.webhook_url 2>/dev/null)
+    json_add_string sms_url "$_sms"
+    _last=$(tail -n 1 "$HISTORY" 2>/dev/null)
+    if [ -n "$_last" ]; then
+        json_add_string last_result "$(printf '%s' "$_last" | cut -d'|' -f3)"
+        json_add_string last_code "$(printf '%s' "$_last" | cut -d'|' -f4)"
+    else
+        json_add_string last_result idle
+        json_add_string last_code ''
+    fi
+    json_add_array history
+    _rows=$(tail -n "$HISTORY_MAX" "$HISTORY" 2>/dev/null | tac 2>/dev/null)
+    _old=$IFS; IFS=$NL
+    for _row in $_rows; do
+        [ -n "$_row" ] || continue
+        _ts=${_row%%|*}; _r=${_row#*|}
+        _kind=${_r%%|*}; _r=${_r#*|}
+        _res=${_r%%|*}; _code=${_r#*|}
+        json_add_object
+        json_add_string kind "$_kind"
+        json_add_string result "$_res"
+        json_add_string http_code "$_code"
+        json_add_string time "$_ts"
+        json_close_object
+    done
+    IFS=$_old
+    json_close_array
+    json_close_object
+}
+
+run() {
+    while :; do
+        load_config
+        if [ "$cfg_enabled" = 1 ]; then
+            resolve_channel
+            refresh_info
+            poll_once
+            sleep "$cfg_poll"
+        else
+            sleep 10
+        fi
+    done
+}
+
+case "${1:-run}" in
+run)        run ;;
+get)
+    load_config
+    resolve_channel
+    json_init
+    config_json
+    status_json
+    json_dump
+    ;;
+status)
+    load_config
+    resolve_channel
+    json_init
+    status_json
+    json_dump
+    ;;
+set)
+    save_config
+    ;;
+log-clear)
+    : > "$HISTORY" 2>/dev/null || { reply_error storage_failed; exit 0; }
+    reply_ok
+    ;;
+test-run)
+    load_config
+    resolve_channel
+    refresh_info
+    send_event test "+8613800000000" ringing && reply_ok || reply_error delivery_failed
+    ;;
+# The page must not wait on a live HTTP request, so the test runs detached and
+# the page polls the history for the result.
+test-start)
+    ( "$0" test-run >/dev/null 2>&1 ) &
+    reply_ok
+    ;;
+*)
+    echo "usage: call-forward {run|get|status|set|test-start|test-run|log-clear}" >&2
+    exit 2
+    ;;
+esac
