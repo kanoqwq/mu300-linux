@@ -143,18 +143,55 @@ config_json() {
 }
 
 # ------------------------------------------------------------------ device info
+ucs2_decode() {
+    # Modems commonly return AT+COPS? operator names as a UCS-2 hex payload
+    # ("4E2D56FD8054901A"). Decode it to UTF-8 so the template shows text.
+    _uh="$1"
+    _ui=0
+    _uo=""
+    _un=${#_uh}
+    while [ "$_ui" -lt "$_un" ]; do
+        _uc=$((0x${_uh:_ui:4}))
+        _b1=$((0xE0 | _uc / 4096))
+        _b2=$((0x80 | (_uc / 64 % 64)))
+        _b3=$((0x80 | (_uc % 64)))
+        _ue=$(printf '\\x%02x\\x%02x\\x%02x' "$_b1" "$_b2" "$_b3")
+        _uo="${_uo}$(printf '%b' "$_ue")"
+        _ui=$((_ui + 4))
+    done
+    printf '%s' "$_uo"
+}
+
 fetch_info() {
     _co=$(MU300_SIM_SLOT=0 "$AT" -t 6 'AT+COPS?' 2>/dev/null | tr -d '\r')
-    _operator=$(printf '%s' "$_co" | sed -n 's/^+COPS: *[0-9],[0-9],"\(.*\)",[0-9]*$/\1/p' | head -1)
-    _cs=$(MU300_SIM_SLOT=0 "$AT" -t 6 'AT+CSQ' 2>/dev/null | tr -d '\r')
-    _rssi=$(printf '%s' "$_cs" | sed -n 's/^+CSQ: *([0-9][0-9]*),.*/\1/p' | head -1)
-    if num "$_rssi" && [ "$_rssi" -le 31 ]; then
-        _signal="$(( -113 + 2 * _rssi ))dBm"
+    _opraw=$(printf '%s' "$_co" | sed -n 's/^+COPS: *[0-9],[0-9],"\(.*\)",[0-9]*$/\1/p' | head -1)
+    case "$_opraw" in
+        '') _operator= ;;
+        *[!0-9A-Fa-f]*) _operator="$_opraw" ;;
+        *) [ $(( ${#_opraw} % 4 )) -eq 0 ] && _operator=$(ucs2_decode "$_opraw") || _operator="$_opraw" ;;
+    esac
+
+    # Data-session modems often report CSQ 99; CESQ carries a usable RSRP index.
+    _ce=$(MU300_SIM_SLOT=0 "$AT" -t 6 'AT+CESQ' 2>/dev/null | tr -d '\r')
+    _rsrp=$(printf '%s' "$_ce" | sed -n 's/^+CESQ: *//p' | awk -F', *' '{ for (i = 6; i <= NF; i++) if ($i + 0 > 0 && $i + 0 <= 97) { print $i; exit } }')
+    if num "$_rsrp"; then
+        _signal="$(( -140 + _rsrp ))dBm"
     else
-        _signal=未知
+        _cs=$(MU300_SIM_SLOT=0 "$AT" -t 6 'AT+CSQ' 2>/dev/null | tr -d '\r')
+        _rssi=$(printf '%s' "$_cs" | sed -n 's/^+CSQ: *\([0-9][0-9]*\)[,].*/\1/p' | head -1)
+        if num "$_rssi" && [ "$_rssi" -gt 0 ] && [ "$_rssi" -le 31 ]; then
+            _signal="$(( -113 + 2 * _rssi ))dBm"
+        else
+            _signal=
+        fi
     fi
+
     _cn=$(MU300_SIM_SLOT=0 "$AT" -t 6 'AT+CNUM' 2>/dev/null | tr -d '\r')
     _self=$(printf '%s' "$_cn" | sed -n 's/^+CNUM: *[^,]*,"\([^"]*\)".*/\1/p' | head -1)
+    case "$_self" in
+        86???????????) _self="+$_self" ;;
+        86??????????) _self="+$_self" ;;
+    esac
     _up=$(awk '{s=int($1); printf "%02d:%02d:%02d", s/3600, (s%3600)/60, s%60}' /proc/uptime 2>/dev/null)
     {
         printf 'INFO_SELF=%s\n' "$(quote "${_self:-未知}")"
