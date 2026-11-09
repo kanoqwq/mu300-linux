@@ -142,7 +142,9 @@ for (let s in specs) {
 	let b = {
 		name: s.name, dev: s.dev, chan: basename(s.dev), dir: s.dir, urcdir: s.dir + '/urc',
 		reopen: (s.reopen ?? '1') != '0', ready: s.ready ?? '',
-		pool: env('MU300_SMS_POOL', '/etc/mu300/sms') + (match(s.dev, /stty_nr[345]$/) ? '/sim1' : ''),
+		// The ingress port cannot prove a CMT's receiving slot. Keep raw
+		// unscoped frames separate from both user inboxes and do not ACK them.
+		pool: env('MU300_SMS_POOL', '/etc/mu300/sms') + '/unassigned',
 		queue: [], cur: null, phase: 'closed', clean: false, silent: 0, last_reopen: 0, reply: [],
 		t_quiet: null, t_max: null, t_collect: null, drain_then: null, drain_wait: 0, served: false
 	};
@@ -190,8 +192,8 @@ const registration = cache(env('MU300_REGISTRATION_DIR', RUN + '/mu300-registrat
 	(name, data) => { if (bus) bus.event(name, data); });
 function urc_event(chan, line) {
 	// NR0 is the sole unsolicited ingress. A spool completion is an internal
-	// notification, carrying the existing pool owner for its one importer/ACK.
-	if (chan != 'stty_nr0' && index(['+CMT (PDU spooled)', '+CMT (not spooled)'], line) < 0) return;
+	// notification to request slot-scoped storage reads, never a slot identity.
+	if (chan != 'stty_nr0' && index(['+CMT (unassigned PDU saved)', '+CMT (not spooled)'], line) < 0) return;
 	if (bus)
 		bus.event('mu300.modem.urc', { channel: chan, line: line });
 }
@@ -329,21 +331,21 @@ function cmt_end(c, pdu) {
 		f.timer.cancel();
 	let ok = false;
 	if (executable(CMT_SPOOL)) {
-		let p = popen('MU300_SMS_POOL=' + shq(c.broker.pool) + ' ' + shq(CMT_SPOOL) + ' >/dev/null 2>&1', 'w');
+		let p = popen('MU300_CMT_UNASSIGNED=1 MU300_SMS_POOL=' + shq(c.broker.pool) + ' ' + shq(CMT_SPOOL) + ' >/dev/null 2>&1', 'w');
 		if (p) {
 			p.write(f.header + '\n' + pdu + '\n');
 			ok = (p.close() == 0);
 		}
 	}
 	if (ok)
-		log_line(f.log, '+CMT (PDU spooled)');
+		log_line(f.log, '+CMT (unassigned PDU saved)');
 	else {
 		log('a message delivered directly (+CMT) could not be spooled; it stays unacknowledged');
 		log_line(f.log, '+CMT (not spooled)');
 	}
-	// mu300-smsd pools and acknowledges a spooled frame when it hears of it: the log's fixed words, never the header
-	// or the PDU
-	urc_event(c.name, ok ? '+CMT (PDU spooled)' : '+CMT (not spooled)');
+	// Receivers query their explicitly selected storages after this hint. A raw
+	// CMT has no slot identity and is never imported or acknowledged by port.
+	urc_event(c.name, ok ? '+CMT (unassigned PDU saved)' : '+CMT (not spooled)');
 }
 function cmt_start(c, header, logpath) {
 	c.cmt = { header: header, tries: 0, log: logpath, timer: null };

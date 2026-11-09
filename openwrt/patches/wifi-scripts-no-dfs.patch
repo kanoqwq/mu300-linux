@@ -14,9 +14,48 @@
 +	phy_capabilities.freqs = band?.freqs ?? [];
  
  	phy_capabilities.ht_capa = band.ht_capa ?? 0;
-@@ -486,4 +488,43 @@
+@@ -486,4 +488,82 @@
  }
  
++/* Backport dikeckaan/mu300-linux#432: a 5 GHz ACS list can survive a LuCI
++ * band change. Filter against the selected band's actual wiphy frequencies;
++ * otherwise ACS on 2.4 GHz receives e.g. 36 40 44 48 and cannot start the AP.
++ * Keep valid lists and widths unchanged, including user-supplied ranges. */
++function device_chanlist_band(config) {
++	let list = config.chanlist;
++	if (list == null || !length(phy_capabilities.freqs))
++		return;
++	if (type(list) != 'array')
++		list = [ list ];
++	let chans = {};
++	for (let f in phy_capabilities.freqs) {
++		let chan = f.freq == 2484 ? 14 : f.freq == 5935 ? 2 :
++			f.freq < 2500 ? (f.freq - 2407) / 5 :
++			f.freq < 5950 ? (f.freq - 5000) / 5 : (f.freq - 5950) / 5;
++		chans[chan] = true;
++	}
++	let keep = [], dropped = [];
++	for (let entry in list)
++		for (let item in split(trim(`${entry}`), /[ \t]+/)) {
++			if (item == '')
++				continue;
++			let ends = match(item, /^([1-9][0-9]*)(-([1-9][0-9]*))?$/);
++			if (!ends || !chans[+ends[1]] ||
++			    (ends[3] && (!chans[+ends[3]] || +ends[1] > +ends[3])))
++				push(dropped, item);
++			else
++				push(keep, item);
++		}
++	if (!length(dropped))
++		return;
++	log(`channel list: ${join(' ', dropped)} not on the ${config.band} band or invalid, left out` +
++	    (length(keep) ? '' : '; automatic channel selection uses the whole band'));
++	if (length(keep))
++		config.chanlist = keep;
++	else
++		delete config.chanlist;
++}
++
 +/* mu300: an AP on a DFS channel needs radar detection; without it hostapd's start_dfs_cac() fails and the AP never
 + * comes up (the SC2355 driver: mu300-linux docs/FINDINGS.md 40). For such a driver an explicit DFS channel becomes
 + * channel 36, keeping htmode exactly as configured. Never select 149 or narrow the bandwidth.
@@ -58,9 +97,11 @@
 +
  function generate(config) {
  	if (!config)
-@@ -495,4 +536,6 @@
+@@ -495,4 +575,8 @@
  
  	set_device_defaults(config);
++
++	device_chanlist_band(config);
 +
 +	device_no_dfs(config);
  

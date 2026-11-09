@@ -82,6 +82,17 @@ class Multipart(unittest.TestCase):
         self.receive('A',source='sim');self.receive('B',part=2)
         self.assertIn('source: sim\n',self.messages()[0].read_text())
 
+    def test_stored_live_multipart_and_mixed_history(self):
+        # Arrival order must not promote any historical part to a live event.
+        for first, second, expected in [('stored-live','stored-live','stored-live'),
+                                        ('direct','stored-live','stored-live'),
+                                        ('sim','stored-live','sim'),
+                                        ('stored-live','sim','sim')]:
+            ref=50+len(self.messages())
+            self.receive('head',ref=ref,source=first)
+            self.receive('tail',ref=ref,part=2,source=second)
+            self.assertIn('source: '+expected+'\n',self.messages()[-1].read_text())
+
     def test_deleted_message_retry_does_not_resurrect(self):
         self.receive('A');self.receive('B',part=2)
         result=self.command('delete','000001');self.assertEqual(result.returncode,0,result.stderr)

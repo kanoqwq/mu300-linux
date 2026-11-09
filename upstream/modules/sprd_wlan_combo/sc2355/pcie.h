@@ -68,8 +68,7 @@ static inline void pcie_free_msg_content(struct sprd_msg *msg)
 
 }
 
-void sc2355_tx_free_pcie_data_num(struct sprd_hif *hif, unsigned char *data);
-int sc2355_tx_free_pcie_data(unsigned char *data);
+int sc2355_tx_free_pcie_data(unsigned char *data, int len);
 int sc2355_tx_addr_trans_pcie(struct sprd_hif *hif,
 			      unsigned char *data, int len, bool send_now);
 

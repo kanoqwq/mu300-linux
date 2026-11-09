@@ -381,6 +381,20 @@ class Buttons(ShellTest):
                     self.assertEqual(calls.count('mu300-wifi-band toggle'), toggles, calls)
                     self.assertEqual(calls.count('systemctl start mu300-hotspot'), hotspot, calls)
 
+    def test_u30air_shutdown_feedback_precedes_poweroff_and_cancels_on_failure(self):
+        self.stub('mu300-keys', 'echo "116 long"')
+        self.stub('mu300-led', 'echo "mu300-led $*" >> "$STUBLOG/calls"')
+        self.stub('logger', 'exit 0')
+        self.stub('systemctl', 'echo "systemctl $*" >> "$STUBLOG/calls"; exit "${TEST_POWEROFF_STATUS:-0}"')
+        for shell in self.each_shell():
+            for status in ('0','1'):
+                (self.tmp/'calls').write_text('')
+                result=self.script(shell,BIN/'mu300-buttons',TEST_BUTTON_DEVICE='u30air',TEST_POWEROFF_STATUS=status)
+                self.assertEqual(result.returncode,0,result.stderr)
+                wanted=['mu300-led wake','mu300-led shutdown','systemctl poweroff']
+                if status=='1':wanted.append('mu300-led shutdown off')
+                self.assertEqual((self.tmp/'calls').read_text().splitlines(),wanted)
+
 
 class ThermalGuard(ShellTest):
     """thermal-guard's LED alarm (one round against a fake /: MU300_SYSROOT)."""

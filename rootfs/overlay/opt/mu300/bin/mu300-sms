@@ -471,10 +471,9 @@ sim_list() {
 
 # ------------------------------------------------------------------ commands
 cmd_sync() {
-    # Direct delivery is PDU-only. The legacy text-mode reader would leave
-    # CMGF=1 behind and turn the next +CMT into an undecodable body. PDU
-    # archival both imports and frees the exceptional SIM-resident messages.
-    if [ -f "$DIRECT_FLAG" ]; then
+    # Scoped native reception and legacy direct mode are PDU-only. Manual
+    # refresh must use the same importer so multipart identity is retained.
+    if [ -n "${MU300_SIM_SLOT:-}" ] || [ -f "$DIRECT_FLAG" ]; then
         cmd_archive_sim
         return $?
     fi
@@ -592,7 +591,11 @@ import_multipart() {
         [ -f "$group/$p" ] || { echo "multipart SMS: saved part $part/$total"; return 0; }
         hashes="$hashes $(hdr "$group/$p" fingerprint)"
         joined="$joined$(body_of "$group/$p")"
-        [ "$(hdr "$group/$p" source)" = direct ] || finalsource=sim
+        case $(hdr "$group/$p" source) in
+            direct) ;;
+            stored-live) [ "$finalsource" = sim ] || finalsource=stored-live ;;
+            *) finalsource=sim ;;
+        esac
         p=$((p + 1))
     done
     finalhash=$(printf '%s' "$hashes" | md5sum | cut -d' ' -f1)
@@ -618,7 +621,7 @@ import_multipart() {
 cmd_import_pdu() {
     local file=${1:-} pdu decoded idx peer scts ref total part body hash text_hash f known= newid= coding=pdu
     local source=${2:-direct} scheme=
-    case $source in direct|sim) ;; *) die "invalid SMS source" ;; esac
+    case $source in direct|sim|stored-live) ;; *) die "invalid SMS source" ;; esac
     [ -f "$file" ] || die "direct SMS spool file is missing"
     IFS= read -r pdu < "$file" || die "direct SMS spool file is empty"
     case $pdu in ''|*[!0123456789abcdefABCDEF]*) die "invalid direct SMS PDU" ;; esac
@@ -683,6 +686,8 @@ cmd_archive_sim() {
     sms_op_lock
     pool_init
     local reply tmp sorted idx stat pdu check hash archive part count=0 planned used
+    local receive_source=${MU300_SMS_IMPORT_SOURCE:-sim}
+    case $receive_source in sim|stored-live) ;; *) die "invalid archive receive source" ;; esac
     reply=$(at 'AT+CPMS="SM"' 6) || die "cannot select SIM storage"
     printf '%s\n' "$reply" | grep -q '^OK' || die "SIM storage was refused"
     used=$(printf '%s\n' "$reply" | awk -F'[,:]' '/^\+CPMS:/ { gsub(/ /,"",$2); print $2; exit }')
@@ -727,7 +732,7 @@ cmd_archive_sim() {
         fi
         [ "$(cat "$archive" 2>/dev/null)" = "$pdu" ] || break
         sync "$archive" "$POOL/archive" 2>/dev/null || sync
-        case $stat in 0|1) "$0" import-pdu "$archive" sim || break ;; esac
+        case $stat in 0|1) "$0" import-pdu "$archive" "$receive_source" || break ;; esac
         reply=$(at "AT+CMGD=$idx" 6) || break
         printf '%s\n' "$reply" | grep -q '^OK' || break
         count=$((count + 1))
@@ -938,19 +943,17 @@ SMS_DELETE_PAUSED=0
 sim_delete_restore() {
     [ "$SMS_DELETE_PAUSED" = 1 ] || return 0
     SMS_DELETE_PAUSED=0
-    if at 'AT+CMGF=0' 6 | grep -q '^OK' &&
-       at 'AT+CNMI=3,2,2,1,1' 6 | grep -q '^OK'; then
-        return 0
-    fi
+    # Upgrades may leave a legacy direct-mode marker. Never re-enable unscoped
+    # CMT routing after a delete; preserve the same slot-scoped receive mode.
     rm -f "$DIRECT_FLAG"
-    at 'AT+CNMI=2,1,0,0,0' 6 >/dev/null 2>&1 || true
-    echo "mu300-sms: direct SMS delivery could not be restored; SIM fallback enabled" >&2
-    return 1
+    at 'AT+CMGF=0' 6 | grep -q '^OK' &&
+        at 'AT+CNMI=2,1,0,0,0' 6 | grep -q '^OK'
 }
+
 sim_delete() {
     local rc
     sms_op_lock
-    if [ -f "$DIRECT_FLAG" ]; then
+    if [ -n "${MU300_SIM_SLOT:-}" ] || [ -f "$DIRECT_FLAG" ]; then
         if ! at 'AT+CNMI=2,1,0,0,0' 6 | grep -q '^OK'; then
             sms_op_unlock
             return 1

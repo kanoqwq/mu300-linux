@@ -227,7 +227,7 @@ let presses = [], pressing = false, wifi_last = null, key_model = null;
 let press_next;
 function button_done(argv, cb) {
     let timer = null;
-    let p = spawn(argv, () => { if (timer) timer.cancel(); cb(); });
+    let p = spawn(argv, (code) => { if (timer) timer.cancel(); cb(code); });
     timer = deadline(DEADLINE, p);
 }
 function button_model() {
@@ -246,7 +246,16 @@ function press_rest(code, kind) {
         wifi_last = null;
         if (kind == 'long') {
             log('mu300-buttons', 'power button held: shutting down');
-            button_done(is_openwrt() ? ['poweroff'] : ['systemctl','poweroff'], () => press_next());
+            let shutdown = function() {
+                button_done(is_openwrt() ? ['poweroff'] : ['systemctl','poweroff'], (code) => {
+                    if (code != 0 && button_model() == 'u30air')
+                        spawn(['mu300-led','shutdown','off'], () => { if (parts.led) led_arm(); press_next(); });
+                    else press_next();
+                });
+            };
+            if (button_model() == 'u30air')
+                spawn(['mu300-led','shutdown'], () => { if (parts.led) led_arm(); shutdown(); });
+            else shutdown();
         } else press_next();
         return;
     }
@@ -302,9 +311,9 @@ function led_observe() {
         let on=rd(PSY+'/bq256xx-charger/online');
         if(on==null)on=(st=='Charging' || st=='Full')?'1':'0';
         if(on!='1')st='Discharging';
-        let color=+cap>=50?'white':'blue', mode='steady';
+        let color=+cap<10?'red':(+cap>=50?'white':'blue'), mode='steady';
         if(st=='Full')color='white';
-        if(st=='Charging') {mode='breathe';if(+cap<10)color='red';}
+        if(st=='Charging')mode='breathe';
         battery=digits(cap) && +cap<=100?color+':'+mode+':'+(on=='1'?'1':'0'):'unavailable';
     }
     return [battery,rd(LEDDIR+'/.awake-until'),rd(LEDDIR+'/.boot-chase'),
@@ -312,6 +321,7 @@ function led_observe() {
 }
 let led_timer = null, led_soon_timer = null, led_ticking = false, led_again = false;
 function led_look() {
+    if (exists(LEDDIR+'/.shutdown')) { led_arm(); return; }
     if (led_ticking) { led_again = true; return; }
     led_hint_load();
     let observed=led_observe();
@@ -327,6 +337,9 @@ function led_look() {
     });
 }
 led_arm = function() {
+    if (exists(LEDDIR+'/.shutdown')) {
+        led_timer?.cancel(); led_timer=null; return;
+    }
     led_hint_load();
     let on=rd(PSY+'/bq256xx-charger/online'), safety=on=='1'?30:90;
     let left=led_hint?min(safety,led_hint.due-now()):5;

@@ -96,6 +96,62 @@ Path(os.environ['SLACK_RESULT']).write_text(Path('/proc/self/timerslack_ns').rea
         self.assertEqual(p.returncode,0,p.stderr)
         self.assertNotEqual(int((self.base/'slack').read_text()),500000000)
 
+    def test_late_battery_event_cannot_hide_expired_wifi_sleep_from_sysd(self):
+        led=TOP/'rootfs/overlay/opt/mu300/bin/mu300-led'
+        realbin=led.parent
+        (self.root/'proc/uptime').unlink()
+        (self.root/'proc/uptime').write_text('100.00 0.00\n')
+        (self.root/'run/mu300/device').write_text('u30air\n')
+        for name in ('net_blue','keyboard-backlight','zte-ldo0','zte-ldo1','zte-ldo2','sc27xx:red','sc27xx:green','sc27xx:blue'):
+            lamp=self.root/'sys/class/leds'/name;lamp.mkdir(parents=True)
+            (lamp/'brightness').write_text('0\n');(lamp/'max_brightness').write_text('255\n')
+            (lamp/'trigger').write_text('[none] timer pattern\n')
+        battery=self.root/'sys/class/power_supply/sc27xx-fgu';battery.mkdir(parents=True)
+        (battery/'capacity').write_text('65\n');(battery/'status').write_text('Discharging\n')
+        charger=battery.parent/'bq256xx-charger';charger.mkdir();(charger/'online').write_text('0\n')
+        self.stub('uci', '#!/bin/sh\n[ "$3" != system.mu300_leds.timeout ] || echo 60\n')
+        self.stub('iw', '#!/bin/sh\necho "channel 36 (5180 MHz)"\n')
+        # Execute the real detector from a private executable fixture. A
+        # read-only Windows Docker bind need not preserve source execute bits.
+        self.stub('mu300-device',(realbin/'mu300-device').read_text())
+        env=dict(self.env,REAL_LED=str(led))
+        probe=subprocess.run(['sh',str(self.bin/'mu300-device')],env=env,capture_output=True,text=True)
+        self.assertEqual(probe.stdout.strip(),'u30air',probe.stderr)
+        for args in (('wake',),('wifi','on')):
+            initial=subprocess.run(['sh','-x',str(led),*args],env=env,check=True,capture_output=True,text=True)
+        self.assertNotEqual((self.root/'sys/class/leds/zte-ldo1/brightness').read_text().strip(),'0',initial.stderr)
+        self.stub('mu300-led', '''#!/bin/sh
+printf '%s\\n' "$1" >> "$MU300_SYSROOT/calls"
+sh "$REAL_LED" "$@"
+result=$?
+[ "$1" != tick ] || touch "$MU300_SYSROOT/tick-done"
+exit "$result"
+''')
+        helper=self.stub('keys', '''#!/usr/bin/python3
+import ctypes,os,subprocess,time
+from pathlib import Path
+ctypes.CDLL(None).prctl(1,15)
+root=Path(os.environ['MU300_SYSROOT'])
+while not (root/'tick-done').exists():time.sleep(.02)
+time.sleep(.3)
+root.joinpath('proc/uptime').write_text('161.00 0.00\\n')
+subprocess.run(['sh',os.environ['REAL_LED'],'battery'],check=True)
+print('uevent power_supply',flush=True)
+time.sleep(60)
+''')
+        env.update(MU300_KEYS_BIN=str(helper),MU300_SYSD_PARTS='led')
+        daemon=subprocess.Popen(['ucode',str(SYSD)],env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        wifi=self.root/'sys/class/leds/zte-ldo1/brightness'
+        try:
+            until=time.monotonic()+10
+            while time.monotonic()<until and wifi.read_text().strip()!='0':time.sleep(.05)
+            self.assertEqual(wifi.read_text().strip(),'0','late battery event postponed whole-board sleep')
+            self.assertEqual((self.root/'calls').read_text().splitlines(),['tick','tick'])
+            time.sleep(.3)
+            self.assertEqual((self.root/'calls').read_text().splitlines(),['tick','tick'])
+        finally:
+            daemon.send_signal(signal.SIGTERM);daemon.communicate(timeout=5)
+
     def test_color_change_during_tick_is_not_acknowledged_by_completion(self):
         psy=self.root/'sys/class/power_supply'
         (psy/'sc27xx-fgu').mkdir(parents=True)

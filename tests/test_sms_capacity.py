@@ -44,42 +44,6 @@ class SmsCapacity(unittest.TestCase):
             self.assertIn('multipart_total: 1\n', headers + '\n')
             self.assertIn('multipart_part: 1\n', headers + '\n')
 
-    def test_receiver_scans_hidden_spool_and_acknowledges_after_import(self):
-        daemon = (TOP / 'rootfs/overlay/opt/mu300/bin/mu300-smsd').read_text()
-        process = daemon[daemon.index('process_spool() {'):daemon.index('sync_fallback() {')]
-        with tempfile.TemporaryDirectory() as tmp:
-            temp = Path(tmp)
-            pool = temp / 'pool'
-            env = dict(os.environ, MU300_SMS_POOL=str(pool), MU300_SMS_PDU_AWK=str(PDU_AWK),
-                       SMS=str(SMS), SPOOL=str(pool / 'incoming'), TEST_POOL=str(pool),
-                       TEST_ACK=str(temp / 'ack.log'), TEST_ACK_FAIL='1')
-            spooled = subprocess.run([str(SPOOL)],
-                                     input='+CMT: ,20\n00040481214300006201702143650005E8329BFD06\n',
-                                     env=env, capture_output=True, text=True, timeout=15)
-            self.assertEqual(spooled.returncode, 0, spooled.stderr)
-            ready = list((pool / 'incoming').glob('*.ready'))
-            self.assertEqual(len(ready), 1)
-            self.assertTrue(ready[0].name.startswith('.cmt.'))
-            code = '''
-mu300-at() {
-    [ -f "$TEST_POOL/msg/000001" ] || return 1
-    printf '%s\\n' "$*" >> "$TEST_ACK"
-    [ "$TEST_ACK_FAIL" != 1 ] || { printf 'ERROR\\n'; return 1; }
-    printf 'OK\\n'
-}
-''' + daemon[daemon.index('sms_at() {'):daemon.index('\n# one daemon')]+process + '\nprocess_spool\n'
-            result = subprocess.run(['bash', '-c', code], env=env, capture_output=True,
-                                    text=True, timeout=15)
-            self.assertNotEqual(result.returncode, 0)
-            self.assertTrue(ready[0].exists(), 'failed modem ACK must retain the original PDU')
-            env['TEST_ACK_FAIL'] = '0'
-            result = subprocess.run(['bash', '-c', code], env=env, capture_output=True,
-                                    text=True, timeout=15)
-            self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual((temp / 'ack.log').read_text(), '-t 5 AT+CNMA=1\n' * 2)
-            self.assertFalse(ready[0].exists())
-            self.assertEqual((pool / 'next_id').read_text(), '1\n')
-            self.assertEqual((pool / 'msg/000001').read_text().split('\n\n', 1)[1], 'hello\n')
 
     def test_import_preserves_body_with_empty_ref_and_multipart_ref(self):
         # UCS-2 avoids relying on a mock decoder and includes Chinese plus
@@ -128,7 +92,7 @@ mu300-at() {
     def test_direct_mode_never_switches_to_text_during_manual_sync_or_send(self):
         sms = SMS.read_text(encoding='utf-8')
         daemon = (TOP / 'rootfs/overlay/opt/mu300/bin/mu300-smsd').read_text(encoding='utf-8')
-        self.assertIn('if [ -f "$DIRECT_FLAG" ]; then\n        cmd_archive_sim', sms)
+        self.assertIn('if [ -n "${MU300_SIM_SLOT:-}" ] || [ -f "$DIRECT_FLAG" ]; then\n        cmd_archive_sim', sms)
         send = sms.split('cmd_send() {', 1)[1].split('cmd_delete() {', 1)[0]
         self.assertNotIn("at 'AT+CMGF=1'", send)
         fallback = daemon.split('sync_fallback() {', 1)[1].split('signature() {', 1)[0]
@@ -199,7 +163,7 @@ esac
             self.assertNotEqual(result.returncode, 0)
             self.assertFalse(log.exists())
 
-    def test_manual_sim_delete_restores_direct_delivery_on_failure(self):
+    def test_manual_sim_delete_retires_legacy_direct_marker_on_failure(self):
         with tempfile.TemporaryDirectory() as tmp:
             temp = Path(tmp)
             pool = temp / 'pool'
@@ -227,10 +191,10 @@ esac
                                     capture_output=True, text=True)
             self.assertNotEqual(result.returncode, 0)
             self.assertTrue((pool / 'msg/000001').exists())
-            self.assertTrue(flag.exists())
+            self.assertFalse(flag.exists())
             commands = log.read_text().splitlines()
             self.assertEqual(commands[0], 'AT+CNMI=2,1,0,0,0')
-            self.assertEqual(commands[-2:], ['AT+CMGF=0', 'AT+CNMI=3,2,2,1,1'])
+            self.assertEqual(commands[-2:], ['AT+CMGF=0', 'AT+CNMI=2,1,0,0,0'])
 
     def test_sim_delete_failure_is_not_downgraded_to_local_delete(self):
         rpc = RPC.read_text(encoding='utf-8')

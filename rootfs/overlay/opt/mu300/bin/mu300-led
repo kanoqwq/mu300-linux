@@ -9,6 +9,7 @@
 #   mu300-led test              each LED in turn, 2 s each, with its name (to tell which one is where)
 #   mu300-led alarm on|off      too hot (thermal-guard): the battery LED flashes its colours one at a time like a
 #                               siren (U30 Air: red, white, blue), also while the others are dark
+#   mu300-led shutdown [off]    U30 Air: latch red hardware breathing until shutdown (off cancels a failed request)
 # ZTE F50: one RGB LED of the PMIC: blue is data, red and blue the alarm. ZTE U30 Air (found by lighting each one):
 #   battery  the PMIC's RGB LED: its "green" channel is white (power: Linux is up), red, blue
 #   network  as ZTE's firmware: blue on 4G (a GPIO, net_blue), white on 5G (LDO VDDCAMA0), red without service
@@ -51,6 +52,7 @@ esac
 case $DEVICE in u30air) SIREN="sc27xx:red sc27xx:green sc27xx:blue" ;; *) SIREN="sc27xx:red sc27xx:blue" ;; esac
 SIREN_PID=$R/run/mu300/led-siren.pid
 BOOT_STATE=$STATE/.boot-chase
+SHUTDOWN_STATE=$STATE/.shutdown
 rd() { local value=; [ -r "$1" ] || return 1; IFS= read -r value < "$1" || :; printf '%s\n' "$value"; }
 TIMEOUT=
 if [ -r "${MU300_LED_CONF:-/etc/mu300/led.conf}" ]; then
@@ -72,7 +74,11 @@ cfg() { uci -q get "system.mu300_leds.$1" 2>/dev/null; }
 if [ "$DEVICE" = u30air ] && [ "${1:-}" != siren ] && [ "${1:-}" != boot-worker ]; then
     mkdir -p "$STATE" || exit 0
     exec 9>"$STATE/.lock"
-    flock -w 2 9 || exit 0
+    # OpenWrt ash can select its BusyBox applet before PATH. That applet lacks
+    # -w; use the already-packaged util-linux executable for a bounded wait.
+    lock_tool=/usr/bin/flock
+    [ ! -e /etc/openwrt_release ] || lock_tool=/usr/bin/util-linux-flock
+    "$lock_tool" -w 2 9 || exit 0
 fi
 
 
@@ -103,7 +109,9 @@ tick_hint() {
     now=$(uptime_s); due=$((now + 600))
     until=$(rd "$STATE/.awake-until")
     case $until in ''|*[!0-9]*) ;; *)
-        [ "$KEEP_LIT" = 1 ] || [ "$TIMEOUT" = 0 ] || [ "$until" -le "$now" ] || due=$until ;;
+        # An expired lease is still pending until tick/sleep darkens ALL lamps.
+        # A late battery-only event must not postpone that work by ten minutes.
+        [ "$KEEP_LIT" = 1 ] || [ "$TIMEOUT" = 0 ] || due=$until ;;
     esac
     if [ "$DEVICE" = u30air ]; then
         # Only battery() knows which snapshot was actually applied. A Wi-Fi
@@ -126,6 +134,7 @@ vendor_ldo() {  # vendor_ldo zte-ldoN: the 5.4 kernel's switch for that LDO, if 
 has_led() { [ -e "$LEDS/$1" ] || vendor_ldo "$1" >/dev/null; }
 write() {  # write NAME 0|1: the LED itself
     local requested=$2 group= value maximum level pattern
+    [ ! -f "$SHUTDOWN_STATE" ] || [ "${SHUTDOWN_FRAME:-0}" = 1 ] || return 0
     # Boot owns only the battery RGB. Power events still update the desired
     # battery state, but cannot overwrite a frame before the boot handoff.
     case $1 in sc27xx:*)
@@ -213,11 +222,11 @@ battery() {
     # Charger online changes before the fuel-gauge status sometimes does.
     # A stale "Charging"/"Full" must not keep the charging indication alive.
     [ "$KEEP_LIT" != 0 ] || status=Discharging
-    # U30 Air: charging below 10% breathes red, 10..49% blue, then white.
-    # Discharging keeps its existing colour policy; Full is steady white.
+    # The colour represents charge remaining, on battery as well as on USB.
+    # Charging animates that colour; Full is steady white.
     color=sc27xx:green
     [ "$cap" -ge 50 ] || color=sc27xx:blue
-    if [ "$status" = Charging ] && [ "$cap" -lt 10 ]; then color=sc27xx:red; fi
+    [ "$cap" -ge 10 ] || color=sc27xx:red
     mkdir -p "$STATE"
     previous_power=$(rd "$STATE/.external-power")
     echo "$KEEP_LIT" > "$STATE/.external-power"
@@ -242,6 +251,7 @@ battery() {
 
 boot_frame() {
     [ "$DEVICE" = u30air ] && [ "$(rd "$BOOT_STATE")" = "$1" ] || return 1
+    [ ! -f "$SHUTDOWN_STATE" ] || return 1
     siren_running && return 1
     case $2 in sc27xx:red|sc27xx:green|sc27xx:blue) ;; *) return 1 ;; esac
     BOOT_FRAME=1
@@ -249,7 +259,34 @@ boot_frame() {
     if awake; then write "$2" 1; else write "$2" 0; fi
 }
 
+# Shutdown is terminal until poweroff fails or the next boot clears /run.
+# Late power, Wi-Fi and timeout events must not overwrite its acknowledgement.
+if [ "$DEVICE" = u30air ] && [ -f "$SHUTDOWN_STATE" ] && [ "${1:-}" != shutdown ]; then
+    [ "${1:-}" != boot-frame ] || exit 1
+    exit 0
+fi
+
 case "$1 ${2:-}" in
+    "shutdown "|"shutdown on")
+        [ "$DEVICE" = u30air ] || exit 0
+        [ ! -f "$SHUTDOWN_STATE" ] || exit 0
+        echo 1 > "$SHUTDOWN_STATE"
+        rm -f "$BOOT_STATE" "$STATE/.battery-blink" "$STATE/.battery-breathe"
+        if siren_running; then kill "$p" 2>/dev/null; fi
+        rm -f "$SIREN_PID"
+        SHUTDOWN_FRAME=1
+        for lamp in "$DATA" "$DATA5G" "$NODATA" "$WIFI5" "$WIFI24" sc27xx:green sc27xx:blue; do write "$lamp" 0; done
+        echo sc27xx:red > "$STATE/.battery-breathe"
+        # Hardware pattern is preferred; timer is a driver-trigger fallback,
+        # never a userspace animation loop.
+        echo sc27xx:red > "$STATE/.battery-blink"
+        write sc27xx:red 1 ;;
+    "shutdown off")
+        [ "$DEVICE" = u30air ] && [ -f "$SHUTDOWN_STATE" ] || exit 0
+        rm -f "$SHUTDOWN_STATE" "$STATE/.battery-blink" "$STATE/.battery-breathe"
+        [ "$TIMEOUT" = 0 ] || echo $(( $(uptime_s) + TIMEOUT )) > "$STATE/.awake-until"
+        battery
+        show_all ;;
     "boot on")
         [ "$DEVICE" = u30air ] || exit 0
         [ ! -f "$BOOT_STATE" ] || exit 0

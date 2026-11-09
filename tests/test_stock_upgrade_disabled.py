@@ -14,6 +14,8 @@ PLUGIN = TOP/'openwrt'/('luci-app-t551m' if E5 else 'luci-app-mu300')
 POLICY = PLUGIN/'root/usr/libexec/unisoc-modem/disable-stock-upgrade'
 GUARD = TOP/'openwrt/overlay/usr/libexec'/('e5-sysupgrade' if E5 else 'mu300-sysupgrade')
 IMAGE = 'mu300-openwrt-base:25.12.5'
+CHECKER = 'www/luci-static/resources/view/status/include/11_upgrades.js'
+CONFIG = 'etc/config/attendedsysupgrade'
 
 
 class Guard(unittest.TestCase):
@@ -49,6 +51,9 @@ class Policy(unittest.TestCase):
 
     def fixture(self, root):
         files = {
+            CHECKER: "throw new Error('stock release check must never run');",
+            'www/luci-static/resources/view/status/include/10_system.js': 'system status panel',
+            CONFIG: "config client 'client'\n\toption login_check_for_upgrades '1'\n\toption server 'https://example.invalid'\n",
             'www/luci-static/resources/view/system/flash.js': """return {render(){var m,s,o,ss;
 m=new form.JSONMap({},_('Flash operations'));
 o=s.option(form.Button,'restore',_('Restore backup'));
@@ -79,6 +84,10 @@ s=m.section(form.NamedSection,'config','config',_('Configuration'));return m.ren
     def test_backup_controls_and_custom_ota_survive_and_second_run_is_unchanged(self):
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder);self.fixture(root);r=self.run_policy(root);self.assertEqual(r.returncode,0,r.stderr)
+            self.assertFalse((root/CHECKER).exists())
+            self.assertEqual((root/'www/luci-static/resources/view/status/include/10_system.js').read_text(),'system status panel')
+            self.assertIn("login_check_for_upgrades '0'",(root/CONFIG).read_text())
+            self.assertIn("server 'https://example.invalid'",(root/CONFIG).read_text())
             view=root/'www/luci-static/resources/view/system/flash.js'
             self.assertNotIn('Flash new firmware image',view.read_text())
             self.assertIn('Restore backup',view.read_text());self.assertIn("'Configuration'",view.read_text())
@@ -107,6 +116,41 @@ s=m.section(form.NamedSection,'config','config',_('Configuration'));return m.ren
             before={str(p):p.read_bytes() for p in root.rglob('*') if p.is_file()}
             r=self.run_policy(root);self.assertNotEqual(r.returncode,0)
             self.assertEqual(before,{str(p):p.read_bytes() for p in root.rglob('*') if p.is_file()})
+
+    def test_absent_asu_package_and_restored_status_include(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);self.fixture(root);(root/CONFIG).unlink()
+            r=self.run_policy(root);self.assertEqual(r.returncode,0,r.stderr)
+            self.assertIn("login_check_for_upgrades '0'",(root/CONFIG).read_text())
+            self.assertFalse((root/CHECKER).exists())
+            before=(root/CONFIG).stat().st_mtime_ns
+            (root/CHECKER).write_text('freshly installed LuCI release checker')
+            r=self.run_policy(root);self.assertEqual(r.returncode,0,r.stderr)
+            self.assertFalse((root/CHECKER).exists())
+            self.assertEqual(before,(root/CONFIG).stat().st_mtime_ns)
+
+    def test_invalid_uci_does_not_partially_apply_policy(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);self.fixture(root)
+            (root/CONFIG).write_text("config client 'unterminated\n")
+            before={str(p):p.read_bytes() for p in root.rglob('*') if p.is_file()}
+            r=self.run_policy(root);self.assertNotEqual(r.returncode,0)
+            self.assertEqual(before,{str(p):p.read_bytes() for p in root.rglob('*') if p.is_file()})
+
+    def test_installed_luci_status_checker_is_removed_in_real_root(self):
+        # Exercise the actual packaged/minified LuCI, not just fixture syntax.
+        command = (
+            f'test -f /{CHECKER} && ucode /policy / && '
+            f'test ! -e /{CHECKER} && '
+            'test "$(uci -q get attendedsysupgrade.client.login_check_for_upgrades)" = 0 && '
+            'test -f /www/luci-static/resources/view/status/index.js && '
+            'test -f /www/luci-static/resources/view/status/include/10_system.js && '
+            'ucode /policy /'
+        )
+        r=subprocess.run(['docker','run','--rm','--pull=never','--network','none',
+            '--platform','linux/arm64','-v',str(POLICY)+':/policy:ro',
+            '--entrypoint','/bin/sh',IMAGE,'-c',command],capture_output=True,text=True)
+        self.assertEqual(r.returncode,0,r.stdout+r.stderr)
 
 
 if __name__=='__main__':unittest.main()

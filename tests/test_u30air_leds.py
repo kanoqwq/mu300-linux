@@ -116,6 +116,49 @@ esac""")
             self.assertEqual(self.value('zte-ldo1'),'0')
             (self.root/'proc/uptime').write_text('100.00 0.00\n')
 
+    def test_battery_event_after_deadline_preserves_pending_group_sleep(self):
+        for shell in self.each_shell():
+            (self.battery/'status').write_text('Discharging\n')
+            (self.root/'proc/uptime').write_text('100.00 0.00\n')
+            self.assertEqual(self.led(shell,'wake',TEST_TIMEOUT='60').returncode,0)
+            self.apply(shell,'wifi-on',TEST_TIMEOUT='60')
+            self.assertEqual(self.value('zte-ldo1'),'1')
+            (self.root/'proc/uptime').write_text('161.00 0.00\n')
+            self.apply(shell,'battery',TEST_TIMEOUT='60')
+            # Battery-only reconciliation has not touched the Wi-Fi lamp.
+            # Its hint must keep the expired lease due, not acknowledge it.
+            self.assertEqual(self.value('zte-ldo1'),'1')
+            self.assertIn('due 160\n',(self.root/'run/mu300/led/.tick-hint').read_text())
+            self.assertEqual(self.led(shell,'tick',TEST_TIMEOUT='60').returncode,0)
+            self.assertTrue(all(self.value(n)=='0' for n in ('zte-ldo1','zte-ldo2','sc27xx:green')))
+
+    def test_shutdown_breathes_red_and_late_events_cannot_overwrite_it(self):
+        for shell in self.each_shell():
+            state=self.root/'run/mu300/led';state.mkdir(exist_ok=True)
+            self.apply(shell,'wifi-on')
+            (state/'.boot-chase').write_text('old-boot\n')
+            lamp=self.lamps/'sc27xx:red'
+            (lamp/'trigger').write_text('[none] timer pattern\n')
+            (lamp/'hw_pattern').write_text('');(lamp/'repeat').write_text('0\n')
+            result=self.led(shell,'shutdown',TEST_BRIGHTNESS='40')
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertTrue((state/'.shutdown').exists())
+            self.assertFalse((state/'.boot-chase').exists())
+            self.assertEqual((lamp/'trigger').read_text().strip(),'pattern')
+            self.assertEqual((lamp/'hw_pattern').read_text().strip(),'0 625 40 750 0 625 0 250')
+            before=(lamp/'hw_pattern').stat().st_mtime_ns
+            for event in (('tick',),('battery',),('wifi','on'),('wake',),('sleep',),('boot','on'),('alarm','on'),('shutdown',)):
+                result=self.led(shell,*event)
+                self.assertEqual(result.returncode,0,result.stderr)
+                self.assertEqual((lamp/'hw_pattern').stat().st_mtime_ns,before,event)
+                self.assertTrue(all(self.value(n)=='0' for n in ('zte-ldo0','zte-ldo1','zte-ldo2','sc27xx:green','sc27xx:blue')))
+            self.assertFalse((self.root/'run/mu300/led-siren.pid').exists())
+            self.assertEqual(self.led(shell,'boot-frame','old-boot','sc27xx:blue').returncode,1)
+            self.assertEqual(self.led(shell,'shutdown','off').returncode,0)
+            self.assertFalse((state/'.shutdown').exists())
+            self.assertEqual(self.value('sc27xx:green'),'255')
+            self.assertEqual(self.value('zte-ldo1'),'1')
+
     def test_tick_hint_tracks_timeout_charge_bucket_and_unplug(self):
         for shell in self.each_shell():
             state=self.root/'run/mu300/led'
@@ -336,13 +379,12 @@ esac""")
                     self.assertEqual(self.value('sc27xx:'+other),'0')
             self.apply(shell,'refresh',TEST_BATTERY='0')
             self.assertTrue(all(self.value('sc27xx:'+c)=='0' for c in ('red','green','blue')))
-            # A stale FGU Charging status after unplug must not keep red
-            # breathing active or change the existing discharging policy.
+            # Unplug stops breathing, but low charge remains red.
             online.write_text('0\n')
             self.apply(shell,'battery')
             self.assertFalse((state/'.battery-breathe').exists())
-            self.assertEqual(self.value('sc27xx:red'),'0')
-            self.assertEqual(self.value('sc27xx:blue'),'255')
+            self.assertEqual(self.value('sc27xx:red'),'255')
+            self.assertEqual(self.value('sc27xx:blue'),'0')
 
     def test_remaining_charge_color_boundary_never_changes_timeout(self):
         for shell in self.each_shell():
@@ -350,11 +392,12 @@ esac""")
             self.script(shell,BIN/'mu300-led','wake',**dict(self.extra,TEST_TIMEOUT='60'))
             deadline=self.root/'run/mu300/led/.awake-until'
             before=deadline.read_text()
-            for cap, channel in [(0,'blue'),(15,'blue'),(49,'blue'),(50,'green'),(51,'green'),(100,'green')]:
+            for cap, channel in [(0,'red'),(9,'red'),(10,'blue'),(15,'blue'),(49,'blue'),(50,'green'),(51,'green'),(100,'green')]:
                 (self.battery/'capacity').write_text(str(cap)+'\n')
                 self.apply(shell,'battery',TEST_TIMEOUT='60')
                 self.assertEqual(self.value('sc27xx:'+channel),'255')
-                self.assertEqual(self.value('sc27xx:red'),'0')
+                for other in {'red','green','blue'}-{channel}:
+                    self.assertEqual(self.value('sc27xx:'+other),'0')
                 self.assertFalse((self.root/'run/mu300/led/.battery-breathe').exists())
                 self.assertEqual(deadline.read_text(),before)
 

@@ -378,7 +378,7 @@ class Modemd(Base):
         self.assertTrue(wait_for(lambda: self.spooled.exists() and '0791448720003023' in self.spooled.read_text()))
         self.assertEqual(self.spooled.read_text(), '+CMT: ,23\n0791448720003023\n')
         log = (self.at_dir() / 'urc' / 'stty_nr0.log').read_text()
-        self.assertIn('+CMT (PDU spooled)', log)
+        self.assertIn('+CMT (unassigned PDU saved)', log)
         self.assertNotIn('0791', log)
         # inside a reply on the command channel: spooled, and kept out of the reply
         ans = self.at_dir() / 'answer.13'
@@ -389,7 +389,7 @@ class Modemd(Base):
         self.assertEqual(self.answer(ans), '+CMGL: 1,0,,23\nOK\n')
         self.assertTrue(wait_for(lambda: '0791448720003024' in self.spooled.read_text()))
 
-    def test_sms_pools_follow_physical_slot_not_channel_number_division(self):
+    def test_unscoped_cmt_never_uses_a_channel_as_receiving_slot(self):
         pool = self.tmp / "custom sms pool"
         spool = self.tmp / 'spool'
         spool.write_text(f'#!/bin/sh\nprintf "%s\\n" "$MU300_SMS_POOL" >> "{self.spooled}"\ncat >/dev/null\n')
@@ -400,7 +400,7 @@ class Modemd(Base):
             self.bridge.rx(f'stty_nr{n}', '+CMT: ,23')
             self.bridge.rx(f'stty_nr{n}', '0791448720003023')
         self.assertTrue(wait_for(lambda: self.spooled.exists() and len(self.spooled.read_text().splitlines()) == 4))
-        self.assertCountEqual(self.spooled.read_text().splitlines(), [str(pool)]*3 + [str(pool / 'sim1')])
+        self.assertCountEqual(self.spooled.read_text().splitlines(), [str(pool / 'unassigned')]*4)
 
     def test_sim_cache_survives_daemon_restart_with_same_bridge(self):
         p = self.start()
@@ -527,7 +527,7 @@ class ModemdUbus(Base):
         out = listen.communicate(timeout=5)[0]
         events = [json.loads(l)['mu300.modem.urc'] for l in out.splitlines() if l.strip()]
         self.assertIn({'channel': 'stty_nr0', 'line': '+CEREG: 1,"1A2B","01234567",7'}, events)
-        self.assertIn({'channel': 'stty_nr0', 'line': '+CMT (PDU spooled)'}, events)
+        self.assertIn({'channel': 'stty_nr0', 'line': '+CMT (unassigned PDU saved)'}, events)
         self.assertNotIn('0791', out)
         self.assertNotIn('+CMT: ,23', out)
         self.assertNotIn({'channel': 'stty_nr1', 'line': '+CMTI: "SM",3'}, events)

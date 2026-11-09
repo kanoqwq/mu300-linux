@@ -1,8 +1,10 @@
 #!/bin/sh
 case "$1:$2" in
-    list:) echo '{"get":{},"apply":{"algorithm":"String"}}' ;;
+    list:) echo '{"get":{},"apply":{"algorithm":"String"},"get_offload":{},"apply_offload":{"enabled":"Boolean"}}' ;;
     call:get) /usr/libexec/unisoc-modem/network-performance get ;;
     call:apply) /usr/libexec/unisoc-modem/network-performance apply ;;
+    call:get_offload) /usr/libexec/unisoc-modem/network-performance offload_get ;;
+    call:apply_offload) /usr/libexec/unisoc-modem/network-performance offload_apply ;;
     *) echo '{"ok":false,"error":"network_invalid"}' ;;
 esac
 exit 0

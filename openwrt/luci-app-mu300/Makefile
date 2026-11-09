@@ -53,7 +53,7 @@ define Package/luci-app-mu300/install
 	chmod 0755 $(1)/usr/libexec/rpcd/unisoc-nfc
 	chmod 0755 $(1)/usr/libexec/rpcd/unisoc-roaming
 	chmod 0600 $(1)/etc/config/unisoc_apn
-	chmod 0755 $(1)/etc/uci-defaults/97-unisoc-upgrade-policy
+	chmod 0755 $(1)/etc/uci-defaults/97-unisoc-upgrade-policy $(1)/etc/uci-defaults/99-unisoc-wifi-widths
 	chmod 0600 $(1)/etc/config/mu300-charge
 	chmod 0755 $(1)/etc/init.d/mu300-charge $(1)/etc/hotplug.d/power_supply/75-mu300-charge $(1)/usr/libexec/rpcd/mu300-charge
 	chmod 0755 $(1)/etc/init.d/unisoc-cpu
@@ -77,6 +77,7 @@ define Package/luci-app-mu300/postinst
 		cp -a "$$old"/. "$$state"/
 	fi
 	ucode /usr/libexec/unisoc-modem/disable-channel-analysis || exit 1
+	ucode /usr/libexec/unisoc-modem/limit-wifi-widths || exit 1
 	ucode /usr/libexec/unisoc-modem/disable-stock-upgrade || exit 1
 	ucode /usr/libexec/unisoc-modem/filter-wifi-ciphers || exit 1
 	rm -f /tmp/luci-indexcache /tmp/luci-modulecache/* 2>/dev/null

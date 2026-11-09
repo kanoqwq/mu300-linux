@@ -91,12 +91,13 @@ class ForwardHistory(ShellTest):
                     self.assertEqual(result.returncode == 0, expected)
             # A direct SMS received now can have an old SMSC timestamp; do not
             # suppress genuine delayed network delivery just because it is old.
-            result = self.sh(shell, self.code + '\nsms_is_new direct old "$RECEIVED"',
-                             RECEIVED=self.barrier + 500, since=self.barrier)
-            self.assertEqual(result.returncode, 0)
-            result = self.sh(shell, self.code + '\nsms_is_new direct old "$RECEIVED"',
-                             RECEIVED=self.barrier - 1, since=self.barrier)
-            self.assertNotEqual(result.returncode, 0)
+            for live_source in ('direct','stored-live'):
+                result = self.sh(shell, self.code + '\nsms_is_new "$LIVE" old "$RECEIVED"',
+                                 LIVE=live_source, RECEIVED=self.barrier + 500, since=self.barrier)
+                self.assertEqual(result.returncode, 0)
+                result = self.sh(shell, self.code + '\nsms_is_new "$LIVE" old "$RECEIVED"',
+                                 LIVE=live_source, RECEIVED=self.barrier - 1, since=self.barrier)
+                self.assertNotEqual(result.returncode, 0)
 
     def test_mixed_batch_downtime_restart_blacklist_and_no_replay(self):
         for index, shell in enumerate(self.each_shell()):
@@ -139,9 +140,9 @@ class ForwardHistory(ShellTest):
         for n, (tzbyte, suffix) in enumerate([('23', '+08:00'), ('49', '-03:30'), ('32', '+05:45')]):
             raw = self.tmp / f'input{n}.pdu'
             raw.write_text('0004048121430000620170214365' + tzbyte + '05E8329BFD06\n')
-            for source in ('sim', 'direct'):
+            for source in ('sim', 'direct', 'stored-live'):
                 pool = self.tmp / f'pool{n}-{source}'
-                args = [str(SMS), 'import-pdu', str(raw)] + (['sim'] if source == 'sim' else [])
+                args = [str(SMS), 'import-pdu', str(raw), source]
                 result = subprocess.run(args, env=self.env(MU300_SMS_POOL=pool, MU300_SMS_PDU_AWK=PDU),
                                         capture_output=True, text=True, timeout=30)
                 self.assertEqual(result.returncode, 0, result.stderr)

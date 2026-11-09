@@ -19,8 +19,21 @@ mkdir -p "$SPOOL"
 part=$(mktemp "$SPOOL/.cmt.XXXXXXXX") || exit 1
 trap 'rm -f "$part"' EXIT INT TERM
 printf '%s\n' "$pdu" > "$part"
-mv "$part" "$part.ready"
+if [ "${MU300_CMT_UNASSIGNED:-0}" = 1 ]; then
+    # A retried unscoped delivery must not grow an unbounded quarantine. The
+    # raw PDU is durable evidence only, not an assigned inbox message.
+    digest=$(printf '%s' "$pdu" | sha256sum) || exit 1
+    digest=${digest%% *}
+    ready=$SPOOL/.cmt.$digest.ready
+    if ! ln "$part" "$ready" 2>/dev/null; then
+        [ ! -L "$ready" ] && [ -f "$ready" ] && [ "$(cat "$ready")" = "$pdu" ] || exit 1
+    fi
+    rm -f "$part"
+else
+    ready=$part.ready
+    mv "$part" "$ready"
+fi
 trap - EXIT INT TERM
 # Persist this PDU and the directory entry before any network acknowledgement.
 # A global sync needlessly flushes the whole TF card and can stall receipt.
-sync "$part.ready" "$SPOOL" 2>/dev/null || sync
+sync "$ready" "$SPOOL" 2>/dev/null || sync

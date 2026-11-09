@@ -12,16 +12,15 @@ from test_modemd import Base, has_modules, wait_for, UBUS, UBUSD
 LIB=TOP/'rootfs/overlay/opt/mu300/lib/sms-events.sh'
 
 class SmsEventFilter(ShellTest):
-    def test_only_own_physical_bank_triggers_spool_and_sim_archive(self):
+    def test_nr0_hints_wake_both_scoped_storage_receivers(self):
         for shell in self.each_shell():
             for slot in [0,1]:
                 for nr in range(8):
-                    for line,expected in [('+CMT (PDU spooled)','spool'),('+CMTI: "SM",1','sync'),('+CEREG: 1',''),('+CMT: ,23','')]:
+                    for line,expected in [('+CMT (PDU spooled)','sync'),('+CMT (unassigned PDU saved)','sync'),('+CMTI: "SM",1','sync'),('+CEREG: 1',''),('+CMT: ,23','')]:
                         event=json.dumps({'mu300.modem.urc':{'channel':f'stty_nr{nr}','line':line}},separators=(',',':'))
-                        own=(nr in [0,1,2,6,7]) if slot==0 else nr in [3,4,5]
                         r=self.sh(shell,'. '+str(LIB)+'\nsms_event_decode "$EVENT"; printf "%s" "$sms_event"',MU300_SIM_SLOT=slot,EVENT=event)
                         self.assertEqual(r.returncode,0,r.stderr)
-                        self.assertEqual(r.stdout,('sync' if nr==0 else '') if line.startswith('+CMTI:') else expected if own else '',(slot,nr,line))
+                        self.assertEqual(r.stdout,('sync' if nr==0 else '') if line.startswith('+CMTI:') else expected,(slot,nr,line))
 
     def test_native_sim_state_and_object_removal(self):
         for shell in self.each_shell():
@@ -91,34 +90,37 @@ class SmsEventBus(Base):
         script=TOP/'rootfs/overlay/opt/mu300/bin/mu300-smsd'
         p=subprocess.Popen(['/bin/sh',str(script)],env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
         self.procs.append(p)
-        self.assertTrue(wait_for(lambda: (self.tmp/'direct').exists()))
+        self.assertTrue(wait_for(lambda: self.sms_log.exists() and 'archive-sim' in self.sms_log.read_text()))
         time.sleep(.2)
         return p
 
-    def test_ubuntu_urc_log_transport_remains_functional(self):
+    def test_ubuntu_urc_log_transport_keeps_unscoped_frame_unassigned(self):
         self.daemon(poll=1,events=False)
         self.frame.write_text('fixture PDU')
-        self.assertTrue(wait_for(lambda: not self.frame.exists(),3))
-        self.assertIn('CNMA=1',self.at_log.read_text())
+        time.sleep(1.2)
+        self.assertTrue(self.frame.exists())
+        self.assertNotIn('CNMA',self.at_log.read_text())
+        self.assertNotIn('import-pdu',self.sms_log.read_text())
 
-    def test_existing_spool_is_imported_and_acknowledged_before_first_wait(self):
+    def test_existing_unscoped_spool_is_preserved_without_import_or_ack(self):
         p=self.daemon(initial_spool=True)
-        self.assertTrue(wait_for(lambda: not self.frame.exists(),3))
-        self.assertIn('import-pdu',self.sms_log.read_text())
-        self.assertIn('AT+SPACTCARD=0;+CNMA=1',self.at_log.read_text())
+        self.assertTrue(self.frame.exists())
+        self.assertIn('archive-sim',self.sms_log.read_text())
+        self.assertNotIn('CNMA',self.at_log.read_text())
+        self.assertNotIn('import-pdu',self.sms_log.read_text())
         self.assertNotIn('fixture PDU',self.sms_log.read_text()+self.at_log.read_text())
+        self.assertFalse((self.tmp/'direct').exists())
         p.terminate();self.assertEqual(p.wait(5),0)
         self.assertFalse((self.tmp/'receiver-lock').exists())
 
-    def test_failed_import_keeps_frame_and_sends_no_ack_then_retries(self):
-        self.daemon(initial_spool=True,fail_import=True)
-        self.assertTrue(wait_for(lambda: 'import-pdu' in self.sms_log.read_text(),3))
+    def test_nr0_indication_requests_scoped_archive_and_never_imports_pending_pdu(self):
+        self.daemon(initial_spool=True)
+        before=self.sms_log.read_text().count('archive-sim')
+        self.send('mu300.modem.urc',{'channel':'stty_nr0','line':'+CMTI: "SM",7'})
+        self.assertTrue(wait_for(lambda:self.sms_log.read_text().count('archive-sim')>before,5))
         self.assertTrue(self.frame.exists())
         self.assertNotIn('CNMA',self.at_log.read_text())
-        self.import_failure.unlink()
-        self.send('mu300.modem.urc',{'channel':'stty_nr1','line':'+CMT (PDU spooled)'})
-        self.assertTrue(wait_for(lambda: not self.frame.exists(),3))
-        self.assertIn('CNMA=1',self.at_log.read_text())
+        self.assertNotIn('import-pdu',self.sms_log.read_text())
 
     def test_safety_sync_uses_real_time_even_without_events(self):
         self.daemon(sync_interval=2)
@@ -127,12 +129,12 @@ class SmsEventBus(Base):
     def test_sms_event_wakes_without_waiting_for_poll(self):
         p=self.receiver(slot=1)
         self.send('mu300.modem.urc',{'channel':'stty_nr4','line':'+CMT (PDU spooled)'})
-        self.finish(p,'spool|1')
+        self.finish(p,'sync|1')
 
     def test_other_slot_and_radio_events_do_not_move_deadline(self):
         p=self.receiver(slot=0,seconds=2)
         for i in range(4):
-            self.send('mu300.modem.urc',{'channel':'stty_nr3','line':'+CMT (PDU spooled)'})
+            self.send('mu300.modem.urc',{'channel':'stty_nr3','line':'+CMTI: \"SM\",7'})
             self.send('mu300.modem.urc',{'channel':'stty_nr0','line':'+CEREG: 1'})
             time.sleep(.1)
         self.finish(p,'|1')

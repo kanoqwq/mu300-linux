@@ -41,5 +41,8 @@ class PatchLayouts(unittest.TestCase):
                 text=p.read_text()
                 self.assertEqual(text.count('function device_no_dfs(config)'),1)
                 self.assertEqual(text.count('device_no_dfs(config);'),1)
+                self.assertEqual(text.count('function device_chanlist_band(config)'),1)
+                self.assertEqual(text.count('device_chanlist_band(config);'),1)
+                self.assertLess(text.index('device_chanlist_band(config);'),text.index('device_no_dfs(config);'))
                 self.assertIn('config.channel = 36;',text)
                 self.assertNotRegex(text,r'config\.htmode\s*=(?!=)')

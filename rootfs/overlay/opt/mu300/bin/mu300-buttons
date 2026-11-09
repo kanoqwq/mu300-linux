@@ -58,7 +58,10 @@ mu300-keys -l 3000 -t 5 | while read -r code kind; do
         "$KEY_POWER long")
             logger -t mu300-buttons "power button held: shutting down" 2>/dev/null
             mu300-led wake
-            if is_openwrt; then poweroff; else systemctl poweroff; fi ;;
+            [ "$device" != u30air ] || mu300-led shutdown
+            if is_openwrt; then poweroff; else systemctl poweroff; fi
+            result=$?
+            if [ "$result" != 0 ] && [ "$device" = u30air ]; then mu300-led shutdown off; fi ;;
         "$KEY_WIFI short") wifi_short ;;
         "$KEY_WIFI long") wifi_last_click=; mu300-led wake; hotspot_toggle ;;
         "0 tick") mu300-led sleep --if-due ;;

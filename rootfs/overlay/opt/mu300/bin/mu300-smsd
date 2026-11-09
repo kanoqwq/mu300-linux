@@ -1,16 +1,9 @@
 #!/bin/sh
-# Keep the local SMS pool in step with direct +CMT delivery and the SIM fallback.
-#
-# Receiving is +CMTI-driven where it can be: mu300-atd logs every unsolicited line of every
-# channel into /run/mu300-at/urc/*.log, so a new "+CMTI:" anywhere changes the md5 of the
-# +CMTI lines and that is the trigger. The logs are capped and truncated, not rotated - a
-# truncation changes the signature too, and a sync is idempotent, so a spurious trigger costs
-# one paced AT+CMGL. A SIM archive also runs once per MU300_SMS_SYNC_INTERVAL regardless, as the
-# safety net for an announcement missed while nobody watched.
-#
-# A direct SMS is acknowledged only after atd has spooled its PDU and mu300-sms
-# has committed it to the persistent pool. The SIM fallback is archived before
-# any of its slots are released.
+# Receive stored PDU notifications through the existing owner. NR0 carries both
+# slots' indications, so every import uses explicit SPACTCARD + storage reads.
+# The existing periodic archive is a safety net for missed indications; storage
+# entries are freed only after their local copy has been durably verified.
+# Unscoped direct PDUs are retained separately, never assigned/ACKed by port.
 set -u
 export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
 # A dead/busy AT client must not hold the receiver behind the 90 s CLI default.
@@ -31,14 +24,13 @@ SYNC_INTERVAL=${MU300_SMS_SYNC_INTERVAL:-300}
 [ "$SYNC_INTERVAL" -gt 0 ] 2>/dev/null || SYNC_INTERVAL=$POLL
 SMS=${MU300_SMS_BIN:-$(command -v mu300-sms 2>/dev/null || echo /opt/mu300/bin/mu300-sms)}
 DIRECT_FLAG=${MU300_SMS_DIRECT_FLAG:-/run/mu300-sms-direct}
-SPOOL=$POOL/incoming
 REGISTRATION_LIB=${MU300_REGISTRATION_LIB:-/opt/mu300/lib/registration.sh}
 [ ! -r "$REGISTRATION_LIB" ] || . "$REGISTRATION_LIB"
 sim_absent() { command -v mu300_sim_absent >/dev/null 2>&1 && mu300_sim_absent "${MU300_SIM_SLOT:-0}"; }
 sim_ready() { command -v mu300_sim_is >/dev/null 2>&1 && mu300_sim_is "${MU300_SIM_SLOT:-0}" ready; }
 
 # A channel is not a permanent SIM address. Select and execute atomically,
-# including CNMI setup and CNMA acknowledgements (not only archive/send).
+# including CNMI setup (not only archive/send).
 sms_at() {
     local cmd=$2
     case ${MU300_SIM_SLOT:-} in
@@ -94,48 +86,29 @@ done
 at_ok() { sms_at 5 "$1" 2>/dev/null | grep -qx OK; }
 setup_sms() {
     rm -f "$DIRECT_FLAG"
-    # Import anything already on SIM before enabling direct delivery. If direct
-    # routing is rejected, the old +CMTI/periodic-sync path remains functional.
-    at_ok 'AT+CNMI=2,1,0,0,0' || true
-    "$SMS" archive-sim || {
-        echo "mu300-smsd: PDU archive incomplete; attempting read-only legacy import" >&2
-        "$SMS" sync || true
-    }
-    if at_ok 'AT+CMGF=0' && at_ok 'AT+CSMS=1' &&
-       at_ok 'AT+CNMI=3,2,2,1,1'; then
-        : > "$DIRECT_FLAG"
-        echo "mu300-smsd: direct +CMT delivery enabled" >&2
-    else
-        at_ok 'AT+CNMI=2,1,0,0,0' || true
-        echo "mu300-smsd: direct delivery rejected; using SIM indications" >&2
-    fi
+    # Both slots' unsolicited indications arrive on NR0 without a slot tag.
+    # Store the PDU first; scoped CMGL/CMGR is the receiving-slot evidence.
+    at_ok 'AT+CNMI=2,1,0,0,0' && at_ok 'AT+CMGF=0' || return 1
+    # Some firmware rejects service selection but supports stored SMS. Its
+    # optional CSMS result must not prevent a verified stored-mode receive.
+    at_ok 'AT+CSMS=1' || echo 'mu300-smsd: SMS service selection refused; checking stored reception' >&2
+    # CPMS mem3 is the incoming store; selecting mem1 alone would leave a
+    # stock ME target while our scoped archiver reads SM. Set all three.
+    at_ok 'AT+CPMS="SM","SM","SM"' || return 1
+    at_ok 'AT+CNMI=2,1,0,0,0' || return 1
+    MU300_SMS_IMPORT_SOURCE=sim "$SMS" archive-sim || return 1
+    echo "mu300-smsd: slot-scoped stored PDU reception enabled" >&2
 }
+# Subscribe before changing CNMI/scanning storage, so an arrival between
+# the initial archive and entering the event loop cannot lose its wakeup.
+[ "$SMS_TRANSPORT" != ubus ] || sms_events_start || exit 1
 sim_configured=0
-if ! sim_absent; then setup_sms; sim_configured=1; fi
-
-process_spool() {
-    local f reply
-    # The CMT writer uses hidden mktemp names. Keep accepting visible spool
-    # files too; shell '*' alone never matches the writer's .cmt.* names.
-    for f in "$SPOOL"/*.ready "$SPOOL"/.cmt.*.ready; do
-        [ -f "$f" ] || continue
-        if ! "$SMS" import-pdu "$f"; then
-            echo "mu300-smsd: could not import $f" >&2
-            return 1
-        fi
-        reply=$(sms_at 5 'AT+CNMA=1' 2>/dev/null || true)
-        if ! printf '%s\n' "$reply" | grep -q '^OK'; then
-            echo "mu300-smsd: direct SMS confirmation failed" >&2
-            return 1
-        fi
-        rm -f "$f"
-    done
-}
+if ! sim_absent && setup_sms; then sim_configured=1; fi
 
 sync_fallback() {
-    # PDU archival leaves direct delivery's CMGF=0 untouched. No text-mode
-    # window, no lost +CMT, and fewer commands on the shared AT channel.
-    "$SMS" archive-sim
+    # PDU archival keeps CMGF=0 and validates each exact storage index before
+    # deletion. No ambiguous direct-PDU import or duplicate CNMA is involved.
+    MU300_SMS_IMPORT_SOURCE=stored-live "$SMS" archive-sim
 }
 
 signature() {
@@ -144,19 +117,18 @@ signature() {
 
 last=$(signature)
 sms_clock; sync_due=$((SMS_NOW + SYNC_INTERVAL))
-sms_event= spool_failures=0 sms_first=1
-[ "$SMS_TRANSPORT" != ubus ] || sms_events_start || exit 1
+sms_event= sms_first=1
 echo "mu300-smsd: pooling into $POOL (poll ${POLL}s, full sync every ${SYNC_INTERVAL}s)" >&2
 while :; do
     sms_event=
     if [ "$sms_first" = 1 ]; then
-        sms_first=0  # import an already-spooled frame before the first event wait
+        sms_first=0  # perform the initial scoped storage synchronization once
     elif [ "$SMS_TRANSPORT" = urc-log ]; then
         sleep "$POLL"
     else
         sms_clock
         wait_due=$sync_due
-        if [ "$spool_failures" -gt 0 ] || [ "$sim_configured" = 0 ]; then
+        if [ "$sim_configured" = 0 ]; then
             [ "$wait_due" -le "$((SMS_NOW + POLL))" ] || wait_due=$((SMS_NOW + POLL))
         fi
         sms_events_wait "$wait_due" || exit 1
@@ -175,26 +147,14 @@ while :; do
             sms_clock; sync_due=$((SMS_NOW + SYNC_INTERVAL))
             continue
         fi
-        setup_sms
+        if ! setup_sms; then
+            sms_clock; sync_due=$((SMS_NOW + POLL))
+            continue
+        fi
         sim_configured=1
     fi
-    if process_spool; then
-        spool_failures=0
-    else
-        spool_failures=$((${spool_failures:-0} + 1))
-        if [ "$spool_failures" -ge 3 ]; then
-            # Never spin AT+CNMA against a CP that refuses acknowledgement.
-            # Keep the saved PDU, revert to SIM indications, and let the archive
-            # path continue to free SIM slots after each successful sync.
-            rm -f "$DIRECT_FLAG"
-            at_ok 'AT+CNMI=2,1,0,0,0' || true
-            for f in "$SPOOL"/*.ready "$SPOOL"/.cmt.*.ready; do
-                [ -f "$f" ] && mv "$f" "${f%.ready}.ack-failed"
-            done
-            echo "mu300-smsd: direct mode disabled after repeated import/ack failures" >&2
-            spool_failures=0
-        fi
-    fi
+    # Old unscoped incoming/*.ready files remain intact. Without an explicit
+    # receiving-slot proof they must not enter either inbox or trigger CNMA.
     s=$last
     [ "$SMS_TRANSPORT" != urc-log ] || s=$(signature)
     if [ "$sms_event" = sync ] || [ "$s" != "$last" ]; then

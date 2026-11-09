@@ -222,6 +222,8 @@ for helper in mu300-data-sim-u30 mu300-sim-u30 u30air-led-status; do
     chmod 0755 "$R/opt/mu300/bin/$helper"
 done
 chroot "$R" /bin/sh -c "command -v flock >/dev/null" || { echo "missing native SIM flock dependency" >&2; exit 1; }
+# LED transactions require timed locking; the BusyBox applet has no -w option.
+chroot "$R" /usr/bin/util-linux-flock --version >/dev/null || { echo "missing util-linux flock for LED transactions" >&2; exit 1; }
 [ -s "$R/opt/mu300/lib/sms-pool.sh" ] || { echo "missing shared SMS pool library" >&2; exit 1; }
 chmod 0755 $R/etc/hotplug.d/power_supply/70-mu300-led
 chmod 0755 $R/opt/mu300/bin/mu300-platform-config
@@ -250,6 +252,7 @@ python3 /in/stage-flow-offload.py --root $R
 apk_retry add patch >/dev/null
 patch --batch --fuzz=0 -d $R -p1 -i /in/wifi-scripts-no-dfs.patch
 grep -q "device_no_dfs(config);" $R/usr/share/ucode/wifi/hostapd.uc || { echo "wifi-scripts DFS patch not applied" >&2; exit 1; }
+grep -q "device_chanlist_band(config);" $R/usr/share/ucode/wifi/hostapd.uc || { echo "wifi-scripts channel-list band patch not applied" >&2; exit 1; }
 if [ -d /in/luci-plugin ]; then
     cp -a /in/luci-plugin/root/. $R/
     cp -a /in/luci-plugin/htdocs/. $R/www/
@@ -257,6 +260,7 @@ if [ -d /in/luci-plugin ]; then
     chmod 0755 $R/etc/init.d/unisoc-battery-history $R/usr/libexec/unisoc-modem/battery-history
     chmod 0755 $R/etc/init.d/mu300-charge $R/etc/hotplug.d/power_supply/75-mu300-charge $R/usr/libexec/rpcd/mu300-charge
     ucode $R/usr/libexec/unisoc-modem/disable-channel-analysis $R
+    ucode $R/usr/libexec/unisoc-modem/limit-wifi-widths $R
     ucode $R/usr/libexec/unisoc-modem/filter-wifi-ciphers $R
     chmod 0755 $R/etc/init.d/unisoc-cpu $R/etc/init.d/unisoc-cpu-cores $R/usr/libexec/rpcd/unisoc-cpu-cores
     chmod 0755 $R/etc/init.d/unisoc-cpu-idle $R/usr/libexec/rpcd/unisoc-cpu-idle
@@ -265,7 +269,7 @@ if [ -d /in/luci-plugin ]; then
     chmod 0755 $R/usr/libexec/rpcd/unisoc-roaming
     chmod 0600 $R/etc/config/unisoc_apn
     chmod 0755 $R/etc/init.d/unisoc-ttl $R/etc/hotplug.d/iface/92-unisoc-ttl $R/etc/hotplug.d/net/92-unisoc-ttl $R/etc/uci-defaults/98-unisoc-ttl
-    chmod 0755 $R/etc/uci-defaults/97-unisoc-upgrade-policy
+    chmod 0755 $R/etc/uci-defaults/97-unisoc-upgrade-policy $R/etc/uci-defaults/99-unisoc-wifi-widths
     chmod 0755 $R/etc/init.d/unisoc-modem-ui $R/etc/init.d/unisoc-sms-forward $R/etc/init.d/unisoc-traffic $R/etc/hotplug.d/net/90-unisoc-usb-host $R/etc/hotplug.d/iface/90-unisoc-usb-host $R/usr/libexec/rpcd/mu300dash $R/usr/libexec/unisoc-modem/*
     # rpcd refuses world-writable plugins from a Windows bind mount.
     chmod 0644 $R/usr/share/rpcd/ucode/*.uc $R/usr/share/ucode/mu300/*.uc

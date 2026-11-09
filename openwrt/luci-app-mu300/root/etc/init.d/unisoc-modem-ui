@@ -4,6 +4,7 @@ START=95
 USE_PROCD=1
 
 start_service() {
+	ucode /usr/libexec/unisoc-modem/limit-wifi-widths || logger -t unisoc-modem-ui "Wi-Fi width policy failed"
 	ucode /usr/libexec/unisoc-modem/disable-channel-analysis || logger -t unisoc-modem-ui "Channel analysis policy failed"
 	/usr/libexec/unisoc-modem/refresh-config
 	# Complete this short policy step before S99 mu300-post decides whether the

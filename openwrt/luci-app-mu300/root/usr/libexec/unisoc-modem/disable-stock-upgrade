@@ -1,6 +1,7 @@
 #!/usr/bin/ucode
 // Stock whole-disk flashing is unsupported; keep configuration backup/restore.
 import { glob, readfile, writefile, rename, unlink } from 'fs';
+import { cursor } from 'uci';
 let root = ARGV[0] || '';
 let changes = [];
 let marker = '/* unisoc: configuration backups only */';
@@ -65,7 +66,30 @@ for (let path in glob(root + '/usr/share/rpcd/acl.d/*.json')) {
     }
     if (changed) push(changes, [ path, sprintf('%J\n', data) ]);
 }
-// Do not write any menu/ACL if the view or input JSON failed validation.
+// luci-mod-status checks official releases independently of the removed ASU
+// package. Generic target matches do not validate our native boot containers.
+// Keep the preference disabled too, in case a later LuCI update restores the
+// include. Preserve any other ASU configuration owned by the user.
+let config = root + '/etc/config/attendedsysupgrade';
+let settings = null;
+let settings_changed = false;
+if (readfile(config) == null) {
+    push(changes, [ config, "config client 'client'\n\toption login_check_for_upgrades '0'\n" ]);
+}
+else {
+    settings = cursor(root + '/etc/config');
+    if (!settings.load('attendedsysupgrade'))
+        die('Invalid attendedsysupgrade configuration\n');
+    if (settings.get('attendedsysupgrade', 'client', 'login_check_for_upgrades') != '0') {
+        if (!settings.get('attendedsysupgrade', 'client')
+            && !settings.set('attendedsysupgrade', 'client', 'client'))
+            die('Could not create upgrade check preference\n');
+        if (!settings.set('attendedsysupgrade', 'client', 'login_check_for_upgrades', '0'))
+            die('Could not disable upgrade check preference\n');
+        settings_changed = true;
+    }
+}
+// Do not change files if the view, input JSON or UCI failed validation.
 for (let change in changes) {
     let temporary = change[0] + '.upgrade-policy.tmp';
     if (writefile(temporary, change[1]) != length(change[1]) || !rename(temporary, change[0])) {
@@ -73,3 +97,8 @@ for (let change in changes) {
         die('Could not disable stock flashing: ' + change[0] + '\n');
     }
 }
+if (settings_changed && !settings.commit('attendedsysupgrade'))
+    die('Could not save disabled upgrade check preference\n');
+let checker = root + '/www/luci-static/resources/view/status/include/11_upgrades.js';
+if (readfile(checker) != null && !unlink(checker))
+    die('Could not remove stock release notification\n');

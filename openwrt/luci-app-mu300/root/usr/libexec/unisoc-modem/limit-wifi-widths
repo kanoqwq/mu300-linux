@@ -1,0 +1,61 @@
+#!/usr/bin/ucode
+// Hide unsupported 160 MHz AP choices in the shared LuCI frequency widget.
+// This edits view code only: never rewrite wireless UCI or the driver itself.
+import { readfile, writefile, rename, unlink, glob } from 'fs';
+
+let root = ARGV[0] || '';
+let path = root + '/www/luci-static/resources/view/network/wireless.js';
+let text = readfile(path);
+if (text == null || index(text, 'unisoc-wifi-width-options:v1') >= 0)
+	exit(0);
+let start = match(text, /(var|const|let)\s+CBIWifiFrequencyValue\s*=/);
+let end = match(text, /(var|const|let)\s+CBIWifiTxPowerValue\s*=/);
+if (!start || !end)
+	die('Unexpected LuCI Wi-Fi frequency widget\n');
+let begin = index(text, start[0]), finish = index(text, end[0]);
+if (finish <= begin)
+	die('Unexpected LuCI Wi-Fi widget order\n');
+let widget = substr(text, begin, finish - begin);
+function once(pattern, replacement, label) {
+	let count = 0;
+	widget = replace(widget, pattern, m => { count++; return replacement + m; });
+	if (count != 1)
+		die('Unexpected LuCI Wi-Fi width source: ' + label + '\n');
+}
+once(/this\.htmodes\s*=/g, `
+/* unisoc-wifi-width-options:v1: advertised capabilities overstate this firmware. */
+for (const width of ['VHT160', 'HE160', 'EHT160', 'VHT80+80', 'HE80+80', 'EHT80+80'])
+    delete htmodelist[width];
+`, 'capabilities');
+let initialized = 0;
+widget = replace(widget, /bwdt\.value\s*=\s*htval;/g, m => {
+	initialized++;
+	return m + `
+// Retain a legacy value as a hidden, disabled placeholder, so opening the
+// page cannot silently clear it or downgrade it to the first valid option.
+if (/^(VHT|HE|EHT)(160|80\\+80)$/.test(htval) && bwdt.selectedIndex < 0) {
+    bwdt.add(E('option', {value:htval, disabled:true, hidden:true}, _('Unsupported')));
+    bwdt.value = htval;
+}
+`;
+});
+if (initialized != 1)
+	die('Unexpected LuCI Wi-Fi initial width source\n');
+once(/write\s*:\s*function\(section_id,\s*value\)\s*\{/g, `
+validate: function(section_id, value) {
+    if (/^(VHT|HE|EHT)(160|80\\+80)$/.test(value?.[0] || ''))
+        return /^zh/.test(L.env.lang) ? '本机不支持 160 MHz 频宽，请选择 20、40 或 80 MHz。' :
+            /^tr/.test(L.env.lang) ? 'Bu cihaz 160 MHz kanal genişliğini desteklemiyor. 20, 40 veya 80 MHz seçin.' :
+            'This device does not support 160 MHz channel width. Select 20, 40 or 80 MHz.';
+    return true;
+},
+`, 'validation');
+text = substr(text, 0, begin) + widget + substr(text, finish);
+let temporary = path + '.widths.tmp';
+if (writefile(temporary, text) != length(text) || !rename(temporary, path)) {
+	unlink(temporary);
+	die('Cannot update LuCI Wi-Fi width choices\n');
+}
+for (let pattern in [ '/tmp/luci-indexcache*', '/tmp/luci-modulecache/*' ])
+	for (let cache in glob(root + pattern))
+		unlink(cache);

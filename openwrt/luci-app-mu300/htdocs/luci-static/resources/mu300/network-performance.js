@@ -2,6 +2,7 @@
 'require baseclass';
 'require rpc';
 'require mu300.common as M';
+'require mu300.flow-offload as FlowOffload';
 const get=rpc.declare({object:'unisoc-network-performance',method:'get',nobatch:true,expect:{}});
 const apply=rpc.declare({object:'unisoc-network-performance',method:'apply',params:['algorithm'],nobatch:true,expect:{}});
 const words={
@@ -50,6 +51,7 @@ return baseclass.extend({mount:function(root) {
   node('p','主要影响设备自身新建的 TCP 连接；不会将热点或 USB 转发的客户端连接统一改为 BBR。','mud-note'),
   node('p','BBR 配套使用 FQ 作为新建接口的默认队列；现有连接、接口和 QoS 不重置。设置重启后保留。','mud-note'),result);
  root.append(card);
+ const offload=FlowOffload.mount(card);
  let state=null,busy=false,disposed=false;
  const writable=typeof L.hasViewPermission!=='function' || L.hasViewPermission();
  function disable() {select.disabled=save.disabled=busy || !writable || !state || !state.supported;refresh.disabled=busy;card.setAttribute('aria-busy',String(busy));}
@@ -73,5 +75,5 @@ return baseclass.extend({mount:function(root) {
   finally{busy=false;if(!disposed)disable();}
  };
  refresh.onclick=reload;reload();
- return {dispose:()=>{disposed=true;}};
+ return {dispose:()=>{disposed=true;offload.dispose();}};
 }});

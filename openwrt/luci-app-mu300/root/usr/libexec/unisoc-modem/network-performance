@@ -1,8 +1,18 @@
 #!/bin/sh
 action=${1:-get}
-case "$action" in get|apply|boot) ;; *) exit 2 ;; esac
-if [ "$action" != get ]; then
+case "$action" in get|apply|boot|offload_get|offload_apply) ;; *) exit 2 ;; esac
+if [ "$action" != get ] && [ "$action" != offload_get ]; then
     exec 9>"${UNISOC_NET_LOCK:-/run/unisoc-network-performance.lock}" || exit 1
     flock -n 9 || { echo '{"ok":false,"error":"network_busy"}'; exit 1; }
 fi
+case "$action" in
+offload_*)
+    if [ "$action" = offload_apply ]; then
+        # Serialize with TTL's legacy software/hardware restore bookkeeping.
+        exec 8>"${MU300_TTL_LOCK:-/var/lock/unisoc-ttl.lock}" || exit 1
+        flock -n 8 || { echo '{"ok":false,"error":"offload_busy"}'; exit 1; }
+    fi
+    exec ucode "${UNISOC_FLOW_LIB:-/usr/libexec/unisoc-modem/flow-offload.uc}" "${action#offload_}"
+    ;;
+esac
 exec ucode "${UNISOC_NET_LIB:-/usr/libexec/unisoc-modem/network-performance.uc}" "$action"

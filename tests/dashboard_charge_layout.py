@@ -5,7 +5,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 JS = ROOT/'openwrt/luci-app-mu300/htdocs/luci-static/resources'
 sources = {name: (JS/path).read_text(encoding='utf-8') for name, path in {
-    'common':'mu300/common.js', 'network':'mu300/network-performance.js', 'charge':'mu300/charge.js', 'device':'view/mu300/device.js', 'battery':'view/mu300/battery.js'}.items()}
+    'common':'mu300/common.js', 'network':'mu300/network-performance.js', 'offload':'mu300/flow-offload.js', 'charge':'mu300/charge.js', 'device':'view/mu300/device.js', 'battery':'view/mu300/battery.js'}.items()}
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path='C:/Program Files/Google/Chrome/Application/chrome.exe')
     for lang in ('zh-cn', 'en', 'tr'):
@@ -41,7 +41,8 @@ with sync_playwright() as p:
                 const baseclass={extend:x=>x};
                 const M=new Function('baseclass','rpc','L',sources.common)(baseclass,rpc,L);
                 const Charge=new Function('baseclass','rpc','M',sources.charge)(baseclass,rpc,M);
-                const NetworkPerformance=new Function('baseclass','rpc','M',sources.network)(baseclass,rpc,M);
+                const FlowOffload=new Function('baseclass','rpc','M',sources.offload)(baseclass,rpc,M);
+                const NetworkPerformance=new Function('baseclass','rpc','M','FlowOffload',sources.network)(baseclass,rpc,M,FlowOffload);
                 const app=new Function('view','rpc','poll','M','Charge',sources.battery)({extend:x=>x},rpc,{add(){},remove(){}},M,Charge);
                 document.querySelector('main').appendChild(app.render({ok:1,role:'device',net_current:'ncm'}));
             }''', dict(sources=sources, lang=lang, dark=dark))

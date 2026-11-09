@@ -1007,8 +1007,17 @@ int sc2355_pcie_hif_tx_list(struct sprd_hif *hif,
 
 				k = 0;
 			}
-			if (msg_pos->skb)
-				pcie_skb_to_tx_buf(hif, msg_pos);
+			if (msg_pos->skb) {
+				ret = pcie_skb_to_tx_buf(hif, msg_pos);
+				if (ret) {
+					/* Keep all messages on the original send list. Entries
+					 * already converted retain their buffers for the retry.
+					 * Never send a stale address after conversion failed.
+					 */
+					sprdwl_mbuf_list_free(hif, head, tail, pcie_count);
+					return ret;
+				}
+			}
 			pr_debug("debug pcie addr: 0x%lx\n", msg_pos->pcie_addr);
 			memcpy(&addr_buffer->pcie_addr[k],
 			       &msg_pos->pcie_addr, SPRD_PHYS_LEN);
@@ -1437,30 +1446,44 @@ int sc2355_pcie_tx_data_pop_list(int channel, struct mbuf_t *head,
 }
 
 static inline int sprd_tx_free_txc_msg(struct tx_mgmt *tx_msg,
-					 struct sprd_msg *msg_buf)
+				     unsigned long pcie_addr,
+				     unsigned long *tx_start_time)
 {
 	struct sprd_msg *pos_msg = NULL;
+	struct sprd_msg *msg_buf = NULL;
+	struct sprd_hif *hif = tx_msg->hif;
 	unsigned long lockflag_txc = 0;
-	int found = 0;
+	unsigned long addr_mask = SPRD_PHYS_MASK & ~SPRD_MH_ADDRESS_BIT;
 
 	spin_lock_irqsave(&tx_msg->xmit_msg_list.free_lock, lockflag_txc);
 	list_for_each_entry(pos_msg, &tx_msg->xmit_msg_list.to_free_list,
 			    list) {
-		if (pos_msg == msg_buf) {
-			found = 1;
+		/* The MH marker is not part of the DMA address. Accept the same
+		 * address whether firmware preserved or stripped that marker.
+		 */
+		if ((pos_msg->pcie_addr & addr_mask) == (pcie_addr & addr_mask)) {
+			msg_buf = pos_msg;
 			break;
 		}
 	}
 
-	if (found != 1) {
-		pr_err("%s: msg_buf %lx not in to free list\n",
-			__func__, msg_buf);
+	if (!msg_buf) {
+		pr_debug_ratelimited("%s: completion address not outstanding\n", __func__);
 		spin_unlock_irqrestore(&tx_msg->xmit_msg_list.free_lock,
 				       lockflag_txc);
 		return -1;
 	}
 	list_del(&msg_buf->list);
 	spin_unlock_irqrestore(&tx_msg->xmit_msg_list.free_lock, lockflag_txc);
+#if defined(MORE_DEBUG)
+	if (tx_start_time && !*tx_start_time)
+		*tx_start_time = msg_buf->tx_start_time;
+#endif
+	/* Validate ownership before unmapping. Unknown/duplicate completions must
+	 * not unmap another DMA allocation or dereference a firmware backpointer.
+	 */
+	sc2355_mm_phys_to_virt(&hif->pdev->dev, msg_buf->pcie_addr, msg_buf->len,
+			     DMA_TO_DEVICE, false);
 	if (msg_buf->node)
 		pcie_free_tx_buf(msg_buf->node);
 	if (msg_buf->skb)
@@ -1471,44 +1494,38 @@ static inline int sprd_tx_free_txc_msg(struct tx_mgmt *tx_msg,
 	msg_buf->data = NULL;
 	msg_buf->tran_data = NULL;
 	msg_buf->len = 0;
+	msg_buf->pcie_addr = 0;
 
 	sprd_free_msg(msg_buf, msg_buf->msglist);
 	return 0;
 }
 
 /*free PCIe data when receive txc event from cp*/
-int sc2355_tx_free_pcie_data(unsigned char *data)
+int sc2355_tx_free_pcie_data(unsigned char *data, int len)
 {
-	int i;
+	int i, reclaimed = 0;
 	struct sprd_hif *hif = sc2355_pcie_get_hif();
-	struct tx_mgmt *tx_mgmt = (struct tx_mgmt *)smp_load_acquire(&hif->tx_mgmt);
-	void *data_addr_ptr;
+	struct tx_mgmt *tx_mgmt;
 	unsigned long pcie_addr;
 	unsigned short data_num;
 	struct txc_addr_buff *txc_addr;
 	unsigned char (*pos)[5];
-	struct sprd_msg *msg, *last_msg = NULL;
-#if defined(MORE_DEBUG)
 	unsigned long tx_start_time = 0;
-#endif
 	unsigned char *tmp;
 	static unsigned long caller_jiffies;
-	struct sprd_priv *priv = hif->priv;
 
-	pr_debug("%s:=0x%x %p %p\n", __func__, data, tx_mgmt, hif);
-
-	/* a TX-complete event outside the tx context's lifetime (see sc2355_pcie_tx_cmd_pop_list) */
+	if (!hif)
+		return -ENODEV;
+	tx_mgmt = smp_load_acquire(&hif->tx_mgmt);
 	if (!tx_mgmt)
-		return 0;
-
-	if (tx_mgmt->net_stopped == 1) {
-		sprd_net_flowcontrl(priv, SPRD_MODE_NONE, true);
-		tx_mgmt->net_stopped = 0;
-	}
+		return -ENODEV;
+	if (!data || len < sizeof(*txc_addr))
+		return -EINVAL;
 
 	txc_addr = (struct txc_addr_buff *)data;
 	data_num = txc_addr->number;
-	tx_mgmt->txc_num += data_num;
+	if (data_num > (len - sizeof(*txc_addr)) / SPRD_PHYS_LEN)
+		return -EMSGSIZE;
 	tmp = (unsigned char *)txc_addr;
 	pr_debug("%s: seq_num=0x%x", __func__, *(tmp + 1));
 	pr_debug("%s, total free num:%lu; total tx_num:%lu\n", __func__,
@@ -1523,29 +1540,27 @@ int sc2355_tx_free_pcie_data(unsigned char *data)
 
 	pos = (unsigned char (*)[5])(txc_addr + 1);
 	for (i = 0; i < data_num; i++, pos++) {
+		pcie_addr = 0;
 		memcpy(&pcie_addr, pos, SPRD_PHYS_LEN);
+		if (pcie_addr < 0x10)
+			continue;
 		pcie_addr -= 0x10;	//Workaround for HW issue
 
 		pr_debug("%s: pcie_addr=0x%lx", __func__, pcie_addr);
-		data_addr_ptr =
-		    sc2355_mm_phys_to_virt(&hif->pdev->dev, pcie_addr,
-					   SPRD_MAX_DATA_TXLEN, DMA_TO_DEVICE,
-					   false);
-		msg = NULL;
-		RESTORE_ADDR(msg, data_addr_ptr, sizeof(msg));
-
-		if (last_msg == msg) {
-			pr_info("%s: same msg buf: %lx, %lx\n", __func__,
-				(unsigned long)msg, (unsigned long)last_msg);
+		if (!sprd_tx_free_txc_msg(tx_mgmt, pcie_addr, &tx_start_time))
+			reclaimed++;
+	}
+	/* Credit and wakeups describe buffers already returned to the pool,
+	 * not the untrusted number in a receipt waiting on the command worker.
+	 */
+	if (reclaimed) {
+		atomic_sub(reclaimed, &tx_mgmt->xmit_msg_list.free_num);
+		tx_mgmt->txc_num += reclaimed;
+		if (tx_mgmt->net_stopped == 1) {
+			tx_mgmt->net_stopped = 0;
+			sprd_net_flowcontrl(hif->priv, SPRD_MODE_NONE, true);
 		}
-		pr_debug("data_addr_ptr: 0x%lx, msg: 0x:%lx\n",
-					data_addr_ptr, msg);
-#if defined(MORE_DEBUG)
-		if (i == 0)
-			tx_start_time = msg->tx_start_time;
-#endif
-		if (!sprd_tx_free_txc_msg(tx_mgmt, msg))
-			last_msg = msg;
+		sc2355_tx_up(tx_mgmt);
 	}
 
 #if defined(MORE_DEBUG)

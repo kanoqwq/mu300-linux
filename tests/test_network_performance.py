@@ -74,7 +74,7 @@ class NetworkPerformance(unittest.TestCase):
         self.assertEqual(self.call('apply',{'algorithm':'default'})['current'],'reno')
     def test_acl_separates_read_and_write(self):
         acl=json.loads((APP/'root/usr/share/rpcd/acl.d/unisoc-network-performance.json').read_text())['unisoc-network-performance']
-        self.assertEqual(acl['read']['ubus']['unisoc-network-performance'],['get'])
-        self.assertEqual(acl['write']['ubus']['unisoc-network-performance'],['apply'])
+        self.assertEqual(acl['read']['ubus']['unisoc-network-performance'],['get','get_offload'])
+        self.assertEqual(acl['write']['ubus']['unisoc-network-performance'],['apply','apply_offload'])
 
 if __name__=='__main__':unittest.main()

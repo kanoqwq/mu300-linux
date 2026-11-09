@@ -787,9 +787,10 @@ scts_epoch() {
 }
 sms_is_new() { # source, original timestamp, local import time
     number "$3" && [ "$3" -ge "$since" ] || return 1
-    # Explicit direct delivery is a live event, even if the SMSC timestamp is
-    # old (delayed delivery). SIM/legacy imports must prove their original age.
-    [ "$1" = direct ] && return 0
+    # A direct event or a scoped storage scan after successful initial archive
+    # is live even if the SMSC timestamp is old (delayed delivery). Initial
+    # archive/manual/legacy imports must still prove their original age.
+    case $1 in direct|stored-live) return 0 ;; esac
     _sent=$(scts_epoch "$2") || return 1
     number "$_sent" && [ "$_sent" -ge "$since" ]
 }

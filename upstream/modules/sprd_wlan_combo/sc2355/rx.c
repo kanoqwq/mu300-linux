@@ -322,21 +322,6 @@ rx_mh_data_process(struct rx_mgmt *rx_mgmt, void *data,
 {
 	sc2355_mm_mh_data_process(&rx_mgmt->mm_entry, data, len, buffer_type);
 }
-void sc2355_tx_free_data_num(struct sprd_hif *hif, unsigned char *data)
-{
-	struct tx_mgmt *tx_mgmt;
-	unsigned short data_num;
-	struct txc_addr_buff *txc_addr;
-
-	tx_mgmt = (struct tx_mgmt *)hif->tx_mgmt;
-	txc_addr = (struct txc_addr_buff *)data;
-
-	data_num = txc_addr->number;
-	atomic_sub(data_num, &tx_mgmt->xmit_msg_list.free_num);
-
-	sc2355_tx_up(tx_mgmt);
-}
-
 void sc2355_count_rx_tp(struct sprd_hif *hif, int len)
 {
 	unsigned long long timeus = 0;
@@ -381,7 +366,6 @@ sc2355_rx_mh_addr_process(struct rx_mgmt *rx_mgmt, void *data,
 	struct sprd_hif *hif = rx_mgmt->hif;
 	struct sprd_common_hdr *hdr =
 	    (struct sprd_common_hdr *)(data + hif->hif_offset);
-	struct sprd_work *misc_work = NULL;
 
 	pr_debug("%s: rx_data_addr=0x%lx\n", __func__, (unsigned long)data);
 
@@ -393,18 +377,12 @@ sc2355_rx_mh_addr_process(struct rx_mgmt *rx_mgmt, void *data,
 
 	} else {
 		pr_debug("%s: Add TX complete code here\n", __func__);
-		sc2355_tx_free_data_num(hif, (unsigned char *)data);
-		misc_work = sprd_alloc_work(sizeof(void *));
-
-		if (misc_work) {
-			misc_work->id = SPRD_PCIE_TX_FREE_BUF;
-			memcpy(misc_work->data, &data, sizeof(void *));
-			misc_work->len = buffer_type;
-
-			sprd_queue_work(hif->priv, misc_work);
-		} else {
-			pr_err("%s fail\n", __func__);
-		}
+		/* Already in the RX worker, not the EDMA hard IRQ. Return buffers
+		 * before publishing credit, without allocating a second work item.
+		 * Losing that allocation used to lose the only TX completion receipt.
+		 */
+		sc2355_tx_free_pcie_data(data, len);
+		sc2355_free_data(data, buffer_type);
 	}
 }
 

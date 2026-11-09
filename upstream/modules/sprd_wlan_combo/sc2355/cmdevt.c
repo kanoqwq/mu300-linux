@@ -3213,12 +3213,6 @@ bool sc2355_do_delay_work(struct sprd_work *work)
 					(struct list_head *)work->data,
 					work->len);
 		break;
-	case SPRD_PCIE_TX_FREE_BUF:
-		memcpy((unsigned char *)&data, work->data,
-		       sizeof(unsigned char *));
-		sc2355_tx_free_pcie_data(data);
-		sc2355_free_data(data, work->len);
-		break;
 	case SPRD_CMD_TX_DATA:
 		sprd_send_data2cmd(vif->priv, vif, work->data, work->len);
 		break;

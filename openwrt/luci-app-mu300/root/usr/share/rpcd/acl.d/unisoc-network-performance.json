@@ -1,7 +1,7 @@
 {
   "unisoc-network-performance": {
-    "description": "TCP congestion control settings",
-    "read": { "ubus": { "unisoc-network-performance": ["get"] } },
-    "write": { "ubus": { "unisoc-network-performance": ["apply"] } }
+    "description": "TCP congestion control and software flow offloading settings",
+    "read": { "ubus": { "unisoc-network-performance": ["get", "get_offload"] } },
+    "write": { "ubus": { "unisoc-network-performance": ["apply", "apply_offload"] } }
   }
 }
