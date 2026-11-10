@@ -1,0 +1,6 @@
+{
+  "luci-app-mu300": {
+    "read": {"ubus": {"unisoc-euicc": ["status", "current"]}},
+    "write": {"ubus": {"unisoc-euicc": ["start", "answer", "cancel"]}}
+  }
+}

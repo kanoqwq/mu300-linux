@@ -126,6 +126,12 @@ for f in ./lib/netifd/proto/mu300cell.sh ./lib/netifd/proto/mu300cell-v6.sh \
     ./usr/share/luci/menu.d/luci-app-mu300.json ./usr/share/rpcd/ucode/mu300rates.uc ./usr/share/ucode/mu300/rates.uc \
     ./www/luci-static/resources/view/mu300/home.js \
     ./www/luci-static/resources/mu300/refresh.js \
+    ./www/luci-static/resources/view/mu300/settings.js ./www/luci-static/resources/mu300/product-form.js \
+    ./usr/libexec/unisoc-modem/product-form ./usr/libexec/rpcd/unisoc-product-form \
+    ./usr/lib/lpac ./usr/share/unisoc-modem/lpac.json ./usr/libexec/unisoc-modem/euicc ./usr/libexec/unisoc-modem/euicc-screen ./usr/libexec/unisoc-modem/euicc-progress.py ./usr/libexec/rpcd/unisoc-euicc ./usr/share/licenses/unisoc-euicc/e5-esim-MIT \
+    ./usr/share/rpcd/acl.d/unisoc-euicc.json ./usr/share/luci/menu.d/unisoc-euicc.json \
+    ./www/luci-static/resources/view/mu300/euicc.js ./www/luci-static/resources/mu300/vendor/jsQR.js \
+    ./usr/share/rpcd/acl.d/unisoc-product-form.json ./etc/init.d/mu300-vendor \
     ./www/luci-static/resources/view/mu300/sms.css \
     ./usr/libexec/unisoc-modem/dashboard-rates ./usr/libexec/unisoc-modem/dashboard-network.sh ./usr/share/ucode/mu300/dash.uc ./usr/share/rpcd/ucode/mu300status.uc ./opt/mu300/bin/mu300-service-cpus ./usr/share/ucode/mu300/service-cpus.uc ./opt/mu300/bin/wifi-ready \
     ./usr/libexec/unisoc-modem/apn ./usr/libexec/unisoc-modem/apn.uc ./usr/libexec/unisoc-modem/apn-identity ./etc/config/unisoc_apn \
@@ -148,7 +154,7 @@ for f in ./lib/netifd/proto/mu300cell.sh ./lib/netifd/proto/mu300cell-v6.sh \
     ./usr/libexec/unisoc-modem/cpu-voltage ./usr/libexec/unisoc-modem/cpu-voltage.uc \
     ./opt/mu300/bin/cpu-voltage-platform ./opt/mu300/bin/sml-voltage-check ./etc/init.d/mu300-cpu-driver \
     ./etc/rc.d/S08mu300-cpu-driver ./etc/rc.d/K89unisoc-cpu \
-    ./usr/libexec/unisoc-modem/sms-forward ./usr/libexec/unisoc-modem/power-supply.sh ./usr/libexec/unisoc-modem/forward-template.uc \
+    ./usr/libexec/unisoc-modem/call-notify ./usr/libexec/unisoc-modem/call-notify-events.uc ./usr/libexec/unisoc-modem/sms-forward ./usr/libexec/unisoc-modem/power-supply.sh ./usr/libexec/unisoc-modem/forward-template.uc \
     ./www/luci-static/resources/view/mu300/forward.js ./etc/init.d/unisoc-sms-forward \
     ./usr/libexec/unisoc-modem/data-sim ./www/luci-static/resources/view/mu300/sim.js \
     ./usr/libexec/unisoc-modem/operator.uc ./usr/libexec/unisoc-modem/refresh-config \

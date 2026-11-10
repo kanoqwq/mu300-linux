@@ -1,0 +1,6 @@
+#!/bin/sh
+case ${1:-}:${2:-} in
+ list:) echo '{"get":{},"set":{"model":"String","mode":"String"}}';;
+ call:get|call:set) /usr/libexec/unisoc-modem/product-form "$2"; exit 0;;
+ *) echo '{"ok":0,"error":"product_form_invalid"}';;
+esac

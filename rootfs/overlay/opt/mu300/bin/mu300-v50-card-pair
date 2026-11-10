@@ -2,6 +2,9 @@
 # Set both V50 card sources without changing the data SIM or RF permissions.
 # Physical switching remains inside the existing modem/RF owner transaction.
 set -eu
+if [ "${1:-}" != validate ] && [ "${UNISOC_EUICC_GUARDED:-0}" != 1 ]; then
+    exec "${MU300_EUICC_TOOL:-/usr/libexec/unisoc-modem/euicc}" --guard /bin/sh "$0" "$@"
+fi
 export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
 BIN=${MU300_BIN:-/opt/mu300/bin}
 R=${MU300_V50_RUN:-/run}

@@ -1,0 +1,6 @@
+{
+  "luci-app-mu300": {
+    "read": {"ubus": {"unisoc-product-form": ["get"]}},
+    "write": {"ubus": {"unisoc-product-form": ["set"]}}
+  }
+}

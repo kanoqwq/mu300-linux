@@ -4,10 +4,11 @@
 'require mu300.refresh as R';
 'require view';
 'require mu300.common as M';
+'require mu300.product-form as P';
 
 return view.extend({
-	load: function() { return uci.load('unisoc_modem'); },
-	render: function() {
+	load: function() { return Promise.all([uci.load('unisoc_modem'), P.load()]); },
+	render: function(data) {
 		M.localizeMenu();
 		var t = M.translate;
 		var m = new form.Map('unisoc_modem', t('适配设置'),
@@ -80,6 +81,10 @@ return view.extend({
 		o = s.option(form.Value, 'state_dir', t('持久化状态目录'));
 		o.placeholder = '/etc/unisoc-modem/lock-state.d';
 
-		return m.render();
+		return m.render().then(function(form) {
+			var root=document.createElement('div'),product=P.render(data && data[1]);
+			if(product)root.append(product);
+			root.append(form);return root;
+		});
 	}
 });

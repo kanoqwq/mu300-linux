@@ -91,6 +91,8 @@ BLOCK_APK=$TOP/work/block-mount-mu300.apk
 sh "$TOP/openwrt/build-block-mount.sh" "$BLOCK_APK"
 WIFI_APKS="$TOP/work/wifi-sae"
 UNISOC_WRT_VER="$VER" sh "$TOP/openwrt/build-hostapd.sh" "$WIFI_APKS"
+LPAC_APKS=${UNISOC_LPAC_APKS:-$(python3 "$TOP/openwrt/lpac-state.py" --path)}
+UNISOC_WRT_VER="$VER" sh "$TOP/openwrt/build-lpac.sh" "$LPAC_APKS"
 
 cd "$TOP"
 if [ ! -f "openwrt/$TARBALL" ]; then
@@ -148,6 +150,8 @@ docker run --rm --platform linux/arm64 \
   -v "$BLOCK_APK":/in/block-mount-mu300.apk:ro \
   -v "$BLOCK_APK.build-id":/in/block-mount.build-id:ro \
   -v "$WIFI_APKS":/in/wifi-sae:ro \
+    -v "$LPAC_APKS":/in/lpac:ro \
+    -v "$TOP/openwrt":/in/euicc-source/openwrt:ro \
   -v "$TOP/openwrt/luci-app-mu300/root/usr/libexec/unisoc-modem/disable-stock-upgrade":/in/stock-upgrade-policy:ro \
   -v "$TOP/installer":/in/ota-source/installer:ro \
   -v "$TOP/work/luci-app-aurora-config-1.2.5-r20260920.apk":/in/luci-app-aurora-config.apk:ro \
@@ -171,8 +175,9 @@ apk_retry add --allow-untrusted /in/wifi-sae/*.apk >/dev/null
 apk_retry add iwinfo wireless-regdb iw-full bash ip-full coreutils-stty openssl-util curl ca-bundle msmtp luci-base \
     luci-i18n-base-zh-cn luci-i18n-firewall-zh-cn luci-i18n-package-manager-zh-cn \
     rpcd-mod-ucode ucode ucode-mod-fs ucode-mod-ubus ucode-mod-uci ucode-mod-uloop ucode-mod-nl80211 ucode-mod-rtnl ucode-mod-socket \
-    i2c-tools gpiod-tools flock ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn luci-i18n-ttyd-tr python3 >/dev/null
+    i2c-tools gpiod-tools flock ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn luci-i18n-ttyd-tr python3 python3-openssl >/dev/null
 apk_retry add --allow-untrusted /in/block-mount-mu300.apk >/dev/null
+apk_retry add --allow-untrusted /in/lpac/lpac-2.3.0-r1001.apk >/dev/null
 apk_retry add --allow-untrusted /in/luci-theme-aurora.apk >/dev/null
 apk_retry add --allow-untrusted /in/luci-app-aurora-config.apk /in/aurora-config-zh-cn.apk /in/aurora-config-tr.apk >/dev/null
 # ujail drops CAP_PERFMON (38), which this 5.4 kernel does not know: jailed services (dnsmasq, ntpd) crash-loop
@@ -266,6 +271,8 @@ if [ -d /in/luci-plugin ]; then
     chmod 0755 $R/etc/init.d/unisoc-cpu-idle $R/usr/libexec/rpcd/unisoc-cpu-idle
     chmod 0755 $R/etc/init.d/unisoc-network-performance $R/usr/libexec/rpcd/unisoc-network-performance
     chmod 0755 $R/usr/libexec/rpcd/unisoc-nfc
+    chmod 0755 $R/usr/libexec/rpcd/unisoc-euicc
+    chmod 0755 $R/usr/libexec/rpcd/unisoc-product-form
     chmod 0755 $R/usr/libexec/rpcd/unisoc-roaming
     chmod 0600 $R/etc/config/unisoc_apn
     chmod 0755 $R/etc/init.d/unisoc-ttl $R/etc/hotplug.d/iface/92-unisoc-ttl $R/etc/hotplug.d/net/92-unisoc-ttl $R/etc/uci-defaults/98-unisoc-ttl
@@ -371,6 +378,7 @@ cp /in/stock-upgrade-policy $R/usr/libexec/unisoc-modem/disable-stock-upgrade
 chmod 0755 $R/usr/libexec/unisoc-modem/disable-stock-upgrade
 ucode $R/usr/libexec/unisoc-modem/disable-stock-upgrade $R
 python3 /in/ota-source/installer/stage-ota.py --root $R
+python3 /in/euicc-source/openwrt/stage-lpac.py --root $R --artifacts /in/lpac
 cd $R && tar -czf /out/$OUT .
 ls -la /out/$OUT'
 # Remove optional VPN helpers and reject accidentally inherited VPN packages.

@@ -1,0 +1,236 @@
+#!/usr/bin/python3
+"""Product-specific SIM form override. Config-only; never sends AT or GPIO.
+
+The active selection is frozen per boot. Native CP startup publishes it and
+removes only saved source choices incompatible with the selected topology.
+"""
+import fcntl
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+ROOT = Path(os.environ.get('MU300_SYSROOT') or '/')
+RUN = Path(os.environ.get('MU300_U30PRO_RUN', os.environ.get('MU300_V50_RUN', '/run')))
+PROFILES = {'u30pro': tuple(str(i) for i in range(7)),
+            'f50pro': tuple(str(i) for i in range(6)),
+            'v50': tuple(str(i) for i in range(4))}
+
+
+class Error(Exception):
+    pass
+
+
+def uci(*args, required=False, text=None):
+    proc = subprocess.run(['uci', '-q', *args], input=text, capture_output=True,
+                          text=True, timeout=6)
+    if required and proc.returncode:
+        raise Error('product_form_storage')
+    return proc.stdout.strip() if proc.returncode == 0 else ''
+
+
+def get_option(name):
+    return uci('get', 'unisoc_modem.main.' + name)
+
+
+def model():
+    try:
+        device = subprocess.check_output([str(ROOT / 'opt/mu300/bin/mu300-device')],
+                                         text=True, timeout=4).strip()
+        value = (ROOT / 'etc/mu300/model').read_text().strip() if device == 'u30pro' else device
+    except (OSError, subprocess.CalledProcessError):
+        raise Error('product_form_unsupported')
+    if value not in PROFILES:
+        raise Error('product_form_unsupported')
+    return value
+
+
+def library(product):
+    env = {'u30pro': 'MU300_U30PRO_CARD_LIB', 'f50pro': 'MU300_F50PRO_CARD_LIB',
+           'v50': 'MU300_V50_CARD_LIB'}[product]
+    return os.environ.get(env, str(ROOT / f'opt/mu300/lib/{product}-card.sh'))
+
+
+def card_function(product, suffix, *args):
+    # Function/product are internal constants; caller data stays argv only.
+    p = subprocess.run(['/bin/sh', '-c', f'. "$1"; shift; {product}_{suffix} "$@"',
+                        'product-form', library(product), *args], capture_output=True,
+                       text=True, timeout=6)
+    return p.stdout.strip() if p.returncode == 0 else None
+
+
+def detected():
+    path = ROOT / 'proc/driver/board_id'
+    if path.is_file():
+        value = path.read_text().strip()
+        return int(value) if re.fullmatch(r'[0-9]{1,5}', value) else None
+    for path in (ROOT / 'proc/cmdline', ROOT / 'proc/device-tree/chosen/bootargs'):
+        if not path.is_file():
+            continue
+        match = re.search(r'(?:^|\s)(?:androidboot|zteboot)\.zte_boardid=([0-9]{1,5})(?:\s|$)',
+                          path.read_bytes().replace(b'\0', b' ').decode(errors='replace'))
+        if match:
+            return int(match[1])
+    return None
+
+
+def validate_mode(product, mode):
+    if not isinstance(mode, str) or mode not in ('auto', *PROFILES[product]):
+        raise Error('product_form_invalid')
+    return mode
+
+
+def saved(product):
+    return validate_mode(product, get_option(product + '_board_override') or 'auto')
+
+
+def marker(product):
+    return RUN / ('mu300-product-form-' + product)
+
+
+def active(product):
+    path = marker(product)
+    return validate_mode(product, path.read_text().strip()) if path.is_file() else saved(product)
+
+
+def effective(product, mode):
+    raw = detected() if mode == 'auto' else int(mode)
+    return raw if str(raw) in PROFILES[product] else None
+
+
+def cards(product, board):
+    if board is None:
+        return []
+    value = card_function(product, 'cards', str(board))
+    if value is None or not re.fullmatch(r'[0-4](?: [0-4])*', value):
+        raise Error('product_form_invalid')
+    return [int(v) for v in value.split()]
+
+
+def publish(product, mode):
+    path = marker(product)
+    RUN.mkdir(parents=True, exist_ok=True)
+    temp = path.with_name(path.name + '.new')
+    temp.write_text(mode + '\n')
+    temp.replace(path)
+
+
+def snapshot():
+    product = model()
+    chosen, running = saved(product), active(product)
+    return dict(ok=1, supported=True, model=product, detected_board_id=detected(),
+                mode=chosen, active_mode=running,
+                effective_board_id=effective(product, running),
+                pending_reboot=chosen != running,
+                options=[dict(value=b, cards=cards(product, int(b))) for b in PROFILES[product]])
+
+
+def commit(commands):
+    if not commands:
+        return
+    # Never sweep another process's pending UCI edits into this commit.
+    if uci('changes', 'unisoc_modem'):
+        raise Error('product_form_unsaved')
+    try:
+        uci('batch', required=True, text='\n'.join(commands + ['commit unisoc_modem']) + '\n')
+    except Error:
+        uci('revert', 'unisoc_modem')
+        raise
+
+
+def set_form(data):
+    product = model()
+    if data.get('model') != product:
+        raise Error('product_form_model_changed')
+    choice = validate_mode(product, data.get('mode'))
+    # Freeze the old choice BEFORE saving, including upgrades from a firmware
+    # without this boot marker. No hardware source or data SIM is switched here.
+    old = active(product)
+    if not marker(product).exists():
+        publish(product, old)
+    command = (f'delete unisoc_modem.main.{product}_board_override' if choice == 'auto'
+               else f'set unisoc_modem.main.{product}_board_override={choice}')
+    if choice != saved(product):
+        commit([command])
+    return snapshot()
+
+
+def prune(product, board):
+    allowed = cards(product, board)
+    remove = []
+    def invalid(name):
+        value = get_option(name)
+        return bool(value) and (not value.isdigit() or int(value) not in allowed)
+    if invalid(product + '_card'):
+        remove.append(product + '_card')
+    if product in ('f50pro', 'v50'):
+        routes = [get_option(product + '_route0'), get_option(product + '_route1')]
+        # A partial pair must not make the pre-CP controller fail startup.
+        if any(routes):
+            valid = True
+            for slot, route in enumerate(routes):
+                mapping = card_function(product, 'card_map', str(board), route)
+                if mapping is None or not mapping.startswith(str(slot) + ' '):
+                    valid = False
+            if not valid:
+                remove.extend(product + '_route' + str(i) for i in range(2) if routes[i])
+    commands = ['delete unisoc_modem.main.' + name for name in remove]
+    if product == 'u30pro' and board == 5 and get_option('data_sim') == '1':
+        commands.append('set unisoc_modem.main.data_sim=0')
+    commit(commands)
+
+
+def boot():
+    product = model()
+    # A service restart must retain the running CP's source interpretation.
+    if (RUN / 'u30pro-cp-started').exists() or (RUN / 'mu300-modem/io.sock').exists():
+        return snapshot()
+    live = subprocess.run(['pidof', 'modem_control' if product == 'v50' else 'u30-modemd'],
+                          capture_output=True, timeout=3)
+    if live.returncode == 0:
+        return snapshot()
+    choice = saved(product)
+    prune(product, effective(product, choice))
+    publish(product, choice)
+    return snapshot()
+
+
+def execute(method, data):
+    if method == 'get':
+        return snapshot()
+    if method not in ('set', 'boot'):
+        raise Error('product_form_invalid')
+    RUN.mkdir(parents=True, exist_ok=True)
+    with (RUN / 'mu300-product-form.lock').open('a') as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise Error('product_form_busy')
+        return set_form(data) if method == 'set' else boot()
+
+
+def main():
+    method = sys.argv[1] if len(sys.argv) == 2 else ''
+    try:
+        raw = '' if method == 'boot' else sys.stdin.read(4097)
+        if len(raw) > 4096:
+            raise Error('product_form_invalid')
+        data = json.loads(raw or '{}')
+        if not isinstance(data, dict):
+            raise Error('product_form_invalid')
+        result = execute(method, data)
+    except Error as error:
+        result = dict(ok=0, error=str(error))
+        if str(error) == 'product_form_unsupported':
+            result['supported'] = False
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        result = dict(ok=0, error='product_form_unavailable')
+    if method != 'boot' or not result.get('ok'):
+        print(json.dumps(result, ensure_ascii=False))
+    return 0 if result.get('ok') else 1
+
+
+if __name__ == '__main__':
+    sys.exit(main())

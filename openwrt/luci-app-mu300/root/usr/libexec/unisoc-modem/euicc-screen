@@ -1,0 +1,97 @@
+#!/usr/bin/python3
+"""Adapt the attributed e5-webapp-esim UI onto the shared firmware job owner.
+
+No second AT reader, runtime installer, independent lock or radio reset.
+"""
+import os
+
+
+def invoke(request, api):
+    fail = api['Failure']
+    method = request.get('method')
+    params = request.get('params')
+    if not isinstance(params, dict):
+        raise fail('invalid_request')
+    def wrapped(state):
+        result = state.get('result') or {}
+        action = state.get('action')
+        value = result.get('notifications' if action == 'notifications' else 'profiles')
+        if action == 'download':
+            value = result
+        return dict(ok=bool(state.get('ok')), running=state.get('state') == 'running',
+            type='download' if action == 'download' else 'operation',
+            state='done' if state.get('state') == 'done' else 'error' if state.get('state') == 'failed' else state.get('state'),
+            slot=int(state.get('slot', '0')), aid=result.get('aid', state.get('aid', '')),
+            action={'enable': 'switch', 'disable': 'switch', 'nickname': 'rename'}.get(action, action),
+            step=state.get('stage'), preview=state.get('preview', False), metadata=state.get('metadata'),
+            write=state.get('write'), error=state.get('error'), detail=state.get('error') or '',
+            remove=state.get('remove', False), processed=result.get('processed', 0), failed=result.get('failed', 0),
+            warning=result.get('warning'), data=value, job=state.get('job'))
+    if method == 'dependencies':
+        present = os.access(api['LPAC'], os.X_OK)
+        return {'ok': True, 'data': {'ready': present, 'missing': [] if present else ['lpac'],
+                'items': [{'package': 'lpac', 'path': api['LPAC'], 'present': present}]}}
+    if method == 'job_status':
+        state = api['status'](params['job']) if params.get('job') else api['current']()
+        if params.get('format'):
+            return snapshot(state, params['format'])
+        return wrapped(state)
+    if method in ('job_confirm', 'job_cancel'):
+        current = api['status'](params['job']) if params.get('job') else api['current']()
+        body = {'job': current.get('job'), 'accept': params.get('accept')}
+        return api['control'](body, 'answer' if method == 'job_confirm' else 'cancel')
+    if method not in ('snapshot', 'profiles', 'notifications', 'operation_start', 'download_start'):
+        raise fail('invalid_request')
+    slot = params.get('slot')
+    if type(slot) is not int or slot not in (0, 1):
+        raise fail('invalid_request')
+    body = {'job': params.get('job'), 'slot': str(slot), 'aid': params.get('aid', ''),
+            'transport': 'csim', 'action': 'scan'}
+    if method in ('snapshot', 'profiles', 'notifications'):
+        body['scan_se'] = bool(params.get('scan'))
+    else:
+        body.update(eid=params.get('eid'), confirm='yes')
+        if method == 'download_start':
+            body.update(action='download', activation=params.get('activation'), confirmation=params.get('confirmation', ''))
+        else:
+            action = params.get('request')
+            if isinstance(action, str):
+                import json
+                action = json.loads(action)
+            if not isinstance(action, dict):
+                raise fail('invalid_request')
+            if action.get('action') == 'switch':
+                if type(action.get('enabled')) is not bool:
+                    raise fail('invalid_request')
+                body.update(action='enable' if action['enabled'] else 'disable', iccid=action.get('iccid'))
+            elif action.get('action') == 'rename':
+                body.update(action='nickname', iccid=action.get('iccid'), nickname=action.get('name'))
+            elif action.get('action') == 'delete':
+                body.update(action='delete', iccid=action.get('iccid'))
+            elif action.get('action') == 'notifications':
+                items = action.get('notifications')
+                if not isinstance(items, list) or any(not isinstance(item, dict) for item in items):
+                    raise fail('invalid_request')
+                body.update(action='notifications', remove=action.get('remove', False), sequences=[item.get('seqNumber') for item in items])
+            else:
+                raise fail('invalid_request')
+    result = api['start'](body)
+    if not result.get('ok'):
+        return {'ok': False, 'error': result.get('error'), 'detail': result.get('error')}
+    if method in ('snapshot', 'profiles', 'notifications'):
+        return {'ok': True, 'wait': method, 'job': result['job']}
+    return {'ok': True, 'job': result['job']}
+
+
+def snapshot(state, method):
+    if state.get('state') == 'running':
+        return {'ok': True, 'running': True, 'job': state['job']}
+    if state.get('state') != 'done':
+        return {'ok': False, 'error': state.get('error'), 'detail': state.get('error') or 'Read failed'}
+    info = state['result']
+    if method != 'snapshot':
+        return {'ok': True, 'data': info.get(method, [])}
+    return {'ok': True, 'aid': info.get('aid', ''), 'ses': info.get('ses', 0),
+            'chip': {'ok': True, 'data': info['chip']},
+            'profiles': {'ok': True, 'data': info['profiles']},
+            'notifications': {'ok': True, 'data': info['notifications']}}

@@ -1,0 +1,6 @@
+#!/bin/sh
+case ${1:-}:${2:-} in
+ list:) exec /usr/libexec/unisoc-modem/euicc list;;
+ call:start|call:status|call:current|call:answer|call:cancel) exec /usr/libexec/unisoc-modem/euicc "$2";;
+ *) echo '{"ok":0,"error":"invalid_request"}';;
+esac

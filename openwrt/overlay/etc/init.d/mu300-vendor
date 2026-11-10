@@ -22,6 +22,11 @@ start_service() {
 	[ -f /lib/modules/$(uname -r)/sipc-core.ko ] || [ -e /dev/modem ] || [ -e /dev/pmsys ] || {
 		logger -t mu300-vendor "no modem stack in $(uname -r)"; return 0; }
 	/opt/mu300/bin/bootmark S09-vendor-init
+	if [ "$(/opt/mu300/bin/mu300-device)" = v50 ]; then
+		/usr/libexec/unisoc-modem/product-form boot || {
+			logger -t mu300-vendor 'Cannot prepare the configured V50 SIM form'; return 1;
+		}
+	fi
 	# the NV server first: the modem asks for its data while it boots, and a modem that does not get it
 	# stalls with "wait modem alive timeout" (this is what kept the mainline kernel without a modem)
 	procd_open_instance cp_diskserver

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Stock V50 B15 ElfDeviceManager constants, not modem logical slot numbers.
-v50_board_id() {
+v50_detected_board_id() {
     local root=${MU300_SYSROOT:-} value token path
     if [ -r "$root/proc/driver/board_id" ]; then
         value=$(cat "$root/proc/driver/board_id")
@@ -19,6 +19,16 @@ v50_board_id() {
         done
     done
     return 1
+}
+v50_board_id() {
+    local value marker=${MU300_V50_RUN:-/run}/mu300-product-form-v50
+    if [ -r "$marker" ]; then value=$(cat "$marker");
+    else value=$(uci -q get unisoc_modem.main.v50_board_override 2>/dev/null || true); fi
+    case $value in
+        ''|auto) v50_detected_board_id;;
+        0|1|2|3) printf '%s\n' "$value";;
+        *) return 1;;
+    esac
 }
 
 v50_cards() {

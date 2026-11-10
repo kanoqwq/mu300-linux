@@ -16,7 +16,7 @@ class ForwardProfiles(ShellTest):
     def test_template_helper_is_required_by_both_release_paths(self):
         for name in ('build-openwrt-tf-magisk.sh', 'make-release.sh'):
             text = (TOP / 'tools' / name).read_text()
-            for path in ('sms-forward', 'forward-template.uc'):
+            for path in ('sms-forward', 'forward-template.uc', 'call-notify', 'call-notify-events.uc'):
                 self.assertIn('./usr/libexec/unisoc-modem/' + path + ' ', text)
 
     def test_mode_defaults_and_invalid_mode_fail_closed(self):

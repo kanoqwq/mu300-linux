@@ -1,0 +1,836 @@
+#!/usr/bin/python3
+"""eUICC jobs. lpac owns SGP.22; existing modem queues own every AT exchange.
+
+No tty access, NR0 reader, radio resets, profile auto-selection or idle daemon.
+The stdio transports also let TLS verification stay enabled with lpac 2.3.0.
+"""
+import contextlib
+import hashlib
+import hmac
+import http.client
+import ipaddress
+import json
+import os
+from pathlib import Path
+import re
+import queue
+import runpy
+import select
+import signal
+import socket
+import ssl
+import subprocess
+import sys
+import time
+import threading
+from urllib.parse import urlsplit
+
+RUN = Path('/run/unisoc-euicc')
+LPAC = '/usr/lib/lpac'  # OpenWrt binary; /usr/bin/lpac overwrites our driver env.
+SELF = '/usr/libexec/unisoc-modem/euicc'
+RSP_CA = Path('/usr/share/unisoc-euicc/ca/gsma-rsp2-root-ci1.pem')
+LIMIT = 8 * 1024 * 1024
+HEX = re.compile(r'(?:[0-9A-Fa-f]{2})+')
+EID = re.compile(r'[0-9]{32}')
+ICCID = re.compile(r'[0-9]{18,22}')
+ISDR = 'A0000005591010FFFFFFFF8900000100'
+SE_AIDS = ('A06573746B6D65FFFF4953442D522030', 'A06573746B6D65FFFF4953442D522031')
+ESTK = 'A06573746B6D65FFFFFFFFFFFF6D6774'
+CONTROL = {'cancelled': False, 'process': None, 'preview_fd': None}
+
+
+class Failure(Exception):
+    def __init__(self, code):
+        super().__init__(code)
+        self.code = code
+
+
+def dump(value):
+    return json.dumps(value, ensure_ascii=False, separators=(',', ':'))
+
+
+def lock_file(fd, exclusive):
+    import fcntl
+    fcntl.flock(fd, (fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH) | fcntl.LOCK_NB)
+
+
+def atom(path, value):
+    tmp = path.with_suffix('.new')
+    with tmp.open('w', encoding='utf-8') as f:
+        f.write(dump(value))
+    tmp.replace(path)
+
+
+def process_ticks(pid):
+    try:
+        return Path(f'/proc/{pid}/stat').read_text().rsplit(')', 1)[1].split()[19]
+    except (OSError, IndexError):
+        return None
+
+
+def bus(obj, method, data=None):
+    try:
+        p = subprocess.run(['ubus', '-S', '-t', '8', 'call', obj, method,
+                            dump(data or {})], capture_output=True, timeout=10)
+        if p.returncode:
+            raise Failure('modem_unavailable')
+        return json.loads(p.stdout or '{}')
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        raise Failure('modem_unavailable')
+
+
+class Owner:
+    def __init__(self, slot):
+        self.slot = slot
+        self.env = dict(os.environ)
+        self.env.pop('MU300_SIM_CONTROL', None)
+        self.env.update(MU300_SIM_SLOT=str(slot), MU300_AT_DAEMON_ONLY='1',
+                        MU300_AT_LOCK_WAIT='12')
+        if Path('/etc/e5/device-profile').is_file():
+            self.binary = '/opt/e5/e5-at'
+        else:
+            state = bus('mu300.modem', 'status')
+            if state.get('bridge') != 'connected':
+                raise Failure('modem_unavailable')
+            platform = Path('/etc/mu300/platform')
+            pro = platform.is_file() and platform.read_text().strip() == 'u30pro'
+            order = ([2, 1, 6, 7] if slot == 0 else [5, 4, 3, 6, 7]) if pro else ([1, 2, 6, 7] if slot == 0 else [4, 5, 3, 6, 7])
+            broker = next((b for nr in order for b in state.get('brokers', [])
+                           if b.get('ready') and b.get('dev') == f'/dev/stty_nr{nr}'), None)
+            if not broker or not re.fullmatch(r'/(?:var/)?run/[A-Za-z0-9_/-]+', broker.get('dir', '')):
+                raise Failure('modem_unavailable')
+            self.binary = '/opt/mu300/bin/mu300-at'
+            self.env.update(MU300_AT_DIR=broker['dir'], MU300_AT_DEV=broker['dev'])
+        self.routing = self.route_signature()
+
+    @staticmethod
+    def route_signature():
+        values = []
+        for p in ('chip_select', 'psim_select', 'layout'):
+            file = Path('/sys/bus/platform/devices/sim_gpio_ctl') / p
+            values.append(file.read_text().strip() if file.is_file() else '')
+        return tuple(values)
+
+    def command(self, body):
+        if self.route_signature() != self.routing:
+            raise Failure('card_changed')
+        if Path('/run/mu300/sim-sequence').exists() or Path('/run/mu300/sim-active-unknown').exists():
+            raise Failure('modem_busy')
+        try:
+            p = subprocess.run([self.binary, '-t', '15', f'AT+SPACTCARD={self.slot};{body}'],
+                               env=self.env, stdin=subprocess.DEVNULL, capture_output=True,
+                               text=True, start_new_session=True, timeout=32)
+        except (OSError, subprocess.TimeoutExpired):
+            raise Failure('at_timeout')
+        lines = p.stdout.strip().splitlines()
+        if p.returncode or not lines or lines[-1].strip() != 'OK':
+            if re.search(r'\+CME ERROR:\s*10\b', p.stdout):
+                raise Failure('no_sim')
+            raise Failure('at_rejected')
+        return p.stdout
+
+
+class APDU:
+    def __init__(self, owner, transport, aid=ISDR):
+        self.owner, self.transport = owner, transport
+        self.aid = aid
+        self.on_transmit = None
+        self.channels = set()
+
+    def csim(self, data):
+        text = data.hex().upper()
+        reply = self.owner.command(f'+CSIM={len(text)},"{text}"')
+        return self.parse_data(reply, 'CSIM')
+
+    @staticmethod
+    def parse_data(reply, kind):
+        found = re.findall(r'\+' + kind + r':\s*(\d+)\s*,\s*"?([0-9A-Fa-f]+)"?\s*(?:\r?\n|$)', reply)
+        if len(found) != 1:
+            raise Failure('apdu_reply')
+        size, value = found[0]
+        if int(size) != len(value) or len(value) < 4 or len(value) % 2:
+            raise Failure('apdu_reply')
+        return bytes.fromhex(value)
+
+    def close(self, channel):
+        if channel not in self.channels:
+            raise Failure('apdu_channel')
+        try:
+            if self.transport == 'logical':
+                self.owner.command(f'+CCHC={channel}')
+            elif self.csim(bytes([0, 0x70, 0x80, channel, 0]))[-2:] != b'\x90\x00':
+                raise Failure('apdu_reply')
+        finally:
+            self.channels.discard(channel)
+
+    def cleanup(self):
+        for channel in list(self.channels):
+            with contextlib.suppress(Failure):
+                self.close(channel)
+
+    def request(self, req):
+        func, param = req.get('func'), req.get('param')
+        if func == 'connect':
+            # An empty eUICC can report CPIN "SIM not inserted" while its
+            # ISD-R remains reachable. Probe APDU capability, not USIM/PIN.
+            self.owner.command('+CSIM=?' if self.transport == 'csim' else '+CGLA=?')
+            return {'ecode': 0}
+        if func == 'disconnect':
+            self.cleanup()
+            return {'ecode': 0}
+        if not isinstance(param, str) or not HEX.fullmatch(param) or len(param) > 1024:
+            raise Failure('apdu_request')
+        data = bytes.fromhex(param)
+        if func == 'logic_channel_open':
+            # Only lpac's ISD-R application; no basic-channel SELECT or raw RPC.
+            if param.upper() != self.aid or self.aid not in (ISDR, ESTK, *SE_AIDS):
+                raise Failure('apdu_application')
+            if self.transport == 'logical':
+                reply = self.owner.command(f'+CCHO="{self.aid}"')
+                m = re.search(r'\+CCHO:\s*(\d+)\s*(?:\r?\n|$)', reply)
+                if not m:
+                    raise Failure('apdu_reply')
+                channel = int(m[1])
+            else:
+                reply = self.csim(bytes.fromhex('0070000001'))
+                if len(reply) != 3 or reply[-2:] != b'\x90\x00':
+                    raise Failure('apdu_channel')
+                channel = reply[0]
+            # lpac 2.3.0 encodes the channel in the low CLA nibble. Refuse
+            # channels requiring the extended ISO7816 CLA representation.
+            if channel not in range(1, 4) or channel in self.channels:
+                if channel in range(4, 20):
+                    with contextlib.suppress(Failure):
+                        if self.transport == 'logical':
+                            self.owner.command(f'+CCHC={channel}')
+                        else:
+                            self.csim(bytes([0, 0x70, 0x80, channel, 0]))
+                raise Failure('apdu_channel')
+            self.channels.add(channel)
+            if self.transport == 'csim':
+                cla = channel if channel < 4 else 0x40 | (channel - 4)
+                reply = self.csim(bytes([cla, 0xa4, 4, 0, len(data)]) + data)
+                if reply[-2:] == b'\x6a\x82':
+                    raise Failure('not_euicc')
+                if reply[-2:] != b'\x90\x00' and reply[-2] != 0x61:
+                    raise Failure('apdu_select')
+            return {'ecode': channel}
+        if func == 'logic_channel_close' and len(data) == 1:
+            self.close(data[0])
+            return {'ecode': 0}
+        if func == 'transmit' and 4 <= len(data) <= 512:
+            cla = data[0]
+            channel = 4 + (cla & 15) if cla & 0x40 else cla & 3
+            if channel not in self.channels:
+                raise Failure('apdu_channel')
+            if self.transport == 'logical':
+                reply = self.owner.command(f'+CGLA={channel},{len(param)},"{param.upper()}"')
+                response = self.parse_data(reply, 'CGLA')
+            else:
+                response = self.csim(data)
+            if self.on_transmit:
+                self.on_transmit(param, f'+CGLA: {len(response)*2},"{response.hex()}"')
+            return {'ecode': 0, 'data': response.hex().upper()}
+        raise Failure('apdu_request')
+
+
+def tls_context():
+    # ES9+ permits both public web PKI and eSIM CI roots (SGP.22 2.6.6).
+    # Scope the additional root to eUICC requests, never the system CA store.
+    # Keep hostname, validity, purpose and chain verification enabled.
+    try:
+        context = ssl.create_default_context()
+        context.load_verify_locations(cafile=str(RSP_CA))
+        return context
+    except (OSError, ssl.SSLError):
+        raise Failure('server_ca')
+
+
+class TLSConnection(http.client.HTTPSConnection):
+    def connect(self):
+        # Resolve once and connect to the checked address. No redirects/proxies,
+        # downgrade, RFC1918 endpoint or DNS-rebinding second resolution.
+        choices = socket.getaddrinfo(self.host, self.port, type=socket.SOCK_STREAM)
+        if not choices or any(not ipaddress.ip_address(x[4][0]).is_global for x in choices):
+            raise Failure('server_address')
+        failure = None
+        for family, kind, proto, _, address in choices:
+            raw = socket.socket(family, kind, proto)
+            raw.settimeout(self.timeout)
+            try:
+                raw.connect(address)
+                self.sock = self._context.wrap_socket(raw, server_hostname=self.host)
+                return
+            except OSError as error:
+                raw.close()
+                failure = error
+        raise failure or Failure('server_unavailable')
+
+
+def http_request(req):
+    url = req.get('url')
+    if not isinstance(url, str) or len(url) > 2048 or any(ord(c) < 32 for c in url):
+        raise Failure('server_address')
+    try:
+        parts = urlsplit(url)
+        port = parts.port
+    except ValueError:
+        raise Failure('server_address')
+    if (parts.scheme != 'https' or not parts.hostname or parts.username or parts.password or
+            parts.fragment or port not in (None, 443)):
+        raise Failure('server_address')
+    tx = req.get('tx', '')
+    if not isinstance(tx, str) or len(tx) > 2 * LIMIT or (tx and not HEX.fullmatch(tx)):
+        raise Failure('server_request')
+    supplied = req.get('headers', [])
+    if not isinstance(supplied, list) or len(supplied) > 16:
+        raise Failure('server_request')
+    headers = {}
+    for header in supplied:
+        if not isinstance(header, str) or '\r' in header or '\n' in header or ':' not in header:
+            raise Failure('server_request')
+        name, value = header.split(':', 1)
+        if len(header) > 1024:
+            raise Failure('server_request')
+        if name.lower() not in ('content-type', 'user-agent', 'x-admin-protocol', 'accept'):
+            raise Failure('server_request')
+        headers[name] = value.strip()
+    connection = TLSConnection(parts.hostname, timeout=40, context=tls_context())
+    try:
+        connection.request('POST', parts.path + ('?' + parts.query if parts.query else ''),
+                           body=bytes.fromhex(tx), headers=headers)
+        reply = connection.getresponse()
+        body = reply.read(LIMIT + 1)
+        if len(body) > LIMIT:
+            raise Failure('server_reply')
+        return {'rcode': reply.status, 'rx': body.hex().upper()}
+    except ssl.SSLError:
+        raise Failure('server_tls')
+    except (TimeoutError, socket.timeout):
+        raise Failure('server_timeout')
+    except OSError:
+        raise Failure('server_unavailable')
+    finally:
+        connection.close()
+
+
+def lpac(args, adapter, progress):
+    if CONTROL['cancelled']:
+        raise Failure('cancelled')
+    # Drivers selected explicitly: OpenWrt's UCI wrapper must not choose uqmi.
+    env = {k: v for k, v in os.environ.items() if not k.startswith(('LPAC_', 'LIBEUICC_'))}
+    env.update(LPAC_APDU='stdio', LPAC_HTTP='stdio',
+               LPAC_CUSTOM_ISD_R_AID=adapter.aid, LPAC_CUSTOM_ES10X_MSS='120')
+    env.pop('LPAC_HTTP_TRUST_STORE', None)
+    proc = subprocess.Popen([LPAC, *args], stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+    CONTROL['process'] = proc
+    writer = None
+    if args[:2] == ['profile', 'download']:
+        WriteProgress = runpy.run_path(str(Path(__file__).with_name('euicc-progress.py')))['WriteProgress']
+        writer = WriteProgress(lambda _stage, detail: progress('writing', detail))
+        adapter.on_transmit = writer.accept
+    final, sizes = None, {'out': 0, 'err': 0}
+    events, stopped = queue.Queue(maxsize=8), threading.Event()
+    def publish(event):
+        while not stopped.is_set():
+            try:
+                events.put(event, timeout=.5)
+                return
+            except queue.Full:
+                continue
+    def pump(stream, name):
+        try:
+            while not stopped.is_set():
+                line = stream.readline(2 * LIMIT + 65537)
+                if not line:
+                    break
+                publish((name, line))
+        finally:
+            publish((name, None))
+    pumps = [threading.Thread(target=pump, args=(stream, name), daemon=True)
+             for stream, name in ((proc.stdout, 'out'), (proc.stderr, 'err'))]
+    for thread in pumps:
+        thread.start()
+    deadline = time.monotonic() + 600
+    try:
+        ended = set()
+        while len(ended) != 2:
+            left = deadline - time.monotonic()
+            if left <= 0:
+                raise Failure('operation_timeout')
+            try:
+                name, line = events.get(timeout=left)
+            except queue.Empty:
+                raise Failure('operation_timeout')
+            if line is None:
+                ended.add(name)
+                continue
+            sizes[name] += len(line)
+            if len(line) > 2 * LIMIT + 65536 or sizes[name] > 64 * LIMIT:
+                raise Failure('lpac_reply')
+            if name == 'err':
+                # Discard raw APDU/profile/token/error bodies, including stderr.
+                continue
+            if not line.strip():
+                continue
+            item = json.loads(line)
+            if not isinstance(item, dict):
+                raise Failure('lpac_reply')
+            kind, payload = item.get('type'), item.get('payload')
+            if not isinstance(payload, dict):
+                raise Failure('lpac_reply')
+            if kind in ('apdu', 'http'):
+                if final is not None and (kind != 'apdu' or payload.get('func') not in ('logic_channel_close', 'disconnect')):
+                    raise Failure('lpac_reply')
+                answer = adapter.request(payload) if kind == 'apdu' else http_request(payload)
+                proc.stdin.write((dump({'type': kind, 'payload': answer}) + '\n').encode())
+                proc.stdin.flush()
+            elif kind == 'progress':
+                stage = payload.get('message', '')
+                if writer:
+                    writer.active = stage == 'es10b_load_bound_profile_package'
+                if stage in ('es8p_metadata_parse', 'es8p_meatadata_parse'):
+                    metadata = payload.get('data')
+                    if not isinstance(metadata, dict):
+                        raise Failure('lpac_reply')
+                    progress('metadata', {k: str(metadata.get(k) or '')[:256] for k in
+                             ('iccid', 'serviceProviderName', 'profileName', 'profileClass')})
+                elif stage == 'preview':
+                    accept = progress('preview')
+                    CONTROL['cancelled'] = not bool(accept)
+                    # lpac consumes exactly one byte with getchar(). A newline
+                    # here would become the next stdio APDU/HTTP JSON reply.
+                    proc.stdin.write(b'y' if accept else b'n')
+                    proc.stdin.flush()
+                    deadline = time.monotonic() + 600
+                else:
+                    progress(stage if isinstance(stage, str) and re.fullmatch(r'[a-z0-9_]{1,80}', stage) else 'working')
+            elif kind == 'lpa' and final is None:
+                final = payload
+            else:
+                raise Failure('lpac_reply')
+        if proc.wait(timeout=3) or not final or final.get('code') != 0:
+            raise Failure('cancelled' if CONTROL['cancelled'] else 'lpac_failed')
+        return final.get('data')
+    except (json.JSONDecodeError, UnicodeError, BrokenPipeError):
+        raise Failure('lpac_reply')
+    finally:
+        if proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
+        stopped.set()
+        for thread in pumps:
+            thread.join(timeout=1)
+        for stream in (proc.stdin, proc.stdout, proc.stderr):
+            with contextlib.suppress(OSError):
+                stream.close()
+        CONTROL['process'] = None
+        adapter.on_transmit = None
+        adapter.cleanup()
+
+
+def validate(data):
+    if not isinstance(data, dict) or data.get('slot') not in ('0', '1'):
+        raise Failure('invalid_request')
+    data = dict(data)
+    job_path(data.get('job'))
+    data.setdefault('transport', 'csim')
+    data.setdefault('aid', '')
+    if data['aid'] not in ('', *SE_AIDS):
+        raise Failure('invalid_request')
+    if type(data.get('scan_se', False)) is not bool:
+        raise Failure('invalid_request')
+    if data.get('transport', 'csim') not in ('csim', 'logical'):
+        raise Failure('invalid_request')
+    action = data.get('action')
+    if action not in ('scan', 'download', 'enable', 'disable', 'delete', 'nickname', 'notifications'):
+        raise Failure('invalid_request')
+    if action != 'scan' and not EID.fullmatch(str(data.get('eid', ''))):
+        raise Failure('scan_required')
+    if action in ('enable', 'disable', 'delete', 'download') and data.get('confirm') != 'yes':
+        raise Failure('confirmation_required')
+    if action in ('enable', 'disable', 'delete', 'nickname') and not ICCID.fullmatch(str(data.get('iccid', ''))):
+        raise Failure('invalid_request')
+    if action == 'nickname':
+        name = data.get('nickname')
+        if not isinstance(name, str) or len(name) > 64 or any(ord(c) < 32 for c in name):
+            raise Failure('invalid_request')
+    if action == 'download':
+        code = data.get('activation', '')
+        if not isinstance(code, str):
+            raise Failure('activation_invalid')
+        code = code.strip()
+        parts = code.split('$')
+        if (len(parts) not in (3, 4, 5) or parts[0] != 'LPA:1' or len(code) > 2048 or
+                not re.fullmatch(r'[a-zA-Z0-9](?:[a-zA-Z0-9.-]{0,251}[a-zA-Z0-9])?', parts[1]) or
+                any(ord(c) < 33 or ord(c) == 127 for c in code)):
+            raise Failure('activation_invalid')
+        confirmation = data.get('confirmation', '')
+        if not isinstance(confirmation, str) or len(confirmation) > 128 or any(ord(c) < 32 for c in confirmation):
+            raise Failure('invalid_request')
+        data['activation'] = code
+    if action == 'notifications':
+        sequences = data.get('sequences')
+        if sequences is not None and (not isinstance(sequences, list) or len(sequences) > 256 or
+                any(type(n) is not int or not 0 <= n <= 0xffffffff for n in sequences)):
+            raise Failure('invalid_request')
+        if type(data.get('remove', False)) is not bool:
+            raise Failure('invalid_request')
+        if data.get('remove') and data.get('confirm') != 'yes':
+            raise Failure('confirmation_required')
+    return data
+
+
+def clean_info(info):
+    if not isinstance(info, dict) or not EID.fullmatch(str(info.get('eidValue', ''))):
+        raise Failure('not_euicc')
+    detail = info.get('EUICCInfo2') or {}
+    if not isinstance(detail, dict) or not isinstance(detail.get('extCardResource') or {}, dict):
+        raise Failure('lpac_reply')
+    if len(dump(info)) > 128 * 1024:
+        raise Failure('lpac_reply')
+    return {'eid': info['eidValue'], 'firmware': str(detail.get('euiccFirmwareVer') or '')[:128],
+            'free_bytes': (detail.get('extCardResource') or {}).get('freeNonVolatileMemory'), 'chip': info}
+
+
+def probe_se(owner, transport, progress):
+    probe = APDU(owner, transport, ESTK)
+    try:
+        probe.request({'func': 'logic_channel_open', 'param': ESTK})
+    except Failure as error:
+        if error.code in ('at_rejected', 'not_euicc', 'apdu_select', 'apdu_channel', 'no_sim'):
+            return 0
+        raise
+    finally:
+        probe.cleanup()
+    mask = 0
+    for index, aid in enumerate(SE_AIDS):
+        try:
+            clean_info(lpac(['chip', 'info'], APDU(owner, transport, aid), progress))
+            mask |= 1 << index
+        except Failure as error:
+            if error.code not in ('lpac_failed', 'not_euicc', 'apdu_select', 'apdu_channel', 'at_rejected'):
+                raise
+    return mask
+
+
+def clean_profiles(rows):
+    if not isinstance(rows, list) or len(rows) > 256:
+        raise Failure('lpac_reply')
+    result = []
+    for row in rows:
+        if (not isinstance(row, dict) or not ICCID.fullmatch(str(row.get('iccid', ''))) or
+                not isinstance(row.get('profileState'), str) or
+                row['profileState'].lower() not in ('enabled', 'disabled')):
+            raise Failure('lpac_reply')
+        result.append({k: str(row.get(k) or '')[:256] for k in
+                       ('iccid', 'profileState', 'profileNickname', 'serviceProviderName', 'profileName')})
+    return result
+
+
+def perform(data, owner, progress):
+    adapter = APDU(owner, data.get('transport', 'csim'), data.get('aid') or ISDR)
+    info = clean_info(lpac(['chip', 'info'], adapter, progress))
+    if data['action'] == 'scan' and data.get('scan_se'):
+        info['ses'] = probe_se(owner, data.get('transport', 'csim'), progress)
+    if data['action'] != 'scan' and info['eid'] != data['eid']:
+        raise Failure('card_changed')
+    action = data['action']
+    before_notifications = None
+    if action == 'download':
+        before_notifications = lpac(['notification', 'list'], adapter, progress)
+        if not isinstance(before_notifications, list):
+            raise Failure('lpac_reply')
+    if action in ('enable', 'disable', 'delete', 'nickname'):
+        rows = clean_profiles(lpac(['profile', 'list'], adapter, progress))
+        target = next((r for r in rows if r['iccid'] == data['iccid']), None)
+        if target is None:
+            raise Failure('profile_missing')
+        if action == 'delete' and target['profileState'].lower() == 'enabled':
+            raise Failure('profile_enabled')
+        if action == 'delete':
+            before_notifications = lpac(['notification', 'list'], adapter, progress)
+            if not isinstance(before_notifications, list):
+                raise Failure('lpac_reply')
+        args = ['profile', action, data['iccid']]
+        if action == 'nickname':
+            args.append(data['nickname'])
+        try:
+            lpac(args, adapter, progress)
+        except Failure as error:
+            # Some 2.3.0/card combinations commit deletion before losing the
+            # final reply. Verify the card instead of ever repeating DELETE.
+            if action != 'delete' or error.code != 'lpac_failed':
+                raise
+            remaining = clean_profiles(lpac(['profile', 'list'], adapter, progress))
+            if any(row['iccid'] == data['iccid'] for row in remaining):
+                raise
+            info['diagnostic'] = 'delete_response_lost_verified_absent'
+        progress('command_completed')
+    elif action == 'download':
+        args = ['profile', 'download', '-p', '-a', data['activation']]
+        if data.get('confirmation'):
+            args.extend(['-c', data['confirmation']])
+        lpac(args, adapter, progress)
+        progress('command_completed')
+    elif action == 'notifications':
+        notifications = lpac(['notification', 'list'], adapter, progress)
+        if not isinstance(notifications, list) or len(notifications) > 1024:
+            raise Failure('lpac_reply')
+        available = {r['seqNumber'] for r in notifications if isinstance(r, dict) and type(r.get('seqNumber')) is int}
+        sequences = data.get('sequences')
+        selected = sorted(available if sequences is None else set(sequences))
+        if not set(selected) <= available:
+            raise Failure('notification_missing')
+        processed = failed = 0
+        for sequence in selected:
+            try:
+                args = ['notification', 'remove', str(sequence)] if data.get('remove') else ['notification', 'process', '-r', str(sequence)]
+                lpac(args, adapter, progress)
+                processed += 1
+            except Failure as error:
+                if error.code in ('cancelled', 'card_changed', 'modem_busy'):
+                    raise
+                failed += 1
+        info.update(processed=processed, failed=failed)
+        progress('command_completed')
+    progress('reading_profiles')
+    info['profiles'] = clean_profiles(lpac(['profile', 'list'], adapter, progress))
+    if action in ('enable', 'disable', 'delete', 'nickname'):
+        current = next((r for r in info['profiles'] if r['iccid'] == data['iccid']), None)
+        if ((action == 'delete' and current is not None) or
+                (action != 'delete' and current is None) or
+                (action in ('enable', 'disable') and current['profileState'].lower() !=
+                 ('enabled' if action == 'enable' else 'disabled')) or
+                (action == 'nickname' and current['profileNickname'] != data['nickname'])):
+            raise Failure('readback_failed')
+    info['notifications'] = lpac(['notification', 'list'], adapter, progress)
+    if before_notifications is not None:
+        seen = {n.get('seqNumber') for n in before_notifications if isinstance(n, dict)}
+        notifications = info['notifications']
+        if not isinstance(notifications, list):
+            raise Failure('lpac_reply')
+        for item in notifications:
+            sequence = item.get('seqNumber') if isinstance(item, dict) else None
+            if type(sequence) is int and sequence not in seen:
+                try:
+                    lpac(['notification', 'process', '-r', str(sequence)], adapter, progress)
+                except Failure as error:
+                    if error.code in ('card_changed', 'cancelled', 'modem_busy'):
+                        raise
+                    info['warning'] = 'notification_report'
+        if notifications:
+            info['notifications'] = lpac(['notification', 'list'], adapter, progress)
+    info['aid'] = data.get('aid', '')
+    return info
+
+
+def job_path(key):
+    if not isinstance(key, str) or not re.fullmatch(r'[0-9a-f]{32}', key):
+        raise Failure('invalid_job')
+    return RUN / ('job-' + key + '.json')
+
+
+def status(key):
+    path = job_path(key)
+    try:
+        state = json.loads(path.read_text())
+    except (OSError, ValueError):
+        raise Failure('invalid_job')
+    if state.get('state') == 'running' and (not state.get('ticks') or process_ticks(state.get('pid')) != state.get('ticks')):
+        state.update(state='failed', error='operation_interrupted')
+    return {k: v for k, v in state.items() if k != 'request_hash'}
+
+
+def start(data):
+    data = validate(data)
+    key = data['job']
+    request_hash = hashlib.sha256(dump(dict(sorted(data.items()))).encode()).hexdigest()
+    def previous():
+        path = job_path(key)
+        if not path.exists():
+            return None
+        state = json.loads(path.read_text())
+        if not hmac.compare_digest(request_hash, state.get('request_hash', '')):
+            raise Failure('request_changed')
+        return status(key)
+    prior = previous()
+    if prior is not None:
+        return prior
+    if not os.access(LPAC, os.X_OK):
+        raise Failure('lpac_missing')
+    RUN.mkdir(mode=0o700, parents=True, exist_ok=True)
+    fd = os.open(RUN / 'operation.lock', os.O_CREAT | os.O_RDWR, 0o600)
+    try:
+        try:
+            lock_file(fd, True)
+        except BlockingIOError:
+            prior = previous()
+            if prior is not None:
+                return prior
+            raise Failure('operation_busy')
+        prior = previous()
+        if prior is not None:
+            return prior
+        proc = subprocess.Popen([sys.executable, SELF, '--worker', key, str(fd)],
+                                stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL, start_new_session=True, pass_fds=(fd,))
+        initial = dict(ok=1, job=key, slot=data['slot'], action=data['action'], state='running',
+                       aid=data['aid'], remove=data.get('remove', False), stage='preparing',
+                       pid=proc.pid, ticks=process_ticks(proc.pid), request_hash=request_hash)
+        atom(job_path(key), initial)
+        atom(RUN / 'current.json', {'job': key})
+        try:
+            proc.stdin.write((dump(data) + '\n').encode())
+            proc.stdin.close()
+        except (BrokenPipeError, OSError):
+            raise Failure('worker_failed')
+        # Keep a bounded number of private RAM-only result records.
+        previous = sorted(RUN.glob('job-*.json'), key=lambda p: p.stat().st_mtime, reverse=True)
+        for path in previous[16:]:
+            path.unlink(missing_ok=True)
+        return status(key)
+    finally:
+        os.close(fd)  # child holds the same flock; never explicitly unlock here.
+
+
+def worker(key, fd):
+    signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(Failure('operation_interrupted')))
+    def cancel(*_):
+        CONTROL['cancelled'] = True
+        if CONTROL['process'] is not None:
+            with contextlib.suppress(OSError):
+                CONTROL['process'].send_signal(signal.SIGINT)
+        if CONTROL['preview_fd'] is not None:
+            with contextlib.suppress(OSError):
+                os.write(CONTROL['preview_fd'], b'n')
+    signal.signal(signal.SIGUSR1, cancel)
+    # Parent publishes the reservation BEFORE releasing this stdin handshake.
+    raw = sys.stdin.buffer.readline(8193)
+    state = json.loads(job_path(key).read_text())
+    try:
+        signal.signal(signal.SIGALRM, lambda *_: (_ for _ in ()).throw(Failure('operation_timeout')))
+        signal.alarm(900)
+        data = validate(json.loads(raw))
+        def progress(stage, detail=None):
+            if stage == 'command_completed':
+                state['submitted'] = True
+            if stage in ('metadata', 'writing'):
+                state['metadata' if stage == 'metadata' else 'write'] = detail
+            if stage == 'preview':
+                path = RUN / ('answer-' + key)
+                os.mkfifo(path, 0o600)
+                answer_fd = os.open(path, os.O_RDWR | os.O_NONBLOCK)
+                CONTROL['preview_fd'] = answer_fd
+                try:
+                    state.update(stage='preview', preview=True)
+                    atom(job_path(key), state)
+                    ready = select.select([answer_fd], [], [], 180)[0]
+                    return bool(ready) and os.read(answer_fd, 1) == b'y' and not CONTROL['cancelled']
+                finally:
+                    CONTROL['preview_fd'] = None
+                    os.close(answer_fd)
+                    path.unlink(missing_ok=True)
+                    state['preview'] = False
+                    atom(job_path(key), state)
+            if state.get('stage') != stage:
+                state.update(stage=stage)
+                atom(job_path(key), state)
+            elif detail is not None:
+                atom(job_path(key), state)
+        state['result'] = perform(data, Owner(int(data['slot'])), progress)
+        state.update(state='done', stage='done')
+    except Failure as error:
+        state.update(state='failed', error=error.code)
+    except Exception:
+        state.update(state='failed', error='operation_failed')
+    finally:
+        signal.alarm(0)
+        atom(job_path(key), state)
+        os.close(fd)
+
+
+def current():
+    try:
+        return status(json.loads((RUN/'current.json').read_text())['job'])
+    except (OSError, ValueError, KeyError, Failure):
+        return {'ok': 1, 'state': 'idle'}
+
+
+def control(data, method):
+    state = status(data.get('job'))
+    if state.get('state') != 'running':
+        raise Failure('operation_interrupted')
+    if method == 'answer':
+        if type(data.get('accept')) is not bool or not state.get('preview'):
+            raise Failure('invalid_request')
+        fd = os.open(RUN/('answer-'+data['job']), os.O_WRONLY | os.O_NONBLOCK | os.O_NOFOLLOW)
+        try:
+            os.write(fd, b'y' if data['accept'] else b'n')
+        finally:
+            os.close(fd)
+    else:
+        os.kill(state['pid'], signal.SIGUSR1)
+    return {'ok': 1}
+
+
+def main():
+    os.umask(0o077)
+    if len(sys.argv) > 2 and sys.argv[1] == '--guard':
+        # Physical SIM routing holds a shared lock; eUICC jobs hold exclusive.
+        # The lifetime follows file descriptors, so crashes leave no stale gate.
+        RUN.mkdir(mode=0o700, parents=True, exist_ok=True)
+        with (RUN / 'operation.lock').open('a') as lock:
+            try:
+                lock_file(lock.fileno(), False)
+            except BlockingIOError:
+                print('eUICC operation is running; wait before changing physical SIM routing', file=sys.stderr)
+                sys.exit(75)
+            env = dict(os.environ, UNISOC_EUICC_GUARDED='1')
+            os.set_inheritable(lock.fileno(), True)
+            # exec preserves the RF controller's parent/lock-owner check.
+            os.execvpe(sys.argv[2], sys.argv[2:], env)
+    if len(sys.argv) == 4 and sys.argv[1] == '--worker':
+        worker(sys.argv[2], int(sys.argv[3]))
+        return
+    method = sys.argv[1] if len(sys.argv) == 2 else ''
+    if method == 'list':
+        print(dump({'start': {'job': 'String', 'slot': 'String', 'action': 'String', 'transport': 'String',
+               'eid': 'String', 'iccid': 'String', 'nickname': 'String', 'activation': 'String',
+               'confirmation': 'String', 'confirm': 'String', 'aid': 'String',
+               'sequences': 'Array', 'remove': 'Boolean', 'scan_se': 'Boolean'}, 'status': {'job': 'String'},
+               'current': {}, 'answer': {'job': 'String', 'accept': 'Boolean'}, 'cancel': {'job': 'String'}}))
+        return
+    try:
+        raw = sys.stdin.buffer.read(8193)
+        if len(raw) > 8192:
+            raise Failure('invalid_request')
+        data = json.loads(raw)
+        if not isinstance(data, dict):
+            raise Failure('invalid_request')
+        if method == 'start':
+            answer = start(data)
+        elif method == 'status':
+            answer = status(data.get('job'))
+        elif method == 'current':
+            answer = current()
+        elif method in ('answer', 'cancel'):
+            answer = control(data, method)
+        elif method == 'screen_rpc':
+            answer = runpy.run_path(str(Path(__file__).with_name('euicc-screen')))['invoke'](data, globals())
+        else:
+            raise Failure('invalid_request')
+    except Failure as error:
+        answer = {'ok': 0, 'error': error.code}
+    except Exception:
+        answer = {'ok': 0, 'error': 'operation_failed'}
+    print(dump(answer))
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,465 @@
+#!/usr/bin/python3
+"""Incoming-call presentation, driven by the existing modem owners only.
+
+E5 consumes the native ModemManager observer's local SSE stream. MU300/Pro
+subscribe to published NR0 hints, then query each explicitly selected SIM on
+the existing command queues. Never open a tty or infer a SIM from NR0.
+"""
+import atexit
+import csv
+import fcntl
+import http.client
+import json
+import os
+from pathlib import Path
+import queue
+import re
+import signal
+import subprocess
+import sys
+import threading
+import time
+import uuid
+from urllib.parse import unquote
+
+RUN = Path('/run/unisoc-call-notify')
+FORWARD = '/usr/libexec/unisoc-modem/sms-forward'
+RINGING = {'ringing-in', 'waiting'}
+AT_TIMEOUT = 8
+AT_CLIENT = '/opt/mu300/bin/mu300-at'
+HINT = re.compile(r'^(?:RING$|NO CARRIER$|BUSY$|NO ANSWER$|\+CRING:|\+CLIP:|\+CCWA:|\+CLCCS:|\^ORIG:|\^CONF:|\^CONN:|\^CEND:|\^DSCI:)')
+
+
+def voice_hint(message):
+    hint = message.get('mu300.modem.urc', {})
+    line = hint.get('line', '')
+    return (hint.get('channel') == 'stty_nr0' and isinstance(line, str) and
+            '\r' not in line and '\n' not in line and bool(HINT.match(line.strip())))
+
+
+def caller_number(value):
+    """Extract the user part; never display SIP credentials, domain or params."""
+    value = str(value or '').strip()
+    if '<' in value and '>' in value:
+        value = value.split('<', 1)[1].split('>', 1)[0].strip()
+    value = re.sub(r'^(?:sips?|tel):', '', value, flags=re.I)
+    value = unquote(value.split('@', 1)[0].split(';', 1)[0].split('?', 1)[0])
+    if any(ord(c) < 32 or ord(c) == 127 for c in value):
+        return ''
+    value = re.sub(r'[\s().-]', '', value)
+    return value if re.fullmatch(r'\+?[0-9*#]{1,40}', value) else ''
+
+
+def slot_labels(slot, physical):
+    labels = {'zh': f'SIM {slot + 1}', 'en': f'SIM {slot + 1}', 'tr': f'SIM {slot + 1}'}
+    model = physical.get('model')
+    cards = physical.get('logical_cards', [])
+    if physical.get('supported') is False or model not in ('u30pro', 'f50pro', 'v50') or len(cards) <= slot:
+        return labels
+    card = cards[slot]
+    external = card == 3 or (model == 'f50pro' and card == 4)
+    if external:
+        number = 2 if model == 'f50pro' and card == 3 else 1
+        return dict(zh=f'外置卡{number}', en=f'External SIM {number}', tr=f'Harici SIM {number}')
+    if card in (0, 1, 2):
+        return dict(zh=f'内置卡{card + 1}', en=f'Internal SIM {card + 1}', tr=f'Dahili SIM {card + 1}')
+    return labels
+
+
+def number_key(number):
+    # Same national/E.164 identity rule as the established Pro call adapter.
+    if number.startswith('00'):
+        number = '+' + number[2:]
+    if re.fullmatch(r'\+861[3-9][0-9]{9}', number):
+        number = number[3:]
+    elif re.fullmatch(r'861[3-9][0-9]{9}', number):
+        number = number[2:]
+    return number
+
+
+def ubus(method, obj, data=None):
+    args = ['ubus', '-S', '-t', '12', method, obj]
+    if data is not None:
+        args.append(json.dumps(data, separators=(',', ':')))
+    raw = subprocess.check_output(args, timeout=14)
+    return json.loads(raw or '{}')
+
+
+def call(obj, method, data=None):
+    raw = subprocess.check_output(['ubus', '-S', '-t', '12', 'call', obj, method,
+                                   json.dumps(data or {}, separators=(',', ':'))], timeout=14)
+    return json.loads(raw or '{}')
+
+
+def parse_clcc(reply, slot):
+    calls, seen = [], set()
+    for line in reply.splitlines():
+        if not line.strip().startswith('+CLCC:'):
+            continue
+        row = next(csv.reader([line.split(':', 1)[1].strip()], skipinitialspace=True, strict=True))
+        if len(row) < 5:
+            raise ValueError('invalid call snapshot')
+        index, direction, state, mode, multiparty = map(int, row[:5])
+        if index < 1 or index > 255 or index in seen or direction not in (0, 1) or state not in range(6) or multiparty not in (0, 1):
+            raise ValueError('invalid call snapshot')
+        seen.add(index)
+        if mode not in (0, 3, 4, 5):
+            continue
+        calls.append(dict(key=f'{slot}:{index}', card=slot, index=index,
+                          direction='incoming' if direction else 'outgoing',
+                          state=['active', 'held', 'dialing', 'ringing-out', 'ringing-in', 'waiting'][state],
+                          number=caller_number(row[5] if len(row) > 5 else '')))
+    return calls
+
+
+class ModemOwner:
+    def __init__(self, native_pro):
+        self.native_pro = native_pro
+
+    def command(self, slot, body):
+        status = call('mu300.modem', 'status')
+        if status.get('bridge') != 'connected':
+            raise RuntimeError('modem unavailable')
+        # Native Pro banks differ; MU300 keeps its existing nr1/nr4 owners.
+        order = ([2, 1, 6, 7] if slot == 0 else [5, 4, 3, 6, 7]) if self.native_pro else ([1, 2, 6, 7] if slot == 0 else [4, 5, 3, 6, 7])
+        broker = next((b for nr in order for b in status.get('brokers', [])
+                       if b.get('ready') and b.get('dev') == f'/dev/stty_nr{nr}'), None)
+        if not broker or not re.fullmatch(r'/(?:var/)?run/[A-Za-z0-9_/-]+', broker.get('dir', '')):
+            raise RuntimeError('command owner unavailable')
+        # The existing client waits for this same owner's admission lock. The
+        # nonblocking ubus AT operation can return busy during a dashboard/SIP
+        # query; dropping that last voice event leaves a stale screen forever.
+        # Use this client for every operation, never as an after-error fallback.
+        env = dict(os.environ, MU300_AT_DIR=broker['dir'], MU300_AT_DEV=broker['dev'],
+                   MU300_AT_DAEMON_ONLY='1', MU300_AT_LOCK_WAIT=str(AT_TIMEOUT),
+                   MU300_SIM_SLOT=str(slot), MU300_SIM_CONTROL='0')
+        reply = subprocess.check_output([AT_CLIENT, '-t', str(AT_TIMEOUT),
+            f'AT+SPACTCARD={slot};{body}'], env=env, text=True,
+            stdin=subprocess.DEVNULL, stderr=subprocess.PIPE, start_new_session=True,
+            timeout=AT_TIMEOUT * 2 + 4)
+        if reply.strip().splitlines()[-1:] != ['OK']:
+            raise RuntimeError('call query rejected')
+        return reply
+
+    def snapshot(self, slot):
+        return parse_clcc(self.command(slot, '+CLCC'), slot)
+
+    def confirmed_snapshot(self, slot, existing):
+        rows = self.snapshot(slot)
+        # Vendor CLCC occasionally returns a transient empty success. One
+        # bounded confirmation on the SAME event, never a timer or radio reset.
+        if not rows and any(v['card'] == slot for v in existing.values()):
+            rows = self.snapshot(slot)
+        return rows
+
+
+class Calls:
+    """Stable lifetimes, number updates and duplicate suppression per slot."""
+    def __init__(self, send, publish, physical, saved=None, persist=lambda items: None):
+        self.items = saved or {}
+        self.send, self.publish, self.physical = send, publish, physical
+        self.last = None
+        self.persist = persist
+
+    def update(self, calls, slots=(0, 1)):
+        current = {c['key']: c for c in calls}
+        old = self.items
+        self.items = {k: v for k, v in old.items() if v['card'] not in slots}
+        pending = []
+        for key, incoming in current.items():
+            if incoming['card'] not in slots:
+                continue
+            incoming = dict(incoming)
+            incoming['number'] = caller_number(incoming.get('number'))
+            previous = old.get(key)
+            if previous and (previous.get('direction') != incoming['direction'] or
+                (previous.get('state') not in RINGING and incoming['state'] in RINGING) or
+                (previous.get('number') and incoming['number'] and number_key(previous['number']) != number_key(incoming['number']))):
+                previous = None
+            # A number becoming available or changing URI form is not a new call.
+            item = dict(incoming, id=previous['id'] if previous else uuid.uuid4().hex,
+                        notified=bool(previous and previous.get('notified')))
+            item['labels'] = slot_labels(item['card'], self.physical())
+            if item['direction'] == 'incoming' and item['state'] in RINGING and not item['notified']:
+                pending.append(item)
+            self.items[key] = item
+        # Commit lifetime IDs before a worker can deliver; a crash/restart must
+        # reuse the same ID so the transport's claim ledger still deduplicates.
+        self.persist(self.items)
+        for item in pending:
+            item['notified'] = self.send(item)
+        if pending:
+            self.persist(self.items)
+        presentation = [dict(id=v['id'], card=v['card'], number=v['number'], label=v['labels']['zh'])
+                        for v in sorted(self.items.values(), key=lambda v: (v['card'], v['key']))
+                        if v['direction'] == 'incoming' and v['state'] in RINGING]
+        if presentation != self.last:
+            self.publish(presentation)
+            self.last = presentation
+
+
+class Hangups:
+    """One explicit reject, then event-driven confirmation; never resend CHUP."""
+    def __init__(self, owner, state, result, clock=time.monotonic):
+        self.owner, self.state, self.result, self.clock = owner, state, result, clock
+        self.pending = {}
+
+    def finish(self, identifier, ok):
+        self.pending.pop(identifier, None)
+        self.result(identifier, ok)
+
+    def settle(self):
+        for identifier in list(self.pending):
+            if not any(v['id'] == identifier for v in self.state.items.values()):
+                self.finish(identifier, True)
+
+    def request(self, identifier):
+        if identifier in self.pending:
+            return  # duplicated tap/event cannot submit another non-idempotent AT
+        item = next((v for v in self.state.items.values() if v['id'] == identifier), None)
+        if not item:
+            self.finish(identifier, True)  # caller already ended this lifetime
+            return
+        slot = item['card']
+        rows = self.owner.confirmed_snapshot(slot, self.state.items)
+        self.state.update(rows, (slot,))
+        current = next((v for v in self.state.items.values() if v['id'] == identifier), None)
+        if not current:
+            self.finish(identifier, True)
+            return
+        if current['direction'] != 'incoming' or current['state'] not in RINGING or len(rows) != 1:
+            raise RuntimeError('call no longer ringing or ambiguous')
+        try:
+            self.owner.command(slot, '+CHUP')
+        except (OSError, ValueError, csv.Error, RuntimeError, subprocess.SubprocessError):
+            # The caller can end concurrently, and a final NO CARRIER can
+            # precede OK. Only an explicit scoped read may confirm completion.
+            rows = self.owner.confirmed_snapshot(slot, self.state.items)
+            self.state.update(rows, (slot,))
+            if not any(v['id'] == identifier for v in self.state.items.values()):
+                self.finish(identifier, True)
+                return
+            raise
+        # OK means accepted, not released. Remain busy while NR0 reports the
+        # actual end; the only timeout is an operation confirmation deadline.
+        self.pending[identifier] = (slot, self.clock() + AT_TIMEOUT)
+        try:
+            self.state.update(self.owner.confirmed_snapshot(slot, self.state.items), (slot,))
+        except (OSError, ValueError, csv.Error, RuntimeError, subprocess.SubprocessError):
+            pass  # acceptance is not undone by one failed verification read
+        self.settle()
+
+    def timeout(self):
+        return max(0, min(v[1] for v in self.pending.values()) - self.clock()) if self.pending else None
+
+    def expire(self):
+        for identifier, (slot, deadline) in list(self.pending.items()):
+            if self.clock() < deadline:
+                continue
+            try:
+                self.state.update(self.owner.confirmed_snapshot(slot, self.state.items), (slot,))
+            except (OSError, ValueError, csv.Error, RuntimeError, subprocess.SubprocessError):
+                self.finish(identifier, False)
+                continue
+            self.finish(identifier, not any(v['id'] == identifier for v in self.state.items.values()))
+
+
+def physical():
+    try:
+        return call('mu300dash', 'sim_get').get('physical') or {}
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return {}
+
+
+def observe_needed():
+    if Path('/etc/mu300/model').exists() and Path('/etc/mu300/model').read_text().strip() == 'u30pro':
+        return True
+    return notification_enabled(0) or notification_enabled(1)
+
+
+def notification_enabled(card, base=None):
+    base = Path(base or '/etc/unisoc-modem/forward')
+    try:
+        mode = (base / 'mode').read_text().strip() if (base / 'mode').exists() else 'shared'
+        if mode not in ('shared', 'per_sim') or card not in (0, 1):
+            return False
+        name = 'config.json' if mode == 'shared' else f'config.sim{card}.json'
+        cfg = json.loads((base / name).read_text())
+        return cfg.get('enabled') == 1 and cfg.get('call_forward_enabled') == 1
+    except (OSError, ValueError):
+        pass
+    return False
+
+
+def event_objects(stream):
+    """Decode complete relay frames without treating line breaks as events."""
+    decoder, buffer = json.JSONDecoder(), ''
+    for line in stream:
+        buffer += line
+        if len(buffer) > 262144:
+            raise ValueError('oversized event')
+        while buffer.strip():
+            buffer = buffer.lstrip()
+            try:
+                value, end = decoder.raw_decode(buffer)
+            except json.JSONDecodeError:
+                break
+            buffer = buffer[end:]
+            yield value
+
+
+def main():
+    os.umask(0o077)
+    RUN.mkdir(mode=0o700, parents=True, exist_ok=True)
+    lock = (RUN / 'lock').open('a')
+    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    deliveries, events = queue.Queue(32), queue.Queue(64)
+    refresh_pending = threading.Event()
+    is_mu = Path('/opt/mu300/bin/mu300-modemd').exists()
+    is_pro = Path('/etc/mu300/platform').read_text().strip() == 'u30pro' if Path('/etc/mu300/platform').exists() else False
+    owner = ModemOwner(is_pro)
+
+    def send(item):
+        if not notification_enabled(item['card']):
+            return True  # observed while disabled; never replay an old call after enabling
+        try:
+            deliveries.put_nowait(dict(item))
+            return True
+        except queue.Full:
+            return False
+
+    def deliver():
+        while True:
+            item = deliveries.get()
+            try:
+                subprocess.run([FORWARD, 'call-event'], input=json.dumps(item), text=True,
+                               stdout=subprocess.DEVNULL, timeout=180, check=True)
+            except (OSError, subprocess.SubprocessError):
+                print('call-notify: notification delivery failed', file=sys.stderr)
+
+    def publish(calls):
+        # Event-only; no timer, inbox polling, nor AT commands from the screen.
+        ubus('send', 'unisoc.call', {'calls': calls})
+        if is_pro and Path('/etc/mu300/model').read_text().strip() == 'u30pro':
+            try:
+                call('u30pro.panel', 'incoming', {'calls': calls})
+            except (OSError, ValueError, subprocess.SubprocessError):
+                pass  # the screen requests current state when its ubus reconnects
+
+    saved = {}
+    try:
+        saved = json.loads((RUN / 'state.json').read_text())
+        if not isinstance(saved, dict) or len(saved) > 32 or any(
+            not isinstance(v, dict) or type(v.get('card')) is not int or v['card'] not in (0, 1) or
+            not isinstance(v.get('id'), str) or not re.fullmatch(r'[a-f0-9]{32}', v['id']) or
+            not isinstance(v.get('key'), str) or not isinstance(v.get('number'), str) or
+            v.get('direction') not in ('incoming', 'outgoing') or
+            v.get('state') not in ('active', 'held', 'dialing', 'ringing-out', 'ringing-in', 'waiting')
+            for v in saved.values()):
+            saved = {}
+    except (OSError, ValueError):
+        pass
+    def persist(items):
+        temporary = RUN / 'state.new'
+        temporary.write_text(json.dumps(items))
+        temporary.replace(RUN / 'state.json')
+    state = Calls(send, publish, physical if is_mu else lambda: {}, saved, persist)
+    def hangup_result(identifier, ok):
+        if is_pro:
+            try:
+                call('u30pro.panel', 'incoming_result', {'id': identifier, 'ok': ok})
+            except (OSError, ValueError, subprocess.SubprocessError):
+                pass  # a restarted panel obtains the current snapshot on reconnect
+    hangups = Hangups(owner, state, hangup_result)
+    threading.Thread(target=deliver, daemon=True).start()
+
+    def observe():
+        try:
+            with subprocess.Popen(['ucode', '/usr/libexec/unisoc-modem/call-notify-events.uc'],
+                                  stdout=subprocess.PIPE, text=True) as process:
+                def stop_listener():
+                    if process.poll() is None:
+                        process.terminate()
+                        try:
+                            process.wait(timeout=2)
+                        except subprocess.TimeoutExpired:
+                            process.kill()
+                atexit.register(stop_listener)
+                # The subscription is installed before the initial snapshot.
+                for message in event_objects(process.stdout):
+                    if message.get('ready') is True or 'unisoc.forward.changed' in message or voice_hint(message):
+                        # Collapse a URC burst into at most one queued refresh
+                        # while a previous owner transaction is in progress.
+                        if not refresh_pending.is_set():
+                            refresh_pending.set()
+                            events.put(('refresh', None))
+                    elif 'u30pro.panel.request' in message:
+                        events.put(('ubus', message))
+        finally:
+            events.put(('closed', None))
+
+    def observe_e5():
+        connection = http.client.HTTPConnection('127.0.0.1', 8089, timeout=40)
+        try:
+            connection.request('GET', '/events', headers={'Origin': 'http://127.0.0.1:8088'})
+            response = connection.getresponse()
+            if response.status != 200:
+                raise RuntimeError('native call observer unavailable')
+            while True:
+                line = response.readline(262145)
+                if not line or len(line) > 262144:
+                    break
+                if line.startswith(b'data: '):
+                    value = json.loads(line[6:])
+                    if value.get('observer_ready') is True:
+                        events.put(('e5', value))
+        finally:
+            connection.close()
+            events.put(('closed', None))
+
+    threading.Thread(target=observe if is_mu else observe_e5, daemon=True).start()
+    while True:
+        try:
+            kind, message = events.get(timeout=hangups.timeout())
+        except queue.Empty:
+            hangups.expire()
+            continue
+        if kind == 'refresh':
+            refresh_pending.clear()
+        if kind == 'closed':
+            raise RuntimeError('call event stream closed')  # procd reconnects; never an AT polling timer
+        try:
+            if kind == 'e5':
+                rows = [dict(c, key=c['id']) for c in message.get('calls', [])
+                        if type(c.get('card')) is int and c['card'] in (0, 1)]
+                state.update(rows)
+            else:
+                request = (message or {}).get('u30pro.panel.request', {})
+                refresh = observe_needed() and (kind == 'refresh' or 'unisoc.forward.changed' in (message or {}) or
+                    voice_hint(message or {}))
+                if refresh:
+                    for slot in (0, 1):
+                        try:
+                            rows = owner.confirmed_snapshot(slot, state.items)
+                        except (OSError, ValueError, csv.Error, RuntimeError, subprocess.SubprocessError):
+                            continue  # failure is not an empty call list
+                        state.update(rows, (slot,))
+                elif request.get('request') == 'call_refresh':
+                    state.last = None
+                    state.update([], ())
+                elif request.get('request') == 'call_hangup':
+                    hangups.request(request.get('id', ''))
+            hangups.settle()
+            hangups.expire()
+        except (OSError, ValueError, csv.Error, RuntimeError, subprocess.SubprocessError):
+            print('call-notify: call observation or action failed', file=sys.stderr)
+            if is_pro and kind == 'ubus' and message.get('u30pro.panel.request', {}).get('request') == 'call_hangup':
+                try:
+                    hangups.finish(message['u30pro.panel.request'].get('id', ''), False)
+                except (OSError, ValueError, subprocess.SubprocessError):
+                    pass
+
+
+if __name__ == '__main__':
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
+    main()

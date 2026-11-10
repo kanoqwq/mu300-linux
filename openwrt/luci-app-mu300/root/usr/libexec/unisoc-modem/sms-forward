@@ -66,7 +66,7 @@ render_webhook() { # JSON input, no eval or shell expansion of templates
     json_add_object values
     json_add_string from "${_from:-}"; json_add_string text "${_text:-}"
     json_add_string time "${_date:-}"
-    json_add_string sim "SIM$((${MU300_SIM_SLOT:-0} + 1))"
+    json_add_string sim "${_call_label:-SIM$((${MU300_SIM_SLOT:-0} + 1))}"
     json_add_string device "${nickname:-$(cat /proc/sys/kernel/hostname 2>/dev/null)}"
     json_add_string kind "${_kind:-sms}"; json_close_object
     json_dump | ucode "$RENDERER" 2>/dev/null
@@ -211,13 +211,14 @@ test_gate() {
 load_config() {
     enabled=0 method=webhook webhook_url= dingtalk_webhook= dingtalk_secret=
     sms_to_phone= smtp_host= smtp_port=465 smtp_username= smtp_to= smtp_password=
-    power_forward_enabled=0 blacklist_phone= blacklist_keywords= nickname= template_language=
+    call_forward_enabled=0 power_forward_enabled=0 blacklist_phone= blacklist_keywords= nickname= template_language=
     smtp_forward_device_info=0 dingtalk_forward_device_info=0 sms_forward_device_info=0
     webhook_method=POST webhook_content_type=application/json webhook_body= webhook_headers= webhook_timeout=12 webhook_expect=
     [ -s "$CONFIG" ] || return 0
     json_load_file "$CONFIG" 2>/dev/null || return 1
     json_get_vars enabled method webhook_url dingtalk_webhook dingtalk_secret sms_to_phone
     json_get_vars smtp_host smtp_port smtp_username smtp_to smtp_password
+    json_get_var call_forward_enabled call_forward_enabled 0
     json_get_vars power_forward_enabled blacklist_phone blacklist_keywords nickname
     json_get_vars smtp_forward_device_info dingtalk_forward_device_info sms_forward_device_info
     json_get_var template_language template_language ''
@@ -258,6 +259,7 @@ save_config() {
     json_add_string smtp_username "$smtp_username"
     json_add_string smtp_to "$smtp_to"
     json_add_string smtp_password "$smtp_password"
+    json_add_boolean call_forward_enabled "$call_forward_enabled"
     json_add_boolean power_forward_enabled "$power_forward_enabled"
     json_add_string blacklist_phone "$blacklist_phone"
     json_add_string blacklist_keywords "$blacklist_keywords"
@@ -270,7 +272,7 @@ save_config() {
 }
 write_result() { printf '%s|%s\n' "$1" "$2" > "$RESULT.tmp.$$" && mv -f "$RESULT.tmp.$$" "$RESULT"; }
 record_delivery() { # kind only; never store destination, source or message content
-    case "$1" in sms|power|test) ;; *) return 1 ;; esac
+    case "$1" in sms|call|power|test) ;; *) return 1 ;; esac
     case "$method" in webhook|dingtalk|smtp|sms) ;; *) return 1 ;; esac
     case "$DELIVER_RESULT" in sent|disabled|self_forward_blocked|message_too_long|storage_failed|source_unavailable|power_unavailable|invalid_config|invalid_forward_config|invalid_destination|delivery_failed|smtp_auth_failed|service_rejected|service_answer_missing) ;; *) return 1 ;; esac
     # Writers already hold state.lock. Keep 30 small records in RAM, newest first.
@@ -291,7 +293,7 @@ add_history() {
         while IFS='|' read -r _when _kind _method _result _slot _http _extra; do
             _history_n=$((_history_n + 1)); [ "$_history_n" -le 30 ] || break
             number "$_when" && [ ${#_when} -le 11 ] || continue
-            case "$_kind" in sms|power|test) ;; *) continue ;; esac
+            case "$_kind" in sms|call|power|test) ;; *) continue ;; esac
             case "$_method" in webhook|dingtalk|smtp|sms) ;; *) continue ;; esac
             case "$_result" in sent|disabled|self_forward_blocked|message_too_long|storage_failed|source_unavailable|power_unavailable|invalid_config|invalid_forward_config|invalid_destination|delivery_failed|smtp_auth_failed|service_rejected|service_answer_missing) ;; *) continue ;; esac
             [ -z "$_extra" ] || continue
@@ -329,6 +331,7 @@ add_status() {
     json_add_boolean enabled "$enabled"
     json_add_string method "$method"
     json_add_boolean power_supported "$power_ok"
+    json_add_boolean call_forward_enabled "$call_forward_enabled"
     json_add_boolean power_forward_enabled "$power_forward_enabled"
     json_add_string last_result "$last_result"
     json_add_string power_last_result "$power_last_result"
@@ -359,6 +362,7 @@ get_view() {
     json_add_string to "$smtp_to"
     json_add_boolean password_configured "$([ -n "$smtp_password" ] && echo 1 || echo 0)"
     json_close_object
+    json_add_boolean call_forward_enabled "$call_forward_enabled"
     json_add_boolean power_forward_enabled "$power_forward_enabled"
     json_add_string blacklist_phone "$blacklist_phone"
     json_add_string blacklist_keywords "$blacklist_keywords"
@@ -411,6 +415,7 @@ set_config() {
     json_get_var new_smtp_username smtp_username
     json_get_var new_smtp_to smtp_to
     json_get_var new_smtp_password smtp_password
+    json_get_var new_call_forward_enabled call_forward_enabled
     json_get_var new_power_forward_enabled power_forward_enabled
     json_get_var new_blacklist_phone blacklist_phone
     json_get_var new_blacklist_keywords blacklist_keywords
@@ -430,6 +435,7 @@ set_config() {
     [ "$new_webhook_expect" = __keep__ ] || webhook_expect=$new_webhook_expect
     sms_to_phone=${new_sms_to_phone:-}; smtp_host=${new_smtp_host:-}
     smtp_port=${new_smtp_port:-465}; smtp_username=${new_smtp_username:-}; smtp_to=${new_smtp_to:-}
+    call_forward_enabled=${new_call_forward_enabled:-${call_forward_enabled:-0}}
     power_forward_enabled=${new_power_forward_enabled:-0}
     blacklist_phone=${new_blacklist_phone:-}; blacklist_keywords=${new_blacklist_keywords:-}
     nickname=${new_nickname:-}
@@ -443,7 +449,7 @@ set_config() {
     [ -n "${new_smtp_password:-}" ] && smtp_password=$new_smtp_password
     [ "${clear_dingtalk_secret:-0}" = 1 ] && dingtalk_secret=
     [ -n "${new_dingtalk_secret:-}" ] && dingtalk_secret=$new_dingtalk_secret
-    for _bit in "$enabled" "$power_forward_enabled" "$smtp_forward_device_info" \
+    for _bit in "$enabled" "$call_forward_enabled" "$power_forward_enabled" "$smtp_forward_device_info" \
         "$dingtalk_forward_device_info" "$sms_forward_device_info"; do
         bool "$_bit" || { reply_error invalid_config; return; }
     done
@@ -519,6 +525,7 @@ set_config() {
     printf '%s\n' "$new_mode" > "$BASE/mode.tmp.$$" && mv -f "$BASE/mode.tmp.$$" "$BASE/mode" ||
         { reply_error forward_storage_failed; return; }
     write_result idle idle || :
+    ubus send unisoc.forward.changed '{}' >/dev/null 2>&1 || :
     reply_ok
 }
 message_file() { printf '%s/msg/%06d' "$POOL" "$1"; }
@@ -544,7 +551,7 @@ template_strings() {
     # Missing language in an existing config preserves the Chinese templates.
     case "${template_language:-zh}" in
         en)
-            T_SUBJECT_TEST='MU300 forwarding test'; T_TEST='MU300 SMS forwarding test'
+            T_CALL='Incoming call'; T_SUBJECT_TEST='MU300 forwarding test'; T_TEST='MU300 SMS forwarding test'
             T_SUBJECT_SMS='MU300 SMS notification'; T_FROM='SMS from'
             T_SUBJECT_POWER='MU300 power notification'; T_POWER='Power status notification'
             T_DEVICE='Device'; T_FIRMWARE='Firmware'; T_UPTIME='Uptime'; T_SECONDS='seconds'
@@ -552,7 +559,7 @@ template_strings() {
             T_CHARGING='Charging'; T_DISCHARGING='Discharging'; T_NOT_CHARGING='Not charging'; T_FULL='Full'
             ;;
         tr)
-            T_SUBJECT_TEST='MU300 yönlendirme testi'; T_TEST='MU300 SMS yönlendirme testi'
+            T_CALL='Gelen arama'; T_SUBJECT_TEST='MU300 yönlendirme testi'; T_TEST='MU300 SMS yönlendirme testi'
             T_SUBJECT_SMS='MU300 SMS bildirimi'; T_FROM='SMS gönderen:'
             T_SUBJECT_POWER='MU300 güç bildirimi'; T_POWER='Güç durumu bildirimi'
             T_DEVICE='Cihaz'; T_FIRMWARE='Yazılım'; T_UPTIME='Çalışma süresi'; T_SECONDS='saniye'
@@ -560,7 +567,7 @@ template_strings() {
             T_CHARGING='Şarj oluyor'; T_DISCHARGING='Pil kullanılıyor'; T_NOT_CHARGING='Şarj olmuyor'; T_FULL='Dolu'
             ;;
         *)
-            T_SUBJECT_TEST='MU300 转发测试'; T_TEST='MU300 短信转发测试'
+            T_CALL='来电提醒'; T_SUBJECT_TEST='MU300 转发测试'; T_TEST='MU300 短信转发测试'
             T_SUBJECT_SMS='MU300 短信通知'; T_FROM='短信来自'
             T_SUBJECT_POWER='MU300 电源通知'; T_POWER='电源状态通知'
             T_DEVICE='设备'; T_FIRMWARE='固件'; T_UPTIME='运行时间'; T_SECONDS='秒'
@@ -573,6 +580,7 @@ format_message() { # kind, sender, original body (never translate user content)
     template_strings
     case "$1" in
         test) _subject=$T_SUBJECT_TEST; _content=$T_TEST ;;
+        call) _subject=$T_CALL; _content="$3" ;;
         power) _subject=$T_SUBJECT_POWER; _content="$T_POWER$NL$3" ;;
         *) _subject=$T_SUBJECT_SMS; _content="$T_FROM $2$NL$3" ;;
     esac
@@ -653,7 +661,8 @@ $(device_info)"; fi
         _delivered=0
         while IFS= read -r _to || [ -n "$_to" ]; do
             [ -n "$_to" ] || continue
-            [ "${_to#+}" = "${_from#+}" ] && continue
+            # Generated call notices can notify the caller without creating an SMS relay loop.
+            if [ "$_kind" != call ] && [ "${_to#+}" = "${_from#+}" ]; then continue; fi
             "$SMS" send "$_to" "$_content" >/dev/null 2>&1 ||
                 { DELIVER_RESULT=delivery_failed; return 1; }
             _delivered=1
@@ -717,6 +726,7 @@ EOF_TARGET
                     *) _url="$_url?timestamp=$_stamp&sign=$_sig" ;; esac
             fi
         else
+            [ "$_kind" != call ] || { json_add_string kind call; json_add_string sim "$_call_label"; }
             [ "$_kind" = power ] && json_add_string kind power
             json_add_string from "$_from"
             json_add_string text "$_text"
@@ -971,7 +981,60 @@ run_daemon() {
         sleep "${MU300_FORWARD_POLL:-5}" 8>&- 9>&-
     done
 }
+process_call_event() {
+    ensure_base || { reply_error storage_failed; return; }
+    exec 8> "$BASE/state.lock"
+    flock -x 8 || exit 1
+    json_load "$(cat)" || { reply_error invalid_config; return; }
+    json_get_var _call_id id; json_get_var _card card; json_get_var _sender number
+    case "$_call_id" in ''|*[!a-f0-9]*) reply_error invalid_config; return ;; esac
+    [ ${#_call_id} = 32 ] || { reply_error invalid_config; return; }
+    case "$_card" in 0|1) ;; *) reply_error invalid_config; return ;; esac
+    [ -z "$_sender" ] || { [ ${#_sender} -le 41 ] && one_line "$_sender"; } || { reply_error invalid_config; return; }
+    json_select labels || { reply_error invalid_config; return; }
+    json_get_var _label_zh zh; json_get_var _label_en en; json_get_var _label_tr tr
+    export MU300_SIM_SLOT=$_card
+    if [ "$_card" = 1 ]; then
+        export MU300_SMS_POOL=$ROOT_POOL/sim1 MU300_AT_DIR=/run/mu300-at4
+        export MU300_SMS_OP_LOCK=/tmp/mu300-sms-op-sim1.lock MU300_SMS_DIRECT_FLAG=/run/mu300-sms-direct-sim1
+    else
+        export MU300_SMS_POOL=$ROOT_POOL MU300_AT_DIR=/run/mu300-at
+        export MU300_SMS_OP_LOCK=/tmp/mu300-sms-op.lock MU300_SMS_DIRECT_FLAG=/run/mu300-sms-direct
+    fi
+    read_mode || { reply_error invalid_config; return; }
+    _profile=shared
+    [ "$forward_mode" != per_sim ] || _profile=sim$_card
+    select_profile "$_profile" && load_config || { reply_error invalid_config; return; }
+    [ "$enabled:$call_forward_enabled" = 1:1 ] || { reply_ok; return; }
+    case "${template_language:-zh}" in
+        en) _call_label=$_label_en; _unknown='Unknown caller' ;;
+        tr) _call_label=$_label_tr; _unknown='Bilinmeyen numara' ;;
+        *) _call_label=$_label_zh; _unknown='未知号码' ;;
+    esac
+    [ -n "$_call_label" ] && [ ${#_call_label} -le 80 ] && one_line "$_call_label" || { reply_error invalid_config; return; }
+    # IDs only; no caller identifiers or content persist in the claim ledger.
+    _claims=${MU300_CALL_RUNTIME:-/run/unisoc-call-notify}/claimed
+    mkdir -p "${_claims%/*}" || { reply_error storage_failed; return; }
+    [ ! -f "$_claims" ] || ! grep -qxF "$_call_id" "$_claims" || { reply_ok; return; }
+    if [ -s "$_claims" ]; then
+        tail -n 511 "$_claims" > "$_claims.tmp.$$" && mv -f "$_claims.tmp.$$" "$_claims" ||
+            { reply_error storage_failed; return; }
+    fi
+    printf '%s\n' "$_call_id" >> "$_claims" || { reply_error storage_failed; return; }
+    _display=${_sender:-$_unknown}
+    case "${template_language:-zh}" in
+        en) _detail="$_call_label: incoming call from $_display" ;;
+        tr) _detail="$_call_label: $_display numarasından gelen arama" ;;
+        *) _detail="$_call_label：$_display 来电了" ;;
+    esac
+    load_state; read_result
+    deliver call "$_display" "$_detail" "$(date '+%Y-%m-%d %H:%M:%S')" || :
+    record_delivery call || :
+    write_result "$DELIVER_RESULT" "$power_last_result" || :
+    reply_ok
+}
 case "${1:-}" in
+    call-event) process_call_event ;;
     get) get_view "${2:-shared}" ;;
     status) status_only "${2:-shared}" ;;
     set) set_config ;;

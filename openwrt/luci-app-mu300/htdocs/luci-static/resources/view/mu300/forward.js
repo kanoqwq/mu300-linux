@@ -138,7 +138,10 @@ return view.extend({
   </div>
  </section>
  <section class="mud-card">
-  <h3>电源通知</h3>
+  <h3>来电提醒</h3>
+  <label class="mud-fwd-toggle"><input id="mud-fwd-call_forward_enabled" type="checkbox">转发来电提醒</label>
+  <div class="mud-note">默认关闭。两个槽位的来电按当前配置模式转发，包含卡源和来电号码；每通电话只提醒一次。</div>
+  <h3 style="margin-top:22px">电源通知</h3>
   <div class="mud-note">电源通知使用共用配置；请同时开启该配置并设置渠道。</div>
   <label class="mud-fwd-toggle"><input id="mud-fwd-power_forward_enabled" type="checkbox">电源状态通知</label>
   <div class="mud-note" id="mud-fwd-power-note">充电状态变化，或电量跨过 5%、20%、40%、60%、80%、100% 时通知。</div>
@@ -147,7 +150,7 @@ return view.extend({
   <h3 style="margin-top:22px">黑名单</h3>
   <div class="mud-fwd-field"><label for="mud-fwd-blacklist_phone">号码黑名单 · 每行一个，最多 64 个</label><textarea id="mud-fwd-blacklist_phone"></textarea></div>
   <div class="mud-fwd-field"><label for="mud-fwd-blacklist_keywords">关键词黑名单 · 每行一个，最多 32 个</label><textarea id="mud-fwd-blacklist_keywords"></textarea></div>
-  <div class="mud-note">命中的新短信只记为已处理，不会转发；清空规则后不会补发。规则不影响电源通知。</div>
+  <div class="mud-note">命中的新短信只记为已处理，不会转发；清空规则后不会补发。规则不影响电源或来电通知。</div>
  </section>
 </div>
 <section class="mud-card" style="margin-top:14px">
@@ -196,7 +199,7 @@ return view.extend({
 	},
 	fill: function(c) {
 		var self = this;
-		[ 'enabled', 'power_forward_enabled', 'smtp_forward_device_info',
+		[ 'enabled', 'call_forward_enabled', 'power_forward_enabled', 'smtp_forward_device_info',
 			'dingtalk_forward_device_info', 'sms_forward_device_info' ].forEach(function(k) { self.q(k).checked = !!c[k]; });
 		[ 'method', 'webhook_url', 'dingtalk_webhook', 'sms_to_phone', 'blacklist_phone',
 			'blacklist_keywords', 'nickname' ].forEach(function(k) { self.q(k).value = c[k] || ''; });
@@ -217,7 +220,7 @@ return view.extend({
 	},
 	payload: function() {
 		var self = this, p = { profile: this.profile, mode: this.q('mode').value };
-		[ 'enabled', 'power_forward_enabled', 'smtp_forward_device_info',
+		[ 'enabled', 'call_forward_enabled', 'power_forward_enabled', 'smtp_forward_device_info',
 			'dingtalk_forward_device_info', 'sms_forward_device_info',
 			'clear_smtp_password', 'clear_dingtalk_secret' ].forEach(function(k) { p[k] = self.q(k).checked ? 1 : 0; });
 		[ 'method', 'template_language', 'webhook_url', 'dingtalk_webhook', 'dingtalk_secret', 'sms_to_phone',
@@ -264,7 +267,7 @@ return view.extend({
 		history.replaceChildren();
 		(s.history || []).slice(0, 30).forEach(function(item) {
 			var row = document.createElement('div'); row.className = 'mud-fwd-event';
-			var kind = { sms: '短信', power: '电源通知', test: '测试消息' }[item.kind] || '短信';
+			var kind = { sms: '短信', call: '来电提醒', power: '电源通知', test: '测试消息' }[item.kind] || '短信';
 			[new Date(Number(item.time) * 1000).toLocaleString(), M.translate(kind) + (item.slot == null ? '' : ' · SIM ' + (Number(item.slot) + 1)) + ' · ' + M.translate(METHODS[item.method] || '未知'), result(item.result) + (item.http_code ? ' · HTTP ' + item.http_code : '')].forEach(function(value) {
 				var el = document.createElement('span'); el.textContent = value; row.appendChild(el);
 			});

@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-mu300
 PKG_VERSION:=1.2.0
-PKG_RELEASE:=24
+PKG_RELEASE:=25
 PKG_LICENSE:=MIT
 PKG_MAINTAINER:=MU300 Linux contributors
 PKGARCH:=all
@@ -14,7 +14,7 @@ define Package/luci-app-mu300
   CATEGORY:=LuCI
   SUBMENU:=3. Applications
   TITLE:=Unisoc modem control center
-  DEPENDS:=+luci-base +firewall4 +nftables-json +flock +rpcd +rpcd-mod-ucode +jsonfilter +curl +ca-bundle +openssl-util +msmtp +ucode +ucode-mod-fs +ucode-mod-ubus +ucode-mod-uci +ucode-mod-uloop +ucode-mod-nl80211 +ucode-mod-rtnl
+  DEPENDS:=+python3 +python3-openssl +lpac +luci-base +firewall4 +nftables-json +flock +rpcd +rpcd-mod-ucode +jsonfilter +curl +ca-bundle +openssl-util +msmtp +ucode +ucode-mod-fs +ucode-mod-ubus +ucode-mod-uci +ucode-mod-uloop +ucode-mod-nl80211 +ucode-mod-rtnl
 endef
 
 define Package/luci-app-mu300/description
@@ -52,6 +52,8 @@ define Package/luci-app-mu300/install
 	chmod 0755 $(1)/etc/init.d/unisoc-network-performance $(1)/usr/libexec/rpcd/unisoc-network-performance $(1)/usr/libexec/unisoc-modem/network-performance
 	chmod 0755 $(1)/usr/libexec/rpcd/unisoc-nfc
 	chmod 0755 $(1)/usr/libexec/rpcd/unisoc-roaming
+	chmod 0755 $(1)/usr/libexec/rpcd/unisoc-euicc
+	chmod 0755 $(1)/usr/libexec/rpcd/unisoc-product-form
 	chmod 0600 $(1)/etc/config/unisoc_apn
 	chmod 0755 $(1)/etc/uci-defaults/97-unisoc-upgrade-policy $(1)/etc/uci-defaults/99-unisoc-wifi-widths
 	chmod 0600 $(1)/etc/config/mu300-charge

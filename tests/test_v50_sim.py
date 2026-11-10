@@ -90,7 +90,8 @@ else:sys.exit(2)
         shims='\n'.join(n+'() { "$STUBLOG/stubs/'+n+'" "$@"; }' for n in ['ifdown','ifup','sleep'])
         self.controller.write_text(CONTROL.read_text().replace('#!/bin/sh\n','#!/bin/sh\n'+shims+'\n',1))
         self.stub('mu300-v50-sim',f'exec /bin/sh "{self.controller}" "$@"')
-        self.extra=dict(MU300_SYSROOT=self.root,MU300_BIN=self.stubs,MU300_V50_CARD_LIB=LIB,
+        self.stub('euicc-guard', '[ "$1" = --guard ] || exit 1; shift; export UNISOC_EUICC_GUARDED=1; exec "$@"')
+        self.extra=dict(MU300_EUICC_TOOL=self.stubs/'euicc-guard',MU300_SYSROOT=self.root,MU300_BIN=self.stubs,MU300_V50_CARD_LIB=LIB,
                         MU300_V50_RUN=self.run,MU300_V50_MUX=self.hw,MU300_DASH_CACHE_ROOT=self.tmp/'cache',MU300_DASH_BIN=self.dash)
         self.pair=self.tmp/'v50-pair'
         self.pair.write_text((BIN/'mu300-v50-card-pair').read_text().replace('#!/bin/sh\n','#!/bin/sh\n'+shims+'\n',1))

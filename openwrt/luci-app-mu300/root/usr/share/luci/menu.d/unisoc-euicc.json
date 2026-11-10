@@ -1,0 +1,8 @@
+{
+  "admin/modem/esim": {
+    "title": "eSIM 管理",
+    "order": 1,
+    "action": {"type": "view", "path": "mu300/euicc"},
+    "depends": {"acl": ["luci-app-mu300"]}
+  }
+}

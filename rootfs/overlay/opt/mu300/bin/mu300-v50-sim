@@ -2,6 +2,13 @@
 # Physical V50 cards above the existing TWO logical SIM stacks. Stock B15
 # powers down the affected stack, changes its mux, waits 5 s, then powers up.
 set -eu
+# Keep a private eUICC logical channel on the same physical card for the job.
+case ${1:-} in status|validate) ;; *)
+    if [ "${UNISOC_EUICC_GUARDED:-0}" != 1 ]; then
+        exec "${MU300_EUICC_TOOL:-/usr/libexec/unisoc-modem/euicc}" --guard /bin/sh "$0" "$@"
+    fi
+    ;;
+esac
 export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
 BIN=${MU300_BIN:-/opt/mu300/bin}
 DASH=${MU300_DASH_BIN:-/usr/libexec/unisoc-modem}
