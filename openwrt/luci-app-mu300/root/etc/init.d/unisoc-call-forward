@@ -1,0 +1,15 @@
+#!/bin/sh /etc/rc.common
+# Independent of the SMS worker: enabling call notifications must not restart
+# SMS forwarding, and the service stays up (config disabled) so the page can
+# turn it on without a service bounce.
+START=97
+USE_PROCD=1
+
+start_service() {
+	procd_open_instance
+	procd_set_param command /usr/libexec/unisoc-modem/call-forward run
+	procd_set_param respawn 3600 5 0
+	procd_set_param stdout 1
+	procd_set_param stderr 1
+	procd_close_instance
+}

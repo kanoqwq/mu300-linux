@@ -406,6 +406,11 @@ do_list() {
 	"sms_job": { "slot": "String" },
 	"sms_delete": { "id": "String", "sim": "String", "slot": "String" },
 	"sms_sync": { "slot": "String" },
+	"call_get": { },
+	"call_status": { },
+	"call_set": { "payload": "String" },
+	"call_test": { },
+	"call_log_clear": { },
 	"forward_get": { "profile": "String" },
 	"cpu_get": { },
 	"cpu_apply": { "payload": "String" },
@@ -512,6 +517,13 @@ call)
         sms_job)    m_sms_job ;;
         sms_delete) run_m sms_delete 'm_sms_delete' ;;
         sms_sync)   run_m sms_sync   'm_sms_sync' ;;
+        call_get)    "$DASH/call-forward" get ;;
+        call_status) "$DASH/call-forward" status ;;
+        call_set)
+            inp '@.payload' | "$DASH/call-forward" set
+            ;;
+        call_test)   "$DASH/call-forward" test-start ;;
+        call_log_clear) "$DASH/call-forward" log-clear ;;
         forward_get) "$DASH/sms-forward" get "$(inp '@.profile' shared)" ;;
         cpu_get) "$DASH/cpu" get ;;
         cpu_apply) inp '@.payload' | "$DASH/cpu" apply ;;
