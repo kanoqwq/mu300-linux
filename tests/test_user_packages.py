@@ -334,6 +334,40 @@ class Record(ShellTest):
         self.assertLess(ai.index('image_own_save "$M/$os.new"'), ai.index('for k in $keep'))
         self.assertLess(ai.index('upk_record "$M/$os"'), ai.index('mv "$M/$os.new" "$M/$os"'))
 
+    def test_missing_product_marker_survives_kept_directory_replacement(self):
+        for shell in self.each_shell():
+            for product in ('u30pro', 'f50pro'):
+                self.fresh()
+                write(self.new, {'etc/mu300/model': product + '\n'})
+                result = self.record(shell)
+                self.assertIn('rc=0', result.stdout, result.stderr)
+                self.assertEqual((self.new/'etc/mu300/model').read_text(), product + '\n')
+                self.assertEqual((self.new/'etc/config/dhcp').read_text(), 'old dhcp\n')
+
+    def test_existing_product_marker_and_custom_symlink_are_preserved(self):
+        for shell in self.each_shell():
+            for kind in ('file', 'link'):
+                self.fresh()
+                write(self.old, {'etc/mu300/model': 'user-selected\n'})
+                if kind == 'link':
+                    (self.old/'etc/mu300/model').unlink()
+                    (self.old/'etc/mu300/model').symlink_to('custom-product')
+                write(self.new, {'etc/mu300/model': 'f50pro\n'})
+                result = self.record(shell)
+                self.assertIn('rc=0', result.stdout, result.stderr)
+                if kind == 'link':
+                    self.assertTrue((self.new/'etc/mu300/model').is_symlink())
+                    self.assertEqual(os.readlink(self.new/'etc/mu300/model'), 'custom-product')
+                else:
+                    self.assertEqual((self.new/'etc/mu300/model').read_text(), 'user-selected\n')
+
+    def test_generic_images_without_product_marker_keep_existing_behavior(self):
+        for shell in self.each_shell():
+            self.fresh()
+            result = self.record(shell)
+            self.assertIn('rc=0', result.stdout, result.stderr)
+            self.assertFalse((self.new/'etc/mu300/model').exists())
+
 
 class ApplyOne(ShellTest):
     """apply_one with an OpenWrt that has OpenClash: the record, the set-aside UCI file, its rc.d link not carried

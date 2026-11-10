@@ -89,6 +89,18 @@ elif args[0]=='batch':
         self.assertEqual(r['effective_board_id'],1)
         self.assertFalse(self.commands.exists())
 
+    def test_supported_pro_missing_identity_is_not_reported_as_unsupported(self):
+        self.product('u30pro',2)
+        (self.root/'etc/mu300/model').unlink()
+        with self.assertRaisesRegex(self.mod.Error,'product_form_unavailable'):
+            self.get()
+
+    def test_other_models_remain_hidden(self):
+        for name in ('f50','u30air','e5','unknown'):
+            tool=self.bin/'mu300-device';tool.write_text('#!/bin/sh\necho '+name+'\n')
+            with self.assertRaisesRegex(self.mod.Error,'product_form_unsupported'):
+                self.get()
+
     @unittest.skipUnless((TOP/'devices/f50pro').is_dir(), 'Pro model libraries are in the Pro repository')
     def test_pro_catalogs_do_not_share_board_number_meanings(self):
         self.product('u30pro',4);u=self.get()

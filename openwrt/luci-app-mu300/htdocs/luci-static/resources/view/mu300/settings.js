@@ -15,6 +15,12 @@ return view.extend({
 			t('这里定义插件与当前紫光 OpenWrt 的边界。修改后无需改动看板、AT、锁定或短信页面。'));
 		var s = m.section(form.NamedSection, 'main', 'core', t('平台适配'));
 		s.addremove = false;
+		if (!(data && data[1] && data[1].supported === false)) {
+			var product = s.option(form.DummyValue, '_product_form', P.title());
+			product.renderWidget = function() { return P.render(data && data[1], {embedded:true}); };
+			product.write = function() {};
+			product.remove = function() {};
+		}
 
 		var o = s.option(form.ListValue, 'at_backend', t('AT 后端'));
 		o.value('auto', t('自动检测'));
@@ -81,10 +87,6 @@ return view.extend({
 		o = s.option(form.Value, 'state_dir', t('持久化状态目录'));
 		o.placeholder = '/etc/unisoc-modem/lock-state.d';
 
-		return m.render().then(function(form) {
-			var root=document.createElement('div'),product=P.render(data && data[1]);
-			if(product)root.append(product);
-			root.append(form);return root;
-		});
+		return m.render();
 	}
 });

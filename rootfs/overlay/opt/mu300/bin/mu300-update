@@ -338,7 +338,7 @@ upk_pending() {
 # image_own_restore NEW after; upk_record removes what they keep in NEW/.mu300-image.
 image_own_save() {
     rm -rf "$1/.mu300-image"; mkdir -p "$1/.mu300-image" || return 1
-    for _uf in image-version image-packages packages.txt release.json; do
+    for _uf in image-version image-packages packages.txt release.json model; do
         [ ! -f "$1/etc/mu300/$_uf" ] || cp "$1/etc/mu300/$_uf" "$1/.mu300-image/$_uf" || return 1
     done
     for _uf in "$1"/etc/config/*; do [ ! -e "$_uf" ] || echo "${_uf##*/}"; done > "$1/.mu300-image/config"
@@ -351,6 +351,12 @@ image_own_restore() {
         # a list of the old image would describe the wrong one (the version stays: "unknown" says less)
         elif [ "$_uf" != image-version ]; then rm -f "$1/etc/mu300/$_uf"; fi
     done
+    # The kept directory may predate product identity. Introduce the image's
+    # missing default, but preserve any existing file or user-managed symlink.
+    if [ ! -e "$1/etc/mu300/model" ] && [ ! -L "$1/etc/mu300/model" ] &&
+       [ -f "$1/.mu300-image/model" ]; then
+        cp "$1/.mu300-image/model" "$1/etc/mu300/model" || return 1
+    fi
 }
 # upk_os_codename ROOT: Ubuntu's release name (noble, ...)
 upk_os_codename() {

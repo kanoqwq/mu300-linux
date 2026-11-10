@@ -4,6 +4,7 @@ from playwright.sync_api import sync_playwright
 
 TOP=Path(__file__).resolve().parents[1]
 SOURCE=(TOP/'openwrt/luci-app-mu300/htdocs/luci-static/resources/mu300/product-form.js').read_text(encoding='utf-8')
+SETTINGS=(TOP/'openwrt/luci-app-mu300/htdocs/luci-static/resources/view/mu300/settings.js').read_text(encoding='utf-8')
 LAYOUTS={'u30pro':[[0,1,2,3],[0,1,2],[0,1],[0,1,3],[0,1,2,3],[3],[0,2]],
          'f50pro':[[0,1,2],[0,1],[0,2],[0,2,3,4],[0,1,3,4],[3,4]],
          'v50':[[0,1,2],[0,1,2,3],[0,1,3],[0,1]]}
@@ -19,7 +20,18 @@ def mount(page,model,lang,writable=True):
         state={...state,mode:args[1],pending_reboot:args[1]!==state.active_mode};return {...state};}};
       window.L={hasViewPermission:()=>writable};
       const M={uiLanguage:()=>lang,injectCss:()=>{},confirmBox:async()=>confirmed,toast:(...x)=>notices.push(x)};
-      const component=new Function('baseclass','rpc','M',source)({extend:x=>x},rpc,M);
+      // Keep RPC/control tests independent of a theme or full LuCI loader.
+      // The component uses LuCI's real Dropdown API, not private select styling.
+      const ui={Dropdown:class{
+        constructor(value,choices,options){this.value=value;this.choices=choices;this.options=options;}
+        render(){this.node=document.createElement('select');this.node.className='cbi-dropdown';
+          this.options.sort.forEach(value=>{const option=document.createElement('option');option.value=value;option.textContent=this.choices[value];this.node.append(option);});
+          this.node.value=this.value;this.node.addEventListener('change',()=>this.node.dispatchEvent(new CustomEvent('widget-change',{bubbles:true})));return this.node;}
+        getValue(){return this.node.value;}
+        setValue(value){this.node.value=value;}
+      }};
+      const component=new Function('baseclass','rpc','M','ui',source)({extend:x=>x},rpc,M,ui);
+      window.productComponent=component;
       document.body.replaceChildren(component.render(state));
     }''',[SOURCE,model,options,lang,writable])
 
@@ -41,6 +53,8 @@ with sync_playwright() as p:
           mount(page,model,lang)
           assert page.locator('select option').count()==len(LAYOUTS[model])+1
           assert page.locator('select').input_value()=='auto'
+          assert page.locator('.pf-meta + .mud-note + .pf-row').count()==1
+          assert '手动形态仅覆盖' not in page.locator('.mud-product-form').inner_text()
           assert page.locator('button').nth(0).is_disabled()
           assert page.locator('button').nth(1).is_disabled()
           page.locator('select').select_option('2')
@@ -70,5 +84,39 @@ with sync_playwright() as p:
     page.wait_for_function('notices.length>0')
     assert '其他待提交' in page.locator('.pf-status').inner_text()
     assert page.evaluate('state.mode')=='auto'
+    for model in (*LAYOUTS,'f50','u30air','e5','unknown','unavailable'):
+        mount(page,'u30pro' if model not in LAYOUTS else model,'zh')
+        page.evaluate('''async ([source,model])=>{
+          if(!['u30pro','f50pro','v50'].includes(model))
+            state=model==='unavailable'?{ok:0,error:'product_form_unavailable'}:{ok:0,supported:false};
+          const form={NamedSection:'section',DummyValue:'dummy',ListValue:'list',Value:'value',Flag:'flag'};
+          window.formOptions=[];
+          form.Map=function(){this.sections=[];this.section=(type,id,kind,title)=>{
+            const node=document.createElement('section');node.className='platform-section';
+            const heading=document.createElement('h3');heading.textContent=title;node.append(heading);
+            this.sections.push(node);
+            return {option:(type,key,label)=>{const option={type,key,label,value(){},depends(){}};
+              formOptions.push(option);return option;}};};
+            this.render=async()=>{const root=document.createElement('main');root.append(...this.sections);
+              for(const option of formOptions)if(option.renderWidget){
+                const row=document.createElement('div');row.className='platform-option';
+                const label=document.createElement('label');label.textContent=option.label;
+                row.append(label,option.renderWidget());this.sections[0].append(row);
+              }return root;};};
+          const view={extend:x=>x},uci={load:async()=>{},get:()=>null};
+          const M={localizeMenu(){},translate:x=>x},R={seconds:()=>2};
+          const settings=new Function('form','uci','R','view','M','P',source)(form,uci,R,view,M,productComponent);
+          const loaded=await settings.load();document.body.replaceChildren(await settings.render(loaded));
+        }''',[SETTINGS,model])
+        supported=model in LAYOUTS or model=='unavailable'
+        assert page.locator('.platform-section .mud-product-form').count()==int(supported),model
+        assert page.locator('.mud-product-form > h3').count()==0,model
+        if model in LAYOUTS:
+            assert page.locator('.platform-option label').inner_text()=='产品形态'
+            assert page.locator('select option').count()==len(LAYOUTS[model])+1
+            assert page.locator('select').input_value()=='auto'
+            assert page.evaluate('formOptions.find(o=>o.key==="_product_form").write()') is None
+        elif model=='unavailable':
+            assert '无法读取' in page.locator('.pf-status').inner_text()
     browser.close()
-print(f'PASS product form: {count} model/language/theme/viewport cases, permissions, confirmation cancellation and failed save')
+print(f'PASS product form: {count} model/language/theme/viewport cases, settings-section integration, unsupported hiding, read errors, permissions and save failures')

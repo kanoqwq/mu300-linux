@@ -21,6 +21,7 @@ class AndroidUpgrade(ShellTest):
             openwrt_old(old)
             openwrt_new(image, {'sqm-scripts': ['etc/config/sqm']})
             write(old, {'etc/shadow': 'root:kept-hash:0:0:99999:7:::\n',
+                        'etc/config/wireless': "config wifi-iface user_ap\n option key 'user-new-password!'\n",
                         'etc/unisoc-modem/sms.json': 'messages\n',
                         'etc/mu300/hotspot.conf': 'SSID=Personal\nPSK=personal-password\n',
                         'etc/rc.local': 'personal rc\n'})
@@ -36,6 +37,7 @@ class AndroidUpgrade(ShellTest):
                              MU300_KEEP_PAYLOAD=1)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertEqual((old / 'etc/config/dhcp').read_text(), 'old dhcp\n')
+            self.assertEqual((old / 'etc/config/wireless').read_text(), "config wifi-iface user_ap\n option key 'user-new-password!'\n")
             self.assertEqual((old / 'etc/config/sqm').read_text(), 'image sqm\n')
             self.assertEqual((old / 'etc/mu300/image-version').read_text(), 'v2\n')
             self.assertEqual((old / 'etc/unisoc-modem/sms.json').read_text(), 'messages\n')

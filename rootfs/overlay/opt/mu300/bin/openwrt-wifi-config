@@ -10,6 +10,34 @@ WIFI_CHANNELS=${MU300_WIFI_CHANNELS:-/opt/mu300/lib/wifi-channels.sh}
 [ -r "$WIFI_CHANNELS" ] || WIFI_CHANNELS=$(dirname "$0")/../lib/wifi-channels.sh
 . "$WIFI_CHANNELS"
 [ -f "$R/etc/openwrt_release" ] || exit 0
+# An older installation or a restored directory may lack the stamp even when
+# wireless contains the user's AP/STA settings. Only an untouched disabled
+# OpenWrt template is eligible for importing Android credentials.
+if [ ! -e "$R/etc/mu300/wifi-configured" ]; then
+	wireless_state=$(uci -q show wireless) || {
+		# A read/parse failure is not an empty factory configuration.
+		[ ! -s "$R/etc/config/wireless" ] || exit 1
+	}
+	for section in $(printf '%s\n' "$wireless_state" | sed -n 's/^wireless\.\([^=]*\)=wifi-iface$/\1/p'); do
+		mode=$(uci -q get "wireless.$section.mode") || mode=
+		ssid=$(uci -q get "wireless.$section.ssid") || ssid=
+		enc=$(uci -q get "wireless.$section.encryption") || enc=
+		key=$(uci -q get "wireless.$section.key") || key=
+		radio=$(uci -q get "wireless.$section.device") || radio=
+		radio_off=$(uci -q get "wireless.$radio.disabled") || radio_off=
+		iface_off=$(uci -q get "wireless.$section.disabled") || iface_off=
+		[ -n "$mode$ssid$key" ] || continue
+		if [ "$section" = "default_$radio" ] && [ "$mode" = ap ] && [ "$ssid" = OpenWrt ] &&
+		   { [ -z "$enc" ] || [ "$enc" = none ]; } && [ -z "$key" ] &&
+		   { [ -z "$radio_off" ] || [ "$radio_off" = 1 ]; } && [ "$iface_off" = 1 ]; then
+			continue
+		fi
+		changes=$(uci -q changes wireless) || exit 1
+		[ -z "$changes" ] || exit 1
+		mkdir -p "$R/etc/mu300" && touch "$R/etc/mu300/wifi-configured" || exit 1
+		break
+	done
+fi
 # Configured before (at every boot from then on): a DFS channel set in LuCI or by hand becomes 36 without changing htmode,
 # with a line that says so. (wifi-scripts would replace it at every start anyway, see openwrt/patches/
 # wifi-scripts-no-dfs.patch; this makes LuCI show the channel the hotspot really uses.)

@@ -39,9 +39,19 @@ def model():
     try:
         device = subprocess.check_output([str(ROOT / 'opt/mu300/bin/mu300-device')],
                                          text=True, timeout=4).strip()
-        value = (ROOT / 'etc/mu300/model').read_text().strip() if device == 'u30pro' else device
     except (OSError, subprocess.CalledProcessError):
-        raise Error('product_form_unsupported')
+        raise Error('product_form_unavailable')
+    if device == 'u30pro':
+        try:
+            value = (ROOT / 'etc/mu300/model').read_text().strip()
+        except OSError:
+            # A missing migration input is a visible read error, not evidence
+            # that the Pro product lacks card-form support.
+            raise Error('product_form_unavailable')
+        if value not in ('u30pro', 'f50pro'):
+            raise Error('product_form_unavailable')
+    else:
+        value = device
     if value not in PROFILES:
         raise Error('product_form_unsupported')
     return value
