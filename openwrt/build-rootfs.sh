@@ -87,6 +87,12 @@ URL=$BASEURL/$VER/targets/armsr/armv8
 
 # Stock block-mount probes /dev/sd* (including Unisoc diagnostic channels).
 # Build/install the patched APK before exposing LuCI's Mount Points page.
+# Declare existing built-in capabilities with real APK ownership/file lists.
+NFT_APKS=$TOP/work/nft-builtins
+NFT_CONFIG=$TOP/kernel/linux.config
+if [ -d "$MAINLINE/modules" ]; then NFT_CONFIG=$MAINLINE/kernel.config; fi
+python3 "$TOP/openwrt/nft-builtins/build.py" --apk "${MU300_APK_MKPKG:-}" \
+    --config "$NFT_CONFIG" --resolved-config "$NFT_CONFIG" --output "$NFT_APKS"
 BLOCK_APK=$TOP/work/block-mount-mu300.apk
 sh "$TOP/openwrt/build-block-mount.sh" "$BLOCK_APK"
 WIFI_APKS="$TOP/work/wifi-sae"
@@ -146,6 +152,7 @@ docker run --rm --platform linux/arm64 \
   $(mainline_opt modules.builtin mainline-modules.builtin) $(mainline_opt modules.builtin.modinfo mainline-modules.builtin.modinfo) \
   -v "$THEME_APK":/in/luci-theme-aurora.apk:ro \
   -v "$BLOCK_APK":/in/block-mount-mu300.apk:ro \
+  -v "$NFT_APKS":/in/nft-builtins:ro \
   -v "$BLOCK_APK.build-id":/in/block-mount.build-id:ro \
   -v "$WIFI_APKS":/in/wifi-sae:ro \
   -v "$TOP/openwrt/luci-app-mu300/root/usr/libexec/unisoc-modem/disable-stock-upgrade":/in/stock-upgrade-policy:ro \
@@ -173,6 +180,8 @@ apk_retry add iwinfo wireless-regdb iw-full bash ip-full coreutils-stty openssl-
     rpcd-mod-ucode ucode ucode-mod-fs ucode-mod-ubus ucode-mod-uci ucode-mod-uloop ucode-mod-nl80211 ucode-mod-rtnl ucode-mod-socket \
     i2c-tools gpiod-tools flock ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn luci-i18n-ttyd-tr python3 >/dev/null
 apk_retry add --allow-untrusted /in/block-mount-mu300.apk >/dev/null
+# The assembly container runs the host kernel; the selected target config was checked above.
+apk add --no-network --allow-untrusted --no-scripts /in/nft-builtins/kmod-nft-*-2026.11.07-r1.apk >/dev/null
 apk_retry add --allow-untrusted /in/luci-theme-aurora.apk >/dev/null
 apk_retry add --allow-untrusted /in/luci-app-aurora-config.apk /in/aurora-config-zh-cn.apk /in/aurora-config-tr.apk >/dev/null
 # ujail drops CAP_PERFMON (38), which this 5.4 kernel does not know: jailed services (dnsmasq, ntpd) crash-loop
