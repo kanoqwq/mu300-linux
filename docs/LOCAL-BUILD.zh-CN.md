@@ -46,6 +46,7 @@ python3 tools/build-release.py status
 
 ```sh
 python3 tools/build-release.py run --label wifi -- sh openwrt/build-hostapd.sh
+python3 tools/build-release.py run --label iwinfo-ap-scan -- sh openwrt/build-iwinfo-ap-scan.sh
 python3 tools/build-release.py run --label block -- sh openwrt/build-block-mount.sh
 # 内核：run --label mu300-kernel -- <现有构建命令>
 ```
@@ -63,6 +64,9 @@ python3 tools/build-release.py run --label block -- sh openwrt/build-block-mount
 
 原 rootfs 构建仍需安装软件包、编译少量辅助程序；不重新编译内核或 GUI。
 Wi-Fi/block-mount 先验证缓存，现有构建器命中缓存即复用。
+AP 扫描库也必须通过 `iwinfo_apks` 登记路径的源码指纹和校验和检查；
+使用既有 OpenWrt SDK 编译，不复制另一套工具链。此用户态库共用于两条
+内核发行线；WLAN ko 仍须按各自内核编译，不能跨内核复用。
 完成 ZIP CRC、原 manifest 文件校验、单份 boot/rootfs 校验及复制 SHA-256
 核对后，清理本机型 staging。全部发行线通过且源码未变，才把隐藏的
 `.building-<task>` 目录改名为正式目录，写入 `BUILD-RUN.json`。

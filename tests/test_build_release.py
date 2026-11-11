@@ -164,6 +164,11 @@ class Archives(unittest.TestCase):
 
 
 class TaskState(unittest.TestCase):
+    @staticmethod
+    def package_inputs():
+        return {'inputs': Path('/input'), 'desktop_tools': Path('/tools'),
+                'lpac_apks': Path('/lpac'), 'iwinfo_apks': Path('/iwinfo')}
+
     def fake_assembly(self, task, model, args, extra_env=None):
         current = model.removesuffix('-package')
         active = [p.name for p in (task.workspace / 'package-work/mu300-release').iterdir()]
@@ -182,7 +187,7 @@ class TaskState(unittest.TestCase):
                 'verify_archive': lambda archive: None}):
             task = build.Task(Path(folder) / 'native', 'fixture')
             with patch.object(task, 'run', side_effect=lambda model,args,**kw:self.fake_assembly(task,model,args,**kw)):
-                build.package(task, {'inputs':Path('/input'),'desktop_tools':Path('/tools')}, {'mu300-7.2': {'kernel':Path('/kernel')}, 'mu300-6.18': {'kernel':Path('/kernel2')}})
+                build.package(task, self.package_inputs(), {'mu300-7.2': {'kernel':Path('/kernel')}, 'mu300-6.18': {'kernel':Path('/kernel2')}})
             destination = Path(folder) / 'release' / task.id
             self.assertTrue(destination.is_dir())
             self.assertFalse(destination.with_name('.building-' + task.id).exists())
@@ -202,7 +207,7 @@ class TaskState(unittest.TestCase):
                 task = build.Task(Path(folder) / 'native', 'fixture')
                 with patch.object(task, 'run', side_effect=lambda model,args,**kw:self.fake_assembly(task,model,args,**kw)):
                     with self.assertRaisesRegex(ValueError, 'sources changed'):
-                        build.package(task, {'inputs':Path('/input'),'desktop_tools':Path('/tools')}, {'mu300-7.2': {'kernel':Path('/kernel')}})
+                        build.package(task, self.package_inputs(), {'mu300-7.2': {'kernel':Path('/kernel')}})
                 self.assertFalse((Path(folder) / 'release' / task.id).exists())
                 self.assertTrue((Path(folder) / 'release' / ('.building-' + task.id)).exists())
 
@@ -230,7 +235,7 @@ class TaskState(unittest.TestCase):
                 def fail(*args, **kwargs):raise RuntimeError('assembler failed')
                 with patch.object(task, 'run', side_effect=fail):
                     with self.assertRaisesRegex(RuntimeError, 'assembler failed'):
-                        build.package(task, {'inputs':Path('/input'),'desktop_tools':Path('/tools')}, {'mu300-7.2': {'kernel':Path('/kernel')}})
+                        build.package(task, self.package_inputs(), {'mu300-7.2': {'kernel':Path('/kernel')}})
                 stage = build.stage_path(workspace, 'mu300-7.2')
                 self.assertTrue((stage / '.build-owner.json').exists())
                 self.assertEqual([p.name for p in (root / 'release').iterdir()], ['.building-' + task.id])
@@ -240,7 +245,7 @@ class TaskState(unittest.TestCase):
              patch.object(build.os, 'geteuid', return_value=0), \
              patch.object(build, 'input_check', side_effect=ValueError('stale GUI')):
             task = build.Task(Path(folder) / 'native', 'fixture')
-            with self.assertRaisesRegex(ValueError, 'stale GUI'):build.package(task, {'inputs':Path('/input'),'desktop_tools':Path('/tools')}, {'mu300-7.2': {'kernel':Path('/kernel')}})
+            with self.assertRaisesRegex(ValueError, 'stale GUI'):build.package(task, self.package_inputs(), {'mu300-7.2': {'kernel':Path('/kernel')}})
             self.assertFalse((Path(folder) / 'native/package-work').exists())
             self.assertFalse((Path(folder) / 'release').exists())
 

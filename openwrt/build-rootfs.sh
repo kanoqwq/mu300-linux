@@ -91,6 +91,8 @@ BLOCK_APK=$TOP/work/block-mount-mu300.apk
 sh "$TOP/openwrt/build-block-mount.sh" "$BLOCK_APK"
 WIFI_APKS="$TOP/work/wifi-sae"
 UNISOC_WRT_VER="$VER" sh "$TOP/openwrt/build-hostapd.sh" "$WIFI_APKS"
+IWINFO_APKS=${UNISOC_IWINFO_APKS:-$TOP/work/iwinfo-ap-scan}
+sh "$TOP/openwrt/build-iwinfo-ap-scan.sh" "$IWINFO_APKS"
 LPAC_APKS=${UNISOC_LPAC_APKS:-$(python3 "$TOP/openwrt/lpac-state.py" --path)}
 UNISOC_WRT_VER="$VER" sh "$TOP/openwrt/build-lpac.sh" "$LPAC_APKS"
 
@@ -150,6 +152,7 @@ docker run --rm --platform linux/arm64 \
   -v "$BLOCK_APK":/in/block-mount-mu300.apk:ro \
   -v "$BLOCK_APK.build-id":/in/block-mount.build-id:ro \
   -v "$WIFI_APKS":/in/wifi-sae:ro \
+  -v "$IWINFO_APKS":/in/iwinfo-ap-scan:ro \
     -v "$LPAC_APKS":/in/lpac:ro \
     -v "$TOP/openwrt":/in/euicc-source/openwrt:ro \
   -v "$TOP/openwrt/luci-app-mu300/root/usr/libexec/unisoc-modem/disable-stock-upgrade":/in/stock-upgrade-policy:ro \
@@ -171,6 +174,7 @@ apk_retry update >/dev/null
 # openssl-util: general TLS certificate inspection and maintenance tools;
 # i2c-tools, gpiod-tools: mu300-usb (the charger of the U30 Air) and mu300-nfc (its NFC tag)
 apk_retry add --allow-untrusted /in/wifi-sae/*.apk >/dev/null
+apk_retry add --allow-untrusted /in/iwinfo-ap-scan/*.apk >/dev/null
 # The cipher capability helper needs the section omitted by reduced iw builds.
 apk_retry add iwinfo wireless-regdb iw-full bash ip-full coreutils-stty openssl-util curl ca-bundle msmtp luci-base \
     luci-i18n-base-zh-cn luci-i18n-firewall-zh-cn luci-i18n-package-manager-zh-cn \
@@ -215,6 +219,10 @@ mkdir -p $R/etc/mu300
 cp /in/block-mount.build-id $R/etc/mu300/block-mount.build-id
 cp /in/wifi-sae/build-id $R/etc/mu300/wifi-sae.build-id
 cp /in/wifi-sae/source-info $R/etc/mu300/wifi-sae.source-info
+cp /in/iwinfo-ap-scan/build-id $R/etc/mu300/iwinfo-ap-scan.build-id
+[ -s "$R/usr/lib/libiwinfo.so.20230701" ] || {
+    echo "AP scan library missing from rootfs" >&2; exit 1;
+}
 for f in sbin/block lib/libblkid-tiny.so etc/init.d/fstab; do
     [ -s "$R/$f" ] || { echo "patched block-mount required file missing: $f" >&2; exit 1; }
 done

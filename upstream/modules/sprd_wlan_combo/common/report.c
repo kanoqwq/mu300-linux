@@ -23,7 +23,7 @@
 void sprd_report_scan_done(struct sprd_vif *vif, bool abort)
 {
 	struct sprd_priv *priv = vif->priv;
-	struct cfg80211_scan_info info;
+	struct cfg80211_scan_info info = { 0 };
 
 	if (priv->scan_vif && priv->scan_vif == vif) {
 		if (timer_pending(&priv->scan_timer))

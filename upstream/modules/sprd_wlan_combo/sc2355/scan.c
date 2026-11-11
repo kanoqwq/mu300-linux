@@ -190,47 +190,34 @@ static void scan_acs_result(struct sprd_vif *vif, u16 chan,
 	}
 }
 
-static void sc2355_cancel_scan(struct sprd_vif *vif)
+/* A rejected start is still owned by cfg80211; never complete it as well.
+ * A firmware completion racing the command reply has already taken ownership,
+ * in which case the scan callback must return success instead of rejecting it.
+ */
+static bool sc2355_cancel_scan(struct sprd_vif *vif,
+                               struct cfg80211_scan_request *request)
 {
 	struct sprd_priv *priv = vif->priv;
-	struct cfg80211_scan_info info;
 	struct sprd_api_version_t *api = (&priv->sync_api)->api_array;
-	u8 fw_ver = 0;
+	u8 fw_ver = (api + CMD_SCAN)->fw_version;
+	bool cancelled = false;
 
-	pr_info("%s enter==\n", __func__);
-
-	if (priv->scan_vif && priv->scan_vif == vif) {
-		if (timer_pending(&priv->scan_timer))
-			del_timer_sync(&priv->scan_timer);
-
-		spin_lock_bh(&priv->scan_lock);
-
-		if (priv->scan_request) {
-			info.aborted = true;
-			fw_ver = (api + CMD_SCAN)->fw_version;
-			if (priv->hif.hw_type == SPRD_HW_SC2355_PCIE) {
-				u8 drv_ver = 0;
-
-				drv_ver = (api + CMD_SCAN)->drv_version;
-				fw_ver = min(fw_ver, drv_ver);
-			}
-			if (vif->mode == SPRD_MODE_AP && fw_ver == 1)
-				transfer_survey_info(vif);
-			/*delete scan node*/
-			if (!list_empty(&vif->scan_head_ptr))
-				scan_clean_list(vif);
-
-			if (priv->scan_request->n_channels != 0)
-				cfg80211_scan_done(priv->scan_request, &info);
-			else
-				netdev_info(vif->ndev,
-					    "%s, %d, error, scan_request freed",
-					    __func__, __LINE__);
-			priv->scan_request = NULL;
-			priv->scan_vif = NULL;
-		}
-		spin_unlock_bh(&priv->scan_lock);
+	/* Do not wait for the timer while holding its scan_lock. */
+	del_timer_sync(&priv->scan_timer);
+	spin_lock_bh(&priv->scan_lock);
+	if (priv->scan_request == request && priv->scan_vif == vif) {
+		if (priv->hif.hw_type == SPRD_HW_SC2355_PCIE)
+			fw_ver = min(fw_ver, (api + CMD_SCAN)->drv_version);
+		if (!list_empty(&vif->scan_head_ptr))
+			scan_clean_list(vif);
+		if (vif->mode == SPRD_MODE_AP && fw_ver == 1)
+			clean_survey_info_list(vif);
+		priv->scan_request = NULL;
+		priv->scan_vif = NULL;
+		cancelled = true;
 	}
+	spin_unlock_bh(&priv->scan_lock);
+	return cancelled;
 }
 
 static void sc2355_cancel_sched_scan(struct sprd_vif *vif)
@@ -250,7 +237,7 @@ static void sc2355_cancel_sched_scan(struct sprd_vif *vif)
 void sc2355_scan_timeout(struct timer_list *t)
 {
 	struct sprd_priv *priv = from_timer(priv, t, scan_timer);
-	struct cfg80211_scan_info info;
+	struct cfg80211_scan_info info = { 0 };
 	struct sprd_api_version_t *api = (&priv->sync_api)->api_array;
 	u8 fw_ver = 0;
 
@@ -299,9 +286,12 @@ int sc2355_scan(struct wiphy *wiphy, struct cfg80211_scan_request *request)
 	netdev_info(vif->ndev, "%s n_channels %u\n", __func__,
 		    request->n_channels);
 
-	if (priv->scan_request)
-		netdev_err(vif->ndev, "%s error scan %p running [%p, %p]\n",
-			   __func__, priv->scan_request, priv->scan_vif, vif);
+	/* One firmware scan context; preserve the request already in flight. */
+	spin_lock_bh(&priv->scan_lock);
+	ret = priv->scan_request ? -EBUSY : 0;
+	spin_unlock_bh(&priv->scan_lock);
+	if (ret)
+		return ret;
 	if (vif->mode == SPRD_MODE_STATION ||
 		vif->mode == SPRD_MODE_STATION_SECOND) {
 		sc2355_random_mac_addr(rand_addr);
@@ -415,7 +405,8 @@ int sc2355_scan(struct wiphy *wiphy, struct cfg80211_scan_request *request)
 			      n_5g_chn, chns_5g);
 	kfree(ssids_ptr);
 	if (ret) {
-		sc2355_cancel_scan(vif);
+		if (!sc2355_cancel_scan(vif, request))
+			return 0; /* Completion or timeout won the reply race. */
 		goto err;
 	}
 

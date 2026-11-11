@@ -24,7 +24,7 @@ TOP = Path(__file__).resolve().parents[1]
 sys.dont_write_bytecode = True
 OWNER = 'mu300-build-release-v1'
 PROFILES = ('mu300-7.2', 'mu300-6.18')
-COMMON = ('inputs', 'desktop_tools', 'block_apk', 'wifi_apks', 'lpac_apks')
+COMMON = ('inputs', 'desktop_tools', 'block_apk', 'wifi_apks', 'iwinfo_apks', 'lpac_apks')
 
 
 def write_json(path, value):
@@ -138,6 +138,7 @@ def input_check(common, rows):
     runpy.run_path(str(TOP / 'tools/atd-io/artifact.py'))['check'](common['inputs'] / 'tools/atd-io/mu300-atd-io')
     runpy.run_path(str(TOP / 'tools/atd-io/artifact.py'))['check'](common['inputs'] / 'tools/keys/mu300-keys', TOP / 'tools/keys/mu300-keys.c')
     runpy.run_path(str(TOP / 'openwrt/wifi-sae-state.py'))['inspect'](common['wifi_apks'])
+    runpy.run_path(str(TOP / 'openwrt/iwinfo-ap-scan-state.py'))['inspect'](common['iwinfo_apks'])
     runpy.run_path(str(TOP / 'openwrt/lpac-state.py'))['inspect'](common['lpac_apks'])
     block = common['block_apk']
     block_sources = ('block-mount.Dockerfile', 'build-block-mount.sh', 'build-block-mount-inner.sh',
@@ -271,7 +272,8 @@ def package(task, common, rows):
                'MU300_UPSTREAM_OUT': str(row['kernel']), 'MU300_KERNEL': model.removeprefix('mu300-'),
                'MU300_PACKAGE_WORK': str(assembly), 'MU300_ROOTFS_OUT_DIR': str(assembly),
                'MU300_VERSION': version, 'MU300_DESKTOP_INSTALLER': '1', 'OPENWRT_GUI_OPTIONAL': '0',
-               'UNISOC_LPAC_APKS': str(common['lpac_apks'])}
+               'UNISOC_LPAC_APKS': str(common['lpac_apks']),
+               'UNISOC_IWINFO_APKS': str(common['iwinfo_apks'])}
         task.run(model + '-package', ['sh', TOP / 'tools/build-openwrt-tf-magisk.sh', archive], extra_env=env)
         verify_archive(archive, require_diff=True,require_android=True)
         release = json.loads((assembly / ('release-' + env['MU300_KERNEL'] + '.json')).read_text())
