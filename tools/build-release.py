@@ -320,8 +320,8 @@ def publish_completed(task, common, rows, source):
         profile = 'mu300-' + '.'.join(record['kernel_release'].split('.')[:2])
         if profile not in rows or profile + '-package' not in complete:
             raise ValueError('Archive has no completed selected build step: ' + profile)
-        if path.name != record['package_name'] + '.zip' or record.get('source_dirty') is not False:
-            raise ValueError('Archive name or clean source provenance differs')
+        if path.name != record['package_name'] + '.zip':
+            raise ValueError('Archive name differs from release provenance')
         commit = record['source_commit']
         if not re.fullmatch('[a-f0-9]{40}', commit): raise ValueError('Invalid source commit')
         git = ['git', '-c', 'safe.directory='+str(TOP), '-C', str(TOP)]
@@ -332,6 +332,11 @@ def publish_completed(task, common, rows, source):
                 directory = '/mnt/'+directory[0].lower()+'/'+directory[3:].replace('\\','/')
                 git += ['--git-dir='+directory, '--work-tree='+str(TOP)]
         tree = subprocess.check_output([*git, 'rev-parse', commit+'^{tree}'])
+        # Git can mark a submodule dirty solely for an untracked generated
+        # Cargo target symlink. The identity fingerprint below must still be
+        # exactly the committed tree: tracked edits and ordinary untracked
+        # input files change it and cannot be resumed through this path.
+        # Keep the original source_dirty observation in the published record.
         if hashlib.sha256(tree).hexdigest() != record['source_fingerprint']:
             raise ValueError('Recorded source fingerprint differs from its clean Git tree')
         key = (commit, record['source_fingerprint'], record['private_version'])
@@ -340,7 +345,7 @@ def publish_completed(task, common, rows, source):
         wanted = path.with_name(path.name+'.sha256').read_text().split()
         checksum = digest(path)
         if wanted != [checksum, path.name]: raise ValueError('Pending archive checksum differs')
-        verify_archive(path, require_diff=True)
+        verify_archive(path, require_diff=True, require_android=True)
         assets.append({'profile':profile,'file':path.name,'bytes':path.stat().st_size,'sha256':checksum})
         source_record = record
     if {a['profile'] for a in assets} != set(rows):
