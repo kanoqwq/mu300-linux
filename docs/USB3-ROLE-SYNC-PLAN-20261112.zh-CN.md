@@ -922,3 +922,25 @@ I2C6:0x30 PTN38003A 节点但没有驱动绑定。只读访问 PTN 的 0x00、0x
 host-lifecycle-pc-settled.txt、host-lifecycle-first-powered-dock.txt、
 host-lifecycle-dock-powercycle.txt、host-lifecycle-warm-reboot.txt、
 host-lifecycle-failure-hardware-inventory.txt、host-lifecycle-ptn-readonly.txt。
+
+
+### F50 原厂对照尚未成立，已返回 OpenWrt
+
+用户随后补充确认上一轮对坞完全断电，并授权临时切原厂 Android 对照，
+确认无线 ADB/root 已开启。仅写入本机已校验 CRC 的 Android A 32 字节
+misc 启动记录并回读校验，执行正常重启；没有修改 Linux 默认启动文件。
+但网线管理下 192.168.0.1:5555 未连通，没有取得原厂 uname、数据角色或
+USB 枚举结果，不能据此确认原厂是否完成启动或进入 OTG，更不能宣称这台
+F50 原厂也已测到 480。
+
+用户指出原厂可能需要额外 CC 触发 OTG。这个具体触发条件尚未核实；
+同平台原厂源码确实根据 CC/ID 的 EXTCON_USB_HOST 事件启动 host。
+有效速率对照必须先确认两边都处于数据主机且保持同一外部供电条件。
+本轮未修改 CC、VBUS 或 PTN38003A 寄存器，不将假设直接变成硬件操作。
+
+用户自行切回后，只读确认 F50 运行 #102，boot_id=
+f6932602-bba1-457b-8907-259398d3cda4，默认 Linux、成功启动计数已清零，
+实际 host，RTL8153 仍为 480。没有再次切系统或重启。电脑用于本轮原厂
+探测的两个临时静态地址和 DNS 已撤回，恢复本轮之前的 DHCP/自动 DNS，
+重新取得原租约地址；原 Wi-Fi 与默认联网路径保持不变。保留机器已有的
+路由发现/忽略默认路由策略，没有套用上一台 U30 Air 的旧网络备份。
