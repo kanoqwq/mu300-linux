@@ -1009,3 +1009,23 @@ Type-C 端口或 TCPM 实例。新增后端因此将原有 host 请求记为 err
 链路状态；有效原厂对照仍需先确认真实 host 条件，不将无管理连接当作测速结果。
 私有证据：pd-sink-forced-deployment.txt、pd-sink-forced-direct-pc.txt、
 pd-sink-forced-probe-failure.txt、pd-sink-forced-dt-device.txt。
+
+### 撤回后的本机恢复已完成验证
+
+用户明确授权恢复后，校验设备 CID、Linux B 分区映射及当前试验镜像指纹，
+仅恢复本机 #102 boot 前 48 MiB、匹配模块及原 device-usb，移除两个新增 PD
+运行时文件。保留 #104 boot/模块/运行时备份及模块目录，未改 Android、
+GPT、userdata、NV/IMEI 或 misc。恢复前后的 unisoc_modem 配置校验和相同。
+
+正常重启保留用户 role_auto=1，直连电脑的 gadget 随主机策略断开；
+用户接回原带外供坞后，只续租电脑该以太网口的 DHCP，恢复原管理租约，
+未修改电脑 Wi-Fi、路由优先级或保存的网卡设置。
+只读核对本机实际运行 #102，boot_id 为 c33fd803-982e-4e82-bf8f-df01095286c3，
+实际 host；内核有效命令行无 PD 试验参数，新增文件已不存在。
+boot 前 48 MiB 哈希与原件一致，运行目录的 202 个模块逐项通过原清单校验。
+热点及蜂窝 IPv4、IPv6 地址和 IPv6 默认路由均正常。
+
+本坞 RTL8153 与 USB2 hub 仍为 480，没有 SuperSpeed hub；这与原试验前
+故障一致，恢复成功不代表原有带坞启动降速问题已解决。
+证据：pd-trial-recovery.txt、pd-trial-recovery-settled.txt、
+pd-trial-recovery-live-modules.txt、pd-trial-recovery-verification.json。
