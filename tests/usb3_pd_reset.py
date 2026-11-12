@@ -31,7 +31,7 @@ typedef uint32_t u32;
 #define PD_REV30 2
 enum tcpm_transmit_type {TCPC_TX_SOP,TCPC_TX_HARD_RESET};
 struct pd_message {unsigned short header;u32 payload[7];};
-struct sc27xx_pd {void *regmap;u32 base;int lock;bool rx_enabled,tx_pending,tx_sop;};
+struct sc27xx_pd {bool sink_only;void *regmap;u32 base;int lock;bool rx_enabled,tx_pending,tx_sop;};
 struct tcpc_dev {struct sc27xx_pd *pd;};
 ''' + regs + r'''
 struct operation {u32 reg,mask,value;};
@@ -105,6 +105,12 @@ int main(void){
   assert(ops[i].reg!=SC27XX_PD_MESG_ID_CFG);
   if(ops[i].reg==SC27XX_PD_CTRL)assert(ops[i].mask!=SC27XX_PD_RX_FLASH&&ops[i].mask!=SC27XX_PD_RX_ID_CLR);
  }
+ /* Fixed-input profiles must reject a hard reset before touching any RX,
+  * TX, message-ID or pending-completion state. Normal SOP still works. */
+ pd.sink_only=true;count=0;pd.tx_pending=false;pd.rx_enabled=true;
+ assert(sc27xx_transmit(&tcpc,TCPC_TX_HARD_RESET,0,PD_REV30)==-EOPNOTSUPP);
+ assert(!count&&!pd.tx_pending&&pd.rx_enabled&&!pd.lock);
+ assert(!sc27xx_transmit(&tcpc,TCPC_TX_SOP,&msg,PD_REV30)&&pd.tx_pending&&pd.tx_sop);
 }
 '''
 with tempfile.TemporaryDirectory() as directory:

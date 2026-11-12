@@ -17,6 +17,21 @@ PAGE = 4096
 LIMIT = 48 << 20
 
 
+def select_batteryless_pd_profile(header, enabled):
+    if not enabled:
+        return
+    cmdline = bytes(header[44:1580]).split(b'\0', 1)[0]
+    key = b'sc27xx_ump9620.batteryless_sink='
+    selected = [token for token in cmdline.split() if token.startswith(key)]
+    if selected and selected != [key+b'1']:
+        raise ValueError('conflicting fixed-input PD profile in installed boot')
+    if not selected:
+        cmdline = cmdline.rstrip() + b' ' + key+b'1'
+    if len(cmdline) >= 1536:
+        raise ValueError('trial command line exceeds the boot header')
+    header[44:1580] = cmdline + bytes(1536-len(cmdline))
+
+
 def replace_modules(raw, modules):
     result = bytearray()
     position = 0
@@ -74,6 +89,8 @@ def main():
     parser.add_argument('--backup', required=True, type=Path)
     parser.add_argument('--kernel-dir', required=True, type=Path)
     parser.add_argument('--out', required=True, type=Path)
+    parser.add_argument('--batteryless-pd-sink', action='store_true',
+                        help='explicitly enable the fixed-input PD trial profile')
     args = parser.parse_args()
     base = args.backup.read_bytes()
     if base[:8] != b'ANDROID!' or struct.unpack_from('<I', base, 40)[0] != 4 or base[-64:-60] != b'AVBf':
@@ -95,6 +112,7 @@ def main():
                        flags, 0, 0, 0) + b'ARMd' + bytes(4)
     kernel = stub + bytes(gap-len(stub)) + raw_kernel
     header = bytearray(base[:PAGE])
+    select_batteryless_pd_profile(header, args.batteryless_pd_sink)
     struct.pack_into('<II', header, 8, len(kernel), len(ram))
     struct.pack_into('<I', header, 1580, 0)
     body = bytes(header) + kernel + bytes(-len(kernel) % PAGE) + ram
@@ -111,7 +129,8 @@ def main():
     print('Backup SHA256:', hashlib.sha256(base).hexdigest())
     print('Candidate SHA256:', hashlib.sha256(result).hexdigest())
     print('Replaced existing ramdisk modules:', len(replaced))
-    print('Preserved init, cpio metadata, cmdline and persistent-log region; no device writes')
+    print('Preserved init, cpio metadata and persistent-log region; no device writes')
+    print('Command line:', 'explicit fixed-input PD trial' if args.batteryless_pd_sink else 'unchanged')
 
 
 if __name__ == '__main__':

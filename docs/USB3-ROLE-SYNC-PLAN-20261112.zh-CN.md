@@ -981,3 +981,39 @@ Type-C 的 PD_SUPPORT 及协议控制器 CTL_EN 未启用。PD 数据包头配�
 
 私有记录：current-ss-port-state.txt、single-ss-warm-reset-result.txt、
 single-ss-warm-reset-settled.txt、cc-pd-readonly-failure-state.txt。
+
+### F50 无电池 PD 受电端候选：源码与构建完成，硬件尚未验收
+
+新增显式启动参数 `sc27xx_ump9620.batteryless_sink=1`，仅用于本轮 F50
+试验镜像。默认关闭，不能因为共享设备树包含 PD 节点或未发现电池就启用。
+同时存在电池策略时拒绝该配置；现有 U30 Air 电池路径与默认 F50/V50 路径保留。
+同平台原厂源码仅作接口参考，尚无本机原厂 PD/数据角色有效对照结果。
+
+该配置将 TCPM 连接器声明为 power-role=sink、data-role=dual，只声明
+5 V / 2 A 受电能力，不声明供电 PDO 或 self-powered。驱动不获取充电器或
+升压 regulator，拒绝 Rp、source、VCONN 供电及主动发送 Hard Reset；
+电流预算回调不控制取电硬件。保留 TCPM 对仅靠 VBUS 供电设备的既有恢复路径。
+对端仍可能自行断开供电，这些限制不构成“不可能掉电”的硬件承诺。
+
+网页的 USB 主机/设备选择由同一个 `device-usb` 请求状态拥有。显式启动配置
+选择新 `mu300-usb-pd-sink` 后端，不能失败后退回直接写 DWC3；冲突的自定义
+后端会直接报错。新后端仅在受电状态下请求原生 Type-C `data_role` 交换。
+未建立 PD 合同时保留请求，收到端口/对端加入或 PD 状态变更事件后继续；
+明确不支持 PD 的对端或拒绝交换则报错，不周期重试、不切换供电角色。
+新请求会使旧请求失效，开机补放可能早于 rootfs 的 Type-C 事件。
+
+热插拔脚本放入现有 LuCI 包的 `root/etc/hotplug.d/typec/`，rootfs 构建和
+两条打包入口均校验它与运行时后端，避免只准备热部署文件却漏入后续构建。
+普通发行镜像不会自动追加试验启动参数；硬件验证后再决定正式产品启用策略。
+
+离线验证：41 项 USB 管理、PD 电源边界及旧电池路径测试通过，另外实际驱动
+回调的 PD reset、PHY 角色恢复、方向同步、主机交接和首次初始化回归通过；
+构建脚本语法通过。任务 `20261112-163728-f50-pd-sink-final-regression-1264`。
+6.18.54 TCPM 驱动对象及 7.2.8 完整 Image/202 个配套模块编译通过，任务
+`20261112-163100-f50-pd-sink-kernel-1151`。没有将对象编译记为完整 6.18 构建。
+
+已从本机 #102 备份生成 `boot_b.usb3-pd-sink.img` 与配套模块，保留本机
+ramdisk/init/分区参数和持久日志区域；镜像最后 4096 字节与备份相同。
+本轮只读再次确认机器仍运行 #102、同一 boot_id、host/480，没有刷写或重启。
+待授权后验证实际 Type-C 端口归属、电脑设备网络、PD 主机、正反插和带坞重启；
+这些尚未实测，不能宣称扩展坞 480 Mbps 故障已经解决。

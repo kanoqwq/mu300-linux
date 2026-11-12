@@ -1,0 +1,58 @@
+#!/bin/sh
+# Explicit role_command adapter for the fixed-input F50 PD trial profile.
+# Request ownership stays in device-usb's ROLE_STATE/UCI. Never switch the
+# power role, set port_type=source, write a charger or fall back to raw DWC3.
+set -eu
+export PATH="$PATH:/opt/mu300/bin:/usr/sbin:/sbin:/opt/mu300/busybox-bin"
+R=${MU300_SYSROOT:-}
+PROFILE=${MU300_USB_SINK_PROFILE:-$R/sys/module/sc27xx_ump9620/parameters/batteryless_sink}
+STATE=${MU300_USB_ROLE_STATE:-/run/unisoc-usb-role-state}
+LOCK=${MU300_USB_SINK_LOCK:-/var/lock/mu300-usb-pd-sink.lock}
+die() { echo "mu300-usb-pd-sink: $*" >&2; exit 1; }
+case ${1:-} in host|device) desired=$1 ;; *) die 'expected host or device' ;; esac
+case $(cat "$PROFILE" 2>/dev/null || true) in Y|1) ;; *)
+    die 'the fixed-input Type-C profile is not enabled' ;;
+esac
+
+# Serialize swaps; hotplug must not block the event dispatcher behind an
+# already running request. A newer UI worker will apply its own request.
+mkdir -p "${LOCK%/*}"
+exec 9>"$LOCK"
+if [ "${MU300_USB_ROLE_EVENT:-0}" = 1 ]; then
+    flock -n 9 || exit 0
+else
+    flock -x 9 || die 'cannot acquire role request lock'
+fi
+state=$(cat "$STATE" 2>/dev/null || true)
+token=$(printf '%s\n' "$state" | sed -n '1p')
+target=$(printf '%s\n' "$state" | sed -n '2p')
+if [ -n "$token" ]; then
+    [ "${MU300_USB_ROLE_REQUEST:-}" = "$token" ] || exit 0
+    [ "$target" = "$desired" ] || exit 0
+elif [ -n "${MU300_USB_ROLE_REQUEST:-}" ]; then
+    exit 0
+fi
+
+port=
+for candidate in "$R"/sys/class/typec/port*; do
+    [ -w "$candidate/data_role" ] || continue
+    owner=$(readlink -f "$candidate/device/driver" 2>/dev/null || true)
+    [ "${owner##*/}" = ump9620-tcpm ] || continue
+    [ -z "$port" ] || die 'multiple matching Type-C ports'
+    port=$candidate
+done
+[ -n "$port" ] || die 'the fixed-input Type-C port is not ready'
+case $(cat "$port/power_role") in sink|*'[sink]'*) ;; *)
+    die 'unexpected source power role on a fixed-input board' ;;
+esac
+case $(cat "$port/data_role") in "$desired"|*"[$desired]"*) exit 0 ;; esac
+if [ "$(cat "$port/power_operation_mode")" != usb_power_delivery ]; then
+    # Native port/partner add and PD-contract change events reapply pending
+    # requests. No periodic timer and no source-role substitute for a swap.
+    if [ -d "$port-partner" ] &&
+       [ "$(cat "$port-partner/supports_usb_power_delivery" 2>/dev/null || true)" = no ]; then
+        die 'the attached partner does not support PD data-role swaps'
+    fi
+    exit 0
+fi
+printf '%s\n' "$desired" > "$port/data_role" || die 'the partner refused the PD data-role swap'

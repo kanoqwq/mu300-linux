@@ -30,7 +30,7 @@ enum { POWER_SUPPLY_USB_TYPE_UNKNOWN, POWER_SUPPLY_USB_TYPE_PD };
 enum { POWER_SUPPLY_PROP_USB_TYPE, POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT };
 union power_supply_propval {int intval;};
 struct tcpc_dev {void *pd;};
-struct sc27xx_pd {void *charger;bool pd_capable;};
+struct sc27xx_pd {bool sink_only;void *charger;bool pd_capable;};
 #define min(a,b) ((a)<(b)?(a):(b))
 #define READ_ONCE(x) (x)
 static int input=2000000, writes, error, type=-1;
@@ -84,7 +84,7 @@ enum typec_role {TYPEC_SINK,TYPEC_SOURCE};
 enum typec_data_role {TYPEC_DEVICE,TYPEC_HOST};
 enum tcpm_transmit_status {TCPC_TX_SUCCESS,TCPC_TX_FAILED};
 struct tcpc_dev {void *pd;};
-struct sc27xx_pd {void *role_sw,*dev,*port;bool attached,tx_pending,tx_sop,pd_capable;enum typec_role power_role;};
+struct sc27xx_pd {bool sink_only;void *role_sw,*dev,*port;bool attached,tx_pending,tx_sop,pd_capable;enum typec_role power_role;};
 #define SC27XX_PD_CFG0 16
 #define SC27XX_PD_SRC_SINK_MODE 512
 #define SC27XX_TYPEC_PD_CFG 8
@@ -163,7 +163,7 @@ typedef uint32_t u32;typedef uint16_t u16;typedef int irqreturn_t;
         model=r"""
 enum tcpm_transmit_status {TCPC_TX_SUCCESS,TCPC_TX_FAILED};
 struct pd_message {u16 header;u32 payload[7];};
-struct sc27xx_pd {void *regmap,*port,*dev;u32 base,typec_base;int lock;bool tx_pending,tx_sop,pd_capable,rx_enabled;};
+struct sc27xx_pd {bool sink_only;void *regmap,*port,*dev;u32 base,typec_base;int lock;bool tx_pending,tx_sop,pd_capable,rx_enabled;};
 static u32 fifo[24],flags;static int at,held,flushes,messages,completions,hard_resets,read_error;
 static int empty_reads,stay_empty,status_reads,fail_at=-1,warnings,contract_notifications;static struct pd_message received;
 static void mutex_lock(int *p){(void)p;assert(!held);held=1;}
