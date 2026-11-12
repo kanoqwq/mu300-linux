@@ -283,6 +283,12 @@ setup_usb_gadget() {
         ln -s "$g/functions/acm.GS0" "$g/configs/$cdc/f2"
     fi
     log "stage=usb-net-function ${rndis:+rndis+}${netfunc:-none}"
+    # BEGIN MU300 UNBOUND GADGET
+    if [ "${MU300_USB_EARLY_HOST:-}" = 1 ]; then
+        log 'stage=usb-gadget-prepared-unbound (host boot; device handover retained)'
+        return 0
+    fi
+    # END MU300 UNBOUND GADGET
     log "stage=usb-wait-udc"
     for n in $(seq 1 40); do
         [ -e /sys/class/udc/25100000.dwc3 ] && break
@@ -370,7 +376,39 @@ esac
 # Read the optional LuCI package's USB policy before configfs enumeration.
 # Use the already-mounted TF root: a separate ro,noload peek can miss a new
 # setting still in the ext4 journal, even after the block device appears.
+# BEGIN MU300 EARLY USB ROLE
+has_init() { [ -x "$1/lib/systemd/systemd" ] || [ -x "$1/sbin/init" ]; }
+pick_root() {
+    want=$(cat /disk/.mu300/boot-os 2>/dev/null)
+    for os in $want ubuntu openwrt; do
+        [ -d "/disk/$os" ] && has_init "/disk/$os" && { echo "/disk/$os"; return; }
+        # legacy layout: Ubuntu in the filesystem root
+        [ "$os" = ubuntu ] && [ -x /disk/lib/systemd/systemd ] && { echo /disk; return; }
+    done
+}
+read_usb_boot_role() {
+    case "$DEVICE" in f50|v50) ;; *) return 0 ;; esac
+    case ${DESKTOP_MODE:-} in ''|legacy|part|sd) ;; *) return 0 ;; esac
+    [ "${DESKTOP_USB_READY:-}" != 1 ] || return 0
+    usb_root=$(pick_root) || return 0
+    [ -x "$usb_root/sbin/uci" ] || return 0
+    usb_chroot=${MU300_USB_CHROOT:-chroot}
+    usb_auto=$("$usb_chroot" "$usb_root" /sbin/uci -q get unisoc_modem.usb.role_auto 2>/dev/null)
+    [ "$usb_auto" = 1 ] || return 0
+    usb_adapter=$("$usb_chroot" "$usb_root" /sbin/uci -q get unisoc_modem.usb.role_command 2>/dev/null)
+    [ -z "$usb_adapter" ] || return 0
+    usb_role_file=${MU300_USB_ROLE_FILE:-/sys/class/usb_role/25100000.dwc3-role-switch/role}
+    if [ -w "$usb_role_file" ] && printf '%s\n' host > "$usb_role_file"; then
+        MU300_USB_EARLY_HOST=1
+        log 'stage=usb-early-host (saved host boot policy; gadget not bound)'
+    else
+        log 'stage=usb-early-host-failed (USB rescue retained)'
+    fi
+}
+# END MU300 EARLY USB ROLE
 read_usb_boot_policy() {
+    read_usb_boot_role
+    [ "${MU300_USB_EARLY_HOST:-}" != 1 ] || return 0
     [ -z "${MU300_USBNET:-}" ] || return 0
     for p in /disk/openwrt/etc/unisoc-modem/usb-boot.conf \
              /disk/etc/unisoc-modem/usb-boot.conf; do
@@ -516,15 +554,6 @@ mkdir -p /newroot
 # be handed to ext4 (EINVAL), so attach the loop explicitly and verify its offset
 # The ext4 area holds one or more systems: /ubuntu, /openwrt (selected by /.mu300/boot-os), or a single
 # Ubuntu directly in its root (first installs). Pick one and remember how to start it.
-has_init() { [ -x "$1/lib/systemd/systemd" ] || [ -x "$1/sbin/init" ]; }
-pick_root() {
-    want=$(cat /disk/.mu300/boot-os 2>/dev/null)
-    for os in $want ubuntu openwrt; do
-        [ -d "/disk/$os" ] && has_init "/disk/$os" && { echo "/disk/$os"; return; }
-        # legacy layout: Ubuntu in the filesystem root
-        [ "$os" = ubuntu ] && [ -x /disk/lib/systemd/systemd ] && { echo /disk; return; }
-    done
-}
 if [ "$root_mounted" = 0 ] && [ "$internal_root" = 1 ] && root_region_valid "$ROOT_OFFSET"; then
     rootloop=$(losetup -f 2>/run/rootmount.err)
     if [ -n "$rootloop" ] && losetup -o "$ROOT_OFFSET" -S "$root_bytes" "$rootloop" /dev/mmcblk0 2>>/run/rootmount.err \
@@ -637,7 +666,14 @@ if [ "$root_mounted" = 1 ] && rootdir=$(pick_root) && [ -n "$rootdir" ]; then
         (cd /run && exec .trial-guard/busybox sh -c ".trial-guard/busybox sleep $g; [ -e stay ] && exit 0; .trial-guard/busybox sync; .trial-guard/busybox reboot -f") \
             </dev/null >/dev/null 2>&1 &
     fi
-    umount /config 2>/dev/null
+    # BEGIN MU300 KEEP PREPARED GADGET
+    if [ "${MU300_USB_EARLY_HOST:-}" = 1 ]; then
+        mkdir -p /sys/kernel/config
+        mount --move /config /sys/kernel/config || log 'stage=usb-configfs-move-failed'
+    else
+        umount /config 2>/dev/null
+    fi
+    # END MU300 KEEP PREPARED GADGET
     killall udhcpd 2>/dev/null
     mkdir -p /newroot/dev /newroot/proc /newroot/sys /newroot/run
     mount --move /dev /newroot/dev

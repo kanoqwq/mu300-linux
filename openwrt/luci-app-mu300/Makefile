@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-mu300
 PKG_VERSION:=1.2.0
-PKG_RELEASE:=26
+PKG_RELEASE:=27
 PKG_LICENSE:=MIT
 PKG_MAINTAINER:=MU300 Linux contributors
 PKGARCH:=all
@@ -59,7 +59,7 @@ define Package/luci-app-mu300/install
 	chmod 0600 $(1)/etc/config/mu300-charge
 	chmod 0755 $(1)/etc/init.d/mu300-charge $(1)/etc/hotplug.d/power_supply/75-mu300-charge $(1)/usr/libexec/rpcd/mu300-charge
 	chmod 0755 $(1)/etc/init.d/unisoc-cpu
-	chmod 0755 $(1)/etc/init.d/unisoc-modem-ui $(1)/etc/init.d/unisoc-sms-forward $(1)/etc/init.d/unisoc-traffic $(1)/etc/hotplug.d/net/90-unisoc-usb-host $(1)/etc/hotplug.d/iface/90-unisoc-usb-host $(1)/usr/libexec/rpcd/mu300dash $(1)/usr/libexec/unisoc-modem/*
+	chmod 0755 $(1)/etc/init.d/unisoc-modem-ui $(1)/etc/init.d/unisoc-sms-forward $(1)/etc/init.d/unisoc-traffic $(1)/etc/hotplug.d/net/90-unisoc-usb-host $(1)/etc/hotplug.d/iface/90-unisoc-usb-host $(1)/etc/hotplug.d/udc/90-unisoc-usb-gadget $(1)/usr/libexec/rpcd/mu300dash $(1)/usr/libexec/unisoc-modem/*
 	chmod 0755 $(1)/etc/init.d/unisoc-ttl $(1)/etc/hotplug.d/iface/92-unisoc-ttl $(1)/etc/hotplug.d/net/92-unisoc-ttl $(1)/etc/uci-defaults/98-unisoc-ttl
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/i18n
 	$(CP) ./lmo/. $(1)/usr/lib/lua/luci/i18n/

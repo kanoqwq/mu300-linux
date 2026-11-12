@@ -194,6 +194,45 @@ lane_cleanup() {
     lane_release || true
     if lane_owned && lane_peers_safe; then role_command host >/dev/null 2>&1 || true; fi
 }
+gadget_bind() {
+    # The early-host boot builds descriptors without binding them. A later
+    # explicit DEVICE request binds on the UDC add event, never on a timer.
+    case $(device_name) in f50|v50) ;; *) return 0 ;; esac
+    role_lock || return 1
+    target=$(sed -n '2p' "$ROLE_STATE" 2>/dev/null)
+    case $target in
+        host) return 0 ;;
+        device) [ "$(sed -n '3p' "$ROLE_STATE" 2>/dev/null)" != error ] || return 0 ;;
+        '') [ "$(role_now)" = device ] || return 0 ;;
+        *) return 0 ;;
+    esac
+    if [ ! -d "$GADGET_DIR" ]; then
+        [ "$GADGET_DIR" = /sys/kernel/config/usb_gadget ] || return 0
+        mkdir -p /sys/kernel/config || return 1
+        mount -t configfs configfs /sys/kernel/config || return 1
+    fi
+    [ -f "$GADGET_DIR/linux/UDC" ] || return 0
+    [ -z "$(cat "$GADGET_DIR/linux/UDC")" ] || return 0
+    ready_udc=; ready_count=0
+    for entry in "${MU300_USB_UDC_CLASS:-/sys/class/udc}"/*; do
+        [ -d "$entry" ] || continue
+        ready_udc=${entry##*/}; ready_count=$((ready_count + 1))
+    done
+    [ "$ready_count" = 1 ] || return 0
+    # A new HOST request wins even if its apply worker is waiting on our lock.
+    [ "$(sed -n '2p' "$ROLE_STATE" 2>/dev/null)" != host ] || return 0
+    # Init normally assigns this name after binding. The prepared-host path
+    # returns earlier, so retain the same name when RNDIS is selected.
+    for entry in "$GADGET_DIR/linux"/functions/rndis.*/ifname; do
+        name=$(cat "$entry" 2>/dev/null)
+        case $name in ''|'(unnamed net_device)'|rndis0) ;; *) "$IP" link set "$name" name rndis0 || return 1 ;; esac
+    done
+    printf '%s\n' "$ready_udc" > "$GADGET_DIR/linux/UDC" || return 1
+    if [ -x "${MU300_USB_GADGET_IFUP_HOOK:-/etc/hotplug.d/iface/10-mu300-usb}" ]; then
+        ACTION=ifup INTERFACE=lan "${MU300_USB_GADGET_IFUP_HOOK:-/etc/hotplug.d/iface/10-mu300-usb}"
+    fi
+    logger -t unisoc-usb "prepared USB gadget bound to $ready_udc"
+}
 probe_lanes() {
     case $(device_name) in f50|v50) ;; *) return 0 ;; esac
     [ -z "${MU300_USB_ROLE_COMMAND:-$(get role_command)}" ] || return 0
@@ -458,7 +497,11 @@ case ${1:-} in
             "$0" net-sync >/dev/null 2>&1 || true
         else
             rmdir "$RESCAN_MARKER" 2>/dev/null || true
+            "$0" gadget-bind || exit 1
         fi
+        ;;
+    gadget-bind)
+        gadget_bind
         ;;
     probe-lanes)
         probe_lanes "${2:-}"

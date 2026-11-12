@@ -179,7 +179,8 @@ apk_retry add --allow-untrusted /in/iwinfo-ap-scan/*.apk >/dev/null
 apk_retry add iwinfo wireless-regdb iw-full bash ip-full coreutils-stty openssl-util curl ca-bundle msmtp luci-base \
     luci-i18n-base-zh-cn luci-i18n-firewall-zh-cn luci-i18n-package-manager-zh-cn \
     rpcd-mod-ucode ucode ucode-mod-fs ucode-mod-ubus ucode-mod-uci ucode-mod-uloop ucode-mod-nl80211 ucode-mod-rtnl ucode-mod-socket \
-    i2c-tools gpiod-tools flock ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn luci-i18n-ttyd-tr python3 python3-openssl >/dev/null
+    i2c-tools gpiod-tools flock ttyd luci-app-ttyd luci-i18n-ttyd-zh-cn luci-i18n-ttyd-tr python3 python3-openssl \
+    r8152-firmware >/dev/null
 apk_retry add --allow-untrusted /in/block-mount-mu300.apk >/dev/null
 apk_retry add --allow-untrusted /in/lpac/lpac-2.3.0-r1001.apk >/dev/null
 apk_retry add --allow-untrusted /in/luci-theme-aurora.apk >/dev/null
@@ -285,7 +286,7 @@ if [ -d /in/luci-plugin ]; then
     chmod 0600 $R/etc/config/unisoc_apn
     chmod 0755 $R/etc/init.d/unisoc-ttl $R/etc/hotplug.d/iface/92-unisoc-ttl $R/etc/hotplug.d/net/92-unisoc-ttl $R/etc/uci-defaults/98-unisoc-ttl
     chmod 0755 $R/etc/uci-defaults/97-unisoc-upgrade-policy $R/etc/uci-defaults/99-unisoc-wifi-widths
-    chmod 0755 $R/etc/init.d/unisoc-modem-ui $R/etc/init.d/unisoc-sms-forward $R/etc/init.d/unisoc-traffic $R/etc/hotplug.d/net/90-unisoc-usb-host $R/etc/hotplug.d/iface/90-unisoc-usb-host $R/usr/libexec/rpcd/mu300dash $R/usr/libexec/unisoc-modem/*
+    chmod 0755 $R/etc/init.d/unisoc-modem-ui $R/etc/init.d/unisoc-sms-forward $R/etc/init.d/unisoc-traffic $R/etc/hotplug.d/net/90-unisoc-usb-host $R/etc/hotplug.d/iface/90-unisoc-usb-host $R/etc/hotplug.d/udc/90-unisoc-usb-gadget $R/usr/libexec/rpcd/mu300dash $R/usr/libexec/unisoc-modem/*
     # rpcd refuses world-writable plugins from a Windows bind mount.
     chmod 0644 $R/usr/share/rpcd/ucode/*.uc $R/usr/share/ucode/mu300/*.uc
     chroot "$R" /usr/bin/ucode -e "import * as dash from \"mu300.dash\"; import * as rates from \"mu300.rates\"; import * as placement from \"mu300.service-cpus\";"

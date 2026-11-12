@@ -388,6 +388,12 @@ else:
     if core.count(anchor) != 1:
         sys.exit('port: unexpected DWC3 role transition; USB3 preparation not applied')
     core = core.replace(anchor, prepare + anchor)
+# Retire the rejected child-shutdown trial in already prepared trees. The
+# dwc3-of-simple parent already depopulates the child and performs its remove
+# lifecycle at shutdown. Doing it first in the child cleared drvdata, then
+# the parent's second removal dereferenced NULL. Preserve that single owner.
+core = core.replace('\n#include "ums9620-shutdown.h"\n', '\n')
+core = core.replace('\n\t.shutdown\t= dwc3_ums9620_shutdown,', '')
 open(core_path, 'w').write(core)
 
 # LEDs of the ZTE U30 Air: its white ones on PMIC LDOs (leds-zte-ldo.c), and its red on the PMIC's keypad backlight

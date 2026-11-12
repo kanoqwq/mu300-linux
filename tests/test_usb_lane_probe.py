@@ -103,6 +103,8 @@ fi
         values = dict(MU300_USB_DEVICE='f50', MU300_USB_ROLE_FILE=self.role,
                       MU300_USB_ROLE_LOCK=self.tmp/'role.lock',
                       MU300_USB_ROLE_STATE=self.request,
+                      MU300_USB_GADGET_DIR=self.tmp/'gadgets',
+                      MU300_USB_UDC_CLASS=self.tmp/'udc',
                       MU300_USB_LANE_PARAM=self.param, MU300_USB_LANE_STATE=self.state,
                       MU300_USB_LANE_BOS_TOOL=BOS, MU300_USB_LANE_SETTLE='0',
                       MU300_USB_LANE_WAIT=self.stubs/'sleep',

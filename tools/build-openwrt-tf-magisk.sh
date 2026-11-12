@@ -166,6 +166,7 @@ for f in ./lib/netifd/proto/mu300cell.sh ./lib/netifd/proto/mu300cell-v6.sh \
     ./usr/libexec/unisoc-modem/device-usb \
     ./etc/hotplug.d/net/90-unisoc-usb-host \
     ./etc/hotplug.d/iface/90-unisoc-usb-host \
+    ./etc/hotplug.d/udc/90-unisoc-usb-gadget \
     ./usr/lib/lua/luci/i18n/mu300.en.lmo ./usr/lib/lua/luci/i18n/mu300.tr.lmo \
     ./usr/lib/lua/luci/i18n/base.zh-cn.lmo ./usr/lib/lua/luci/i18n/firewall.zh-cn.lmo ./usr/lib/lua/luci/i18n/package-manager.zh-cn.lmo \
     ./usr/libexec/unisoc-modem/network-performance ./usr/libexec/unisoc-modem/network-performance.uc \

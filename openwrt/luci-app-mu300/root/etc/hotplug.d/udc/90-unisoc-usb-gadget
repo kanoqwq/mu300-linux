@@ -1,0 +1,5 @@
+#!/bin/sh
+# Bind prepared descriptors only when the requested device controller is ready.
+[ "$ACTION" = add ] || exit 0
+[ -x /usr/libexec/unisoc-modem/device-usb ] || exit 0
+/usr/libexec/unisoc-modem/device-usb gadget-bind
