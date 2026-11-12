@@ -1,10 +1,13 @@
 # UMS9620 USB3 角色与方向同步方案
 
 状态：方向/角色同步可在插拔后双面达到 5000 Mbps，带坞启动仍会降至480。
-第八版 TCA 数据门控试验已因失败撤回，当前设备运行 #96。
+第八版 TCA 数据门控试验已因失败撤回，当前设备运行 #99、原坞带外供。
 原坞撤外供后两次启动均 5000；恢复外供后的新候选两次启动仍 480。
 电池 self-powered 声明已生效，但没有解决带外供启动降速；保留失败现场。
 本文件不代表 USB3 问题已经修复。
+最新收敛：#97/#98 的“角色冲突转硬复位”策略未通过，源码已撤掉其启用；
+接收生命周期隔离对照已恢复正常 host/sink，但网口仍 480；
+新发现跨 PHY 初始化丢失角色交接标记，正在构建修正，尚未部署。
 范围：MU300/F50/U30 Air 的 UMS9620 主线内核适配；不直接套用 Pro/E5。
 
 ## 目标
@@ -643,3 +646,126 @@ Data role mismatch，之后重新协商成功，并由扩展坞请求 DR_SWAP，
 本轮未解决带外供启动降速，不增加额外刷写或重启；当前 #96 失败现场
 和临时网线管理保留。证据为私有 battery-backed-pd-{first,second}-boot.txt
 及 second-settled.txt。电脑一直保留 CUDY_TR3000 联网，不切设备热点。
+
+### 后续：原厂 PD 数据角色冲突恢复差异
+
+已提交阶段检查点 4b902ba0（签名有效），并继续核对本机 B04 原厂驱动。
+原厂 GPL `drivers/usb/typec/tcpm/sprd_tcpm.c` 的 RX handler 对相同数据角色
+的协议错误调用 `sprd_hard_reset_state(port)`；主线 6.18/7.2 则直接进入
+ERROR_RECOVERY。UMP9620 的 set_cc(OPEN) 为原厂空操作，因此后者记录
+“请求 CC_OPEN”并不证明实际触发了 CC 断开。#96 的两次启动都有此类
+有效 PD 消息触发的角色冲突，随后再次协商与数据角色切换。
+
+下一候选恢复原厂的**错误触发**、有次数上限的 PD 恢复路径：给 tcpc_dev
+新增默认关闭的选择位，仅本就限定电池板的 UMP9620 驱动置位；其他 TCPC
+仍走原主线 ERROR_RECOVERY。调用主线既有 hard_reset_state，不强制写
+HARD_RESET_SEND、不清重试计数，不忽略冲突消息、不更改正常角色切换、
+PDO/限流或默认 USB 模式。通过 install.py 同步进入两版内核的实际 TCPM。
+这是对已观察协议恢复差异的候选，不代表其与 SS 缺失的因果已经实机验证。
+
+本轮还有一次诊断操作失误，必须与 USB3 故障分开：全表读取各 debugfs
+regmap/registers 触发 MMIO external abort，内核 panic 后自动重启。pstore
+明确指向 regmap_mmio_read32le -> regmap_read_debugfs；私有证据
+regmap-read-reboot-pstore.txt。不是一次获授权的正常带坞测试，也不能计入
+候选重启验收。设备自动恢复 #96 后蜂窝/管理恢复、网口仍 480。禁止再
+遍历读取 regmap 全表，grep 过滤输出也无法阻止底层对未知 MMIO 的访问。
+后续只使用已验证、限定地址且具备安全访问条件的读取；当前先做离线检查。
+
+### 数据角色冲突恢复候选 #97：未通过并已恢复
+
+6.18/7.2 TCPM、PD、PHY、DWC3 对象编译及回归通过；完整 #97 镜像与
+202 个模块的校验通过。用户明确授权写入及两次带外供正常重启。首次
+boot_id=f2225b5e-e656-418a-a534-46ea13cc74fd，完整 OpenWrt、蜂窝与
+热点已启动，但没有切到 host，扩展坞网线不通；用户改为直连电脑后
+USB NCM/SSH 恢复。不能把管理连接缺失解释成整机没有开机。
+
+日志显示角色冲突确实选择 PD hard-reset；两次发送都没有 TX completion，
+约 100ms 后状态机继续。第一轮重置期间仍有旧 SourceCaps 被送到 TCPM，
+打断 SNK_HARD_RESET_SINK_OFF 并再次触发恢复；耗尽既有计数后进入
+SNK_READY，但没有重新协商成 host/sink。此候选没有通过，未做第二次
+同候选带坞验收，也不声称简单照搬原厂状态跳转即可解决 USB3。
+
+捕获失败日志后，仅恢复这一候选相对 #96 的 boot/模块差异，保留方向、
+有效状态与电池能力修正。boot 前 48 MiB 恢复回读 d0fb2c681224128686e5ce73fc3047a5c8d5fdcb537557d1a915b00b2b38fb0d，
+原 #96 模块目录 202 项哈希逐一核验；#97 模块留在 usb3-stock-role-error-rejected。
+本轮剩余一次正常重启用于恢复核对（直连电脑，不冒充带坞验收），已确认
+#96，boot_id=7b2ad7ed-213c-46e5-a2ed-b27a82c5d876，NCM/SSH、蜂窝
+IPv4/IPv6、热点正常。完整证据在 stock-role-error-first-boot-direct-usb.txt、
+restore-after-stock-role-error.txt、restored-after-stock-role-error-boot.txt。
+
+### 补齐原厂接收关闭／FIFO 与消息 ID 生命周期（待实机）
+
+原厂 sc27xx_pd_set_rx 会先调用 reset(false)，控制 PKG_RV 中断及接收，
+reset 按 RX flush -> TX flush -> RX ID clear 顺序；原厂发送／收到硬复位
+还会 reset(true)，初始化也清 TX ID。当前主线适配的 set_rx 只切控制位，
+收包中断始终开启；发送硬复位只写 HARD_RESET，遗漏原厂清理。
+
+补齐上述已有硬件操作，并在 pd->lock 下串行接收门控、FIFO 操作和 IRQ：
+关闭/重新启用接收先屏蔽 PKG_RV；成功启用才发布 rx_enabled。发送硬复位
+前停止普通收包，清 FIFO/ID，再发出 strobe；不伪造 TX completion。关闭
+接收或同次 IRQ 已收到硬复位时不再把残留帧上送 TCPM。普通 SOP 发送
+保持原接收通路与 RX ID，不把正常通信当复位处理，不更改电源/角色策略。
+
+新增实际 C 函数回归覆盖寄存器次序、生产者关闭、失败不激活/不发出复位、
+普通 SOP 不清 RX，既有 IRQ 用例增加关闭接收及硬复位尾部帧隔离。
+日志 20261112-131528-usb3-stock-pd-reset-tests-58800 全部通过，两版
+对象编译日志 20261112-131507-usb3-stock-pd-reset-check-58778 通过。
+完整候选正在构建，尚未部署。#97 的失败和新生命周期遗漏应分开报告；
+不能预告这版一定恢复 SuperSpeed，也不能将之前的授权重复用于下一版刷写。
+
+### #98 生命周期补齐实测与隔离对照
+
+用户授权 #98 新候选首轮带外供重启，只有首次正常枚举才再重启一次。
+boot 前 48 MiB 回读为
+9563aff64957785e56e83832fede0afbb2de31c4e0a16f3355834a3922be9ba2；
+Image/模块 204 个清单项核验通过。首次 boot_id 为
+00a49c65-1c63-4d9f-a7f2-8918b5cccf07，仍未转 host，网线无管理连接。
+用户直连电脑后确认完整系统、USB NCM、蜂窝 IPv4/IPv6、热点正常。
+原坞首轮未正常枚举，因此没有执行条件中的第二次重启。
+
+日志证明接收门控修正已生效：第一轮 SNK_HARD_RESET_SINK_OFF 完整等待
+650ms，没有再被旧 SourceCaps 提前打断；但随后收到的 SourceCaps 仍是
+远端 UFP，与本端 device 冲突，发送硬复位也仍无 TX completion。最终
+没有协商成 host/sink。这是“接收生命周期问题已改善，但强制选择原厂
+硬复位恢复仍未通过”的结果，不能把两者一并发布为 USB3 修复。
+证据 stock-pd-reset-first-boot-direct-usb.txt。
+
+已撤掉 UMP9620 对硬复位恢复策略的启用，并通过受版本管理的安装入口，
+明确移除已准备内核树中的试验分支、前向声明和 tcpc_dev 字段。新源码
+以及两版已准备树的 TCPM 都恢复原主线策略；全新源码不加这些字段。
+清理函数保留显式试验应用/移除的离线回归入口，正常构建固定 enable=False，
+不选择另一个旧驱动、不更改原 PHY、角色或供电路径。
+
+下一候选只把已确认遗漏的接收/FIFO/ID 生命周期与 #96 做单独对照。
+两版对象检查 20261112-132817-usb3-rx-lifecycle-only-check-58871 通过，
+回归 20261112-132913-usb3-rx-lifecycle-only-tests-58899 通过。完整镜像
+构建中；当前设备仍 #98，不因本地代码撤掉策略就声称机器已恢复该项。
+
+### #99 隔离结果及 PHY 初始化前后的角色交接遗漏
+
+按用户新授权刷入仅接收生命周期修正，boot 前 48 MiB 回读为
+79687c85f4811c3c819080feece9132274827a55aac798ff99c95012e57eed21，
+202 个模块与 Image 清单均核验。直连电脑正常重启为 #99，boot_id 为
+30b58686-5675-4c8d-8f6e-f8f87c78ebf6，UDC configured/high-speed、
+NCM/SSH、蜂窝 IPv4/IPv6、Wi-Fi 正常。早期抓取时 netifd 尚未创建 WAN，
+随后稳定抓取已确认 up；不把早期 Not found 当成网络缺陷。
+
+用户接回原外供坞后 host/sink 与充电/Full 状态正常，网口管理恢复，
+但只有 480 的 USB2 hub/RTL8153，没有 SS hub。证据
+rx-lifecycle-only-{first-pc-boot,pc-settled,dock-hotplug}.txt。
+热插未达到 USB3 目标，没有使用条件性的第二次带坞重启。
+
+继续核对调用链发现，本轮引入的完整 host resume 存在状态交接遗漏：
+set_vbus(host) 在 PHY 未初始化时先把 is_host 设成 true；phy_init 随后
+按 host 配好寄存器；最后一次 set_vbus(host) 因 is_host 已 true，判断
+role_changed=false。保留 controller-sync 的无操作检查于是可能跳过
+本该针对真实 device->host 转换完成的 mux 交接。不能把 init 写出的
+匹配静态值当成“旧角色已完成交接”的证据。
+
+新增 role_sync_pending，仅记录尚未完成的角色转换，跨 init 保留，
+实际同步成功才清除；出错留给现有明确重试路径。同角色、同方向且
+没有待交接状态仍使用原无操作检查，不增加轮询、定时器或电源动作。
+真实 C 函数回归新增“PHY 关闭时记录 host -> 初始化 -> host”时序、
+同步失败保留标记与成功后不再强制交接；两版对象编译通过。
+完整候选构建日志 20261112-134108-usb3-pending-role-candidate-59030，
+尚未实机验证。PD 采用原主线策略，失败的角色冲突硬复位策略继续关闭。

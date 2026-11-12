@@ -8,5 +8,6 @@ for version in 6.18.54 7.2.8; do
     test -f "$objects/.config"
     python3 /work/port/install.py "$source_dir"
     make -C "$source_dir" O="$objects" ARCH=arm64 -j4 \
-        drivers/usb/phy/phy-sprd-ums9620-ssphy.o drivers/usb/dwc3/core.o drivers/usb/typec/tcpm/sc27xx-ump9620.o
+        drivers/usb/phy/phy-sprd-ums9620-ssphy.o drivers/usb/dwc3/core.o \
+        drivers/usb/typec/tcpm/sc27xx-ump9620.o drivers/usb/typec/tcpm/tcpm.o
 done

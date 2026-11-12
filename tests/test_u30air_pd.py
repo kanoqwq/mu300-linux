@@ -163,7 +163,7 @@ typedef uint32_t u32;typedef uint16_t u16;typedef int irqreturn_t;
         model=r"""
 enum tcpm_transmit_status {TCPC_TX_SUCCESS,TCPC_TX_FAILED};
 struct pd_message {u16 header;u32 payload[7];};
-struct sc27xx_pd {void *regmap,*port,*dev;u32 base,typec_base;int lock;bool tx_pending,tx_sop,pd_capable;};
+struct sc27xx_pd {void *regmap,*port,*dev;u32 base,typec_base;int lock;bool tx_pending,tx_sop,pd_capable,rx_enabled;};
 static u32 fifo[24],flags;static int at,held,flushes,messages,completions,hard_resets,read_error;
 static int empty_reads,stay_empty,status_reads,fail_at=-1,warnings,contract_notifications;static struct pd_message received;
 static void mutex_lock(int *p){(void)p;assert(!held);held=1;}
@@ -184,6 +184,7 @@ static int regmap_read(void *map,u32 reg,u32 *value){
  if(++attempt>40){result=-ETIMEDOUT;break;}}while(1);result;})
 static int regmap_write(void *map,u32 reg,u32 value){(void)map;(void)value;assert(held&&reg==SC27XX_INT_CLR);return 0;}
 static int regmap_write_bits(void *map,u32 reg,u32 mask,u32 value){(void)map;assert(held&&reg==SC27XX_PD_CTRL);if(mask&SC27XX_PD_RX_FLASH){assert(value&SC27XX_PD_RX_FLASH);flushes++;}return 0;}
+static int pd_update(struct sc27xx_pd *pd,u32 reg,u32 mask,u32 value){(void)pd;assert(held&&reg==SC27XX_PD_MESG_ID_CFG&&mask==SC27XX_PD_MESS_ID_MASK&&!value);return 0;}
 static int cc_update(struct sc27xx_pd *pd,u32 reg,u32 mask,u32 value){(void)pd;assert(held&&reg==SC27XX_TYPEC_PD_CFG&&mask==SC27XX_TYPEC_PD_CONSTRACT&&value==mask);contract_notifications++;return 0;}
 static void tcpm_pd_receive(void *port,const struct pd_message *msg,int sop){(void)port;assert(sop==TCPC_TX_SOP);received=*msg;messages++;}
 static void tcpm_pd_transmit_complete(void *port,enum tcpm_transmit_status status){(void)port;(void)status;completions++;}
@@ -191,7 +192,7 @@ static void tcpm_pd_hard_reset(void *port){(void)port;hard_resets++;}
 """
         after=r"""
 int main(void){
- struct sc27xx_pd pd={0};
+ struct sc27xx_pd pd={.rx_enabled=true};
  empty_reads=2;flags=SC27XX_PD_PKG_RV_FLAG;fifo[0]=0x1161;fifo[1]=0x90c8;fifo[2]=0x2601;fifo[3]=0xc0d8;fifo[4]=0xb104;
  sc27xx_pd_irq(1,&pd);assert(messages==1&&at==3&&flushes==1&&received.header==0x1161&&received.payload[0]==0x260190c8&&!held&&status_reads==4);
  at=0;fifo[0]=PD_CTRL_GOOD_CRC;flags|=SC27XX_PD_TX_OK_FLAG;pd.tx_pending=true;pd.tx_sop=true;
@@ -220,13 +221,19 @@ int main(void){
  assert(completions==old_completions+1&&contract_notifications==old_contracts+1&&!pd.tx_pending&&!held);
  sc27xx_pd_irq(1,&pd);
  assert(completions==old_completions+1&&contract_notifications==old_contracts+1);
+ /* RX-disabled and hard-reset trailer IRQs cannot reach TCPM as frames. */
+ pd.rx_enabled=false;at=0;flags=SC27XX_PD_PKG_RV_FLAG;
+ int old_messages=messages,old_flushes=flushes;
+ sc27xx_pd_irq(1,&pd);assert(!at&&messages==old_messages&&flushes==old_flushes+1);
+ pd.rx_enabled=true;flags|=SC27XX_PD_HARD_RST_FLAG;
+ sc27xx_pd_irq(1,&pd);assert(!at&&messages==old_messages&&hard_resets==2);
 
  return 0;
 }
 """
         with tempfile.TemporaryDirectory() as d:
             source=Path(d)/'receive.c';binary=Path(d)/'receive'
-            source.write_text(before+regs+model+function(text,'sc27xx_complete_tx')+function(text,'sc27xx_receive')+function(text,'sc27xx_pd_irq')+after)
+            source.write_text(before+regs+model+function(text,'sc27xx_reset_fifos')+function(text,'sc27xx_complete_tx')+function(text,'sc27xx_receive')+function(text,'sc27xx_pd_irq')+after)
             result=subprocess.run(['cc','-Wall','-Wextra','-Werror','-Wno-unused-parameter',str(source),'-o',str(binary)],capture_output=True,text=True)
             self.assertEqual(result.returncode,0,result.stderr)
             subprocess.run([str(binary)],check=True)

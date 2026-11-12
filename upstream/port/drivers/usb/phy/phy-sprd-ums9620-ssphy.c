@@ -32,6 +32,7 @@
 
 struct sprd_ssphy {
 	bool orientation_error;
+	bool role_sync_pending;
 	struct device		*dev;
 	struct usb_phy		phy;
 	void __iomem		*base;
@@ -248,7 +249,7 @@ bool ums9620_ssphy_orientation_changed(struct usb_phy *x)
 		 0x18 : 0x14));
 	status = readl(phy->base + 0x34);
 	role = phy->is_host ? 0 : UMS9620_TCA_DEVICE_ROLE;
-	return phy->orientation_error ||
+	return phy->orientation_error || phy->role_sync_pending ||
 		(gcfg & UMS9620_TCA_DEVICE_ROLE) != role ||
 		(direction & (BIT(3) | BIT(2))) != flip ||
 		(status & (BIT(3) | BIT(2))) != flip;
@@ -347,6 +348,11 @@ static int sprd_ssphy_set_vbus(struct usb_phy *x, int on)
 		}
 		phy->is_host = false;
 	}
+	/* A role update can precede init. Preserve that transition until the
+	 * live mux has been synchronized; phy_init setting matching register
+	 * values is not evidence that the old data-role handoff took place.
+	 */
+	phy->role_sync_pending |= was_host != phy->is_host;
 
 	if (phy->bc12_enabled) {
 		if (was_host != phy->is_host)
@@ -356,8 +362,11 @@ static int sprd_ssphy_set_vbus(struct usb_phy *x, int on)
 	/* DWC3 has stopped the previous link. Synchronize PHY data role and
 	 * direction before the next link starts; never change VBUS policy here.
 	 */
-	if (!ret && atomic_read(&phy->inited))
-		ret = sprd_ssphy_sync_orientation(phy, was_host != phy->is_host);
+	if (!ret && atomic_read(&phy->inited)) {
+		ret = sprd_ssphy_sync_orientation(phy, phy->role_sync_pending);
+		if (!ret)
+			phy->role_sync_pending = false;
+	}
 	return ret;
 }
 

@@ -46,7 +46,7 @@ struct sc27xx_pd {
 	int irq, cc_irq;
 	enum typec_role power_role;
 	bool attached, pd_capable;
-	bool vbus_on, tx_pending, tx_sop, stopping, irqs_enabled;
+	bool vbus_on, tx_pending, tx_sop, rx_enabled, stopping, irqs_enabled;
 };
 
 #include "sc27xx-ump9620-calibration.h"
@@ -230,17 +230,65 @@ static int sc27xx_set_roles(struct tcpc_dev *tcpc, bool attached,
 	return ret;
 }
 
+/* Caller holds pd->lock. Match the stock reset order; these are strobes. */
+static int sc27xx_reset_fifos(struct sc27xx_pd *pd, bool clear_tx_id)
+{
+	int ret;
+
+	ret = regmap_write_bits(pd->regmap, pd->base + SC27XX_PD_CTRL,
+		SC27XX_PD_RX_FLASH, SC27XX_PD_RX_FLASH);
+	if (ret)
+		return ret;
+	ret = regmap_write_bits(pd->regmap, pd->base + SC27XX_PD_CTRL,
+		SC27XX_PD_TX_FLASH, SC27XX_PD_TX_FLASH);
+	if (ret)
+		return ret;
+	ret = regmap_write_bits(pd->regmap, pd->base + SC27XX_PD_CTRL,
+		SC27XX_PD_RX_ID_CLR, SC27XX_PD_RX_ID_CLR);
+	if (ret || !clear_tx_id)
+		return ret;
+	return pd_update(pd, SC27XX_PD_MESG_ID_CFG, SC27XX_PD_MESS_ID_MASK, 0);
+}
+
 static int sc27xx_set_rx(struct tcpc_dev *tcpc, bool on)
 {
 	struct sc27xx_pd *pd = to_pd(tcpc);
 	int ret;
 
-	ret = pd_update(pd, SC27XX_PD_CFG1, SC27XX_PD_EN_SOP_RX | SC27XX_PD_RX_AUTO_GOOD_CRC,
-		on ? SC27XX_PD_EN_SOP_RX | SC27XX_PD_RX_AUTO_GOOD_CRC : 0);
+	mutex_lock(&pd->lock);
+	pd->rx_enabled = false;
+	/* Stop the producer before clearing old frames. Disabling only CTL_EN
+	 * leaves a pending PKG_RV interrupt able to queue a stale PD message.
+	 */
+	ret = pd_update(pd, SC27XX_INT_EN, SC27XX_PD_PKG_RV_FLAG, 0);
 	if (ret)
-		return ret;
-	return pd_update(pd, SC27XX_PD_CFG0, SC27XX_PD_CTL_EN | SC27XX_PD_EN_SOP,
-		on ? SC27XX_PD_CTL_EN | SC27XX_PD_EN_SOP : 0);
+		goto out;
+	ret = pd_update(pd, SC27XX_PD_CFG0, SC27XX_PD_CTL_EN | SC27XX_PD_EN_SOP, 0);
+	if (ret)
+		goto out;
+	ret = pd_update(pd, SC27XX_PD_CFG1, SC27XX_PD_EN_SOP_RX | SC27XX_PD_RX_AUTO_GOOD_CRC, 0);
+	if (ret)
+		goto out;
+	ret = sc27xx_reset_fifos(pd, false);
+	if (ret)
+		goto out;
+	pd->tx_pending = false;
+	if (!on)
+		goto out;
+	ret = pd_update(pd, SC27XX_PD_CFG1, SC27XX_PD_EN_SOP_RX | SC27XX_PD_RX_AUTO_GOOD_CRC,
+		SC27XX_PD_EN_SOP_RX | SC27XX_PD_RX_AUTO_GOOD_CRC);
+	if (ret)
+		goto out;
+	ret = pd_update(pd, SC27XX_PD_CFG0, SC27XX_PD_CTL_EN | SC27XX_PD_EN_SOP,
+		SC27XX_PD_CTL_EN | SC27XX_PD_EN_SOP);
+	if (ret)
+		goto out;
+	ret = pd_update(pd, SC27XX_INT_EN, SC27XX_PD_PKG_RV_FLAG, SC27XX_PD_PKG_RV_FLAG);
+	if (!ret)
+		pd->rx_enabled = true;
+out:
+	mutex_unlock(&pd->lock);
+	return ret;
 }
 
 static int sc27xx_transmit(struct tcpc_dev *tcpc, enum tcpm_transmit_type type,
@@ -263,6 +311,21 @@ static int sc27xx_transmit(struct tcpc_dev *tcpc, enum tcpm_transmit_type type,
 	if (ret)
 		goto out;
 	if (type == TCPC_TX_HARD_RESET) {
+		/* A hard reset has no GoodCRC exchange. Stop ordinary RX now,
+		 * before TCPM waits for TX completion, so old SourceCaps cannot
+		 * queue another recovery halfway through this reset.
+		 */
+		pd->rx_enabled = false;
+		ret = pd_update(pd, SC27XX_INT_EN, SC27XX_PD_PKG_RV_FLAG, 0);
+		if (ret)
+			goto out;
+		ret = pd_update(pd, SC27XX_PD_CFG1,
+			SC27XX_PD_EN_SOP_RX | SC27XX_PD_RX_AUTO_GOOD_CRC, 0);
+		if (ret)
+			goto out;
+		ret = sc27xx_reset_fifos(pd, true);
+		if (ret)
+			goto out;
 		ret = regmap_write_bits(pd->regmap, pd->base + SC27XX_PD_CTRL,
 			SC27XX_PD_HARD_RESET, SC27XX_PD_HARD_RESET);
 		goto pending;
@@ -369,16 +432,15 @@ static irqreturn_t sc27xx_pd_irq(int irq, void *data)
 	regmap_write(pd->regmap, pd->base + SC27XX_INT_CLR, flags & SC27XX_INT_CLR_MASK);
 	if (flags & SC27XX_PD_HARD_RST_FLAG) {
 		pd->tx_pending = false;
-		regmap_write_bits(pd->regmap, pd->base + SC27XX_PD_CTRL,
-			SC27XX_PD_RX_FLASH | SC27XX_PD_RX_ID_CLR,
-			SC27XX_PD_RX_FLASH | SC27XX_PD_RX_ID_CLR);
+		ret = sc27xx_reset_fifos(pd, true);
 		tcpm_pd_hard_reset(pd->port);
 	}
-	if (flags & SC27XX_PD_PKG_RV_FLAG) {
+	if (!ret && (flags & SC27XX_PD_PKG_RV_FLAG)) {
 		/* The FIFO holds one received frame plus controller trailer words.
 		 * They are not another PD header. Match the vendor receive/flush
 		 * sequence instead of passing those words to TCPM as messages. */
-		ret = sc27xx_receive(pd);
+		if (pd->rx_enabled && !(flags & SC27XX_PD_HARD_RST_FLAG))
+			ret = sc27xx_receive(pd);
 		if (!ret)
 			ret = regmap_write_bits(pd->regmap, pd->base + SC27XX_PD_CTRL,
 				SC27XX_PD_RX_FLASH, SC27XX_PD_RX_FLASH);
@@ -428,9 +490,8 @@ static int sc27xx_vbus_event(struct notifier_block *nb, unsigned long event, voi
 	return NOTIFY_OK;
 }
 
-static int sc27xx_init(struct tcpc_dev *tcpc)
+static int sc27xx_hw_init(struct sc27xx_pd *pd)
 {
-	struct sc27xx_pd *pd = to_pd(tcpc);
 	int ret;
 
 	ret = sc27xx_pd_set_aon_clock(pd, true);
@@ -461,11 +522,28 @@ static int sc27xx_init(struct tcpc_dev *tcpc)
 	ret = pd_update(pd, SC27XX_PD_CFG0, SC27XX_PD_BIST_MODE_EN, SC27XX_PD_BIST_MODE_EN);
 	if (ret)
 		return ret;
+	ret = sc27xx_reset_fifos(pd, true);
+	if (ret)
+		return ret;
 	regmap_write(pd->regmap, pd->base + SC27XX_INT_CLR, SC27XX_INT_CLR_MASK);
-	ret = regmap_write(pd->regmap, pd->base + SC27XX_INT_EN, SC27XX_INT_EN_MASK);
+	ret = regmap_write(pd->regmap, pd->base + SC27XX_INT_EN,
+		SC27XX_INT_EN_MASK & ~SC27XX_PD_PKG_RV_FLAG);
 	if (ret)
 		return ret;
 	return cc_update(pd, 0x0c, BIT(0) | BIT(1), BIT(0) | BIT(1));
+}
+
+static int sc27xx_init(struct tcpc_dev *tcpc)
+{
+	struct sc27xx_pd *pd = to_pd(tcpc);
+	int ret;
+
+	mutex_lock(&pd->lock);
+	pd->rx_enabled = false;
+	pd->tx_pending = false;
+	ret = sc27xx_hw_init(pd);
+	mutex_unlock(&pd->lock);
+	return ret;
 }
 
 static void sc27xx_cleanup(void *data)
