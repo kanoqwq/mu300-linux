@@ -30,6 +30,33 @@
 #include <dt-bindings/soc/sprd,qogirn6pro-mask.h>
 #include <dt-bindings/soc/sprd,qogirn6pro-regs.h>
 
+/* Manual diagnostic selector, not an attach detector. Changing it only stages
+ * a request; the existing DWC3 role worker must stop the link before applying
+ * it. -1 preserves the stock AON source. Never alter CC or VBUS here.
+ */
+static int tca_flip_override = -1;
+
+static int sprd_ssphy_set_flip_override(const char *value,
+				      const struct kernel_param *param)
+{
+	int selected, ret = kstrtoint(value, 0, &selected);
+
+	if (ret)
+		return ret;
+	if (selected < -1 || selected > 1)
+		return -EINVAL;
+	WRITE_ONCE(*(int *)param->arg, selected);
+	return 0;
+}
+
+static const struct kernel_param_ops sprd_ssphy_flip_ops = {
+	.set = sprd_ssphy_set_flip_override,
+	.get = param_get_int,
+};
+module_param_cb(tca_flip_override, &sprd_ssphy_flip_ops, &tca_flip_override, 0600);
+MODULE_PARM_DESC(tca_flip_override,
+	"Diagnostic only: -1=AON, 0=flip bit clear, 1=flip bit set; reapply the existing USB role to commit safely");
+
 struct sprd_ssphy {
 	bool orientation_error;
 	bool role_sync_pending;
@@ -242,7 +269,7 @@ bool ums9620_ssphy_orientation_changed(struct usb_phy *x)
 		return false;
 	if (regmap_read(phy->aon_apb, REG_AON_APB_BOOT_MODE, &boot))
 		return false;
-	flip = boot & BIT(10) ? 0 : BIT(2);
+	flip = sprd_ssphy_tca_flip(boot);
 	gcfg = readl(phy->base + 0x10);
 	direction = readl(phy->base +
 		((gcfg & UMS9620_TCA_OP_MODE_MASK) == UMS9620_TCA_OP_MODE_SYSTEM ?
@@ -416,6 +443,7 @@ static int sprd_ssphy_init(struct usb_phy *x)
 	u32	reg, msk;
 	int	ret = 0;
 	int timeout;
+	bool sram_ready = false, tca_ready = false;
 
 	if (atomic_read(&phy->inited)) {
 		dev_info(x->dev, "%s is already inited!\n", __func__);
@@ -514,6 +542,7 @@ static int sprd_ssphy_init(struct usb_phy *x)
 	while (1) {
 		ret |= regmap_read(phy->ipa_usb31_dp, PHY_SRAM_INIT_CHECK_DONE, &reg);
 		if ((reg & BIT(2)) == BIT(2)) {
+			sram_ready = true;
 			break;
 		} else {
 			msleep(1);
@@ -574,7 +603,7 @@ static int sprd_ssphy_init(struct usb_phy *x)
 	/* remove usbonly,add combophy for dp/usb */
 	ret |= regmap_read(phy->aon_apb, REG_AON_APB_BOOT_MODE, &reg);
 	msk = readl_relaxed(phy->base + 0x14);
-	if ((reg & BIT(10))) {
+	if (!sprd_ssphy_tca_flip(reg)) {
 		msk &= ~(BIT(2) | BIT(3));
 		msk |= BIT(0) | BIT(1) | BIT(4);
 	} else {
@@ -584,7 +613,7 @@ static int sprd_ssphy_init(struct usb_phy *x)
 	writel_relaxed(msk, phy->base + 0x14);
 
 	msk = readl_relaxed(phy->base + 0x18);
-	if (reg & BIT(10))
+	if (!sprd_ssphy_tca_flip(reg))
 		msk &= ~BIT(2);
 	else
 		msk |= BIT(2);
@@ -596,6 +625,7 @@ static int sprd_ssphy_init(struct usb_phy *x)
 	while (1) {
 		reg = readl_relaxed(phy->base + 0x08);
 		if ((reg & BIT(0)) == BIT(0) || (reg & BIT(1)) == BIT(1)) {
+			tca_ready = (reg & BIT(0)) && !(reg & BIT(1));
 			msk = 0xffff;
 			writel_relaxed(msk, phy->base + 0x08);
 			break;
@@ -617,6 +647,11 @@ static int sprd_ssphy_init(struct usb_phy *x)
 	}
 
 	atomic_set(&phy->inited, 1);
+	/* Only a completed SRAM init and an ACK (not a TCA timeout event)
+	 * establish a fresh handoff. Failed init retains the pending state.
+	 */
+	if (!ret && sram_ready && tca_ready)
+		ret = sprd_ssphy_finish_tca_init(phy);
 	ret |= sprd_ssphy_restore_data_state(phy);
 
 	return ret;

@@ -4,3 +4,8 @@
 [ "$ACTION" = add ] || exit 0
 [ -x /usr/libexec/unisoc-modem/device-usb ] || exit 0
 /usr/libexec/unisoc-modem/device-usb net-sync >/dev/null 2>&1
+case $(readlink -f "/sys/class/net/$INTERFACE/device/subsystem" 2>/dev/null) in
+    */bus/usb)
+        (/usr/libexec/unisoc-modem/device-usb probe-lanes "$INTERFACE" </dev/null >/dev/null 2>&1) &
+        ;;
+esac

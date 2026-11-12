@@ -4,6 +4,15 @@
 #define UMS9620_TCA_OP_MODE_SYSTEM 0U
 #define UMS9620_TCA_OP_MODE_CONTROLLER 1U
 #define UMS9620_TCA_DEVICE_ROLE BIT(4)
+static u32 sprd_ssphy_tca_flip(u32 boot)
+{
+	int selected = READ_ONCE(tca_flip_override);
+
+	if (selected >= 0)
+		return selected ? BIT(2) : 0;
+	return boot & BIT(10) ? 0 : BIT(2);
+}
+
 static int sprd_ssphy_sync_orientation(struct sprd_ssphy *phy, bool role_changed)
 {
 	u32 boot, mode, status, flip, gcfg, role, active, op_mode;
@@ -12,7 +21,7 @@ static int sprd_ssphy_sync_orientation(struct sprd_ssphy *phy, bool role_changed
 	ret = regmap_read(phy->aon_apb, REG_AON_APB_BOOT_MODE, &boot);
 	if (ret)
 		return ret;
-	flip = boot & BIT(10) ? 0 : BIT(2);
+	flip = sprd_ssphy_tca_flip(boot);
 	role = phy->is_host ? 0 : UMS9620_TCA_DEVICE_ROLE;
 	gcfg = readl(phy->base + 0x10);
 	mode = readl(phy->base + 0x18);
@@ -59,5 +68,24 @@ out:
 	dev_info(phy->dev, "TCA direction: boot=%#x flip=%u output=%#x result=%d role_change=%u host=%u gcfg=%#x->%#x pstate=%#x\n",
 		 boot, !!flip, status, ret, role_changed, phy->is_host,
 		 gcfg, readl(phy->base + 0x10), readl(phy->base + 0x30));
+	return ret;
+}
+
+/* A full PHY reset/init has already performed the role handoff. Verify its
+ * physical output before retiring the old pending flag; otherwise the next
+ * set_vbus() unnecessarily disables a freshly initialized controller-sync
+ * link and replaces the stock operating mode with system mode.
+ * This helper is not for an ordinary live role change.
+ */
+static int sprd_ssphy_finish_tca_init(struct sprd_ssphy *phy)
+{
+	int ret;
+
+	phy->orientation_error = false;
+	ret = sprd_ssphy_sync_orientation(phy, false);
+	if (ret)
+		phy->orientation_error = true;
+	else
+		phy->role_sync_pending = false;
 	return ret;
 }

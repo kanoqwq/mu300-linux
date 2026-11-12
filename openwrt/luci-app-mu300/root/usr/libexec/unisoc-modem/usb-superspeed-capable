@@ -1,0 +1,25 @@
+#!/usr/bin/ucode
+// Read the kernel's cached BOS; no control transfers or device writes.
+import { readfile } from 'fs';
+if (length(ARGV) != 1)
+	exit(1);
+let data = readfile(ARGV[0]);
+if (!data || length(data) < 5 || ord(data, 0) != 5 || ord(data, 1) != 15)
+	exit(1);
+let total = ord(data, 2) | (ord(data, 3) << 8);
+if (total != length(data))
+	exit(1);
+let superspeed = false, count = 0;
+for (let offset = 5; offset < total; ) {
+	let size = ord(data, offset);
+	if (size < 3 || offset + size > total || ord(data, offset + 1) != 16)
+		exit(1);
+	if (ord(data, offset + 2) == 3) {
+		if (size < 10)
+			exit(1);
+		superspeed = !!((ord(data, offset + 4) | (ord(data, offset + 5) << 8)) & 8);
+	}
+	count++;
+	offset += size;
+}
+exit(superspeed && count == ord(data, 4) ? 0 : 1);

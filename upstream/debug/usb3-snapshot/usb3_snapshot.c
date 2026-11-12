@@ -3,13 +3,19 @@
 #include <linux/module.h>
 #include <linux/io.h>
 #include <linux/of_address.h>
+#include <linux/mfd/syscon.h>
+#include <linux/regmap.h>
 #include <linux/debugfs.h>
 #include <linux/seq_file.h>
 static void __iomem *base;
 static struct dentry *dir;
+static struct regmap *aon;
 static int snapshot_show(struct seq_file *s, void *unused)
 {
  unsigned int off;
+ int ret = regmap_read(aon, 0x2c, &off);
+ if (ret) return ret;
+ seq_printf(s, "AON_BOOT_MODE: %08x\n", off);
  for (off = 0; off <= 0x34; off += 4)
   seq_printf(s, "%02x: %08x\n", off, readl(base + off));
  return 0;
@@ -24,6 +30,10 @@ static int __init snapshot_init(void)
  if (!np) return -ENODEV;
  idx = of_property_match_string(np, "reg-names", "phy_glb_regs");
  ret = idx < 0 ? idx : of_address_to_resource(np, idx, &r);
+ if (!ret) {
+  aon = syscon_regmap_lookup_by_phandle(np, "sprd,syscon-aon-apb");
+  if (IS_ERR(aon)) ret = PTR_ERR(aon);
+ }
  of_node_put(np);
  if (ret) return ret;
  if (resource_size(&r) < 0x38) return -EINVAL;

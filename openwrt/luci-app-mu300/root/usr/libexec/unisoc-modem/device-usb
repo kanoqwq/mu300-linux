@@ -11,12 +11,18 @@ ROLE_FILE=${MU300_USB_ROLE_FILE:-/sys/class/usb_role/25100000.dwc3-role-switch/r
 BOOT_FILE=${MU300_USB_BOOT_FILE:-/etc/unisoc-modem/usb-boot.conf}
 NET_CLASS=${MU300_USB_NET_CLASS:-/sys/class/net}
 USB_BUS=${MU300_USB_BUS:-/sys/bus/usb/devices}
+BLOCK_CLASS=${MU300_USB_BLOCK_CLASS:-/sys/class/block}
 RESCAN_MARKER=${MU300_USB_RESCAN_MARKER:-/run/unisoc-usb-host-rescan-done}
 GADGET_DIR=${MU300_USB_GADGET_DIR:-/sys/kernel/config/usb_gadget}
 ROLE_STATE=${MU300_USB_ROLE_STATE:-/run/unisoc-usb-role-state}
 NETWORK_SERVICE=${MU300_USB_NETWORK_SERVICE:-/etc/init.d/network}
 IP=${MU300_USB_IP_BIN:-ip}
 NET_LOCK=${MU300_USB_NET_LOCK:-/var/lock/unisoc-usb-net.lock}
+ROLE_LOCK=${MU300_USB_ROLE_LOCK:-/var/lock/unisoc-usb-role.lock}
+LANE_PARAM=${MU300_USB_LANE_PARAM:-/sys/module/phy_sprd_ums9620_ssphy/parameters/tca_flip_override}
+LANE_STATE=${MU300_USB_LANE_STATE:-/run/unisoc-usb-lane-probe}
+LANE_BOS_TOOL=${MU300_USB_LANE_BOS_TOOL:-/usr/libexec/unisoc-modem/usb-superspeed-capable}
+LANE_WAIT=${MU300_USB_LANE_WAIT:-sleep}
 get() { uci -q get "$CFG.$1" 2>/dev/null || true; }
 put() { uci -q set "$CFG.$1=$2"; }
 error() { printf '{"ok":0,"error":"%s"}\n' "$1"; exit 1; }
@@ -86,6 +92,167 @@ role_command() {
         [ -w "$ROLE_FILE" ] || error 'USB role switch is unavailable'
         printf '%s\n' "$1" > "$ROLE_FILE" || error 'USB role switch failed'
     fi
+}
+role_lock() {
+    # Serialize only the battery-less raw-role platforms. No extra lock or
+    # power-policy changes for the U30 Air or other platform adapters.
+    role_lock_held=0
+    case $(device_name) in
+        f50|v50) exec 8>"$ROLE_LOCK" && flock 8 && role_lock_held=1 ;;
+        *) return 0 ;;
+    esac
+}
+role_unlock() {
+    if [ "${role_lock_held:-0}" = 1 ]; then
+        flock -u 8 2>/dev/null || true
+        exec 8>&-
+    fi
+}
+lane_release() {
+    # Retire only a choice written by this probe, never a different manual
+    # override. Called before an explicit role change while holding role lock.
+    choice=$(cat "$LANE_STATE" 2>/dev/null)
+    case $choice in
+        0|1) [ "$(cat "$LANE_PARAM" 2>/dev/null)" != "$choice" ] ||
+                printf '%s\n' -1 > "$LANE_PARAM" || return 1 ;;
+    esac
+    rm -f "$LANE_STATE"
+}
+lane_owned() {
+    [ -z "${MU300_USB_ROLE_COMMAND:-$(get role_command)}" ] || return 1
+    [ "$(role_now)" = host ] &&
+        [ "$lane_request" = "$(sed -n '1p' "$ROLE_STATE" 2>/dev/null)" ] || return 1
+    target=$(sed -n '2p' "$ROLE_STATE" 2>/dev/null)
+    [ -z "$target" ] || [ "$target" = host ]
+}
+lane_empty_reader() {
+    # A dock may contain an empty removable-card reader. Permit it only when
+    # all its interfaces are storage and every registered disk has no medium.
+    # Unknown/probing devices and readers with any medium remain excluded.
+    reader=$1
+    reader_seen=0
+    for reader_iface in "$reader"/*:*; do
+        [ -f "$reader_iface/bInterfaceClass" ] || continue
+        [ "$(cat "$reader_iface/bInterfaceClass")" = 08 ] || return 1
+        case $(readlink -f "$reader_iface/driver") in
+            */bus/usb/drivers/usb-storage) ;;
+            *) return 1 ;;
+        esac
+        reader_seen=1
+    done
+    [ "$reader_seen" = 1 ] || return 1
+    reader_seen=0
+    for reader_block in "$BLOCK_CLASS"/*; do
+        reader_real=$(readlink -f "$reader_block/device")
+        case $reader_real in "$reader"/*) ;; *) continue ;; esac
+        [ "$(cat "$reader_block/removable" 2>/dev/null)" = 1 ] &&
+            [ "$(cat "$reader_block/size" 2>/dev/null)" = 0 ] || return 1
+        for reader_holder in "$reader_block"/holders/*; do
+            [ ! -e "$reader_holder" ] || return 1
+        done
+        reader_seen=1
+    done
+    [ "$reader_seen" = 1 ]
+}
+lane_peers_safe() {
+    # Re-enumeration must not interrupt another peripheral (e.g. mounted
+    # storage or USB audio). Hubs and their Billboard function carry no user
+    # data; a proven empty removable reader has no medium to interrupt.
+    # Check again immediately before each controller operation.
+    for entry in "$USB_BUS"/*; do
+        [ -f "$entry/idVendor" ] || continue
+        real=$(readlink -f "$entry")
+        case $real in "$lane_controller"/*) ;; *) continue ;; esac
+        [ "$real" != "$lane_device" ] || continue
+        if [ "$(cat "$entry/devpath" 2>/dev/null)" = "$lane_port" ] &&
+           [ "$(cat "$entry/idVendor" 2>/dev/null)" = "$lane_vid" ] &&
+           [ "$(cat "$entry/idProduct" 2>/dev/null)" = "$lane_pid" ]; then continue; fi
+        case $(cat "$entry/bDeviceClass" 2>/dev/null) in
+            09|11) ;;
+            00|08) lane_empty_reader "$real" || return 1 ;;
+            *) return 1 ;;
+        esac
+    done
+}
+lane_superspeed_present() {
+    for entry in "$USB_BUS"/*; do
+        [ -f "$entry/idVendor" ] || continue
+        real=$(readlink -f "$entry")
+        case $real in "$lane_controller"/*) ;; *) continue ;; esac
+        [ "$(cat "$entry/devpath" 2>/dev/null)" = "$lane_port" ] &&
+            [ "$(cat "$entry/idVendor" 2>/dev/null)" = "$lane_vid" ] &&
+            [ "$(cat "$entry/idProduct" 2>/dev/null)" = "$lane_pid" ] || continue
+        speed=$(cat "$entry/speed" 2>/dev/null)
+        case $speed in ''|*[!0-9]*) continue ;; esac
+        [ "$speed" -lt 5000 ] || return 0
+    done
+    return 1
+}
+lane_cleanup() {
+    # A newer explicit UI request wins. Its apply-role worker holds the same
+    # lock and will run next; do not submit another host request over it.
+    lane_release || true
+    if lane_owned && lane_peers_safe; then role_command host >/dev/null 2>&1 || true; fi
+}
+probe_lanes() {
+    case $(device_name) in f50|v50) ;; *) return 0 ;; esac
+    [ -z "${MU300_USB_ROLE_COMMAND:-$(get role_command)}" ] || return 0
+    [ "$(role_now)" = host ] && [ -w "$LANE_PARAM" ] || return 0
+    usb_net "${1:-}" || return 0
+    # Never queue a second worker behind a running probe or explicit request.
+    exec 8>"$ROLE_LOCK" || return 1
+    flock -n 8 || return 0
+    [ ! -e "$LANE_STATE" ] && [ "$(cat "$LANE_PARAM")" = -1 ] || return 0
+    lane_device=$(readlink -f "$NET_CLASS/$1/device")
+    lane_device=${lane_device%/*}
+    [ "$(cat "$lane_device/speed" 2>/dev/null)" = 480 ] || return 0
+    lane_controller=${MU300_USB_CONTROLLER_ROOT:-$(readlink -f "${ROLE_FILE%/*}/device")}
+    [ -n "$lane_controller" ] || return 0
+    case $lane_device in "$lane_controller"/*) ;; *) return 0 ;; esac
+    # USB 2-only devices must retain normal operation. Require a BOS SS
+    # capability, not a product/vendor allowlist. BOS cannot identify the
+    # cable: an SS device on a USB2 cable may fail both bounded attempts.
+    ucode "$LANE_BOS_TOOL" "$lane_device/bos_descriptors" || return 0
+    lane_request=$(sed -n '1p' "$ROLE_STATE" 2>/dev/null)
+    lane_port=$(cat "$lane_device/devpath")
+    lane_vid=$(cat "$lane_device/idVendor"); lane_pid=$(cat "$lane_device/idProduct")
+    lane_owned && lane_peers_safe || return 0
+    # One finite probe per host session, started by netdev add. There is no
+    # recurring scan, idle timer, daemon, persisted orientation or UCI change.
+    printf '%s\n' pending > "$LANE_STATE" || return 1
+    trap lane_cleanup EXIT
+    for choice in 0 1; do
+        lane_owned && lane_peers_safe || return 0
+        [ "$(cat "$LANE_PARAM")" = -1 ] ||
+            [ "$(cat "$LANE_PARAM")" = "$(cat "$LANE_STATE")" ] || return 0
+        printf '%s\n' "$choice" > "$LANE_STATE"
+        printf '%s\n' "$choice" > "$LANE_PARAM" || return 1
+        role_command host >/dev/null || return 1
+        # A one-shot enumeration deadline, not periodic monitoring. Correct
+        # SuperSpeed devices never enter this path at all.
+        "$LANE_WAIT" "${MU300_USB_LANE_SETTLE:-5}"
+        lane_owned || return 0
+        if lane_superspeed_present; then
+            trap - EXIT
+            logger -t unisoc-usb "USB3 lane $choice confirmed for port $lane_port"
+            return 0
+        fi
+        # The old USB2 object may have been replaced on the same port.
+        for entry in "$USB_BUS"/*; do
+            real=$(readlink -f "$entry")
+            case $real in "$lane_controller"/*) ;; *) continue ;; esac
+            [ "$(cat "$entry/devpath" 2>/dev/null)" = "$lane_port" ] &&
+                [ "$(cat "$entry/idVendor" 2>/dev/null)" = "$lane_vid" ] &&
+                [ "$(cat "$entry/idProduct" 2>/dev/null)" = "$lane_pid" ] || continue
+            lane_device=$real; break
+        done
+    done
+    lane_release || return 1
+    lane_owned && role_command host >/dev/null
+    # Keep an attempted marker, even if the cable has no working SS lanes.
+    printf '%s\n' attempted > "$LANE_STATE"
+    trap - EXIT
+    logger -t unisoc-usb 'USB3 lane probe finished without SuperSpeed; automatic direction restored'
 }
 ensure_section() {
     uci -q get "$CFG" >/dev/null 2>&1 || uci -q set "$CFG=device"
@@ -276,18 +443,25 @@ case ${1:-} in
         request=${3:-}
         case $role in host|device) ;; *) exit 2 ;; esac
         [ -z "$request" ] || [ "$request" = "$(sed -n '1p' "$ROLE_STATE" 2>/dev/null)" ] || exit 0
+        role_lock || exit 1
+        [ -z "$request" ] || [ "$request" = "$(sed -n '1p' "$ROLE_STATE" 2>/dev/null)" ] || exit 0
+        [ "$role" != device ] || lane_release || exit 1
         ! role_apply_needed "$role" || ( role_command "$role" ) || {
             role_result "$role" error '' "$request"
             logger -t unisoc-usb "role switch to $role failed"
             exit 1
         }
         [ "$(role_now)" != "$role" ] || role_result "$role" done '' "$request"
+        role_unlock
         if [ "$role" = host ]; then
             start_host_rescan
             "$0" net-sync >/dev/null 2>&1 || true
         else
             rmdir "$RESCAN_MARKER" 2>/dev/null || true
         fi
+        ;;
+    probe-lanes)
+        probe_lanes "${2:-}"
         ;;
     set-net)
         mode=${2:-}; scope=${3:-}; auto=${4:-}

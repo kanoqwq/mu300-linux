@@ -1,7 +1,9 @@
 # UMS9620 USB3 角色与方向同步方案
 
-状态：方向/角色同步可在插拔后双面达到 5000 Mbps，带坞启动仍会降至480。
-当前设备运行 #100，对应签名提交 de0bbf36。最新实测双面均枚举 5000，
+状态：U30 Air 方向/角色同步可在插拔后双面达到 5000 Mbps，带坞启动仍会降至480。
+U30 Air 最后实机验证运行 #100，对应签名提交 de0bbf36；F50 后续运行
+#106，直连网卡的方向恢复成功，原两级 hub 扩展坞仍为 480，详见文末。
+U30 Air 最后实测双面均枚举 5000，
 主机＋外供及最终直连电脑 NCM/SSH、蜂窝 IPv4/IPv6、热点正常。
 但同一 #100 首次带外供启动为 480，用户随后手动重启到 5000，
 因此不能宣布带外供跨重启的间歇降速已解决，也不能直接断言是坞的缺陷。
@@ -1029,3 +1031,145 @@ boot 前 48 MiB 哈希与原件一致，运行目录的 202 个模块逐项通�
 故障一致，恢复成功不代表原有带坞启动降速问题已解决。
 证据：pd-trial-recovery.txt、pd-trial-recovery-settled.txt、
 pd-trial-recovery-live-modules.txt、pd-trial-recovery-verification.json。
+
+### F50 后续候选：完成初始化后退休旧角色交接标记
+
+在恢复的 #102 现场只读确认：仍为 host，DWC3/xHCI 为 active，SS 根端口
+仍停在 RxDetect；DWC3 GUSB3PIPECTL(0)=0x01001102，DT 保留原厂的
+dis_u2_susphy/dis_u3_susphy 属性。不能将 SS 根总线的 10000 能力值当成
+RTL8153 的实际速率。本轮没有更改电脑 Wi-Fi 或设备配置。
+
+代码审查确认了一个独立的初始化交接问题：set_vbus(host) 在完整 PHY
+恢复前保留 role_sync_pending；随后 phy_init 已按 host 重新配置并交接
+TCA，但 pending 标记没有退休。恢复后的第二次 set_vbus 因此无条件再次
+disable/rearm，将刚建立的 controller-sync 改成 system mode。现有 #102
+日志的 gcfg=0x1->0x0 与这条路径一致。原厂 U30 Air 实机模块和现有
+同平台 GPL 代码均在初始化中保留 controller-sync；本机缓存的 5.4 USB
+模块也采用该方式，但尚未确认该缓存与 F50 当前 Android A 的固件版本
+一致，不能冒充已完成 F50 原厂实测。
+
+候选只在 SRAM 初始化完成且 TCA 收到 ACK、无 timeout event、无 regmap
+错误后，校验当前角色、输入方向和实际输出，再清除旧 pending 标记。
+匹配时不写 TCA，保留 controller-sync；不匹配时沿既有受控同步流程修正；
+校验失败保留 pending/error。普通运行中的角色变化和正反插仍走原交接流程。
+不改变 F50 原厂禁用的 PD 节点、供电策略、默认角色或 USB 最高速率。
+
+离线验证：30 项 USB 管理/U30 Air PD 测试及实际 C helper 回归通过；
+新增覆盖两种角色、两个方向、旧 pending/error、SRAM/ACK 未完成、读失败、
+物理输出不匹配及下一次重复 set_vbus 不再写 TCA。6.18 USB 对象编译通过，
+完整 7.2 Image 与 202 个配套模块编译及清单校验通过；不宣称全量 6.18
+镜像已经重新构建。
+
+构建任务：20261112-175357-f50-fresh-tca-regression-16412、
+20261112-175433-f50-fresh-tca-kernel-16439、
+20261112-175619-f50-fresh-tca-image-16463。
+用本机 #102 备份生成的候选保留 init、ramdisk 元数据、安装参数、命令行、
+48 MiB 后持久日志与末尾 4 KiB；内核/ramdisk 长度及 AVB 位置均未变化。
+源码中的重复交接得到修正，能否解决本坞跨重启 480 仍须实机验证。
+
+本轮实机结果：用户授权后写入候选 #105 的 boot_b 前 48 MiB 和配套模块，
+完整备份 #102，读回哈希及全部模块清单通过；配置及角色适配器哈希不变。
+首次带外供坞启动后，boot_id=822cd6c3-2cc7-4247-a853-a5ba6c488463，
+host、热点及蜂窝 IPv4/IPv6 正常。管理网络在系统启动过程中恢复，未改电脑
+网络配置。临时只读快照确认 GCFG=1、TCPC=3、SYSMODE=3、TC_STATUS=0x103；
+重复交接确实已消除。RTL8153 仍为 480，SS PORTSC 仍为 RxDetect，故不将
+此改动称为带坞启动降速的完整修复。按授权约定没有执行第二次重启。
+快照模块读完立即卸载，未留下后台采样或角色恢复任务。
+
+为避免继续引用错误缓存，又只读提取了本机 Android A 的实际 kernel 和
+vendor_boot_a ramdisk 中 USB 模块。版本为
+5.4.254-android12-9-g9c6342244991，2025-01-20；与机内缓存
+5.4.254-gb50db5b6224c 不同。没有启动/修改 Android 或装载其模块。
+该实际版本确认 GCFG 保持 controller-sync，且 dwc3-sprd 的
+limit_dwc3_max_speed 在 PTN38003A 失败时把 DCFG.speed 改为 4（SuperSpeed）。
+当前主线 DCFG.speed 为 5（SuperSpeedPlus）。这是一处已确认差异，尚未证明
+与 host SS 未连接存在因果关系；DCFG 本身是 gadget 配置，不能直接把它
+描述为已经证实的 xHCI 限速根因。
+
+新增 manual-only usb3-stock-speed 对照工具：默认只读，必须显式 apply=1
+且确认当前为 active host 才能临时改上述三个 speed 位；与 DWC3 role worker
+共用互斥锁并持有 PM 引用，不做 USB reset/角色/供电操作。卸载时仅在仍为
+同一 host、字段仍为本工具值时恢复原 speed 位，避免覆盖后续操作者状态。
+不是开机服务，不纳入正式固件模块或默认构建。按当前 #105 编译通过，
+任务 20261112-180421-f50-stock-speed-probe-16640；实际写入对照另需授权。
+
+用户授权后的 15 秒 DCFG 对照已完成：保持 #105、同一 boot_id、host 和
+原坞连接，将 DCFG 从 0x00080805 临时改为 0x00080804；三次有界采样中
+RTL8153 和两个 5411 hub 全部仍为 480，没有 SS hub。之后 DCFG 已恢复
+0x00080805，测试模块已卸载；配置和角色适配器摘要不变，热点、蜂窝
+IPv4/IPv6 及 IPv6 默认路由正常。未重启、复位 USB、切角色或修改供电。
+结论限于“单独运行时修改 gadget 速率字段不能恢复现有 host SS 链路”，
+不能据此断言初始化期间的所有速率设置均无关，也不将此字段修改加入
+正式固件。证据：stock-speed-trial-result.txt、stock-speed-trial-after.txt。
+
+用户确认另有一款带供电 USB3 设备。下一步在相同内核、角色和电脑联网
+路径下换坞对照；需要保留网线管理通道，另一款若没有网口则先不更换。
+读取新设备首次枚举结果后，只有在用户另外授权且首次 5 Gbps、管理正常
+时才做一次正常重启，比较其是否也会降速。不把换坞结果预先称为修复。
+
+用户换上另一款带供电、带网口设备并授权一次条件性正常重启后，实机
+首次上电（boot_id=03ecf857-3e8b-45ac-baf2-c04b9b28060a）识别到
+0bda:8153 直接接在 2-1、5000 Mbps，没有原坞的两级 0bda:5411 hub。
+GCTL=0x00111006、GUSB3PIPECTL(0)=0x01001102、DCFG=0x00080805；
+TCA GCFG=1、TCPC/SYSMODE=7、TC_STATUS=0x107，SS 端口为 U0/Speed=4。
+在供电和连接不动时执行了已授权的**一次**正常重启：
+boot_id=607b331f-7041-4ec1-9abb-28c17076d593，仍为 5000 Mbps。
+16 秒时热点/蜂窝尚未起来，33 秒时均已正常，IPv6 默认路由正常。
+配置及角色适配器摘要仍未变；没有额外刷写、重启或配置调整。
+
+另一个差异是新设备下 TYPEC_STATUS=0、DBG1=0x100，原坞失败现场则为
+0x60a2/0x10f。CC 和 hub 拓扑同时改变，因此这个结果只能证明 #105 的
+SuperSpeed host 路径及带此设备的正常重启可工作，不能单独归因于 5411
+芯片或据此认定原坞损坏。只读 CC 快照按当前内核重新编译、读取后卸载，
+没有修改 CC/PD 寄存器。
+证据：alternate-powered-first-boot.txt、alternate-powered-before-warm-reboot.txt、
+alternate-powered-after-one-reboot.txt、alternate-powered-settled-cc-state.txt。
+
+再次核对上游 [issue #54](https://github.com/dikeckaan/mu300-linux/issues/54)
+及 [PR #341](https://github.com/dikeckaan/mu300-linux/pull/341)：PR 自述尚未
+运行于实机，其 redriver 推断及轮询方案不能替代当前 F50 的硬件证据；
+没有据此写入未识别的 I2C 芯片、增加轮询或宣称已有通用修复。
+
+### F50：插头方向的因果对照与事件恢复
+
+另一款直连 RTL8153 翻面后，#105 同样降为 480，CC 状态仍为 0，
+TCA 输出仍为 0x107；AON_BOOT_MODE=0x1b。当前连接不能仅凭这个
+启动时留下的方向位决定 SS 通道。#106 新增 root 可写的暂存方向参数，
+设置参数本身不写硬件；仍由现有 DWC3 host 角色流程停控制器、同步 TCA
+并重新枚举，不改变 CC、PD、VBUS 或用户设置。
+
+已授权实机 A/B/A：保持同一启动、插头、供电和网线，默认方向为 480，
+暂存方向 0 后经原 host 流程变为 5000，恢复默认后再次为 480。
+这证明该次故障与方向选择有关。不是把 root hub 的 10000 能力当成
+实际速率，成功判据是同一物理端口 RTL8153 的 speed=5000。
+证据：lane-ab-result.txt；#106 与 202 个配套模块已校验部署。
+
+用户授权热部署的事件恢复也通过一次实测：netdev 事件发现支持 SS 的
+网卡只运行在 480，有限尝试两个方向，确认 5000 后保留当前 host 会话的
+RAM 选择并退出；没有常驻轮询。切到设备模式会释放自己拥有的选择。
+新角色请求优先，不覆盖用户手动参数或平台自定义适配器，不写 UCI。
+缓存 BOS 解析和角色并发等 35 项离线测试通过；热点及蜂窝 IPv4/IPv6
+正常，配置摘要不变。该结果目前只覆盖直连 RTL8153 的一次恢复。
+
+换回原扩展坞后仍为 480，未执行有条件的重启。只读确认它额外的
+0bda:0306 实际是 USB3 读卡器（接口 08/06/50、usb-storage），不是
+Billboard；两个 removable 盘容量均为 0，无介质或挂载。现有外设保护
+因此跳过恢复，BOS 能力检查本身通过。新增源码仅允许所有接口为存储、
+所有已注册盘均可移除且容量 0、无 holder 的空读卡器；未知状态、有介质
+或其他接口仍拒绝自动重新枚举，每次操作前重新检查。
+此扩展的 36 项离线测试通过（dash、bash、BusyBox ash 及实际 ucode），
+任务 20261112-184803-f50-empty-reader-lane-tests-59231。
+
+用户另行授权后已热更新单份 device-usb，保留旧脚本归档及摘要。
+在原坞同一 boot_id=03858309-f2c0-439c-9f11-d3575d3ac922 的现场，
+两个方向均完成有限尝试。内核日志确认 TCA 先变为 0x107，再恢复 0x103，
+各次 xHCI 和 USB2 hub/网卡确实重新枚举，但未出现 SuperSpeed hub。
+最终 RTL8153 仍为 480，参数恢复 -1，RAM 留下 attempted 标记，工作进程
+退出、角色锁已释放；热点、蜂窝 IPv4/IPv6 正常，用户配置摘要不变。
+因未满足首次 5000 的条件，没有执行授权中的正常重启。
+
+空读卡器阻断已解除，但不能把另一款直连 RTL8153 的方向恢复成功
+推广为此两级 hub 扩展坞已修复。此坞的 SS 链路未建立原因仍未确认，
+也没有证据据此启用 F50 的 PD 或改变其供电策略。
+实机证据：empty-reader-original-dock-result.txt、
+empty-reader-original-dock-link-log.txt。

@@ -13,6 +13,9 @@ class USBManagement(ShellTest):
         extra.setdefault('MU300_USB_ROLE_STATE', self.tmp / 'role-result')
         extra.setdefault('MU300_USB_GADGET_DIR', self.tmp / 'gadgets')
         extra.setdefault('MU300_USB_NET_LOCK', self.tmp / 'net.lock')
+        extra.setdefault('MU300_USB_ROLE_LOCK', self.tmp / 'role.lock')
+        extra.setdefault('MU300_USB_LANE_STATE', self.tmp / 'lane-state')
+        extra.setdefault('MU300_USB_LANE_PARAM', self.tmp / 'lane-param')
         return super().env(**extra)
 
     def setUp(self):
