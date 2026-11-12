@@ -3,8 +3,8 @@ from pathlib import Path
 import re, subprocess, tempfile
 TOP=Path(__file__).resolve().parents[1]
 s=(TOP/'upstream/port/drivers/usb/phy/phy-sprd-ums9620-ssphy.c').read_text()
-def function(name):
- match=re.search(r'static int '+re.escape(name)+r'\([^;]*\)\n\{',s)
+def function(name, signature="static int"):
+ match=re.search(re.escape(signature)+r' '+re.escape(name)+r'\([^;]*\)\n\{',s)
  assert match, 'missing production function definition: '+name
  start=match.start()
  return s[start:s.index('\n}',start)+2]
@@ -31,10 +31,16 @@ static int regmap_write(u32 *map,u32 reg,u32 v){map[reg/4]=v;return error;}
 static int regmap_update_bits(u32 *map,u32 reg,u32 mask,u32 v){map[reg/4]=(map[reg/4]&~mask)|(v&mask);return error;}
 static void sprd_ssphy_bc12_role(struct sprd_ssphy *p){assert(p->dpdm_lock);}
 static int sprd_ssphy_sync_orientation(struct sprd_ssphy *p,bool changed){assert(!p->dpdm_lock);syncs++;last_changed=changed;return sync_error;}
-'''+constants+'\n'+function('sprd_ssphy_set_vbus')+'\n'+function('sprd_ssphy_notify_disconnect')+r'''
+'''+constants+'\n'+function('ums9620_ssphy_is_initialized', 'bool')+'\n'+function('sprd_ssphy_set_vbus')+'\n'+function('sprd_ssphy_notify_disconnect')+r'''
 int main(void) {
  u32 aon[0x1000]={0},ana[0x1000]={0};
  struct sprd_ssphy p={.aon_apb=aon,.ana_g0l=ana,.bc12_enabled=true,.inited=1};
+ for(int battery=0;battery<2;battery++){
+  p.bc12_enabled=battery;
+  p.inited=0;assert(!ums9620_ssphy_is_initialized(&p.phy));
+  p.inited=1;assert(ums9620_ssphy_is_initialized(&p.phy));
+ }
+ p.bc12_enabled=true;
  for(int i=0;i<2;i++){
   p.is_host=false;
   mutex_lock(&p.dpdm_lock);assert(!sprd_ssphy_notify_disconnect(&p.phy,USB_SPEED_UNKNOWN));mutex_unlock(&p.dpdm_lock);

@@ -6,13 +6,13 @@
 struct usb_phy;
 #if IS_REACHABLE(CONFIG_USB_SPRD_UMS9620_SSPHY)
 bool ums9620_ssphy_orientation_changed(struct usb_phy *phy);
-bool ums9620_ssphy_host_resume_needed(struct usb_phy *phy);
+bool ums9620_ssphy_is_initialized(struct usb_phy *phy);
 #else
 static inline bool ums9620_ssphy_orientation_changed(struct usb_phy *phy)
 {
 	return false;
 }
-static inline bool ums9620_ssphy_host_resume_needed(struct usb_phy *phy)
+static inline bool ums9620_ssphy_is_initialized(struct usb_phy *phy)
 {
 	return false;
 }

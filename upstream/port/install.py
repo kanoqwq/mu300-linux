@@ -337,36 +337,44 @@ prepare = '''\t/* ums9620-prepare-phy-before-role: no VBUS power-policy change. 
 \tif (of_device_is_compatible(dwc->dev->of_node, "snps,sprd-dwc3") &&
 \t    dwc->usb2_phy && dwc->usb2_phy == dwc->usb3_phy &&
 \t    desired_dr_role != DWC3_GCTL_PRTCAP_OTG) {
+\t\tbool phy_inited = ums9620_ssphy_is_initialized(dwc->usb2_phy);
 \t\tbool host_resume = desired_dr_role == DWC3_GCTL_PRTCAP_HOST &&
-\t\t\tdwc->current_dr_role != DWC3_GCTL_PRTCAP_HOST &&
-\t\t\tums9620_ssphy_host_resume_needed(dwc->usb2_phy);
-\t\tbool host_resumed = false;
+\t\t\tdwc->current_dr_role != DWC3_GCTL_PRTCAP_HOST;
+\t\tbool core_resume = host_resume || !phy_inited;
+\t\tbool core_resumed = false;
 
 \t\t/* Both old controllers have exited. Match the stock glue ordering:
 \t\t * host PHY intent, then full PHY/core resume, then xHCI. A PHY-only
 \t\t * reset would also reset the core without restoring its registers.
+\t\t * This lifecycle is required on battery-less boards too; it must not
+\t\t * depend on BC1.2. A failed preparation can leave role=0 with the
+\t\t * core off, so either next role must restore it before starting.
 \t\t */
-\t\tif (host_resume && dwc->current_dr_role)
+\t\tif (host_resume && phy_inited)
 \t\t\tdwc3_core_exit(dwc);
 \t\tret = otg_set_vbus(dwc->usb2_phy->otg,
 \t\t\tdesired_dr_role == DWC3_GCTL_PRTCAP_HOST);
-\t\tif (!ret && host_resume) {
+\t\tif (!ret && core_resume) {
 \t\t\tret = dwc3_core_init_for_resume(dwc);
-\t\t\thost_resumed = !ret;
+\t\t\tcore_resumed = !ret;
 \t\t\t/* phy_init restored controller-sync mode. Finish the mux
 \t\t\t * handoff now, not in the generic callback after xHCI starts.
 \t\t\t */
 \t\t\tif (!ret)
-\t\t\t\tret = otg_set_vbus(dwc->usb2_phy->otg, true);
+\t\t\t\tret = otg_set_vbus(dwc->usb2_phy->otg,
+\t\t\t\t\tdesired_dr_role == DWC3_GCTL_PRTCAP_HOST);
 \t\t}
 \t\tif (ret) {
-\t\t\tif (host_resumed)
+\t\t\tif (core_resumed)
 \t\t\t\tdwc3_core_exit(dwc);
 \t\t\tdev_err(dwc->dev, "cannot prepare combo PHY role: %d\\n", ret);
 \t\t\t/* The old controller has exited; allow a later explicit retry. */
 \t\t\tdwc->current_dr_role = 0;
 \t\t\tgoto out;
 \t\t}
+\t\tif (core_resumed)
+\t\t\tdev_info(dwc->dev, "combo PHY/core resumed before %s controller\\n",
+\t\t\t\tdesired_dr_role == DWC3_GCTL_PRTCAP_HOST ? "host" : "device");
 \t}
 
 '''

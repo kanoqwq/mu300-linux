@@ -256,16 +256,18 @@ bool ums9620_ssphy_orientation_changed(struct usb_phy *x)
 }
 EXPORT_SYMBOL_GPL(ums9620_ssphy_orientation_changed);
 
-bool ums9620_ssphy_host_resume_needed(struct usb_phy *x)
+bool ums9620_ssphy_is_initialized(struct usb_phy *x)
 {
 	struct sprd_ssphy *phy = container_of(x, struct sprd_ssphy, phy);
 
-	/* Stock battery-board glue sets host before resuming the combo PHY.
-	 * Keep the existing direct path of boards without this policy.
+	/* Core/PHY lifecycle is independent of BC1.2 and battery presence.
+	 * DWC3 also needs this state after a failed role preparation: a cleared
+	 * current_dr_role alone cannot distinguish an active core from one whose
+	 * clocks and PHY have already been stopped.
 	 */
-	return phy->bc12_enabled;
+	return atomic_read(&phy->inited);
 }
-EXPORT_SYMBOL_GPL(ums9620_ssphy_host_resume_needed);
+EXPORT_SYMBOL_GPL(ums9620_ssphy_is_initialized);
 
 static int sprd_ssphy_set_vbus(struct usb_phy *x, int on)
 {
