@@ -982,62 +982,30 @@ Type-C 的 PD_SUPPORT 及协议控制器 CTL_EN 未启用。PD 数据包头配�
 私有记录：current-ss-port-state.txt、single-ss-warm-reset-result.txt、
 single-ss-warm-reset-settled.txt、cc-pd-readonly-failure-state.txt。
 
-### F50 无电池 PD 受电端候选：源码与构建完成，硬件尚未验收
+### 撤回 F50 PD 试验方向，保留原厂禁用节点行为
 
-新增显式启动参数 `sc27xx_ump9620.batteryless_sink=1`，仅用于本轮 F50
-试验镜像。默认关闭，不能因为共享设备树包含 PD 节点或未发现电池就启用。
-同时存在电池策略时拒绝该配置；现有 U30 Air 电池路径与默认 F50/V50 路径保留。
-同平台原厂源码仅作接口参考，尚无本机原厂 PD/数据角色有效对照结果。
+此前将 F50 未启用 PD 称为“路径缺口”缺少本机原厂行为依据，该结论撤回。
+用户明确指出 F50 原厂不使用该 PD 节点；不能把 U30 Air 的电池/PD 方案直接
+迁入 F50，也不能以扩展坞降速为由启用原厂禁用的控制器。
 
-该配置将 TCPM 连接器声明为 power-role=sink、data-role=dual，只声明
-5 V / 2 A 受电能力，不声明供电 PDO 或 self-powered。驱动不获取充电器或
-升压 regulator，拒绝 Rp、source、VCONN 供电及主动发送 Hard Reset；
-电流预算回调不控制取电硬件。保留 TCPM 对仅靠 VBUS 供电设备的既有恢复路径。
-对端仍可能自行断开供电，这些限制不构成“不可能掉电”的硬件承诺。
+试验曾提交 b66768e5/e5350612：新增显式 sink-only PD 配置和网页后端，
+仅写 Linux B boot 前 48 MiB、配套模块和三份运行时文件，全部保留备份。
+#103 因强制内核命令行未接到启用参数，实际配置为 N，仍走原控制路径。
+修正参数后部署 #104，带坞重启未恢复网口，条件性第二次重启没有执行。
+用户改用数据线直连电脑后，只读确认 #104、配置 Y、实际 USB device，
+NCM configured/high-speed，蜂窝 IPv4/IPv6 正常。
 
-网页的 USB 主机/设备选择由同一个 `device-usb` 请求状态拥有。显式启动配置
-选择新 `mu300-usb-pd-sink` 后端，不能失败后退回直接写 DWC3；冲突的自定义
-后端会直接报错。新后端仅在受电状态下请求原生 Type-C `data_role` 交换。
-未建立 PD 合同时保留请求，收到端口/对端加入或 PD 状态变更事件后继续；
-明确不支持 PD 的对端或拒绝交换则报错，不周期重试、不切换供电角色。
-新请求会使旧请求失效，开机补放可能早于 rootfs 的 Type-C 事件。
+关键证据是本机 PD 节点实际 `status=disabled`，没有对应 platform device、
+Type-C 端口或 TCPM 实例。新增后端因此将原有 host 请求记为 error；
+这属于试验适配器对不存在端口的依赖，不能称为 PD 协商失败或原厂缺陷。
+没有启用禁用节点、操作 PD 硬件或回退到强制供电路径。
 
-热插拔脚本放入现有 LuCI 包的 `root/etc/hotplug.d/typec/`，rootfs 构建和
-两条打包入口均校验它与运行时后端，避免只准备热部署文件却漏入后续构建。
-普通发行镜像不会自动追加试验启动参数；硬件验证后再决定正式产品启用策略。
+源码撤回以上两笔 PD 试验，保留此前的 USB3 方向、PHY/core 恢复等独立修正。
+机内恢复方案为本机已验证 #102 boot 前 48 MiB、原匹配模块及原 device-usb，
+移除本轮新增的两个运行时文件，保留当前 UCI；这项实际恢复/重启另按授权执行。
+恢复仅消除本轮 PD 依赖造成的角色切换障碍，不宣称解决此前的 480 Mbps 问题。
 
-离线验证：41 项 USB 管理、PD 电源边界及旧电池路径测试通过，另外实际驱动
-回调的 PD reset、PHY 角色恢复、方向同步、主机交接和首次初始化回归通过；
-构建脚本语法通过。任务 `20261112-163728-f50-pd-sink-final-regression-1264`。
-6.18.54 TCPM 驱动对象及 7.2.8 完整 Image/202 个配套模块编译通过，任务
-`20261112-163100-f50-pd-sink-kernel-1151`。没有将对象编译记为完整 6.18 构建。
-
-已从本机 #102 备份生成 `boot_b.usb3-pd-sink.img` 与配套模块，保留本机
-ramdisk/init/分区参数和持久日志区域；镜像最后 4096 字节与备份相同。
-本轮只读再次确认机器仍运行 #102、同一 boot_id、host/480，没有刷写或重启。
-待授权后验证实际 Type-C 端口归属、电脑设备网络、PD 主机、正反插和带坞重启；
-这些尚未实测，不能宣称扩展坞 480 Mbps 故障已经解决。
-
-### #103 首次部署：参数未进入有效命令行，未开始 PD 硬件验收
-
-用户明确授权后，保存本机完整 boot、现有模块和运行时备份；写入 Linux B
-boot 前 48 MiB、202 个匹配模块及三份运行时文件并逐项校验，保留 UCI 的
-host 自动应用设置。首次带坞重启进入 #103，boot_id 为
-72022490-79be-4688-a82b-07ba5e5eba7a；网口恢复，但仍为 480，无 Type-C 端口。
-
-只读确认 `/sys/module/sc27xx_ump9620/parameters/batteryless_sink` 为 N。
-镜像头虽包含启用参数，内核配置 `CONFIG_CMDLINE_FORCE=y` 使实际 `/proc/cmdline`
-只使用原有内置参数，因此驱动根本没有选择新路径。本轮不能算 PD 方案已执行
-后仍失败，也不以重复重启来测试一个尚未激活的路径。条件性的第二次重启未执行。
-电脑网卡索引现为 40、Wi-Fi 为 10；根据实际枚举读取，未改网络配置。
-
-构建入口补充显式环境参数 `MU300_F50_PD_SINK_TRIAL=1`，在验证原有配置后，
-仅向该候选的内核内置命令行追加启用参数，再运行 olddefconfig 并检查实际结果。
-默认构建仍以同一原始配置生成，不启用此候选。准备工具必须校验 kernel.config
-中的强制命令行确实包含且只包含一个启用值；默认镜像拒绝误用试验内核。
-不再通过 Android boot header 传递该内核选项，并保留原厂镜像头命令行。
-
-41 项回归及 PD reset 边界测试通过：
-`20261112-165816-f50-pd-forced-cmdline-tests-1334`。新候选构建与实测另行记录。
-私有证据：pd-sink-deployment.txt、pd-sink-first-boot.txt、
-pd-sink-parameter-investigation.txt；完整备份名称包含 before-pd-sink。
+后续围绕 F50 原有供电和 USB 数据角色控制，调查 PHY/xHCI/扩展坞 SuperSpeed
+链路状态；有效原厂对照仍需先确认真实 host 条件，不将无管理连接当作测速结果。
+私有证据：pd-sink-forced-deployment.txt、pd-sink-forced-direct-pc.txt、
+pd-sink-forced-probe-failure.txt、pd-sink-forced-dt-device.txt。

@@ -15,20 +15,11 @@ RESCAN_MARKER=${MU300_USB_RESCAN_MARKER:-/run/unisoc-usb-host-rescan-done}
 GADGET_DIR=${MU300_USB_GADGET_DIR:-/sys/kernel/config/usb_gadget}
 ROLE_STATE=${MU300_USB_ROLE_STATE:-/run/unisoc-usb-role-state}
 NETWORK_SERVICE=${MU300_USB_NETWORK_SERVICE:-/etc/init.d/network}
-SINK_ADAPTER=${MU300_USB_PD_SINK_ADAPTER:-/opt/mu300/bin/mu300-usb-pd-sink}
 IP=${MU300_USB_IP_BIN:-ip}
 NET_LOCK=${MU300_USB_NET_LOCK:-/var/lock/unisoc-usb-net.lock}
 get() { uci -q get "$CFG.$1" 2>/dev/null || true; }
 put() { uci -q set "$CFG.$1=$2"; }
 error() { printf '{"ok":0,"error":"%s"}\n' "$1"; exit 1; }
-sink_profile_enabled() {
-    case $(cat "${MU300_USB_SINK_PROFILE:-/sys/module/sc27xx_ump9620/parameters/batteryless_sink}" 2>/dev/null) in
-        Y|1) return 0 ;; *) return 1 ;;
-    esac
-}
-sink_adapter_selected() {
-    sink_profile_enabled || [ "$(get role_command)" = "$SINK_ADAPTER" ]
-}
 role_now() {
     current=$(cat "$ROLE_FILE" 2>/dev/null)
     case $current in host|device) printf '%s\n' "$current" ;; *) echo unavailable ;; esac
@@ -37,8 +28,7 @@ role_apply_needed() {
     # An unattached Type-C port can still report DWC3's old data role. U30 Air
     # must apply the requested CC/PD policy even if that readback matches it,
     # e.g. cancelling a pending source-only request back to device/sink.
-    [ "$(role_now)" != "$1" ] || [ "$(device_name)" = u30air ] ||
-        sink_adapter_selected
+    [ "$(role_now)" != "$1" ] || [ "$(device_name)" = u30air ]
 }
 role_result() {
     # Only the latest request may publish its asynchronous result.
@@ -84,11 +74,6 @@ device_name() {
 }
 role_command() {
     cmd=${MU300_USB_ROLE_COMMAND:-$(get role_command)}
-    if sink_profile_enabled; then
-        [ -z "$cmd" ] || [ "$cmd" = "$SINK_ADAPTER" ] ||
-            error 'USB role adapter conflicts with the selected fixed-input profile'
-        cmd=$SINK_ADAPTER
-    fi
     if [ -n "$cmd" ]; then
         [ -x "$cmd" ] || error 'USB role adapter is not executable'
         "$cmd" "$1" || error 'USB role adapter failed'
@@ -291,7 +276,6 @@ case ${1:-} in
         request=${3:-}
         case $role in host|device) ;; *) exit 2 ;; esac
         [ -z "$request" ] || [ "$request" = "$(sed -n '1p' "$ROLE_STATE" 2>/dev/null)" ] || exit 0
-        export MU300_USB_ROLE_REQUEST="$request"
         ! role_apply_needed "$role" || ( role_command "$role" ) || {
             role_result "$role" error '' "$request"
             logger -t unisoc-usb "role switch to $role failed"
@@ -304,28 +288,6 @@ case ${1:-} in
         else
             rmdir "$RESCAN_MARKER" 2>/dev/null || true
         fi
-        ;;
-    typec-event)
-        # Only the explicitly selected fixed-input adapter consumes Type-C
-        # events. No availability-based fallback to a raw DWC3 write.
-        sink_adapter_selected || exit 0
-        state=$(cat "$ROLE_STATE" 2>/dev/null || true)
-        request=$(printf '%s\n' "$state" | sed -n '1p')
-        role=$(printf '%s\n' "$state" | sed -n '2p')
-        result=$(printf '%s\n' "$state" | sed -n '3p')
-        # A refused swap is retried by a new request or a newly attached
-        # partner, not by every subsequent identity/status notification.
-        [ "$result" != error ] || [ "${ACTION:-}" = add ] || exit 0
-        case $role in host|device) ;; *)
-            role=device
-            [ "$(get role_auto)" != 1 ] || role=host
-            request= ;;
-        esac
-        if [ "$result" = error ] && [ "${ACTION:-}" = add ]; then
-            role_result "$role" pending '' "$request"
-        fi
-        export MU300_USB_ROLE_EVENT=1
-        "$0" apply-role "$role" "$request"
         ;;
     set-net)
         mode=${2:-}; scope=${3:-}; auto=${4:-}
@@ -354,11 +316,7 @@ case ${1:-} in
             put net_auto 0 && uci commit unisoc_modem
             rm -f "$BOOT_FILE"
         fi
-        if sink_adapter_selected; then
-            # Kernel Type-C events can precede procd/rootfs. Replay the saved
-            # data intent once at boot, including the default DEVICE choice.
-            "$0" typec-event || logger -t unisoc-usb 'fixed-input Type-C boot request failed'
-        elif [ "$(get role_auto)" = 1 ]; then
+        if [ "$(get role_auto)" = 1 ]; then
             [ "$(role_now)" = host ] || role_command host
             start_host_rescan
         fi

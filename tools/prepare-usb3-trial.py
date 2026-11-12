@@ -74,11 +74,7 @@ def main():
     parser.add_argument('--backup', required=True, type=Path)
     parser.add_argument('--kernel-dir', required=True, type=Path)
     parser.add_argument('--out', required=True, type=Path)
-    parser.add_argument('--batteryless-pd-sink', action='store_true',
-                        help='explicitly enable the fixed-input PD trial profile')
     args = parser.parse_args()
-    profile = runpy.run_path(str(TOP/'upstream/debug/select-f50-pd-sink.py'))
-    profile['validate_profile']((args.kernel_dir/'kernel.config').read_text(), args.batteryless_pd_sink)
     base = args.backup.read_bytes()
     if base[:8] != b'ANDROID!' or struct.unpack_from('<I', base, 40)[0] != 4 or base[-64:-60] != b'AVBf':
         raise ValueError('expected installed v4/AVB boot backup')
@@ -115,9 +111,7 @@ def main():
     print('Backup SHA256:', hashlib.sha256(base).hexdigest())
     print('Candidate SHA256:', hashlib.sha256(result).hexdigest())
     print('Replaced existing ramdisk modules:', len(replaced))
-    print('Preserved init, cpio metadata and persistent-log region; no device writes')
-    print('Boot header command line unchanged; kernel profile:',
-          'explicit fixed-input PD trial' if args.batteryless_pd_sink else 'default')
+    print('Preserved init, cpio metadata, cmdline and persistent-log region; no device writes')
 
 
 if __name__ == '__main__':

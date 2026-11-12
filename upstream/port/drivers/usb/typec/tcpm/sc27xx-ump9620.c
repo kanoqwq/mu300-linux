@@ -28,14 +28,6 @@
 
 #include "sc27xx-ump9620-regs.h"
 
-/* Explicit board-profile opt-in. Never enable the batteryless path merely
- * because a shared DT contains a PD node. The F50 trial boot selects this;
- * existing U30 Air and V50 releases keep their current policy.
- */
-static bool batteryless_sink;
-module_param(batteryless_sink, bool, 0444);
-MODULE_PARM_DESC(batteryless_sink, "Fixed-input, sink-only board profile with PD data-role swaps");
-
 struct sc27xx_pd {
 	struct device *dev;
 	struct regmap *regmap, *aon_apb;
@@ -55,7 +47,6 @@ struct sc27xx_pd {
 	enum typec_role power_role;
 	bool attached, pd_capable;
 	bool vbus_on, tx_pending, tx_sop, rx_enabled, stopping, irqs_enabled;
-	bool sink_only;
 };
 
 #include "sc27xx-ump9620-calibration.h"
@@ -125,12 +116,6 @@ static int sc27xx_set_cc(struct tcpc_dev *tcpc, enum typec_cc_status cc)
 	/* The autonomous controller owns detach/open, as in the vendor driver. */
 	if (cc == TYPEC_CC_OPEN)
 		return 0;
-	if (pd->sink_only) {
-		if (cc != TYPEC_CC_RD)
-			return -EOPNOTSUPP;
-		/* Keep the input attached. Never advertise Rp or perform PR_SWAP. */
-		return cc_update(pd, SC27XX_TYPEC_MODE, GENMASK(1, 0), 0);
-	}
 	if (cc == TYPEC_CC_RD)
 		mode = 0;
 	else {
@@ -157,11 +142,8 @@ static int sc27xx_start_toggling(struct tcpc_dev *tcpc, enum typec_port_type por
 	u32 mode = port == TYPEC_PORT_DRP ? 2 : port == TYPEC_PORT_SNK ? 0 : 1;
 	int ret;
 
-	if (pd->sink_only && port != TYPEC_PORT_SNK)
-		return -EOPNOTSUPP;
 	/* Hardware DRP, no userspace polling or periodic role-flip task. */
-	ret = pd->sink_only ? cc_update(pd, SC27XX_TYPEC_MODE, GENMASK(1, 0), 0) :
-		cc_update(pd, SC27XX_TYPEC_MODE, GENMASK(3, 0), mode | BIT(2));
+	ret = cc_update(pd, SC27XX_TYPEC_MODE, GENMASK(3, 0), mode | BIT(2));
 	/* A cable already attached before probe may not generate another edge. */
 	if (!ret && !READ_ONCE(pd->stopping))
 		mod_delayed_work(system_power_efficient_wq, &pd->cc_work, msecs_to_jiffies(8));
@@ -177,8 +159,6 @@ static int sc27xx_set_polarity(struct tcpc_dev *tcpc, enum typec_cc_polarity pol
 
 static int sc27xx_set_vconn(struct tcpc_dev *tcpc, bool on)
 {
-	if (to_pd(tcpc)->sink_only)
-		return on ? -EOPNOTSUPP : 0;
 	return cc_update(to_pd(tcpc), SC27XX_TYPEC_PD_CFG,
 		SC27XX_TYPEC_VCCON_LDO_EN, on ? SC27XX_TYPEC_VCCON_LDO_EN : 0);
 }
@@ -188,11 +168,6 @@ static int sc27xx_set_vbus(struct tcpc_dev *tcpc, bool on, bool charge)
 	struct sc27xx_pd *pd = to_pd(tcpc);
 	int ret = 0;
 
-	/* This board has no source regulator/charger owner. Its existing fixed
-	 * input remains connected; TCPM must not switch or discharge that rail.
-	 */
-	if (pd->sink_only)
-		return on ? -EOPNOTSUPP : 0;
 	if (on && charge)
 		return -EINVAL;
 	mutex_lock(&pd->lock);
@@ -216,11 +191,6 @@ static int sc27xx_set_current_limit(struct tcpc_dev *tcpc, u32 ma, u32 mv)
 	/* Only 5 V is advertised; do not request unsupported higher PD voltages. */
 	if (mv > 5000)
 		return -EINVAL;
-	/* Negotiated budget notification only on a fixed-input board. There is
-	 * no programmable charger/current limiter to control on this profile.
-	 */
-	if (pd->sink_only)
-		return 0;
 	value.intval = pd_current ? POWER_SUPPLY_USB_TYPE_PD : POWER_SUPPLY_USB_TYPE_UNKNOWN;
 	ret = power_supply_set_property(pd->charger, POWER_SUPPLY_PROP_USB_TYPE, &value);
 	/* Without a PD contract the charger owns BC1.2/Rp arbitration. TCPM's
@@ -242,8 +212,6 @@ static int sc27xx_set_roles(struct tcpc_dev *tcpc, bool attached,
 		data == TYPEC_HOST ? USB_ROLE_HOST : USB_ROLE_DEVICE;
 	int ret;
 
-	if (pd->sink_only && power != TYPEC_SINK)
-		return -EOPNOTSUPP;
 	ret = pd_update(pd, SC27XX_PD_CFG0, SC27XX_PD_SRC_SINK_MODE,
 		power == TYPEC_SOURCE ? SC27XX_PD_SRC_SINK_MODE : 0);
 	if (ret)
@@ -331,12 +299,6 @@ static int sc27xx_transmit(struct tcpc_dev *tcpc, enum tcpm_transmit_type type,
 	u32 payload;
 
 	if (type != TCPC_TX_SOP && type != TCPC_TX_HARD_RESET)
-		return -EOPNOTSUPP;
-	/* A partner may remove VBUS in response to a hard reset. A board powered
-	 * solely from this port cannot request one as an automatic recovery.
-	 * Report the unsupported operation; never synthesize TX completion.
-	 */
-	if (pd->sink_only && type == TCPC_TX_HARD_RESET)
 		return -EOPNOTSUPP;
 	mutex_lock(&pd->lock);
 	ret = pd_update(pd, SC27XX_PD_CFG1, SC27XX_PD_RETRY_MASK,
@@ -664,11 +626,10 @@ static int sc27xx_probe(struct platform_device *pdev)
 	struct device_node *typec, *usb, *gpio;
 	struct extcon_dev *extcon;
 	int ret;
-	bool battery = ump9620_has_battery_policy();
 	/* Existing board power path is 5 V only. Do not import vendor PPS PDOs. */
 	u32 src[] = { PDO_FIXED(5000, 500, PDO_FIXED_DUAL_ROLE | PDO_FIXED_DATA_SWAP | PDO_FIXED_USB_COMM) };
 	u32 snk[] = { PDO_FIXED(5000, 2000, PDO_FIXED_DUAL_ROLE | PDO_FIXED_DATA_SWAP | PDO_FIXED_USB_COMM) };
-	const struct property_entry battery_properties[] = {
+	const struct property_entry properties[] = {
 		/* This driver is gated to battery-policy boards below. Let TCPM
 		 * use battery-backed recovery, rather than treating a powered dock
 		 * as the system's only power source. PDO limits/roles stay unchanged.
@@ -681,24 +642,16 @@ static int sc27xx_probe(struct platform_device *pdev)
 		PROPERTY_ENTRY_U32_ARRAY("sink-pdos", snk),
 		PROPERTY_ENTRY_U32("op-sink-microwatt", 10000000), {}
 	};
-	u32 fixed_snk[] = { PDO_FIXED(5000, 2000, PDO_FIXED_DATA_SWAP | PDO_FIXED_USB_COMM) };
-	const struct property_entry fixed_input_properties[] = {
-		PROPERTY_ENTRY_STRING("power-role", "sink"),
-		PROPERTY_ENTRY_STRING("data-role", "dual"),
-		PROPERTY_ENTRY_U32_ARRAY("sink-pdos", fixed_snk),
-		PROPERTY_ENTRY_U32("op-sink-microwatt", 10000000), {}
-	};
 
-	/* Opt-in is separate from battery presence, not an implicit fallback. */
-	if (!battery && !batteryless_sink)
+	/* Batteryless F50/V50 must retain their stock USB power path. */
+	if (!ump9620_has_battery_policy())
 		return -ENODEV;
-	if (battery && batteryless_sink)
-		return dev_err_probe(dev, -EINVAL, "fixed-input profile conflicts with battery policy\n");
 
 	typec = of_get_compatible_child(dev->parent->of_node, "sprd,sc27xx-typec");
 	if (!typec)
 		return -ENODEV;
-	if (battery && !of_property_read_bool(typec, "use_pdhub_c2c")) {
+	/* This path needs a real battery board with the PD-hub connector. */
+	if (!of_property_read_bool(typec, "use_pdhub_c2c")) {
 		of_node_put(typec);
 		return -ENODEV;
 	}
@@ -708,7 +661,6 @@ static int sc27xx_probe(struct platform_device *pdev)
 		return -ENOMEM;
 	}
 	pd->dev = dev;
-	pd->sink_only = !battery;
 	pd->var_data = &ump9620_data;
 	pd->regmap = dev_get_regmap(dev->parent, NULL);
 	mutex_init(&pd->lock);
@@ -730,17 +682,15 @@ static int sc27xx_probe(struct platform_device *pdev)
 	pd->aon_apb = syscon_regmap_lookup_by_phandle(dev->of_node, "sprd,syscon-aon-apb");
 	if (IS_ERR(pd->aon_apb))
 		return PTR_ERR(pd->aon_apb);
-	if (!pd->sink_only) {
-		pd->vbus = devm_regulator_get(dev, "vbus");
-		if (IS_ERR(pd->vbus))
-			return dev_err_probe(dev, PTR_ERR(pd->vbus), "OTG power regulator\n");
-		pd->charger = power_supply_get_by_name("bq256xx-charger");
-		if (!pd->charger)
-			return -EPROBE_DEFER;
-		ret = devm_add_action_or_reset(dev, sc27xx_put_charger, pd->charger);
-		if (ret)
-			return ret;
-	}
+	pd->vbus = devm_regulator_get(dev, "vbus");
+	if (IS_ERR(pd->vbus))
+		return dev_err_probe(dev, PTR_ERR(pd->vbus), "OTG power regulator\n");
+	pd->charger = power_supply_get_by_name("bq256xx-charger");
+	if (!pd->charger)
+		return -EPROBE_DEFER;
+	ret = devm_add_action_or_reset(dev, sc27xx_put_charger, pd->charger);
+	if (ret)
+		return ret;
 	usb = of_find_compatible_node(NULL, NULL, "snps,sprd-dwc3");
 	if (!usb)
 		return -ENODEV;
@@ -755,8 +705,7 @@ static int sc27xx_probe(struct platform_device *pdev)
 	if (ret)
 		return dev_err_probe(dev, ret, "PD efuse calibration\n");
 	/* A software-node parent must itself be a software node, not an OF node. */
-	pd->connector = fwnode_create_software_node(pd->sink_only ?
-		fixed_input_properties : battery_properties, NULL);
+	pd->connector = fwnode_create_software_node(properties, NULL);
 	if (IS_ERR(pd->connector))
 		return PTR_ERR(pd->connector);
 	ret = devm_add_action_or_reset(dev, sc27xx_put_connector, pd->connector);
@@ -806,8 +755,7 @@ static int sc27xx_probe(struct platform_device *pdev)
 	enable_irq(pd->cc_irq);
 	pd->irqs_enabled = true;
 	mod_delayed_work(system_power_efficient_wq, &pd->cc_work, 0);
-	dev_info(dev, "Type-C/PD active: %s, PD data-role swaps\n",
-		pd->sink_only ? "fixed 5 V input, sink only" : "5 V sink/source");
+	dev_info(dev, "Type-C/PD active: automatic USB roles, 5 V sink/source\n");
 	return 0;
 put_node:
 	return ret;

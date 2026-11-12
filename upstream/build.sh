@@ -50,17 +50,6 @@ while IFS= read -r l; do
     [ "$g" = "$v" ] || grep -qx "$k" /work/config-ignored.txt 2>/dev/null || bad="$bad\nNOT SET: $k want $v got ${g:-unset}";; esac
 done < /work/mu300-mainline.config
 [ -z "$bad" ] || { printf "config options not taken:$bad\n" >&2; exit 1; }
-# Boot header/DT arguments are ignored under CONFIG_CMDLINE_FORCE. Keep the
-# batteryless PD experiment explicit and out of ordinary shared releases.
-case ${MU300_F50_PD_SINK_TRIAL:-0} in
-    0) ;;
-    1)
-        python3 /work/debug/select-f50-pd-sink.py "$O/.config"
-        make O=$O ARCH=arm64 olddefconfig >/dev/null
-        python3 /work/debug/select-f50-pd-sink.py "$O/.config" --verify
-        ;;
-    *) echo 'invalid MU300_F50_PD_SINK_TRIAL value' >&2; exit 1 ;;
-esac
 # on failure show the compiler's own messages: a plain grep for "error" also matches object names like
 # fdt_strerror.o and used to fill the report with those
 make O=$O ARCH=arm64 -j"$(nproc)" Image > $O/build.log 2>&1 || {

@@ -1,6 +1,0 @@
-#!/bin/sh
-case ${ACTION:-}:${DEVTYPE:-} in
-    add:typec_port|change:typec_port|add:typec_partner)
-        /usr/libexec/unisoc-modem/device-usb typec-event
-        ;;
-esac

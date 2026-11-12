@@ -123,7 +123,6 @@ for f in ./opt/mu300/bin/mu300-at ./opt/mu300/bin/mobile-data \
     ./usr/libexec/unisoc-modem/data-sim ./www/luci-static/resources/view/mu300/sim.js \
     ./www/luci-static/resources/view/mu300/device.js ./usr/libexec/unisoc-modem/device-usb \
     ./etc/hotplug.d/net/90-unisoc-usb-host ./etc/hotplug.d/iface/90-unisoc-usb-host \
-    ./opt/mu300/bin/mu300-usb-pd-sink ./etc/hotplug.d/typec/50-mu300-usb-pd-sink \
     ./etc/init.d/unisoc-modem-ui ./usr/lib/lua/luci/i18n/mu300.en.lmo ./usr/lib/lua/luci/i18n/mu300.tr.lmo \
     ./usr/lib/lua/luci/i18n/base.zh-cn.lmo ./usr/lib/lua/luci/i18n/firewall.zh-cn.lmo ./usr/lib/lua/luci/i18n/package-manager.zh-cn.lmo \
     ./usr/libexec/unisoc-modem/network-performance ./usr/libexec/unisoc-modem/network-performance.uc \

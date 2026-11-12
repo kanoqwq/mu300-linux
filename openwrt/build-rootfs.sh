@@ -240,7 +240,6 @@ chroot "$R" /usr/bin/util-linux-flock --version >/dev/null || { echo "missing ut
 [ -s "$R/opt/mu300/lib/sms-pool.sh" ] || { echo "missing shared SMS pool library" >&2; exit 1; }
 chmod 0755 $R/etc/hotplug.d/power_supply/70-mu300-led
 chmod 0755 $R/opt/mu300/bin/mu300-platform-config
-chmod 0755 $R/opt/mu300/bin/mu300-usb-pd-sink
 chmod 0755 $R/opt/mu300/bin/mu300-network-recovery $R/etc/init.d/mu300-network-recovery
 chmod 0755 $R/etc/uci-defaults/92-mu300-uhttpd-key
 chmod 0755 $R/opt/mu300/bin/v50-led-status
@@ -270,7 +269,6 @@ grep -q "device_chanlist_band(config);" $R/usr/share/ucode/wifi/hostapd.uc || { 
 if [ -d /in/luci-plugin ]; then
     cp -a /in/luci-plugin/root/. $R/
     cp -a /in/luci-plugin/htdocs/. $R/www/
-    chmod 0755 $R/etc/hotplug.d/typec/50-mu300-usb-pd-sink
     chmod 0600 $R/etc/config/mu300-charge
     chmod 0755 $R/etc/init.d/unisoc-battery-history $R/usr/libexec/unisoc-modem/battery-history
     chmod 0755 $R/etc/init.d/mu300-charge $R/etc/hotplug.d/power_supply/75-mu300-charge $R/usr/libexec/rpcd/mu300-charge

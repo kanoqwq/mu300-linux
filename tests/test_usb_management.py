@@ -13,11 +13,6 @@ class USBManagement(ShellTest):
         extra.setdefault('MU300_USB_ROLE_STATE', self.tmp / 'role-result')
         extra.setdefault('MU300_USB_GADGET_DIR', self.tmp / 'gadgets')
         extra.setdefault('MU300_USB_NET_LOCK', self.tmp / 'net.lock')
-        if hasattr(self, 'sink_adapter'):
-            extra.setdefault('MU300_USB_PD_SINK_ADAPTER', self.sink_adapter)
-        if hasattr(self, 'event_action'):
-            extra.setdefault('ACTION', self.event_action)
-        extra.setdefault('MU300_USB_SINK_PROFILE', self.tmp / 'sink-profile')
         return super().env(**extra)
 
     def setUp(self):
@@ -290,91 +285,6 @@ esac
             self.assertEqual((self.tmp / 'uci.role_auto').read_text(), '1')
             self.wait_text(self.tmp / 'role-request', 'host')
 
-    def test_explicit_pd_adapter_cancels_pending_host_and_replays_typec_events(self):
-        self.sink_adapter=self.helper
-        state=self.tmp/'role-result'
-        for shell in self.each_shell():
-            (self.tmp/'uci.role_command').write_text(str(self.helper))
-            self.role.write_text('device\n')
-            state.write_text('old\nhost\npending\n\n')
-            # Matching raw role still has to cancel the prior PD intent.
-            response=json.loads(self.call_usb(shell,'set-role','device','0').stdout)
-            self.assertEqual(response,{'ok':1,'pending':1})
-            self.wait_text(self.role,'device')
-            # Wait for the async worker to finish recording its latest intent.
-            for _ in range(200):
-                if state.read_text().splitlines()[2]=='done':break
-                time.sleep(0.02)
-            self.call_usb(shell,'apply-role','host','old')
-            self.assertEqual(self.role.read_text(),'device\n')
-            state.write_text('current\nhost\npending\n\n')
-            self.event_action='change'
-            self.call_usb(shell,'typec-event')
-            self.assertEqual(self.role.read_text(),'host\n')
-            self.assertEqual(state.read_text().splitlines()[:3],['current','host','done'])
-            state.write_text('refused\nhost\nerror\n\n');self.role.write_text('device\n')
-            self.call_usb(shell,'typec-event')
-            self.assertEqual(self.role.read_text(),'device\n')
-            self.event_action='add';self.call_usb(shell,'typec-event')
-            self.assertEqual(self.role.read_text(),'host\n')
-
-    def test_pd_profile_boot_replays_both_saved_host_and_default_device(self):
-        self.sink_adapter=self.helper
-        state=self.tmp/'role-result'
-        (self.tmp/'uci.role_command').write_text(str(self.helper))
-        for shell in self.each_shell():
-            for auto,desired,initial in [('0','device','host'),('1','host','device')]:
-                state.unlink(missing_ok=True)
-                (self.tmp/'uci.role_auto').write_text(auto)
-                self.role.write_text(initial+'\n')
-                self.call_usb(shell,'boot')
-                self.assertEqual(self.role.read_text(),desired+'\n')
-
-    def test_typec_events_do_not_change_unselected_legacy_backend(self):
-        self.role.write_text('device\n')
-        for shell in self.each_shell():
-            self.call_usb(shell,'typec-event')
-            self.assertEqual(self.role.read_text(),'device\n')
-
-    def test_kernel_sink_profile_selects_adapter_without_writing_uci(self):
-        self.sink_adapter=self.helper
-        (self.tmp/'sink-profile').write_text('Y\n')
-        state=self.tmp/'role-result'
-        for shell in self.each_shell():
-            (self.tmp/'uci.role_auto').write_text('1')
-            state.unlink(missing_ok=True)
-            self.role.write_text('device\n')
-            self.call_usb(shell,'boot')
-            self.assertEqual(self.role.read_text(),'host\n')
-            self.assertFalse((self.tmp/'uci.role_command').exists())
-            # An old explicit adapter cannot bypass the fixed-input profile.
-            foreign=self.tmp/'foreign-adapter'
-            foreign.write_text('#!/bin/sh\nexit 0\n');foreign.chmod(0o755)
-            state.write_text('conflict\nhost\npending\n')
-            self.role.write_text('device\n')
-            refused=self.script(shell,USB,'apply-role','host','conflict',
-                MU300_USB_ROLE_FILE=self.role,MU300_USB_ROLE_COMMAND=foreign)
-            self.assertNotEqual(refused.returncode,0)
-            self.assertEqual(self.role.read_text(),'device\n')
-            self.assertEqual(state.read_text().splitlines()[2],'error')
-
-    def test_port_add_reopens_pending_contract_after_early_port_error(self):
-        self.sink_adapter=self.helper
-        (self.tmp/'sink-profile').write_text('Y\n')
-        state=self.tmp/'role-result'
-        for shell in self.each_shell():
-            self.role.write_text('device\n')
-            state.write_text('early\nhost\nerror\n')
-            # Port exists now, contract is not ready: the helper accepts the
-            # pending request without changing the controller yet.
-            self.helper.write_text('#!/bin/sh\nexit 0\n')
-            self.event_action='add';self.call_usb(shell,'typec-event')
-            self.assertEqual(state.read_text().splitlines()[2],'pending')
-            self.helper.write_text('#!/bin/sh\nprintf "%s\\n" "$1" > "$MU300_USB_ROLE_FILE"\n')
-            self.event_action='change';self.call_usb(shell,'typec-event')
-            self.assertEqual(self.role.read_text(),'host\n')
-            self.assertEqual(state.read_text().splitlines()[:3],['early','host','done'])
-
     def test_host_only_usb_adapter_list_and_idempotent_bridge_add(self):
         usbdev = self.tmp / 'usb1' / '1-1'
         usbdev.mkdir(parents=True)
@@ -605,11 +515,6 @@ class USBIntegration(unittest.TestCase):
         for script in ('openwrt/build-rootfs.sh', 'tools/build-openwrt-tf-magisk.sh', 'tools/make-release.sh'):
             content = (TOP / script).read_text()
             self.assertIn('90-unisoc-usb-host', content)
-            self.assertIn('50-mu300-usb-pd-sink', content)
-            self.assertIn('mu300-usb-pd-sink', content)
-        events=(pkg / 'typec/50-mu300-usb-pd-sink').read_text()
-        self.assertIn('change:typec_port',events)
-        self.assertIn('device-usb typec-event',events)
 
 
 if __name__ == '__main__':
