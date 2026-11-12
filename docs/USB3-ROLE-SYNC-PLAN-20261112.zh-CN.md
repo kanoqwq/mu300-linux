@@ -944,3 +944,40 @@ f6932602-bba1-457b-8907-259398d3cda4，默认 Linux、成功启动计数已清�
 探测的两个临时静态地址和 DNS 已撤回，恢复本轮之前的 DHCP/自动 DNS，
 重新取得原租约地址；原 Wi-Fi 与默认联网路径保持不变。保留机器已有的
 路由发现/忽略默认路由策略，没有套用上一台 U30 Air 的旧网络备份。
+
+
+### F50 当前故障的链路和 CC/PD 只读证据
+
+在 #102、host、RTL8153 480 的现有故障现场，xHCI USB3 port02 PORTSC 为
+0x000002a0（Speed=0、RxDetect、PP），USB2 port01 为 0x00000e03
+（Speed=3、U0、CCS/PP/PED）；USB3 对应端口的 state 为 not attached。
+这能将当前故障定位到 SuperSpeed 链路尚未建立，不能将其描述为已连接
+USB3 的网卡被限速，也不能直接据此区分本机 PHY 与坞上游端的责任。
+
+对空闲 USB3 根端口通过标准 USBDEVFS_CONTROL 执行一次
+SET_FEATURE(BH_PORT_RESET=28)，不操作 USB2 端口、供电或角色。
+请求被接受；0.1、0.5、2 秒后仍为 RxDetect，网口仍 USB2 480，网线管理
+正常。未加入循环复位服务，不据这次失败修改通用 USB hub 行为。
+
+新增 manual-only usb3-cc-snapshot 诊断模块，通过已有 PMIC regmap，仅访问
+原厂驱动定义的 Type-C/PD 配置和只读状态寄存器；不读 FIFO/中断清除寄存器，
+不写寄存器、不改变时钟或角色。编译任务
+20261112-151647-f50-usb3-cc-readonly-59530；读取结束已经卸载，未增加常驻服务。
+
+故障时实际读取：TYPEC_EN=0x1e03、MODE=0x20d4、PD_CFG=0、
+STATUS=0x60a2、DBG1=0x10f；PD_HEAD_CFG=0、PD_CFG0=0x10b、
+PD_CFG1=0x130b、PD_STS0/1=0x2000。按同平台寄存器定义解码：
+Type-C 为 attached sink（state=2），VBUS_OK=1，USB20_ONLY 位未置位，
+Type-C 的 PD_SUPPORT 及协议控制器 CTL_EN 未启用。PD 数据包头配置处于
+未启用状态，不能把其 0 值当成已协商的数据角色。
+
+同时源码确认 F50/V50 的网页适配器直接写 DWC3 role，UMP9620 TCPM 驱动
+当前被电池策略条件排除。这是已确认的路径缺口；它是否导致本坞 SS 检测
+失败尚未证实。sink 电源角色本身不是错误，不能将其等同于数据 device，
+也不能用强制 source/Rp 或关闭取电来尝试恢复无电池 F50。
+后续候选若扩展无电池 Type-C/PD 支持，须保持取电路径、单独协商数据角色，
+同步网页显式模式选择，并验证电脑设备模式、带外供 host 及两面跨重启行为；
+不能只删除电池判断并复用现有双电源角色/充电器控制。
+
+私有记录：current-ss-port-state.txt、single-ss-warm-reset-result.txt、
+single-ss-warm-reset-settled.txt、cc-pd-readonly-failure-state.txt。
