@@ -1,13 +1,13 @@
 # UMS9620 USB3 角色与方向同步方案
 
 状态：方向/角色同步可在插拔后双面达到 5000 Mbps，带坞启动仍会降至480。
-第八版 TCA 数据门控试验已因失败撤回，当前设备运行 #99、原坞带外供。
-原坞撤外供后两次启动均 5000；恢复外供后的新候选两次启动仍 480。
-电池 self-powered 声明已生效，但没有解决带外供启动降速；保留失败现场。
-本文件不代表 USB3 问题已经修复。
-最新收敛：#97/#98 的“角色冲突转硬复位”策略未通过，源码已撤掉其启用；
-接收生命周期隔离对照已恢复正常 host/sink，但网口仍 480；
-新发现跨 PHY 初始化丢失角色交接标记，正在构建修正，尚未部署。
+当前设备运行 #100，对应签名提交 de0bbf36。最新实测双面均枚举 5000，
+主机＋外供及最终直连电脑 NCM/SSH、蜂窝 IPv4/IPv6、热点正常。
+但同一 #100 首次带外供启动为 480，用户随后手动重启到 5000，
+因此不能宣布带外供跨重启的间歇降速已解决，也不能直接断言是坞的缺陷。
+原厂 Android 也曾复现该组合；#95 的无外供对照两次均为 5000。
+#97/#98 的角色冲突硬复位策略未通过，正常构建已撤掉；已保留独立确认的
+PD 生命周期与 PHY 角色交接修正。设备临时 LAN 改动已恢复，不额外重启。
 范围：MU300/F50/U30 Air 的 UMS9620 主线内核适配；不直接套用 Pro/E5。
 
 ## 目标
@@ -17,7 +17,7 @@
 自动与用户手选角色。USB2 设备或 USB2 线本身只能跑 480 Mbit/s，不能承诺
 所有组合一律 5 Gbit/s，也不能仅凭 root hub 的 10000M 判断链路成功。
 
-## 当前源码证据
+## 初始源码证据（修正前）
 
 - `upstream/port/drivers/usb/phy/phy-sprd-ums9620-ssphy.c`：初始化按
   `is_host` 设置 TCA GCFG bit4；`sprd_ssphy_set_vbus()` 在后续角色变化时
@@ -769,3 +769,39 @@ role_changed=false。保留 controller-sync 的无操作检查于是可能跳过
 同步失败保留标记与成功后不再强制交接；两版对象编译通过。
 完整候选构建日志 20261112-134108-usb3-pending-role-candidate-59030，
 尚未实机验证。PD 采用原主线策略，失败的角色冲突硬复位策略继续关闭。
+
+### #100 最终实机记录：双面和电脑模式通过，带坞重启仍间歇降速
+
+用户授权写入新镜像，最多三次带外供正常重启，每轮正常枚举才继续，
+最后直连电脑检查，不额外重启。实际写入 boot_b 前 48 MiB 并回读为
+6c356cc9386b21a0f456a7ba33af5030c2dd4e59a769a0352dfde1be53750a54，
+202 个模块和 Image 共 204 个清单项通过校验，原 #99 模块目录保留。
+
+首轮 boot_id=43f9ce8c-d33c-44e6-9785-9125f8f08bb8，host/sink、
+外供/Full、网线管理正常，但 RTL8153 为 480，没有 SS hub。8.791188秒
+TCA 日志明确 role_change=1、result=0、output=0x103，证明待交接标记
+修正已执行，却不足以修好这次 SS 枚举。随后稳定读取确认蜂窝 v4/v6 与
+热点正常。未继续条件中的剩余两次自动重启。
+
+之后只读发现同一 #100 的新 boot_id=48258594-2764-4803-95e7-038c19e9c5cd，
+原方向下两个 0bda:0411 hub 及 0bda:8153 均为 5000。用户明确确认这次
+是其手动重启；不能记成 Agent 发起的第二次重启，也不是自动崩溃恢复。
+原方向 AON BOOT_MODE=0x41d/flip0，TCA output=0x103；用户将插头翻面后，
+BOOT_MODE=0x1d/flip1、output=0x107，两个 SS hub 和网口仍为 5000，
+同一 boot_id 未变，host/sink、外供/Full 和蜂窝/热点正常。
+
+最后用户直连电脑，仍同一 boot_id，Type-C=device/sink，UDC configured，
+实际 current_speed=high-speed（与本次线材/电脑路径的既有基线相同），
+usb0 在 br-lan 上 UP/LOWER_UP，NCM/SSH 工作，蜂窝 IPv4/IPv6、热点正常，
+未见新增 Oops/Call trace/Kernel panic/cannot prepare。没有额外重启。
+不能把本次电脑路径表述成 USB3 设备模式 5 Gbps 已验收。
+
+证据：pending-role-first-boot.txt、pending-role-first-settled.txt、
+pending-role-before-final-orientation-check.txt、pending-role-final-flipped-orientation.txt、
+pending-role-final-pc-regression.txt。测试结束只移除本轮临时添加的 eth0
+LAN 成员及 unisoc_modem.usb.lan_auto=1，不覆盖其他配置、不重载网络；
+回读 ports=usb0、lan_auto 不存在且 UDC 仍 configured。电脑 USB NCM 网卡
+的临时地址及专用 /32 路由已移除，DHCP、自动跃点、IPv6 路由发现及原 DNS
+已恢复。以太网 5 在用户报告拔线后仍显示 Up；用户随后明确要求“别管”，
+因此停止修改该网口，保留其临时静态地址、DNS 和路由保护，未将其记为
+已恢复。电脑 Wi-Fi 保持 CUDY_TR3000，默认 IPv4 路由仍经 192.168.10.1。
