@@ -92,9 +92,11 @@ def patch_wifi(root):
 
 def patch_reload(root):
     root = Path(root)
-    # SET_BEACON has no crypto-settings callback in cfg80211. In-place BSS
-    # reloads cannot update the firmware password; restart only when an SAE
-    # BSS configuration actually changes, not on each ordinary reload.
+    if '/* sc2355-security-reload:' in (root / 'hostapd.uc').read_text():
+        return
+    # SET_BEACON has no crypto-settings callback in cfg80211. Firmware-SAE
+    # configuration changes require START_AP; WPA2 security changes below
+    # also recreate the SC2355 BSS rather than retaining old key state.
     replace(root / 'hostapd.uc',
             '\tif (is_equal(old_config.bss, config.bss))\n\t\treturn true;\n',
             '''\tif (is_equal(old_config.bss, config.bss))
@@ -107,6 +109,26 @@ def patch_reload(root):
 				if (line == 'unisoc_sae=1')
 					return false;
 ''')
+    # SC2355's CHANGE_BEACON updates IEs only, unlike START_AP. A security
+    # change must discard the previous BSS/key state, just as a width change
+    # already does. Keep ordinary reloads and unrelated drivers incremental.
+    path = root / 'hostapd.uc'
+    replace(path, 'import { open, readfile, access } from "fs";',
+            'import { open, readfile, access, realpath } from "fs";')
+    replace(path, '\t/* A changed firmware-SAE BSS needs START_AP with its new password. */',
+            '''	/* sc2355-security-reload: renew firmware BSS and key state together. */
+	if (realpath(`/sys/class/ieee80211/${phy}/device/driver/module`) == '/sys/module/sprd_wlan_combo') {
+		let security = (bss) => ({
+			data: filter(bss.data ?? [], (line) => !!match(line,
+				/^(wpa|wpa_passphrase|wpa_psk|wpa_key_mgmt|wpa_pairwise|rsn_pairwise|ieee80211w|sae_password|sae_pwe)=/)),
+			psk: bss.hash?.wpa_psk_file,
+			sae: bss.hash?.sae_password_file,
+		});
+		if (!is_equal(map(old_config.bss ?? [], security), map(config.bss ?? [], security)))
+			return false;
+	}
+
+	/* A changed firmware-SAE BSS needs START_AP with its new password. */''')
 
 
 if __name__ == '__main__':

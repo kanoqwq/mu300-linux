@@ -867,7 +867,15 @@ down() {
 sim_reset() {
     "${MU300_RADIO_ALLOWED:-/opt/mu300/bin/mu300-radio-allowed}" "$MU300_SIM_SLOT" || { echo 'This SIM radio is disabled by the user' >&2; return 1; }
     tty_setup
-    at 'AT+SFUN=5' 20; at 'AT+SFUN=3' 10; sleep 2; at 'AT+SFUN=2' 10; at 'AT+SFUN=4' 30
+    # A failed reply may follow an already executed stop. Complete the existing
+    # power-up sequence once through the same owner, preserving the first error.
+    local reset_rc=0 command_rc
+    at 'AT+SFUN=5' 20 || reset_rc=$?
+    at 'AT+SFUN=3' 10 || { command_rc=$?; [ "$reset_rc" -ne 0 ] || reset_rc=$command_rc; }
+    sleep 2
+    at 'AT+SFUN=2' 10 || { command_rc=$?; [ "$reset_rc" -ne 0 ] || reset_rc=$command_rc; }
+    at 'AT+SFUN=4' 30 || { command_rc=$?; [ "$reset_rc" -ne 0 ] || reset_rc=$command_rc; }
+    [ "$reset_rc" -eq 0 ] || return "$reset_rc"
     for _ in $(seq 1 30); do at 'AT+CPIN?' | grep -q READY && break; sleep 2; done
     at 'AT+CPIN?' || return $?
     # SFUN=2 resets volatile preferences too. Reuse the detached platform
