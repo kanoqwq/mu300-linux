@@ -805,3 +805,55 @@ LAN 成员及 unisoc_modem.usb.lan_auto=1，不覆盖其他配置、不重载网
 已恢复。以太网 5 在用户报告拔线后仍显示 Up；用户随后明确要求“别管”，
 因此停止修改该网口，保留其临时静态地址、DNS 和路由保护，未将其记为
 已恢复。电脑 Wi-Fi 保持 CUDY_TR3000，默认 IPv4 路由仍经 192.168.10.1。
+
+
+### F50 无电池实机对照：坞一起断电能到 USB3，单独重启仍降速
+
+用户连接同一只带供电 Realtek 扩展坞，明确授权编译、刷入并测试 F50。
+本机是 eMMC、没有电池策略服务，Linux boot_b 为 mmcblk0p38，根分区
+mu300root 为 mmcblk0p76。不能套用上一台 U30 Air 的 UFS 节点、boot 镜像
+或 Windows 临时网络配置。
+
+先保存本机完整 64 MiB boot 和原模块，核对原 boot 前 48 MiB 摘要；使用
+既有构建树，通过受版本管理的 build-release.py run 调用 build.sh 和
+build-modules.sh，生成 7.2.8 #101。未改变无电池板的供电策略，未主动改写
+用户的 USB 角色配置。使用本机备份生成候选，保留 init、ramdisk 元数据、命令行、持久日志
+与 AVB 尾部，仅替换内核及对应模块。四项 USB3 回归、202 个模块和
+Image/kernel.config 共 204 项摘要通过；刷入前后 boot 前 48 MiB 回读一致。
+Android A、GPT、userdata、NV/IMEI 未改。原模块目录留存供恢复。
+
+| 对照 | 实际网口/SS hub | 角色及方向同步 |
+| --- | --- | --- |
+| 原 #73 带同一外供坞 | RTL8153 480，无 SS hub | host |
+| #101 保持坞供电正常重启 | 480，无 SS hub | host，boot=0x41f，flip0，output=0x103，result=0 |
+| 仅拔插 F50 C 口，同方向，坞不断电 | 480，无 SS hub | host，flip0，output=0x103，result=0 |
+| 仅翻转 F50 C 口，坞不断电 | 480，无 SS hub | host，boot=0x1b，flip1，output=0x107，result=0 |
+| F50 C 口不动，坞完全撤去外供 10 秒后重新供电 | 两个 0bda:0411 hub、RTL8153、读卡器均 5000 | host，flip1，output=0x107，result=0 |
+| 上一行成功后，供电/线缆不动，只正常重启 F50 | RTL8153 又回到 480，无 SS hub | host，flip1，output=0x107，result=0 |
+
+全断电成功与随后软件重启失败使用同一 #101 内核、同一插头方向和同一
+供电配置。它们的 TCA 同步都成功，不能再把 role_change 处理完成或输出
+方向一致当成 SuperSpeed 链路已修复。证据支持“坞保留的供电/链路状态与
+重新建链时序有关”，仍不能单方面证明纯粹是坞硬件缺陷或将原因全归于 PHY。
+没有采用强制 host/SRC、按秒猜测电脑、循环 PHY 复位或电池策略冒用。
+各轮热点、蜂窝 IPv4/IPv6 与网线管理均恢复。
+
+构建任务：20261112-141014-f50-usb3-kernel-trial-59090；镜像与回归任务：
+20261112-141157-f50-usb3-image-check-59112。私有实机记录在
+work/f50-usb3-20261112 的 baseline.txt、first-boot.txt、
+same-orientation-cold-boot.txt、flipped-cold-boot.txt、
+dock-and-f50-cold-boot.txt、warm-reboot-after-dock-powercycle.txt。
+设备备份、CID 和完整诊断不纳入公开仓库。
+
+最终用户直连电脑，并说明此前手动选择了主机模式；用户通过手机手动改为
+设备模式后，PC 出现 UsbNcm Host Device #3，DHCP 地址 192.168.77.200，
+F50 为 device、UDC configured/high-speed，usb0 UP/LOWER_UP，NCM/SSH
+及蜂窝 v4/v6、热点正常，未出现新增 Oops/Call trace。不能把手动主机模式下
+不枚举成电脑网卡记为设备模式缺陷，也不能据此宣称已验证自动角色或电脑
+设备模式 5 Gbps。用户保存的 role_auto=0 和设备模式均保留。
+
+电脑全程保留原 Wi-Fi 和默认联网路由，本轮未修改电脑地址、DNS 或路由，
+未清理原有 F50 的 lan_auto=1/eth0 LAN 成员。备份及本轮部署回执保留，
+当前机器仍运行 #101、连接电脑处于设备模式。最终记录 direct-pc-final.txt。
+本轮结论是“无电池 F50 可达 USB3，但该外供坞的跨重启链路问题仍复现”，
+不是正式发布或全硬件验收通过。
