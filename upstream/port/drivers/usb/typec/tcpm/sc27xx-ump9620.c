@@ -46,7 +46,7 @@ struct sc27xx_pd {
 	int irq, cc_irq;
 	enum typec_role power_role;
 	bool attached, pd_capable;
-	bool vbus_on, tx_pending, stopping, irqs_enabled;
+	bool vbus_on, tx_pending, tx_sop, stopping, irqs_enabled;
 };
 
 #include "sc27xx-ump9620-calibration.h"
@@ -278,8 +278,10 @@ static int sc27xx_transmit(struct tcpc_dev *tcpc, enum tcpm_transmit_type type,
 		ret = regmap_write_bits(pd->regmap, pd->base + SC27XX_PD_CTRL,
 			SC27XX_PD_TX_START, SC27XX_PD_TX_START);
 pending:
-	if (!ret)
+	if (!ret) {
+		pd->tx_sop = type == TCPC_TX_SOP;
 		pd->tx_pending = true;
+	}
 out:
 	mutex_unlock(&pd->lock);
 	return ret;
@@ -289,6 +291,16 @@ static void sc27xx_complete_tx(struct sc27xx_pd *pd, enum tcpm_transmit_status s
 {
 	/* The same packet may produce TX_OK and an explicit GoodCRC reception. */
 	if (pd->tx_pending) {
+		/* With automatic GoodCRC reception, TX_OK can be the only ACK
+		 * notification. Match the stock first-GoodCRC Type-C handoff here
+		 * for either IRQ path. A hard reset is not an acknowledged SOP.
+		 */
+		if (status == TCPC_TX_SUCCESS && pd->tx_sop &&
+		    cc_update(pd, SC27XX_TYPEC_PD_CFG, SC27XX_TYPEC_PD_CONSTRACT,
+			      SC27XX_TYPEC_PD_CONSTRACT)) {
+			dev_warn_ratelimited(pd->dev, "PD communication handoff failed\n");
+			status = TCPC_TX_FAILED;
+		}
 		pd->tx_pending = false;
 		tcpm_pd_transmit_complete(pd->port, status);
 	}
@@ -337,8 +349,6 @@ static int sc27xx_receive(struct sc27xx_pd *pd)
 			"PD invalid source capabilities: header %#x, FIFO %#x, first PDO %#x\n",
 			le16_to_cpu(msg.header), rx_status, le32_to_cpu(msg.payload[0]));
 	if (!count && pd_header_type_le(msg.header) == PD_CTRL_GOOD_CRC) {
-		cc_update(pd, SC27XX_TYPEC_PD_CFG, SC27XX_TYPEC_PD_CONSTRACT,
-			SC27XX_TYPEC_PD_CONSTRACT);
 		sc27xx_complete_tx(pd, TCPC_TX_SUCCESS);
 	} else {
 		tcpm_pd_receive(pd->port, &msg, TCPC_TX_SOP);
@@ -542,6 +552,11 @@ static int sc27xx_probe(struct platform_device *pdev)
 	u32 src[] = { PDO_FIXED(5000, 500, PDO_FIXED_DUAL_ROLE | PDO_FIXED_DATA_SWAP | PDO_FIXED_USB_COMM) };
 	u32 snk[] = { PDO_FIXED(5000, 2000, PDO_FIXED_DUAL_ROLE | PDO_FIXED_DATA_SWAP | PDO_FIXED_USB_COMM) };
 	const struct property_entry properties[] = {
+		/* This driver is gated to battery-policy boards below. Let TCPM
+		 * use battery-backed recovery, rather than treating a powered dock
+		 * as the system's only power source. PDO limits/roles stay unchanged.
+		 */
+		PROPERTY_ENTRY_BOOL("self-powered"),
 		PROPERTY_ENTRY_STRING("power-role", "dual"),
 		PROPERTY_ENTRY_STRING("data-role", "dual"),
 		PROPERTY_ENTRY_STRING("try-power-role", "sink"),

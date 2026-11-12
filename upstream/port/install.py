@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Copy the MU300 driver ports (drivers ported from the Unisoc 5.4 tree) into a mainline tree and hook up
 Makefile/Kconfig entries. Idempotent. usage: install.py <kernel tree>"""
-import os, shutil, sys
+import os, re, shutil, sys
 tree = sys.argv[1]
 here = os.path.dirname(os.path.abspath(__file__))
 for root, _, files in os.walk(here):
@@ -288,6 +288,97 @@ missing = [(p, w) for p, ws in expect for w in ws if w not in open(os.path.join(
 if missing:
     sys.exit('port: edits did not apply (anchor changed in this kernel?): ' + '; '.join(f'{p}: {w}' for p, w in missing))
 print('port installed')
+
+# UMS9620's two legacy usb-phy phandles reference the same combo PHY. Its
+# role-dependent TCA state must be prepared after stopping the old link and
+# before starting xHCI/gadget, not after xHCI has begun link training.
+core_path = os.path.join(tree, 'drivers/usb/dwc3/core.c')
+core = open(core_path).read()
+header = '#include <linux/usb/ums9620-ssphy.h>\n'
+if header not in core:
+    anchor = '#include "core.h"\n'
+    if core.count(anchor) != 1:
+        sys.exit('port: unexpected DWC3 header location')
+    core = core.replace(anchor, header + anchor)
+resume_decls = '/* ums9620 role-resume forward declarations */'
+if resume_decls in core:
+    previous_decls = re.compile(re.escape(resume_decls) +
+        r'\n(?:(?:static )?(?:void|int) dwc3_core_(?:exit|init|init_for_resume)'
+        r'\(struct dwc3 \*dwc\);\n){2}\n')
+    core, count = previous_decls.subn('', core)
+    if count != 1:
+        sys.exit('port: unexpected existing DWC3 lifecycle declarations')
+if resume_decls not in core:
+    declarations = []
+    for name in ('dwc3_core_exit', 'dwc3_core_init_for_resume'):
+        match = re.search(r'^((?:static )?(?:void|int) ' + name +
+                          r'\(struct dwc3 \*dwc\))\n\{', core, re.M)
+        if not match:
+            sys.exit('port: unexpected DWC3 core lifecycle signature: ' + name)
+        declarations.append(match.group(1) + ';')
+    role_entry = 'static void __dwc3_set_mode(struct work_struct *work)'
+    if core.count(role_entry) != 1:
+        sys.exit('port: unexpected DWC3 role worker')
+    core = core.replace(role_entry, resume_decls + '\n' +
+                        '\n'.join(declarations) + '\n\n' + role_entry)
+same_role = '\tif (desired_dr_role == dwc->current_dr_role)\n\t\tgoto out;'
+if same_role in core:
+    core = core.replace(same_role, '''\t/* A reattached cable can have a new orientation with the same data role. */
+\tif (desired_dr_role == dwc->current_dr_role &&
+\t    !(of_device_is_compatible(dwc->dev->of_node, "snps,sprd-dwc3") &&
+\t      dwc->usb2_phy && dwc->usb2_phy == dwc->usb3_phy &&
+\t      ums9620_ssphy_orientation_changed(dwc->usb2_phy)))
+\t\tgoto out;''', 1)
+marker = '/* ums9620-prepare-phy-before-role: no VBUS power-policy change. */'
+anchor = '\tspin_lock_irqsave(&dwc->lock, flags);\n\n\tdwc3_set_prtcap(dwc, desired_dr_role, false);'
+prepare = '''\t/* ums9620-prepare-phy-before-role: no VBUS power-policy change. */
+\tif (of_device_is_compatible(dwc->dev->of_node, "snps,sprd-dwc3") &&
+\t    dwc->usb2_phy && dwc->usb2_phy == dwc->usb3_phy &&
+\t    desired_dr_role != DWC3_GCTL_PRTCAP_OTG) {
+\t\tbool host_resume = desired_dr_role == DWC3_GCTL_PRTCAP_HOST &&
+\t\t\tdwc->current_dr_role != DWC3_GCTL_PRTCAP_HOST &&
+\t\t\tums9620_ssphy_host_resume_needed(dwc->usb2_phy);
+\t\tbool host_resumed = false;
+
+\t\t/* Both old controllers have exited. Match the stock glue ordering:
+\t\t * host PHY intent, then full PHY/core resume, then xHCI. A PHY-only
+\t\t * reset would also reset the core without restoring its registers.
+\t\t */
+\t\tif (host_resume && dwc->current_dr_role)
+\t\t\tdwc3_core_exit(dwc);
+\t\tret = otg_set_vbus(dwc->usb2_phy->otg,
+\t\t\tdesired_dr_role == DWC3_GCTL_PRTCAP_HOST);
+\t\tif (!ret && host_resume) {
+\t\t\tret = dwc3_core_init_for_resume(dwc);
+\t\t\thost_resumed = !ret;
+\t\t\t/* phy_init restored controller-sync mode. Finish the mux
+\t\t\t * handoff now, not in the generic callback after xHCI starts.
+\t\t\t */
+\t\t\tif (!ret)
+\t\t\t\tret = otg_set_vbus(dwc->usb2_phy->otg, true);
+\t\t}
+\t\tif (ret) {
+\t\t\tif (host_resumed)
+\t\t\t\tdwc3_core_exit(dwc);
+\t\t\tdev_err(dwc->dev, "cannot prepare combo PHY role: %d\\n", ret);
+\t\t\t/* The old controller has exited; allow a later explicit retry. */
+\t\t\tdwc->current_dr_role = 0;
+\t\t\tgoto out;
+\t\t}
+\t}
+
+'''
+if marker in core:
+    begin = core.index('\t' + marker)
+    end = core.find(anchor, begin)
+    if end < 0 or core[begin:end].count(marker) != 1:
+        sys.exit('port: unexpected existing UMS9620 role preparation block')
+    core = core[:begin] + prepare + core[end:]
+else:
+    if core.count(anchor) != 1:
+        sys.exit('port: unexpected DWC3 role transition; USB3 preparation not applied')
+    core = core.replace(anchor, prepare + anchor)
+open(core_path, 'w').write(core)
 
 # LEDs of the ZTE U30 Air: its white ones on PMIC LDOs (leds-zte-ldo.c), and its red on the PMIC's keypad backlight
 # sink (leds-sc27xx-kpled.c)

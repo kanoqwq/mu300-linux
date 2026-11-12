@@ -84,15 +84,19 @@ enum typec_role {TYPEC_SINK,TYPEC_SOURCE};
 enum typec_data_role {TYPEC_DEVICE,TYPEC_HOST};
 enum tcpm_transmit_status {TCPC_TX_SUCCESS,TCPC_TX_FAILED};
 struct tcpc_dev {void *pd;};
-struct sc27xx_pd {void *role_sw,*dev,*port;bool attached,tx_pending,pd_capable;enum typec_role power_role;};
+struct sc27xx_pd {void *role_sw,*dev,*port;bool attached,tx_pending,tx_sop,pd_capable;enum typec_role power_role;};
 #define SC27XX_PD_CFG0 16
 #define SC27XX_PD_SRC_SINK_MODE 512
+#define SC27XX_TYPEC_PD_CFG 8
+#define SC27XX_TYPEC_PD_CONSTRACT 64
+#define dev_warn_ratelimited(...) ((void)0)
 #define dev_info(...) ((void)0)
-static int writes,usb_calls,power_value,usb_value,write_error,usb_error,tx_completions;
+static int writes,usb_calls,power_value,usb_value,write_error,usb_error,tx_completions,contract_writes,last_status;
+static int cc_update(struct sc27xx_pd *pd,int reg,int mask,int val){(void)pd;assert(reg==8&&mask==64&&val==64);contract_writes++;return write_error;}
 static struct sc27xx_pd *to_pd(struct tcpc_dev *dev){return dev->pd;}
 static int pd_update(struct sc27xx_pd *pd,int reg,int mask,int val){(void)pd;assert(reg==16&&mask==512);writes++;power_value=val;return write_error;}
 static int usb_role_switch_set_role(void *sw,enum usb_role role){(void)sw;usb_calls++;usb_value=role;return usb_error;}
-static void tcpm_pd_transmit_complete(void *port,enum tcpm_transmit_status status){(void)port;(void)status;tx_completions++;}
+static void tcpm_pd_transmit_complete(void *port,enum tcpm_transmit_status status){(void)port;last_status=status;tx_completions++;}
 '''
         after=r'''
 int main(void){
@@ -109,8 +113,15 @@ int main(void){
  assert(sc27xx_set_roles(&tcpc,true,TYPEC_SOURCE,TYPEC_HOST)==-EIO&&usb_calls==calls&&!pd.attached);
  write_error=0;usb_error=-EIO;
  assert(sc27xx_set_roles(&tcpc,true,TYPEC_SOURCE,TYPEC_HOST)==-EIO&&!pd.attached);
- pd.tx_pending=true;sc27xx_complete_tx(&pd,TCPC_TX_SUCCESS);sc27xx_complete_tx(&pd,TCPC_TX_SUCCESS);
- assert(tx_completions==1&&!pd.tx_pending);
+ usb_error=0;
+ pd.tx_sop=true;pd.tx_pending=true;sc27xx_complete_tx(&pd,TCPC_TX_SUCCESS);sc27xx_complete_tx(&pd,TCPC_TX_SUCCESS);
+ assert(tx_completions==1&&!pd.tx_pending&&contract_writes==1&&last_status==TCPC_TX_SUCCESS);
+ pd.tx_sop=false;pd.tx_pending=true;sc27xx_complete_tx(&pd,TCPC_TX_SUCCESS);
+ assert(tx_completions==2&&contract_writes==1);
+ pd.tx_sop=true;pd.tx_pending=true;sc27xx_complete_tx(&pd,TCPC_TX_FAILED);
+ assert(tx_completions==3&&contract_writes==1);
+ write_error=-EIO;pd.tx_pending=true;sc27xx_complete_tx(&pd,TCPC_TX_SUCCESS);
+ assert(tx_completions==4&&contract_writes==2&&last_status==TCPC_TX_FAILED);
  return 0;
 }
 '''
@@ -152,9 +163,9 @@ typedef uint32_t u32;typedef uint16_t u16;typedef int irqreturn_t;
         model=r"""
 enum tcpm_transmit_status {TCPC_TX_SUCCESS,TCPC_TX_FAILED};
 struct pd_message {u16 header;u32 payload[7];};
-struct sc27xx_pd {void *regmap,*port,*dev;u32 base,typec_base;int lock;bool tx_pending,pd_capable;};
+struct sc27xx_pd {void *regmap,*port,*dev;u32 base,typec_base;int lock;bool tx_pending,tx_sop,pd_capable;};
 static u32 fifo[24],flags;static int at,held,flushes,messages,completions,hard_resets,read_error;
-static int empty_reads,stay_empty,status_reads,fail_at=-1,warnings;static struct pd_message received;
+static int empty_reads,stay_empty,status_reads,fail_at=-1,warnings,contract_notifications;static struct pd_message received;
 static void mutex_lock(int *p){(void)p;assert(!held);held=1;}
 static void mutex_unlock(int *p){(void)p;assert(held);held=0;}
 static int regmap_read(void *map,u32 reg,u32 *value){
@@ -173,7 +184,7 @@ static int regmap_read(void *map,u32 reg,u32 *value){
  if(++attempt>40){result=-ETIMEDOUT;break;}}while(1);result;})
 static int regmap_write(void *map,u32 reg,u32 value){(void)map;(void)value;assert(held&&reg==SC27XX_INT_CLR);return 0;}
 static int regmap_write_bits(void *map,u32 reg,u32 mask,u32 value){(void)map;assert(held&&reg==SC27XX_PD_CTRL);if(mask&SC27XX_PD_RX_FLASH){assert(value&SC27XX_PD_RX_FLASH);flushes++;}return 0;}
-static int cc_update(struct sc27xx_pd *pd,u32 reg,u32 mask,u32 value){(void)pd;(void)reg;(void)mask;(void)value;return 0;}
+static int cc_update(struct sc27xx_pd *pd,u32 reg,u32 mask,u32 value){(void)pd;assert(held&&reg==SC27XX_TYPEC_PD_CFG&&mask==SC27XX_TYPEC_PD_CONSTRACT&&value==mask);contract_notifications++;return 0;}
 static void tcpm_pd_receive(void *port,const struct pd_message *msg,int sop){(void)port;assert(sop==TCPC_TX_SOP);received=*msg;messages++;}
 static void tcpm_pd_transmit_complete(void *port,enum tcpm_transmit_status status){(void)port;(void)status;completions++;}
 static void tcpm_pd_hard_reset(void *port){(void)port;hard_resets++;}
@@ -183,7 +194,7 @@ int main(void){
  struct sc27xx_pd pd={0};
  empty_reads=2;flags=SC27XX_PD_PKG_RV_FLAG;fifo[0]=0x1161;fifo[1]=0x90c8;fifo[2]=0x2601;fifo[3]=0xc0d8;fifo[4]=0xb104;
  sc27xx_pd_irq(1,&pd);assert(messages==1&&at==3&&flushes==1&&received.header==0x1161&&received.payload[0]==0x260190c8&&!held&&status_reads==4);
- at=0;fifo[0]=PD_CTRL_GOOD_CRC;flags|=SC27XX_PD_TX_OK_FLAG;pd.tx_pending=true;
+ at=0;fifo[0]=PD_CTRL_GOOD_CRC;flags|=SC27XX_PD_TX_OK_FLAG;pd.tx_pending=true;pd.tx_sop=true;
  sc27xx_pd_irq(1,&pd);assert(messages==1&&completions==1&&!pd.tx_pending&&at==1&&flushes==2&&!held);
  read_error=1;flags=SC27XX_PD_PKG_RV_FLAG;sc27xx_pd_irq(1,&pd);assert(messages==1&&completions==1&&flushes==3&&!held);
  flags=SC27XX_PD_HARD_RST_FLAG;sc27xx_pd_irq(1,&pd);assert(hard_resets==1&&!held);
@@ -202,6 +213,13 @@ int main(void){
  /* Report, but do not rewrite/discard, the observed malformed SourceCaps. */
  at=0;fifo[1]=0x8f7d;fifo[2]=0x3800;int old_warnings=warnings;
  sc27xx_pd_irq(1,&pd);assert(messages==3&&at==9&&flushes==8&&warnings==old_warnings+1);
+ /* Automatic GoodCRC may produce TX_OK without any RX FIFO frame. */
+ int old_completions=completions,old_contracts=contract_notifications;
+ pd.tx_pending=true;pd.tx_sop=true;flags=SC27XX_PD_TX_OK_FLAG;
+ sc27xx_pd_irq(1,&pd);
+ assert(completions==old_completions+1&&contract_notifications==old_contracts+1&&!pd.tx_pending&&!held);
+ sc27xx_pd_irq(1,&pd);
+ assert(completions==old_completions+1&&contract_notifications==old_contracts+1);
 
  return 0;
 }

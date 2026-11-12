@@ -11,6 +11,7 @@
 #include <linux/err.h>
 #include <linux/extcon.h>
 #include <linux/io.h>
+#include <linux/iopoll.h>
 #include <linux/kernel.h>
 #include <linux/mfd/syscon.h>
 #include <linux/module.h>
@@ -24,11 +25,13 @@
 #include <linux/slab.h>
 #include <linux/usb/otg.h>
 #include <linux/usb/phy.h>
+#include <linux/usb/ums9620-ssphy.h>
 #include <linux/workqueue.h>
 #include <dt-bindings/soc/sprd,qogirn6pro-mask.h>
 #include <dt-bindings/soc/sprd,qogirn6pro-regs.h>
 
 struct sprd_ssphy {
+	bool orientation_error;
 	struct device		*dev;
 	struct usb_phy		phy;
 	void __iomem		*base;
@@ -155,6 +158,33 @@ static int sc27xx_dpdm_switch_to_phy(struct regmap *regmap, bool enable)
 }
 
 static void sprd_ssphy_bc12_role(struct sprd_ssphy *phy);
+static int sprd_ssphy_notify_connect(struct usb_phy *x, enum usb_device_speed speed);
+static int sprd_ssphy_notify_disconnect(struct usb_phy *x, enum usb_device_speed speed);
+
+static int sprd_ssphy_restore_data_state(struct sprd_ssphy *phy)
+{
+	enum usb_charger_type type;
+	int ret = 0;
+
+	if (!phy->bc12_enabled)
+		return 0;
+	mutex_lock(&phy->dpdm_lock);
+	/* The detector can finish before PHY init, when notify_* has no live
+	 * registers to update. Apply its current decision before returning the
+	 * initialized PHY to DWC3; do not let init unconditionally reopen data.
+	 * Host + external sink power remains independent of charger detection.
+	 */
+	if (!phy->is_host) {
+		type = READ_ONCE(phy->phy.chg_type);
+		if (READ_ONCE(phy->vbus_present) &&
+		    (type == SDP_TYPE || type == CDP_TYPE))
+			ret = sprd_ssphy_notify_connect(&phy->phy, USB_SPEED_UNKNOWN);
+		else
+			ret = sprd_ssphy_notify_disconnect(&phy->phy, USB_SPEED_UNKNOWN);
+	}
+	mutex_unlock(&phy->dpdm_lock);
+	return ret;
+}
 
 
 static inline void sprd_ssphy_reset_core(struct sprd_ssphy *phy)
@@ -200,6 +230,42 @@ static inline void sprd_ssphy_reset_core(struct sprd_ssphy *phy)
 }
 
 
+#include "ums9620-tca.h"
+
+bool ums9620_ssphy_orientation_changed(struct usb_phy *x)
+{
+	struct sprd_ssphy *phy = container_of(x, struct sprd_ssphy, phy);
+	u32 boot, flip, gcfg, direction, status, role;
+
+	if (!atomic_read(&phy->inited))
+		return false;
+	if (regmap_read(phy->aon_apb, REG_AON_APB_BOOT_MODE, &boot))
+		return false;
+	flip = boot & BIT(10) ? 0 : BIT(2);
+	gcfg = readl(phy->base + 0x10);
+	direction = readl(phy->base +
+		((gcfg & UMS9620_TCA_OP_MODE_MASK) == UMS9620_TCA_OP_MODE_SYSTEM ?
+		 0x18 : 0x14));
+	status = readl(phy->base + 0x34);
+	role = phy->is_host ? 0 : UMS9620_TCA_DEVICE_ROLE;
+	return phy->orientation_error ||
+		(gcfg & UMS9620_TCA_DEVICE_ROLE) != role ||
+		(direction & (BIT(3) | BIT(2))) != flip ||
+		(status & (BIT(3) | BIT(2))) != flip;
+}
+EXPORT_SYMBOL_GPL(ums9620_ssphy_orientation_changed);
+
+bool ums9620_ssphy_host_resume_needed(struct usb_phy *x)
+{
+	struct sprd_ssphy *phy = container_of(x, struct sprd_ssphy, phy);
+
+	/* Stock battery-board glue sets host before resuming the combo PHY.
+	 * Keep the existing direct path of boards without this policy.
+	 */
+	return phy->bc12_enabled;
+}
+EXPORT_SYMBOL_GPL(ums9620_ssphy_host_resume_needed);
+
 static int sprd_ssphy_set_vbus(struct usb_phy *x, int on)
 {
 	struct sprd_ssphy *phy = container_of(x, struct sprd_ssphy, phy);
@@ -236,6 +302,21 @@ static int sprd_ssphy_set_vbus(struct usb_phy *x, int on)
 		ret |= regmap_update_bits(phy->ana_g0l,
 			REG_ANLG_PHY_G0L_ANALOG_USB20_USB20_UTMI_CTL1,
 			msk, reg);
+		/* BC1.2/detach may have invalidated both PHY inputs while we were
+		 * a device. The stock host resume reruns phy_init(), restoring them.
+		 * Mainline keeps the PHY initialized across DR swaps, so restore the
+		 * data-path inputs here before xHCI starts (also for host + sink).
+		 * These are internal valid signals, not the external VBUS regulator.
+		 */
+		ret |= regmap_update_bits(phy->aon_apb, REG_AON_APB_OTG_PHY_TEST,
+				MASK_AON_APB_OTG_VBUS_VALID_PHYREG,
+				MASK_AON_APB_OTG_VBUS_VALID_PHYREG);
+		ret |= regmap_update_bits(phy->aon_apb, REG_AON_APB_USB31DPCOMBPHY_CTRL,
+				MASK_AON_APB_SYS_VBUSVALID, MASK_AON_APB_SYS_VBUSVALID);
+		ret |= regmap_update_bits(phy->ana_g0l,
+				REG_ANLG_PHY_G0L_ANALOG_USB20_USB20_UTMI_CTL1,
+				BIT_ANLG_PHY_G0L_ANALOG_USB20_USB20_VBUSVLDEXT,
+				BIT_ANLG_PHY_G0L_ANALOG_USB20_USB20_VBUSVLDEXT);
 		phy->is_host = true;
 	} else {
 		regmap_write(phy->ana_g0l, REG_ANLG_PHY_G0L_ANALOG_USB20_USB20_TRIMMING,
@@ -272,6 +353,11 @@ static int sprd_ssphy_set_vbus(struct usb_phy *x, int on)
 			sprd_ssphy_bc12_role(phy);
 		mutex_unlock(&phy->dpdm_lock);
 	}
+	/* DWC3 has stopped the previous link. Synchronize PHY data role and
+	 * direction before the next link starts; never change VBUS policy here.
+	 */
+	if (!ret && atomic_read(&phy->inited))
+		ret = sprd_ssphy_sync_orientation(phy, was_host != phy->is_host);
 	return ret;
 }
 
@@ -520,6 +606,7 @@ static int sprd_ssphy_init(struct usb_phy *x)
 	}
 
 	atomic_set(&phy->inited, 1);
+	ret |= sprd_ssphy_restore_data_state(phy);
 
 	return ret;
 }
