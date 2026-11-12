@@ -100,21 +100,20 @@ int main(void){
 
 
 class ProfileSelection(unittest.TestCase):
-    def test_trial_profile_is_explicit_and_preserves_other_header_bytes(self):
-        select = runpy.run_path(str(TOP/'tools/prepare-usb3-trial.py'))['select_batteryless_pd_profile']
-        original = bytearray(b'Z'*4096)
-        original[44:1580] = b'console=ttyS1'+bytes(1536-len(b'console=ttyS1'))
-        header = bytearray(original); select(header, False)
-        self.assertEqual(header, original)
-        select(header, True)
-        self.assertEqual(header[:44],original[:44]); self.assertEqual(header[1580:],original[1580:])
-        expected = b'console=ttyS1 sc27xx_ump9620.batteryless_sink=1'
-        self.assertEqual(bytes(header[44:1580]).split(b'\0')[0], expected)
-        saved=bytes(header);select(header,True);self.assertEqual(header,saved)
-        bad=bytearray(header);bad[44:1580]=expected.replace(b'=1',b'=0')+bytes(1536-len(expected))
-        with self.assertRaises(ValueError):select(bad,True)
-        big=bytearray(original);big[44:1580]=b'x'*1535+b'\0'
-        with self.assertRaises(ValueError):select(big,True)
+    def test_trial_profile_reaches_forced_kernel_cmdline_and_preserves_other_config(self):
+        profile=runpy.run_path(str(TOP/'upstream/debug/select-f50-pd-sink.py'))
+        select=profile['enable_profile'];validate=profile['validate_profile']
+        original=(TOP/'upstream/mu300-mainline.config').read_text()
+        validate(original,False)
+        with self.assertRaises(ValueError):validate(original,True)
+        updated=select(original);validate(updated,True)
+        self.assertEqual(select(updated),updated)
+        self.assertEqual([v for v in original.splitlines() if not v.startswith('CONFIG_CMDLINE=')],
+                         [v for v in updated.splitlines() if not v.startswith('CONFIG_CMDLINE=')])
+        with self.assertRaises(ValueError):validate(updated,False)
+        with self.assertRaises(ValueError):select(updated.replace('batteryless_sink=1','batteryless_sink=0'))
+        with self.assertRaises(ValueError):select(original.replace('CONFIG_CMDLINE_FORCE=y','# CONFIG_CMDLINE_FORCE is not set'))
+        with self.assertRaises(ValueError):select(updated.replace('batteryless_sink=1','batteryless_sink=1 sc27xx_ump9620.batteryless_sink=1'))
 
 
 class SinkRoleAdapter(ShellTest):

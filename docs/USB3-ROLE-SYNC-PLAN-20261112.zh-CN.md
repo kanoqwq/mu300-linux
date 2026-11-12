@@ -1017,3 +1017,27 @@ ramdisk/init/分区参数和持久日志区域；镜像最后 4096 字节与备�
 本轮只读再次确认机器仍运行 #102、同一 boot_id、host/480，没有刷写或重启。
 待授权后验证实际 Type-C 端口归属、电脑设备网络、PD 主机、正反插和带坞重启；
 这些尚未实测，不能宣称扩展坞 480 Mbps 故障已经解决。
+
+### #103 首次部署：参数未进入有效命令行，未开始 PD 硬件验收
+
+用户明确授权后，保存本机完整 boot、现有模块和运行时备份；写入 Linux B
+boot 前 48 MiB、202 个匹配模块及三份运行时文件并逐项校验，保留 UCI 的
+host 自动应用设置。首次带坞重启进入 #103，boot_id 为
+72022490-79be-4688-a82b-07ba5e5eba7a；网口恢复，但仍为 480，无 Type-C 端口。
+
+只读确认 `/sys/module/sc27xx_ump9620/parameters/batteryless_sink` 为 N。
+镜像头虽包含启用参数，内核配置 `CONFIG_CMDLINE_FORCE=y` 使实际 `/proc/cmdline`
+只使用原有内置参数，因此驱动根本没有选择新路径。本轮不能算 PD 方案已执行
+后仍失败，也不以重复重启来测试一个尚未激活的路径。条件性的第二次重启未执行。
+电脑网卡索引现为 40、Wi-Fi 为 10；根据实际枚举读取，未改网络配置。
+
+构建入口补充显式环境参数 `MU300_F50_PD_SINK_TRIAL=1`，在验证原有配置后，
+仅向该候选的内核内置命令行追加启用参数，再运行 olddefconfig 并检查实际结果。
+默认构建仍以同一原始配置生成，不启用此候选。准备工具必须校验 kernel.config
+中的强制命令行确实包含且只包含一个启用值；默认镜像拒绝误用试验内核。
+不再通过 Android boot header 传递该内核选项，并保留原厂镜像头命令行。
+
+41 项回归及 PD reset 边界测试通过：
+`20261112-165816-f50-pd-forced-cmdline-tests-1334`。新候选构建与实测另行记录。
+私有证据：pd-sink-deployment.txt、pd-sink-first-boot.txt、
+pd-sink-parameter-investigation.txt；完整备份名称包含 before-pd-sink。
