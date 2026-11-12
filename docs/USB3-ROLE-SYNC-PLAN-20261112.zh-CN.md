@@ -888,3 +888,37 @@ PD 生命周期/策略清除及六项原有 U30 Air PD 回归全部通过。
 20261112-143445-f50-host-lifecycle-tests-59310；本机镜像准备任务
 20261112-143717-f50-host-lifecycle-image-59353。仍属硬件候选，尚未证明
 外供坞跨重启问题已经解决；保留前一轮失败和冷启动对照记录。
+
+
+### 完整生命周期候选 #102：顺序已执行，跨重启降速仍未解决
+
+用户确认继续后，本机 boot_b 前 48 MiB 回读为
+bd347b097e8b6ebc8704d00a19923defea2a180a0f2b262fd869d9ab6fac4113，
+202 个模块及 Image/kernel.config 清单均通过。前一版 #101 boot/模块已另存。
+直连电脑启动 #102，device/configured/high-speed、NCM/SSH 正常；启动稳定后
+蜂窝 IPv4/IPv6 与热点正常。没有把 netifd 尚未启动时的早期 Object not found
+误记成服务持续故障。
+
+用户接回一直供电的原坞后，boot_id=e249bcce-96a4-417e-b895-eaf3fa67ba4a，
+RTL8153 仍 480，无 SS hub。13.255397 秒的日志明确记录 combo PHY/core
+resumed before host controller，早于 13.256510 秒的 xHCI 启动；TCA 同步
+result=0。因此本次实际执行了完整恢复，不能用“代码可能没生效”解释失败。
+
+请求用户对坞和 F50 一起断电作对照后，观察到新 boot_id=
+958a03c7-8d1e-46e9-8bf6-d0e868b23224，两个 SS hub 和 RTL8153 均 5000；
+截至采样没有收到该物理操作的文字确认，不将它额外记为某种已确认复位原因。
+从这个已确认 5000 的状态，保持供电和线缆正常重启 F50，boot_id=
+5670d5bf-a1b6-4f7f-ae2f-113edf55a479，RTL8153 再次为 480、没有 SS hub。
+13.471182 秒恢复完成，13.472358 秒 xHCI 启动，TCA result=0；网络与热点正常。
+本轮停止重复重启，同一方案未解决该组合的跨重启 SuperSpeed 问题。
+
+后续只读核对：F50 没有已注册的 Type-C 端口；DT 存在 sc27xx Type-C 和
+I2C6:0x30 PTN38003A 节点但没有驱动绑定。只读访问 PTN 的 0x00、0x04
+均返回 I/O error，不能据节点存在断言芯片实际焊装，也不据此盲写重驱动。
+尚需本机原厂 Android 的实际角色/链路对照，不能把 U30 Air 原厂结果或
+同平台 GPL 源码当成 F50 原厂实测。
+
+证据文件：host-lifecycle-deployment.txt、host-lifecycle-first-pc-boot.txt、
+host-lifecycle-pc-settled.txt、host-lifecycle-first-powered-dock.txt、
+host-lifecycle-dock-powercycle.txt、host-lifecycle-warm-reboot.txt、
+host-lifecycle-failure-hardware-inventory.txt、host-lifecycle-ptn-readonly.txt。
