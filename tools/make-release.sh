@@ -118,7 +118,7 @@ for f in ./opt/mu300/bin/mu300-at ./opt/mu300/bin/mobile-data \
     ./usr/libexec/unisoc-modem/cpu-voltage ./usr/libexec/unisoc-modem/cpu-voltage.uc \
     ./opt/mu300/bin/cpu-voltage-platform ./opt/mu300/bin/sml-voltage-check ./opt/mu300/bin/modem-loader-patch ./etc/init.d/mu300-cpu-driver \
     ./etc/rc.d/S08mu300-cpu-driver ./etc/rc.d/K89unisoc-cpu \
-    ./usr/libexec/unisoc-modem/call-notify ./usr/libexec/unisoc-modem/call-notify-events.uc ./usr/libexec/unisoc-modem/sms-forward ./usr/libexec/unisoc-modem/power-supply.sh ./usr/libexec/unisoc-modem/forward-template.uc \
+    ./usr/libexec/unisoc-modem/call-notify ./usr/libexec/unisoc-modem/call-notify-events.uc ./usr/libexec/unisoc-modem/sms-forward ./usr/libexec/unisoc-modem/power-supply.sh ./usr/libexec/unisoc-modem/forward-template.uc ./usr/libexec/unisoc-modem/forward-filter.uc \
     ./www/luci-static/resources/view/mu300/forward.js ./etc/init.d/unisoc-sms-forward \
     ./usr/libexec/unisoc-modem/data-sim ./www/luci-static/resources/view/mu300/sim.js \
     ./www/luci-static/resources/view/mu300/device.js ./usr/libexec/unisoc-modem/device-usb \
