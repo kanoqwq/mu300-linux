@@ -85,8 +85,14 @@ static void sprd_ssphy_bc12_work(struct work_struct *work)
 	generation = atomic_read(&phy->bc12_generation);
 	present = READ_ONCE(phy->vbus_present);
 	if (phy->is_host) {
-		/* Never drive BC1.2 signals onto a live host/dock data path. */
-		sprd_ssphy_bc12_publish(phy, UNKNOWN_TYPE, present, generation);
+		/* Never drive BC1.2 signals onto a live host/dock data path.
+		 * A data-only role change does not revoke this cable's completed
+		 * charging permission. VBUS notifier clears chg_type under the
+		 * event lock on every cable edge; generation checking rejects a
+		 * racing old result. Unknown/new cables retain the USB budget.
+		 */
+		type = present ? READ_ONCE(phy->phy.chg_type) : UNKNOWN_TYPE;
+		sprd_ssphy_bc12_publish(phy, type, present, generation);
 		goto out;
 	}
 	if (generation != phy->bc12_seen) {

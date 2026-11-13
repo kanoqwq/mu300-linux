@@ -115,6 +115,19 @@ int main(void){
         assert(sprd_ssphy_charger_detect(&phy.phy)==types[i]);
         assert((reg_ctrl&~(BIT(14)|BIT(0)))==0x2f0);
     }
+    /* Data-only HOST override must retain the same cable's completed
+     * charging permission; a real VBUS edge invalidates it immediately. */
+    for(int i=0;i<3;i++){
+        reset();attach(BIT(2)|BIT(11)|bits[i]);
+        phy.is_host=true;
+        mutex_lock(&phy.dpdm_lock);sprd_ssphy_bc12_role(&phy);mutex_unlock(&phy.dpdm_lock);
+        tick();assert(phy.phy.chg_type==types[i]&&usb_owner&&!attempts);
+        sprd_ssphy_vbus_notify(&phy.phy.vbus_nb,0,NULL);
+        assert(phy.phy.chg_type==UNKNOWN_TYPE);tick();
+        assert(phy.phy.chg_state==USB_CHARGER_ABSENT);
+        attach(BIT(2)|BIT(11)|bits[i]);
+        assert(phy.phy.chg_type==UNKNOWN_TYPE&&!attempts);
+    }
     /* Pending hardware completion: detector retains data lines until DONE. */
     reset();attach(BIT(2));assert(queued&&!usb_owner&&phy.phy.chg_type==UNKNOWN_TYPE);
     reg_status=BIT(2)|BIT(11)|BIT(5);tick();assert(!queued&&usb_owner&&phy.phy.chg_type==CDP_TYPE);
