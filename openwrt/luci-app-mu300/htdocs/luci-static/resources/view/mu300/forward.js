@@ -153,8 +153,8 @@ return view.extend({
   <div class="mud-note" id="mud-fwd-power-note">充电状态变化，或电量跨过 5%、20%、40%、60%、80%、100% 时通知。</div>
   <div class="mud-note" id="mud-fwd-power-last"></div>
   <div class="mud-fwd-field"><label for="mud-fwd-nickname">设备备注</label><input id="mud-fwd-nickname" maxlength="255" autocomplete="off"></div>
-  <div id="mud-fwd-regex-details" style="margin-top:18px">
-   <h3>正则筛选（可选）</h3>
+  <h3 style="margin-top:18px">正则筛选（可选）</h3>
+  <div id="mud-fwd-regex-details">
    <div class="mud-note" id="mud-fwd-legacy-filter-note" hidden>旧版号码与关键词黑名单已停用；如需继续拦截，请在下方正则筛选中设置。</div>
    <div class="mud-note">号码和正文的筛选须同时通过。仅影响新收到的短信，不影响电源或来电通知。</div>
    <div class="mud-fwd-field"><label for="mud-fwd-number_filter_mode">号码筛选</label><select id="mud-fwd-number_filter_mode"><option value="off">关闭筛选</option><option value="blacklist">黑名单：匹配则不转发</option><option value="whitelist">白名单：仅匹配才转发</option></select></div>
