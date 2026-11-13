@@ -6,7 +6,8 @@
 function formatUsage(n) { return M.fmtTrafficBytes(n); }
 function trafficSlot() { return String(M.selectedSlot()); }
 var ERRORS = { invalid_config: '配置无效', traffic_unavailable: '流量统计服务暂不可用',
-	storage_failed: '统计数据保存失败', clock_unsynced: '系统时间尚未同步', confirmation_required: '请先确认清空操作' };
+	storage_failed: '统计数据保存失败', clock_unsynced: '系统时间尚未同步', confirmation_required: '请先确认操作',
+	invalid_backup: '备份文件无效或已损坏', backup_too_large: '备份文件过大', invalid_sim: 'SIM 卡槽不可用' };
 
 return view.extend({
 	load: function() { return L.resolveDefault(M.callTrafficGet(trafficSlot()), {}); },
@@ -70,6 +71,8 @@ return view.extend({
  <div class="mud-tr-scroll"><table class="mud-tr-table"><thead><tr><th>月份</th><th>下行</th><th>上行</th><th>合计</th></tr></thead><tbody id="mud-tr-months"></tbody></table></div>
  <div class="mud-note" style="margin-top:12px">从启用统计时开始记录；统计约每 10 秒更新、每 60 秒保存。突然断电可能损失最近未保存的记录。</div>
  <div class="mud-note">本地网卡统计供参考，计费以运营商为准。额度用于显示和提醒，不会自动断网。</div>
+ <div class="mud-tr-actions"><button class="mud-btn" id="mud-tr-export">导出流量池备份</button><button class="mud-btn" id="mud-tr-import">导入流量池备份</button><input id="mud-tr-backup-file" type="file" accept="application/json,.json" hidden></div>
+ <div class="mud-note">备份包含当前查看 SIM 的套餐设置、本地用量历史和校准值。</div>
  <div class="mud-tr-actions"><button class="mud-btn warn" id="mud-tr-clear">清空流量记录</button></div>
  <div class="mud-note">仅清除本地统计，不会重置运营商账单，也不会断开网络。</div>
 </section>`;
@@ -147,40 +150,107 @@ return view.extend({
 		}).finally(function() { if (self._refresh === request) self._refresh = null; });
 		return request.promise;
 	},
-	mutate: function(button, invoke, clearing, slot) {
+	mutate: function(button, invoke, action, slot) {
 		if (this._disposed || this._mutating) return Promise.resolve();
 		var self = this;
 		this._mutating = true; this._epoch++;
-		this.q('save').disabled = this.q('clear').disabled = true;
+		['save','clear','export','import','refresh'].forEach(function(key) { self.q(key).disabled = true; });
 		M.busy(button, true);
 		if (this._toast) this._toast.close();
-		var toast = this._toast = M.toast(clearing ? '正在清空流量记录…' : '正在保存流量池设置…', {type:'busy', timeout:0});
+		var messages = {
+			clear: ['正在清空流量记录…', '清空失败', '流量记录已清空'],
+			save: ['正在保存流量池设置…', '保存失败', '已保存'],
+			import: ['正在导入流量池备份…', '导入失败', '流量池备份已导入'],
+			export: ['正在导出流量池备份…', '导出失败', '流量池备份已导出']
+		}[action];
+		var toast = this._toast = M.toast(messages[0], {type:'busy', timeout:0});
 		return Promise.resolve().then(invoke).then(function(r) {
 			if (self._disposed) return;
-			if (!r || !r.ok) toast.update(ERRORS[r && r.error] || (clearing ? '清空失败' : '保存失败'), 'error');
+			if (!r || !r.ok) toast.update(ERRORS[r && r.error] || messages[1], 'error');
+			else if (action === 'export' && !self.downloadBackup(r.payload)) toast.update(ERRORS.invalid_backup, 'error');
 			else {
 				if (slot === trafficSlot()) {
-					self.q('used_gb').value = '';
-					if (!clearing) self._dirty = false;
+					if (action === 'import' && r.data) {
+						self.fill(r.data.config || {}); self._dirty = false;
+					}
+					else if (action === 'clear' || action === 'save') {
+						self.q('used_gb').value = '';
+						if (action === 'save') self._dirty = false;
+					}
 					if (r.data) self.accept(r.data, slot);
 				}
-				toast.update(clearing ? '流量记录已清空' : '已保存', 'success');
+				toast.update(messages[2], 'success');
 			}
 		}, function() {
-			if (!self._disposed) toast.update(clearing ? '清空失败' : '保存失败', 'error');
+			if (!self._disposed) toast.update(messages[1], 'error');
 		}).finally(function() {
 			self._mutating = false; M.busy(button, false);
 			if (!self._disposed) {
-				self.q('save').disabled = self.q('clear').disabled = false;
+				['save','clear','export','import','refresh'].forEach(function(key) { self.q(key).disabled = false; });
 				self.refresh();
 				setTimeout(function() { toast.close(); }, 3000);
 			}
 		});
 	},
+	downloadBackup: function(payload) {
+		var backup;
+		try { backup = JSON.parse(payload); } catch (e) { return false; }
+		if (!backup || backup.format !== 'mu300-traffic-pool' || backup.version !== 1 ||
+			(backup.source_slot !== 0 && backup.source_slot !== 1)) return false;
+		var url = URL.createObjectURL(new Blob([payload, '\n'], {type:'application/json;charset=utf-8'}));
+		var link = document.createElement('a');
+		link.href = url;
+		link.download = 'mu300-traffic-sim-' + (backup.source_slot + 1) + '-' + new Date().toISOString().replace(/[:.]/g, '-') + '.json';
+		link.style.display = 'none'; document.body.appendChild(link); link.click(); link.remove();
+		setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+		return true;
+	},
 	wire: function() {
 		var self = this;
 		this.root.querySelectorAll('input,select').forEach(function(input) { input.addEventListener('input', function() { self._dirty = true; }); });
 		this.q('refresh').onclick = function() { self.refresh(); };
+		this.q('export').onclick = function() {
+			if (self._mutating || self._confirming) return;
+			var slot = self._slot || trafficSlot();
+			if (slot !== trafficSlot()) { self.refresh(); return; }
+			self.mutate(self.q('export'), function() { return M.callTrafficExport(slot); }, 'export', slot);
+		};
+		this.q('import').onclick = function() {
+			if (!self._mutating && !self._confirming) self.q('backup-file').click();
+		};
+		this.q('backup-file').onchange = function() {
+			if (self._confirming || self._mutating) { this.value = ''; return; }
+			var file = this.files && this.files[0], slot = self._slot || trafficSlot(); this.value = '';
+			if (!file) return;
+			if (slot !== trafficSlot()) { self.refresh(); return; }
+			if (file.size > 32768) { M.toast('备份文件过大（最大 32 KiB）', {type:'error'}); return; }
+			self._confirming = true;
+			var reader = new FileReader();
+			reader.onerror = function() {
+				self._confirming = false;
+				if (!self._disposed) M.toast('无法读取备份文件', {type:'error'});
+			};
+			reader.onload = function() {
+				if (self._disposed) { self._confirming = false; return; }
+				var payload = String(reader.result || ''), backup;
+				try { backup = JSON.parse(payload); } catch (e) { self._confirming = false; M.toast('备份文件无效或已损坏', {type:'error'}); return; }
+				if (!backup || backup.format !== 'mu300-traffic-pool' || backup.version !== 1 ||
+					(backup.source_slot !== 0 && backup.source_slot !== 1)) {
+					self._confirming = false; M.toast('备份文件无效或已损坏', {type:'error'}); return;
+				}
+				var sourceName = 'SIM ' + (backup.source_slot + 1), targetName = M.slotName ? M.slotName(slot) : 'SIM ' + (Number(slot) + 1);
+				var explanation = sourceName === targetName ?
+					'将替换目标 ' + targetName + ' 的套餐设置、用量历史和本周期校准值。此操作不可撤销。' :
+					'备份来自 ' + sourceName + '，将替换目标 ' + targetName + ' 的套餐设置、用量历史和本周期校准值。此操作不可撤销。';
+				M.confirmBox('确认导入流量池备份？', explanation, {danger:true, okText:'导入'}).then(function(yes) {
+					if (yes && !self._disposed) return self.mutate(self.q('import'), function() {
+						return M.callTrafficImport(payload, true, slot);
+					}, 'import', slot);
+				}).finally(function() { self._confirming = false; });
+			};
+			try { reader.readAsText(file, 'utf-8'); }
+			catch (e) { self._confirming = false; M.toast('无法读取备份文件', {type:'error'}); }
+		};
 		this.q('clear').onclick = function() {
 			if (self._mutating || self._confirming) return;
 			var slot = self._slot;
@@ -189,7 +259,7 @@ return view.extend({
 			M.confirmBox(M.translate('清空流量记录') + ' · ' + M.slotName(slot),
 				'将清空今日、每月历史和套餐周期校准，并从当前网卡计数重新开始。已保存的套餐额度、结算日、计量方式和统计网卡保持不变。此操作不可撤销。',
 				{danger:true, okText:'清空'}).then(function(yes) {
-				if (yes && !self._disposed) return self.mutate(self.q('clear'), function() { return M.callTrafficClear(true, slot); }, true, slot);
+				if (yes && !self._disposed) return self.mutate(self.q('clear'), function() { return M.callTrafficClear(true, slot); }, 'clear', slot);
 			}).finally(function() { self._confirming = false; });
 		};
 		this.q('save').onclick = function() {
@@ -207,7 +277,7 @@ return view.extend({
 			var confirmed = p.used_gb == null ? Promise.resolve(true) :
 				M.confirmBox('校准本周期已用流量？', '这会将当前套餐周期已用值调整为输入值，每日和自然月记录不变。', {okText:'保存'});
 			confirmed.then(function(yes) {
-				if (yes && !self._disposed) return self.mutate(self.q('save'), function() { return M.callTrafficSet(JSON.stringify(p), slot); }, false, slot);
+				if (yes && !self._disposed) return self.mutate(self.q('save'), function() { return M.callTrafficSet(JSON.stringify(p), slot); }, 'save', slot);
 			}).finally(function() { self._confirming = false; });
 		};
 	}

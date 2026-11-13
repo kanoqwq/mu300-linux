@@ -9,6 +9,7 @@ const BASE = getenv('MU300_TRAFFIC_DIR') || '/etc/unisoc-modem/traffic';
 const RUN = getenv('MU300_TRAFFIC_RUN') || '/run/unisoc-modem-traffic';
 const NET = getenv('MU300_TRAFFIC_SYS') || '/sys/class/net';
 const BUS = getenv('MU300_TRAFFIC_BUS') || 'unisoc.traffic';
+const MAX_BACKUP_BYTES = 32768;
 const boot = trim(fs.readfile('/proc/sys/kernel/random/boot_id') || '');
 fs.mkdir('/etc/unisoc-modem', 448);
 fs.mkdir(BASE, 448); fs.mkdir(RUN, 448);
@@ -41,8 +42,9 @@ if (db.version != 1 || type(db.days) != 'object' || type(db.months) != 'object')
 db.config = core.config(db.config);
 let saved_at = 0, storage_error = false, resolved = '', resolve_at = 0;
 
-function resolve_device(now) {
-    if (db.config.device) return db.config.device;
+function resolve_device(now, config) {
+    let current = config || db.config;
+    if (current.device) return current.device;
     // In dual mode never follow the active WAN for both cards. Each ledger
     // follows its own platform-provided mapping (or explicit user override).
     if (dual) {
@@ -59,8 +61,8 @@ function resolve_device(now) {
     if (name && match(name, /^[a-zA-Z0-9_.:-]{1,15}$/)) resolved = name;
     return resolved;
 }
-function snapshot(now) {
-    let name = resolve_device(now);
+function snapshot(now, config) {
+    let name = resolve_device(now, config);
     if (!name) return null;
     // A bad duplicate map must not count the same bytes twice. Preserve both
     // saved ledgers, but pause SIM 2 until its mapping is corrected.
@@ -147,6 +149,37 @@ return {
         sample(true);
         return { ok: 1 };
     } },
+    'export': { call: function(req) {
+        sample(false);
+        if (storage_error) return { ok: 0, error: 'storage_failed' };
+        let payload = sprintf('%J', core.export_backup(db, time(), slot));
+        if (length(payload) > MAX_BACKUP_BYTES) return { ok: 0, error: 'backup_too_large' };
+        return { ok: 1, payload: payload };
+    } },
+    'import': { args: { payload: '', confirm: false }, call: function(req) {
+        if (req.args?.confirm !== true) return { ok: 0, error: 'confirmation_required' };
+        let payload = req.args?.payload;
+        if (type(payload) != 'string' || !length(payload) || length(payload) > MAX_BACKUP_BYTES)
+            return { ok: 0, error: 'invalid_backup' };
+        let input, next, now = time();
+        try {
+            input = json(payload);
+            next = core.import_backup(input, db, now);
+        } catch (e) { return { ok: 0, error: 'invalid_backup' }; }
+
+        // Resolve the imported device override against this router before
+        // advancing, so the saved baseline never contains the source router's
+        // interface counters or boot identity.
+        resolved = ''; resolve_at = 0;
+        core.advance(next, snapshot(now, next.config), now);
+        if (!atomic(BASE + '/state.json', next)) {
+            storage_error = true;
+            return { ok: 0, error: 'storage_failed' };
+        }
+        db = next; saved_at = now; storage_error = false;
+        checkpoint(false);
+        return { ok: 1, data: get_data() };
+    } },
     flush: { call: function(req) { sample(true); return { ok: !storage_error }; } }
 };
 }
@@ -161,6 +194,8 @@ const obj = bus.publish(BUS, {
     get: {args:{slot:0}, call:function(req) {return dispatch('get',req);}},
     set: {args:{slot:0,payload:''}, call:function(req) {return dispatch('set',req);}},
     clear: {args:{slot:0,confirm:false}, call:function(req) {return dispatch('clear',req);}},
+    'export': {args:{slot:0}, call:function(req) {return dispatch('export',req);}},
+    'import': {args:{slot:0,payload:'',confirm:false}, call:function(req) {return dispatch('import',req);}},
     flush: {call:function(req) {let ok=true; for(let l in ledgers) if(!l.flush.call(req).ok) ok=false; return {ok:ok};}}
 });
 if (!obj) die('Traffic service already running or publish failed\n');

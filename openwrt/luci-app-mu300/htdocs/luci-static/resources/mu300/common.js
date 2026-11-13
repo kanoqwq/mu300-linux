@@ -146,6 +146,10 @@ var trafficClearRpc = rpc.declare({object:'mu300dash',method:'traffic_clear',par
 function callTrafficGet(slot) { return trafficGetRpc(slot == null ? selectedSlot() : String(slot)); }
 function callTrafficSet(payload, slot) { return trafficSetRpc(payload, slot == null ? selectedSlot() : String(slot)); }
 function callTrafficClear(confirm, slot) { return trafficClearRpc(confirm, slot == null ? selectedSlot() : String(slot)); }
+var trafficExportRpc = rpc.declare({object:'mu300dash',method:'traffic_export',params:['slot'],expect:{'':{}},nobatch:true});
+var trafficImportRpc = rpc.declare({object:'mu300dash',method:'traffic_import',params:['payload','confirm','slot'],expect:{'':{}},nobatch:true});
+function callTrafficExport(slot) { return trafficExportRpc(slot == null ? selectedSlot() : String(slot)); }
+function callTrafficImport(payload, confirm, slot) { return trafficImportRpc(payload, confirm, slot == null ? selectedSlot() : String(slot)); }
 var callTtlGet = rpc.declare({ object: 'mu300dash', method: 'ttl_get', expect: { '': {} } });
 var callTtlSet = rpc.declare({ object: 'mu300dash', method: 'ttl_set', params: [ 'value' ], expect: { '': {} }, nobatch: true });
 var callUsbGet = rpc.declare({ object: 'mu300dash', method: 'usb_get', expect: { '': {} } });
@@ -1211,6 +1215,32 @@ var DASH_I18N = {
 	'」': ['”', '”']
 };
 Object.assign(DASH_I18N, {
+  "导出流量池备份": ["Export traffic pool backup", "Trafik havuzu yedeğini dışa aktar"],
+  "导入流量池备份": ["Import traffic pool backup", "Trafik havuzu yedeğini içe aktar"],
+  "备份包含当前查看 SIM 的套餐设置、本地用量历史和校准值。": [
+    "The backup contains the viewed SIM's plan, local usage history and cycle calibration.",
+    "Yedek, görüntülenen SIM'in paketini, yerel kullanım geçmişini ve dönem kalibrasyonunu içerir."
+  ],
+  "流量池备份已导出": ["Traffic pool backup exported", "Trafik havuzu yedeği dışa aktarıldı"],
+  "流量池备份已导入": ["Traffic pool backup imported", "Trafik havuzu yedeği içe aktarıldı"],
+  "正在导出流量池备份…": ["Exporting traffic pool backup…", "Trafik havuzu yedeği dışa aktarılıyor…"],
+  "正在导入流量池备份…": ["Importing traffic pool backup…", "Trafik havuzu yedeği içe aktarılıyor…"],
+  "备份文件无效或已损坏": ["Invalid or damaged backup file", "Yedek dosyası geçersiz veya bozuk"],
+  "备份文件过大": ["Backup file is too large", "Yedek dosyası çok büyük"],
+  "备份文件过大（最大 32 KiB）": ["Backup file is too large (maximum 32 KiB)", "Yedek dosyası çok büyük (en fazla 32 KiB)"],
+  "无法读取备份文件": ["Could not read the backup file", "Yedek dosyası okunamadı"],
+  "确认导入流量池备份？": ["Import this traffic pool backup?", "Bu trafik havuzu yedeği içe aktarılsın mı?"],
+  "将替换目标 ": ["This will replace ", "Şunun yerine geçecek: "],
+  " 的套餐设置、用量历史和本周期校准值。此操作不可撤销。": [
+    "'s plan, usage history and cycle calibration. This cannot be undone.",
+    " planı, kullanım geçmişi ve dönem kalibrasyonu. Bu işlem geri alınamaz."
+  ],
+  "备份来自 ": ["Backup from ", "Yedek kaynağı "],
+  "，将替换目标 ": [", replacing target ", ", hedefin yerine geçecek "],
+  "导入": ["Import", "İçe aktar"],
+  "请先确认操作": ["Confirm the operation first", "Önce işlemi onaylayın"],
+  "导入失败": ["Import failed", "İçe aktarma başarısız"],
+  "导出失败": ["Export failed", "Dışa aktarma başarısız"],
   "关闭后该卡无法通话、收发短信或上网，设置会在重启后保留。": [
     "This SIM will have no calls, SMS or data. The setting persists after reboot.",
     "Bu SIM arama, SMS veya veri kullanamaz. Ayar yeniden başlatınca korunur."
@@ -2062,7 +2092,8 @@ return baseclass.extend({
 	callSimGet: callSimGet, simSelector: simSelector, slotName: slotName, selectedSlot: selectedSlot, selectViewedSlot: selectViewedSlot,
 	callForwardSet: callForwardSet, callForwardTest: callForwardTest, callForwardClear: callForwardClear,
 	callTrafficGet: callTrafficGet, callTrafficSet: callTrafficSet,
-	callTrafficClear: callTrafficClear,
+	callTrafficClear: callTrafficClear, callTrafficExport: callTrafficExport,
+	callTrafficImport: callTrafficImport,
 	callTtlGet: callTtlGet, callTtlSet: callTtlSet, callUsbGet: callUsbGet, callUsbSet: callUsbSet,
 	callUsbNetList: callUsbNetList, callUsbNetAdd: callUsbNetAdd,
 	carrierName: carrierName, qLabel: qLabel, qCol: qCol, qScore: qScore,
