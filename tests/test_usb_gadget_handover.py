@@ -65,3 +65,19 @@ class GadgetHandover(ShellTest):
             self.bound.write_text(''); (self.tmp/'ip').unlink(missing_ok=True)
             self.assertEqual(self.script(shell, USB, 'gadget-bind').returncode, 0)
             self.assertEqual((self.tmp/'ip').read_text().strip(), 'link set usb0 name rndis0')
+
+    def test_native_battery_mode_and_latest_request_own_device_binding(self):
+        driver=self.tmp/'driver';control=driver/'pd/usb_role_override';control.parent.mkdir(parents=True)
+        negotiated=control.parent/'usb_role_negotiated'
+        for shell in self.each_shell():
+            for mode,auto,target,phase,expected in [
+                ('device','host','host','done',True),
+                ('device','host','host','pending',False),
+                ('host','device','device','done',False),
+                ('auto','host','auto','pending',False),
+                ('auto','device','auto','pending',True)]:
+                self.bound.write_text('');control.write_text(mode+'\n');negotiated.write_text(auto+'\n')
+                self.state.write_text('request\n'+target+'\n'+phase+'\n')
+                result=self.script(shell,USB,'gadget-bind',MU300_USB_DEVICE='u30air',MU300_USB_ROLE_DRIVER=driver)
+                self.assertEqual(result.returncode,0,result.stderr)
+                self.assertEqual(bool(self.bound.read_text().strip()),expected,(mode,auto,target,phase))

@@ -23,6 +23,7 @@ LANE_PARAM=${MU300_USB_LANE_PARAM:-/sys/module/phy_sprd_ums9620_ssphy/parameters
 LANE_STATE=${MU300_USB_LANE_STATE:-/run/unisoc-usb-lane-probe}
 LANE_BOS_TOOL=${MU300_USB_LANE_BOS_TOOL:-/usr/libexec/unisoc-modem/usb-superspeed-capable}
 LANE_WAIT=${MU300_USB_LANE_WAIT:-sleep}
+ROLE_DRIVER=${MU300_USB_ROLE_DRIVER:-/sys/bus/platform/drivers/ump9620-tcpm}
 get() { uci -q get "$CFG.$1" 2>/dev/null || true; }
 put() { uci -q set "$CFG.$1=$2"; }
 error() { printf '{"ok":0,"error":"%s"}\n' "$1"; exit 1; }
@@ -30,10 +31,31 @@ role_now() {
     current=$(cat "$ROLE_FILE" 2>/dev/null)
     case $current in host|device) printf '%s\n' "$current" ;; *) echo unavailable ;; esac
 }
+override_file() {
+    [ "$(device_name)" = u30air ] || return 1
+    [ -z "${MU300_USB_ROLE_COMMAND:-$(get role_command)}" ] || return 1
+    override_path=; override_count=0
+    for override_entry in "$ROLE_DRIVER"/*/usb_role_override; do
+        [ -w "$override_entry" ] || continue
+        override_path=$override_entry; override_count=$((override_count + 1))
+    done
+    [ "$override_count" = 1 ] || return 1
+    printf '%s\n' "$override_path"
+}
+override_now() {
+    override_control=$(override_file) || return 1
+    cat "$override_control"
+}
+role_reached() {
+    if [ "$1" = auto ]; then [ "$(override_now)" = auto ]
+    elif override_control=$(override_file); then
+        [ "$(cat "$override_control")" = "$1" ] && [ "$(role_now)" = "$1" ]
+    else [ "$(role_now)" = "$1" ]; fi
+}
 role_apply_needed() {
     # An unattached Type-C port can still report DWC3's old data role. U30 Air
-    # must apply the requested CC/PD policy even if that readback matches it,
-    # e.g. cancelling a pending source-only request back to device/sink.
+    # must apply its explicit data-role policy even if the current data role
+    # already matches: AUTO and FORCE are different policies for the next event.
     [ "$(role_now)" != "$1" ] || [ "$(device_name)" = u30air ]
 }
 role_result() {
@@ -94,11 +116,11 @@ role_command() {
     fi
 }
 role_lock() {
-    # Serialize only the battery-less raw-role platforms. No extra lock or
-    # power-policy changes for the U30 Air or other platform adapters.
+    # Serialize each explicit data-role policy; the kernel owner separately
+    # serializes Type-C events with native override changes.
     role_lock_held=0
     case $(device_name) in
-        f50|v50) exec 8>"$ROLE_LOCK" && flock 8 && role_lock_held=1 ;;
+        f50|v50|u30air) exec 8>"$ROLE_LOCK" && flock 8 && role_lock_held=1 ;;
         *) return 0 ;;
     esac
 }
@@ -197,15 +219,32 @@ lane_cleanup() {
 gadget_bind() {
     # The early-host boot builds descriptors without binding them. A later
     # explicit DEVICE request binds on the UDC add event, never on a timer.
-    case $(device_name) in f50|v50) ;; *) return 0 ;; esac
-    role_lock || return 1
-    target=$(sed -n '2p' "$ROLE_STATE" 2>/dev/null)
-    case $target in
-        host) return 0 ;;
-        device) [ "$(sed -n '3p' "$ROLE_STATE" 2>/dev/null)" != error ] || return 0 ;;
-        '') [ "$(role_now)" = device ] || return 0 ;;
+    case $(device_name) in
+        f50|v50) ;;
+        u30air) override_file >/dev/null || return 0 ;;
         *) return 0 ;;
     esac
+    role_lock || return 1
+    target=$(sed -n '2p' "$ROLE_STATE" 2>/dev/null)
+    if [ "$(device_name)" = u30air ]; then
+        override_control=$(override_file) || return 0
+        case $(cat "$override_control") in
+            device) ;;
+            auto) [ "$(cat "${override_control%/*}/usb_role_negotiated")" = device ] || return 0 ;;
+            *) return 0 ;;
+        esac
+        # A newer queued host request wins; a completed old request must not
+        # override an explicit CLI policy that the kernel has since accepted.
+        if [ "$target" = host ] && [ "$(sed -n '3p' "$ROLE_STATE")" = pending ]; then return 0; fi
+    else
+      case $target in
+        host) return 0 ;;
+        device) [ "$(sed -n '3p' "$ROLE_STATE" 2>/dev/null)" != error ] || return 0 ;;
+        auto) [ "$(override_now)" = auto ] || return 0 ;;
+        '') [ "$(role_now)" = device ] || return 0 ;;
+        *) return 0 ;;
+      esac
+    fi
     if [ ! -d "$GADGET_DIR" ]; then
         [ "$GADGET_DIR" = /sys/kernel/config/usb_gadget ] || return 0
         mkdir -p /sys/kernel/config || return 1
@@ -220,7 +259,13 @@ gadget_bind() {
     done
     [ "$ready_count" = 1 ] || return 0
     # A new HOST request wins even if its apply worker is waiting on our lock.
-    [ "$(sed -n '2p' "$ROLE_STATE" 2>/dev/null)" != host ] || return 0
+    if [ "$(device_name)" = u30air ]; then
+        [ "$(override_now)" != host ] || return 0
+        if [ "$(sed -n '2p' "$ROLE_STATE" 2>/dev/null)" = host ] &&
+           [ "$(sed -n '3p' "$ROLE_STATE" 2>/dev/null)" = pending ]; then return 0; fi
+    else
+        [ "$(sed -n '2p' "$ROLE_STATE" 2>/dev/null)" != host ] || return 0
+    fi
     # Init normally assigns this name after binding. The prepared-host path
     # returns earlier, so retain the same name when RNDIS is selected.
     for entry in "$GADGET_DIR/linux"/functions/rndis.*/ifname; do
@@ -435,22 +480,27 @@ case ${1:-} in
         if [ "$role" = host ] || [ "$role_auto" = 1 ]; then available=0; fi
         host_supported=1
         [ -e "$ROLE_FILE" ] || host_supported=0
+        force_supported=0; role_override=
+        if override_control=$(override_file); then
+            force_supported=1; role_override=$(cat "$override_control")
+            case $role_override in auto|host|device) ;; *) role_override= ;; esac
+        fi
         network_status
         role_target=$(sed -n '2p' "$ROLE_STATE" 2>/dev/null)
-        case $role_target in host|device) ;; *) role_target= ;; esac
+        case $role_target in host|device|auto) ;; *) role_target= ;; esac
         role_error=0; role_pending=0
-        if [ -n "$role_target" ] && [ "$role" != "$role_target" ]; then
+        if [ -n "$role_target" ] && ! role_reached "$role_target"; then
             case $(sed -n '3p' "$ROLE_STATE" 2>/dev/null) in pending) role_pending=1 ;; error) role_error=1 ;; esac
         fi
         link=$("${MU300_USB_UCODE:-ucode}" "${MU300_USB_LINK_HELPER:-/usr/libexec/unisoc-modem/usb-link.uc}" \
             "$role" "$ROLE_FILE" "$GADGET_DIR" "$USB_BUS" \
             "${MU300_USB_UDC_CLASS:-/sys/class/udc}" "${MU300_USB_ROLE_CLASS:-/sys/class/usb_role}" 2>/dev/null) || link='{"state":"unavailable","links":[]}'
-        printf '{"ok":1,"role":"%s","role_auto":%s,"host_supported":%s,"role_target":"%s","role_pending":%s,"role_error":%s,"net_mode":"%s","net_scope":"%s","net_auto":%s,"net_available":%s,"net_current":"%s","net_next":"%s","net_policy_error":%s,"lan_auto":%s,"usb_link":%s}\n' \
-            "$role" "$role_auto" "$host_supported" "$role_target" "$role_pending" "$role_error" "$mode" "$scope" "$net_auto" "$available" "$net_current" "$net_next" "$net_policy_error" "$lan_auto" "$link"
+        printf '{"ok":1,"role":"%s","role_auto":%s,"host_supported":%s,"force_role_supported":%s,"role_override":"%s","role_target":"%s","role_pending":%s,"role_error":%s,"net_mode":"%s","net_scope":"%s","net_auto":%s,"net_available":%s,"net_current":"%s","net_next":"%s","net_policy_error":%s,"lan_auto":%s,"usb_link":%s}\n' \
+            "$role" "$role_auto" "$host_supported" "$force_supported" "$role_override" "$role_target" "$role_pending" "$role_error" "$mode" "$scope" "$net_auto" "$available" "$net_current" "$net_next" "$net_policy_error" "$lan_auto" "$link"
         ;;
     set-role)
         role=${2:-}; auto=${3:-}
-        case $role in host|device) ;; *) error 'Invalid USB role' ;; esac
+        case $role in host|device) ;; auto) override_file >/dev/null || error 'Automatic USB data role is unavailable on this platform' ;; *) error 'Invalid USB role' ;; esac
         case $auto in 0|1) ;; *) error 'Invalid boot-auto value' ;; esac
         [ "$role" = host ] || [ "$auto" = 0 ] || error 'Device is the boot default; host auto-apply is the only persistent role'
         [ -e "$ROLE_FILE" ] || error 'USB role switch is unavailable'
@@ -480,19 +530,19 @@ case ${1:-} in
     apply-role)
         role=${2:-}
         request=${3:-}
-        case $role in host|device) ;; *) exit 2 ;; esac
+        case $role in host|device) ;; auto) override_file >/dev/null || exit 2 ;; *) exit 2 ;; esac
         [ -z "$request" ] || [ "$request" = "$(sed -n '1p' "$ROLE_STATE" 2>/dev/null)" ] || exit 0
         role_lock || exit 1
         [ -z "$request" ] || [ "$request" = "$(sed -n '1p' "$ROLE_STATE" 2>/dev/null)" ] || exit 0
-        [ "$role" != device ] || lane_release || exit 1
+        [ "$role" = host ] || lane_release || exit 1
         ! role_apply_needed "$role" || ( role_command "$role" ) || {
             role_result "$role" error '' "$request"
             logger -t unisoc-usb "role switch to $role failed"
             exit 1
         }
-        [ "$(role_now)" != "$role" ] || role_result "$role" done '' "$request"
+        ! role_reached "$role" || role_result "$role" done '' "$request"
         role_unlock
-        if [ "$role" = host ]; then
+        if [ "$role" = host ] || { [ "$role" = auto ] && [ "$(role_now)" = host ]; }; then
             start_host_rescan
             "$0" net-sync >/dev/null 2>&1 || true
         else
@@ -534,7 +584,7 @@ case ${1:-} in
             rm -f "$BOOT_FILE"
         fi
         if [ "$(get role_auto)" = 1 ]; then
-            [ "$(role_now)" = host ] || role_command host
+            ! role_apply_needed host || role_command host
             start_host_rescan
         fi
         "$0" net-sync || true

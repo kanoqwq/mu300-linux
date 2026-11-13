@@ -38,6 +38,7 @@ struct sc27xx_pd {
 	struct regulator *vbus;
 	struct power_supply *charger;
 	struct mutex lock;
+	struct mutex role_lock;
 	struct delayed_work cc_work;
 	struct notifier_block vbus_nb;
 	struct extcon_dev *vbus_extcon;
@@ -45,6 +46,7 @@ struct sc27xx_pd {
 	u32 base, typec_base, rc_cal, delta_cal, ref_cal;
 	int irq, cc_irq;
 	enum typec_role power_role;
+	enum usb_role negotiated_role, data_override;
 	bool attached, pd_capable;
 	bool vbus_on, tx_pending, tx_sop, rx_enabled, stopping, irqs_enabled;
 };
@@ -204,12 +206,15 @@ static int sc27xx_set_current_limit(struct tcpc_dev *tcpc, u32 ma, u32 mv)
 	return power_supply_set_property(pd->charger, POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT, &value);
 }
 
+#include "sc27xx-ump9620-role.h"
+
 static int sc27xx_set_roles(struct tcpc_dev *tcpc, bool attached,
 			  enum typec_role power, enum typec_data_role data)
 {
 	struct sc27xx_pd *pd = to_pd(tcpc);
 	enum usb_role usb = !attached ? USB_ROLE_DEVICE :
 		data == TYPEC_HOST ? USB_ROLE_HOST : USB_ROLE_DEVICE;
+	enum usb_role applied;
 	int ret;
 
 	ret = pd_update(pd, SC27XX_PD_CFG0, SC27XX_PD_SRC_SINK_MODE,
@@ -217,10 +222,10 @@ static int sc27xx_set_roles(struct tcpc_dev *tcpc, bool attached,
 	if (ret)
 		return ret;
 	/* A PD data-role swap must never implicitly enable the charger's boost. */
-	ret = usb_role_switch_set_role(pd->role_sw, usb);
+	ret = sc27xx_apply_data_role(pd, usb, &applied);
 	if (!ret)
 		dev_info(pd->dev, "%s: USB %s, power %s\n", attached ? "attached" : "detached",
-			 usb_role_string(usb), power == TYPEC_SOURCE ? "source" : "sink");
+			 usb_role_string(applied), power == TYPEC_SOURCE ? "source" : "sink");
 	if (!ret) {
 		pd->attached = attached;
 		pd->power_role = power;
@@ -664,6 +669,8 @@ static int sc27xx_probe(struct platform_device *pdev)
 	pd->var_data = &ump9620_data;
 	pd->regmap = dev_get_regmap(dev->parent, NULL);
 	mutex_init(&pd->lock);
+	mutex_init(&pd->role_lock);
+	pd->negotiated_role = USB_ROLE_DEVICE;
 	INIT_DELAYED_WORK(&pd->cc_work, sc27xx_cc_work);
 	ret = of_property_read_u32_index(dev->of_node, "reg", 0, &pd->base);
 	if (!ret)
@@ -773,7 +780,8 @@ MODULE_DEVICE_TABLE(of, sc27xx_ids);
 static struct platform_driver sc27xx_driver = {
 	.probe = sc27xx_probe, .remove = sc27xx_shutdown,
 	.shutdown = sc27xx_shutdown,
-	.driver = { .name = "ump9620-tcpm", .of_match_table = sc27xx_ids },
+	.driver = { .name = "ump9620-tcpm", .of_match_table = sc27xx_ids,
+		.dev_groups = sc27xx_role_groups },
 };
 module_platform_driver(sc27xx_driver);
 MODULE_DESCRIPTION("UMP9620 Type-C/PD mainline TCPM controller");

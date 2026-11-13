@@ -1,8 +1,9 @@
 #!/bin/sh
 # The USB-C port's role (U30 Air; Ubuntu and OpenWrt, mainline kernels):
 #   mu300-usb             show it
-#   mu300-usb host        request data host (USB network to a computer disappears).
-#   mu300-usb device      request data device for the computer's USB network.
+#   mu300-usb auto        follow the Type-C negotiated data role.
+#   mu300-usb host        force data host (USB network to a computer disappears).
+#   mu300-usb device      force data device for the computer's USB network.
 #   mu300-usb boot        native PD: leave role/power negotiation to TCPM.
 #                        old kernels: clear stale charger boost before USB attach.
 # Native Type-C/PD controls power separately: host can keep charging via a dock.
@@ -53,45 +54,32 @@ setbits() {  # setbits REG MASK VALUE
     i2c set "$BUS" $ADDR "$1" $(( (v & ~$2) | $3 )) || die "cannot write the charger"
 }
 
-# A native PD controller owns the boost and negotiates data-role changes.
-# Do not force I2C bits behind it: USB host may legitimately remain a sink.
+# The native controller owns both the automatic role and its explicit override.
+# TCPM keeps owning power; forcing USB host may legitimately remain a sink.
 if [ "$(mu300-device)" = u30air ]; then
+    native_override=; native_controls=0
+    for control in "$R"/sys/bus/platform/drivers/ump9620-tcpm/*/usb_role_override; do
+        [ -w "$control" ] || continue
+        native_override=$control; native_controls=$((native_controls + 1))
+    done
     for native_port in "$R"/sys/class/typec/port*; do
         [ -w "$native_port/data_role" ] || continue
         case ${1:-status} in
-            boot)
-                # Manual source/sink requests are session policy. Normal boot
-                # restores stock automatic Type-C detection before saved policy.
-                if [ -w "$native_port/port_type" ]; then
-                    echo dual > "$native_port/port_type" || die "cannot restore automatic Type-C detection"
-                fi
-                exit 0 ;;
-            host|device)
+            boot|auto|host|device)
                 [ "$(id -u)" = 0 ] || die "run as root"
-                if [ "$(cat "$native_port/power_operation_mode" 2>/dev/null)" = usb_power_delivery ]; then
-                    # A PD dock can be data host and power sink. Do not replace
-                    # this with a source-only policy or direct charger writes.
-                    if [ -w "$native_port/port_type" ]; then
-                        echo dual > "$native_port/port_type" || die "cannot select dual-role Type-C policy"
-                    fi
-                    current=$(cat "$native_port/data_role" 2>/dev/null)
-                    case "$current" in "$1"|*"[$1]"*) ;; *)
-                        echo "$1" > "$native_port/data_role" || die "the Type-C partner refused the data-role swap" ;;
-                    esac
-                else
-                    # data_role is a negotiated swap, not a manual port-mode
-                    # setter. A non-PD PC/OTG cable (or no cable) cannot perform
-                    # that swap. Let TCPM re-evaluate CC using the requested
-                    # source/sink policy; it alone owns VBUS and charger boost.
-                    [ -w "$native_port/port_type" ] || die "the Type-C port-mode control is unavailable"
-                    case $1 in host) policy=source ;; device) policy=sink ;; esac
-                    echo "$policy" > "$native_port/port_type" || die "cannot set the Type-C port policy"
-                fi
-                echo "USB data role requested: $1 (Type-C attach/PD controls power)"
+                [ "$native_controls" = 1 ] || die "USB data-role override requires the matching native Type-C kernel interface"
+                [ -w "$native_port/port_type" ] || die "the Type-C port-mode control is unavailable"
+                # Undo an old session's source/sink-only CC policy. This does
+                # not swap an attached PD contract: power remains automatic.
+                echo dual > "$native_port/port_type" || die "cannot restore automatic Type-C power policy"
+                policy=$1; [ "$policy" != boot ] || policy=auto
+                echo "$policy" > "$native_override" || die "cannot apply the USB data-role override"
+                echo "USB data policy applied: $policy (Type-C/PD still controls power)"
                 exit 0 ;;
             status)
                 printf 'data role: '; cat "$native_port/data_role"
                 printf 'power role: '; cat "$native_port/power_role"
+                [ "$native_controls" != 1 ] || { printf 'data override: '; cat "$native_override"; }
                 exit 0 ;;
         esac
     done

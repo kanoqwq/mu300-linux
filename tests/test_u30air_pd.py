@@ -84,7 +84,10 @@ enum typec_role {TYPEC_SINK,TYPEC_SOURCE};
 enum typec_data_role {TYPEC_DEVICE,TYPEC_HOST};
 enum tcpm_transmit_status {TCPC_TX_SUCCESS,TCPC_TX_FAILED};
 struct tcpc_dev {void *pd;};
-struct sc27xx_pd {void *role_sw,*dev,*port;bool attached,tx_pending,tx_sop,pd_capable;enum typec_role power_role;};
+struct sc27xx_pd {void *role_sw,*dev,*port;bool attached,tx_pending,tx_sop,pd_capable,stopping;enum typec_role power_role;enum usb_role negotiated_role,data_override;int role_lock;};
+#define READ_ONCE(x) (x)
+static void mutex_lock(int *m){assert(!*m);*m=1;}
+static void mutex_unlock(int *m){assert(*m);*m=0;}
 #define SC27XX_PD_CFG0 16
 #define SC27XX_PD_SRC_SINK_MODE 512
 #define SC27XX_TYPEC_PD_CFG 8
@@ -127,7 +130,8 @@ int main(void){
 '''
         with tempfile.TemporaryDirectory() as d:
             source=Path(d)/'roles.c';binary=Path(d)/'roles'
-            source.write_text(before+function(text,'sc27xx_set_roles')+function(text,'sc27xx_complete_tx')+after)
+            helpers=(DRIVER.parent/'sc27xx-ump9620-role.h').read_text()
+            source.write_text(before+function(helpers,'sc27xx_apply_data_role')+function(text,'sc27xx_set_roles')+function(text,'sc27xx_complete_tx')+after)
             result=subprocess.run(['cc','-Wall','-Wextra','-Werror',str(source),'-o',str(binary)],capture_output=True,text=True)
             self.assertEqual(result.returncode,0,result.stderr)
             subprocess.run([str(binary)],check=True)
@@ -247,44 +251,52 @@ class NativeRoleHelper(ShellTest):
         (port/'data_role').write_text('device\n')
         (port/'power_role').write_text('sink\n')
         (port/'power_operation_mode').write_text('usb_power_delivery\n')
+        (port/'port_type').write_text('dual\n')
+        control=root/'sys/bus/platform/drivers/ump9620-tcpm/controller/usb_role_override'
+        control.parent.mkdir(parents=True);control.write_text('auto\n')
         self.stub('mu300-device','echo u30air')
         self.stub('id','echo 0')
         self.stub('i2cget','echo unexpected >> "$STUBLOG/i2c"; exit 1')
         self.stub('i2cset','echo unexpected >> "$STUBLOG/i2c"; exit 1')
         for shell in self.each_shell():
-            for mode in ('boot','host','device','status'):
+            for mode in ('boot','host','device','auto','status'):
                 result=self.script(shell,BIN/'mu300-usb',mode,MU300_SYSROOT=root)
                 self.assertEqual(result.returncode,0,result.stderr)
+                if mode!='status':self.assertEqual(control.read_text().strip(),'auto' if mode=='boot' else mode)
             self.assertEqual((port/'power_role').read_text(),'sink\n')
+            self.assertEqual((port/'data_role').read_text(),'device\n')
             self.assertFalse((self.tmp/'i2c').exists())
 
-    def test_non_pd_and_unattached_requests_set_cc_policy_not_pd_swap(self):
+    def test_non_pd_and_unattached_force_only_data_with_automatic_power(self):
         root=self.tmp/'native-root';port=root/'sys/class/typec/port0';port.mkdir(parents=True)
         (port/'data_role').write_text('host [device]\n')
         (port/'power_role').write_text('source [sink]\n')
         (port/'port_type').write_text('[dual] source sink\n')
+        control=root/'sys/bus/platform/drivers/ump9620-tcpm/controller/usb_role_override'
+        control.parent.mkdir(parents=True);control.write_text('auto\n')
         self.stub('mu300-device','echo u30air');self.stub('id','echo 0')
         self.stub('i2cget','echo unexpected >> "$STUBLOG/i2c"; exit 1')
         self.stub('i2cset','echo unexpected >> "$STUBLOG/i2c"; exit 1')
         for shell in self.each_shell():
             for mode in ('default','1.5A','3.0A',''):
                 (port/'power_operation_mode').write_text(mode+'\n')
-                for role,policy in [('host','source'),('device','sink'),('boot','dual')]:
+                for role in ('host','device','auto','boot'):
                     result=self.script(shell,BIN/'mu300-usb',role,MU300_SYSROOT=root)
                     self.assertEqual(result.returncode,0,result.stderr)
-                    self.assertEqual((port/'port_type').read_text(),policy+'\n')
+                    self.assertEqual((port/'port_type').read_text(),'dual\n')
+                    self.assertEqual(control.read_text().strip(),'auto' if role=='boot' else role)
                     self.assertEqual((port/'data_role').read_text(),'host [device]\n')
                     self.assertEqual((port/'power_role').read_text(),'source [sink]\n')
             self.assertFalse((self.tmp/'i2c').exists())
 
-    def test_pd_swap_rejection_is_not_hidden_by_forcing_source(self):
+    def test_missing_override_interface_fails_without_changing_power_policy(self):
         root=self.tmp/'pd-root';port=root/'sys/class/typec/port0';port.mkdir(parents=True)
-        (port/'data_role').mkdir() # readable control missing; write must fail
-        (port/'port_type').write_text('dual\n')
+        (port/'data_role').write_text('[host] device\n')
+        (port/'port_type').write_text('sink\n')
         (port/'power_operation_mode').write_text('usb_power_delivery\n')
         self.stub('mu300-device','echo u30air');self.stub('id','echo 0')
         for shell in self.each_shell():
             result=self.script(shell,BIN/'mu300-usb','host',MU300_SYSROOT=root)
             self.assertNotEqual(result.returncode,0)
-            self.assertIn('refused the data-role swap',result.stderr)
-            self.assertEqual((port/'port_type').read_text(),'dual\n')
+            self.assertIn('matching native Type-C kernel interface',result.stderr)
+            self.assertEqual((port/'port_type').read_text(),'sink\n')

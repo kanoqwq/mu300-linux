@@ -41,10 +41,10 @@ return view.extend({
   <div class="mud-r"><span class="mud-k">USB 链路速率</span><span class="mud-v" id="mud-usb-link-speed">--</span></div>
   <div class="mud-r"><span class="mud-k">开机角色策略</span><span class="mud-v" id="mud-usb-role-policy">--</span></div>
   <div class="mud-device-field"><label for="mud-usb-role">切换 USB 角色</label>
-   <select id="mud-usb-role"><option value="device">设备模式</option><option value="host">主机模式</option></select></div>
-  <label class="mud-device-toggle"><input type="checkbox" id="mud-usb-role-auto">开机自动启用主机模式</label>
+   <select id="mud-usb-role"><option value="auto" hidden>自动（跟随 Type-C）</option><option value="device">设备模式</option><option value="host">主机模式</option></select></div>
+  <label class="mud-device-toggle"><input type="checkbox" id="mud-usb-role-auto"><span id="mud-usb-role-auto-label">开机自动启用主机模式</span></label>
   <div class="mud-device-actions"><button class="mud-btn" id="mud-usb-role-apply">应用角色</button></div>
-  <div class="mud-note">主机模式会断开本端口的 USB 网络与串口。F50 没有电池；切换后可能失去管理连接，外接 USB 网卡通常需要自供电 Hub。</div>
+  <div class="mud-note" id="mud-usb-role-note">主机模式会断开本端口的 USB 网络与串口。F50 没有电池；切换后可能失去管理连接，外接 USB 网卡通常需要自供电 Hub。</div>
  </section>
  <section class="mud-card" id="mud-usb-net-card">
   <h3>USB 网络模式</h3>
@@ -97,10 +97,16 @@ return view.extend({
 	},
 	paint: function(fill) {
 		var s = this.state || {};
+		var forced = !!s.force_role_supported;
+		this.q('role').querySelector('option[value="auto"]').hidden = !forced;
+		this.q('role').querySelector('option[value="host"]').textContent = M.translate(forced ? '强制主机' : '主机模式');
+		this.q('role').querySelector('option[value="device"]').textContent = M.translate(forced ? '强制设备' : '设备模式');
+		this.q('role-auto-label').textContent = M.translate(forced ? '开机应用强制主机模式' : '开机自动启用主机模式');
+		this.q('role-note').textContent = M.translate(forced ? '自动模式跟随 Type-C 数据角色。强制模式只控制 USB 数据，充电和供电仍由 Type-C／PD 管理；与对端角色不匹配时，USB 数据连接不可用。' : '主机模式会断开本端口的 USB 网络与串口。F50 没有电池；切换后可能失去管理连接，外接 USB 网卡通常需要自供电 Hub。');
 		var protocol = function(v) { return /^(ncm|ecm|rndis)$/.test(v || '') ? v.toUpperCase() : M.translate(v === 'none' ? '主机模式不使用共享协议' : v === 'mixed' ? '多个共享协议' : '未能确认'); };
 		this.q('net-current').textContent = protocol(s.net_current);
 		this.q('net-next').textContent = protocol(s.net_next);
-		this.q('role-policy').textContent = s.ok ? M.translate(s.role_auto ? '开机自动启用主机模式' : '设备模式（默认）') : '--';
+		this.q('role-policy').textContent = s.ok ? M.translate(s.role_auto ? (forced ? '开机应用强制主机模式' : '开机自动启用主机模式') : (forced ? '自动（跟随 Type-C）' : '设备模式（默认）')) : '--';
 		this.q('state-error').textContent = M.translate(!s.ok ? 'USB 状态读取失败，请刷新重试' : s.role_error ? 'USB 角色后台切换失败，请重试' : s.net_policy_error ? '启动协议文件与保存设置不一致，请重新保存' : s.role_pending ? '切换请求已接收，USB 连接可能短暂中断。' : '');
 		this.q('role-now').textContent = s.role === 'host' ? M.translate('主机模式') : s.role === 'device' ? M.translate('设备模式') : M.translate('不可用');
 		var link = s.usb_link || {}, rates = [];
@@ -112,7 +118,7 @@ return view.extend({
 		this.q('link-speed').title = M.translate('当前协商的 USB 数据链路速率，不代表实时传输速度；接入扩展坞时显示与扩展坞的链路。');
 		this.q('role').querySelector('option[value="host"]').disabled = s.host_supported === 0;
 		if (fill !== false) {
-		this.q('role').value = s.role === 'host' || s.role_auto ? 'host' : 'device';
+		this.q('role').value = forced ? (s.role_override || 'auto') : (s.role === 'host' || s.role_auto ? 'host' : 'device');
 		this.q('role-auto').checked = !!s.role_auto;
 		this.q('net-mode').value = s.net_mode || 'ncm';
 		this.q('net-scope').value = s.net_scope || 'permanent';
@@ -142,7 +148,7 @@ return view.extend({
 		this.q('role-auto').addEventListener('change', function() { self.updateDisabled(); });
 		this.q('role-apply').addEventListener('click', function() {
 			var role = self.q('role').value, auto = self.q('role-auto').checked ? '1' : '0';
-			var warning = role === 'host' ? '切换主机模式会立即断开 USB 管理连接。F50 没有电池，外设可能需要自供电；请确认有其他管理途径。' : '切回设备模式后 USB 网络和串口会重新枚举。';
+			var warning = self.state.force_role_supported ? (role === 'auto' ? '恢复 Type-C 自动数据角色，当前 USB 管理连接可能中断。' : '只强制 USB 数据角色，充电和供电策略保持不变。切换可能断开 USB 网卡、网络或串口连接。') : (role === 'host' ? '切换主机模式会立即断开 USB 管理连接。F50 没有电池，外设可能需要自供电；请确认有其他管理途径。' : '切回设备模式后 USB 网络和串口会重新枚举。');
 			self.confirm('确认切换 USB 角色？', warning, { danger: role === 'host', okText: '应用' }, function() {
 				return self.perform('role', self.q('role-apply'), function() { return M.callUsbSet('role', role, '', auto); }, function(r, msg) {
 					if (!r || r.ok !== 1) { msg.update(r && r.ok === 0 ? '切换失败：' + (r.error || '未知错误') : '管理连接已中断；请重新连接后确认 USB 角色。', r && r.ok === 0 ? 'error' : 'info'); return; }
@@ -213,7 +219,7 @@ return view.extend({
 		return this.request(function() { return M.callUsbGet(); }, Math.min(1500, deadline - Date.now())).catch(function() { return null; }).then(function(s) {
 			if (self._disposed) return;
 			if (!s || !s.ok) { msg.update('暂时无法确认角色；请重新连接后刷新页面。', 'info'); return; }
-			if (s && s.ok && s.role === role) { self.state = s; self.paint(); msg.update('USB 角色已应用', 'success'); return; }
+			if (s && s.ok && (role === 'auto' ? s.role_override === 'auto' : s.role === role && (!s.force_role_supported || s.role_override === role))) { self.state = s; self.paint(); msg.update('USB 角色已应用', 'success'); return; }
 			if (s && s.role_target === role && s.role_error) { self.state = s; self.paint(); msg.update('USB 角色后台切换失败，请重试', 'error'); return; }
 			return new Promise(function(resolve) { self.later(resolve, Math.min(700, Math.max(0, deadline - Date.now()))); }).then(function() { return self.watchRole(role, msg, deadline); });
 		});

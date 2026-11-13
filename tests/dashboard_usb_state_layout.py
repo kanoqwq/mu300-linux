@@ -120,6 +120,20 @@ def main():
                     assert not page.locator('main').evaluate("e=>/[\\u4e00-\\u9fff]/.test(e.textContent)")
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),(lang,width,'overflow')
                 assert not errors,errors
+                # Only native battery boards expose auto/force. Returning to
+                # auto may keep the actual role host; it must still complete.
+                page.evaluate("state={...state,force_role_supported:1,role_override:'auto',role:'host',role_auto:0};v.state=state;v.paint()")
+                assert page.locator('#mud-usb-role').input_value()=='auto'
+                assert not page.locator('#mud-usb-role option[value=auto]').evaluate('(e)=>e.hidden')
+                page.select_option('#mud-usb-role','device')
+                assert page.is_disabled('#mud-usb-role-auto')
+                page.evaluate("state={...state,force_role_supported:0,role:'device'};v.state=state;v.paint()")
+                assert page.locator('#mud-usb-role option[value=auto]').evaluate('(e)=>e.hidden')
+                assert page.locator('#mud-usb-role').input_value()=='device'
+                if lang!='zh':
+                    assert not page.locator('main').evaluate("e=>/[\\u4e00-\\u9fff]/.test(e.textContent)")
+                assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),(lang,width,'forced-role overflow')
+                assert not errors,errors
                 page.close()
         browser.close()
     print('USB UI: 6 language/viewport cases, policy, timeout, errors and lifecycle passed')
