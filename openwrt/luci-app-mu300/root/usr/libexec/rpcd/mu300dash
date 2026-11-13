@@ -418,6 +418,8 @@ do_list() {
 	"traffic_get": { "slot": "String" },
 	"traffic_set": { "payload": "String", "slot": "String" },
 	"traffic_clear": { "confirm": false, "slot": "String" },
+	"traffic_export": { "slot": "String" },
+	"traffic_import": { "payload": "String", "confirm": false, "slot": "String" },
 	"ttl_get": { },
 	"ttl_set": { "value": "String" },
 	"usb_get": { },
@@ -545,6 +547,13 @@ call)
             # the internal service is intentionally not exposed by the UI ACL.
             case $(inp '@.confirm') in true) confirm=true ;; *) confirm=false ;; esac
             ubus -t 5 call unisoc.traffic clear "{\"confirm\":$confirm,\"slot\":${MU300_SIM_SLOT:-0}}" 2>/dev/null || printf '{"ok":0,"error":"traffic_unavailable"}\n'
+            ;;
+        traffic_export)
+            ubus -t 3 call unisoc.traffic export "{\"slot\":${MU300_SIM_SLOT:-0}}" 2>/dev/null || printf '{"ok":0,"error":"traffic_unavailable"}\n'
+            ;;
+        traffic_import)
+            params=$(printf '%s' "$INPUT" | ucode -e 'import * as fs from "fs"; let i=json(fs.readfile("/dev/stdin")); if (type(i.payload)!="string" || !length(i.payload) || length(i.payload)>32768 || (i.confirm !== true && i.confirm !== false)) die("invalid backup"); print(sprintf("%J", {payload:i.payload,confirm:i.confirm,slot:int(getenv("MU300_SIM_SLOT") || 0)}));' 2>/dev/null) || { printf '{"ok":0,"error":"invalid_backup"}\n'; exit 0; }
+            ubus -t 10 call unisoc.traffic import "$params" 2>/dev/null || printf '{"ok":0,"error":"traffic_unavailable"}\n'
             ;;
         usb_get)    run_m usb_get    '"$DASH/device-usb" get' ;;
         usb_set)

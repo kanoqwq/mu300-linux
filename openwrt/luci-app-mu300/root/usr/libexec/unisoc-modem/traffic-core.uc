@@ -1,4 +1,7 @@
 // Pure accounting rules shared by the daemon and deterministic boundary tests.
+const BACKUP_FORMAT = 'mu300-traffic-pool';
+const MAX_BACKUP_NUMBER = 9007199254740991;
+
 export const defaults = { plan_name: '', monthly_gb: 0, daily_gb: 0,
     reset_day: 1, count_mode: 'total', device: '' };
 
@@ -147,4 +150,98 @@ export function update_config(db, input, now) {
         db.adjustment = { start: view.cycle_start, reset_day: next.reset_day, mode: next.count_mode,
             bytes: int(input.used_gb * 1000000000) - counted(view.period, next.count_mode) };
     }
+};
+
+function exact_keys(value, expected) {
+    if (type(value) != 'object') return false;
+    let found = keys(value);
+    if (length(found) != length(expected)) return false;
+    for (let name in expected) if (index(found, name) < 0) return false;
+    return true;
+};
+
+function integer_between(value, minimum, maximum) {
+    return (type(value) == 'int' || type(value) == 'double') &&
+        value >= minimum && value <= maximum && value == int(value);
+};
+
+function valid_day(value) {
+    if (type(value) != 'string' || !match(value, /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)) return false;
+    let year = int(substr(value, 0, 4)), month = int(substr(value, 5, 2)), day = int(substr(value, 8, 2));
+    if (year < 2000 || month < 1 || month > 12 || day < 1 || day > 31) return false;
+    let leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+    let month_days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    return day <= month_days[month - 1];
+};
+
+function validate_records(records, limit, is_day) {
+    if (type(records) != 'object' || length(keys(records)) > limit) die('invalid_backup');
+    for (let date, row in records) {
+        if ((is_day && !valid_day(date)) ||
+            (!is_day && (!match(date, /^[0-9]{4}-[0-9]{2}$/) || int(substr(date, 0, 4)) < 2000 ||
+                int(substr(date, 5, 2)) < 1 || int(substr(date, 5, 2)) > 12)) ||
+            !exact_keys(row, ['rx', 'tx']) ||
+            !integer_between(row.rx, 0, MAX_BACKUP_NUMBER) || !integer_between(row.tx, 0, MAX_BACKUP_NUMBER))
+            die('invalid_backup');
+    }
+};
+
+export function export_backup(db, now, source_slot) {
+    return {
+        format: BACKUP_FORMAT,
+        version: 1,
+        source_slot: source_slot,
+        exported_at: now,
+        config: config(db.config),
+        started_at: db.started_at,
+        days: db.days,
+        months: db.months,
+        pending_rx: db.pending_rx ?? 0,
+        pending_tx: db.pending_tx ?? 0,
+        adjustment: db.adjustment ?? null
+    };
+};
+
+export function import_backup(input, current, now) {
+    if (!exact_keys(input, ['format', 'version', 'source_slot', 'exported_at', 'config', 'started_at',
+            'days', 'months', 'pending_rx', 'pending_tx', 'adjustment']) ||
+        input.format != BACKUP_FORMAT || !integer_between(input.version, 1, 1) ||
+        !integer_between(input.source_slot, 0, 1) ||
+        !integer_between(input.exported_at, 0, 4102444800) ||
+        !integer_between(input.started_at, 0, 4102444800) ||
+        !exact_keys(input.config, keys(defaults))) die('invalid_backup');
+
+    let saved_config = config(input.config);
+    validate_records(input.days, 93, true);
+    validate_records(input.months, 24, false);
+    if (!integer_between(input.pending_rx, 0, MAX_BACKUP_NUMBER) ||
+        !integer_between(input.pending_tx, 0, MAX_BACKUP_NUMBER)) die('invalid_backup');
+
+    let adjustment = input.adjustment;
+    if (adjustment != null && (!exact_keys(adjustment, ['start', 'reset_day', 'mode', 'bytes']) ||
+        !valid_day(adjustment.start) || !integer_between(adjustment.reset_day, 1, 31) ||
+        index(['total', 'rx', 'tx'], adjustment.mode) < 0 ||
+        !integer_between(adjustment.bytes, -MAX_BACKUP_NUMBER, MAX_BACKUP_NUMBER))) die('invalid_backup');
+
+    let days = {}, months = {};
+    for (let date, row in input.days) days[date] = { rx: row.rx, tx: row.tx };
+    for (let month, row in input.months) months[month] = { rx: row.rx, tx: row.tx };
+    return {
+        version: 1,
+        revision: (current.revision ?? 0) + 1,
+        config: saved_config,
+        started_at: input.started_at,
+        last: null,
+        days: days,
+        months: months,
+        pending_rx: input.pending_rx,
+        pending_tx: input.pending_tx,
+        adjustment: adjustment == null ? null : {
+            start: adjustment.start, reset_day: adjustment.reset_day,
+            mode: adjustment.mode, bytes: adjustment.bytes
+        },
+        updated_at: now,
+        clock_ok: now >= 1704067200,
+        available: false
+    };
 };
