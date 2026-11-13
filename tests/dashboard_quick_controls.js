@@ -20,7 +20,8 @@ function fixture(on) {
         {wait:(job,active)=>{jobs.push(job);return new Promise((resolve,reject)=>{finishJob=()=>resolve(active()?{ok:1,state:'done'}:null);rejectJob=reject;});}});
     view.refreshLock = () => {};
     view.wire(root);
-    view.lastInfo = {wan:{up:on},wifi:{available:1,up:on,pending:false}};
+    view.lastInfo = {wan:{up:on},wifi:{available:1,up:on,pending:false},
+        boot:{can_set_default:true,lock_state:on?'locked':'unlocked'}};
     view.lastCell = {cfun:on?1:0};
     return {view,root,buttons,requests,dialogs,decide:v=>decide(v),complete:(r)=>complete(r||{ok:1}),jobs,toasts,finishJob:()=>finishJob(),rejectJob:e=>rejectJob(e)};
 }
@@ -29,7 +30,8 @@ function fixture(on) {
         ['data',true,'data','down'], ['data',false,'data','up'],
         ['radio',true,'radio','off'], ['radio',false,'radio','on'],
         ['wifi',true,'wifi','off'], ['wifi',false,'wifi','on'],
-        ['modem',true,'modem-reset',null], ['android',true,'os','android']
+        ['modem',true,'modem-reset',null], ['android',true,'os','android'],
+        ['bootlock',true,'os','unlock'], ['bootlock',false,'os','lock']
     ];
     for (const [id,on,op,arg] of cases) {
         for (const decision of ['cancel','confirm','unload','detach']) {
@@ -100,6 +102,38 @@ function fixture(on) {
         if(state==='unavailable')f.view.lastInfo.wifi.available=0;
         if(state==='busy')f.view._wifiBusy=true;
         f.buttons['#mud-btn-wifi'].onclick(); assert.equal(f.dialogs.length,0,state);
+    }
+    for(const state of ['trial',null]) {
+        const f=fixture(true);
+        f.view.lastInfo.boot.lock_state=state;
+        f.buttons['#mud-btn-bootlock'].onclick();
+        assert.equal(f.dialogs.length,0,'unsafe lock state '+state);
+    }
+    {
+        const f=fixture(true);
+        f.view.lastInfo.boot.can_set_default=false;
+        f.buttons['#mud-btn-bootlock'].onclick();
+        assert.equal(f.dialogs.length,0,'unsupported boot control');
+    }
+    {
+        const f=fixture(false),b=f.buttons['#mud-btn-bootlock'];
+        b.onclick();
+        assert.equal(f.dialogs[0].options.danger,true);
+        assert(f.dialogs[0].body.includes('不会自动切换到 Android'));
+        f.decide(true);await tick();
+        assert.deepEqual(f.requests,[['os','lock']]);
+        f.complete({ok:0,error:'启动控制回读校验失败'});await tick();
+        assert.equal(f.toasts.at(-1).options.type,'error');
+        assert(f.toasts.at(-1).message.includes('启动控制回读校验失败'));
+    }
+    {
+        const f=fixture(false);
+        f.view.lastInfo.boot.lock_requested=true;
+        f.buttons['#mud-btn-default'].onclick();
+        assert.equal(f.dialogs[0].options.danger,true);
+        assert(f.dialogs[0].body.includes('不会自动回退到 Android'));
+        f.decide(false);await tick();
+        assert.equal(f.requests.length,0);
     }
     console.log('PASS: quick controls and power chooser; shutdown/restart, cancellation, view lifecycle, duplicates, RPC errors and busy cleanup');
 })().catch(e=>{console.error(e);process.exitCode=1;});
