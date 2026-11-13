@@ -15,6 +15,7 @@ RESULT=${MU300_FORWARD_RESULT:-/run/unisoc-modem-forward-result}
 HISTORY=${MU300_FORWARD_HISTORY:-$RESULT.history}
 ROOT_RESULT=$RESULT
 RENDERER=${MU300_FORWARD_RENDERER:-/usr/libexec/unisoc-modem/forward-template.uc}
+FILTER=${MU300_FORWARD_FILTER:-${RENDERER%/*}/forward-filter.uc}
 SMS=${MU300_SMS_BIN:-$(uci -q get unisoc_modem.main.sms_command 2>/dev/null)}
 [ -n "$SMS" ] || SMS=$(command -v mu300-sms 2>/dev/null || true)
 case "$SMS" in */*) ;; *) SMS=$(command -v "$SMS" 2>/dev/null || true) ;; esac
@@ -208,10 +209,26 @@ test_gate() {
     printf '%s\n' "$uptime" > "$ROOT_RESULT.test-at"
 }
 
+sms_filter_fields() {
+    json_add_string number_filter_mode "$number_filter_mode"
+    json_add_string number_filter_regex "$number_filter_regex"
+    json_add_string text_filter_mode "$text_filter_mode"
+    json_add_string text_filter_regex "$text_filter_regex"
+    json_add_boolean filter_ignore_case "$filter_ignore_case"
+}
+sms_filter_input() (
+    json_init
+    sms_filter_fields
+    json_add_string number "${1:-}"
+    json_add_string text "${2:-}"
+    json_dump
+)
+
 load_config() {
+    number_filter_mode=off number_filter_regex= text_filter_mode=off text_filter_regex= filter_ignore_case=0
     enabled=0 method=webhook webhook_url= dingtalk_webhook= dingtalk_secret=
     sms_to_phone= smtp_host= smtp_port=465 smtp_username= smtp_to= smtp_password=
-    call_forward_enabled=0 power_forward_enabled=0 blacklist_phone= blacklist_keywords= nickname= template_language=
+    call_forward_enabled=0 power_forward_enabled=0 legacy_blacklist_present=0 nickname= template_language=
     smtp_forward_device_info=0 dingtalk_forward_device_info=0 sms_forward_device_info=0
     webhook_method=POST webhook_content_type=application/json webhook_body= webhook_headers= webhook_timeout=12 webhook_expect=
     [ -s "$CONFIG" ] || return 0
@@ -219,7 +236,10 @@ load_config() {
     json_get_vars enabled method webhook_url dingtalk_webhook dingtalk_secret sms_to_phone
     json_get_vars smtp_host smtp_port smtp_username smtp_to smtp_password
     json_get_var call_forward_enabled call_forward_enabled 0
-    json_get_vars power_forward_enabled blacklist_phone blacklist_keywords nickname
+    json_get_vars power_forward_enabled nickname
+    json_get_var _legacy_phone blacklist_phone ''
+    json_get_var _legacy_keywords blacklist_keywords ''
+    [ -z "$_legacy_phone$_legacy_keywords" ] || legacy_blacklist_present=1
     json_get_vars smtp_forward_device_info dingtalk_forward_device_info sms_forward_device_info
     json_get_var template_language template_language ''
     json_get_var webhook_method webhook_method POST
@@ -228,6 +248,11 @@ load_config() {
     json_get_var webhook_headers webhook_headers ''
     json_get_var webhook_timeout webhook_timeout 12
     json_get_var webhook_expect webhook_expect ''
+    json_get_var number_filter_mode number_filter_mode off
+    json_get_var number_filter_regex number_filter_regex ''
+    json_get_var text_filter_mode text_filter_mode off
+    json_get_var text_filter_regex text_filter_regex ''
+    json_get_var filter_ignore_case filter_ignore_case 0
 }
 load_state() {
     last_id=0 since=0 power_percent=-1 power_status=none
@@ -261,8 +286,7 @@ save_config() {
     json_add_string smtp_password "$smtp_password"
     json_add_boolean call_forward_enabled "$call_forward_enabled"
     json_add_boolean power_forward_enabled "$power_forward_enabled"
-    json_add_string blacklist_phone "$blacklist_phone"
-    json_add_string blacklist_keywords "$blacklist_keywords"
+    sms_filter_fields
     json_add_string nickname "$nickname"
     json_add_boolean smtp_forward_device_info "$smtp_forward_device_info"
     json_add_boolean dingtalk_forward_device_info "$dingtalk_forward_device_info"
@@ -347,6 +371,7 @@ get_view() {
     json_add_string profile "$profile"
     json_add_int sim_slots "$([ "$(uci -q get unisoc_modem.main.sim_slots 2>/dev/null)" = 2 ] && echo 2 || echo 1)"
     json_add_object config
+    json_add_boolean legacy_blacklist_present "$legacy_blacklist_present"
     json_add_boolean enabled "$enabled"
     json_add_string method "$method"
     json_add_string template_language "$template_language"
@@ -364,8 +389,7 @@ get_view() {
     json_close_object
     json_add_boolean call_forward_enabled "$call_forward_enabled"
     json_add_boolean power_forward_enabled "$power_forward_enabled"
-    json_add_string blacklist_phone "$blacklist_phone"
-    json_add_string blacklist_keywords "$blacklist_keywords"
+    sms_filter_fields
     json_add_string nickname "$nickname"
     json_add_boolean smtp_forward_device_info "$smtp_forward_device_info"
     json_add_boolean dingtalk_forward_device_info "$dingtalk_forward_device_info"
@@ -417,14 +441,39 @@ set_config() {
     json_get_var new_smtp_password smtp_password
     json_get_var new_call_forward_enabled call_forward_enabled
     json_get_var new_power_forward_enabled power_forward_enabled
-    json_get_var new_blacklist_phone blacklist_phone
-    json_get_var new_blacklist_keywords blacklist_keywords
     json_get_var new_nickname nickname
     json_get_var new_smtp_forward_device_info smtp_forward_device_info
     json_get_var new_dingtalk_forward_device_info dingtalk_forward_device_info
     json_get_var new_sms_forward_device_info sms_forward_device_info
+    new_number_filter_mode_type= new_number_filter_regex_type= new_text_filter_mode_type= new_text_filter_regex_type= new_filter_ignore_case_type=
+    json_get_type new_number_filter_mode_type number_filter_mode || :
+    json_get_type new_number_filter_regex_type number_filter_regex || :
+    json_get_type new_text_filter_mode_type text_filter_mode || :
+    json_get_type new_text_filter_regex_type text_filter_regex || :
+    json_get_type new_filter_ignore_case_type filter_ignore_case || :
+    json_get_var new_number_filter_mode number_filter_mode
+    json_get_var new_number_filter_regex number_filter_regex
+    json_get_var new_text_filter_mode text_filter_mode
+    json_get_var new_text_filter_regex text_filter_regex
+    json_get_var new_filter_ignore_case filter_ignore_case
     json_get_vars clear_smtp_password clear_dingtalk_secret
     load_config || { reply_error invalid_config; return; }
+    # Omitted fields from older clients retain the saved filtering policy.
+    for _type in "$new_number_filter_mode_type" "$new_number_filter_regex_type" "$new_text_filter_mode_type" "$new_text_filter_regex_type"; do
+        case "$_type" in ''|string) ;; *) reply_error invalid_forward_filter; return ;; esac
+    done
+    case "$new_filter_ignore_case_type" in ''|boolean|int) ;; *) reply_error invalid_forward_filter; return ;; esac
+    [ -z "$new_number_filter_mode_type" ] || number_filter_mode=$new_number_filter_mode
+    [ -z "$new_number_filter_regex_type" ] || number_filter_regex=$new_number_filter_regex
+    [ -z "$new_text_filter_mode_type" ] || text_filter_mode=$new_text_filter_mode
+    [ -z "$new_text_filter_regex_type" ] || text_filter_regex=$new_text_filter_regex
+    [ -z "$new_filter_ignore_case_type" ] || filter_ignore_case=$new_filter_ignore_case
+    bool "$filter_ignore_case" || { reply_error invalid_forward_filter; return; }
+    _filter_validation=$(sms_filter_input | ucode "$FILTER" validate 2>/dev/null)
+    if [ "$(printf '%s' "$_filter_validation" | jsonfilter -e '@.ok' 2>/dev/null)" != 1 ]; then
+        [ -z "$_filter_validation" ] && reply_error invalid_forward_filter || printf '%s\n' "$_filter_validation"
+        return
+    fi
     old_enabled=$enabled old_method=$method
     enabled=${new_enabled:-0}; method=${new_method:-webhook}
     # Older clients omit this field; retain the saved language in that case.
@@ -437,7 +486,6 @@ set_config() {
     smtp_port=${new_smtp_port:-465}; smtp_username=${new_smtp_username:-}; smtp_to=${new_smtp_to:-}
     call_forward_enabled=${new_call_forward_enabled:-${call_forward_enabled:-0}}
     power_forward_enabled=${new_power_forward_enabled:-0}
-    blacklist_phone=${new_blacklist_phone:-}; blacklist_keywords=${new_blacklist_keywords:-}
     nickname=${new_nickname:-}
     smtp_forward_device_info=${new_smtp_forward_device_info:-0}
     dingtalk_forward_device_info=${new_dingtalk_forward_device_info:-0}
@@ -463,9 +511,7 @@ set_config() {
         https_url "$dingtalk_webhook" &&
         case "$dingtalk_webhook" in https://oapi.dingtalk.com/robot/send*) true ;; *) false ;; esac
     } || { reply_error invalid_destination; return; }
-    list_valid "$sms_to_phone" 3 phone &&
-    list_valid "$blacklist_phone" 64 phone &&
-    list_valid "$blacklist_keywords" 32 keyword ||
+    list_valid "$sms_to_phone" 3 phone ||
         { reply_error invalid_forward_config; return; }
     [ ${#nickname} -le 255 ] && one_line "$nickname" &&
     [ ${#dingtalk_secret} -le 256 ] && one_line "$dingtalk_secret" &&
@@ -532,21 +578,15 @@ message_file() { printf '%s/msg/%06d' "$POOL" "$1"; }
 msg_field() { sed -n "1,/^$/s/^$2: //p" "$1" | head -n1; }
 msg_body() { sed -n '1,/^$/!p' "$1"; }
 blocked() {
-    _peer=${1#+}
-    while IFS= read -r _item || [ -n "$_item" ]; do
-        [ -n "$_item" ] || continue
-        [ "${_item#+}" = "$_peer" ] && return 0
-    done <<EOF_PHONE
-$blacklist_phone
-EOF_PHONE
-    while IFS= read -r _item || [ -n "$_item" ]; do
-        [ -n "$_item" ] || continue
-        case "$2" in *"$_item"*) return 0 ;; esac
-    done <<EOF_KEYWORD
-$blacklist_keywords
-EOF_KEYWORD
-    return 1
+    [ "${number_filter_mode:-off}" != off ] || [ "${text_filter_mode:-off}" != off ] || return 1
+    _filter_decision=$(sms_filter_input "$1" "$2" | ucode "$FILTER" check 2>/dev/null) || _filter_decision=invalid
+    case "$_filter_decision" in
+        allow) return 1 ;;
+        block) return 0 ;;
+        *) write_result invalid_forward_filter "$power_last_result" || :; return 0 ;;
+    esac
 }
+
 template_strings() {
     # Missing language in an existing config preserves the Chinese templates.
     case "${template_language:-zh}" in

@@ -13,6 +13,9 @@ var RESULTS = {
 	message_too_long: '短信过长，未发送', storage_failed: '设备保存失败',
 	source_unavailable: '短信服务暂不可用', power_unavailable: '设备暂未提供有效电池状态',
 	invalid_config: '配置无效', invalid_forward_config: '配置无效',
+    invalid_number_filter_regex: '号码正则表达式无效', invalid_text_filter_regex: '正文正则表达式无效',
+    number_filter_empty: '号码白名单至少填写一条正则', text_filter_empty: '正文白名单至少填写一条正则',
+    invalid_forward_filter: '短信筛选规则无效',
 	invalid_destination: '目标地址无效', delivery_failed: '投递失败，请检查配置和设备网络',
 	smtp_auth_failed: '邮箱服务器拒绝登录，请检查授权码'
 };
@@ -20,6 +23,9 @@ var ERRORS = {
 	forward_test_wait: '请等待 5 秒后再测试',
 	forward_busy: '转发正在执行，请稍后再试', disabled: '转发未开启',
 	invalid_config: '配置无效', invalid_forward_config: '配置无效',
+    invalid_number_filter_regex: '号码正则表达式无效', invalid_text_filter_regex: '正文正则表达式无效',
+    number_filter_empty: '号码白名单至少填写一条正则', text_filter_empty: '正文白名单至少填写一条正则',
+    invalid_forward_filter: '短信筛选规则无效',
 	invalid_destination: '目标地址无效', forward_storage_failed: '设备保存失败',
 	sms_list_unavailable: '短信服务暂不可用', power_unavailable: '设备暂未提供有效电池状态'
 };
@@ -84,7 +90,7 @@ return view.extend({
   <div class="mud-fwd-field"><label for="mud-fwd-mode">配置模式</label><select id="mud-fwd-mode"><option value="shared">所有 SIM 共用</option><option value="per_sim">按 SIM 独立配置</option></select></div>
   <div class="mud-fwd-field"><label for="mud-fwd-profile">正在编辑</label><select id="mud-fwd-profile"><option value="shared">共用配置 / 电源通知</option><option value="sim0">SIM 1</option><option value="sim1">SIM 2</option></select></div>
  </div>
- <div class="mud-note">独立模式按收到短信的卡选择渠道和黑名单，不受上网卡切换影响。电源通知始终使用共用配置。</div>
+ <div class="mud-note">独立模式按收到短信的卡选择渠道和筛选规则，不受上网卡切换影响。电源通知始终使用共用配置。</div>
  <div class="mud-note" id="mud-fwd-profile-note"></div>
 </section>
 <div class="mud-fwd-grid">
@@ -147,10 +153,18 @@ return view.extend({
   <div class="mud-note" id="mud-fwd-power-note">充电状态变化，或电量跨过 5%、20%、40%、60%、80%、100% 时通知。</div>
   <div class="mud-note" id="mud-fwd-power-last"></div>
   <div class="mud-fwd-field"><label for="mud-fwd-nickname">设备备注</label><input id="mud-fwd-nickname" maxlength="255" autocomplete="off"></div>
-  <h3 style="margin-top:22px">黑名单</h3>
-  <div class="mud-fwd-field"><label for="mud-fwd-blacklist_phone">号码黑名单 · 每行一个，最多 64 个</label><textarea id="mud-fwd-blacklist_phone"></textarea></div>
-  <div class="mud-fwd-field"><label for="mud-fwd-blacklist_keywords">关键词黑名单 · 每行一个，最多 32 个</label><textarea id="mud-fwd-blacklist_keywords"></textarea></div>
-  <div class="mud-note">命中的新短信只记为已处理，不会转发；清空规则后不会补发。规则不影响电源或来电通知。</div>
+  <div id="mud-fwd-regex-details" style="margin-top:18px">
+   <h3>正则筛选（可选）</h3>
+   <div class="mud-note" id="mud-fwd-legacy-filter-note" hidden>旧版号码与关键词黑名单已停用；如需继续拦截，请在下方正则筛选中设置。</div>
+   <div class="mud-note">号码和正文的筛选须同时通过。仅影响新收到的短信，不影响电源或来电通知。</div>
+   <div class="mud-fwd-field"><label for="mud-fwd-number_filter_mode">号码筛选</label><select id="mud-fwd-number_filter_mode"><option value="off">关闭筛选</option><option value="blacklist">黑名单：匹配则不转发</option><option value="whitelist">白名单：仅匹配才转发</option></select></div>
+   <div class="mud-fwd-field"><label for="mud-fwd-number_filter_regex">号码正则 · 每行一条</label><textarea id="mud-fwd-number_filter_regex" spellcheck="false" placeholder="^106[0-9]+$"></textarea></div>
+   <div class="mud-fwd-field"><label for="mud-fwd-text_filter_mode">正文筛选</label><select id="mud-fwd-text_filter_mode"><option value="off">关闭筛选</option><option value="blacklist">黑名单：匹配则不转发</option><option value="whitelist">白名单：仅匹配才转发</option></select></div>
+   <div class="mud-fwd-field"><label for="mud-fwd-text_filter_regex">正文正则 · 每行一条</label><textarea id="mud-fwd-text_filter_regex" spellcheck="false" placeholder="OTP|code|kod|验证码"></textarea></div>
+   <label class="mud-fwd-toggle"><input id="mud-fwd-filter_ignore_case" type="checkbox">忽略英文字母大小写</label>
+   <div class="mud-note">每项最多 32 条，每条最多 512 字节。同项内任一行匹配即命中；白名单至少填写一条。</div>
+   <div class="mud-note">使用 POSIX 扩展正则，不加 / 分隔符；数字用 [0-9]。匹配原始号码（包含 +）和完整正文，点号可跨行。</div>
+  </div>
  </section>
 </div>
 <section class="mud-card" style="margin-top:14px">
@@ -201,8 +215,7 @@ return view.extend({
 		var self = this;
 		[ 'enabled', 'call_forward_enabled', 'power_forward_enabled', 'smtp_forward_device_info',
 			'dingtalk_forward_device_info', 'sms_forward_device_info' ].forEach(function(k) { self.q(k).checked = !!c[k]; });
-		[ 'method', 'webhook_url', 'dingtalk_webhook', 'sms_to_phone', 'blacklist_phone',
-			'blacklist_keywords', 'nickname' ].forEach(function(k) { self.q(k).value = c[k] || ''; });
+		[ 'method', 'webhook_url', 'dingtalk_webhook', 'sms_to_phone', 'nickname' ].forEach(function(k) { self.q(k).value = c[k] || ''; });
 		this.q('method').value = c.method || 'webhook';
 		this.q('webhook_method').value = c.webhook_method || 'POST';
 		this.q('webhook_content_type').value = c.webhook_content_type || 'application/json';
@@ -216,6 +229,10 @@ return view.extend({
 		[ 'smtp_password', 'dingtalk_secret' ].forEach(function(k) { self.q(k).value = ''; self.q('clear_' + k).checked = false; });
 		this.q('smtp_password').placeholder = M.translate(c.smtp && c.smtp.password_configured ? '已配置，留空保留' : '请输入授权码');
 		this.q('dingtalk_secret').placeholder = M.translate(c.dingtalk_secret_configured ? '已配置，留空保留' : '可选');
+        [ 'number_filter_mode', 'text_filter_mode' ].forEach(function(k) { self.q(k).value = c[k] || 'off'; });
+        [ 'number_filter_regex', 'text_filter_regex' ].forEach(function(k) { self.q(k).value = c[k] || ''; });
+        this.q('filter_ignore_case').checked = !!c.filter_ignore_case;
+        this.q('legacy-filter-note').hidden = !c.legacy_blacklist_present;
 		this.paintMethod();
 	},
 	payload: function() {
@@ -225,19 +242,24 @@ return view.extend({
 			'clear_smtp_password', 'clear_dingtalk_secret' ].forEach(function(k) { p[k] = self.q(k).checked ? 1 : 0; });
 		[ 'method', 'template_language', 'webhook_url', 'dingtalk_webhook', 'dingtalk_secret', 'sms_to_phone',
 			'smtp_host', 'smtp_port', 'smtp_username', 'smtp_to', 'smtp_password',
-			'blacklist_phone', 'blacklist_keywords', 'nickname' ].forEach(function(k) { p[k] = self.q(k).value.trim(); });
-		[ 'sms_to_phone', 'blacklist_phone', 'blacklist_keywords' ].forEach(function(k) { p[k] = lines(p[k]).join('\n'); });
+			'nickname' ].forEach(function(k) { p[k] = self.q(k).value.trim(); });
+		[ 'sms_to_phone' ].forEach(function(k) { p[k] = lines(p[k]).join('\n'); });
 		[ 'webhook_method', 'webhook_content_type', 'webhook_timeout', 'webhook_headers', 'webhook_body', 'webhook_expect' ].forEach(function(k) { p[k] = self.q(k).value; });
+        [ 'number_filter_mode', 'text_filter_mode', 'number_filter_regex', 'text_filter_regex' ].forEach(function(k) { p[k] = self.q(k).value; });
+        p.filter_ignore_case = self.q('filter_ignore_case').checked ? 1 : 0;
 		if (p.clear_smtp_password) {
 			p.smtp_host = ''; p.smtp_username = ''; p.smtp_to = ''; p.smtp_password = ''; p.smtp_port = '465';
 		}
 		return p;
 	},
 	validate: function(p) {
-		if (!validPhones(p.sms_to_phone, 3) || !validPhones(p.blacklist_phone, 64)) return '号码无效、重复或超过数量上限';
-		var words = lines(p.blacklist_keywords);
-			if (words.length > 32 || words.some(function(w) { return unescape(encodeURIComponent(w)).length > 128; }) ||
-			new Set(words).size !== words.length) return '关键词无效、重复或超过数量上限';
+        for (var f of ['number', 'text']) {
+            var mode = p[f + '_filter_mode'], rules = String(p[f + '_filter_regex'] || '').replace(/\r\n/g, '\n').split('\n').filter(function(s) { return s.length > 0; });
+            if (['off', 'blacklist', 'whitelist'].indexOf(mode) < 0) return '短信筛选规则无效';
+            if (mode === 'whitelist' && !rules.length) return f === 'number' ? '号码白名单至少填写一条正则' : '正文白名单至少填写一条正则';
+            if (rules.length > 32 || rules.some(function(s) { return unescape(encodeURIComponent(s)).length > 512; })) return '正则条数或长度超过上限';
+        }
+		if (!validPhones(p.sms_to_phone, 3)) return '号码无效、重复或超过数量上限';
 		if (p.power_forward_enabled && !this.status.power_supported) return '设备暂未提供有效电池状态';
 		if (p.webhook_expect && !/^[A-Za-z_][A-Za-z0-9_]{0,63}=(-?[0-9]{1,16}|[a-z]{1,16})$/.test(p.webhook_expect)) return '成功响应条件格式无效';
 		if (!/^\d+$/.test(p.webhook_timeout) || +p.webhook_timeout < 1 || +p.webhook_timeout > 120) return '请求超时必须为 1–120 秒';
@@ -337,7 +359,7 @@ return view.extend({
 				var btn = self.q('save'), toast = M.toast('正在保存短信转发设置…', { type: 'busy', timeout: 0 });
 				M.busy(btn, true); self.q('profile').disabled = true; self.q('test').disabled = true; self.error('');
 				L.resolveDefault(M.callForwardSet(JSON.stringify(p)), {}).then(function(r) {
-					if (!r.ok) { self.error(r.error || '保存失败'); toast.update('保存失败', 'error'); }
+					if (!r.ok) { self.error(r.line ? M.translate(ERRORS[r.error] || r.error) + ' · ' + M.translate('第 %d 行').replace('%d', String(r.line)) : r.error || '保存失败'); toast.update('保存失败', 'error'); }
 					else {
 						self.savedPayload = null;
 						return L.resolveDefault(M.callForwardGet(self.profile), {}).then(function(v) {

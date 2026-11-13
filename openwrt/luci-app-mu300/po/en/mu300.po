@@ -56,3 +56,64 @@ msgstr "Off by default. Calls on both slots use the selected forwarding mode, in
 
 msgid "eSIM 管理"
 msgstr "eSIM management"
+
+# SMS regular expression filters
+msgid "正则筛选（可选）"
+msgstr "Regular expression filters (optional)"
+
+msgid "号码和正文的筛选须同时通过。仅影响新收到的短信，不影响电源或来电通知。"
+msgstr "Both number and message filters must pass. Applies only to new incoming SMS, not power or incoming-call alerts."
+
+msgid "号码筛选"
+msgstr "Number filter"
+
+msgid "正文筛选"
+msgstr "Message filter"
+
+msgid "关闭筛选"
+msgstr "Filter off"
+
+msgid "黑名单：匹配则不转发"
+msgstr "Blocklist: do not forward matches"
+
+msgid "白名单：仅匹配才转发"
+msgstr "Allowlist: forward matches only"
+
+msgid "号码正则 · 每行一条"
+msgstr "Number expressions · one per line"
+
+msgid "正文正则 · 每行一条"
+msgstr "Message expressions · one per line"
+
+msgid "忽略英文字母大小写"
+msgstr "Ignore letter case"
+
+msgid "每项最多 32 条，每条最多 512 字节。同项内任一行匹配即命中；白名单至少填写一条。"
+msgstr "Up to 32 expressions per field, 512 bytes each. Any matching line counts; an allowlist needs at least one expression."
+
+msgid "使用 POSIX 扩展正则，不加 / 分隔符；数字用 [0-9]。匹配原始号码（包含 +）和完整正文，点号可跨行。"
+msgstr "Use POSIX extended expressions without / delimiters; use [0-9] for digits. Matches the original number (including +) and full message; dot can cross line breaks."
+
+msgid "号码正则表达式无效"
+msgstr "Invalid number expression"
+
+msgid "正文正则表达式无效"
+msgstr "Invalid message expression"
+
+msgid "号码白名单至少填写一条正则"
+msgstr "The number allowlist needs at least one expression"
+
+msgid "正文白名单至少填写一条正则"
+msgstr "The message allowlist needs at least one expression"
+
+msgid "短信筛选规则无效"
+msgstr "Invalid SMS filter rules"
+
+msgid "正则条数或长度超过上限"
+msgstr "Too many expressions or an expression is too long"
+
+msgid "第 %d 行"
+msgstr "Line %d"
+
+msgid "旧版号码与关键词黑名单已停用；如需继续拦截，请在下方正则筛选中设置。"
+msgstr "Legacy number and keyword blocklists are inactive. Set the regex filters below to continue blocking."

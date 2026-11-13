@@ -56,3 +56,64 @@ msgstr "Varsayılan olarak kapalıdır. İki yuvanın aramaları, SIM kaynağı 
 
 msgid "eSIM 管理"
 msgstr "eSIM yönetimi"
+
+# SMS regular expression filters
+msgid "正则筛选（可选）"
+msgstr "Düzenli ifade filtreleri (isteğe bağlı)"
+
+msgid "号码和正文的筛选须同时通过。仅影响新收到的短信，不影响电源或来电通知。"
+msgstr "Numara ve mesaj filtrelerinin ikisi de geçmelidir. Yalnızca yeni SMS’lere uygulanır; güç ve arama bildirimlerini etkilemez."
+
+msgid "号码筛选"
+msgstr "Numara filtresi"
+
+msgid "正文筛选"
+msgstr "Mesaj filtresi"
+
+msgid "关闭筛选"
+msgstr "Filtre kapalı"
+
+msgid "黑名单：匹配则不转发"
+msgstr "Engelleme listesi: eşleşenleri yönlendirme"
+
+msgid "白名单：仅匹配才转发"
+msgstr "İzin listesi: yalnızca eşleşenleri yönlendir"
+
+msgid "号码正则 · 每行一条"
+msgstr "Numara ifadeleri · her satıra bir tane"
+
+msgid "正文正则 · 每行一条"
+msgstr "Mesaj ifadeleri · her satıra bir tane"
+
+msgid "忽略英文字母大小写"
+msgstr "Büyük/küçük harfi yok say"
+
+msgid "每项最多 32 条，每条最多 512 字节。同项内任一行匹配即命中；白名单至少填写一条。"
+msgstr "Her alan için en fazla 32 ifade, ifade başına 512 bayt. Herhangi bir satırın eşleşmesi yeterlidir; izin listesinde en az bir ifade olmalıdır."
+
+msgid "使用 POSIX 扩展正则，不加 / 分隔符；数字用 [0-9]。匹配原始号码（包含 +）和完整正文，点号可跨行。"
+msgstr "/ ayırıcıları olmadan POSIX genişletilmiş ifadeler kullanın; rakamlar için [0-9] yazın. Özgün numara (+ dahil) ve mesajın tamamı eşleştirilir; nokta satır sonlarıyla da eşleşir."
+
+msgid "号码正则表达式无效"
+msgstr "Geçersiz numara ifadesi"
+
+msgid "正文正则表达式无效"
+msgstr "Geçersiz mesaj ifadesi"
+
+msgid "号码白名单至少填写一条正则"
+msgstr "Numara izin listesinde en az bir ifade olmalıdır"
+
+msgid "正文白名单至少填写一条正则"
+msgstr "Mesaj izin listesinde en az bir ifade olmalıdır"
+
+msgid "短信筛选规则无效"
+msgstr "Geçersiz SMS filtre kuralları"
+
+msgid "正则条数或长度超过上限"
+msgstr "Çok fazla ifade var veya bir ifade çok uzun"
+
+msgid "第 %d 行"
+msgstr "Satır %d"
+
+msgid "旧版号码与关键词黑名单已停用；如需继续拦截，请在下方正则筛选中设置。"
+msgstr "Eski numara ve anahtar sözcük engelleme listeleri devre dışıdır. Engellemeye devam etmek için aşağıdaki düzenli ifade filtrelerini ayarlayın."
