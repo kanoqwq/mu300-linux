@@ -562,25 +562,35 @@ if [ "$root_mounted" = 0 ] && [ "$internal_root" = 1 ] && root_region_valid "$RO
         root_mounted=1
     fi
 fi
-if [ "$root_mounted" = 1 ] && rootdir=$(pick_root) && [ -n "$rootdir" ]; then
-    # A way back to Android with no computer and no keyboard: cut the power during boot N times in a row (N is
-    # .mu300/boot-attempts, 5 without it). Every boot counts up here and mu300-next-boot --rearm clears the count
-    # once the system is really up, so only boots that never got that far add up. LK does the same with the
-    # tries it was armed with (N+1) and normally gets there first; this is the backstop, and it goes to Android
-    # on the boot after the Nth failed one, exactly when LK would.
-    # only in default-Linux mode: with the one-shot trial every power cut already lands in Android
-    if [ "$(cat "$rootdir/etc/mu300/default-boot" 2>/dev/null)" = linux ]; then
-        tries=$(cat /disk/.mu300/boot-tries 2>/dev/null || echo 0)
-        case $tries in ''|*[!0-9]*) tries=0 ;; esac
-        tries=$((tries + 1))
-        mkdir -p /disk/.mu300 && echo "$tries" > /disk/.mu300/boot-tries && sync
-    else
-        tries=0
+# --- boot-lock/boot-tries begin
+lk_locked() {
+    [ -n "$misc" ] || return 1
+    [ "$(dd if="$misc" bs=1 skip=2052 count=4 2>/dev/null)" = BCAB ] || return 1
+    case $linux_slot in a) _o=2060 ;; b) _o=2062 ;; *) return 1 ;; esac
+    _v=$(dd if="$misc" bs=1 skip=$_o count=1 2>/dev/null | od -An -tu1 | tr -d ' \n')
+    case $_v in ''|*[!0-9]*) return 1 ;; esac
+    [ $((_v & 128)) != 0 ]
+}
+# A successful Linux slot disables LK's failed-boot fallback. Keep the initramfs
+# backstop disabled only while both the bit and the owner's disk marker agree.
+boot_tries_exceeded() {  # ROOTDIR DISK
+    [ "$(cat "$1/etc/mu300/default-boot" 2>/dev/null)" = linux ] || return 1
+    if [ -f "$2/.mu300/boot-lock" ] && [ ! -L "$2/.mu300/boot-lock" ] && lk_locked; then
+        log 'stage=boot-locked (no failed-boot backstop)'
+        return 1
     fi
-    max=$(cat /disk/.mu300/boot-attempts 2>/dev/null); case $max in [1-6]) ;; *) max=5 ;; esac
-    if [ "$tries" -gt "$max" ]; then
-        log "stage=boot-tries-exceeded count=$tries (booting Android instead)"
-        echo 0 > /disk/.mu300/boot-tries && sync
+    tries=$(cat "$2/.mu300/boot-tries" 2>/dev/null || echo 0)
+    case $tries in ''|*[!0-9]*) tries=0 ;; esac
+    tries=$((tries + 1))
+    mkdir -p "$2/.mu300" && echo "$tries" > "$2/.mu300/boot-tries" && sync
+    max=$(cat "$2/.mu300/boot-attempts" 2>/dev/null); case $max in [1-6]) ;; *) max=5 ;; esac
+    [ "$tries" -gt "$max" ] || return 1
+    log "stage=boot-tries-exceeded count=$tries (booting Android instead)"
+    echo 0 > "$2/.mu300/boot-tries" && sync
+}
+# --- boot-lock/boot-tries end
+if [ "$root_mounted" = 1 ] && rootdir=$(pick_root) && [ -n "$rootdir" ]; then
+    if boot_tries_exceeded "$rootdir" /disk; then
         restore_android
         persist
         sync
@@ -683,13 +693,25 @@ if [ "$root_mounted" = 1 ] && rootdir=$(pick_root) && [ -n "$rootdir" ]; then
     exec switch_root /newroot $init
 fi
 log "stage=rootfs-unavailable $(cat /run/rootmount.err)"
-restore_android
-if [ "$root_target" = sd ]; then
-    log 'stage=tf-root-unavailable (returning to Android; eMMC root probe skipped)'
-    # Do not enter the vendor/standalone diagnostic boot on a missing TF root.
-    # No extra global sync into the failed TF; restore_android verifies misc.
-    reboot -f
-    while :; do sleep 1; done
+if lk_locked; then
+    # The disk may be unreadable, so misc is the only available lock authority.
+    # Keep USB recovery alive until the owner explicitly chooses Android.
+    log 'stage=rootfs-unavailable-locked (staying in USB recovery)'
+    touch /run/stay
+    if [ "$linux_slot" = a ]; then android_slot=b; else android_slot=a; fi
+    printf '#!/bin/sh\nset -e\ndd if=/etc/misc-bc-slot-%s.bin of=%s bs=1 seek=2048 conv=notrunc,fsync\ndd if=%s of=/run/to-android-check bs=1 skip=2048 count=32\ncmp -s /run/to-android-check /etc/misc-bc-slot-%s.bin\nsync\nreboot -f\n' \
+        "$android_slot" "$misc" "$misc" "$android_slot" > /run/to-android
+    chmod 755 /run/to-android
+    rescue_note='locked: run sh /run/to-android to switch to Android'
+else
+    restore_android
+    if [ "$root_target" = sd ]; then
+        log 'stage=tf-root-unavailable (returning to Android; eMMC root probe skipped)'
+        # Do not enter the standalone diagnostic boot on a missing TF root.
+        reboot -f
+        while :; do sleep 1; done
+    fi
+    rescue_note='auto reboot to Android after 90s unless /run/stay exists'
 fi
 ifconfig usb0 $NET.1 netmask 255.255.255.0 up
 log "stage=usb0 $(ifconfig usb0 2>&1 | head -1)"
@@ -706,7 +728,7 @@ touch /run/udhcpd.leases
 udhcpd /etc/udhcpd.conf
 telnetd -b $NET.1 -p 23 -l /bin/sh
 mkdir -p /run/www
-echo "MU300 standalone Linux v5: telnet $NET.1; auto reboot to Android after 90s unless /run/stay exists" > /run/www/index.html
+echo "MU300 standalone Linux v5: telnet $NET.1; $rescue_note" > /run/www/index.html
 httpd -p $NET.1:80 -h /run/www
 log "stage=ready"
 

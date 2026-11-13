@@ -3,21 +3,27 @@
 #   mu300-next-boot linux          Linux stays the default (re-armed on every successful boot)
 #   mu300-next-boot android        next reboot (and later ones) go to Android
 #   mu300-next-boot attempts [N]   show, or set, how many boots in a row may fail before Android takes over (1-6)
+#   mu300-next-boot lock           keep Linux even after failed boots; Android only by explicit choice
+#   mu300-next-boot unlock         restore the failed-boot fallback to Android
 #   mu300-next-boot --rearm        used by mu300-boot-ok.service after a successful boot
-#   mu300-next-boot --trial        try an updated Linux boot without changing the saved default
+#   mu300-next-boot --trial        temporarily unlock a new boot image; re-lock after a successful boot
 #   mu300-next-boot status
-# The Linux slot is armed with tries=N+1 and successful=0. LK decrements tries on every boot and rolls back to Android's slot
+# A lock marks the Linux slot successful in misc and keeps the owner's intent in .mu300/boot-lock.
+# --trial preserves that marker but clears the successful bit so a new kernel can fail back to Android.
+# An unlocked Linux slot is armed with tries=N+1 and successful=0. LK decrements tries on every boot and rolls back to Android's slot
 # (Android) when it finds tries=1, so N boots that never reach mu300-boot-ok land in Android on the next one.
 # A boot that does reach it arms N+1 again. N lives in .mu300/boot-attempts on the Linux disk, shared by every
 # system there and by the initramfs; without the file it is 5.
 # OpenWrt: od/timeout come from the static busybox in /opt/mu300/busybox-bin
 export PATH="$PATH:/opt/mu300/busybox-bin"
 set -eu
-CONF=/etc/mu300/default-boot
-LINUX_SLOT=$(cat /run/mu300/linux-slot 2>/dev/null || true)
-BC_ANDROID=/run/mu300/misc-bc-android.bin
-BC_LINUX=/run/mu300/misc-bc-linux-trial.bin
-[ -s "$BC_LINUX" ] || BC_LINUX=/run/mu300/misc-bc-slot-b-trial.bin
+CONF=${MU300_CONF:-/etc/mu300/default-boot}
+RUN=${MU300_RUN:-/run/mu300}
+LOCK=${MU300_LOCK:-/run/openwrt-default-boot.lock}
+LINUX_SLOT=$(cat "$RUN/linux-slot" 2>/dev/null || true)
+BC_ANDROID=$RUN/misc-bc-android.bin
+BC_LINUX=$RUN/misc-bc-linux-trial.bin
+[ -s "$BC_LINUX" ] || BC_LINUX=$RUN/misc-bc-slot-b-trial.bin
 case "$(dd if="$BC_LINUX" bs=1 count=2 2>/dev/null)" in
     _a) detected_slot=a; android_slot=b ;;
     _b) detected_slot=b; android_slot=a ;;
@@ -27,20 +33,22 @@ esac
     echo 'Conflicting Linux slot metadata; boot control unchanged' >&2; exit 1;
 }
 LINUX_SLOT=$detected_slot
-[ -s "$BC_ANDROID" ] || BC_ANDROID=/run/mu300/misc-bc-slot-$android_slot.bin
+[ -s "$BC_ANDROID" ] || BC_ANDROID=$RUN/misc-bc-slot-$android_slot.bin
 [ -s "$BC_ANDROID" ] && [ -s "$BC_LINUX" ] || {
     echo 'boot control blocks for the active slot are unavailable' >&2; exit 1;
 }
 [ "$(dd if="$BC_ANDROID" bs=1 count=2 2>/dev/null)" = "_$android_slot" ] || {
     echo 'Conflicting Android/Linux slot metadata; boot control unchanged' >&2; exit 1;
 }
-MISC=$(cat /run/mu300/misc-dev 2>/dev/null || readlink -f /dev/block/by-name/misc)
+MISC=${MU300_MISC:-$(cat "$RUN/misc-dev" 2>/dev/null || readlink -f /dev/block/by-name/misc)}
 DEFAULT_ATTEMPTS=5
 
 disk_dir() {
-    for d in /mnt/mu300-disk ""; do [ -d "$d/.mu300" ] && { printf '%s/.mu300' "$d"; return; }; done
+    for d in "${MU300_DISK:-/mnt/mu300-disk}" ""; do [ -d "$d/.mu300" ] && { printf '%s/.mu300' "$d"; return; }; done
     return 1
 }
+
+lock_wanted() { d=$(disk_dir) && [ -f "$d/boot-lock" ] && [ ! -L "$d/boot-lock" ]; }
 
 attempts() {
     n=$(cat "$(disk_dir)/boot-attempts" 2>/dev/null || true)
@@ -50,13 +58,13 @@ attempts() {
 hex_of() { od -An -tx1 -v "$1" | tr -d ' \n'; }
 bytes_of() { printf "$(printf '%s' "$1" | sed 's/../\\x&/g')"; }
 
-# The Linux slot block with tries=$1, made from the initramfs' tries=2 block: byte 12 or 14 is the Linux slot's
+# The Linux slot block with tries=$1 and successful=$2, made from the initramfs' tries=2 block: byte 12 or 14 is the Linux slot's
 # priority | tries << 4 | successful << 7, and the last four bytes are the CRC-32 of the first 28 - the same
 # CRC-32 gzip ends every stream with, which saves needing anything that computes one.
 make_bc_linux() {
     b=$(hex_of "$BC_LINUX")
     [ ${#b} = 64 ] || return 1
-    meta=$(printf '%02x' $(( 0x0f | ($1 << 4) )))
+    meta=$(printf '%02x' $(( 0x0f | ($1 << 4) | (${2:-0} << 7) )))
     if [ "$LINUX_SLOT" = a ]; then
         body="${b:0:24}${meta}${b:26:30}"
     else
@@ -77,21 +85,46 @@ write_bc() {
 
 arm_linux() {
     n=$(attempts)
+    successful=0
+    if [ "${1:-}" != trial ] && lock_wanted; then successful=1; fi
     # Rebuilding the tries=2 block has to reproduce the initramfs' own byte for byte, or the arithmetic
     # above is wrong for this misc and nothing it makes gets written.
-    if [ "$(make_bc_linux 2 2>/dev/null)" != "$(hex_of "$BC_LINUX")" ]; then
+    if [ "$(make_bc_linux 2 0 2>/dev/null)" != "$(hex_of "$BC_LINUX")" ]; then
         echo "cannot rebuild the slot $LINUX_SLOT block on this system; arming with 1 attempt" >&2
-        write_bc "$BC_LINUX"; return $?
+        [ "$successful" = 0 ] || { echo 'cannot lock: the Linux slot block does not match' >&2; return 1; }
+        clear_boot_tries || return 1
+        write_bc "$BC_LINUX" || return 1
+        return 1
     fi
-    tmp=$(mktemp); bytes_of "$(make_bc_linux $((n + 1)))" > "$tmp"
+    tmp=$(mktemp) || return 1
+    bytes_of "$(make_bc_linux $((n + 1)) "$successful")" > "$tmp" || { rm -f "$tmp"; return 1; }
+    clear_boot_tries || { rm -f "$tmp"; return 1; }
     write_bc "$tmp" || { rm -f "$tmp"; return 1; }; rm -f "$tmp"
-    echo "slot $LINUX_SLOT armed: $n failed boot(s) in a row before Android"
+    if [ "$successful" = 1 ]; then
+        echo "slot $LINUX_SLOT locked: Android only by explicit choice"
+    else
+        echo "slot $LINUX_SLOT armed: $n failed boot(s) in a row before Android"
+    fi
 }
 
 # The initramfs counts every boot in .mu300/boot-tries; this is where a boot counts as good and clears it.
 clear_boot_tries() {
     d=$(disk_dir) || return 0
     echo 0 > "$d/boot-tries" 2>/dev/null && sync
+}
+
+linux_successful_bit() {
+    b=$(dd if="$MISC" bs=1 skip=2048 count=32 2>/dev/null | od -An -tx1 -v | tr -d ' \n')
+    [ ${#b} = 64 ] && [ "${b:8:8}" = 42434142 ] || return 1
+    if [ "$LINUX_SLOT" = a ]; then meta=${b:24:2}; else meta=${b:28:2}; fi
+    case $meta in [0-9a-f][0-9a-f]) ;; *) return 1 ;; esac
+    if [ $((0x$meta & 128)) != 0 ]; then echo 1; else echo 0; fi
+}
+
+linux_successful() { [ "$(linux_successful_bit)" = 1 ]; }
+
+lock_active() {
+    [ "$(cat "$CONF" 2>/dev/null)" = linux ] && lock_wanted && linux_successful
 }
 
 slot_state() {
@@ -104,9 +137,9 @@ slot_state() {
 # default change before misc readback. Preserve old misc if persistence fails.
 set_default() (
     target=$1
-    mkdir -p "${CONF%/*}" /run || exit 1
+    mkdir -p "${CONF%/*}" "$RUN" || exit 1
     candidate=$(mktemp "${CONF}.XXXXXX") || exit 1
-    previous=$(mktemp /run/openwrt-boot-bc.XXXXXX) || { rm -f "$candidate"; exit 1; }
+    previous=$(mktemp "$RUN/openwrt-boot-bc.XXXXXX") || { rm -f "$candidate"; exit 1; }
     old_conf=$(mktemp "${CONF}.backup.XXXXXX") || { rm -f "$candidate" "$previous"; exit 1; }
     had_conf=false
     if [ -e "$CONF" ]; then cp -p "$CONF" "$old_conf" || exit 1; had_conf=true; fi
@@ -124,29 +157,92 @@ set_default() (
     exit 1
 )
 
+lock_linux() {
+    d=$(disk_dir) || { echo 'cannot find the MU300 disk area' >&2; return 1; }
+    marker=$d/boot-lock
+    [ ! -L "$marker" ] || { echo 'invalid boot-lock marker' >&2; return 1; }
+    if [ -e "$marker" ]; then
+        [ -f "$marker" ] || { echo 'invalid boot-lock marker' >&2; return 1; }
+        if [ "$(cat "$CONF" 2>/dev/null)" = linux ] && ! linux_successful; then
+            echo 'Linux is on trial; wait for a successful boot before locking again' >&2
+            return 1
+        fi
+        created=
+    else
+        (umask 077; set -C; : > "$marker") || { echo 'cannot save boot-lock marker' >&2; return 1; }
+        created=1
+    fi
+    if sync && set_default linux && lock_active; then
+        echo 'default boot: linux (locked)'
+        return 0
+    fi
+    if [ -n "$created" ]; then
+        bit=$(linux_successful_bit) || bit=unknown
+        if [ "$bit" = 0 ]; then
+            rm -f "$marker" && sync || echo 'boot-lock marker rollback failed' >&2
+        else
+            echo 'misc is still locked or unreadable; preserving the marker for recovery' >&2
+        fi
+    fi
+    echo 'Linux lock could not be verified' >&2
+    return 1
+}
+
+unlock_linux() {
+    d=$(disk_dir) || { echo 'cannot find the MU300 disk area' >&2; return 1; }
+    marker=$d/boot-lock
+    [ ! -L "$marker" ] || { echo 'invalid boot-lock marker' >&2; return 1; }
+    if [ "$(cat "$CONF" 2>/dev/null)" = linux ]; then
+        # Remove the successful bit first. A power cut before removing the marker
+        # then leaves the safe trial/fallback state, not an unmarked locked slot.
+        arm_linux trial || return 1
+    fi
+    if [ -e "$marker" ]; then
+        rm -f "$marker" || { echo 'could not remove boot-lock marker' >&2; return 1; }
+        sync || return 1
+    fi
+    echo "unlocked: $(attempts) failed boot(s) in a row before Android"
+}
+
 # Include the successful-boot rearm in the same lock: an Android selection
 # must not be overwritten by a concurrently finishing startup service.
 case "${1:-status}" in
-    linux|android|--rearm|--trial|attempts)
-        exec 9>/run/openwrt-default-boot.lock
+    linux|android|lock|unlock|--rearm|--trial|attempts)
+        exec 9>"$LOCK"
         flock -n 9 || { echo "boot control busy" >&2; exit 1; } ;;
 esac
 
 case "${1:-status}" in
     linux)   set_default linux; echo "default boot: linux" ;;
     android) set_default android; echo "next boot: android (opposite slot)" ;;
-    --trial) clear_boot_tries; arm_linux ;;
+    lock)    lock_linux ;;
+    unlock)  unlock_linux ;;
+    --trial) if [ "$(cat "$CONF" 2>/dev/null)" = linux ]; then arm_linux trial
+             else echo 'default boot is Android; no Linux trial armed'; fi ;;
     attempts)
         if [ -z "${2:-}" ]; then attempts; exit 0; fi
         case $2 in [1-6]) ;; *) echo "attempts must be 1-6 (the slot's tries field has room for 7)" >&2; exit 2 ;; esac
         d=$(disk_dir) || { echo "cannot find the MU300 disk area" >&2; exit 1; }
         echo "$2" > "$d/boot-attempts.tmp" && mv "$d/boot-attempts.tmp" "$d/boot-attempts" && sync
-        [ "$(cat "$CONF" 2>/dev/null)" = linux ] && arm_linux || echo "saved; used once Linux is the default boot" ;;
-    --rearm) clear_boot_tries
-             [ "$(cat "$CONF" 2>/dev/null)" = linux ] && arm_linux || echo "default boot is not linux, nothing to do" ;;
+        if [ "$(cat "$CONF" 2>/dev/null)" = linux ]; then
+            if lock_wanted; then
+                bit=$(linux_successful_bit) || { echo 'cannot verify Linux lock state' >&2; exit 1; }
+                if [ "$bit" = 0 ]; then arm_linux trial; else arm_linux; fi
+            else
+                arm_linux
+            fi
+        else
+            echo 'saved; used once Linux is the default boot'
+        fi ;;
+    --rearm) if [ "$(cat "$CONF" 2>/dev/null)" = linux ]; then arm_linux
+             else echo 'default boot is not linux, nothing to do'; fi ;;
     status)  echo "default boot: $(cat "$CONF" 2>/dev/null || echo android)"
-             echo "failed boots in a row before Android: $(attempts)"
+             if lock_wanted; then echo 'lock requested: yes'; else echo 'lock requested: no'; fi
+             if lock_active; then echo 'locked: yes (Android only by hand)'; else echo 'locked: no'; fi
+             if [ "$(cat "$CONF" 2>/dev/null)" = linux ] && lock_wanted && [ "$(linux_successful_bit)" = 0 ]; then
+                 echo "failed boots in a row before Android: $(attempts) (during boot-image trial)"
+             else echo "failed boots in a row before Android: $(attempts)"; fi
              d=$(disk_dir) && [ -f "$d/boot-tries" ] && echo "boots since the last good one: $(cat "$d/boot-tries")"
              slot_state ;;
-    *) echo "usage: $0 linux|android|--trial|attempts [N]|status" >&2; exit 2 ;;
+    *) echo "usage: $0 linux|android|lock|unlock|--trial|--rearm|attempts [N]|status" >&2; exit 2 ;;
 esac

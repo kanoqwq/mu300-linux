@@ -72,6 +72,23 @@ case "${1:-}:${2:-}" in
             fail "os linux-default" "$message"
         fi
         ;;
+    os:lock|os:unlock)
+        if [ ! -x /opt/mu300/bin/mu300-next-boot ]; then
+            fail "os $2" '启动控制不可用'
+        elif out=$(/opt/mu300/bin/mu300-next-boot "$2" 2>&1); then
+            ok "os $2"
+        else
+            case "$out" in
+                *"rollback failed"*) message='启动控制回退失败，请检查启动设置' ;;
+                *"boot control busy"*) message='启动控制正忙，请稍后重试' ;;
+                *"invalid boot-lock marker"*) message='Linux 锁定标记无效，请检查磁盘' ;;
+                *"Linux is on trial"*) message='Linux 试启动中，成功启动后再操作' ;;
+                *"misc verify failed"*) message='启动控制回读校验失败' ;;
+                *) message='Linux 锁定设置失败，请重试' ;;
+            esac
+            fail "os $2" "$message"
+        fi
+        ;;
     os:android)
         # arm inline (fast, failures surface to the page); reboot DETACHED so
         # the reply reaches the browser before the box goes down - a reboot
@@ -86,7 +103,7 @@ case "${1:-}:${2:-}" in
         fi
         ;;
     *)
-        echo "usage: $0 radio on|off | data up|down | wifi on|off | modem-reset | reboot | poweroff | os android" >&2
+        echo "usage: $0 radio on|off | data up|down | wifi on|off | modem-reset | reboot | poweroff | os linux-default|lock|unlock|android" >&2
         printf '{"ok":0,"error":"unknown op"}\n'
         exit 2
         ;;
