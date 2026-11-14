@@ -415,6 +415,8 @@ do_list() {
 	"forward_set": { "payload": "String" },
 	"forward_test": { "profile": "String" },
 	"forward_log_clear": { },
+	"traffic_export": { "slot": "String", "backup": false },
+	"traffic_import": { "slot": "String", "csv": "String", "mode": "String", "confirm": false },
 	"traffic_get": { "slot": "String" },
 	"traffic_set": { "payload": "String", "slot": "String" },
 	"traffic_clear": { "confirm": false, "slot": "String" },
@@ -530,6 +532,12 @@ call)
                 *) printf '{"ok":0,"error":"invalid_config"}\n'; exit 0 ;; esac
             # The backend admits one worker, then returns without holding RPC.
             "$DASH/sms-forward" test-start "$profile"
+            ;;
+        traffic_export|traffic_import)
+            # Explicit scope; do not forward browser sessions or unknown fields.
+            params=$(printf '%s' "$INPUT" | TRAFFIC_CSV_ACTION=$2 ucode -e 'import * as fs from "fs"; let i=json(fs.readfile("/dev/stdin")); if (!(i.slot in ["0","1"])) exit(1); let slot=int(i.slot); print(sprintf("%J", getenv("TRAFFIC_CSV_ACTION") == "traffic_export" ? {slot,backup:i.backup === true} : {slot,csv:i.csv || "",mode:i.mode || "merge",confirm:i.confirm === true}));' 2>/dev/null) || { printf '{"ok":0,"error":"invalid_slot"}\n'; exit 0; }
+            case "$2" in traffic_export) method=export_csv;; *) method=import_csv;; esac
+            ubus -t 5 call unisoc.traffic "$method" "$params" 2>/dev/null || printf '{"ok":0,"error":"traffic_unavailable"}\n'
             ;;
         traffic_get)
             ubus -t 3 call unisoc.traffic get "{\"slot\":${MU300_SIM_SLOT:-0}}" 2>/dev/null || printf '{"error":"traffic_unavailable"}\n'

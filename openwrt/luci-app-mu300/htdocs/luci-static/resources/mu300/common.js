@@ -143,6 +143,9 @@ var callForwardTest = rpc.declare({ object: 'mu300dash', method: 'forward_test',
 var trafficGetRpc = rpc.declare({object:'mu300dash',method:'traffic_get',params:['slot'],expect:{'':{}},nobatch:true});
 var trafficSetRpc = rpc.declare({object:'mu300dash',method:'traffic_set',params:['payload','slot'],expect:{'':{}},nobatch:true});
 var trafficClearRpc = rpc.declare({object:'mu300dash',method:'traffic_clear',params:['confirm','slot'],expect:{'':{}},nobatch:true});
+var callTrafficExport = rpc.declare({object:'mu300dash',method:'traffic_export',params:['slot','backup'],expect:{'':{}},nobatch:true});
+var callTrafficImport = rpc.declare({object:'mu300dash',method:'traffic_import',params:['slot','csv','mode','confirm'],expect:{'':{}},nobatch:true});
+
 function callTrafficGet(slot) { return trafficGetRpc(slot == null ? selectedSlot() : String(slot)); }
 function callTrafficSet(payload, slot) { return trafficSetRpc(payload, slot == null ? selectedSlot() : String(slot)); }
 function callTrafficClear(confirm, slot) { return trafficClearRpc(confirm, slot == null ? selectedSlot() : String(slot)); }
@@ -1349,6 +1352,121 @@ Object.assign(DASH_I18N, {
   ]
 });
 
+Object.assign(DASH_I18N, {
+  "流量备份与报表": [
+    "Traffic backup and reports",
+    "Veri yedekleme ve raporlar"
+  ],
+  "导出当前卡槽保留的全部每日和月度记录，字节数可用于报表。恢复不修改套餐设置。": [
+    "Export all retained daily and monthly records for this slot, with exact byte counts. Restoring keeps plan settings.",
+    "Bu yuvanın saklanan günlük ve aylık kayıtlarını tam bayt değerleriyle dışa aktarın. Geri yükleme tarife ayarlarını değiştirmez."
+  ],
+  "导出 CSV": [
+    "Export CSV",
+    "CSV dışa aktar"
+  ],
+  "下载上次恢复前备份": [
+    "Download pre-restore backup",
+    "Geri yükleme öncesi yedeği indir"
+  ],
+  "备份文件": [
+    "Backup file",
+    "Yedek dosyası"
+  ],
+  "恢复方式": [
+    "Restore mode",
+    "Geri yükleme yöntemi"
+  ],
+  "合并导入日期（相同日期覆盖）": [
+    "Merge dates (replace matching dates)",
+    "Tarihleri birleştir (eşleşen tarihleri değiştir)"
+  ],
+  "替换当前卡全部历史": [
+    "Replace all history for this slot",
+    "Bu yuvanın tüm geçmişini değiştir"
+  ],
+  "合并保留未导入的日期；替换会移除当前卡原有历史。恢复前会校验日月总量并保留一份原账本，同一文件重复恢复不会累加。": [
+    "Merge preserves unlisted dates; replace removes this slot’s existing history. Totals are checked and one original backup is kept before restoring. Restoring the same file never adds its usage twice.",
+    "Birleştirme listelenmeyen tarihleri korur; değiştirme bu yuvanın mevcut geçmişini siler. Geri yüklemeden önce toplamlar denetlenir ve bir özgün yedek tutulur. Aynı dosya yeniden yüklendiğinde kullanım iki kez eklenmez."
+  ],
+  "预览并恢复 CSV": [
+    "Preview and restore CSV",
+    "CSV önizle ve geri yükle"
+  ],
+  "CSV 格式或数据无效，请使用本页面导出的格式": [
+    "Invalid CSV format or data. Use this page’s export format.",
+    "CSV biçimi veya verileri geçersiz. Bu sayfanın dışa aktarma biçimini kullanın."
+  ],
+  "每日记录与月度汇总冲突，请核对 CSV 或选择替换全部历史": [
+    "Daily records conflict with monthly totals. Check the CSV or replace all history.",
+    "Günlük kayıtlarla aylık toplamlar uyuşmuyor. CSV dosyasını kontrol edin veya tüm geçmişi değiştirin."
+  ],
+  "合并结果超过历史保留范围，请选择替换全部历史或减少导入记录": [
+    "Merged history exceeds retention limits. Replace all history or import fewer records.",
+    "Birleştirilmiş geçmiş saklama sınırını aşıyor. Tüm geçmişi değiştirin veya daha az kayıt aktarın."
+  ],
+  "暂无恢复前备份": [
+    "No pre-restore backup available",
+    "Geri yükleme öncesi yedek yok"
+  ],
+  "流量备份或恢复失败": [
+    "Traffic backup or restore failed",
+    "Veri yedekleme veya geri yükleme başarısız"
+  ],
+  "查看卡槽已改变，请重新操作": [
+    "The viewed slot changed. Try again.",
+    "Görüntülenen yuva değişti. Yeniden deneyin."
+  ],
+  "备份统计槽位：": [
+    "Backup statistics slot: ",
+    "Yedekteki istatistik yuvası: "
+  ],
+  "恢复到：": [
+    "Restore to: ",
+    "Hedef: "
+  ],
+  "记录范围：": [
+    "Record range: ",
+    "Kayıt aralığı: "
+  ],
+  "每日记录：": [
+    "Daily records: ",
+    "Günlük kayıtlar: "
+  ],
+  "月度记录：": [
+    "Monthly records: ",
+    "Aylık kayıtlar: "
+  ],
+  "重合记录：": [
+    "Matching records: ",
+    "Eşleşen kayıtlar: "
+  ],
+  "将替换当前卡全部历史，原账本会先备份。": [
+    "All history for this slot will be replaced. The original ledger will be backed up first.",
+    "Bu yuvanın tüm geçmişi değiştirilecek. Önce özgün kayıtlar yedeklenecek."
+  ],
+  "仅覆盖导入日期，其他记录保留，原账本会先备份。": [
+    "Only imported dates will be replaced. Other records are kept and the original ledger is backed up first.",
+    "Yalnızca içe aktarılan tarihler değiştirilecek. Diğer kayıtlar korunacak ve önce özgün kayıtlar yedeklenecek."
+  ],
+  "恢复流量记录？": [
+    "Restore traffic history?",
+    "Veri geçmişi geri yüklensin mi?"
+  ],
+  "恢复": [
+    "Restore",
+    "Geri yükle"
+  ],
+  "正在恢复流量记录…": [
+    "Restoring traffic history…",
+    "Veri geçmişi geri yükleniyor…"
+  ],
+  "流量记录已恢复": [
+    "Traffic history restored",
+    "Veri geçmişi geri yüklendi"
+  ]
+});
+
 var DASH_KEYS = Object.keys(DASH_I18N).sort(function(a, b) { return b.length - a.length; });
 var DASH_PATTERN = new RegExp(DASH_KEYS.map(function(k) { return k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|'), 'g');
 function uiLanguage() {
@@ -2081,6 +2199,7 @@ return baseclass.extend({
 	callForwardGet: callForwardGet, callForwardStatus: callForwardStatus,
 	callSimGet: callSimGet, simSelector: simSelector, slotName: slotName, selectedSlot: selectedSlot, selectViewedSlot: selectViewedSlot,
 	callForwardSet: callForwardSet, callForwardTest: callForwardTest, callForwardClear: callForwardClear,
+	callTrafficExport: callTrafficExport, callTrafficImport: callTrafficImport,
 	callTrafficGet: callTrafficGet, callTrafficSet: callTrafficSet,
 	callTrafficClear: callTrafficClear,
 	callTtlGet: callTtlGet, callTtlSet: callTtlSet, callUsbGet: callUsbGet, callUsbSet: callUsbSet,

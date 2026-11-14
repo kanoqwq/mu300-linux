@@ -110,7 +110,7 @@ printf '%s|%s' "$watch_event" "$watch_events" > "$RESULT"
         source=original.MOBILE
         functions=source[source.index('watch_context_state() {'):source.index('\n# Radio quality')]
         functions=functions.replace('/run/',str(root)+'/').replace('watch_events_start || return 1;','watch_events_start || return 1; printf "%s" "$watch_event_pid" > "$STARTED";')
-        script='set -euo pipefail\n'+functions+'''
+        script='set -euo pipefail\n'+original.PDP_SOURCE+functions+'''
 CID=1; DEV=/dev/null; IFACE=sipa_eth0; DEVICE=f50; MU300_NETIFD=1; MU300_SIM_SLOT=0
 modem_stack() { return 0; }
 tty_setup() { :; }
@@ -120,7 +120,7 @@ led_up() { :; }
 radio_on() { echo forbidden-radio >> "$CALLS"; }
 at() {
     printf 'slot=%s %s\n' "$MU300_SIM_SLOT" "$1" >> "$CALLS"
-    case "$1" in *CGACT*) echo '+CGACT: 1,1';; *CGPADDR*) echo '+CGPADDR: 1,10.0.0.2';; esac
+    case "$1" in *CGACT*) echo '+CGACT: 1,1';; *CGCONTRDP*) echo '+CGCONTRDP: 1,6,internet,10.0.0.2.255.0.0.0,,1.1.1.1';; esac
 }
 watch
 '''

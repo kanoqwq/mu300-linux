@@ -347,7 +347,7 @@ nr_neighbours() {  # SPENGMD: band/ARFCN/PCI/RSRP/RSRQ/SINR arrays; SPQ fallback
 # registration line "+CEREG: 2,1,\"01F0\",\"0ABCD123\",13" -> fragment
 reg_fragment() {  # reg_fragment LINE
     [ -n "$1" ] || { echo null; return; }
-    printf '%s\n' "$1" | sed 's/^+C[5]*EREG: *//' | tr -d '"' | awk -F',' '
+    printf '%s\n' "$1" | sed 's/^+CEREG: *//; s/^+C5GREG: *//' | tr -d '"' | awk -F',' '
         { act = ($5 == "") ? "null" : $5
           printf "{\"stat\":%s,\"tac\":%s,\"cid\":%s,\"act\":%s}",
               (($2=="")?"null":$2), (($3=="")?"null":"\""$3"\""), (($4=="")?"null":"\""$4"\""), act }'
@@ -357,12 +357,34 @@ cops_fragment() {
     ucode "$(dirname "$0")/operator.uc" "$1" 2>/dev/null || echo null
 }
 
-cesq_fragment() {  # "+CESQ: 24,99,55,255,36,98"
+cesq_fragment() {
     [ -n "$1" ] || { echo null; return; }
     printf '%s\n' "$1" | sed 's/^+CESQ: *//' | awk -F',' '
-        { if ($6 != "" && $6 != 255) rsrp = $6 - 140; else rsrp = "null"
-          if ($5 != "" && $5 != 255) rsrq = sprintf("%.1f", -19.5 + $5*0.5); else rsrq = "null"
-          printf "{\"rsrp\":%s,\"rsrq\":%s}", rsrp, rsrq }'
+        function known(v,max) { return v ~ /^[0-9]+$/ && v+0<=max }
+        { for(i=1;i<=NF;i++) gsub(/[[:space:]\r]/,"",$i)
+          if (NF>=9 && known($8,126)) {
+              rsrp=($8==126 ? -31 : $8-156)
+              rsrq=known($7,126) ? sprintf("%.1f",-43+$7*0.5) : "null"
+              sinr=known($9,127) ? sprintf("%.1f",$9==127 ? 40 : -23+$9*0.5) : "null"
+              printf "{\"rsrp\":%s,\"rsrq\":%s,\"sinr\":%s}",rsrp,rsrq,sinr
+          } else {
+              rsrp=known($6,97) ? $6-140 : "null"
+              rsrq=known($5,34) ? sprintf("%.1f",-19.5+$5*0.5) : "null"
+              printf "{\"rsrp\":%s,\"rsrq\":%s}",rsrp,rsrq
+          }
+        }'
+}
+
+# Status 8 keeps its emergency-only registration meaning. A firmware may
+# still expose a valid NR serving cell: permit read-only engineering queries
+# from that cell identity, without granting registration or data permission.
+nr_serving_present() {
+    printf '%s\n' "$1" "$2" | sed 's/^+CEREG: *//; s/^+C5GREG: *//' | tr -d '"' |
+        awk -F, '{
+            for(i=1;i<=NF;i++) gsub(/[[:space:]\r]/,"",$i)
+            if($2==8 && $3~/^[0-9a-fA-F]+$/ && $4~/^[0-9a-fA-F]+$/ &&
+               ($5==11 || $5==12 || $5==13)) found=1
+        } END { exit !found }'
 }
 
 qos_fragment() {  # "+CGEQOSRDP: 1,9,..OK" (this modem glues OK onto the line)
@@ -394,8 +416,10 @@ R4=$(printf '%s\n' "$CEREG" | tr -d '"' | awk -F',' '{ gsub(/ /,"",$2); print $2
 R5=$(printf '%s\n' "$C5GREG" | tr -d '"' | awk -F',' '{ gsub(/ /,"",$2); print $2 }')
 REGISTERED=0
 case "$R4:$R5" in 1:*|5:*|10:*|*:1|*:5|*:10) REGISTERED=1 ;; esac
+QUERY_SERVING=$REGISTERED
+if [ "$CFUN" = 1 ] && nr_serving_present "$CEREG" "$C5GREG"; then QUERY_SERVING=1; fi
 SP_LTE=; SP_LTEPHY=; SP_NR=; SP_LN=; SP_NRNB=; SP_NRNB_SOURCE=; QOS=; COPS=
-if [ "$REGISTERED" = 1 ]; then
+if [ "$QUERY_SERVING" = 1 ]; then
     SP_LTE=$(at 'AT+SPENGMD=0,6,0' 2 | grep -v '^AT' | grep -- '-' | head -n1)
     SP_LTEPHY=$(at 'AT+SPENGMD=0,0,6' 2 | grep -v '^AT' | grep -- '-' | head -n1)
     SP_NR=$(at 'AT+SPENGMD=0,14,1' 2 | grep -v '^AT' | grep -- '-' | head -n1)
@@ -444,7 +468,7 @@ if [ "$MODE" = full ]; then
     COPSJ=$(cops_fragment "$COPS")
     NEIGH=null; QOSJ=null
     publish_cell 1 1
-    if [ "$REGISTERED" = 1 ]; then
+    if [ "$QUERY_SERVING" = 1 ]; then
         SP_LN=$(at 'AT+SPENGMD=0,6,6' 2 | grep -v '^AT' | grep -- '-' | head -n1)
         SP_NRNB=$(at 'AT+SPENGMD=0,14,2' 2 | grep -v '^AT' | grep -- '-' | head -n1)
         SP_NRNB_SOURCE=spengmd
@@ -462,7 +486,7 @@ if [ "$MODE" = full ]; then
     else NEIGH=null; fi
 
     publish_cell 1 0
-    if [ "$REGISTERED" = 1 ]; then
+    if [ "$QUERY_SERVING" = 1 ]; then
         QOS_WAN=$(dash_wan_status)
         QOS=$(dash_active_qos "$QOS_WAN" "${MU300_SIM_SLOT:-${DATA_CARD:-0}}")
     fi

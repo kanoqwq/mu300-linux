@@ -4,6 +4,7 @@ import * as uloop from 'uloop';
 import * as ubus from 'ubus';
 import * as uci from 'uci';
 import * as core from './traffic-core.uc';
+import * as csv from './traffic-csv.uc';
 
 const BASE = getenv('MU300_TRAFFIC_DIR') || '/etc/unisoc-modem/traffic';
 const RUN = getenv('MU300_TRAFFIC_RUN') || '/run/unisoc-modem-traffic';
@@ -17,12 +18,14 @@ function read_json(path) {
     if (text == null) return null;
     try { return json(text); } catch (e) { die('Invalid traffic database: ' + path + '\n'); }
 }
-function atomic(path, value) {
-    let text = sprintf('%J\n', value), tmp = path + '.new';
+function atomic_text(path, text) {
+    let tmp = path + '.new';
     if (fs.writefile(tmp, text) != length(text)) return false;
     fs.chmod(tmp, 384);
     return fs.rename(tmp, path);
 }
+function atomic(path, value) { return atomic_text(path, sprintf('%J\n',value)); }
+
 uloop.init();
 const bus = ubus.connect(null, 2);
 if (!bus) die('Traffic ubus connection failed\n');
@@ -103,7 +106,7 @@ function get_data() {
         if (length(months) >= 12) break;
         push(months, { date: date, rx: db.months[date].rx, tx: db.months[date].tx });
     }
-    return { config: db.config, status: view(time()), days: days, months: months };
+    return { csv_backup: fs.stat(BASE + '/before-import.csv') != null, config: db.config, status: view(time()), days: days, months: months };
 }
 return {
     device: resolve_device,
@@ -147,6 +150,31 @@ return {
         sample(true);
         return { ok: 1 };
     } },
+    export_csv: {call:function(req) {
+        let now=time(), text;
+        if (now < 1704067200) return {ok:0,error:'clock_unsynced'};
+        if (req.args.backup) text=fs.readfile(BASE + '/before-import.csv');
+        else { sample(false); try { text=csv.encode(db,slot,now); }
+            catch(e) { return {ok:0,error:'csv_invalid'}; } }
+        return text == null ? {ok:0,error:'csv_backup_missing'} : {ok:1,slot,csv:text};
+    }},
+    import_csv: {call:function(req) {
+        let now=time(), prepared, before;
+        try { prepared=csv.prepare(db,req.args.csv,req.args.mode,now); }
+        catch(e) { return {ok:0,error: e.message || 'csv_invalid'}; }
+        if (req.args.confirm !== true) return {ok:1,slot,preview:prepared.preview};
+        sample(false);
+        try { prepared=csv.prepare(db,req.args.csv,req.args.mode,now);
+            before=csv.encode(db,slot,now); }
+        catch(e) { return {ok:0,error: e.message || 'csv_invalid'}; }
+        core.advance(prepared.db,db.available ? db.last : null,now);
+        if (!atomic_text(BASE + '/before-import.csv',before) ||
+            !atomic(BASE + '/state.json',prepared.db)) {
+            storage_error=true; return {ok:0,error:'storage_failed'};
+        }
+        db=prepared.db; saved_at=now; storage_error=false; checkpoint(false);
+        return {ok:1,slot,data:get_data()};
+    }},
     flush: { call: function(req) { sample(true); return { ok: !storage_error }; } }
 };
 }
@@ -158,6 +186,8 @@ function dispatch(method, req) {
     return ledgers[slot][method].call(req);
 }
 const obj = bus.publish(BUS, {
+    export_csv: {args:{slot:0,backup:false},call:function(req) {return dispatch('export_csv',req);}},
+    import_csv: {args:{slot:-1,csv:'',mode:'merge',confirm:false},call:function(req) {return dispatch('import_csv',req);}},
     get: {args:{slot:0}, call:function(req) {return dispatch('get',req);}},
     set: {args:{slot:0,payload:''}, call:function(req) {return dispatch('set',req);}},
     clear: {args:{slot:0,confirm:false}, call:function(req) {return dispatch('clear',req);}},

@@ -34,11 +34,18 @@ if name=='uci':
  elif a[:2]==['-q','commit'] and s.get('fail_commit'):
   s['fail_commit']=False; save(); sys.exit(1)
 elif name=='ubus':
- print(json.dumps({'up':s['up'],'pending':False,'autostart':s.get('autostart',True),'l3_device':'card'+str(s['actual'])}))
+ if 'notify_proto' in a:
+  update=json.loads(a[-1]); assert update=={'action':5,'available':True}
+  s['available']=True
+  if s.get('autostart',True): s['up']=True
+  save(); print('{}')
+ else:
+  print(json.dumps({'up':s['up'],'pending':s.get('pending',False),'available':s.get('available',True),'autostart':s.get('autostart',True),'l3_device':'card'+str(s['actual'])}))
 elif name=='ifdown':
- if not s.get('stuck'): s['up']=False; save()
+ if not s.get('stuck'): s['up']=False; s['autostart']=False; save()
 elif name=='ifup':
- if s['saved']!=1 or not s.get('fail_target'):
+ s['autostart']=True; save()
+ if s.get('available',True) and (s['saved']!=1 or not s.get('fail_target')):
   s['actual']=s['saved']; s['up']=True; save()
 elif name=='mu300-at':
  cmd=a[-1]
@@ -174,6 +181,41 @@ printf '%s\\n' "$flags" > "$UNISOC_RADIO_POLICY"
             self.assertEqual(r.returncode,0,r.stderr)
             self.assertNotIn('ifdown',(self.tmp/'commands').read_text())
             self.assertNotIn('ifup',(self.tmp/'commands').read_text())
+
+    def test_select_actual_card_resumes_wan_waiting_on_old_saved_card(self):
+        for shell in self.each_shell():
+            for target in (0,1):
+                for available in (False,True):
+                    self.reset(saved=1-target,actual=target,up=False,available=available)
+                    r=self.run_switch(shell,str(target))
+                    self.assertEqual(r.returncode,0,r.stderr)
+                    state=json.loads(self.db.read_text())
+                    self.assertEqual((state['saved'],state['actual'],state['up']),(target,target,True))
+                    commands=(self.tmp/'commands').read_text()
+                    self.assertNotIn('ifdown',commands)
+                    self.assertEqual(commands.count('ifup '),1)
+                    self.assertEqual(commands.count("'notify_proto'"),0 if available else 1)
+
+    def test_select_actual_card_preserves_manual_off_and_running_wan(self):
+        for shell in self.each_shell():
+            for status in ({'up':False,'autostart':False},{'up':True},{'up':False,'pending':True}):
+                self.reset(saved=0,actual=1,available=False,**status)
+                r=self.run_switch(shell,'1')
+                self.assertEqual(r.returncode,0,r.stderr)
+                self.assertEqual(json.loads(self.db.read_text())['saved'],1)
+                commands=(self.tmp/'commands').read_text()
+                self.assertNotIn('ifup',commands)
+                self.assertNotIn('ifdown',commands)
+                self.assertNotIn("'notify_proto'",commands)
+
+    def test_switch_from_unavailable_old_card_reenables_protocol(self):
+        for shell in self.each_shell():
+            self.reset(saved=0,actual=0,up=False,available=False)
+            r=self.run_switch(shell,'1')
+            self.assertEqual(r.returncode,0,r.stderr)
+            state=json.loads(self.db.read_text())
+            self.assertEqual((state['saved'],state['actual'],state['up']),(1,1,True))
+            self.assertIn("'notify_proto'",(self.tmp/'commands').read_text())
 
     def test_validated_switch_and_reverse(self):
         for shell in self.each_shell():

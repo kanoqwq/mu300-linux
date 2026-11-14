@@ -58,7 +58,7 @@ function stop() {
     }
     die('Fixture service did not stop\n');
 }
-try {
+function start() {
     let child = run('MU300_TRAFFIC_DIR=' + q(root + '/disk') + ' MU300_TRAFFIC_RUN=' + q(root + '/ram') +
         ' MU300_TRAFFIC_SYS=' + q(root + '/net') + ' MU300_TRAFFIC_CARD=' + q(root + '/card') +
         ' MU300_TRAFFIC_BUS=' + q(bus) + ' MU300_TRAFFIC_SIM_SLOTS=2' +
@@ -71,6 +71,9 @@ try {
         sleep(100);
     }
     check(ready, 'fixture published: ' + fs.readfile(root + '/daemon.log'));
+}
+try {
+    start();
     const session = '00000000000000000000000000000000';
     // This extra field recreates rpcd's browser call, unlike a root CLI call.
     let plan = {plan_name:'不知道',device:'sipa_eth0',count_mode:'total',monthly_gb:1000,daily_gb:1000,reset_day:1};
@@ -99,6 +102,53 @@ try {
     forwarded(['confirm', 'slot']);
     check(get(1).status.today_used == 0 && get(0).status.today.rx == 123, 'clear affects only requested SIM');
     check(get(1).config.monthly_gb == 55, 'clear retains plan');
+    let exported=rpc('traffic_export',{slot:'0',backup:false,ubus_rpc_session:session,extra:'ignored'});
+    forwarded(['slot','backup']);
+    check(exported.ok && index(exported.csv,'rx_bytes,tx_bytes,total_bytes')>=0,'CSV report schema');
+    check(rpc('traffic_import',{csv:exported.csv,mode:'replace',confirm:true}).ok==0,'explicit restore scope required');
+    let before=get(1), original=before.status.today.rx;
+    let preview=rpc('traffic_import',{slot:'1',csv:exported.csv,mode:'replace',confirm:false,ubus_rpc_session:session});
+    forwarded(['slot','csv','mode','confirm']);
+    check(preview.ok && preview.preview.source_slot==0 && preview.slot==1,'cross-slot preview is explicit');
+    check(get(1).status.today.rx==original && !get(1).csv_backup,'preview never writes history or backup');
+    check(rpc('traffic_import',{slot:'1',csv:'bad',mode:'replace',confirm:true}).error=='csv_invalid','invalid file error');
+    check(rpc('traffic_import',{slot:'1',csv:exported.csv,mode:'replace',confirm:true,ubus_rpc_session:session}).ok,'restore through browser RPC');
+    check(get(1).status.today.rx==123 && get(0).status.today.rx==123,'only target history changes');
+    check(get(1).config.monthly_gb==55,'target plan survives restore');
+    check(get(1).csv_backup,'backup reported in status');
+    check(rpc('traffic_export',{slot:'1',backup:true}).ok,'original CSV can be downloaded');
+    counters(1,2466,229);call('flush');
+    check(get(1).status.today.rx==133,'restored baseline adds only ten new bytes');
+    check(rpc('traffic_import',{slot:'1',csv:exported.csv,mode:'replace',confirm:true}).ok,'repeat restore');
+    check(get(1).status.today.rx==123,'repeat is replacement, never addition');
+    let directory=root+'/disk'+(string_slots?'':'/sim1');
+    let backup=directory+(string_slots?'/before-import-sim1.csv':'/before-import.csv');
+    fs.mkdir(backup+'.new',448);
+    check(rpc('traffic_import',{slot:'1',csv:exported.csv,mode:'replace',confirm:true}).error=='storage_failed','backup failure aborts restore');
+    check(get(1).status.today.rx==123,'backup failure preserves in-memory ledger');
+    fs.rmdir(backup+'.new');
+    fs.mkdir(directory+'/state.json.new',448);
+    check(rpc('traffic_import',{slot:'1',csv:exported.csv,mode:'replace',confirm:true}).error=='storage_failed','durable write failure aborts restore');
+    check(get(1).status.today.rx==123,'write failure preserves history');
+    fs.rmdir(directory+'/state.json.new');
+    let changed=replace(exported.csv,/,123,9,132,/g,',555,9,564,');
+    check(changed!=exported.csv,'changed backup fixture');
+    let ramdir=root+'/ram'+(string_slots?'':'/sim1');
+    fs.mkdir(ramdir+'/state.json.new',448);
+    check(rpc('traffic_import',{slot:'1',csv:changed,mode:'replace',confirm:true}).ok,'disk commit succeeds despite failed RAM cache');
+    check(get(1).status.today.rx==555,'new durable history active');
+    stop();fs.rmdir(ramdir+'/state.json.new');start();
+    check(get(1).status.today.rx==555,'restart never resurrects stale RAM cache');
+    check(get(0).status.today.rx==123,'restart preserves other slot');
+    let date=get(1).days[0].date;
+    stop();
+    let broken=json(fs.readfile(directory+'/state.json'));
+    let item=string_slots?broken.slots[1]:broken;
+    item.days[date].rx=9007199254740992;item.months[substr(date,0,7)].rx=9007199254740992;
+    broken.revision++;
+    fs.writefile(directory+'/state.json',sprintf('%J',broken));start();
+    check(rpc('traffic_export',{slot:'1',backup:false}).error=='csv_invalid','unsupported export values report errors');
+    check(get(1).status.today.rx==9007199254740992,'CSV error never clips counters or stops accounting');
     stop();
 } catch (e) { stop(); die('Traffic browser RPC: ' + e + '; fixtures ' + root + '\n'); }
 printf('PASS: %d real ubus/browser RPC checks; fixtures %s\n', checks, root);

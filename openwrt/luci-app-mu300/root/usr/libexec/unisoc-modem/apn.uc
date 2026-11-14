@@ -45,8 +45,8 @@ export function validate(p) {
     if(type(value)!='string' || length(value)>100 ||
        (value!='' && !match(value,/^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*$/))) return false;
     for(let label in split(value,'.'))if(length(label)>63)return false;
-    // mu300cell requires an IPv4 bearer address; IPv6-only is not supported.
-    return p.pdptype in ['IP','IPV4V6'] && (p.roaming || p.pdptype) in ['IP','IPV4V6'] &&
+    // The granted bearer may be IPv4, IPv6 or dual-stack.
+    return p.pdptype in ['IP','IPV6','IPV4V6'] && (p.roaming || p.pdptype) in ['IP','IPV6','IPV4V6'] &&
         auth(p) in ['none','pap','chap','papchap'] && credentials(p) &&
         (p.attach==null || p.attach in ['0','1']) &&
         length(sprintf('AT+SPCGAPNCFG=1,"%s","%s","%s",0,"%s","%s",3',value,p.pdptype,p.roaming || p.pdptype,p.username || '',p.password || ''))<=240;

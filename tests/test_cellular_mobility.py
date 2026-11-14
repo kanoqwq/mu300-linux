@@ -1,5 +1,8 @@
 """Mobility address renewal and watchdog decisions, with isolated AT/IP/netifd."""
 from helpers import ShellTest, TOP, BIN
+import shlex
+PDP_LIB = TOP / "rootfs/overlay/opt/mu300/lib/pdp-address.sh"
+PDP_SOURCE = ". " + shlex.quote(str(PDP_LIB)) + "\n"
 
 
 MONITOR = TOP / 'openwrt/overlay/lib/netifd/proto/mu300cell-v6.sh'
@@ -10,7 +13,7 @@ MOBILE = (BIN / 'mobile-data').read_text()
 class Mobility(ShellTest):
     def setUp(self):
         super().setUp()
-        self.functions = SOURCE[SOURCE.index('mask2prefix() {'):SOURCE.index('\nlast_v6=$(v6_snapshot)')]
+        self.functions = PDP_SOURCE + SOURCE[SOURCE.index('current_v6() {'):SOURCE.index('\nlast_v6=$(v6_snapshot)')]
         self.functions = self.functions.replace('/run/mu300-at', str(self.tmp / 'at'))
         for name in ('at', 'at4', 'at6', 'at7'):
             directory = self.tmp / name
@@ -196,6 +199,60 @@ proto_mu300cell_setup wan
                 self.assertIn('mu300cell-v6.sh wan mob_sipa 10.0.0.2 8 1.1.1.1 8.8.8.8 1  0', commands[0])
 
 
+    def test_ipv6_only_grant_removes_only_old_ipv4_after_reporting(self):
+        self.reply.write_text('+CGCONTRDP: 1,6,internet,2001:db8::42,,2001:4860:4860::8888,::\n')
+        for shell in self.each_shell():
+            output,calls=self.refresh(shell)
+            self.assertIn('rc=0 ip=/ dns=2001:4860:4860::8888,',output)
+            self.assertNotIn('ip -4 addr add',calls)
+            self.assertNotIn('ip -4 route replace',calls)
+            self.assertIn('proto v6route :: 0 fe80::1 4096 100',calls)
+            self.assertIn('proto dns 2001:4860:4860::8888',calls)
+            self.assertLess(calls.index('proto update wan'),calls.index('ip -4 addr del 10.0.0.1/8'))
+            self.assertNotIn('proto address',calls)
+
+    def test_steady_ipv6_bearer_has_no_spurious_update_or_retry(self):
+        self.reply.write_text('+CGCONTRDP: 1,6,internet,::8000:0:0:0,,2001:4860:4860::8888,::\n')
+        for shell in self.each_shell():
+            output,calls=self.refresh(shell,extra='ip4=; prefix4=; dns1=2001:4860:4860::8888; dns2=\n',KERNEL_MISSING='1')
+            self.assertIn('rc=0',output)
+            self.assertNotIn('proto update',calls)
+            self.assertNotIn('ip -4 addr add',calls)
+            self.assertNotIn('ip -4 route del',calls)
+
+    def test_setup_accepts_ipv6_only_but_never_a_failed_attach(self):
+        proto=(MONITOR.parent/'mu300cell.sh').read_text()
+        setup=proto[proto.index('proto_mu300cell_setup() {'):proto.index('\nproto_mu300cell_renew()')]
+        setup=setup.replace('/run/',str(self.tmp)+'/').replace('/proc/sys/',str(self.tmp/'sys')+'/')
+        setup=setup.replace('/tmp/mu300cell.err',str(self.tmp/'error'))
+        setup=setup.replace('/opt/mu300/bin/mobile-data',str(self.stubs/'mobile-data'))
+        setup=setup.replace('/opt/mu300/bin/mu300-sim-env',str(self.tmp/'sim-env'))
+        (self.tmp/'sim-env').write_text('mu300_sim_env() { MU300_SIM_SLOT=0; MU300_SIM_DEVICE=mob_sipa; }\n')
+        self.stub('mobile-data', "printf '%s\\n' 'IP=' 'IFACE=mob_sipa' 'PDP_TYPE=IPV6' 'DNS1=2001:db8::53'; exit \"${DIAL_FAIL:-0}\"")
+        for shell in self.each_shell():
+            for fail in ('0','1'):
+                self.calls.unlink(missing_ok=True)
+                code=self.proto+setup+'''
+json_get_vars() { apn=internet; pdptype=IPV4V6; peerdns=1; }
+proto_run_command() { echo "run $*" >>"$STUBLOG/calls"; }
+proto_notify_error() { echo "error $*" >>"$STUBLOG/calls"; }
+proto_setup_failed() { :; }
+proto_mu300cell_setup wan
+'''
+                r=self.sh(shell,code,DIAL_FAIL=fail)
+                calls=self.calls.read_text()
+                self.assertNotIn('proto address',calls)
+                self.assertNotIn('ip -4 addr add',calls)
+                if fail=='0':
+                    self.assertEqual(r.returncode,0,r.stderr)
+                    self.assertIn('run wan',calls)
+                    self.assertIn('proto dns 2001:db8::53',calls)
+                else:
+                    self.assertNotEqual(r.returncode,0)
+                    self.assertIn('error wan ATTACH_FAILED',calls)
+                    self.assertNotIn('run wan',calls)
+
+
 class PendingEvent(ShellTest):
     def setUp(self):
         super().setUp()
@@ -244,7 +301,7 @@ read_event; echo "$event:$retry_due"
 class Watchdog(ShellTest):
     def setUp(self):
         super().setUp()
-        self.context = MOBILE[MOBILE.index('watch_context_state() {'):MOBILE.index('\nwatch() {')]
+        self.context = PDP_SOURCE + MOBILE[MOBILE.index('watch_context_state() {'):MOBILE.index('\nwatch() {')]
         self.watch = MOBILE[MOBILE.index('watch() {'):MOBILE.index('\n# Radio quality')]
         self.watch = self.watch.replace('/run/', str(self.tmp) + '/')
         self.event_transport=self.tmp/'event-transport.sh'
@@ -283,7 +340,7 @@ at() {
     echo "at $*" >>"$STUBLOG/calls"
     case "$1" in
         *CGACT*) [ "${AT_FAIL:-0}" = 0 ] || return 1; echo "${CGACT_REPLY:-+CGACT:1,1}" ;;
-        *CGPADDR*) echo '+CGPADDR: 1,10.0.0.2' ;;
+        *CGCONTRDP*) echo "${RDP_REPLY:-+CGCONTRDP: 1,6,internet,10.0.0.2.255.0.0.0,,1.1.1.1,8.8.8.8}" ;;
         *CFUN*) [ "${CFUN_FAIL:-0}" = 0 ] || return 1; echo "${CFUN_REPLY:-+CFUN: 1}" ;;
     esac
 }
@@ -316,3 +373,10 @@ watch
         self.assertIn('radio_on', calls)
         calls = self.run_watch(CGACT_REPLY='OK', CFUN_FAIL='1')
         self.assertNotIn('radio_on', calls)
+
+    def test_ipv6_only_active_context_never_redials_or_renews_periodically(self):
+        calls=self.run_watch(RDP_REPLY='+CGCONTRDP: 1,5,internet,::8000:0:0:0,,2001:db8::53,::',ROUNDS='2')
+        self.assertNotIn('renew',calls)
+        self.assertNotIn('ifup',calls)
+        self.assertNotIn('CFUN',calls)
+        self.assertNotIn('CGPADDR',calls)

@@ -276,6 +276,8 @@ static void sipa_fill_free_fifo_node(struct sipa_skb_receiver *receiver,
 			skb = build_skb((void *)(skb_mem->virt +
 						 j * SIPA_RECV_BUF_LEN),
 					SIPA_RECV_BUF_LEN);
+			if (!skb)
+				break;
 			page_ref_inc(skb_mem->page);
 			dma_addr = skb_mem->dma_addr + j * SIPA_RECV_BUF_LEN;
 			if (!dma_addr) {
@@ -298,8 +300,10 @@ static void sipa_fill_free_fifo_node(struct sipa_skb_receiver *receiver,
 				break;
 			}
 
-			sipa_put_recv_array_node(fill_array, skb,
-						 dma_addr, false);
+			if (sipa_put_recv_array_node(fill_array, skb, dma_addr, false)) {
+				dev_kfree_skb_any(skb);
+				break;
+			}
 			item->address = dma_addr;
 			item->offset = NET_SKB_PAD;
 			item->length = SIPA_RECV_BUF_LEN - NET_SKB_PAD;
@@ -343,6 +347,7 @@ static int sipa_fill_free_node_by_alloc_skb(struct sipa_skb_receiver *receiver,
 			if (dma_mapping_error(receiver->dev, dma_addr)) {
 				dev_err(receiver->dev,
 					"prepare free node dma map err\n");
+				dev_kfree_skb_any(skb);
 				break;
 			}
 		} else {
@@ -355,12 +360,18 @@ static int sipa_fill_free_node_by_alloc_skb(struct sipa_skb_receiver *receiver,
 						 id, success_cnt);
 		if (!item) {
 			dev_err(receiver->dev, "item is null\n");
+			dma_unmap_single(receiver->dev, dma_addr,
+					 SIPA_RECV_BUF_LEN, DMA_FROM_DEVICE);
 			dev_kfree_skb_any(skb);
 			break;
 		}
 
-		sipa_put_recv_array_node(fill_array, skb,
-					 dma_addr, true);
+		if (sipa_put_recv_array_node(fill_array, skb, dma_addr, true)) {
+			dma_unmap_single(receiver->dev, dma_addr,
+					 SIPA_RECV_BUF_LEN, DMA_FROM_DEVICE);
+			dev_kfree_skb_any(skb);
+			break;
+		}
 
 		memset(item, 0, sizeof(struct sipa_node_desc_tag));
 		item->address = dma_addr;
@@ -458,10 +469,13 @@ static int sipa_fill_remaining_node(struct sipa_skb_receiver *receiver,
 		skb = build_skb((void *)(skb_mem->virt +
 					 i * SIPA_RECV_BUF_LEN),
 				SIPA_RECV_BUF_LEN);
+		if (!skb)
+			break;
 		page_ref_inc(skb_mem->page);
 		dma_addr = skb_mem->dma_addr + i * SIPA_RECV_BUF_LEN;
 		if (!dma_addr) {
 			dev_err(receiver->dev, "dma_addr is null\n");
+			dev_kfree_skb_any(skb);
 			break;
 		}
 
@@ -471,12 +485,14 @@ static int sipa_fill_remaining_node(struct sipa_skb_receiver *receiver,
 						 SIPA_RECV_BUF_LEN,
 						 DMA_TO_DEVICE);
 
-		sipa_put_recv_array_node(fill_array, skb,
-					 dma_addr, false);
-
 		item = sipa_hal_get_rx_node_wptr(receiver->dev, id, i);
 		if (!item) {
 			dev_err(receiver->dev, "item is null\n");
+			dev_kfree_skb_any(skb);
+			break;
+		}
+		if (sipa_put_recv_array_node(fill_array, skb, dma_addr, false)) {
+			dev_kfree_skb_any(skb);
 			break;
 		}
 

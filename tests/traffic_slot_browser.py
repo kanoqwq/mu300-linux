@@ -20,7 +20,7 @@ def main():
             errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
             page.route('http://fixture/**',lambda r:r.fulfill(body='<html><body></body></html>',content_type='text/html'))
             page.goto('http://fixture/')
-            page.evaluate('''async ([common,source,e5])=>{
+            page.evaluate('''async ([common,source,e5,csv])=>{
                 window.e5=e5;window.calls=[];window.pending=[];window.slow=false;window.fail=false;
                 window.setSlot=s=>{sessionStorage.setItem('mu300-view-slot',s);sessionStorage.setItem('modem-view-slot',s);};
                 setSlot('0');
@@ -40,9 +40,9 @@ def main():
                 M.toast=()=>({update(){},close(){}});M.busy=(b,on)=>b.disabled=on;
                 M.confirmBox=()=>new Promise(resolve=>window.answer=resolve);
                 const poll={add:f=>window.poller=f,remove(){}};
-                window.v=new Function('view','M','L','poll',source)(base,M,L,poll);
+                window.v=new Function('view','M','L','poll','TrafficCsv',source)(base,M,L,poll,new Function('baseclass',csv)(base));
                 document.body.append(v.render(await v.load()));
-            }''',[(res/'mu300/common.js').read_text(encoding='utf-8'),(res/'view/mu300/traffic.js').read_text(encoding='utf-8'),app=='luci-app-t551m'])
+            }''',[(res/'mu300/common.js').read_text(encoding='utf-8'),(res/'view/mu300/traffic.js').read_text(encoding='utf-8'),app=='luci-app-t551m',(res/'mu300/traffic-csv.js').read_text(encoding='utf-8')])
             assert page.locator('#mud-tr-plan_name').input_value()=='Plan 0'
             page.evaluate("setSlot('1');v.refresh()")
             assert page.locator('#mud-tr-plan_name').input_value()=='Plan 1'

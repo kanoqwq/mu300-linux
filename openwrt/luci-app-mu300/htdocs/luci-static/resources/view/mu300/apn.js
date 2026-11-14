@@ -53,7 +53,7 @@ return view.extend({
         name.type='text';apn.type='text';
         name.required=true;name.maxLength=64;apn.maxLength=100;apn.pattern='[A-Za-z0-9.\\-]+';
         apn.placeholder=t('留空使用 SIM 默认接入点');name.value=profile?profile.name:'';apn.value=profile?profile.apn:'';
-        ['IPV4V6','IP'].forEach(function(v){var o=el('option',proto(v));o.value=v;type.append(o);});type.value=profile?profile.pdptype:'IPV4V6';
+        ['IPV4V6','IPV6','IP'].forEach(function(v){var o=el('option',proto(v));o.value=v;type.append(o);});type.value=profile?profile.pdptype:'IPV4V6';
         [['接入点名称',name],['APN',apn],['IP 协议',type]].forEach(function(row){var label=el('label',t(row[0]));label.append(row[1]);form.append(label);});
         var auth=el('select'),user=el('input'),password=el('input'),roaming=el('select'),attach=el('input'),clear=el('input');
         user.type='text';user.autocomplete='off';user.spellcheck=false;
@@ -61,7 +61,7 @@ return view.extend({
         auth.value=profile&&profile.auth||'none';user.value=profile&&profile.username||'';user.maxLength=64;
         password.type='password';password.maxLength=64;password.autocomplete='new-password';
         password.placeholder=t(profile&&profile.has_password?'留空保留原密码':'未设置密码');clear.type='checkbox';attach.type='checkbox';attach.checked=!!(profile&&profile.attach==='1');
-        [['IPV4V6','IPv4 / IPv6'],['IP','IPv4']].forEach(function(v){var o=el('option',v[1]);o.value=v[0];roaming.append(o);});roaming.value=profile&&profile.roaming||type.value;
+        [['IPV4V6','IPv4 / IPv6'],['IPV6','IPv6'],['IP','IPv4']].forEach(function(v){var o=el('option',v[1]);o.value=v[0];roaming.append(o);});roaming.value=profile&&profile.roaming||type.value;
         [['鉴权方式',auth],['用户名',user],['密码',password],['清除已保存密码',clear],['漫游 IP 协议',roaming],['配置初始附着 APN（高级）',attach]].forEach(function(row){var label=el('label',t(row[0]));label.append(row[1]);form.append(label);});
         form.append(el('p',t('初始附着默认关闭；仅在运营商需要时启用。不修改 IMS 配置。'),'mud-note'));
         function ask(){

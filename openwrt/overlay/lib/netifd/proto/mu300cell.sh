@@ -78,7 +78,10 @@ proto_mu300cell_setup() {
 		return 1
 	fi
 	ip=$(echo "$out" | sed -n 's/^IP=//p')
-	if [ -z "$ip" ]; then
+	local effective_type
+	effective_type=$(echo "$out" | sed -n 's/^PDP_TYPE=//p')
+	case "$effective_type" in IP|IPV6|IPV4V6) pdptype=$effective_type ;; esac
+	if [ "$rc" != 0 ] || { [ -z "$ip" ] && [ "$pdptype" != IPV6 ]; }; then
 		printf '{"phase":"failed"}\n' > "/run/unisoc-apn-dial-$slot.json"
 		logger -t mu300cell "attach failed: $(cat /tmp/mu300cell.err)"
 		proto_notify_error "$config" ATTACH_FAILED
@@ -86,10 +89,6 @@ proto_mu300cell_setup() {
 		return 1
 	fi
 	ifname=$(echo "$out" | sed -n 's/^IFACE=//p')
-	# Per-SIM profiles can override the global protocol passed by netifd.
-	local effective_type
-	effective_type=$(echo "$out" | sed -n 's/^PDP_TYPE=//p')
-	case "$effective_type" in IP|IPV4V6) pdptype=$effective_type ;; esac
 	prefix=$(echo "$out" | sed -n 's/^PREFIX=//p')
 	dns1=$(echo "$out" | sed -n 's/^DNS1=//p')
 	dns2=$(echo "$out" | sed -n 's/^DNS2=//p')
@@ -123,17 +122,23 @@ proto_mu300cell_setup() {
 	# Install the bearer address ourselves (external updates are never applied by
 	# netifd). Replace-first keeps an unchanged address continuous across
 	# re-setups; anything else the carrier left behind is removed after it.
-	ip -4 addr replace "$ip/${prefix:-32}" dev "$ifname" 2>/dev/null ||
-		ip -4 addr add "$ip/${prefix:-32}" dev "$ifname"
+	if [ -n "$ip" ]; then
+		ip -4 addr replace "$ip/${prefix:-32}" dev "$ifname" 2>/dev/null ||
+			ip -4 addr add "$ip/${prefix:-32}" dev "$ifname"
+		ip -4 route replace default dev "$ifname"
+	else
+		ip -4 route del default dev "$ifname" 2>/dev/null || true
+	fi
 	local a
 	for a in $(ip -4 -o addr show dev "$ifname" scope global | awk '{print $4}'); do
-		[ "$a" = "$ip/${prefix:-32}" ] || ip -4 addr del "$a" dev "$ifname" 2>/dev/null
+		[ -n "$ip" ] && [ "$a" = "$ip/${prefix:-32}" ] || ip -4 addr del "$a" dev "$ifname" 2>/dev/null
 	done
-	ip -4 route replace default dev "$ifname"
 
 	proto_init_update "$ifname" 1 1
-	proto_add_ipv4_address "$ip" "${prefix:-32}"
-	proto_add_ipv4_route "0.0.0.0" 0
+	if [ -n "$ip" ]; then
+		proto_add_ipv4_address "$ip" "${prefix:-32}"
+		proto_add_ipv4_route "0.0.0.0" 0
+	fi
 	if [ "${peerdns:-1}" != 0 ]; then
 		[ -n "$dns1" ] && proto_add_dns_server "$dns1"
 		[ -n "$dns2" ] && proto_add_dns_server "$dns2"

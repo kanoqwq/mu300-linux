@@ -27,6 +27,8 @@ esac
 
 export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
 
+. "${MU300_PDP_ADDRESS_LIB:-/opt/mu300/lib/pdp-address.sh}"
+
 config=$1
 ifname=$2
 ip4=$3
@@ -38,38 +40,6 @@ urclog=${MU300_URC_LOG:-${10:-${MU300_SIM_URC:-/run/mu300-at/urc/stty_nr0.log}}}
 sim_slot=${9:-${MU300_SIM_SLOT:-0}}
 case "$sim_slot" in 0|1) ;; *) exit 1 ;; esac
 logtag=mu300cell-renew
-
-mask2prefix() {
-	local m=$1 bits=0 o partial=0 IFS=.
-	for o in $m; do
-		[ "$partial" = 0 ] || [ "$o" = 0 ] || return 1
-		case $o in
-			255) bits=$((bits + 8)) ;;
-			254) bits=$((bits + 7)); partial=1 ;;
-			252) bits=$((bits + 6)); partial=1 ;;
-			248) bits=$((bits + 5)); partial=1 ;;
-			240) bits=$((bits + 4)); partial=1 ;;
-			224) bits=$((bits + 3)); partial=1 ;;
-			192) bits=$((bits + 2)); partial=1 ;;
-			128) bits=$((bits + 1)); partial=1 ;;
-			0) partial=1 ;; *) return 1 ;;
-		esac
-	done
-	echo "$bits"
-}
-
-valid_ipv4() {
-	local value=$1 a b c d rest
-	IFS=. read -r a b c d rest <<-EOF
-	$value
-	EOF
-	[ -z "$rest" ] && [ -n "$d" ] || return 1
-	for value in "$a" "$b" "$c" "$d"; do
-		case "$value" in ''|*[!0-9]*) return 1 ;; esac
-		[ "$value" -le 255 ] || return 1
-	done
-	[ "$a.$b.$c.$d" != 0.0.0.0 ]
-}
 
 # One record per address: CIDR|preferred seconds|valid seconds. Including the
 # lifetimes in the snapshot means an RA refresh of an unchanged address is
@@ -146,34 +116,19 @@ report() {
 }
 
 read_bearer() {
-	local d out line addrmask mask new_ip4 new_prefix new_dns1 new_dns2
+	local d out
 	local channels='/run/mu300-at6 /run/mu300-at7 /run/mu300-at'
 	[ "$sim_slot" != 1 ] || channels=/run/mu300-at4
 	for d in $channels; do
 		[ -p "$d/cmd" ] || continue
 		out=$(MU300_AT_LOCK_WAIT=0 MU300_AT_DIR="$d" mu300-at -t 3 "AT+SPACTCARD=$sim_slot;+CGCONTRDP=1" 2>/dev/null) || continue
-		line=$(printf '%s\n' "$out" | awk -F, '/^\+CGCONTRDP:/ {
-			a=$4; gsub(/"/, "", a); n=split(a, x, ".")
-			if (n==8 && x[1]+0>0) { print; exit }
-		}')
-		[ -n "$line" ] && break
+		if pdp_address_parse "$out" 1; then
+			BEARER_IP4=$PDP_IP4; BEARER_PREFIX4=$PDP_PREFIX4
+			BEARER_DNS1=$PDP_DNS1; BEARER_DNS2=$PDP_DNS2
+			return 0
+		fi
 	done
-	[ -n "$line" ] || return 1
-	addrmask=$(printf '%s\n' "$line" | cut -d, -f4 | tr -d '"\r ')
-	new_ip4=$(printf '%s\n' "$addrmask" | cut -d. -f1-4)
-	mask=$(printf '%s\n' "$addrmask" | cut -d. -f5-8)
-	new_prefix=$(mask2prefix "$mask") || return 1
-	new_dns1=$(printf '%s\n' "$line" | cut -d, -f6 | tr -d '"\r ')
-	new_dns2=$(printf '%s\n' "$line" | cut -d, -f7 | tr -d '"\r ')
-	[ "$new_dns1" != 0.0.0.0 ] || new_dns1=
-	[ "$new_dns2" != 0.0.0.0 ] || new_dns2=
-	valid_ipv4 "$new_ip4" || return 1
-	[ -z "$new_dns1" ] || valid_ipv4 "$new_dns1" || return 1
-	[ -z "$new_dns2" ] || valid_ipv4 "$new_dns2" || return 1
-	BEARER_IP4=$new_ip4
-	BEARER_PREFIX4=$new_prefix
-	BEARER_DNS1=$new_dns1
-	BEARER_DNS2=$new_dns2
+	return 1
 }
 
 # Only explicit inactivity is evidence to reconnect. AT owners can be busy
@@ -221,21 +176,29 @@ refresh_bearer() {
 	dns1=$BEARER_DNS1; dns2=$BEARER_DNS2
 	kernel_addresses=$(ip -4 -o addr show dev "$ifname" scope global 2>/dev/null | awk '{print $4}')
 	if [ "$old" != "$ip4/$prefix4 $dns1 $dns2" ] ||
-		! printf '%s\n' "$kernel_addresses" | grep -Fxq "$ip4/$prefix4"; then
+		{ [ -n "$ip4" ] && ! printf '%s\n' "$kernel_addresses" | grep -Fxq "$ip4/$prefix4"; } ||
+		{ [ -z "$ip4" ] && [ -n "$kernel_addresses" ]; }; then
 		# Add the replacement before deleting the old address. There is no
 		# ifdown, CGACT cycle or USB event, so an address handover only loses
 		# packets during the carrier's own transition.
-		if ! { ip -4 addr add "$ip4/$prefix4" dev "$ifname" 2>/dev/null ||
-			ip -4 addr replace "$ip4/$prefix4" dev "$ifname"; } ||
-			! ip -4 route replace default dev "$ifname" || ! report; then
+		local applied=0
+		if [ -z "$ip4" ] || { { ip -4 addr add "$ip4/$prefix4" dev "$ifname" 2>/dev/null ||
+			ip -4 addr replace "$ip4/$prefix4" dev "$ifname"; } &&
+			ip -4 route replace default dev "$ifname"; }; then
+			report && applied=1
+		fi
+		if [ "$applied" != 1 ]; then
 			ip4=$old_ip4; prefix4=$old_prefix4
 			dns1=$old_dns1; dns2=$old_dns2
 			logger -t "$logtag" "$reason: update failed; keeping previous snapshot for retry"
 			return 1
 		fi
-		if [ "$old_ip4/$old_prefix4" != "$ip4/$prefix4" ]; then
-			[ -z "$old_ip4" ] || ip -4 addr del "$old_ip4/${old_prefix4:-32}" dev "$ifname" 2>/dev/null || true
-		fi
+		local a
+		for a in $kernel_addresses; do
+			[ -n "$ip4" ] && [ "$a" = "$ip4/$prefix4" ] ||
+				ip -4 addr del "$a" dev "$ifname" 2>/dev/null || true
+		done
+		[ -n "$ip4" ] || ip -4 route del default dev "$ifname" 2>/dev/null || true
 		logger -t "$logtag" "$reason: bearer updated to $ip4/$prefix4"
 	else
 		logger -t "$logtag" "$reason: bearer unchanged"

@@ -16,6 +16,17 @@ if [ "$(cfg sim_slots)" = 2 ]; then mu300_sim_env 1 || exit 1; dev1=$MU300_SIM_D
 [ "$dev0" != "$dev1" ] || exit 1
 net_status() { ubus -t 3 call "network.interface.$wan" status 2>/dev/null; }
 field() { printf '%s' "$status" | jsonfilter -e "@.$1" 2>/dev/null; }
+start_data() {
+    status=$(net_status)
+    if [ "$(field available)" = false ]; then
+        # ifup alone cannot restart a protocol marked unavailable for the
+        # previous card. Selection succeeded; let normal setup check this one.
+        ubus -t 3 call "network.interface.$wan" notify_proto '{"action":5,"available":true}' >/dev/null || return 1
+    fi
+    # The different-card transaction used ifdown, which clears autostart.
+    # Explicit ifup restores that original intent even after availability.
+    ifup "$wan"
+}
 at_slot() {
     mu300_sim_env "$1" || return 1
     [ -p "$MU300_SIM_SHARED/cmd" ] || return 1
@@ -111,9 +122,17 @@ apply)
         if [ "$single" = 1 ]; then
             "${MU300_RADIO_CONTROL:-/opt/mu300/bin/mu300-sim-radio}" --switch-policy "$target" 1 || exit 1
         fi
-        # Even an intentionally disconnected WAN must stay disconnected.
+        # A boot with only the peer card present may already select it in
+        # the modem, while netifd still waits on the old saved preference.
+        # Explicitly adopting that card must resume an autostart WAN too.
+        status=$(net_status)
+        was_up=$(field up); was_pending=$(field pending); was_autostart=$(field autostart)
         save_card "$target" || { echo storage_failed >&2; exit 1; }
         record_card "$target"
+        if [ "$saved" != "$target" ] && [ "$was_autostart" = true ] &&
+           [ "$was_up" = false ] && [ "$was_pending" = false ]; then
+            start_data || logger -t mu300-data-sim 'Data SIM selected; netifd start failed'
+        fi
         exit 0
     fi
     at_slot "$target" 'AT+CPIN?' | grep -q '^+CPIN: READY' || { echo sim_not_ready >&2; exit 1; }
@@ -156,7 +175,7 @@ apply)
         # An explicit ifdown/data-cap action remains off after selection.
         # Existing autostart intent includes a WAN waiting for registration.
         if [ "$was_autostart" != false ]; then
-            ifup "$wan" || logger -t mu300-data-sim 'Data SIM selected; netifd start failed'
+            start_data || logger -t mu300-data-sim 'Data SIM selected; netifd start failed'
         fi
         exit 0
     fi

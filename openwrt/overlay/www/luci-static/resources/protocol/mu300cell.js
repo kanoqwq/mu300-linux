@@ -48,6 +48,7 @@ return network.registerProtocol('mu300cell', {
 			_('IPv4 only is what Android asks this modem for, and what has been measured working here. Ask for both only if the carrier requires it.'));
 		o.value('IP', _('IPv4 only (default)'));
 		o.value('IPV4V6', _('IPv4 and IPv6'));
+		o.value('IPV6', _('IPv6'));
 		o.default = 'IP';
 
 		o = s.taboption('general', form.Flag, 'peerdns', _('Use DNS servers advertised by peer'));

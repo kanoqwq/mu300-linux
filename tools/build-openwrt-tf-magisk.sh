@@ -138,9 +138,9 @@ for f in ./lib/netifd/proto/mu300cell.sh ./lib/netifd/proto/mu300cell-v6.sh \
     ./www/luci-static/resources/view/mu300/apn.js \
     ./usr/libexec/unisoc-modem/lock ./usr/libexec/unisoc-modem/boot-replay ./usr/libexec/unisoc-modem/sim-scope.sh \
     ./usr/libexec/unisoc-modem/lock-apply.sh ./usr/libexec/unisoc-modem/lock-jobs.sh \
-    ./usr/libexec/unisoc-modem/traffic ./usr/libexec/unisoc-modem/traffic-core.uc \
+    ./usr/libexec/unisoc-modem/traffic ./usr/libexec/unisoc-modem/traffic-core.uc ./usr/libexec/unisoc-modem/traffic-csv.uc \
     ./usr/libexec/unisoc-modem/hotspot ./usr/libexec/unisoc-modem/hotspot.uc \
-    ./www/luci-static/resources/view/mu300/traffic.js ./etc/init.d/unisoc-traffic \
+    ./www/luci-static/resources/view/mu300/traffic.js ./www/luci-static/resources/mu300/traffic-csv.js ./etc/init.d/unisoc-traffic \
     ./www/luci-static/resources/view/mu300/cpu.js ./etc/init.d/unisoc-cpu \
     ./www/luci-static/resources/mu300/auto-mode.js \
     ./www/luci-static/resources/mu300/cpu-idle.js ./etc/init.d/unisoc-cpu-idle \

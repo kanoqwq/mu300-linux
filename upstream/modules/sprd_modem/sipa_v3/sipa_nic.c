@@ -654,7 +654,7 @@ int sipa_nic_trigger_flow_ctrl_work(enum sipa_nic_id nic_id, int err)
 
 	switch (err) {
 	case -EAGAIN:
-		ipa->sender->free_notify_net = true;
+		WRITE_ONCE(ipa->sender->free_notify_net, true);
 		schedule_work(&ipa->flow_ctrl_work);
 		break;
 	default:

@@ -7,6 +7,7 @@ export PATH="$PATH:/opt/mu300/busybox-bin"
 set -euo pipefail
 DEV=${MU300_AT_DEV:-/dev/stty_nr1}
 CID=1
+. "${MU300_PDP_ADDRESS_LIB:-/opt/mu300/lib/pdp-address.sh}"
 IFACE=sipa_eth$((CID - 1))
 . /opt/mu300/bin/mu300-sim-env
 mu300_sim_env "${MU300_SIM_SLOT:-}" || { echo 'Invalid SIM configuration' >&2; exit 2; }
@@ -115,32 +116,6 @@ at() {  # at CMD [timeout] -> response lines up to the final result code
     done
     exec 3>&-
     rm -rf "$ATLOCK"
-}
-
-# dotted netmask -> prefix length, in shell: the image has no python3 and a wrong prefix leaves the interface
-# with /32 and no on-link subnet
-mask2prefix() {
-    local m=$1 o bits=0
-    case "$m" in
-        [0-9]*.[0-9]*.[0-9]*.[0-9]*) ;;
-        *) echo 32; return ;;
-    esac
-    local IFS=.
-    for o in $m; do
-        case $o in
-            255) bits=$((bits + 8)) ;;
-            254) bits=$((bits + 7)) ;;
-            252) bits=$((bits + 6)) ;;
-            248) bits=$((bits + 5)) ;;
-            240) bits=$((bits + 4)) ;;
-            224) bits=$((bits + 3)) ;;
-            192) bits=$((bits + 2)) ;;
-            128) bits=$((bits + 1)) ;;
-            0) ;;
-            *) echo 32; return ;;
-        esac
-    done
-    echo "$bits"
 }
 
 # Interface identifier (the low 64 bits, as a:b:c:d) of the IPv6 address the network assigned to the context, or
@@ -489,17 +464,16 @@ radio_on() {
 # 预算是真实秒。按轮数算的话「8」会变成 4 轮 —— 每轮是一条 AT 往返（实测约 2 s）加 sleep 2，
 # 也就是 17 s 才放弃。这里的每一秒都算在开机时间里，所以到点就走。
 fetch_addr() {   # $1 = 预算秒（真实秒，不是轮数）
-    local lim=${1:-8} end line am
+    local lim=${1:-8} end line
     rdp=
     end=$((SECONDS + lim))
     while [ "$SECONDS" -lt "$end" ]; do
         [ ! -e /run/mu300-mobile-data-down ] || return 1
-        line=$(at "AT+CGCONTRDP=$CID" 4 2>&1 | grep '^+CGCONTRDP:' | head -1 || true)
-        am=$(echo "$line" | cut -d, -f4 | tr -d '"')
-        case "$am" in
-            ''|0.0.0.0*) : ;;
-            *.*.*.*) rdp=$line; return 0 ;;
-        esac
+        line=$(at "AT+CGCONTRDP=$CID" 4 2>&1 || true)
+        if pdp_address_parse "$line" "$CID"; then
+            rdp=$line
+            return 0
+        fi
         sleep 2
     done
     return 1
@@ -602,7 +576,7 @@ configure_pdp_context() {
     # Unmanaged/systemd callers without an argument retain their old behavior.
     local apn="${1-${MU300_APN:-}}" pdptype="${MU300_PDP_TYPE:-IP}" result
     [ -n "$apn" ] || [ "${MU300_NETIFD:-0}" = 1 ] || return 0
-    case "$pdptype" in IP|IPV4V6) ;; *) echo 'Invalid PDP type' >&2; return 1;; esac
+    case "$pdptype" in IP|IPV6|IPV4V6) ;; *) echo 'Invalid PDP type' >&2; return 1;; esac
     if [ "${#apn}" -gt 100 ] || { [ -n "$apn" ] && ! [[ "$apn" =~ ^[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*$ ]]; }; then
         echo 'Invalid APN' >&2; return 1
     fi
@@ -670,7 +644,8 @@ resolve_apn_selection() {
 configure_initial_apn() {
     [ "${MU300_INITIAL_ATTACH:-0}" = 1 ] || return 0
     local apn="${1:-}" protocol="${MU300_PDP_TYPE:-IP}" roaming="${MU300_ROAMING_PDP_TYPE:-${MU300_PDP_TYPE:-IP}}" result command
-    case "$protocol:$roaming" in IP:IP|IP:IPV4V6|IPV4V6:IP|IPV4V6:IPV4V6) ;; *) return 1;; esac
+    case "$protocol" in IP|IPV6|IPV4V6) ;; *) return 1;; esac
+    case "$roaming" in IP|IPV6|IPV4V6) ;; *) return 1;; esac
     [[ "$apn" =~ ^[A-Za-z0-9.-]*$ ]] || return 1
     apn_credentials_valid || return 1
     command="AT+SPCGAPNCFG=1,\"$apn\",\"$protocol\",\"$roaming\",0,\"${MU300_USERNAME:-}\",\"${MU300_PASSWORD:-}\",$APN_AUTH_NUMBER"
@@ -754,21 +729,19 @@ up_locked() {
         radio_say "CGACT 已激活但暂未下发地址；幂等重发一次，不切断 PDP"
         at "AT+CGACT=1,$CID" 8 >/dev/null || true
         fetch_addr "${MU300_ADDR_WAIT_RETRY:-8}" || {
-            echo "no IPv4 address from AT+CGCONTRDP after bounded CGACT reassert" >&2; exit 1; }
+            echo "no PDP address from AT+CGCONTRDP after bounded CGACT reassert" >&2; exit 1; }
     fi
     mark dial-addr-ok
-    # +CGCONTRDP: cid,bearer,apn,"a.b.c.d.m.m.m.m",gw,dns1,dns2,...
-    addrmask=$(echo "$rdp" | cut -d, -f4 | tr -d '"')
-    ip4=$(echo "$addrmask" | cut -d. -f1-4)
-    mask=$(echo "$addrmask" | cut -d. -f5-8)
-    dns1=$(echo "$rdp" | cut -d, -f6 | tr -d '"')
-    dns2=$(echo "$rdp" | cut -d, -f7 | tr -d '"')
-    [ -n "$ip4" ] || { echo "no IPv4 address from AT+CGCONTRDP" >&2; exit 1; }
+    pdp_address_parse "$rdp" "$CID" || return 1
+    ip4=$PDP_IP4; prefix=$PDP_PREFIX4
+    dns1=$PDP_DNS1; dns2=$PDP_DNS2
+    # The network can grant only IPv6 even for an IPV4V6 request. Keep the
+    # configured preference, but report the granted family to netifd.
+    [ -n "$ip4" ] || MU300_PDP_TYPE=IPV6
     # AT+CGDATA takes its time on this modem: measured, it answers "^ORIG: <cid>,<n>" and then CONNECT about
     # ten to twenty seconds later. With the old eight-second budget the reply arrived after we had given up, so
     # the next command read it instead of its own and the whole channel looked dead for a while.
     at "AT+CGDATA=\"M-ETHER\",$CID" 45 | grep -q CONNECT || echo "AT+CGDATA did not answer CONNECT" >&2
-    prefix=$(mask2prefix "$mask")
     iid=$(v6_iid)
     # Without an IPv6 address from the network, switch IPv6 off on this interface, as Android does: otherwise it
     # carries a link-local address and sends router solicitations and multicast into a bearer that is IPv4 only
@@ -809,8 +782,10 @@ up_locked() {
     # the sipa driver hands up wrong hardware checksums ("hw csum failure" warnings): verify them in software
     ethtool -K "$IFACE" rx off 2>/dev/null || true
     ip addr flush dev "$IFACE"
-    ip addr add "$ip4/$prefix" dev "$IFACE"
-    ip route replace default dev "$IFACE" metric 100
+    if [ -n "$ip4" ]; then
+        ip addr add "$ip4/$prefix" dev "$IFACE"
+        ip route replace default dev "$IFACE" metric 100
+    fi
     if command -v resolvectl >/dev/null; then
         resolvectl dns "$IFACE" $dns1 $dns2 || true
         resolvectl domain "$IFACE" '~.' || true
@@ -904,8 +879,19 @@ watch_radio_if_off() {
     fi
 }
 
+# Called only after CGACT confirmed this CID active. An unavailable query is
+# not evidence of lost data. An IPv6-only grant stays live while RA is pending.
+watch_address_state() {
+    local reply have
+    reply=$(at "AT+CGCONTRDP=$CID" 4 2>/dev/null) || return 2
+    pdp_address_parse "$reply" "$CID" || return 2
+    [ -n "$PDP_IP4" ] || return 0
+    have=$(ip -4 -o addr show "$IFACE" 2>/dev/null | awk '{ split($4, a, "/"); print a[1]; exit }' || true)
+    [ "$have" = "$PDP_IP4" ]
+}
+
 watch() {
-    local fails=0 context_state want have
+    local fails=0 context_state address_state
     # OpenWrt uses ubus events; Ubuntu retains its existing watchdog wait.
     watch_events_stop() { :; }
     watch_next() { sleep "${MU300_WATCH_INTERVAL:-30}"; }
@@ -974,26 +960,21 @@ watch() {
             continue
         fi
         if [ "$context_state" = 0 ]; then
-            # An active context is not enough: after the radio or the network dropped the bearer, an LTE modem
-            # attaches again by itself and the context comes back with a new address, while the interface keeps
-            # the old one - it sends with it and nothing ever comes back (measured: rx 0, the modem on
-            # 10.160.167.97, sipa_eth0 on 10.200.191.225). In netifd mode ask
-            # its existing event owner to refresh this address without redial.
-            # the context's IPv4 address: the first field after the cid when it has four parts (an IPv6 one has 16)
-            want=$(at "AT+CGPADDR=$CID" 4 | awk -F'[ ,"]+' '/^\+CGPADDR:/ { if (split($3, o, ".") == 4 && $3 != "0.0.0.0") print $3; exit }' || true)
-            have=$(ip -4 -o addr show "$IFACE" 2>/dev/null | awk '{ split($4, a, "/"); print a[1]; exit }' || true)
-            if [ -n "$have" ] && { [ -z "$want" ] || [ "$want" = "$have" ]; }; then
+            address_state=0
+            watch_address_state || address_state=$?
+            if [ "$address_state" = 0 ]; then
                 fails=0
                 led_up
                 continue
             fi
+            if [ "$address_state" = 2 ]; then fails=0; continue; fi
             if [ "${MU300_NETIFD:-0}" = 1 ]; then
-                echo "active PDP address differs ($want; $IFACE has $have), requesting in-place renewal" >&2
+                echo "active PDP address differs on $IFACE, requesting in-place renewal" >&2
                 ubus call "network.interface.${MU300_WAN:-wan}" renew >/dev/null 2>&1 || true
                 fails=0
                 continue
             fi
-            echo "the network gave the context a new address ($want; $IFACE still has $have), reconnecting" >&2
+            echo "the network gave the context a new address on $IFACE, reconnecting" >&2
             fails=1   # no second look needed: the next step reconnects
         fi
         # a switched-off radio never comes back on its own

@@ -109,6 +109,13 @@ struct sk_buff *sipa_find_sent_skb(dma_addr_t addr)
 }
 EXPORT_SYMBOL(sipa_find_sent_skb);
 
+static bool sipa_sender_can_notify(struct sipa_skb_sender *sender)
+{
+	return READ_ONCE(sender->free_notify_net) &&
+		atomic_read(&sender->left_cnt) >
+		sender->ep->send_fifo.rx_fifo.fifo_depth / 4;
+}
+
 static void sipa_free_sent_items(void)
 {
 	bool status = false;
@@ -128,7 +135,7 @@ static void sipa_free_sent_items(void)
 					   sender->ep->send_fifo.idx,
 					   NULL, &num);
 	if (!num)
-		return;
+		goto notify;
 
 	sipa_hal_sync_node_from_tx_fifo(sender->dev,
 					sender->ep->send_fifo.idx, num);
@@ -234,16 +241,16 @@ check_again:
 	sipa_hal_add_tx_fifo_rptr(sender->dev,
 				  sender->ep->send_fifo.idx, num);
 	atomic_add(success_cnt, &sender->left_cnt);
-	if (sender->free_notify_net &&
-	    atomic_read(&sender->left_cnt) >
-	    sender->ep->send_fifo.rx_fifo.fifo_depth / 4) {
-		sender->free_notify_net = false;
-		sipa_inform_evt_to_nics(sender, SIPA_LEAVE_FLOWCTRL);
-	}
 	if (num != success_cnt || i != num)
 		dev_err(sender->dev,
 			"i = %d recv num = %d release num = %d\n",
 			i, num, success_cnt);
+notify:
+	/* A completion can return capacity before the flow request arrives. */
+	if (sipa_sender_can_notify(sender)) {
+		WRITE_ONCE(sender->free_notify_net, false);
+		sipa_inform_evt_to_nics(sender, SIPA_LEAVE_FLOWCTRL);
+	}
 }
 
 static bool sipa_sender_ck_unfree(struct sipa_skb_sender *sender)
@@ -281,8 +288,9 @@ static int sipa_free_thread(void *data)
 		if (wait_event_interruptible(sender->free_waitq,
 				kthread_should_stop() ||
 				(!READ_ONCE(sender->init_flag) &&
+				 !atomic_read(&sender->check_suspend) &&
 				 (!sipa_sender_ck_unfree(sender) ||
-				  sender->free_notify_net))))
+				  sipa_sender_can_notify(sender)))))
 			continue;
 		if (kthread_should_stop())
 			break;
@@ -353,10 +361,9 @@ int sipa_sender_prepare_suspend(struct sipa_skb_sender *sender)
 int sipa_sender_prepare_resume(struct sipa_skb_sender *sender)
 {
 	atomic_set(&sender->check_suspend, 0);
-	if (unlikely(READ_ONCE(sender->init_flag))) {
+	if (unlikely(READ_ONCE(sender->init_flag)))
 		WRITE_ONCE(sender->init_flag, false);
-		wake_up(&sender->free_waitq);
-	}
+	wake_up(&sender->free_waitq);
 
 	return 0;
 }

@@ -1,5 +1,6 @@
 """Run the real SIPA worker bodies with host pthread wait queues (no MMIO)."""
 import pathlib
+import re
 import shutil
 import subprocess
 import tempfile
@@ -10,7 +11,7 @@ SIPA = ROOT / 'upstream/modules/sprd_modem/sipa_v3'
 
 
 def function(source, name):
-    start = source.index('static int ' + name + '(')
+    start = re.search(r'(?m)^static (?:int|bool) ' + name + r'\(', source).start()
     pos = source.index('{', start)
     depth = 1
     end = pos + 1
@@ -36,14 +37,18 @@ class Workers(unittest.TestCase):
 #include <unistd.h>
 #include <signal.h>
 struct queue { pthread_mutex_t mutex; pthread_cond_t cond; };
+struct sipa_endpoint { struct {struct {int fifo_depth;} rx_fifo;} send_fifo; };
 struct sipa_skb_sender { bool init_flag; struct queue free_waitq;
-    bool free_notify_net; };
+    bool free_notify_net; atomic_int check_suspend, left_cnt; struct sipa_endpoint *ep; };
 struct sipa_skb_receiver { bool init_flag; struct queue fill_recv_waitq; };
 static struct queue *q;
 static atomic_bool stopping, pending, interrupt_wait;
-static atomic_int mmio_reads, work, waits;
+static atomic_int mmio_reads, work, waits, notifications;
+static struct sipa_skb_sender *active_sender;
+static bool sipa_sender_can_notify(struct sipa_skb_sender *sender);
 #define READ_ONCE(x) __atomic_load_n(&(x), __ATOMIC_ACQUIRE)
 #define WRITE_ONCE(x,v) __atomic_store_n(&(x),(v),__ATOMIC_RELEASE)
+#define atomic_read(p) atomic_load(p)
 #define current 0
 #define sched_setscheduler(a,b,c) ((void)0)
 #define kthread_should_stop() atomic_load(&stopping)
@@ -61,10 +66,15 @@ static bool sipa_check_need_fill_cnt(void) {
 }
 static void sipa_free_sent_items(void) {
     atomic_store(&pending,false); atomic_fetch_add(&work,1);
+    if(active_sender && sipa_sender_can_notify(active_sender)) {
+        WRITE_ONCE(active_sender->free_notify_net,false);
+        atomic_fetch_add(&notifications,1);
+    }
 }
 static int sipa_fill_all_free_fifo(void) { sipa_free_sent_items(); return 0; }
 #define usleep_range(a,b) usleep(a)
 '''
+        harness += function(send, 'sipa_sender_can_notify') + '\n'
         harness += function(send, 'sipa_free_thread') + '\n'
         harness += function(recv, 'sipa_fill_recv_thread') + '\n'
         harness += r'''
@@ -105,10 +115,35 @@ static void run_case(bool receive, bool resume) {
     assert(!pthread_join(thread,NULL)); assert(atomic_load(&work)==before);
     pthread_cond_destroy(&q->cond); pthread_mutex_destroy(&q->mutex);
 }
+static void run_flow_case(void) {
+    struct sipa_endpoint ep={.send_fifo.rx_fifo.fifo_depth=8};
+    struct sipa_skb_sender s={.ep=&ep,.free_notify_net=true};pthread_t thread;
+    q=&s.free_waitq;pthread_mutex_init(&q->mutex,NULL);pthread_cond_init(&q->cond,NULL);
+    active_sender=&s;worker=sipa_free_thread;
+    atomic_store(&stopping,false);atomic_store(&pending,false);
+    atomic_store(&interrupt_wait,false);atomic_store(&work,0);atomic_store(&waits,0);
+    atomic_store(&notifications,0);
+    assert(!pthread_create(&thread,NULL,entry,&s));settle();
+    assert(atomic_load(&work)==0 && atomic_load(&waits)>0);
+    atomic_store(&s.left_cnt,2);wake();settle();assert(atomic_load(&work)==0);
+    atomic_store(&s.left_cnt,3);wake();settle();
+    assert(atomic_load(&work)==1 && atomic_load(&notifications)==1 && !s.free_notify_net);
+    wake();settle();assert(atomic_load(&work)==1);
+    atomic_store(&s.check_suspend,1);WRITE_ONCE(s.free_notify_net,true);
+    int reads=atomic_load(&mmio_reads);wake();settle();
+    assert(atomic_load(&work)==1 && atomic_load(&mmio_reads)==reads);
+    atomic_store(&s.check_suspend,0);wake();settle();
+    assert(atomic_load(&work)==2 && atomic_load(&notifications)==2);
+    atomic_store(&s.left_cnt,0);atomic_store(&pending,true);wake();settle();
+    assert(atomic_load(&work)==3);
+    atomic_store(&stopping,true);wake();assert(!pthread_join(thread,NULL));
+    active_sender=NULL;pthread_cond_destroy(&q->cond);pthread_mutex_destroy(&q->mutex);
+}
 int main(void) {
     alarm(5);
     run_case(false,false); run_case(true,false);
     run_case(false,true); run_case(true,true);
+    run_flow_case();
     return 0;
 }
 '''
@@ -116,8 +151,9 @@ int main(void) {
             src = pathlib.Path(tmp) / 'test.c'
             exe = pathlib.Path(tmp) / 'test'
             src.write_text(harness)
-            subprocess.run([cc, '-std=gnu11', '-pthread', '-O2', str(src),
-                            '-o', str(exe)], check=True, capture_output=True)
+            result = subprocess.run([cc, '-std=gnu11', '-pthread', '-O2', str(src),
+                                     '-o', str(exe)], capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
             subprocess.run([str(exe)], check=True, timeout=8)
 
     def test_managed_threads_and_initialization(self):

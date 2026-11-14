@@ -149,6 +149,10 @@ t = open(sp).read()
 marker = 'MU300: only the non-removable eMMC'
 old = '\t/* ' + marker + ' is used */\n\tif (!of_property_read_bool(pdev->dev.of_node, "non-removable"))\n\t\treturn -ENODEV;\n'
 t = t.replace(old, '')
+open(sp, 'w').write(t)
+from sdhci_hosts import apply as apply_sdhci_hosts
+apply_sdhci_hosts(tree)
+t = open(sp).read()
 # PR #184 maps all EIC banks so the stock card-detect GPIO uses interrupts.
 # A genuine GPIO deferral still has a TF-only fallback: re-run the full parse
 # without cd-gpios, rather than skipping bus modes/power sequence after it.

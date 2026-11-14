@@ -238,6 +238,7 @@ done
 chroot "$R" /bin/sh -c "command -v flock >/dev/null" || { echo "missing native SIM flock dependency" >&2; exit 1; }
 # LED transactions require timed locking; the BusyBox applet has no -w option.
 chroot "$R" /usr/bin/util-linux-flock --version >/dev/null || { echo "missing util-linux flock for LED transactions" >&2; exit 1; }
+[ -s "$R/opt/mu300/lib/pdp-address.sh" ] || { echo "missing PDP address parser" >&2; exit 1; }
 [ -s "$R/opt/mu300/lib/sms-pool.sh" ] || { echo "missing shared SMS pool library" >&2; exit 1; }
 chmod 0755 $R/etc/hotplug.d/power_supply/70-mu300-led
 chmod 0755 $R/opt/mu300/bin/mu300-platform-config
