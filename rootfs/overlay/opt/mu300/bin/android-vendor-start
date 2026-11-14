@@ -47,6 +47,19 @@ for u in /sys/class/block/${internal_disk}*/uevent; do
 done
 sh /opt/mu300/bin/ueventd-perms.sh
 mark vendor-perms
+# Some V50 board-2 units boot with the empty external SIM1 route selected.
+# Opt-in correction must happen before modem_control/RIL can power that stack.
+# A correction failure must never prevent the original peer-card startup.
+if [ "$(/opt/mu300/bin/mu300-device)" = v50 ] &&
+   [ "$(uci -q get unisoc_modem.main.v50_preboot_sim1 2>/dev/null)" = 1 ]; then
+    if MU300_V50_PREBOOT_PARENT=$$ /opt/mu300/busybox-bin/timeout -s KILL 5 \
+        /opt/mu300/bin/mu300-v50-sim-preboot apply \
+        > /var/log/mu300-v50-sim-preboot.log 2>&1; then
+        :
+    else
+        echo 'v50-sim-preboot: correction failed/skipped; original vendor startup continues' >&2
+    fi
+fi
 for m in dev proc sys; do mkdir -p $A/$m; done
 mkdir -p $A/data/vendor $A/mnt $A/tmp
 mountpoint -q $A/dev || mount --rbind /dev $A/dev
