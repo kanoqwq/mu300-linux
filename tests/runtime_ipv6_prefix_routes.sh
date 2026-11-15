@@ -34,7 +34,7 @@ ip -6 route get 2001:db8::99 | grep -q 'dev br-lan'
 ip -6 route get 2408:1:2:4::99 | grep -q 'dev br-lan'
 
 # Missing route is repaired next round, without reannouncing or losing the other.
-ip -6 route del 2408:1:2:4::/64 dev br-lan metric 1024
+ip -6 route del 2408:1:2:4::/64 dev br-lan metric 128
 learn_once
 ip -6 route get 2408:1:2:4::123 | grep -q 'dev br-lan'
 [ "$ra_calls" = 0 ]

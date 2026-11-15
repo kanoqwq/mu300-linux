@@ -38,6 +38,11 @@ bearer_prefixes() {
     }' "$IF_INET6" 2>/dev/null | sort -u
 }
 
+# SLAAC may also install the same on-link /64 on the bearer at metric 256.
+# Prefer the LAN route even before a client has a neighbour entry or /128 pin.
+# The WAN address remains local; its default and link-local routes are untouched.
+LAN_PREFIX_METRIC=128
+
 # Filter ip route/neighbour output to hosts within a supplied set of /64s.
 # Normalize compressed IPv6 notation before comparing; never match by a
 # textual prefix (2001:db8::1 and 2001:db8:0:0::1 name the same address).
@@ -66,7 +71,7 @@ prefix_hosts() {
 
 drop_old_prefix() {
     [ -n "$1" ] || return
-    ip -6 route del "$1" dev br-lan metric 1024 2>/dev/null
+    ip -6 route del "$1" dev br-lan metric "$LAN_PREFIX_METRIC" 2>/dev/null
     # `ip route show` prints host routes without the implicit /128 suffix.
     for r in $(ip -6 route show dev br-lan 2>/dev/null |
                prefix_hosts "$1"); do
@@ -148,7 +153,7 @@ learn_once() {
         has_prefix "$prefix" "$last_prefixes" ||
             logger -t ndp-learn "LAN prefix route: $prefix dev br-lan"
         # Idempotent replace repairs removed routes without a show/grep per /64.
-        ip -6 route replace "$prefix" dev br-lan metric 1024 2>/dev/null
+        ip -6 route replace "$prefix" dev br-lan metric "$LAN_PREFIX_METRIC" 2>/dev/null
     done
     last_prefixes=$prefixes
     # odhcpd can learn a downstream client's /128 on the WAN side. That

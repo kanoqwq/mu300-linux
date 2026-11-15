@@ -80,7 +80,7 @@ while True:
     def test_neighbour_updates_immediately_but_our_route_notifications_do_not_loop(self):
         p=self.start();self.assertTrue(wait_for(lambda:(self.tmp/'monitor.pid').exists()))
         initial=self.count()
-        self.send('[ROUTE] 2001:db8::/64 dev br-lan metric 1024')
+        self.send('[ROUTE] 2001:db8::/64 dev br-lan metric 128')
         self.send('[ROUTE] default via fe80::1 dev other0')
         time.sleep(.4);self.assertEqual(self.count(),initial)
         self.send('[NEIGH] 2001:db8::22 dev br-lan lladdr aa:bb:cc:dd:ee:ff REACHABLE')
