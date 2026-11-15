@@ -332,7 +332,7 @@ class OpenWrt(ShellTest):
         for shell in self.each_shell():
             for cc, ch, ht, chans in (('CN', '36', 'VHT80', '36 40 44 48 149 153 157 161 165'),
                                       ('JP', '36', 'VHT80', '36 40 44 48'), ('BD', '149', 'VHT80', '149 153 157 161 165'),
-                                      ('', '36', 'VHT80', '36 40 44 48')):
+                                      ('', '36', 'VHT80', '36 40 44 48 149 153 157 161 165')):
                 self.state(f'wireless.radio0.band=2g\nwireless.radio0.country={cc}\n')
                 r = self.script(shell, BIN / 'mu300-wifi-band', '5', MU300_SYSROOT=self.root)
                 self.assertEqual((r.returncode, r.stdout.strip()), (0, 'hotspot: 5 GHz'), r.stderr)

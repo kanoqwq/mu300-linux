@@ -31,7 +31,7 @@ set_band() {  # set_band 2.4|5
             chl='delete wireless.radio0.channels
 delete wireless.radio0.acs_exclude_dfs'
         else
-            cc=$(uci -q get wireless.radio0.country); cc=${cc:-TR}
+            cc=$(uci -q get wireless.radio0.country); cc=${cc:-CN}
             ch=$(wifi_ap5_default "$cc")
             [ -n "$ch" ] || { echo "no 5 GHz channel without DFS in country $cc: the hotspot stays on 2.4 GHz" >&2; exit 1; }
             b=5g ht=VHT$(wifi_ap5_width "$cc" "$ch")

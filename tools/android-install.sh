@@ -548,7 +548,7 @@ openwrt) keep="etc/config etc/mu300 etc/unisoc-modem etc/dropbear etc/rc.local e
     mkdir -p $R/etc/mu300
     if [ -n "$ssid" ] && ! { [ "${UPDATE:-0}" = 1 ] && [ -s $R/etc/mu300/hotspot.conf ]; }; then
         umask 077
-        printf 'SSID=%s\nPSK=%s\nBAND=5\nCHANNEL=auto\nCOUNTRY=TR\n' "$ssid" "$psk" > $R/etc/mu300/hotspot.conf
+        printf 'SSID=%s\nPSK=%s\nBAND=5\nCHANNEL=auto\nCOUNTRY=CN\n' "$ssid" "$psk" > $R/etc/mu300/hotspot.conf
         chmod 600 $R/etc/mu300/hotspot.conf
         umask 022
     fi

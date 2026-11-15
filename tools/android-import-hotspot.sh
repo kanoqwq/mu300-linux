@@ -13,7 +13,7 @@ psk=\$(sed -n \"s/.*<string name=\\\"Passphrase\\\">\\(.*\\)<\\/string>.*/\\1/p\
 sh /data/local/tmp/android-mount-mu300root.sh \$R >/dev/null
 mkdir -p \$R/etc/mu300
 umask 077
-printf \"SSID=%s\\nPSK=%s\\nBAND=5\\nCHANNEL=auto\\nCOUNTRY=TR\\n\" \"\$ssid\" \"\$psk\" > \$R/etc/mu300/hotspot.conf
+printf \"SSID=%s\\nPSK=%s\\nBAND=5\\nCHANNEL=auto\\nCOUNTRY=CN\\n\" \"\$ssid\" \"\$psk\" > \$R/etc/mu300/hotspot.conf
 chown 0:0 \$R/etc/mu300/hotspot.conf; chmod 600 \$R/etc/mu300/hotspot.conf
 sync
 echo \"imported SSID \$ssid (passphrase \${#psk} chars) into \$R/etc/mu300/hotspot.conf\"

@@ -15,13 +15,13 @@ if [ ! -s "$CONF" ]; then
     psk=$(tr -dc 'A-HJ-NP-Za-km-z2-9' </dev/urandom | head -c 12)
     umask 077
     mkdir -p /etc/mu300
-    printf 'SSID=MU300-%s\nPSK=%s\nBAND=5\nCHANNEL=auto\nCOUNTRY=TR\n' "${mac^^}" "$psk" > "$CONF"
+    printf 'SSID=MU300-%s\nPSK=%s\nBAND=5\nCHANNEL=auto\nCOUNTRY=CN\n' "${mac^^}" "$psk" > "$CONF"
     echo "generated $CONF"
 fi
 # read values literally (never source the file: the passphrase may contain shell metacharacters)
 conf() { sed -n "s/^$1=//p" "$CONF" | head -1; }
 SSID=$(conf SSID); PSK=$(conf PSK); CHANNEL=$(conf CHANNEL); COUNTRY=$(conf COUNTRY); BAND=$(conf BAND)
-COUNTRY=${COUNTRY:-TR}
+COUNTRY=${COUNTRY:-CN}
 # BAND=5 uses 802.11a/n/ac; this chip supports only one AP at a time, so 2.4 and 5 GHz cannot run together.
 # The firmware offers 5 GHz AP only on the non-DFS channels 36-48 and 149-165, and the driver has no radar detection:
 # a DFS channel uses 36, or fails if the country does not permit it; other disallowed channels use the country's default, and
