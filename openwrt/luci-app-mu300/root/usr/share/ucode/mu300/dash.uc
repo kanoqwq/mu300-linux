@@ -90,6 +90,22 @@ export function power() {
         volt:volts!=null && volts>0?+sprintf('%.2f',volts/1000000.0):null,
         ua:battery?num(rd(battery+'/current_now')):null,usb};
 };
+function boot_marker() {
+    let disk='/mnt/mu300-disk/.mu300';
+    if(fs.stat(ROOT+disk)?.type!='directory')disk='/.mu300';
+    let marker=fs.lstat(ROOT+disk+'/boot-lock');
+    return marker==null?false:marker.type=='file'?true:null;
+};
+function linux_successful(slot) {
+    let misc=rd('/run/mu300/misc-dev') || '/dev/block/by-name/misc';
+    if(!match(misc,/^\/dev\/[A-Za-z0-9_./-]+$/))return null;
+    let file=fs.open(ROOT+misc,'r');
+    if(!file)return null;
+    let data=file.seek(2048,0)?file.read(32):null;
+    file.close();
+    if(length(data)!=32 || substr(data,4,4)!='BCAB')return null;
+    return !!(ord(data,slot=='a'?12:14) & 0x80);
+};
 export function boot() {
     let state=rd('/etc/mu300/default-boot') || 'android';
     if(!(state in ['android','linux']))state='unknown';
@@ -100,7 +116,12 @@ export function boot() {
         if(slot=='b')writable = writable || fs.stat(ROOT+'/run/mu300/misc-bc-slot-b-trial.bin')?.size>0 &&
             fs.stat(ROOT+'/run/mu300/misc-bc-slot-a.bin')?.size>0;
     }
-    return {default:state,temporary:state=='unknown'?null:state!='linux',can_set_default:!!writable};
+    let requested=boot_marker(), successful=slot in ['a','b']?linux_successful(slot):null;
+    let lock_state=state=='unknown' || requested==null || successful==null ||
+        (successful && (state=='android' || !requested))?null:
+        state=='linux' && requested?(successful?'locked':'trial'):'unlocked';
+    return {default:state,temporary:state=='unknown'?null:state!='linux',can_set_default:!!writable,
+        locked:lock_state=='locked',lock_requested:!!requested,lock_state};
 };
 function clients(dev,bus,leases) {
     if(!device(dev) || !exists('/sys/class/net/'+dev))return {rows:[],count:0};

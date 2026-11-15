@@ -267,6 +267,7 @@ return view.extend({
     <button class="mud-btn warn" id="mud-btn-modem">重启调制解调器</button>
     <button class="mud-btn warn" id="mud-btn-reboot">关机或重启</button>
     <button class="mud-btn warn" id="mud-btn-android">切换到 Android</button>
+    <button class="mud-btn warn" id="mud-btn-bootlock">锁定 Linux</button>
   </div>
 </div>
 <div class="mud-sec">
@@ -362,9 +363,12 @@ return view.extend({
 			}).finally(function() { self._quickPending = false; });
 		};
 		q('btn-default').onclick = function() {
+			if (!self.lastInfo || !self.lastInfo.boot || self.lastInfo.boot.lock_state == null) return;
+			var locked = self.lastInfo.boot.lock_requested;
 			return confirmAction(this, '设为默认启动',
-				'以后开机默认进入 OpenWrt；启动失败仍保留 Android 回退。现在不会重启。',
-				{ okText: '确定' }, 'os', 'linux-default');
+				locked ? '以后开机默认进入 OpenWrt，并恢复 Linux 锁定；启动失败不会自动回退到 Android。现在不会重启。' :
+					'以后开机默认进入 OpenWrt；启动失败仍保留 Android 回退。现在不会重启。',
+				{ danger: !!locked, okText: '确定' }, 'os', 'linux-default');
 		};
 		q('btn-android').onclick = function() {
 			return confirmAction(this, '切换到 Android 系统',
@@ -372,6 +376,18 @@ return view.extend({
 				'回到 OpenWrt：在 Android 上执行 mu300-next-boot linux 后重启；\n' +
 				'或什么都不做，连续 5 次开机未完成会自动回退。',
 				{ danger: true, okText: '切换并重启' }, 'os', 'android', '正在武装 Android 引导并重启…');
+		};
+		q('btn-bootlock').onclick = function() {
+			var boot = self.lastInfo && self.lastInfo.boot;
+			if (!boot || !boot.can_set_default ||
+				(boot.lock_state !== 'locked' && boot.lock_state !== 'unlocked')) return;
+			if (boot.lock_state === 'locked')
+				return confirmAction(this, '解除 Linux 锁定',
+					'解除后，连续启动失败达到设定次数时会自动回退到 Android。现在不会重启。',
+					{ okText: '解除锁定' }, 'os', 'unlock', '正在解除 Linux 锁定…');
+			return confirmAction(this, '锁定 Linux',
+				'锁定后，OpenWrt 启动失败不会自动切换到 Android。OpenWrt 仍可访问时可手动切换；若系统无法启动，可能需要通过 USB（telnet）救援。更新内核会先试启动，成功后恢复锁定。现在不会重启。',
+				{ danger: true, okText: '锁定' }, 'os', 'lock', '正在锁定 Linux…');
 		};
 		q('reveal').onclick = function() {
 			self.identShown = !self.identShown;
@@ -680,17 +696,31 @@ return view.extend({
 		M.set('model', i.model || '--');
 		M.set('fwos', i.fw || '--');
 		M.set('modem', (i.modem && i.modem.alive ? '在线' : '无应答') + (i.modem && i.modem.atd ? '' : ' · AT 适配器不可用'));
-		var androidBtn = M.v('btn-android');
+		var androidBtn = M.v('btn-android'), bootlockBtn = M.v('btn-bootlock');
 		var boot = i.boot || {}, notice = M.v('boot-notice'), setDefault = M.v('btn-default');
 		if (notice) {
 			notice.hidden = boot.temporary !== true;
 			notice.style.display = notice.hidden ? 'none' : 'flex';
 		}
 		if (setDefault) {
-			setDefault.disabled = !boot.can_set_default || !!this._quickPending;
-			setDefault.title = boot.can_set_default ? '' : M.translate('当前启动镜像不支持设置默认启动');
+			setDefault.disabled = !boot.can_set_default || boot.lock_state == null || !!this._quickPending;
+			setDefault.title = !boot.can_set_default ? M.translate('当前启动镜像不支持设置默认启动') :
+				boot.lock_state == null ? M.translate('Linux 锁定状态不可读') : '';
 		}
 		if (androidBtn) androidBtn.style.display = i.capabilities && i.capabilities.dualboot ? '' : 'none';
+		if (bootlockBtn) {
+			bootlockBtn.style.display = i.capabilities && i.capabilities.dualboot ? '' : 'none';
+			bootlockBtn.disabled = !boot.can_set_default || !!this._quickPending ||
+				(boot.lock_state !== 'locked' && boot.lock_state !== 'unlocked');
+			bootlockBtn.classList.toggle('on', boot.lock_state === 'locked');
+			if (!bootlockBtn.classList.contains('busy'))
+				bootlockBtn.textContent = M.translate(boot.lock_state === 'locked' ? '解除 Linux 锁定' :
+					boot.lock_state === 'trial' ? 'Linux 试启动中，成功后恢复锁定' :
+					boot.lock_state === 'unlocked' ? '锁定 Linux' : 'Linux 锁定状态不可读');
+			bootlockBtn.title = !boot.can_set_default ? M.translate('当前启动镜像不支持设置默认启动') :
+				boot.lock_state === 'trial' ? M.translate('Linux 试启动中，成功启动后再操作') :
+				boot.lock_state == null ? M.translate('Linux 锁定状态不可读') : '';
+		}
 
 		var b;
 		b = M.v('btn-data'); b.className = 'mud-btn' + (w.up ? ' on' : ''); b.textContent = '数据连接';

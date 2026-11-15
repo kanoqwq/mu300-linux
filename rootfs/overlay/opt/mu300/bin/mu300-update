@@ -661,13 +661,14 @@ write_boot() {  # write_boot DEV PSIZE BODY VBMETA FOOTER
     rm -f "$3.all"
 }
 
-unlock_for_trial() {
+boot_control() {
     # After a root update / still refers to the old system. Use the tool in
     # the installed system, not a chain of probes against deprecated APIs.
     _next=$DISK/$(running_os)/opt/mu300/bin/mu300-next-boot
     [ -x "$_next" ] || _next=${MU300_BIN:-/opt/mu300/bin}/mu300-next-boot
-    "$_next" --trial
+    "$_next" "$1"
 }
+unlock_for_trial() { boot_control --trial; }
 
 boot_update() {  # boot_update TAG   (MU300_KERNEL_BUNDLE=FILE uses a local mu300-kernel.tar.gz instead)
     tag=$1
@@ -775,6 +776,12 @@ boot_update() {  # boot_update TAG   (MU300_KERNEL_BUNDLE=FILE uses a local mu30
         printf 'boot: %s modules for %s installed into: %s\n' "$(ls "$tmp/modules" | wc -l | tr -d ' ')" "$krel" "$(installed_systems)"
     fi
 
+    # A locked Linux slot must be a trial before a different boot image can be
+    # written. Do this before changing rollback metadata, and stop on failure.
+    if ! unlock_for_trial; then
+        echo 'boot: could not arm a safe Linux trial; boot image unchanged' >&2
+        return 1
+    fi
     # keep the current image for rollback-boot, then write
     cp "$tmp/body" "$BOOTDIR/prev.body"; cp "$tmp/vbmeta" "$BOOTDIR/prev.vbmeta"; cp "$tmp/footer" "$BOOTDIR/prev.footer"
     cat "$BOOTDIR/installed.tag" > "$BOOTDIR/prev.tag" 2>/dev/null || echo installer > "$BOOTDIR/prev.tag"
@@ -782,8 +789,11 @@ boot_update() {  # boot_update TAG   (MU300_KERNEL_BUNDLE=FILE uses a local mu30
     sync
     if ! write_boot "$dev" "$psize" "$tmp/new" "$tmp/vbmeta" "$tmp/newfooter"; then
         echo "boot: writing $BOOT_PART failed verification; restoring the previous image" >&2
-        write_boot "$dev" "$psize" "$BOOTDIR/prev.body" "$BOOTDIR/prev.vbmeta" "$BOOTDIR/prev.footer" ||
+        if write_boot "$dev" "$psize" "$BOOTDIR/prev.body" "$BOOTDIR/prev.vbmeta" "$BOOTDIR/prev.footer"; then
+            boot_control --rearm || echo 'boot: previous image restored, but its boot policy could not be re-armed' >&2
+        else
             echo "boot: RESTORE FAILED - do not reboot into Linux; reinstall with ./install.sh from a computer" >&2
+        fi
         return 1
     fi
     sha256sum < "$tmp/new" | cut -d' ' -f1 > "$BOOTDIR/written.sha256"
@@ -791,7 +801,6 @@ boot_update() {  # boot_update TAG   (MU300_KERNEL_BUNDLE=FILE uses a local mu30
     echo "$tag" > "$BOOTDIR/installed.tag"
     kernel_choice > "$BOOTDIR/installed.kernel"
     sync
-    unlock_for_trial || echo 'boot: image verified, but the Linux trial could not be armed; select OpenWrt before rebooting' >&2
     rm -rf "$tmp"
     [ -n "${MU300_KERNEL_BUNDLE:-}" ] || rm -f "$bundle"
     printf 'boot: updated to %s (kernel %s bytes, ramdisk %s bytes). If it does not start, the device falls back\n' "$tag" "$nksz" "$nrsz"
@@ -833,8 +842,9 @@ rollback_boot() {
     [ -s "$BOOTDIR/prev.body" ] || die "no previous boot image kept"
     dev=$(part_dev "$BOOT_PART") || die "no $BOOT_PART partition found"
     psize=$(( $(cat "/sys/class/block/${dev##*/}/size") * 512 ))
+    unlock_for_trial || die 'could not arm a safe Linux trial; previous boot image unchanged'
     write_boot "$dev" "$psize" "$BOOTDIR/prev.body" "$BOOTDIR/prev.vbmeta" "$BOOTDIR/prev.footer" ||
-        die "writing the previous boot image failed verification"
+        die "writing the previous boot image failed verification; do not reboot into Linux"
     sha256sum < "$BOOTDIR/prev.body" | cut -d' ' -f1 > "$BOOTDIR/written.sha256"
     rm -f "$BOOTDIR/installed.id"
     cat "$BOOTDIR/prev.tag" > "$BOOTDIR/installed.tag" 2>/dev/null

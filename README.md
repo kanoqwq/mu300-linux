@@ -105,7 +105,7 @@ need `adb` on your computer. Getting to that point is not part of this project.
 
 **What protects you:**
 * Linux is installed into empty, unused space on the internal storage; Android's partitions are not touched (except on the 32 GB variant, where you can choose to shrink `userdata` to create that space).
-* Linux starts as a "trial boot". If it fails to start, the bootloader returns to Android by itself.
+* Linux starts as a "trial boot". If it fails to start, the bootloader returns to Android by itself unless you explicitly lock Linux.
 * `./uninstall.sh` puts everything back.
 
 **You need:**
@@ -224,9 +224,16 @@ copied from Android.
 | Fixed TTL for mobile data (so the operator cannot tell hotspot traffic from the device's own) | `sudo mu300-ttl set 64` (`sudo mu300-ttl off` goes back to the default), or `mu300-toolkit` -> Network -> TTL |
 | Switch between OpenWrt and Ubuntu | `sudo mu300-os openwrt` / `sudo mu300-os ubuntu` |
 | Failed boots in a row before it falls back to Android (1-6, default 5) | `sudo mu300-next-boot attempts N` |
+| Keep Linux selected even after failed boots | `sudo mu300-next-boot lock` (or OpenWrt LuCI → Home → Lock Linux) |
+| Restore automatic fallback to Android | `sudo mu300-next-boot unlock` (or OpenWrt LuCI → Home → Unlock Linux) |
 | Go back to Android | `sudo mu300-next-boot android`, then `sudo reboot` |
 | Return to Linux from Android | `su -c mu300-linux` on the device (see below), or `boot/android-boot-linux.sh boot-linux-slotb.img` from a computer |
 | Send all traffic through a VPN | see below |
+
+Locking Linux is opt-in. It marks the Linux boot slot successful and records the choice on the Linux disk. A locked
+device will not automatically switch to Android after failed boots; if Linux cannot start, use its USB (telnet)
+recovery or explicitly select Android. Unlocking restores the configured failed-boot fallback. A boot-image update
+temporarily starts Linux as a trial so a bad new kernel can fall back to Android; a successful boot re-arms the lock.
 
 ### Starting Linux from Android without a computer
 
@@ -270,7 +277,8 @@ at the end, so an interrupted download cannot leave a half-updated system.
 The kernel and the boot image are updated too. The boot image keeps your device's own part (its Android files and
 the stock header) as it is and gets the release's kernel and the generic part of its ramdisk, so no computer and
 nothing from Android are needed. The previous image is kept for `rollback-boot`, and a kernel that does not start
-sends the device back to Android on its own after the usual number of failed boots.
+sends the device back to Android on its own after the usual number of failed boots. Even when Linux is locked, the
+updated image starts as a trial and the lock returns only after the new image boots successfully.
 
 `mu300-update apply` downloads and checks every file first and changes nothing before all of them are there; from
 v2026.09.28 on it also switches to the updater of the release it installs before it starts.
@@ -330,7 +338,7 @@ Like the installer, it offers to reboot the device from Linux into Android first
 | Storage | ✅ about 32 GB in the unused area of the internal eMMC on the 64 GB device; on the 32 GB one you choose the split with Android |
 | RAM | ✅ 1.4 GB usable (the modem firmware keeps the rest) |
 | Temperature control, status LEDs, SIM tray | ✅ |
-| Back to Android, automatic rollback | ✅ |
+| Back to Android, automatic rollback | ✅ (unless Linux is explicitly locked; boot-image updates always use a trial boot) |
 | Screen output (HDMI over USB-C) | ✗ the USB-C power chip never answers, so no display |
 | Sound | No built-in speaker or microphone; USB audio support remains available. |
 | Mainline kernel (6.18) | 🚧 experimental, see [`upstream/`](upstream/) |
@@ -340,7 +348,8 @@ Like the installer, it offers to reboot the device from Linux into Android first
 The device has two Android boot slots, A and B. Android lives on slot A and is left alone. The installer puts a
 custom Linux kernel into slot B and marks it as a one-time trial. At boot, a small startup program loads the
 device's drivers, finds the Linux filesystem in the unused part of the internal storage and starts Ubuntu or OpenWrt
-from it. If Linux ever fails to start, the bootloader falls back to Android by itself. Three small Android programs
+from it. If Linux fails to start, the bootloader falls back to Android by itself unless Linux is explicitly locked.
+Three small Android programs
 keep running inside Linux in a sandbox, because the modem needs them.
 
 The kernel is built from ZTE's published (GPL) source. The reasoning behind each step is in
@@ -367,7 +376,8 @@ operators and VPN servers often look like a different city.
 
 1. **Back to Android:** unplug the device about ten seconds after it powers on, then plug it in again. The
    bootloader sees an unfinished boot and falls back to Android by itself (`mu300-boot-ok` only confirms a boot
-   ~30 s after the system is up, so an interrupted boot never counts as successful).
+   ~30 s after the system is up, so an interrupted boot never counts as successful). This does not work while Linux
+   is locked; use the USB recovery path or explicitly select Android instead.
 2. **Set a new password** from your computer, without booting Linux:
    ```sh
    tools/reset-password.sh            # ubuntu, openwrt or both

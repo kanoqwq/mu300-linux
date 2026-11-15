@@ -38,12 +38,14 @@ class UpdateBase(ShellTest):
 
 class Layouts(UpdateBase):
     def test_actual_trial_updates_only_misc_and_does_not_change_saved_default(self):
+        self.stub('flock','exit 0')
+        self.stub('wc',"/usr/bin/wc \"$@\" | awk '{ print $1 }'")
         run=self.tmp/'trial-run';(run/'mu300').mkdir(parents=True)
         area=self.tmp/'trial-disk';(area/'.mu300').mkdir(parents=True)
         conf=self.tmp/'default-boot';misc=self.tmp/'misc';script=self.tmp/'next-boot'
-        source=(BIN/'mu300-next-boot').read_text().replace('/run/',str(run)+'/')
-        source=source.replace('/mnt/mu300-disk',str(area)).replace('CONF=/etc/mu300/default-boot','CONF='+str(conf))
-        script.write_text(source)
+        script.write_text((BIN/'mu300-next-boot').read_text())
+        run_env=self.env(MU300_CONF=conf,MU300_RUN=run/'mu300',MU300_DISK=area,
+                         MU300_MISC=misc,MU300_LOCK=self.tmp/'boot-lock.lock')
         (run/'mu300/misc-dev').write_text(str(misc)+'\n')
         (area/'.mu300/boot-attempts').write_text('3\n')
         for slot in ('a','b'):
@@ -62,27 +64,33 @@ class Layouts(UpdateBase):
                 if default:conf.write_text(default+'\n')
                 (area/'.mu300/boot-tries').write_text('8\n')
                 before=b'P'*4096;misc.write_bytes(before)
-                result=subprocess.run(['bash',str(script),'--trial'],capture_output=True,text=True,timeout=10)
+                result=subprocess.run(['bash',str(script),'--trial'],capture_output=True,text=True,timeout=10,env=run_env)
                 self.assertEqual(result.returncode,0,result.stderr)
                 self.assertEqual(conf.read_text() if conf.exists() else None,default+'\n' if default else None)
-                after=misc.read_bytes();self.assertEqual(after[:2048],before[:2048]);self.assertEqual(after[2080:],before[2080:])
-                block=after[2048:2080];self.assertEqual(block[12 if slot=='a' else 14],0x4f)
-                self.assertEqual(struct.unpack_from('<I',block,28)[0],zlib.crc32(block[:28]))
-                self.assertEqual((area/'.mu300/boot-tries').read_text(),'0\n')
+                after=misc.read_bytes()
+                if default!='linux':
+                    self.assertEqual(after,before)
+                    self.assertEqual((area/'.mu300/boot-tries').read_text(),'8\n')
+                else:
+                    self.assertEqual(after[:2048],before[:2048]);self.assertEqual(after[2080:],before[2080:])
+                    block=after[2048:2080];self.assertEqual(block[12 if slot=='a' else 14],0x4f)
+                    self.assertEqual(struct.unpack_from('<I',block,28)[0],zlib.crc32(block[:28]))
+                    self.assertEqual((area/'.mu300/boot-tries').read_text(),'0\n')
             # No role file is needed when the supplied Linux trial block
             # identifies its slot. Unknown/conflicting roles may not write misc.
+            conf.write_text('linux\n')
             role=run/'mu300/linux-slot'
             role.unlink()
-            result=subprocess.run(['bash',str(script),'--trial'],capture_output=True,text=True,timeout=10)
+            result=subprocess.run(['bash',str(script),'--trial'],capture_output=True,text=True,timeout=10,env=run_env)
             self.assertEqual(result.returncode,0,result.stderr)
             original=misc.read_bytes()
             role.write_text(('b' if slot=='a' else 'a')+'\n')
-            result=subprocess.run(['bash',str(script),'--trial'],capture_output=True,text=True,timeout=10)
+            result=subprocess.run(['bash',str(script),'--trial'],capture_output=True,text=True,timeout=10,env=run_env)
             self.assertNotEqual(result.returncode,0)
             self.assertEqual(misc.read_bytes(),original)
             role.write_text(slot+'\n')
             (run/'mu300/misc-bc-android.bin').write_bytes(bc)
-            result=subprocess.run(['bash',str(script),'android'],capture_output=True,text=True,timeout=10)
+            result=subprocess.run(['bash',str(script),'android'],capture_output=True,text=True,timeout=10,env=run_env)
             self.assertNotEqual(result.returncode,0)
             self.assertEqual(misc.read_bytes(),original)
             (run/'mu300/misc-bc-android.bin').write_bytes(android)
@@ -139,14 +147,14 @@ class BootUpdate(UpdateBase):
         module=self.disk/'openwrt/lib/modules/7.2.8/driver.ko';module.parent.mkdir(parents=True,exist_ok=True);module.write_bytes(b'old module')
         return dev,module
 
-    def run_boot(self,shell,archive,dev):
+    def run_boot(self,shell,archive,dev,fail_trial=False):
         code='''part_dev(){ echo "$FAKE_BOOT"; }
 this_device(){ echo f50; }
 root_layout(){ echo "$LAYOUT"; }
 running_os(){ echo openwrt; }
 cat(){ case "$1" in /sys/class/block/boot.bin/size) echo 4096;; *) command cat "$@";; esac; }
 sync(){ :; }
-unlock_for_trial(){ echo trial >> "$STUBLOG/events"; }
+unlock_for_trial(){ echo trial >> "$STUBLOG/events"; [ "$FAIL_TRIAL" != 1 ]; }
 write_boot(){
     echo write >> "$STUBLOG/events"
     command cat "$3" "$4" > "$1"
@@ -154,7 +162,25 @@ write_boot(){
 }
 boot_update test
 '''
-        return self.up(shell,code,MU300_KERNEL_BUNDLE=archive,FAKE_BOOT=dev,LAYOUT='part')
+        return self.up(shell,code,MU300_KERNEL_BUNDLE=archive,FAKE_BOOT=dev,LAYOUT='part',FAIL_TRIAL='1' if fail_trial else '0')
+
+    def test_trial_is_armed_before_boot_write(self):
+        for shell in self.each_shell():
+            dev,_=self.fixture();events=self.tmp/'events';events.unlink(missing_ok=True)
+            result=self.run_boot(shell,self.gpt,dev)
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual(events.read_text().splitlines(),['trial','write'])
+
+    def test_failed_trial_leaves_boot_image_and_rollback_metadata_untouched(self):
+        for shell in self.each_shell():
+            dev,_=self.fixture();events=self.tmp/'events';events.unlink(missing_ok=True)
+            before=dev.read_bytes()
+            result=self.run_boot(shell,self.gpt,dev,fail_trial=True)
+            self.assertNotEqual(result.returncode,0,result.stdout+result.stderr)
+            self.assertIn('could not arm a safe Linux trial',result.stderr)
+            self.assertEqual(events.read_text().splitlines(),['trial'])
+            self.assertEqual(dev.read_bytes(),before)
+            self.assertFalse((self.disk/'boot/prev.body').exists())
 
     def test_changed_modules_in_local_bundle_cannot_be_silently_skipped(self):
         for shell in self.each_shell():
