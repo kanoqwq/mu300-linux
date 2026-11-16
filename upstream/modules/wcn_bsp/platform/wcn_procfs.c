@@ -223,6 +223,12 @@ void wcn_set_powerdown_flag(bool flag)
 }
 EXPORT_SYMBOL_GPL(wcn_set_powerdown_flag);
 
+bool wcn_powerdown_in_progress(void)
+{
+	/* The non-integrated caller holds marlin_dev->power_lock. */
+	return mdbg_proc->marlin_powerdown_flag;
+}
+
 void __wcn_assert_interface(enum wcn_source_type type, char *str)
 {
 	int reset_prop = wcn_sysfs_get_reset_prop();
@@ -239,17 +245,12 @@ void __wcn_assert_interface(enum wcn_source_type type, char *str)
 		WCN_ERR("fw assert hanppend already\n");
 		return;
 	}
-	if (!marlin_get_power()) {
-		WCN_INFO("no modules open\n");
-		goto out;
-	}
-
-	if (!(g_match_config && g_match_config->unisoc_wcn_integrated)) {
-		if (mdbg_proc->marlin_powerdown_flag) {
-			WCN_ERR("fw assert hanppend in WCN Powerdown!!\n");
-			/* MU300: the vendor returned here with mdbg_proc->mutex held, for good */
+	if (g_match_config && g_match_config->unisoc_wcn_integrated) {
+		if (!marlin_get_power())
 			goto out;
-		}
+	} else if (!wcn_begin_dump()) {
+		WCN_INFO("WCN off or powering down, skip assert\n");
+		goto out;
 	}
 
 	if (!mdbg_proc->assert_notify_flag) {
@@ -1016,7 +1017,10 @@ static ssize_t mdbg_proc_write(struct file *filp,
 					MDBG_LOCK_WAIT_MS / 1000);
 				return -EBUSY;
 			}
-			sprdwcn_bus_set_carddump_status(true);
+			if (!wcn_begin_dump()) {
+				mutex_unlock(&mdbg_proc->mutex);
+				return -ENODEV;
+			}
 			marlin_set_sleep(MARLIN_MDBG, FALSE);
 			marlin_set_wakeup(MARLIN_MDBG);
 			mdbg_dump_mem(WCN_SOURCE_BTWF);
@@ -1055,15 +1059,19 @@ static ssize_t mdbg_proc_write(struct file *filp,
 					MDBG_LOCK_WAIT_MS / 1000);
 				return -EBUSY;
 			}
+			if (!wcn_begin_dump()) {
+				mutex_unlock(&mdbg_proc->mutex);
+				return -ENODEV;
+			}
 			flag_reset = 1;
 			WCN_INFO("marlin gnss need reset\n");
 			WCN_INFO("fail_count is value %d\n", mdbg_proc->fail_count);
 			stop_loopcheck();
 			mdbg_proc->fail_count = 0;
 			marlin_set_download_status(0);
-			sprdwcn_bus_set_carddump_status(false);
 			marlin_chip_en(false, true);
 			wcn_reset_cp2();
+			sprdwcn_bus_set_carddump_status(false);
 			flag_reset = 0;
 			mutex_unlock(&mdbg_proc->mutex);
 			return count;

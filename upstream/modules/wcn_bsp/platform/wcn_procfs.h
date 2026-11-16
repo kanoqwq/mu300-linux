@@ -20,4 +20,7 @@ void mdbg_assert_interface(char *str);
 int wcn_chr_write(char *buf, size_t len);
 int wcn_chr_report_event(char *str, u32 index);
 void wcn_set_powerdown_flag(bool flag);
+bool wcn_powerdown_in_progress(void);
+/* Caller holds the debug mutex. Claims live bus access against normal stop. */
+bool wcn_begin_dump(void);
 #endif

@@ -201,7 +201,7 @@ int main(void) {
     def test_teardown_lock_and_existing_latency_fixes_survive(self):
         text = (MOD / 'wcn_bsp/platform/wcn_procfs.c').read_text()
         body = function(text, '__wcn_assert_interface')
-        powerdown = body.split('if (mdbg_proc->marlin_powerdown_flag)', 1)[1].split('\n\t}', 1)[0]
+        powerdown = body.split('} else if (!wcn_begin_dump()) {', 1)[1].split('\n\t}', 1)[0]
         self.assertIn('goto out;', powerdown)
         self.assertNotIn('return;', powerdown)
         self.assertIn('mutex_unlock(&mdbg_proc->mutex)', body)

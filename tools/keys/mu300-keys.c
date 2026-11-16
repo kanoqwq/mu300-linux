@@ -23,6 +23,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -75,8 +76,23 @@ static int charge_event(const char *buf, size_t size)
 	return 0;
 }
 
+/* The normal LED event service has not started during charger-only boot.
+ * Re-render from the real supplies on their events (including Full), keeping
+ * the same LED policy as a normal boot and no periodic SOC polling.
+ */
+static void charge_led_refresh(void)
+{
+	pid_t pid = fork();
+	if (pid == 0) {
+		execl("/opt/mu300/bin/mu300-led", "mu300-led", "battery", (char *)NULL);
+		_exit(127);
+	}
+	if (pid > 0)
+		while (waitpid(pid, NULL, 0) < 0 && errno == EINTR) {}
+}
+
 static int charge_wait(struct pollfd *keys, int n, int events,
-		       const char *online_path, long long hold)
+		       const char *online_path, long long hold, void (*refresh)(void))
 {
 	struct pollfd fds[MAXDEV + 1];
 	long long down[MAXDEV] = {0}, unplug = 0;
@@ -96,6 +112,8 @@ static int charge_wait(struct pollfd *keys, int n, int events,
 			int online = charge_online(online_path);
 			if (online < 0)
 				return 1;
+			if (changed && refresh)
+				refresh();
 			if (online)
 				unplug = 0;
 			else if (!unplug)
@@ -296,7 +314,8 @@ int main(int argc, char **argv)
 			return 1;
 		int buffer = 256 * 1024;
 		setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &buffer, sizeof(buffer));
-		return charge_wait(pfd, n, fd, "/sys/class/power_supply/bq256xx-charger/online", hold);
+		return charge_wait(pfd, n, fd, "/sys/class/power_supply/bq256xx-charger/online",
+				   hold, charge_led_refresh);
 	}
 	npfd = n;
 	if (nsub) {

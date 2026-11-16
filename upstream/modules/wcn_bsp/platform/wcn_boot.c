@@ -2501,11 +2501,30 @@ void wcn_chip_power_off(void)
 	}
 
 	mutex_lock(&marlin_dev->power_lock);
-	sprdwcn_bus_runtime_put();
-	chip_power_off(0);
+	/* A queued reset may reach here after normal stop removed the PCIe BAR. */
+	if (marlin_dev->power_state) {
+		sprdwcn_bus_runtime_put();
+		chip_power_off(0);
+	}
 	mutex_unlock(&marlin_dev->power_lock);
 }
 EXPORT_SYMBOL_GPL(wcn_chip_power_off);
+
+bool wcn_begin_dump(void)
+{
+	bool live;
+
+	/* Same lock as stop_marlin(): either stop finishes first and we decline,
+	 * or it sees carddump before it can tear down the bus. Do not hold this
+	 * lock throughout a dump/reset, which takes it again for forced teardown.
+	 */
+	mutex_lock(&marlin_dev->power_lock);
+	live = marlin_dev->power_state && !wcn_powerdown_in_progress();
+	if (live)
+		sprdwcn_bus_set_carddump_status(true);
+	mutex_unlock(&marlin_dev->power_lock);
+	return live;
+}
 
 static int gnss_powerdomain_open(void)
 {
@@ -2952,9 +2971,16 @@ void marlin_power_off(enum wcn_sub_sys subsys)
 {
 	pr_info("%s all\n", __func__);
 
+	mutex_lock(&marlin_dev->power_lock);
+	if (!marlin_dev->power_state || sprdwcn_bus_get_carddump_status()) {
+		pr_info("%s WCN off or dump/reset in progress\n", __func__);
+		mutex_unlock(&marlin_dev->power_lock);
+		return;
+	}
 	marlin_dev->keep_power_on = false;
 	set_bit(subsys, &marlin_dev->power_state);
 	marlin_set_power(subsys, false);
+	mutex_unlock(&marlin_dev->power_lock);
 }
 
 int integ_marlin_get_power(void);
