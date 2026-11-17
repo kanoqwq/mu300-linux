@@ -1,0 +1,7 @@
+{
+  "luci-app-unisoc-bluetooth": {
+    "description": "Manage Bluetooth devices and gateway",
+    "read": {"ubus": {"unisoc-bluetooth": ["status", "gatt_list", "templates", "advertising_list"]}},
+    "write": {"ubus": {"unisoc-bluetooth": ["save", "power", "visibility", "scan", "pair", "pair_reply", "connect", "disconnect", "forget", "trust", "read", "write", "notify", "serial_write", "spp_services", "backup", "restore", "proxy_key", "apply_template", "import_templates", "command", "advertising_save", "advertising_delete", "advertising_start", "advertising_stop"]}}
+  }
+}

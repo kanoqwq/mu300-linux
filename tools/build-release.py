@@ -24,7 +24,7 @@ TOP = Path(__file__).resolve().parents[1]
 sys.dont_write_bytecode = True
 OWNER = 'mu300-build-release-v1'
 PROFILES = ('mu300-7.2', 'mu300-6.18')
-COMMON = ('inputs', 'desktop_tools', 'block_apk', 'wifi_apks', 'iwinfo_apks', 'lpac_apks')
+COMMON = ('inputs', 'desktop_tools', 'block_apk', 'wifi_apks', 'iwinfo_apks', 'lpac_apks','bluetooth_decoder')
 
 
 def write_json(path, value):
@@ -47,6 +47,8 @@ def layout(config, workspace, profiles, repo=TOP):
     data = json.loads(config.read_text(encoding='utf-8'))
     if data.get('format') != 1:
         raise ValueError('Unsupported build layout')
+    if 'bluetooth_decoder' not in data:
+        raise ValueError('Register bluetooth_decoder in the selected build layout; see docs/BLUETOOTH-GATEWAY.zh-CN.md')
     workspace = workspace.expanduser().resolve()
     if workspace == Path('/') or workspace == Path.home():
         raise ValueError('Choose a dedicated build workspace')
@@ -137,9 +139,11 @@ def input_check(common, rows):
     if missing: raise ValueError('Missing registered MU300 inputs:\n' + '\n'.join(missing))
     runpy.run_path(str(TOP / 'tools/atd-io/artifact.py'))['check'](common['inputs'] / 'tools/atd-io/mu300-atd-io')
     runpy.run_path(str(TOP / 'tools/atd-io/artifact.py'))['check'](common['inputs'] / 'tools/keys/mu300-keys', TOP / 'tools/keys/mu300-keys.c')
+    runpy.run_path(str(TOP / 'tools/atd-io/artifact.py'))['check'](common['inputs'] / 'tools/bt-init/mu300-bt-init', TOP / 'tools/bt-init/mu300-bt-init.c')
     runpy.run_path(str(TOP / 'openwrt/wifi-sae-state.py'))['inspect'](common['wifi_apks'])
     runpy.run_path(str(TOP / 'openwrt/iwinfo-ap-scan-state.py'))['inspect'](common['iwinfo_apks'])
     runpy.run_path(str(TOP / 'openwrt/lpac-state.py'))['inspect'](common['lpac_apks'])
+    runpy.run_path(str(TOP/'tools/ble-decoder/build.py'))['check'](common['bluetooth_decoder'])
     block = common['block_apk']
     block_sources = ('block-mount.Dockerfile', 'build-block-mount.sh', 'build-block-mount-inner.sh',
                      'block-probe-guard.h', 'patches/fstools-probe-device-types.patch')
@@ -273,6 +277,7 @@ def package(task, common, rows):
                'MU300_PACKAGE_WORK': str(assembly), 'MU300_ROOTFS_OUT_DIR': str(assembly),
                'MU300_VERSION': version, 'MU300_DESKTOP_INSTALLER': '1', 'OPENWRT_GUI_OPTIONAL': '0',
                'UNISOC_LPAC_APKS': str(common['lpac_apks']),
+               'UNISOC_BLUETOOTH_DECODER':str(common['bluetooth_decoder']),
                'UNISOC_IWINFO_APKS': str(common['iwinfo_apks'])}
         task.run(model + '-package', ['sh', TOP / 'tools/build-openwrt-tf-magisk.sh', archive], extra_env=env)
         verify_archive(archive, require_diff=True,require_android=True)

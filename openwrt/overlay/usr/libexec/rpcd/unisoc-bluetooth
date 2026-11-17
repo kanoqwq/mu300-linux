@@ -1,0 +1,29 @@
+#!/usr/bin/python3
+# SPDX-License-Identifier: MIT
+import json
+import socket
+import sys
+
+READ = ('status', 'gatt_list','templates','advertising_list')
+WRITE = ('save', 'power', 'visibility', 'scan', 'pair', 'pair_reply', 'connect',
+         'disconnect', 'forget', 'trust', 'read', 'write', 'notify', 'serial_write', 'spp_services',
+         'backup','restore','proxy_key','apply_template','import_templates','command',
+         'advertising_save','advertising_delete','advertising_start','advertising_stop')
+METHODS = {name: {'request': 'String'} for name in READ + WRITE}
+if len(sys.argv) == 2 and sys.argv[1] == 'list':
+    print(json.dumps(METHODS))
+elif len(sys.argv) == 3 and sys.argv[1] == 'call' and sys.argv[2] in METHODS:
+    try:
+        envelope = json.load(sys.stdin)
+        request = json.loads(envelope.get('request') or '{}')
+        if not isinstance(request, dict):
+            raise ValueError('invalid_request')
+        request['action'] = sys.argv[2]
+        with socket.socket(socket.AF_UNIX) as client:
+            client.settimeout(27)
+            client.connect('/run/unisoc-bluetooth/control.sock')
+            client.sendall(json.dumps(request).encode() + b'\n')
+            result = client.makefile('rb').readline(1048576)
+            print(json.dumps(json.loads(result)))
+    except (OSError, ValueError, TypeError):
+        print(json.dumps({'ok': False, 'error': 'bluetooth_service_unavailable'}))

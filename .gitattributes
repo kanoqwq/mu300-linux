@@ -2,6 +2,9 @@
 # out with LF on every system, Windows included (issue #7). install.ps1 and build-boot-image.py also convert what
 # they send, for clones made before this file.
 * text=auto eol=lf
+# Keep upstream library/license bytes and their source receipts intact.
+tools/ble-decoder/vendor/** -text -whitespace
+openwrt/overlay/usr/lib/unisoc-bluetooth/vendor/** -text -whitespace
 *.img binary
 *.bin binary
 *.gz binary

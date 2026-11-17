@@ -167,7 +167,8 @@ class TaskState(unittest.TestCase):
     @staticmethod
     def package_inputs():
         return {'inputs': Path('/input'), 'desktop_tools': Path('/tools'),
-                'lpac_apks': Path('/lpac'), 'iwinfo_apks': Path('/iwinfo')}
+                'lpac_apks': Path('/lpac'), 'iwinfo_apks': Path('/iwinfo'),
+                'bluetooth_decoder':Path('/bluetooth-decoder')}
 
     def fake_assembly(self, task, model, args, extra_env=None):
         current = model.removesuffix('-package')

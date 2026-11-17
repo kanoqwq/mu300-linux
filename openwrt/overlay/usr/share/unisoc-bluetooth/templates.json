@@ -1,0 +1,5 @@
+[
+  {"id":"bthome-v2","name":"BTHome v2","description":"BTHome v2 broadcasts: temperature, humidity, door, motion, buttons and more. Enter a bindkey for encrypted devices.","decoder":"bthome","subscriptions":[]},
+  {"id":"gatt-battery","name":"Bluetooth Battery Service","description":"Standard Battery Service. Reads once after connection and subscribes when notifications are supported.","decoder":"auto","subscriptions":[{"service":"0000180f-0000-1000-8000-00805f9b34fb","characteristic":"00002a19-0000-1000-8000-00805f9b34fb","codec":"u8","name":"Battery","unit":"%"}]},
+  {"id":"raw-bridge","name":"Raw Bluetooth bridge","description":"Forward original advertisements without claiming to decode a proprietary protocol.","decoder":"raw","subscriptions":[]}
+]

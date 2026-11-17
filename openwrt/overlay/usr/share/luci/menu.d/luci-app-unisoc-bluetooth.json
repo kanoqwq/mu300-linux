@@ -1,0 +1,7 @@
+{
+  "admin/services/bluetooth": {
+    "title": "Bluetooth", "order": 56,
+    "action": {"type": "view", "path": "unisoc-bluetooth/settings"},
+    "depends": {"acl": ["luci-app-unisoc-bluetooth"]}
+  }
+}

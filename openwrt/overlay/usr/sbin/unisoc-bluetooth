@@ -1,0 +1,10 @@
+#!/usr/bin/python3
+# SPDX-License-Identifier: MIT
+import glob
+import runpy
+import sys
+sys.dont_write_bytecode = True
+
+BASE = '/usr/lib/unisoc-bluetooth'
+sys.path[:0] = [BASE] + sorted(glob.glob(BASE + '/vendor/*.whl'))
+runpy.run_path(BASE + '/daemon.py', run_name='__main__')
