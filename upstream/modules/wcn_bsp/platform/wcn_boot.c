@@ -2501,11 +2501,35 @@ void wcn_chip_power_off(void)
 	}
 
 	mutex_lock(&marlin_dev->power_lock);
+	if (!marlin_get_power()) {
+		pr_info("%s: already powered off, skip runtime put\n", __func__);
+		mutex_unlock(&marlin_dev->power_lock);
+		return;
+	}
 	sprdwcn_bus_runtime_put();
 	chip_power_off(0);
 	mutex_unlock(&marlin_dev->power_lock);
 }
 EXPORT_SYMBOL_GPL(wcn_chip_power_off);
+
+bool wcn_mu300_reserve_reset_dump(void)
+{
+	struct wcn_match_data *g_match_config = get_wcn_match_config();
+	bool reserved = false;
+
+	if (!g_match_config || !g_match_config->unisoc_wcn_pcie ||
+	    g_match_config->unisoc_wcn_integrated)
+		return false;
+
+	mutex_lock(&marlin_dev->power_lock);
+	if (marlin_get_power()) {
+		/* Both ordinary teardown paths check carddump under this lock. */
+		sprdwcn_bus_set_carddump_status(true);
+		reserved = true;
+	}
+	mutex_unlock(&marlin_dev->power_lock);
+	return reserved;
+}
 
 static int gnss_powerdomain_open(void)
 {
@@ -2950,11 +2974,26 @@ check_power_state_notify:
 
 void marlin_power_off(enum wcn_sub_sys subsys)
 {
-	pr_info("%s all\n", __func__);
+	struct wcn_match_data *g_match_config = get_wcn_match_config();
 
+	pr_info("%s all\n", __func__);
+	if (g_match_config && g_match_config->unisoc_wcn_integrated) {
+		marlin_dev->keep_power_on = false;
+		set_bit(subsys, &marlin_dev->power_state);
+		marlin_set_power(subsys, false);
+		return;
+	}
+
+	mutex_lock(&marlin_dev->power_lock);
+	if (sprdwcn_bus_get_carddump_status() || !marlin_get_power()) {
+		pr_info("%s: WCN unavailable or reserved, skip poweroff\n", __func__);
+		mutex_unlock(&marlin_dev->power_lock);
+		return;
+	}
 	marlin_dev->keep_power_on = false;
 	set_bit(subsys, &marlin_dev->power_state);
 	marlin_set_power(subsys, false);
+	mutex_unlock(&marlin_dev->power_lock);
 }
 
 int integ_marlin_get_power(void);

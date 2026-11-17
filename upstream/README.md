@@ -240,5 +240,19 @@ Fixes needed on top of the port:
   5.4 API changes, `wcn_bsp/kinclude/mu300_compat.h` the rest). On OpenWrt the chip boots its firmware and the
   5 GHz VHT80 AP beacons. The factory Wi-Fi MAC is read from `androidboot.wifimac` in `/chosen/bootargs`.
   The WCN modules cannot be unloaded and reloaded (same as on 5.4).
+  On non-integrated PCIe boards, `wcn_bsp` reports read-only `reset_dump_safe=Y` after debug initialization
+  succeeds. This is an observed capability, not a module-load or sysfs switch. Automatic `reset_dump` and
+  the MU300 recovery watchdog reserve carddump while checking power under `power_lock`; ordinary
+  `stop_marlin`/`marlin_power_off` teardown either completes first or leaves the reserved PCIe mappings
+  intact. Reset runs after releasing that lock, skips runtime MMIO close if power is already off, and clears
+  the loopcheck failure gate so the next open can proceed. Non-PCIe/integrated assertion handling and the
+  watchdog's existing reboot policy are unchanged.
+  Userspace may borrow `/sys/devices/virtual/misc/wcn/devices/reset_dump` only when that capability is
+  `Y`/`1`, saving and conditionally restoring the operator's original mode. Do not issue manual `rebootwcn`
+  after taking Wi-Fi down. Dump output uses the driver's memory ring buffer; link loss, stalled readers
+  and module unload remain outside this admission guarantee. Host C regression tests exercise the actual
+  driver functions with stub hardware primitives; they do not establish hardware recovery or kernel ABI
+  compatibility. Rebuild the matching kernel/module set through the normal release workflow and inspect
+  the final rootfs module and its checksum evidence before publishing firmware.
 
 Not yet on mainline: modem (sipc/sipa/modem loader), GPU, audio; Bluetooth is built but untested.
