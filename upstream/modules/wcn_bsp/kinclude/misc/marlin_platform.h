@@ -76,6 +76,7 @@ int cali_ini_need_download(enum wcn_sub_sys subsys);
 const char *strno(enum wcn_sub_sys subsys);
 void wcn_chip_power_on(void);
 void wcn_chip_power_off(void);
+bool wcn_mu300_reserve_reset_dump(void);
 void wcn_reset_pcie(void);
 void mdbg_assert_interface(char *str);
 char *gnss_firmware_path_get(void);
