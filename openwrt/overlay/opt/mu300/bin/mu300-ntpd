@@ -1,0 +1,21 @@
+#!/bin/sh
+# sysntpd supplies its validated peers and all normal service/server options.
+# Only the untouched default pool list gets a bounded, DNS-free first attempt.
+set -u
+peers=${MU300_NTP_SERVERS:-}
+numeric='162.159.200.1 162.159.200.123 2606:4700:f1::1 2606:4700:f1::123'
+if [ "$peers" = '0.openwrt.pool.ntp.org 1.openwrt.pool.ntp.org 2.openwrt.pool.ntp.org 3.openwrt.pool.ntp.org' ]; then
+    # -q exits after setting the clock. timeout prevents dead IPs from hiding
+    # the original DNS path indefinitely. This child never serves LAN clients.
+    /opt/mu300/bin/busybox timeout -s TERM 20 /usr/sbin/ntpd -n -q -N \
+        -p 162.159.200.1 -p 162.159.200.123 \
+        -p 2606:4700:f1::1 -p 2606:4700:f1::123 &
+    probe=$!
+    trap 'kill -TERM "$probe" 2>/dev/null; wait "$probe" 2>/dev/null; exit 0' TERM INT
+    if wait "$probe"; then
+        peers=$numeric
+    fi
+    trap - TERM INT
+fi
+for peer in $peers; do set -- "$@" -p "$peer"; done
+exec /usr/sbin/ntpd "$@"

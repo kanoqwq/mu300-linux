@@ -25,6 +25,12 @@ merged) describes the same GIC/UART/timer layout; this device is derived from th
   `/sys/fs/pstore/console-ramoops-0` (`tools/collect-logs.sh`).
 
 ## Build and test
+
+The WCN dump/reset admission follows [PR #8 by InsulateJustf](https://github.com/kanoqwq/mu300-linux/pull/8)
+(`8b18b7f6`), with the current fork's manual-command protection retained and
+the PCIe reservation applied to all three assert policies. See the
+[integration and validation notes](../docs/MU300-ISSUES-501-502-WCN-PR8.zh-CN.md).
+
 ```sh
 docker build -t mu300-mainline-build upstream/
 docker volume create mu300-mainline   # build.sh fetches linux-$KV (default 6.18.54) into it, checked against kernel.org

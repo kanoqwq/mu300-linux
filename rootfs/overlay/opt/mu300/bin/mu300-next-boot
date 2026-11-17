@@ -9,7 +9,7 @@
 # The Linux slot is armed with tries=N+1 and successful=0. LK decrements tries on every boot and rolls back to Android's slot
 # (Android) when it finds tries=1, so N boots that never reach mu300-boot-ok land in Android on the next one.
 # A boot that does reach it arms N+1 again. N lives in .mu300/boot-attempts on the Linux disk, shared by every
-# system there and by the initramfs; without the file it is 5.
+# system there and by the initramfs; without the file it is 6 (LK's maximum tries=7).
 # OpenWrt: od/timeout come from the static busybox in /opt/mu300/busybox-bin
 export PATH="$PATH:/opt/mu300/busybox-bin"
 set -eu
@@ -35,7 +35,7 @@ LINUX_SLOT=$detected_slot
     echo 'Conflicting Android/Linux slot metadata; boot control unchanged' >&2; exit 1;
 }
 MISC=$(cat /run/mu300/misc-dev 2>/dev/null || readlink -f /dev/block/by-name/misc)
-DEFAULT_ATTEMPTS=5
+DEFAULT_ATTEMPTS=6
 
 disk_dir() {
     for d in /mnt/mu300-disk ""; do [ -d "$d/.mu300" ] && { printf '%s/.mu300' "$d"; return; }; done

@@ -37,6 +37,58 @@ class UpdateBase(ShellTest):
 
 
 class Layouts(UpdateBase):
+    def test_default_retry_budget_keeps_success_bit_clear_and_saved_limits(self):
+        self.stub('sync', 'exit 0')
+        self.stub('flock', 'exit 0')
+        run = self.tmp / 'budget-run'
+        (run / 'mu300').mkdir(parents=True)
+        area = self.tmp / 'budget-disk'
+        state = area / '.mu300'
+        state.mkdir(parents=True)
+        conf, misc, script = (self.tmp / name for name in ('budget-conf', 'budget-misc', 'budget-tool'))
+        conf.write_text('linux\n')
+        source = (BIN / 'mu300-next-boot').read_text().replace('/run/', str(run) + '/')
+        source = source.replace('/mnt/mu300-disk', str(area)).replace('CONF=/etc/mu300/default-boot', 'CONF=' + str(conf))
+        script.write_text(source)
+        (run / 'mu300/misc-dev').write_text(str(misc))
+        for slot in ('a', 'b'):
+            block = bytearray(32)
+            block[:4] = ('_' + slot).encode() + b'\0\0'
+            block[4:10] = b'BCAB\x01\x02'
+            index, other = (12, 14) if slot == 'a' else (14, 12)
+            block[index], block[other] = 0x2f, 0x9e
+            struct.pack_into('<I', block, 28, zlib.crc32(block[:28]))
+            (run / 'mu300/linux-slot').write_text(slot)
+            (run / 'mu300/misc-bc-linux-trial.bin').write_bytes(block)
+            android = bytearray(block)
+            android[:4] = ('_b' if slot == 'a' else '_a').encode() + b'\0\0'
+            android[index], android[other] = 0x1e, 0x9f
+            struct.pack_into('<I', android, 28, zlib.crc32(android[:28]))
+            (run / 'mu300/misc-bc-android.bin').write_bytes(android)
+            for saved, expected in ((None, 7), ('invalid', 7), ('3', 4)):
+                limit = state / 'boot-attempts'
+                if saved is None:
+                    limit.unlink(missing_ok=True)
+                else:
+                    limit.write_text(saved)
+                before = b'P' * 4096
+                misc.write_bytes(before)
+                result = self.script(['bash'], script, '--rearm')
+                self.assertEqual(result.returncode, 0, result.stderr)
+                after = misc.read_bytes()
+                self.assertEqual(after[:2048], before[:2048])
+                self.assertEqual(after[2080:], before[2080:])
+                actual = after[2048:2080]
+                self.assertEqual(actual[index], 0x0f | (expected << 4))
+                self.assertEqual(actual[index] & 0x80, 0)
+                self.assertEqual(actual[other], block[other])
+                self.assertEqual(struct.unpack_from('<I', actual, 28)[0], zlib.crc32(actual[:28]))
+                self.assertEqual(limit.read_text() if limit.exists() else None, saved)
+            previous = misc.read_bytes()
+            result = self.script(['bash'], script, 'attempts', '7')
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(misc.read_bytes(), previous)
+
     def test_actual_trial_updates_only_misc_and_does_not_change_saved_default(self):
         run=self.tmp/'trial-run';(run/'mu300').mkdir(parents=True)
         area=self.tmp/'trial-disk';(area/'.mu300').mkdir(parents=True)

@@ -110,8 +110,7 @@ static int marlin_set_power(enum wcn_sub_sys s,bool on){
 }
 static void set_bit(unsigned i,unsigned long *p){*p|=1UL<<i;}
 '''
-        code += '\n' + function(proc, 'wcn_powerdown_in_progress')
-        code += '\n' + function(boot, 'wcn_begin_dump')
+        code += '\n' + function(boot, 'wcn_mu300_reserve_reset_dump')
         code += '\n' + function(boot, 'wcn_chip_power_off')
         code += '\n' + function(boot, 'stop_marlin').replace('int stop_marlin(', 'static int stop_marlin(')
         code += '\n' + function(boot, 'marlin_power_off')
@@ -129,7 +128,7 @@ static void fresh(void){
  reset_prop=0;g_dumpmem_switch=1;pause_stop=stop_enter=release_stop=false;
 }
 static void *stop_thread(void *p){(void)p;stop_marlin(MARLIN_WIFI);return NULL;}
-static void *dump_thread(void *p){(void)p;claimed=wcn_begin_dump();if(claimed)bar_read();return NULL;}
+static void *dump_thread(void *p){(void)p;claimed=wcn_mu300_reserve_reset_dump();if(claimed)bar_read();return NULL;}
 int main(void){
  pthread_t a,b;
  /* Stop owns power_lock first. Assert must observe OFF after waiting. */
@@ -139,7 +138,7 @@ int main(void){
  release_stop=true;pthread_cond_broadcast(&cond);pthread_mutex_unlock(&sync_lock);
  pthread_join(a,NULL);pthread_join(b,NULL);assert(!claimed&&!carddump&&!bar_live&&removes==1);
  /* Claim wins. A normal stop or explicit debug poweroff cannot remove BAR. */
- fresh();assert(wcn_begin_dump());assert(!pthread_create(&a,NULL,stop_thread,NULL));pthread_join(a,NULL);
+ fresh();assert(wcn_mu300_reserve_reset_dump());assert(!pthread_create(&a,NULL,stop_thread,NULL));pthread_join(a,NULL);
  assert(carddump&&bar_live&&!removes);marlin_power_off(MARLIN_ALL);assert(bar_live&&!removes);
  wcn_chip_power_off();assert(!bar_live&&removes==1);int before=io_reads;
  wcn_chip_power_off();assert(io_reads==before&&removes==1);carddump=false;
@@ -159,13 +158,17 @@ int main(void){
   __wcn_assert_interface(WCN_SOURCE_BTWF,"after off");assert(io_reads==before);
  }
  fresh();g_dumpmem_switch=0;__wcn_assert_interface(WCN_SOURCE_BTWF,"disabled");assert(!carddump&&!io_reads);
+ /* A previous stop flag cannot veto a live bus claimed under power_lock. */
+ fresh();debug.marlin_powerdown_flag=true;
+ assert(wcn_mu300_reserve_reset_dump()&&carddump&&bar_live);
+ wcn_reset_process();assert(!bar_live&&!carddump);
  fresh();pthread_mutex_lock(&debug.mutex);__wcn_assert_interface(WCN_SOURCE_BTWF,"busy");pthread_mutex_unlock(&debug.mutex);assert(!carddump&&!io_reads);
  fresh();assert(user_reboot()==9&&!bar_live&&!carddump&&removes==1&&!flag_reset);
  before=io_reads;assert(user_reboot()==-ENODEV&&io_reads==before);assert(user_dump()==-ENODEV&&io_reads==before);
  assert(!pthread_mutex_trylock(&debug.mutex));pthread_mutex_unlock(&debug.mutex);
  fresh();assert(user_dump()==7&&bar_live&&carddump&&dumps==1);assert(stop_marlin(MARLIN_WIFI)==-1);
  assert(wcn_mu300_recover()&&!bar_live&&!carddump&&removes==1);
- fresh();state.keep_power_on=true;assert(wcn_begin_dump());marlin_power_off(MARLIN_ALL);
+ fresh();state.keep_power_on=true;assert(wcn_mu300_reserve_reset_dump());marlin_power_off(MARLIN_ALL);
  assert(bar_live&&state.keep_power_on&&!io_reads);wcn_reset_process();assert(!bar_live);
  fresh();marlin_power_off(MARLIN_ALL);assert(!bar_live&&removes==1);
  before=io_reads;marlin_power_off(MARLIN_ALL);assert(io_reads==before&&removes==1);

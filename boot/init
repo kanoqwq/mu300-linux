@@ -564,7 +564,7 @@ if [ "$root_mounted" = 0 ] && [ "$internal_root" = 1 ] && root_region_valid "$RO
 fi
 if [ "$root_mounted" = 1 ] && rootdir=$(pick_root) && [ -n "$rootdir" ]; then
     # A way back to Android with no computer and no keyboard: cut the power during boot N times in a row (N is
-    # .mu300/boot-attempts, 5 without it). Every boot counts up here and mu300-next-boot --rearm clears the count
+    # .mu300/boot-attempts, 6 without it). Every boot counts up here and mu300-next-boot --rearm clears the count
     # once the system is really up, so only boots that never got that far add up. LK does the same with the
     # tries it was armed with (N+1) and normally gets there first; this is the backstop, and it goes to Android
     # on the boot after the Nth failed one, exactly when LK would.
@@ -577,7 +577,7 @@ if [ "$root_mounted" = 1 ] && rootdir=$(pick_root) && [ -n "$rootdir" ]; then
     else
         tries=0
     fi
-    max=$(cat /disk/.mu300/boot-attempts 2>/dev/null); case $max in [1-6]) ;; *) max=5 ;; esac
+    max=$(cat /disk/.mu300/boot-attempts 2>/dev/null); case $max in [1-6]) ;; *) max=6 ;; esac
     if [ "$tries" -gt "$max" ]; then
         log "stage=boot-tries-exceeded count=$tries (booting Android instead)"
         echo 0 > /disk/.mu300/boot-tries && sync

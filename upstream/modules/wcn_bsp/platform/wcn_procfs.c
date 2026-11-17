@@ -15,6 +15,8 @@
  * GNU General Public License for more details.
  */
 
+#include <linux/errno.h>
+#include <linux/moduleparam.h>
 #include <linux/mutex.h>
 #include <linux/of.h>
 #include <linux/poll.h>
@@ -46,6 +48,22 @@
 #define pr_fmt(fmt) "WCN BASE: " fmt
 
 u32 wcn_print_level = WCN_DEBUG_OFF;
+
+static bool reset_dump_safe;
+
+static int param_set_reset_dump_safe(const char *val,
+				     const struct kernel_param *kp)
+{
+	return -EPERM;
+}
+
+static const struct kernel_param_ops reset_dump_safe_ops = {
+	.set = param_set_reset_dump_safe,
+	.get = param_get_bool,
+};
+module_param_cb(reset_dump_safe, &reset_dump_safe_ops, &reset_dump_safe, 0444);
+MODULE_PARM_DESC(reset_dump_safe,
+	"Y when powered reset_dump admission is serialized with WCN teardown");
 
 static u32 g_dumpmem_switch =  1;
 static u32 g_loopcheck_switch;
@@ -110,6 +128,7 @@ void wcn_reset_process(void)
 	sprdwcn_bus_set_carddump_status(true);
 	wcn_reset_cp2();
 	mdbg_proc->assert_notify_flag = 0;
+	mdbg_proc->fail_count = 0;
 	dump_cnt = 0;
 	sprdwcn_bus_set_carddump_status(false);
 	/*notify slogmodem to restore the state of saving dump*/
@@ -118,13 +137,9 @@ void wcn_reset_process(void)
 }
 
 /*
- * MU300: the chip reset for sprd_wlan_combo's recovery watchdog (issue #94). Our builds are not
- * TARGET_BUILD_VARIANT=user, so a firmware assert takes the "dump" path (reset_dump defaults to dump):
- * wcn_dump_process() sets the card-dump flag and nothing ever clears it, and every mbuf_link_alloc() fails from
- * then on. This is procfs "rebootwcn" (the non-integrated branch) followed by wcn_reset_process(), which also
- * clears dump_cnt and the assert notification so that a later assert is handled again: power the chip off,
- * call wcn_reset_notifier_list (Wi-Fi marks itself asserted and sends its FW_ERROR uevent) and clear the flag.
- * The chip powers on again at the next start_marlin(), i.e. when Wi-Fi is reopened. Process context; may block.
+ * Automatic reset_dump and watchdog recovery hold mdbg_proc->mutex, reserve
+ * powered WCN under power_lock, then reset without holding the power lock.
+ * The reset clears dump state and the loopcheck failure gate for the next open.
  */
 /*
  * MU300: mdbg_proc->mutex with a deadline. A dump holds it for seconds (several MB over PCIe), and a path that
@@ -161,7 +176,8 @@ bool wcn_mu300_recover(void)
 		return false;
 	}
 	/* someone else (an assert's reset, a manual rebootwcn) may have recovered it meanwhile */
-	if (sprdwcn_bus_get_carddump_status()) {
+	if (sprdwcn_bus_get_carddump_status() &&
+	    wcn_mu300_reserve_reset_dump()) {
 		WCN_INFO("%s begin\n", __func__);
 		stop_loopcheck();
 		mdbg_proc->fail_count = 0;
@@ -170,7 +186,7 @@ bool wcn_mu300_recover(void)
 		WCN_INFO("%s end\n", __func__);
 		done = true;
 	} else {
-		WCN_INFO("%s: not in card dump any more, nothing to do\n", __func__);
+		WCN_INFO("%s: no powered card dump to recover, nothing to do\n", __func__);
 	}
 	mutex_unlock(&mdbg_proc->mutex);
 
@@ -223,16 +239,12 @@ void wcn_set_powerdown_flag(bool flag)
 }
 EXPORT_SYMBOL_GPL(wcn_set_powerdown_flag);
 
-bool wcn_powerdown_in_progress(void)
-{
-	/* The non-integrated caller holds marlin_dev->power_lock. */
-	return mdbg_proc->marlin_powerdown_flag;
-}
-
 void __wcn_assert_interface(enum wcn_source_type type, char *str)
 {
 	int reset_prop = wcn_sysfs_get_reset_prop();
 	struct wcn_match_data *g_match_config = get_wcn_match_config();
+	bool pcie_dump = g_match_config && g_match_config->unisoc_wcn_pcie &&
+		!g_match_config->unisoc_wcn_integrated;
 
 	WCN_INFO("wcn_assert_interface %d\n", reset_prop);
 	WCN_ERR("wcn_source_type:%d\n", type);
@@ -245,11 +257,20 @@ void __wcn_assert_interface(enum wcn_source_type type, char *str)
 		WCN_ERR("fw assert hanppend already\n");
 		return;
 	}
-	if (g_match_config && g_match_config->unisoc_wcn_integrated) {
-		if (!marlin_get_power())
+	if (pcie_dump) {
+		if (!wcn_mu300_reserve_reset_dump()) {
+			WCN_ERR("reset_dump refused: WCN is powered off\n");
 			goto out;
-	} else if (!wcn_begin_dump()) {
-		WCN_INFO("WCN off or powering down, skip assert\n");
+		}
+	}
+	if (!marlin_get_power()) {
+		WCN_INFO("no modules open\n");
+		goto out;
+	}
+
+	if (!(g_match_config && g_match_config->unisoc_wcn_integrated) &&
+	    !pcie_dump && mdbg_proc->marlin_powerdown_flag) {
+		WCN_ERR("fw assert hanppend in WCN Powerdown!!\n");
 		goto out;
 	}
 
@@ -1017,7 +1038,7 @@ static ssize_t mdbg_proc_write(struct file *filp,
 					MDBG_LOCK_WAIT_MS / 1000);
 				return -EBUSY;
 			}
-			if (!wcn_begin_dump()) {
+			if (!wcn_mu300_reserve_reset_dump()) {
 				mutex_unlock(&mdbg_proc->mutex);
 				return -ENODEV;
 			}
@@ -1059,7 +1080,7 @@ static ssize_t mdbg_proc_write(struct file *filp,
 					MDBG_LOCK_WAIT_MS / 1000);
 				return -EBUSY;
 			}
-			if (!wcn_begin_dump()) {
+			if (!wcn_mu300_reserve_reset_dump()) {
 				mutex_unlock(&mdbg_proc->mutex);
 				return -ENODEV;
 			}
@@ -1464,6 +1485,8 @@ int proc_fs_init(void)
 		kfree(mdbg_proc);
 		return -ENOMEM;
 	}
+	reset_dump_safe = g_match_config && g_match_config->unisoc_wcn_pcie &&
+			  !g_match_config->unisoc_wcn_integrated;
 
 	return 0;
 }

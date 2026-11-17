@@ -141,6 +141,7 @@ docker run --rm --platform linux/arm64 \
   -v "$TOP/rootfs/overlay/opt/mu300":/in/opt-mu300:ro -v "$TOP/rootfs/overlay/usr/share/ucode/mu300":/in/ucode-mu300:ro -v "$TOP/openwrt/overlay":/in/overlay:ro \
   -v "$TOP/tools/stage-flow-offload.py":/in/stage-flow-offload.py:ro \
   -v "$TOP/tools/stage-ra-renew.py":/in/stage-ra-renew.py:ro \
+  -v "$TOP/tools/stage-ntp.py":/in/stage-ntp.py:ro \
   -v "$TOP/openwrt/patches/wifi-scripts-no-dfs.patch":/in/wifi-scripts-no-dfs.patch:ro \
   -v "$TOP/boot/module-order.txt":/in/module-order.txt:ro -v "$IN/out/modules":/in/modules:ro \
   $(opt out/modules.builtin modules.builtin) $(opt out/modules.builtin.modinfo modules.builtin.modinfo) \
@@ -327,6 +328,7 @@ if [ -e /in/busybox ]; then
     done
 fi
 mkdir -p $R/etc/mu300
+python3 /in/stage-ntp.py --root $R --overlay /in/overlay
 printf "%s\n" "${MU300_VERSION:-dev}" > $R/etc/mu300/image-version
 [ ! -f /in/release.json ] || cp /in/release.json $R/etc/mu300/release.json
 # Record image packages so upgrades can restore only user additions.

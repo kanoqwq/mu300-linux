@@ -2501,29 +2501,34 @@ void wcn_chip_power_off(void)
 	}
 
 	mutex_lock(&marlin_dev->power_lock);
-	/* A queued reset may reach here after normal stop removed the PCIe BAR. */
-	if (marlin_dev->power_state) {
-		sprdwcn_bus_runtime_put();
-		chip_power_off(0);
+	if (!marlin_get_power()) {
+		pr_info("%s: already powered off, skip runtime put\n", __func__);
+		mutex_unlock(&marlin_dev->power_lock);
+		return;
 	}
+	sprdwcn_bus_runtime_put();
+	chip_power_off(0);
 	mutex_unlock(&marlin_dev->power_lock);
 }
 EXPORT_SYMBOL_GPL(wcn_chip_power_off);
 
-bool wcn_begin_dump(void)
+bool wcn_mu300_reserve_reset_dump(void)
 {
-	bool live;
+	struct wcn_match_data *g_match_config = get_wcn_match_config();
+	bool reserved = false;
 
-	/* Same lock as stop_marlin(): either stop finishes first and we decline,
-	 * or it sees carddump before it can tear down the bus. Do not hold this
-	 * lock throughout a dump/reset, which takes it again for forced teardown.
-	 */
+	if (!g_match_config || !g_match_config->unisoc_wcn_pcie ||
+	    g_match_config->unisoc_wcn_integrated)
+		return false;
+
 	mutex_lock(&marlin_dev->power_lock);
-	live = marlin_dev->power_state && !wcn_powerdown_in_progress();
-	if (live)
+	if (marlin_get_power()) {
+		/* Both ordinary teardown paths check carddump under this lock. */
 		sprdwcn_bus_set_carddump_status(true);
+		reserved = true;
+	}
 	mutex_unlock(&marlin_dev->power_lock);
-	return live;
+	return reserved;
 }
 
 static int gnss_powerdomain_open(void)
@@ -2969,11 +2974,19 @@ check_power_state_notify:
 
 void marlin_power_off(enum wcn_sub_sys subsys)
 {
+	struct wcn_match_data *g_match_config = get_wcn_match_config();
+
 	pr_info("%s all\n", __func__);
+	if (g_match_config && g_match_config->unisoc_wcn_integrated) {
+		marlin_dev->keep_power_on = false;
+		set_bit(subsys, &marlin_dev->power_state);
+		marlin_set_power(subsys, false);
+		return;
+	}
 
 	mutex_lock(&marlin_dev->power_lock);
-	if (!marlin_dev->power_state || sprdwcn_bus_get_carddump_status()) {
-		pr_info("%s WCN off or dump/reset in progress\n", __func__);
+	if (sprdwcn_bus_get_carddump_status() || !marlin_get_power()) {
+		pr_info("%s: WCN unavailable or reserved, skip poweroff\n", __func__);
 		mutex_unlock(&marlin_dev->power_lock);
 		return;
 	}
