@@ -173,6 +173,54 @@ class AsyncTests(unittest.IsolatedAsyncioTestCase):
     async def asyncTearDown(self):
         self.tmp.cleanup()
 
+    async def test_power_status_tracks_initialization_and_actual_controller_state(self):
+        gateway=Gateway(str(Path(self.tmp.name)/'conf'))
+        self.assertEqual(gateway.status()['power_state'],'off')
+        # A failed pairing attempt must not turn a disabled radio into a power failure.
+        gateway.jobs={'1':{'id':'1','state':'failed','error':'org.bluez.Error.ConnectionAttemptFailed'}}
+        self.assertEqual(gateway.status()['power_state'],'off')
+        available=asyncio.Event()
+        async def configure():
+            await available.wait()
+            gateway.bluez.objects={AD:{ADAPTER:{'Powered':True}}}
+            gateway.bluez.select('hci0')
+        gateway.transport=AsyncMock(side_effect=configure)
+        gateway.activate=AsyncMock()
+        task=asyncio.create_task(gateway.power_on())
+        await asyncio.sleep(0)
+        self.assertEqual(gateway.status()['power_state'],'starting')
+        self.assertEqual(gateway.events[-1]['type'],'status')
+        available.set();await task
+        self.assertEqual(gateway.status()['power_state'],'on')
+        gateway.bluez.objects={}
+        self.assertEqual(gateway.status()['power_state'],'unavailable')
+        gateway.transport=AsyncMock(side_effect=Invalid('bluetooth_transport_start_failed'))
+        with self.assertRaisesRegex(Invalid,'bluetooth_transport_start_failed'):
+            await gateway.power_on()
+        self.assertEqual(gateway.status()['power_state'],'failed')
+        # Explicit power-off clears the failed activation state, without enabling anything.
+        gateway.bluez.power=AsyncMock()
+        result=await gateway.dispatch({'action':'power','enabled':False})
+        self.assertEqual(result['power_state'],'off')
+        gateway.bluez.power.assert_awaited_once_with(False)
+        self.assertFalse(gateway.desired_on)
+        self.assertFalse(load_config(gateway.config_path)['autostart'])
+        gateway.catalog.close()
+
+    async def test_autostart_failure_is_reported_without_changing_the_preference(self):
+        gateway=Gateway(str(Path(self.tmp.name)/'conf'))
+        gateway.config['autostart']=True
+        gateway.bluez.start=AsyncMock()
+        gateway.transport=AsyncMock(side_effect=Invalid('bluetooth_transport_start_failed'))
+        await gateway.initialize()
+        self.assertEqual(gateway.status()['power_state'],'failed')
+        self.assertEqual(gateway.status()['error'],'bluetooth_activation_failed')
+        self.assertTrue(gateway.config['autostart'])
+        # If only a gateway feature fails but the adapter is powered, report its real state.
+        gateway.bluez.objects={AD:{ADAPTER:{'Powered':True}}};gateway.bluez.select('hci0')
+        self.assertEqual(gateway.status()['power_state'],'on')
+        gateway.catalog.close()
+
     async def test_advertisement_fields_refresh_without_commands_or_stale_timestamps(self):
         blue=Bluez(lambda k,d:self.events.append((k,d)))
         blue.objects={AD:{ADAPTER:{}},DEV:{DEVICE:{'Address':MAC,'AddressType':'random'}}};blue.select('hci0')

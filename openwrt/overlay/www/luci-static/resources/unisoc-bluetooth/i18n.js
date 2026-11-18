@@ -47,6 +47,11 @@ var rows = {
 Object.assign(rows, {
  on: ['蓝牙已开启', 'Bluetooth is on', 'Bluetooth açık'],
  powered_off: ['蓝牙已关闭', 'Bluetooth is off', 'Bluetooth kapalı'],
+ power_starting: ['正在开启蓝牙…', 'Turning on Bluetooth…', 'Bluetooth açılıyor…'],
+ power_starting_hint: ['正在初始化蓝牙控制器，请稍候。', 'Initializing the Bluetooth adapter. Please wait.', 'Bluetooth bağdaştırıcısı başlatılıyor. Lütfen bekleyin.'],
+ power_failed: ['蓝牙开启失败', 'Bluetooth failed to turn on', 'Bluetooth açılamadı'],
+ power_failed_hint: ['请查看本次操作的技术详情，排除问题后重新开启蓝牙。', 'Check the technical details of this operation, resolve the issue and turn Bluetooth on again.', 'Bu işlemin teknik ayrıntılarını kontrol edin, sorunu giderin ve Bluetooth özelliğini yeniden açın.'],
+ controller_missing_hint: ['当前所选控制器不可用，请重新开启蓝牙并查看操作结果。', 'The selected adapter is unavailable. Turn Bluetooth on again and check the result.', 'Seçili bağdaştırıcı kullanılamıyor. Bluetooth özelliğini yeniden açıp sonucu kontrol edin.'],
  scanning: ['正在扫描', 'Scanning', 'Taranıyor'],
  idle: ['未在扫描', 'Not scanning', 'Tarama kapalı'],
  discoverable: ['其他设备可发现本机', 'Visible to other devices', 'Diğer cihazlara görünür'],

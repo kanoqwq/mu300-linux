@@ -36,11 +36,11 @@ const V=load('view/unisoc-bluetooth/settings.js',{view:baseclass,rpc:{declare:op
  declarations.push(options);return async()=>replies[options.method];
 }},ui:{},I,F,S,A,B,E,L,sessionStorage});
 function fresh(){
- const v=Object.assign({},V,{adapterIds:'hci0',adapter:{value:''},button:()=>'',seq:0,events:[],broadcast:B.create()});
+ const v=Object.assign({},V,{adapterIds:'hci0',adapter:E('select'),button:()=>'',seq:0,events:[],broadcast:B.create()});
  for(const key of ['info','forwardState','devices','pairing','jobs','feedback','eventLog'])v[key]=E('div');
  return v;
 }
-const snapshot={adapters:[{id:'hci0',Address:'02:11:22:33:44:55',Powered:false}],adapter:'hci0',devices:[],pairing:[],
+const snapshot={power_state:'off',adapters:[{id:'hci0',Address:'02:11:22:33:44:55',Powered:false}],adapter:'hci0',devices:[],pairing:[],
  jobs:[],forwarding:{mqtt:'disabled',http:'disabled',dropped:0,errors:0},config:{gateway:{enabled:false}}};
 async function main(){
  for(const lang of ['zh-cn','en','tr']){
@@ -48,6 +48,15 @@ async function main(){
   assert.notEqual(F.error('disable_gateway_before_power_off'),'disable_gateway_before_power_off');
   assert.notEqual(I.t('pair_display_passkey'),'pair_display_passkey');
   assert.notEqual(F.state('running'),'running');
+  for(const [state,label,hint] of [['off','powered_off','controller_hint'],['starting','power_starting','power_starting_hint'],['failed','power_failed','power_failed_hint'],['unavailable','none','controller_missing_hint']]){
+   const stateView=fresh();stateView.status({...snapshot,adapters:[],power_state:state});
+   assert.ok(stateView.info.textContent.includes(I.t(label)));
+   assert.ok(stateView.info.textContent.includes(I.t(hint)));
+   if(state!=='unavailable')assert.ok(!stateView.info.textContent.includes(I.t('none')));
+   assert.notEqual(I.t(label),label);assert.notEqual(I.t(hint),hint);
+  }
+  const enabledView=fresh();enabledView.status({...snapshot,power_state:'on',adapters:[{...snapshot.adapters[0],Powered:true}]});
+  assert.ok(enabledView.info.textContent.includes(I.t('on')));
  }
  L.env.lang='zh-cn';
  // Raw scan data is useful without pairing; RSSI updates retain opened details
@@ -152,6 +161,6 @@ async function main(){
  assert.equal(lab.list.children[0].children[1].children[0].disabled,true);
  for(const lang of ['zh-cn','en','tr']){L.env.lang=lang;assert.notEqual(A.t('title'),'title');}
  L.env.lang='zh-cn';
- console.log('Bluetooth UI: localization, safe error details, async results, replacement feedback and snapshots passed.');
+ console.log('Bluetooth UI: power states, localization, safe error details, async results, replacement feedback and snapshots passed.');
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

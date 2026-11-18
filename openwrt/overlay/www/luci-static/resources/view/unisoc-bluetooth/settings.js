@@ -74,14 +74,17 @@ return view.extend({
   if(adapterIds!==this.adapterIds){this.adapterIds=adapterIds;this.adapter.replaceChildren(E('option',{value:''},T('automatic')));(s.adapters || []).forEach(function(a){this.adapter.appendChild(E('option',{value:a.id},a.id+' · '+a.Address));},this);this.adapter.value=adapterValue;}
   var self = this;
   var selected=(s.adapters || []).find(function(a){return a.id===s.adapter;});
+  var powerLabels={off:'powered_off',on:'on',starting:'power_starting',failed:'power_failed',unavailable:'none'};
+  var powerHints={off:'controller_hint',starting:'power_starting_hint',failed:'power_failed_hint',unavailable:'controller_missing_hint'};
   this.info.replaceChildren();
   if(s.error) this.info.appendChild(F.message(F.error(s.error),s.error,'error'));
   this.info.appendChild(E('div',{'class':'bt-status-line'},[
-   E('strong',{},selected ? T(selected.Powered ? 'on' : 'powered_off') : T('none')),
+   E('strong',{},T(powerLabels[s.power_state] || 'none')),
    selected && selected.Powered ? E('span',{'class':'bt-badge'+(selected.Discovering ? ' bt-active' : '')},T(selected.Discovering ? 'scanning' : 'idle')) : '',
    selected && selected.Discoverable ? E('span',{'class':'bt-badge'},T('discoverable')) : ''
   ]));
-  this.info.appendChild(E('p',{'class':'bt-muted'},selected ? (selected.Alias || selected.id)+' · '+selected.Address : T('controller_hint')));
+  var hint=powerHints[s.power_state];
+  this.info.appendChild(E('p',{'class':'bt-muted'},selected && (s.power_state==='on' || s.power_state==='off') ? (selected.Alias || selected.id)+' · '+selected.Address : T(hint || 'controller_missing_hint')));
   var forwarding=s.forwarding || {};
   this.forwardState.replaceChildren(E('dl',{'class':'bt-forward-status'},['mqtt','http'].map(function(k){
    var state=forwarding[k] || 'disabled';

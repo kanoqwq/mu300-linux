@@ -48,6 +48,7 @@ class Gateway:
         self.decoder=Decoder(self.catalog.decoded,self.emit)
         self.starting = True
         self.desired_on = self.config['autostart']
+        self.activation = 'starting' if self.desired_on else 'off'
         self.advertising = Advertising(self.bluez, Path(config_path).parent/'advertisements.json', self.emit)
 
     def emit(self, kind, data):
@@ -79,7 +80,15 @@ class Gateway:
                 self.subscribe(mac)
 
     def status(self):
-        return dict(self.bluez.snapshot(), ok=True, sequence=self.sequence, event_id=self.event_id,
+        snapshot = self.bluez.snapshot()
+        selected = next((a for a in snapshot['adapters'] if a['id'] == snapshot['adapter']), None)
+        state = self.activation
+        if state != 'starting':
+            if selected and selected.get('Powered'):
+                state = 'on'
+            elif state != 'failed':
+                state = 'unavailable' if self.desired_on and not selected else 'off'
+        return dict(snapshot, ok=True, power_state=state, sequence=self.sequence, event_id=self.event_id,
                     config=public_config(self.config), forwarding=dict(self.forward.state),
                     serial=self.serial.snapshot(), jobs=list(self.jobs.values()), error=self.error,
                     catalog=self.catalog.snapshot(),proxy=self.proxy.snapshot() if self.proxy else {'enabled':False},
@@ -235,10 +244,20 @@ class Gateway:
         return self.status()
 
     async def start_configured(self):
-        await self.transport()
-        await self.activate()
-        if self.config['gateway']['enabled']:
-            await self.serial.configure(self.config['gateway']['serial'])
+        self.activation = 'starting'
+        self.emit('status', {})
+        try:
+            await self.transport()
+            await self.activate()
+            if self.config['gateway']['enabled']:
+                await self.serial.configure(self.config['gateway']['serial'])
+        except Exception:
+            self.activation = 'failed'
+            raise
+        else:
+            self.activation = 'on'
+        finally:
+            self.emit('status', {})
 
     async def configure_proxy(self):
         if not self.config['gateway']['proxy']['enabled']:
@@ -400,6 +419,7 @@ class Gateway:
                 if not enabled:
                     await self.advertising.close()
                     self.desired_on = False
+                    self.activation = 'off'
                     await self.stop_scan_policy()
                     await self.recovery.close()
                     await self.serial.close()
