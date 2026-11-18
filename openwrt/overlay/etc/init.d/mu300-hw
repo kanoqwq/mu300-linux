@@ -27,19 +27,24 @@ hw_bringup() {
 	[ -z "$country" ] || iw reg set "$country"
 	/opt/mu300/bin/wifi-start >>/tmp/mu300-wifi-start.log 2>&1
 	[ ! -x /opt/mu300/bin/bootmark ] || /opt/mu300/bin/bootmark wifi-driver-ready
-	/opt/mu300/bin/extra-modules >/tmp/mu300-extra-modules.log 2>&1
-	[ ! -x /opt/mu300/bin/bootmark ] || /opt/mu300/bin/bootmark wifi-extra-modules-done
-	/opt/mu300/bin/zram-start >/dev/null 2>&1
 	cfg=$(sha256sum /etc/config/wireless 2>/dev/null)
 	/opt/mu300/bin/openwrt-wifi-config >>/tmp/mu300-wifi-start.log 2>&1
 	[ ! -x /opt/mu300/bin/bootmark ] || /opt/mu300/bin/bootmark wifi-config-ready
-	# Supported NFC tags (U30 Air / V50): retain custom text/URLs, synchronize Wi-Fi.
-	/opt/mu300/bin/mu300-nfc supported 2>/dev/null && /opt/mu300/bin/mu300-nfc sync >/tmp/mu300-nfc.log 2>&1
-	[ ! -x /opt/mu300/bin/bootmark ] || /opt/mu300/bin/bootmark wifi-nfc-done
+	# Optional modules need not hold up the AP. Preserve their internal ordering
+	# and run NFC only after both drivers and the final Wi-Fi config exist.
+	(
+		/opt/mu300/bin/extra-modules >/tmp/mu300-extra-modules.log 2>&1
+		[ ! -x /opt/mu300/bin/bootmark ] || /opt/mu300/bin/bootmark wifi-extra-modules-done
+		/opt/mu300/bin/zram-start >/dev/null 2>&1
+		/opt/mu300/bin/mu300-nfc supported 2>/dev/null && /opt/mu300/bin/mu300-nfc sync >/tmp/mu300-nfc.log 2>&1
+		[ ! -x /opt/mu300/bin/bootmark ] || /opt/mu300/bin/bootmark wifi-nfc-done
+	) &
 	reg_ready=1
 	# apply the country before netifd starts hostapd, otherwise 5 GHz channels are still NO-IR under world rules
 	country=$(uci -q get wireless.radio0.country)
-	if [ -n "$country" ]; then
+	if [ -n "$country" ] && ! iw reg get | grep -q "country $country:"; then
+		# The PHY can restore its own country while loading. Request a change
+		# only if its actual rules do not already match the saved country.
 		iw reg set "$country"
 		reg_ready=0
 		for n in $(seq 1 10); do
@@ -47,12 +52,24 @@ hw_bringup() {
 			sleep 1
 		done
 	fi
-	# Keep working APs when netifd already applied unchanged settings.
-	if [ "$reg_ready" = 1 ] && [ -n "$cfg" ] && [ "$cfg" = "$(sha256sum /etc/config/wireless 2>/dev/null)" ] &&
-	   /opt/mu300/bin/wifi-ready; then
-		echo 'configured wireless interfaces already ready; retaining them' >>/tmp/mu300-wifi-start.log
-		return 0
+	# An in-flight netifd setup owns the next transition. Restart only a
+	# settled failure, or an AP whose settings/regulatory rules changed.
+	if [ "$reg_ready" = 1 ] && [ -n "$cfg" ] && [ "$cfg" = "$(sha256sum /etc/config/wireless 2>/dev/null)" ]; then
+		ready_state=0
+		/opt/mu300/bin/wifi-ready --state >>/tmp/mu300-wifi-start.log 2>&1 || ready_state=$?
+		echo "boot wireless readiness=$ready_state" >>/tmp/mu300-wifi-start.log
+		case $ready_state in
+			0)
+				echo 'configured wireless interfaces already ready; retaining them' >>/tmp/mu300-wifi-start.log
+				[ ! -x /opt/mu300/bin/bootmark ] || /opt/mu300/bin/bootmark wifi-boot-retained
+				return 0 ;;
+			1)
+				echo 'wireless setup pending; retaining netifd startup' >>/tmp/mu300-wifi-start.log
+				[ ! -x /opt/mu300/bin/bootmark ] || /opt/mu300/bin/bootmark wifi-boot-pending
+				return 0 ;;
+		esac
 	fi
+	[ ! -x /opt/mu300/bin/bootmark ] || /opt/mu300/bin/bootmark wifi-boot-reconcile
 	# netifd may have scanned before the late, external SC2355 driver created
 	# phy0.  Reconcile once immediately when firmware and regulatory data are
 	# ready; this is readiness-driven and does not leave a polling worker.

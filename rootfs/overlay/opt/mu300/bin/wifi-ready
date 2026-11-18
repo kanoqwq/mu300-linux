@@ -1,23 +1,37 @@
 #!/usr/bin/ucode
-// One read-only readiness check; never enables a disabled radio or AP.
+// Read-only: 0 ready/explicitly disabled, 1 starting/unknown, 2 needs recovery.
+// Pending netifd work is not a failed AP and must not be torn down by boot.
 import { cursor } from 'uci';
 import { connect } from 'ubus';
 let c=cursor(), bus=connect(null,2);
 if(!bus)exit(1);
 let runtime=bus.call('network.wireless','status',{});
 if(runtime==null)exit(1);
-let ready=true, configured=0;
+let pending=false, failed=false, configured=0, states=[];
 c.foreach('wireless','wifi-device',radio=>{
     configured++;
     if(radio.disabled=='1')return;
-    let r=runtime[radio['.name']];
-    if(!r?.up || r.pending || r.failed) {ready=false;return;}
+    let r=runtime[radio['.name']], note={radio:radio['.name'], ap:[]};
+    push(states,note);
+    if(!r) {note.state='missing';failed=true;return;}
+    // Respect a runtime stop as well as the saved disabled flag.
+    if(r.disabled || r.autostart===false) {note.state='disabled';return;}
+    if(r.failed || r.retry_setup_failed) {note.state='failed';failed=true;return;}
+    if(r.pending) {note.state='pending';pending=true;return;}
+    if(!r.up) {note.state='down';failed=true;return;}
+    note.state='up';
     c.foreach('wireless','wifi-iface',iface=>{
         if(iface.device!=radio['.name'] || iface.disabled=='1')return;
         let actual=null;
         for(let i in r.interfaces || [])if(i.section==iface['.name'])actual=i;
-        if(!actual?.ifname) {ready=false;return;}
-        if(iface.mode=='ap' && bus.call('hostapd.'+actual.ifname,'get_status',{})?.status!='ENABLED')ready=false;
+        if(!actual?.ifname) {pending=true;return;}
+        if(iface.mode!='ap')return;
+        let state=bus.call('hostapd.'+actual.ifname,'get_status',{})?.status;
+        push(note.ap,{ifname:actual.ifname,state:state || 'pending'});
+        if(state=='DISABLED')failed=true;
+        else if(state!='ENABLED')pending=true;
     });
 });
-exit(ready && configured?0:1);
+let result=failed || !configured?2:pending?1:0;
+if(ARGV[0]=='--state')printf('%J\n',{result,radios:states});
+exit(result);

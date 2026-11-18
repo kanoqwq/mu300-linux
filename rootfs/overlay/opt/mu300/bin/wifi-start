@@ -22,7 +22,15 @@ for m in wcn_bsp sprd_wlan_combo; do
     insmod "$f"
     [ ! -x /opt/mu300/bin/bootmark ] || /opt/mu300/bin/bootmark "wifi-module-$m-loaded"
 done
-for n in $(seq 1 30); do [ -e /sys/class/net/wlan0 ] && break; sleep 1; done
+# This is an interface readiness check, not firmware settling time. Use the
+# shipped BusyBox (OpenWrt's minimal sleep has no fractional-seconds support).
+# Keep the same 30-second budget without rounding every successful load up
+# to the next whole second.
+n=0
+while [ ! -e /sys/class/net/wlan0 ] && [ "$n" -lt 300 ]; do
+    /opt/mu300/bin/busybox usleep 100000
+    n=$((n + 1))
+done
 # wcn_bsp turns the Marlin3 firmware (ARM) log on at boot; every firmware log packet is printed to the kernel log
 [ -w /proc/mdbg/at_cmd ] && printf 'at+armlog=0\r' > /proc/mdbg/at_cmd 2>/dev/null || true
 ls /sys/class/net

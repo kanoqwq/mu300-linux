@@ -1,0 +1,13 @@
+#!/bin/sh
+# Ordinary boots use the existing early USB/LAN handover, not a temporary
+# rescue address or a serial-key countdown. An explicit failsafe= request
+# retains OpenWrt's original wait handler and complete rescue network setup.
+if ! grep -q 'failsafe=' /proc/cmdline; then
+    pi_preinit_no_failsafe="y"
+    failsafe_wait() {
+        FAILSAFE=
+    }
+    # No temporary address was installed. Do not flush an early USB address
+    # when the board already supplied pi_ifname.
+    preinit_ip_deconfig() { :; }
+fi

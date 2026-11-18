@@ -138,7 +138,7 @@ for f in ./usr/lib/unisoc-bluetooth/events.uc ./etc/init.d/unisoc-bluetooth \
     ./www/luci-static/resources/view/mu300/euicc.js ./www/luci-static/resources/mu300/vendor/jsQR.js \
     ./usr/share/rpcd/acl.d/unisoc-product-form.json ./etc/init.d/mu300-vendor \
     ./www/luci-static/resources/view/mu300/sms.css \
-    ./usr/libexec/unisoc-modem/dashboard-rates ./usr/libexec/unisoc-modem/dashboard-network.sh ./usr/share/ucode/mu300/dash.uc ./usr/share/rpcd/ucode/mu300status.uc ./opt/mu300/bin/mu300-service-cpus ./usr/share/ucode/mu300/service-cpus.uc ./opt/mu300/bin/wifi-ready \
+    ./usr/libexec/unisoc-modem/dashboard-rates ./usr/libexec/unisoc-modem/dashboard-network.sh ./usr/share/ucode/mu300/dash.uc ./usr/share/rpcd/ucode/mu300status.uc ./opt/mu300/bin/mu300-service-cpus ./usr/share/ucode/mu300/service-cpus.uc ./opt/mu300/bin/wifi-ready ./lib/preinit/31_unisoc_fast_boot \
     ./usr/libexec/unisoc-modem/apn ./usr/libexec/unisoc-modem/apn.uc ./usr/libexec/unisoc-modem/apn-identity ./etc/config/unisoc_apn \
     ./www/luci-static/resources/view/mu300/apn.js \
     ./usr/libexec/unisoc-modem/lock ./usr/libexec/unisoc-modem/boot-replay ./usr/libexec/unisoc-modem/sim-scope.sh \
