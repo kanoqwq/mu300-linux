@@ -6,7 +6,7 @@ function fixture(on) {
     const buttons = {}, requests = [], dialogs = [];
     let decide, complete, finishJob, rejectJob;
     const jobs=[], toasts=[];
-    const root = {isConnected:true, querySelector(id) {
+    const root = {isConnected:true, querySelectorAll(){return [];}, querySelector(id) {
         return buttons[id] || (buttons[id] = {disabled:false, addEventListener(){}});
     }};
     const M = {

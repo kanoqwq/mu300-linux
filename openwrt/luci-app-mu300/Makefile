@@ -24,6 +24,7 @@ define Package/luci-app-mu300/description
 endef
 
 define Package/luci-app-mu300/conffiles
+/etc/unisoc-modem/traffic/
 /etc/mu300/ttl.conf
 /etc/mu300/ttl.offload-off
 /etc/mu300/ttl.offload-pending

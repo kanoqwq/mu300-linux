@@ -250,3 +250,18 @@ BLE 与经典扫描均可启动并在 30 秒后自动停止。用户打开手机
 [BlueZ Adapter API](https://bluez.readthedocs.io/en/latest/adapter-api/)、
 [GATT API](https://bluez.readthedocs.io/en/latest/gatt-api/)、
 [Agent API](https://bluez.readthedocs.io/en/latest/agent-api/)。
+
+
+### LuCI 事件连接与并发（2026-11-18）
+
+网页事件改走 uhttpd 原生 ubus SSE `/ubus/subscribe/unisoc-bluetooth-events`，
+由一个 ucode 服务转发私有控制套接字的事件。不再用长期占用 CGI 请求槽的 Python CGI；
+旧 CGI 地址立即返回 410，提示刷新。多标签页不应堵住登录或其他 CGI。
+订阅使用 Bearer 会话与 `:subscribe` ACL；服务器每 30 秒结束订阅租约，重新认证后续接，
+注销或权限撤销不能永久保留事件流。页面隐藏时断开，恢复时重新订阅并刷新快照；
+没有订阅者时不连接私有事件源。蓝牙依旧默认关闭，自动开启设置不变。
+
+`tests/test_bluetooth_http.py` 在真实 uhttpd/rpcd/ubus/ucode 容器中验证八路订阅、
+CGI 和登录并发、未授权拒绝、会话撤销和无订阅时停止取事件；
+`tests/test_bluetooth_events_ui.js` 验证页面隐藏、重连竞态和异常流清理。
+这是离线服务回归，不等于控制器实机验收。

@@ -525,6 +525,19 @@ do_apply_quiet() {
 }
 
 case "${1:-}" in
+    restart)
+        apply_lock || exit 1
+        trap 'rm -f "$APPLY_DIR/pid"; rmdir "$APPLY_DIR" 2>/dev/null' EXIT
+        trap 'exit 1' INT TERM
+        # Reuse the band activation sequence without changing saved locks.
+        # Explicitly off radios must not be switched on by a daily task.
+        if ! "${MU300_RADIO_ALLOWED:-/opt/mu300/bin/mu300-radio-allowed}" "${MU300_SIM_SLOT:-0}"; then
+            echo 'RECONNECT-DEFERRED radio-disabled-by-user'; exit 0
+        fi
+        radio=$(at 'AT+CFUN?' 5 | sed -n 's/^+CFUN: *\([0-9]*\).*$/\1/p')
+        case "$radio" in 1) ;; 0|4) echo 'RECONNECT-DEFERRED radio-off'; exit 0;; *) exit 1;; esac
+        sfun_restart late
+        ;;
     start) job_start "${2:-}" "${3:-}" ;;
     status) job_status "${2:-}" ;;
     worker) job_worker "${2:-}" "${3:-}" "${4:-}" ;;

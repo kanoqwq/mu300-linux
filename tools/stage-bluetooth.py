@@ -27,7 +27,8 @@ def stage(root, platform, overlay=None, decoder_artifacts=None, decoder_sources=
     decoder_sources=Path(decoder_sources) if decoder_sources else TOP/'tools/ble-decoder'
     runpy.run_path(str(decoder_sources/'build.py'))['check'](decoder_artifacts)
     for name in ('usr/bin/bluetoothd', 'usr/bin/rfcomm', 'usr/bin/btattach', 'usr/bin/sdptool',
-                 'etc/init.d/dbus', 'etc/init.d/bluetoothd', 'usr/bin/python3'):
+                 'etc/init.d/dbus', 'etc/init.d/bluetoothd', 'usr/bin/python3',
+                 'usr/bin/ucode', 'usr/lib/ucode/socket.so', 'usr/lib/uhttpd_ubus.so'):
         if not (root/name).exists():
             raise ValueError('Missing Bluetooth dependency: '+name)
     manifest = json.loads((overlay/'usr/lib/unisoc-bluetooth/vendor/MANIFEST.json').read_text())

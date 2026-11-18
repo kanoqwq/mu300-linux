@@ -40,7 +40,7 @@ def main():
                 M.toast=()=>({update(){},close(){}});M.busy=(b,on)=>b.disabled=on;
                 M.confirmBox=()=>new Promise(resolve=>window.answer=resolve);
                 const poll={add:f=>window.poller=f,remove(){}};
-                window.v=new Function('view','M','L','poll','TrafficCsv',source)(base,M,L,poll,new Function('baseclass',csv)(base));
+                window.v=new Function('TrafficControls','view','M','L','poll','TrafficCsv',source)({attach(){return {update(){},dispose(){}}}},base,M,L,poll,new Function('baseclass',csv)(base));
                 document.body.append(v.render(await v.load()));
             }''',[(res/'mu300/common.js').read_text(encoding='utf-8'),(res/'view/mu300/traffic.js').read_text(encoding='utf-8'),app=='luci-app-t551m',(res/'mu300/traffic-csv.js').read_text(encoding='utf-8')])
             assert page.locator('#mud-tr-plan_name').input_value()=='Plan 0'

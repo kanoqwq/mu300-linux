@@ -109,7 +109,12 @@ echo "==> OpenWrt rootfs ($rel modules included)"
 MU300_GPU=0 MU300_INPUTS="$IN" MU300_MAINLINE_OUT="$UO" MU300_LUCI_PLUGIN_SRC="$PLUGIN" \
   MU300_VERSION="$VERSION" MU300_RELEASE_JSON="$RELEASE_JSON" MU300_ROOTFS_OUT_DIR="$ROOTFS_DIR" \
   sh "$TOP/openwrt/build-rootfs.sh" "$(basename "$ROOTFS")"
-for f in ./lib/netifd/proto/mu300cell.sh ./lib/netifd/proto/mu300cell-v6.sh \
+# List once: re-reading the same compressed image per file costs minutes.
+ROOTFS_LIST=$PACKAGE_WORK/rootfs-contents.txt
+tar -tzf "$ROOTFS" > "$ROOTFS_LIST"
+for f in ./usr/lib/unisoc-bluetooth/events.uc ./etc/init.d/unisoc-bluetooth \
+    ./usr/share/rpcd/acl.d/unisoc-bluetooth.json ./www/cgi-bin/unisoc-bluetooth-events \
+    ./lib/netifd/proto/mu300cell.sh ./lib/netifd/proto/mu300cell-v6.sh \
     ./sbin/block ./lib/libblkid-tiny.so ./etc/init.d/fstab ./etc/mu300/block-mount.build-id \
     ./opt/mu300/bin/mu300-atd-io ./opt/mu300/bin/mu300-modemd ./usr/share/ucode/mu300/registration.uc ./usr/share/ucode/mu300/cellparse.uc ./opt/mu300/lib/modemd-service.sh ./opt/mu300/lib/sms-events.sh ./opt/mu300/bin/mu300-sysd ./etc/rc.d/S95mu300-sysd \
     ./opt/mu300/bin/mu300-keys ./opt/mu300/bin/mu300-bt-init ./opt/mu300/bin/mu300-atd ./opt/mu300/bin/mu300-at ./opt/mu300/bin/mobile-data \
@@ -138,9 +143,9 @@ for f in ./lib/netifd/proto/mu300cell.sh ./lib/netifd/proto/mu300cell-v6.sh \
     ./www/luci-static/resources/view/mu300/apn.js \
     ./usr/libexec/unisoc-modem/lock ./usr/libexec/unisoc-modem/boot-replay ./usr/libexec/unisoc-modem/sim-scope.sh \
     ./usr/libexec/unisoc-modem/lock-apply.sh ./usr/libexec/unisoc-modem/lock-jobs.sh \
-    ./usr/libexec/unisoc-modem/traffic ./usr/libexec/unisoc-modem/traffic-core.uc ./usr/libexec/unisoc-modem/traffic-csv.uc \
+    ./usr/libexec/unisoc-modem/traffic ./usr/libexec/unisoc-modem/traffic-policy ./usr/libexec/unisoc-modem/traffic-core.uc ./usr/libexec/unisoc-modem/traffic-csv.uc \
     ./usr/libexec/unisoc-modem/hotspot ./usr/libexec/unisoc-modem/hotspot.uc \
-    ./www/luci-static/resources/view/mu300/traffic.js ./www/luci-static/resources/mu300/traffic-csv.js ./etc/init.d/unisoc-traffic \
+    ./www/luci-static/resources/view/mu300/traffic.js ./www/luci-static/resources/mu300/traffic-controls.js ./www/luci-static/resources/mu300/traffic-csv.js ./etc/init.d/unisoc-traffic \
     ./www/luci-static/resources/view/mu300/cpu.js ./etc/init.d/unisoc-cpu \
     ./www/luci-static/resources/mu300/auto-mode.js \
     ./www/luci-static/resources/mu300/cpu-idle.js ./etc/init.d/unisoc-cpu-idle \
@@ -179,12 +184,12 @@ for f in ./lib/netifd/proto/mu300cell.sh ./lib/netifd/proto/mu300cell-v6.sh \
     ./usr/share/luci/menu.d/luci-app-aurora.json ./usr/share/rpcd/acl.d/luci-app-aurora.json \
     ./usr/lib/lua/luci/i18n/aurora-config.zh-cn.lmo ./usr/lib/lua/luci/i18n/aurora-config.tr.lmo \
     ./usr/share/ucode/luci/template/themes/aurora/header.ut; do
-    tar -tzf "$ROOTFS" "$f" >/dev/null || { echo "built rootfs missing required file: $f" >&2; exit 1; }
+    grep -Fxq "$f" "$ROOTFS_LIST" || { echo "built rootfs missing required file: $f" >&2; exit 1; }
 done
 tar -xOzf "$ROOTFS" ./etc/config/luci | grep -q "mediaurlbase .*/luci-static/aurora" || {
     echo "built rootfs does not enable Aurora by default" >&2; exit 1;
 }
-tar -tzf "$ROOTFS" "./lib/modules/$rel/sprd_wlan_combo.ko" >/dev/null || {
+grep -Fxq "./lib/modules/$rel/sprd_wlan_combo.ko" "$ROOTFS_LIST" || {
     echo "built rootfs missing $rel Wi-Fi module" >&2; exit 1;
 }
 

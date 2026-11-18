@@ -40,7 +40,7 @@ def main():
                     M.simSelector=M.localizeMenu=()=>{};setSlot('0');
                     M.toast=(text)=>{notes.push(text);return{update(text){notes.push(text);},close(){}};};
                     const module=new Function('baseclass',csv)(base);
-                    window.v=new Function('view','M','L','poll','TrafficCsv',traffic)(base,M,L,{add(){},remove(){}},module);
+                    window.v=new Function('TrafficControls','view','M','L','poll','TrafficCsv',traffic)({attach(){return {update(){},dispose(){}}}},base,M,L,{add(){},remove(){}},module);
                     document.body.append(v.render(await v.load()));
                 }''',code+[lang])
                 box=page.locator('#mud-tr-csv')

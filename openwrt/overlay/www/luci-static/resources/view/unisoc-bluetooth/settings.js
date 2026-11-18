@@ -187,8 +187,14 @@ return view.extend({
    E('section',{'class':'bt-card'},[E('h3',{},T('documentation')),E('p',{},T('docs'))])
   ]);
   this.status(initial); this.events=[]; this.seq=0;
-  this.streamAbort=new AbortController();this.openStream();
-  this.observer=new MutationObserver(function(){if(!root.isConnected){self.streamAbort.abort();self.observer.disconnect();if(self.streamTimer)clearTimeout(self.streamTimer);if(self.refreshTimer)clearTimeout(self.refreshTimer);}});
+  this.streamDisposed=false;
+  this.onVisibility=function(){
+   if(document.hidden)self.pauseStream();
+   else if(root.isConnected&&!self.streamDisposed){self.openStream();self.update();}
+  };
+  document.addEventListener('visibilitychange',this.onVisibility);
+  this.openStream();
+  this.observer=new MutationObserver(function(){if(!root.isConnected)self.unload();});
   this.observer.observe(document.body,{childList:true,subtree:true});
   return root;
  },
@@ -201,34 +207,58 @@ return view.extend({
    E('time',{},new Date(x.time*1000).toLocaleTimeString()),E('div',{},[E('span',{},F.event(x)),F.details(JSON.stringify(x.data,null,2))])
   ]));},this);
   if(!this.events.length) this.eventLog.textContent=T('waiting');
-  if(result.events.length && !this.refreshTimer)this.refreshTimer=setTimeout(function(){this.refreshTimer=null;this.update();}.bind(this),250);
+  if((result.events.length||result.resync) && !this.refreshTimer)this.refreshTimer=setTimeout(function(){this.refreshTimer=null;this.update();}.bind(this),250);
+ },
+ pauseStream: function() {
+  if(this.streamAbort)this.streamAbort.abort();
+  this.streamAbort=null;
+  if(this.streamTimer)clearTimeout(this.streamTimer);
+  this.streamTimer=null;
+ },
+ unload: function() {
+  this.streamDisposed=true;this.pauseStream();
+  if(this.onVisibility)document.removeEventListener('visibilitychange',this.onVisibility);
+  if(this.observer)this.observer.disconnect();
+  if(this.refreshTimer)clearTimeout(this.refreshTimer);
  },
  openStream: async function() {
-  var retry=true;
+  if(this.streamDisposed||document.hidden||this.streamAbort)return;
+  var controller=new AbortController();this.streamAbort=controller;
+  var retry=true,cleanEnd=false,received=false;
   try {
-   // LuCI cookies may be scoped to /cgi-bin/luci. Send its session in the POST
-   // body instead of putting a reusable credential into URLs or access logs.
-   var response=await fetch(L.env.cgi_base.replace(/\/luci$/, '')+'/unisoc-bluetooth-events',{
-    method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',
-    body:JSON.stringify({session:rpc.getSessionID()}),signal:this.streamAbort.signal
+   // Native subscriptions do not occupy CGI/script slots. Credentials stay in
+   // the header, never in the URL or access log.
+   var response=await fetch(rpc.getBaseURL().replace(/\/$/,'')+'/subscribe/unisoc-bluetooth-events',{
+    headers:{Authorization:'Bearer '+rpc.getSessionID()},credentials:'same-origin',
+    cache:'no-store',signal:controller.signal
    });
-   if(response.status===403){retry=false;this.streamState.textContent=T('session_expired');throw new Error('Bluetooth event session expired');}
+   if(response.status===401||response.status===403){retry=false;this.streamState.textContent=T('session_expired');throw new Error('Bluetooth event session expired');}
    if(!response.ok)throw new Error('Bluetooth event stream: '+response.status);
+   if((response.headers.get('Content-Type')||'').indexOf('text/event-stream')<0){
+    var failure=await response.json();
+    if(failure.code===-13||failure.code===6){retry=false;this.streamState.textContent=T('session_expired');}
+    throw new Error(failure.message||'Bluetooth event subscription failed');
+   }
    var reader=response.body.getReader(),decoder=new TextDecoder(),buffer='';
    this.streamDelay=1000;
    this.streamState.textContent=T('stream_live');
+   this.update();
    while(true){
-    var chunk=await reader.read();if(chunk.done)break;
+    var chunk=await reader.read();if(chunk.done){cleanEnd=received;break;}
     buffer+=decoder.decode(chunk.value,{stream:true});
     var lines=buffer.split('\n');buffer=lines.pop();
-    lines.forEach(function(line){if(line.indexOf('data: ')===0)this.receiveEvents(JSON.parse(line.slice(6)));},this);
+    lines.forEach(function(line){if(line.indexOf('data: ')===0){this.receiveEvents(JSON.parse(line.slice(6)));received=true;}},this);
    }
   } catch(error) {
-   if(!this.streamAbort.signal.aborted){if(retry)this.streamState.textContent=T('stream_retry');console.warn(error.message);}
+   if(!controller.signal.aborted){if(retry)this.streamState.textContent=T('stream_retry');console.warn(error.message);}
   } finally {
-   if(retry && !this.streamAbort.signal.aborted){
-    this.streamState.textContent=T('stream_retry');
-    this.streamTimer=setTimeout(this.openStream.bind(this),this.streamDelay || 1000);
+   var aborted=controller.signal.aborted;
+   controller.abort();
+   if(this.streamAbort!==controller)return;
+   this.streamAbort=null;
+   if(retry && !aborted&&!this.streamDisposed&&!document.hidden){
+    if(!cleanEnd)this.streamState.textContent=T('stream_retry');
+    this.streamTimer=setTimeout(this.openStream.bind(this),cleanEnd?0:this.streamDelay || 1000);
     this.streamDelay=Math.min((this.streamDelay || 1000)*2,15000);
    }
   }

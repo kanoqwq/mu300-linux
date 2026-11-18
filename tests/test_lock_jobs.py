@@ -84,6 +84,21 @@ print('OK')
         self.modem.write_text(json.dumps(state))
         (self.tmp / 'commands').write_text('')
 
+    def test_scheduled_restart_reuses_stack_sequence_without_changing_locks(self):
+        for shell in self.each_shell():
+            self.reset(cfun='1')
+            (self.state/'lte').write_text('1,3,5')
+            result = self.script(shell, self.lock, 'restart', **self.extra)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            trace = (self.tmp/'commands').read_text()
+            self.assertLess(trace.index('AT+SFUN=5'), trace.index('AT+SFUN=4'))
+            self.assertEqual((self.state/'lte').read_text(), '1,3,5')
+            self.reset(cfun='0')
+            result = self.script(shell, self.lock, 'restart', **self.extra)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn('RECONNECT-DEFERRED radio-off', result.stdout)
+            self.assertNotIn('AT+SFUN=', (self.tmp/'commands').read_text())
+
     def apply(self, shell, kind, val):
         return self.script(shell, self.lock, 'apply', kind, val, **self.extra)
 

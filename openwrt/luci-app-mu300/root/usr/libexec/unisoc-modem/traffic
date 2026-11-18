@@ -195,9 +195,19 @@ const obj = bus.publish(BUS, {
 });
 if (!obj) die('Traffic service already running or publish failed\n');
 for(let l in ledgers) l.sample(true);
+// Reuse the accounting tick; never block ubus on a modem restart.
+let policy_job;
+function policy_tick() {
+    if (policy_job || !fs.stat(BASE + '/policy.json')) return;
+    policy_job = uloop.process('/usr/bin/python3', ['/usr/libexec/unisoc-modem/traffic-policy', 'tick'], {
+        PATH:'/usr/sbin:/usr/bin:/sbin:/bin:/opt/mu300/bin', MU300_TRAFFIC_DIR:BASE, MU300_TRAFFIC_RUN:RUN
+    }, function() { policy_job = null; });
+}
+policy_tick();
 let ticker;
 ticker = uloop.timer(10000, function() {
     for(let l in ledgers) l.sample(false);
+    policy_tick();
     ticker.set(10000);
 });
 let term = uloop.signal(15, function() { for(let l in ledgers) l.sample(true); uloop.end(); });

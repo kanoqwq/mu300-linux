@@ -98,11 +98,11 @@ class ConfigTests(unittest.TestCase):
             self.assertFalse(worker.is_alive())
         finally:transport.close();os.close(master);os.close(slave)
 
-    def test_sse_requires_luci_session(self):
+    def test_retired_cgi_returns_promptly_without_an_event_stream(self):
         path=TOP/'openwrt/overlay/www/cgi-bin/unisoc-bluetooth-events'
         for cookie in ('','sysauth_http=not_a_valid_session'):
-            result=subprocess.run([sys.executable,str(path)],env=dict(os.environ,HTTP_COOKIE=cookie,PYTHONPATH=str(BASE)),capture_output=True,text=True,timeout=3,check=True)
-            self.assertIn('403 Forbidden',result.stdout)
+            result=subprocess.run(['sh',str(path)],env=dict(os.environ,HTTP_COOKIE=cookie),capture_output=True,text=True,timeout=3,check=True)
+            self.assertIn('410 Gone',result.stdout)
             self.assertNotIn('text/event-stream',result.stdout)
 
     def test_sse_accepts_session_body_without_out_of_path_cookie(self):
@@ -136,7 +136,8 @@ class ConfigTests(unittest.TestCase):
         module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder)
-            for name in ('usr/bin/bluetoothd','usr/bin/rfcomm','usr/bin/btattach','usr/bin/sdptool','usr/bin/python3'):
+            for name in ('usr/bin/bluetoothd','usr/bin/rfcomm','usr/bin/btattach','usr/bin/sdptool','usr/bin/python3',
+                         'usr/bin/ucode','usr/lib/ucode/socket.so','usr/lib/uhttpd_ubus.so'):
                 path=root/name; path.parent.mkdir(parents=True,exist_ok=True); path.touch()
             for name,number in (('dbus',60),('bluetoothd',62)):
                 path=root/'etc/init.d'/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text('START='+str(number)+'\n')
@@ -154,6 +155,8 @@ class ConfigTests(unittest.TestCase):
             self.assertNotIn('true',path.read_text())
             self.assertEqual((root/'usr/libexec/rpcd/unisoc-bluetooth').stat().st_mode&0o777,0o755)
             self.assertIn('/etc/bluetooth/',(root/'lib/upgrade/keep.d/unisoc-bluetooth').read_text())
+            self.assertTrue((root/'usr/lib/unisoc-bluetooth/events.uc').is_file())
+            self.assertIn('events.uc',(root/'etc/init.d/unisoc-bluetooth').read_text())
             self.assertTrue((root/'usr/bin/unisoc-ble-decode').is_file())
             self.assertTrue((root/'usr/share/unisoc-bluetooth/decoder-source.tar.gz').is_file())
         acl=json.loads((TOP/'openwrt/overlay/usr/share/rpcd/acl.d/unisoc-bluetooth.json').read_text())['luci-app-unisoc-bluetooth']

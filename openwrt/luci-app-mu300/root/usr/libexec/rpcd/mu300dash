@@ -417,6 +417,9 @@ do_list() {
 	"forward_log_clear": { },
 	"traffic_export": { "slot": "String", "backup": false },
 	"traffic_import": { "slot": "String", "csv": "String", "mode": "String", "confirm": false },
+	"traffic_policy_get": { "slot": "String" },
+	"traffic_policy_set": { "payload": "String" },
+	"traffic_policy_run": { "confirm": false },
 	"traffic_get": { "slot": "String" },
 	"traffic_set": { "payload": "String", "slot": "String" },
 	"traffic_clear": { "confirm": false, "slot": "String" },
@@ -539,6 +542,13 @@ call)
             case "$2" in traffic_export) method=export_csv;; *) method=import_csv;; esac
             ubus -t 5 call unisoc.traffic "$method" "$params" 2>/dev/null || printf '{"ok":0,"error":"traffic_unavailable"}\n'
             ;;
+        traffic_policy_get)
+            printf '%s' "$INPUT" | python3 "$DASH/traffic-policy" get || : ;;
+        traffic_policy_set)
+            # JSON stays on stdin. The backend validates fields and slot scope.
+            inp '@.payload' | python3 "$DASH/traffic-policy" set || : ;;
+        traffic_policy_run)
+            printf '%s' "$INPUT" | python3 "$DASH/traffic-policy" run || : ;;
         traffic_get)
             ubus -t 3 call unisoc.traffic get "{\"slot\":${MU300_SIM_SLOT:-0}}" 2>/dev/null || printf '{"error":"traffic_unavailable"}\n'
             ;;

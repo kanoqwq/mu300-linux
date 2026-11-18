@@ -35,7 +35,7 @@ def main():
                     }};
                     window.M=new Function('rpc','baseclass','L',common)(rpc,base,L);
                     const poll={add:f=>window.poller=f,remove:f=>window.removed=f===poller};
-                    window.v=new Function('view','M','L','poll','TrafficCsv',traffic)(base,M,L,poll,new Function('baseclass',csv)(base));
+                    window.v=new Function('TrafficControls','view','M','L','poll','TrafficCsv',traffic)({attach(){return {update(){},dispose(){}}}},base,M,L,poll,new Function('baseclass',csv)(base));
                     document.querySelector('#app').appendChild(v.render(old));
                 }''', [(RES/'mu300/common.js').read_text(encoding='utf-8'),
                        (RES/'view/mu300/traffic.js').read_text(encoding='utf-8'), lang,(RES/'mu300/traffic-csv.js').read_text(encoding='utf-8')])

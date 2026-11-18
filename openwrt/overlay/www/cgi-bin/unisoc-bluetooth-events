@@ -1,46 +1,4 @@
-#!/usr/bin/python3
+#!/bin/sh
 # SPDX-License-Identifier: MIT
-"""Authenticated, read-only SSE. The private daemon socket is never exposed."""
-import json
-import os
-import socket
-import subprocess
-import sys
-import time
-sys.dont_write_bytecode = True
-
-sys.path.insert(0, '/usr/lib/unisoc-bluetooth')
-from stream_auth import session
-
-try:
-    sid = session(os.environ, sys.stdin.buffer)
-    def authorized():
-        result = subprocess.run(['/bin/ubus', 'call', 'session', 'access', json.dumps({
-            'ubus_rpc_session': sid, 'scope': 'ubus', 'object': 'unisoc-bluetooth', 'function': 'status'})],
-            capture_output=True, timeout=3, check=True)
-        return json.loads(result.stdout).get('access') is True
-    if not authorized():
-        raise ValueError()
-except Exception:
-    print('Status: 403 Forbidden\r\nContent-Type: text/plain\r\n\r\nForbidden')
-    sys.exit(0)
-print('Content-Type: text/event-stream\r\nCache-Control: no-store\r\nX-Accel-Buffering: no\r\n\r\n', flush=True)
-sequence = 0
-event_id = ''
-started = checked = time.monotonic()
-try:
-    while time.monotonic() - started < 240:
-        if time.monotonic() - checked > 30:
-            if not authorized():
-                break
-            checked = time.monotonic()
-        with socket.socket(socket.AF_UNIX) as client:
-            client.settimeout(27)
-            client.connect('/run/unisoc-bluetooth/control.sock')
-            client.sendall(json.dumps({'action': 'events', 'after': sequence, 'wait': 20, 'event_id': event_id}).encode() + b'\n')
-            result = json.loads(client.makefile('rb').readline(262144))
-        sequence = result['sequence']
-        event_id = result['event_id']
-        print('data: ' + json.dumps(result) + '\n', flush=True)
-except (OSError, ValueError):
-    pass
+# Cached old pages must not hold uhttpd CGI slots.
+printf 'Status: 410 Gone\r\nContent-Type: text/plain; charset=utf-8\r\nCache-Control: no-store\r\n\r\nRefresh the Bluetooth page to use native event subscriptions.\n'

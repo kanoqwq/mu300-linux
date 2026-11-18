@@ -171,9 +171,9 @@ return view.extend({
   <div class="mud-kpis">
     <div class="mud-kpi"><b id="mud-rx">--</b><span>累计接收</span></div>
     <div class="mud-kpi"><b id="mud-tx">--</b><span>累计发送</span></div>
-    <div class="mud-kpi"><b id="mud-tr-day">--</b><span>今日流量</span></div>
-    <div class="mud-kpi"><b id="mud-tr-month">--</b><span>当月流量</span></div>
-    <div class="mud-kpi"><b id="mud-tr-left">--</b><span id="mud-tr-plan">套餐剩余</span></div>
+    <a class="mud-kpi mud-kpi-link" data-mud-page="traffic"><b id="mud-tr-day">--</b><span>今日流量</span></a>
+    <a class="mud-kpi mud-kpi-link" data-mud-page="traffic"><b id="mud-tr-month">--</b><span>当月流量</span></a>
+    <a class="mud-kpi mud-kpi-link" data-mud-page="traffic"><b id="mud-tr-left">--</b><span id="mud-tr-plan">套餐剩余</span></a>
   </div>
   <div class="mud-cols">
     <div>
@@ -207,10 +207,10 @@ return view.extend({
   <h3>无线 · 局域网 · 设备 · SIM</h3>
   <div class="mud-temp" id="mud-temps"></div>
   <div class="mud-kpis" style="margin-top:8px">
-    <div class="mud-kpi"><b id="mud-cpu">--</b><span>CPU 占用</span><div class="mud-meter"><i id="mud-cpu-bar" style="background:var(--brand,var(--primary,#3b82f6))"></i></div></div>
-    <div class="mud-kpi"><b id="mud-ram">--</b><span>内存 · <span class="mud-sub" id="mud-ram-sub">--</span></span><div class="mud-meter"><i id="mud-ram-bar" style="background:var(--info,#0ea5e9)"></i></div></div>
+    <a class="mud-kpi mud-kpi-link" data-mud-page="cpu"><b id="mud-cpu">--</b><span>CPU 占用</span><div class="mud-meter"><i id="mud-cpu-bar" style="background:var(--brand,var(--primary,#3b82f6))"></i></div></a>
+    <a class="mud-kpi mud-kpi-link" data-mud-page="cpu"><b id="mud-ram">--</b><span>内存 · <span class="mud-sub" id="mud-ram-sub">--</span></span><div class="mud-meter"><i id="mud-ram-bar" style="background:var(--info,#0ea5e9)"></i></div></a>
     <div class="mud-kpi"><b id="mud-disk">--</b><span>存储</span><div class="mud-meter"><i id="mud-disk-bar" style="background:var(--warning,#f59e0b)"></i></div></div>
-    <div class="mud-kpi"><b id="mud-batt">--</b><span id="mud-batt-l" title="功率和电流均为电池净值，不是 USB 输入值；充放电方向按电池电流判断。">电源</span><div class="mud-meter" id="mud-batt-meter" hidden aria-hidden="true"><i id="mud-batt-bar" style="width:0%;background:var(--success,#16a34a)"></i></div></div>
+    <a class="mud-kpi" id="mud-power-card" data-mud-page="battery" aria-disabled="true" tabindex="-1"><b id="mud-batt">--</b><span id="mud-batt-l" title="功率和电流均为电池净值，不是 USB 输入值；充放电方向按电池电流判断。">电源</span><div class="mud-meter" id="mud-batt-meter" hidden aria-hidden="true"><i id="mud-batt-bar" style="width:0%;background:var(--success,#16a34a)"></i></div></a>
   </div>
   <div id="mud-freqs" class="mud-freqs"></div>
   <div class="mud-cols">
@@ -281,7 +281,23 @@ return view.extend({
 </div><!-- /mud-body -->`;
 	},
 
+	wireCardLinks: function(root) {
+        var self = this;
+        root.querySelectorAll('a[data-mud-page]').forEach(function(card) {
+            var page = card.getAttribute('data-mud-page');
+            var url = L.url('admin', 'modem', page);
+            if (page === 'battery') {
+                self._powerCard = card;
+                self._powerCardUrl = url;
+            } else {
+                card.href = url;
+                card.title = M.translate(page === 'traffic' ? '流量管理' : 'CPU 设置');
+            }
+        });
+    },
+
 	wire: function(root) {
+        this.wireCardLinks(root);
 		var self = this;
 		this.identShown = false;
 		this.dlHist = []; this.ulHist = [];
@@ -370,7 +386,7 @@ return view.extend({
 			return confirmAction(this, '切换到 Android 系统',
 				'下次启动将进入 Android 并立即重启，此管理页面与蜂窝共享都会断开。\n' +
 				'回到 OpenWrt：在 Android 上执行 mu300-next-boot linux 后重启；\n' +
-				'或什么都不做，连续 5 次开机未完成会自动回退。',
+				'或什么都不做，连续 7 次开机未完成会自动回退。',
 				{ danger: true, okText: '切换并重启' }, 'os', 'android', '正在武装 Android 引导并重启…');
 		};
 		q('reveal').onclick = function() {
@@ -666,6 +682,21 @@ return view.extend({
 			M.set('disk', pct2 + '%'); M.v('disk-bar').style.width = pct2 + '%';
 		}
 		var p = i.power || {};
+        if (this._powerCard) {
+            var hasBattery = p.present === true || p.present === 1;
+            this._powerCard.classList.toggle('mud-kpi-link', hasBattery);
+            if (hasBattery) {
+                this._powerCard.href = this._powerCardUrl;
+                this._powerCard.title = M.translate('电池与电量');
+                this._powerCard.removeAttribute('aria-disabled');
+                this._powerCard.removeAttribute('tabindex');
+            } else {
+                this._powerCard.removeAttribute('href');
+                this._powerCard.removeAttribute('title');
+                this._powerCard.setAttribute('aria-disabled', 'true');
+                this._powerCard.setAttribute('tabindex', '-1');
+            }
+        }
 		var batteryPct = p.present && typeof p.capacity === 'number' && Number.isFinite(p.capacity)
 			? Math.max(0, Math.min(100, p.capacity)) : null;
 		M.v('batt-meter').hidden = batteryPct == null;

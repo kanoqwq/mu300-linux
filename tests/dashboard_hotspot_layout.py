@@ -14,16 +14,18 @@ def main():
             page=browser.new_page(viewport={'width':390,'height':844})
             page.route('**/*',lambda route:route.abort())
             errors=[]; page.on('pageerror',lambda e:errors.append(str(e)))
-            page.set_content('<html><body><main></main></body></html>')
+            page.route('http://dashboard.fixture/**',lambda route:route.fulfill(body='<html><body><main></main></body></html>',content_type='text/html'))
+            page.goto('http://dashboard.fixture/')
             page.evaluate('''([common,home,lang])=>{
-                const base={extend:x=>x},L={env:{lang},resolveDefault:p=>p.catch(()=>({}))};
+                const base={extend:x=>x},L={env:{lang},url:(...p)=>"/cgi-bin/luci/"+p.join("/"),resolveDefault:p=>p.catch(()=>({}))};
                 window.calls=[];
                 const rpc={declare:o=>(...args)=>{
                     calls.push([o.method,args]);
+                    if(o.method==='sim_get')return Promise.resolve({ok:1,slots:2,actual_sim:0,saved_sim:0});
                     if(o.method==='act')return new Promise(r=>window.finish=r);
                     return Promise.resolve({});
                 }};
-                window.M=new Function('rpc','baseclass','L',common)(rpc,base,L);M.injectCss();
+                window.M=new Function('rpc','baseclass','L',common)(rpc,base,L);M.injectCss();M.confirmBox=()=>Promise.resolve(true);
                 window.v=new Function('view','M','L','R',home)(base,M,L,{});
                 const root=v._root=document.querySelector('main');root.className='mud';root.innerHTML=v.html();v.wire(root);
                 window.show=(wifi)=>v.update({info:{wifi},cell:null});
@@ -33,7 +35,7 @@ def main():
             button=page.locator('#mud-btn-wifi')
             button.click()
             page.wait_for_function('!!window.finish')
-            assert page.evaluate("calls.filter(c=>c[0]==='act')") == [['act',['wifi','on']]]
+            assert page.evaluate("calls.filter(c=>c[0]==='act')") == [['act',['wifi','on','0']]]
             assert button.is_disabled()
             page.evaluate('show({available:1,up:0,pending:0})')
             assert button.locator('.mud-spin').count()==1
@@ -48,7 +50,7 @@ def main():
             page.evaluate('show({available:1,up:1,pending:0})')
             button.click()
             page.wait_for_function("calls.filter(c=>c[0]==='act').length===2")
-            assert page.evaluate("calls.filter(c=>c[0]==='act')[1][1]")==['wifi','off']
+            assert page.evaluate("calls.filter(c=>c[0]==='act')[1][1]")==['wifi','off','0']
             page.evaluate("finish({ok:0,error:'热点配置保存失败'})")
             page.wait_for_function('!v._wifiBusy')
             assert button.locator('.mud-spin').count()==0

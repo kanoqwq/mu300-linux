@@ -14,6 +14,7 @@ def main():
     for name in ('usr/bin/python3','usr/bin/bluetoothd','usr/bin/btattach','usr/bin/rfcomm','usr/bin/sdptool',
                  'usr/sbin/unisoc-bluetooth','usr/libexec/rpcd/unisoc-bluetooth',
                  'www/cgi-bin/unisoc-bluetooth-events','etc/rc.d/S65unisoc-bluetooth',
+                 'usr/lib/unisoc-bluetooth/events.uc','usr/lib/ucode/socket.so','usr/lib/uhttpd_ubus.so',
                  'usr/bin/unisoc-ble-decode','usr/share/unisoc-bluetooth/decoder-source.tar.gz'):
         if not (root/name).exists():raise ValueError('Bluetooth root input missing: '+name)
     code="""import glob,sys
