@@ -57,8 +57,10 @@ fi
 # front-panel function.  Keeping this separate also guarantees that LTE stays
 # pure blue (B=255, R=W=0), 5G pure white and offline pure red.
 WIFI_LED=
+WIFI_DEFAULT=127
 if [ "$(mu300-device 2>/dev/null)" = f50 ] && [ -w "$LED_ROOT/keyboard-backlight/brightness" ]; then
     WIFI_LED=$LED_ROOT/keyboard-backlight/brightness
+    WIFI_DEFAULT=55
 fi
 
 STATE_FILE=$RUN_DIR/led-status.state
@@ -81,7 +83,7 @@ hw_max() {
     level "$value" 255
 }
 SIGNAL_BRIGHTNESS=$(level "$(uci -q get system.mu300_leds.signal_brightness 2>/dev/null)" 255)
-WIFI_BRIGHTNESS=$(level "$(uci -q get system.mu300_leds.wifi_brightness 2>/dev/null)" 127)
+WIFI_BRIGHTNESS=$(level "$(uci -q get system.mu300_leds.wifi_brightness 2>/dev/null)" "$WIFI_DEFAULT")
 R_MAX=$(hw_max "$LED_R")
 W_MAX=$(hw_max "$LED_W")
 B_MAX=$(hw_max "$LED_B")

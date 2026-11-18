@@ -60,7 +60,7 @@ case "$3" in
   system.mu300_leds.signal) echo "${TEST_SIGNAL_ENABLED:-1}" ;;
   system.mu300_leds.wifi) echo "${TEST_WIFI_ENABLED:-1}" ;;
   system.mu300_leds.signal_brightness) echo "${TEST_SIGNAL_BRIGHTNESS:-255}" ;;
-  system.mu300_leds.wifi_brightness) echo "${TEST_WIFI_BRIGHTNESS:-127}" ;;
+  system.mu300_leds.wifi_brightness) echo "${TEST_WIFI_BRIGHTNESS-}" ;;
 esac
 ''')
             uci.chmod(0o755)
@@ -94,6 +94,9 @@ esac
             apply('refresh')
             self.assertEqual(level('sc27xx:green'), '96')
             self.assertEqual(level('keyboard-backlight'), '48')
+            env['TEST_WIFI_BRIGHTNESS'] = ''
+            apply('refresh')
+            self.assertEqual(level('keyboard-backlight'), '55')
             env['TEST_SIGNAL_ENABLED'] = '0'
             env['TEST_WIFI_ENABLED'] = '0'
             apply('refresh')
@@ -113,13 +116,15 @@ esac
             (leds / 'keyboard-backlight/max_brightness').write_text('255\n')
             apply('refresh')
             self.assertEqual(level('sc27xx:green'), '255')
-            self.assertEqual(level('keyboard-backlight'), '127')
+            self.assertEqual(level('keyboard-backlight'), '55')
 
     def test_defaults_and_animations_use_brightness(self):
         defaults = DEFAULTS.read_text(encoding='utf-8')
         script = LED.read_text(encoding='utf-8')
         self.assertIn("set system.mu300_leds.signal_brightness='255'", defaults)
-        self.assertIn("set system.mu300_leds.wifi_brightness='127'", defaults)
+        self.assertIn('wifi_led_brightness=127', defaults)
+        self.assertIn('!= f50 ] || wifi_led_brightness=55', defaults)
+        self.assertIn("set system.mu300_leds.wifi_brightness='$wifi_led_brightness'", defaults)
         self.assertIn('set_rgb "$_r" "$_w" "$_b"', script)
         self.assertIn('set_rgb 255 0 0; pause_us 120000', script)
 
@@ -160,9 +165,9 @@ for (const [locale, title, signal, wifi] of [
     if (sig.label !== signal || wf.label !== wifi) throw Error(locale + ': brightness labels');
     if (sig.datatype !== 'range(0,255)' || wf.datatype !== 'range(0,255)') throw Error('fallback range');
     if (sig.default !== '255' || wf.default !== '127') throw Error('defaults');
-    const actual = page.render([{ 'keyboard-backlight': { max_brightness: 127, triggers: [] } }, []]);
+    const actual = page.render([{ 'keyboard-backlight': { max_brightness: 127, triggers: [] }, 'sc27xx:blue': { max_brightness: 255, triggers: [] } }, []]);
     const realWifi = actual.sections[0].options.find(o => o.key === 'wifi_brightness');
-    if (realWifi.datatype !== 'range(0,127)' || realWifi.default !== '127') throw Error('hardware maximum');
+    if (realWifi.datatype !== 'range(0,127)' || realWifi.default !== '55') throw Error('F50 hardware maximum and default');
     const v50 = page.render([{ aw_led: {triggers: []}, red: {triggers: []}, green: {triggers: []}, blue: {triggers: []} }, []]);
     if (v50.sections[0].options.some(o => o.key === 'wifi' || o.key === 'wifi_brightness')) throw Error('V50 has no verified independent Wi-Fi lamp');
     const adapted = page.render([{ 'v50:net1:white': { max_brightness: 80, triggers: [] } }, []]);

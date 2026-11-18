@@ -87,6 +87,7 @@ return view.extend({
 		const awRgb = !!(leds.aw_led && leds.red && leds.green && leds.blue);
 		const v50 = !!leds['v50:net1:white'];
 		const u30air = !!(leds['zte-ldo0'] && leds['zte-ldo1'] && leds['zte-ldo2'] && leds.net_blue);
+		const f50 = !v50 && !u30air && !!(leds['sc27xx:blue'] && leds['keyboard-backlight']);
 		let wifiMax = leds['keyboard-backlight'] && Number(leds['keyboard-backlight'].max_brightness);
 		if (!Number.isInteger(wifiMax) || wifiMax < 1 || wifiMax > 255) wifiMax = 255;
 		const triggers = [];
@@ -132,7 +133,7 @@ return view.extend({
 		o = s.option(form.Value, 'wifi_brightness', label('Wi-Fi lamp brightness'),
 			label('0 is dark. Hardware maximum: ') + wifiMax);
 		o.datatype = 'range(0,' + wifiMax + ')';
-		o.default = String(Math.min(127, wifiMax));
+		o.default = String(Math.min(f50 ? 55 : 127, wifiMax));
 		o.rmempty = false;
 		}
 

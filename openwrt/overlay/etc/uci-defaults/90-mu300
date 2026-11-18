@@ -11,6 +11,8 @@ usb_host_mac=$(cat /run/mu300-usb-host-mac 2>/dev/null)
 [ -n "$usb_host_mac" ] || usb_host_mac='02:50:00:00:77:03'
 lan_ip=$(/opt/mu300/bin/mu300-lan-ip)
 usb_host_ip=${lan_ip%.*}.200
+wifi_led_brightness=127
+[ "$(/opt/mu300/bin/mu300-device 2>/dev/null)" != f50 ] || wifi_led_brightness=55
 uci -q batch <<UCI
 set system.@system[0].hostname='mu300'
 set system.@system[0].zonename='Europe/Istanbul'
@@ -19,7 +21,7 @@ set system.mu300_leds=mu300_leds
 set system.mu300_leds.signal='1'
 set system.mu300_leds.signal_brightness='255'
 set system.mu300_leds.wifi='1'
-set system.mu300_leds.wifi_brightness='127'
+set system.mu300_leds.wifi_brightness='$wifi_led_brightness'
 set network.lan.ipaddr='$lan_ip'
 set network.lan.netmask='255.255.255.0'
 set network.lan.ip6assign='64'
