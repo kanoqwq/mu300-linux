@@ -6,6 +6,9 @@ tree = sys.argv[1]
 here = os.path.dirname(os.path.abspath(__file__))
 from tcpm_role_recovery import apply as discard_rejected_tcpm_role_trial
 discard_rejected_tcpm_role_trial(tree, enable=False)
+from audio_memory import apply as apply_audio_memory
+
+apply_audio_memory(tree)
 for root, _, files in os.walk(here):
     for f in files:
         if f in ('install.py',) or root == here:
