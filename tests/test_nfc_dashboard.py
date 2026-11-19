@@ -44,7 +44,7 @@ esac''')
 
     def test_model_owners_readback_and_saved_switch(self):
         for shell in self.each_shell():
-            for model,owner in [('u30pro','native'),('u30air','tag'),('v50','tag')]:
+            for model,owner in [('u30pro','native'),('f50pro','native'),('u30air','tag'),('v50','tag')]:
                 with self.subTest(model=model):
                     (self.tmp/'calls').unlink(missing_ok=True)
                     self.state.write_text('1\n')

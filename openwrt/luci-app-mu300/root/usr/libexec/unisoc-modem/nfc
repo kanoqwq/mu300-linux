@@ -19,7 +19,7 @@ case $action in
 esac
 device=$("$DEVICE" 2>/dev/null)
 case $device in
-    u30pro) owner=$NATIVE;;
+    u30pro|f50pro) owner=$NATIVE;;
     u30air|v50) owner=$TAG;;
     *)
         [ "$action" != get ] || { echo '{"ok":1,"supported":0}'; exit 0; }

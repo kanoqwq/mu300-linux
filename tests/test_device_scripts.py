@@ -535,6 +535,8 @@ if not os.path.exists(os.path.join(os.environ['STUBLOG'], 'held')) or bus != '2'
 n = int(op[1:op.index('@')])
 addr = int(args[2], 16) << 8 | int(args[3], 16)
 if op.startswith('w') and len(args) > 4 and args[4].startswith('r'):
+    if str(addr) == os.environ.get('TEST_READ_FAIL_ADDR'):
+        sys.exit('Error: I2C read failed')
     print(' '.join('0x%02x' % b for b in data[addr:addr + int(args[4][1:])]))
 elif op.startswith('w'):
     body = [int(x, 16) for x in args[4:]]
@@ -557,10 +559,26 @@ elif op.startswith('w'):
         (self.root / 'sys/bus/gpio/devices/gpiochip4').symlink_to(chip)
         (self.tmp / 'eeprom.py').write_text(self.EEPROM)
         self.stub('i2ctransfer', 'exec python3 "$STUBLOG/eeprom.py" "$@"')
-        # libgpiod 2: holds the line until killed
-        self.stub('gpioset', '[ "$1" = --help ] && { echo "  -c, --chip"; exit 0; }; '
-                             '[ "$*" = "-c gpiochip4 ${TEST_NFC_PIN:-190}=0" ] || exit 1; touch "$STUBLOG/held"; '
-                             'trap \'rm -f "$STUBLOG/held"; exit 0\' TERM; while :; do sleep 0.05; done')
+        # Releasing a request leaves CSN low; only an explicit high applies
+        # EEPROM RF configuration. Model the physical effect separately.
+        self.stub('gpioset', '''
+if [ "$1" = --help ]; then
+ [ "${TEST_GPIOD_VERSION:-2}" = 1 ] || echo '  -c, --chip'
+ exit 0
+fi
+p=${TEST_NFC_PIN:-190}
+case "$*" in
+ "-c gpiochip4 $p=0"|"--mode=signal gpiochip4 $p=0")
+  echo 0 > "$STUBLOG/csn"; touch "$STUBLOG/held"
+  trap 'rm -f "$STUBLOG/held"; exit 0' TERM
+  while :; do sleep 0.05; done;;
+ "-c gpiochip4 -p 20ms -t 0 $p=1"|"--mode=time --usec=20000 gpiochip4 $p=1")
+  [ "${TEST_RELEASE_FAIL:-0}" = 0 ] || exit 1
+  [ ! -e "$STUBLOG/held" ] || exit 1
+  echo 1 > "$STUBLOG/csn"
+  python3 -c 'import os,pathlib; p=pathlib.Path(os.environ["STUBLOG"]); (p/"rf-off").write_text(str(bool((p/"tag.bin").read_bytes()[0x3bf]&0x20)))';;
+ *) exit 1;;
+esac''')
         self.conf = self.tmp / 'hotspot.conf'
         self.conf.write_text('SSID=U30 AIR\nPSK=secret pass!\nBAND=5\n')
 
@@ -568,10 +586,10 @@ elif op.startswith('w'):
         (self.tmp / 'tag.bin').write_bytes(self.ZTE + ndef + bytes(1024 - 16 - len(ndef)))
         (self.tmp / 'writes').unlink(missing_ok=True)
 
-    def nfc(self, shell, *args, device='u30air'):
+    def nfc(self, shell, *args, device='u30air', **env):
         (self.root / 'run/mu300/device').write_text(device + '\n')
         return self.script(shell, BIN / 'mu300-nfc', *args, MU300_SYSROOT=self.root, MU300_BIN=BIN,
-                           MU300_HOTSPOT_CONF=self.conf, TEST_NFC_PIN='189' if device=='v50' else '190')
+                           MU300_HOTSPOT_CONF=self.conf, TEST_NFC_PIN='189' if device=='v50' else '190', **env)
 
     def writes(self):
         w = self.tmp / 'writes'
@@ -646,6 +664,7 @@ elif op.startswith('w'):
         # ZTE's NFC switch: bit 5 of the configuration byte 0x3bf (set: phones get nothing); nothing else changes
         for shell in self.each_shell():
             self.blank()
+            self.assertEqual(self.nfc(shell, 'wifi').returncode, 0)
             data = bytearray((self.tmp / 'tag.bin').read_bytes())
             data[0x3b0:0x3c0] = bytes.fromhex('0578f057806002 1e0000009e44000420'.replace(' ', ''))
             (self.tmp / 'tag.bin').write_bytes(bytes(data))
@@ -659,6 +678,90 @@ elif op.startswith('w'):
             self.assertNotIn('NFC is off', self.nfc(shell).stdout)
             self.assertEqual(self.nfc(shell, 'off').stdout.strip(), 'NFC off')
             self.assertEqual((self.tmp / 'tag.bin').read_bytes()[0x3bf], 0x20)
+
+    def test_rf_switch_is_applied_after_deselect_for_both_gpiod_versions(self):
+        for shell in self.each_shell():
+            for version in (1, 2):
+                self.blank()
+                for command, off in [('off', 'True'), ('state', 'True'), ('on', 'False')]:
+                    r=self.nfc(shell, command, TEST_GPIOD_VERSION=version)
+                    self.assertEqual(r.returncode, 0, r.stderr)
+                    self.assertEqual((self.tmp/'csn').read_text().strip(), '1')
+                    self.assertEqual((self.tmp/'rf-off').read_text(), off)
+                    self.assertFalse((self.tmp/'held').exists())
+
+    def test_wifi_password_changes_while_disabled_and_on_catches_missed_event(self):
+        for shell in self.each_shell():
+            self.blank()
+            self.conf.write_text('SSID=Before\nPSK=old password\n')
+            self.assertEqual(self.nfc(shell, 'wifi').returncode, 0)
+            self.assertEqual(self.nfc(shell, 'off').returncode, 0)
+            self.conf.write_text('SSID=After\nPSK=new password\n')
+            self.assertEqual(self.nfc(shell, 'sync').returncode, 0)
+            data=(self.tmp/'tag.bin').read_bytes()
+            self.assertIn(b'new password',data);self.assertNotIn(b'old password',data)
+            self.assertEqual((self.tmp/'rf-off').read_text(),'True')
+            # A second change with no sync event must be caught before on.
+            self.conf.write_text('SSID=Latest\nPSK=latest password\n')
+            self.assertEqual(self.nfc(shell, 'on').returncode, 0)
+            data=(self.tmp/'tag.bin').read_bytes()
+            self.assertIn(b'Latest',data);self.assertIn(b'latest password',data)
+            self.assertEqual((self.tmp/'rf-off').read_text(),'False')
+            self.assertEqual(data[:16],self.ZTE)
+            self.assertNotIn('latest password',self.nfc(shell,'show').stdout)
+
+    def test_on_preserves_custom_tag_and_release_failures_are_not_success(self):
+        for shell in self.each_shell():
+            self.blank()
+            self.assertEqual(self.nfc(shell,'url','https://example.com/').returncode,0)
+            before=(self.tmp/'tag.bin').read_bytes()[:0x3bf]
+            self.assertEqual(self.nfc(shell,'on').returncode,0)
+            self.assertEqual((self.tmp/'tag.bin').read_bytes()[:0x3bf],before)
+            r=self.nfc(shell,'off',TEST_RELEASE_FAIL=1)
+            self.assertNotEqual(r.returncode,0)
+            self.assertIn('cannot deselect',r.stderr)
+
+    def test_i2c_failure_still_deselects_without_changing_tag(self):
+        self.blank();before=(self.tmp/'tag.bin').read_bytes()
+        self.stub('i2ctransfer','exit 1')
+        for shell in self.each_shell():
+            r=self.nfc(shell,'off')
+            self.assertNotEqual(r.returncode,0,r.stderr)
+            self.assertEqual((self.tmp/'csn').read_text().strip(),'1')
+            self.assertEqual((self.tmp/'tag.bin').read_bytes(),before)
+
+    def test_wireless_sync_waits_for_reader_and_uses_latest_saved_password(self):
+        import fcntl
+        import subprocess
+        for shell in self.each_shell():
+            self.blank()
+            (self.root/'run/mu300/device').write_text('u30air\n')
+            lock=self.root/'run/mu300-nfc.lock'
+            with lock.open('w') as stream:
+                fcntl.flock(stream,fcntl.LOCK_EX)
+                process=subprocess.Popen(shell+[str(BIN/'mu300-nfc'),'sync'],
+                    stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,
+                    env=self.env(MU300_SYSROOT=self.root,MU300_BIN=BIN,MU300_HOTSPOT_CONF=self.conf))
+                try:
+                    time.sleep(0.2)
+                    self.assertIsNone(process.poll(),'wireless event was discarded while busy')
+                    self.conf.write_text('SSID=Queued AP\nPSK=queued password\n')
+                finally:
+                    fcntl.flock(stream,fcntl.LOCK_UN)
+                    out,err=process.communicate(timeout=10)
+            self.assertEqual(process.returncode,0,err)
+            self.assertIn(b'queued password',(self.tmp/'tag.bin').read_bytes())
+
+    def test_enabling_does_not_publish_stale_wifi_after_partial_read_failure(self):
+        for shell in self.each_shell():
+            self.blank()
+            self.assertEqual(self.nfc(shell,'wifi').returncode,0)
+            self.assertEqual(self.nfc(shell,'off').returncode,0)
+            before=(self.tmp/'tag.bin').read_bytes()
+            r=self.nfc(shell,'on',TEST_READ_FAIL_ADDR=32)
+            self.assertNotEqual(r.returncode,0,r.stderr)
+            self.assertEqual((self.tmp/'tag.bin').read_bytes(),before)
+            self.assertEqual((self.tmp/'rf-off').read_text(),'True')
 
     def test_state_is_read_only_and_sync_preserves_disabled_rf(self):
         for shell in self.each_shell():

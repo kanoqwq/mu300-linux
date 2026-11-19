@@ -10,11 +10,11 @@
 #                             name or password changed; a URL or text written here stays
 # The tag is a Fudan FM11NT08 (NTAG-like dual interface EEPROM): the phone reads it over RF by itself, Linux writes it
 # over I2C bus 2 at 0x57. It answers I2C only while GPIO 190 (ZTE's "ntag reset") is low, so each access holds that
-# line low and lets it go afterwards. Memory: 16 bytes of UID, lock bits and capability container, then the NDEF
+# line low and explicitly drives it high afterwards. Memory: 16 bytes of UID, lock bits and capability container, then the NDEF
 # TLV from 0x10 (the container's size byte: 0x6d, 872 bytes). ZTE's firmware writes the same Wi-Fi record (WSC,
 # WPA2-PSK). Anyone holding a phone to the device can read what is on it - which is what it is for.
-# ZTE's NFC switch is bit 5 of the chip's configuration byte 0x3bf (set: the RF side stays silent, though the
-# field-detect interrupt still counts every tap), found by reading the chip with the switch on and off; this
+# ZTE's NFC switch is bit 5 of the chip's configuration byte 0x3bf (set: phones cannot read its Type 2 content).
+# It takes effect after CSN returns high; releasing a GPIO request alone is insufficient. Stock on/off comparison
 # changes that one byte and nothing else there (the same block holds the tag's I2C address).
 # (MU300_SYSROOT, MU300_BIN, MU300_HOTSPOT_CONF are for tests/)
 export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
@@ -38,10 +38,18 @@ i2ct() {  # i2ctransfer ARGS: i2c-tools when there, else busybox's
 
 # --- the enable line -------------------------------------------------------------------------------------------
 HOLD=
+GPIOD2=
+
+finish() {
+    rc=$?
+    trap - EXIT INT TERM
+    disable || rc=1
+    exit "$rc"
+}
 enable() {
     # 5.4: ZTE's fm11tag driver owns the line and offers it in /proc
     for f in "$R"/proc/ntag_gpios/*reset*; do
-        [ -e "$f" ] && { echo 0 > "$f" && HOLD=proc:$f; trap disable EXIT INT TERM; reset_delay 0.2; return; }
+        [ -e "$f" ] && { echo 0 > "$f" || die "cannot select NFC tag"; HOLD=proc:$f; trap finish EXIT; trap 'exit 130' INT; trap 'exit 143' TERM; reset_delay 0.2; return; }
     done
     chip=
     for c in "$R"/sys/bus/gpio/devices/gpiochip*; do
@@ -50,24 +58,38 @@ enable() {
     [ -n "$chip" ] || die "the AP GPIO controller is not there"
     command -v gpioset >/dev/null 2>&1 || die "gpioset is missing (Ubuntu: apt install gpiod, OpenWrt: apk add gpiod-tools)"
     # libgpiod 2 holds the line while it runs; 1.x needs --mode=signal for that
-    if gpioset --help 2>&1 | grep -q -- '--chip'; then gpioset -c "$chip" "$LINE=0" </dev/null >/dev/null 2>&1 &
+    if gpioset --help 2>&1 | grep -q -- '--chip'; then GPIOD2=1; gpioset -c "$chip" "$LINE=0" </dev/null >/dev/null 2>&1 &
     else gpioset --mode=signal "$chip" "$LINE=0" </dev/null >/dev/null 2>&1 & fi
     HOLD=$!
-    trap disable EXIT INT TERM
+    trap finish EXIT
+    trap 'exit 130' INT
+    trap 'exit 143' TERM
     reset_delay 0.3
-    kill -0 "$HOLD" 2>/dev/null || die "cannot acquire NFC reset GPIO $LINE"
+    kill -0 "$HOLD" 2>/dev/null || { HOLD=; die "cannot acquire NFC reset GPIO $LINE"; }
 }
 disable() {
     case $HOLD in
-        proc:*) echo 1 > "${HOLD#proc:}" 2>/dev/null ;;
-        ?*) kill "$HOLD" 2>/dev/null; wait "$HOLD" 2>/dev/null ;;
+        proc:*) echo 1 > "${HOLD#proc:}" 2>/dev/null || return 1 ;;
+        ?*)
+            kill "$HOLD" 2>/dev/null; wait "$HOLD" 2>/dev/null
+            HOLD=
+            # Closing a GPIO request does not drive CSN high. Like stock
+            # fm11tag, explicitly deselect the tag so its RF config takes
+            # effect. Hold time is handled by gpioset itself, then it exits.
+            if [ "$GPIOD2" = 1 ]; then
+                gpioset -c "$chip" -p 20ms -t 0 "$LINE=1"
+            else
+                gpioset --mode=time --usec=20000 "$chip" "$LINE=1"
+            fi >/dev/null 2>&1 || { echo "mu300-nfc: cannot deselect NFC tag" >&2; return 1; }
+            ;;
     esac
     HOLD=
 }
 
 # --- memory -----------------------------------------------------------------------------------------------------
 read16() {  # read16 OFFSET: 16 bytes as hex words
-    i2ct "$BUS" "w2@$ADDR" $(printf '0x%02x 0x%02x' $(($1 >> 8)) $(($1 & 255))) r16 | sed 's/0x//g'
+    words=$(i2ct "$BUS" "w2@$ADDR" $(printf '0x%02x 0x%02x' $(($1 >> 8)) $(($1 & 255))) r16) || return 1
+    printf '%s\n' "$words" | sed 's/0x//g'
 }
 capacity() {  # the NDEF area's size in bytes, from the capability container
     cc=$(read16 0) || die "no answer from the tag (I2C $BUS-$ADDR)"
@@ -85,11 +107,13 @@ read_ndef() {  # the NDEF message TLV (its header says how long; a 0xfe inside t
         *) len=16 ;;
     esac
     [ $len -le "$size" ] || len=$size
-    o=$START
+    o=$START out=
     while [ $o -lt $((START + len + 1)) ]; do
-        read16 $o || die "cannot read the tag"
+        page=$(read16 $o) || die "cannot read the tag"
+        out="$out $page"
         o=$((o + 16))
-    done | tr -s ' \n' '  '
+    done
+    printf '%s\n' "$out" | tr -s ' \n' '  '
 }
 write_ndef() {  # write_ndef HEX...: from START, 16 bytes per write, each page only if it differs
     size=$(capacity) || exit 1
@@ -165,6 +189,14 @@ hotspot() {  # SSID and PSK of the hotspot, one per line
         sed -n 's/^PSK=//p' "$CONF" | head -n1
     fi
 }
+prepare_wifi() {
+    network=$(hotspot) || die "cannot read hotspot settings"
+    { IFS= read -r ssid; IFS= read -r psk; } <<EOF
+$network
+EOF
+    [ -n "$ssid" ] || die "the hotspot has no name"
+    new=$(tlv "$(wifi_record "$ssid" "$psk")")
+}
 describe() {  # describe HEX: the NDEF message in words (hex on stdin as words)
     echo "$1" | LC_ALL=C awk '
     function h(x) { return index("0123456789abcdef", substr(x, 1, 1)) * 16 + index("0123456789abcdef", substr(x, 2, 1)) - 17 }
@@ -227,27 +259,40 @@ esac
 # Shared by CLI, boot/config sync and dashboard access. A status read also
 # briefly owns the reset GPIO, so it must not race an EEPROM transaction.
 exec 9>"${MU300_NFC_LOCK:-$R/run/mu300-nfc.lock}" || die "cannot open NFC lock"
-flock -n 9 || die "NFC is busy; retry shortly"
+if [ "${1:-show}" = sync ]; then
+    # A saved Wi-Fi configuration event must not be discarded just because
+    # the dashboard is reading the tag. Read credentials after this lock.
+    flock -w 5 9 || die "NFC is busy; retry shortly"
+else
+    flock -n 9 || die "NFC is busy; retry shortly"
+fi
 case ${1:-show} in
     url)  [ -n "${2:-}" ] || die "which URL?"; new=$(tlv "$(uri_record "$2")") ;;
     text) [ -n "${2:-}" ] || die "which text?"; new=$(tlv "$(text_record "$2")") ;;
     clear) new="03 00 fe" ;;
-    wifi|sync)
-        { IFS= read -r ssid; IFS= read -r psk; } <<EOF
-$(hotspot)
-EOF
-        [ -n "$ssid" ] || die "the hotspot has no name"
-        new=$(tlv "$(wifi_record "$ssid" "$psk")") ;;
+    wifi|sync) prepare_wifi ;;
 esac
 enable
 case ${1:-show} in
-    on|off) rf "$1"; echo "NFC $(rf)"; exit 0 ;;
+    on)
+        # Catch configuration events missed while the tag was disabled.
+        # Publish current credentials before making a Wi-Fi token readable;
+        # custom URLs/text are never replaced by an enable operation.
+        data=$(read_ndef) || exit 1
+        case $(describe "$data") in
+            wifi:*|empty) prepare_wifi; write_ndef $new || exit 1 ;;
+        esac
+        ;;
+esac
+case ${1:-show} in
+    on|off) rf "$1" || exit 1; rf_state=$(rf) || exit 1; echo "NFC $rf_state"; exit 0 ;;
     state)
         rf_state=$(rf) || exit 1
         case $rf_state in on) echo 1;; off) echo 0;; *) die "invalid NFC state";; esac
         exit 0 ;;
 esac
-now=$(describe "$(read_ndef)")
+data=$(read_ndef) || exit 1
+now=$(describe "$data")
 case ${1:-show} in
     show|status)
         echo "$now"
