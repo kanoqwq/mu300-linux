@@ -425,6 +425,8 @@ do_list() {
 	"traffic_clear": { "confirm": false, "slot": "String" },
 	"ttl_get": { },
 	"ttl_set": { "value": "String" },
+            "button_get": {},
+	"button_set": { "short": "String", "long": "String", "short_command": "String", "long_command": "String", "power_short": "String", "power_command": "String", "double": "String", "double_command": "String", "power_double": "String", "power_double_command": "String" },
 	"usb_get": { },
 	"usb_set": { "kind": "String", "value": "String", "scope": "String", "auto": "String" },
 	"apn_get": { },
@@ -564,6 +566,8 @@ call)
             case $(inp '@.confirm') in true) confirm=true ;; *) confirm=false ;; esac
             ubus -t 5 call unisoc.traffic clear "{\"confirm\":$confirm,\"slot\":${MU300_SIM_SLOT:-0}}" 2>/dev/null || printf '{"ok":0,"error":"traffic_unavailable"}\n'
             ;;
+        button_get) "$DASH/buttons" get ;;
+        button_set) printf '%s' "$INPUT" | "$DASH/buttons" set ;;
         usb_get)    run_m usb_get    '"$DASH/device-usb" get' ;;
         usb_set)
             kind=$(inp '@.kind'); value=$(inp '@.value'); scope=$(inp '@.scope'); auto=$(inp '@.auto')

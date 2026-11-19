@@ -585,6 +585,7 @@ apply_one() {  # apply_one OS TAG
             u=${l##*/}
             [ -L "$new/etc/rc.d/$u" ] && continue
             [ -x "$new/etc/init.d/${u#S??}" ] || [ -x "$new/etc/init.d/${u#K??}" ] || continue
+            mkdir -p "$new/etc/rc.d" || return 1
             cp -a "$l" "$new/etc/rc.d/$u" 2>/dev/null || true
         done
     fi

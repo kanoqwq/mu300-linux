@@ -317,9 +317,12 @@ desktop_free_loop
             files={'etc/config/wireless':b'user settings','etc/mu300/desktop-mode':b'part\n',
                    'lib/firmware/wcnmodem.bin':b'own firmware','opt/mu300/android/vendor/bin/modem_control':b'own modem'}
             for n,data in files.items():p=old/n;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data)
+            (old/'etc/rc.d').mkdir(parents=True)
+            (old/'etc/rc.d/S99demo').symlink_to('../init.d/demo')
             with tarfile.open(base/'mu300-openwrt.tar.gz','w:gz') as a:
                 for n,data in (('sbin/init',b'#!/bin/sh\n'),('etc/config/wireless',b'image settings'),
-                               ('etc/config/new-service',b'new settings'),('etc/mu300/image-version',b'new\n'),
+                               ('etc/config/new-service',b'new settings'),('etc/init.d/demo',b'#!/bin/sh\n'),
+                               ('etc/mu300/image-version',b'new\n'),
                                ('lib/firmware/regulatory.db',b'image database'),
                                ('lib/firmware/wcnmodem.bin',b'DONOR firmware'),
                                ('opt/mu300/android/vendor/bin/modem_control',b'DONOR modem')):
@@ -341,12 +344,38 @@ desktop_free_loop
                 self.assertEqual((old/'lib/firmware/wcnmodem.bin').read_bytes(),b'own firmware')
                 self.assertEqual((old/'opt/mu300/android/vendor/bin/modem_control').read_bytes(),b'own modem')
                 self.assertEqual((disk/'openwrt.old/etc/config/wireless').read_bytes(),b'user settings')
+                self.assertTrue((old/'etc/rc.d/S99demo').is_symlink())
+                self.assertEqual(os.readlink(old/'etc/rc.d/S99demo'),'../init.d/demo')
 
     def test_real_native_update_preserves_configuration_and_device_firmware(self):
         self.native_fixture()
 
     def test_real_native_vendor_copy_failure_keeps_old_root(self):
         self.native_fixture(failure=True)
+
+    def test_local_update_creates_boot_state_directory_without_removing_user_files(self):
+        if os.name!='posix':self.skipTest('POSIX update fixture')
+        script=(TOP/'desktop/local-update.sh').read_text()
+        prepare='mkdir -p "$DISK/.mu300"'
+        self.assertLess(script.index(prepare),script.index('if ! apply_one openwrt'))
+        start=script.index('echo linux > "$DISK/openwrt/etc/mu300/default-boot"')
+        commands=prepare+'\n'+script[start:script.index('\nsync',start)]
+        for collision in (False,True):
+            with self.subTest(collision=collision),tempfile.TemporaryDirectory() as t:
+                disk=Path(t);(disk/'openwrt/etc/mu300').mkdir(parents=True)
+                if collision:(disk/'.mu300').write_bytes(b'USER FILE')
+                result=subprocess.run(['sh','-ec',commands],env={**os.environ,'DISK':str(disk)},capture_output=True,text=True)
+                if collision:
+                    self.assertNotEqual(result.returncode,0)
+                    self.assertEqual((disk/'.mu300').read_bytes(),b'USER FILE')
+                else:
+                    self.assertEqual(result.returncode,0,result.stderr)
+                    self.assertEqual((disk/'.mu300/boot-tries').read_text(),'0\n')
+                    self.assertEqual((disk/'.mu300/boot-os').read_text(),'openwrt\n')
+                    (disk/'.mu300/user-data').write_bytes(b'KEEP')
+                    again=subprocess.run(['sh','-ec',commands],env={**os.environ,'DISK':str(disk)},capture_output=True,text=True)
+                    self.assertEqual(again.returncode,0,again.stderr)
+                    self.assertEqual((disk/'.mu300/user-data').read_bytes(),b'KEEP')
 
     def test_boot_control_both_slots_preserve_reserved_bytes(self):
         for slot in ('a','b'):

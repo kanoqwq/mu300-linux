@@ -238,10 +238,13 @@ function button_model() {
     p?.close();
     return key_model;
 }
+// Stock V50 key-function uses KEY_FN (464), not U30 Air KEY_HELP (138).
+function function_key(code) { return code == (button_model() == 'v50' ? 464 : KEY_WIFI); }
 function band_toggle() {
     button_done(['/bin/sh','-c','mu300-wifi-band toggle | logger -t mu300-buttons 2>/dev/null'], () => press_next());
 }
 function press_rest(code, kind) {
+    if (kind == 'double') { press_next(); return; }
     if (code == KEY_POWER) {
         wifi_last = null;
         if (kind == 'long') {
@@ -282,15 +285,48 @@ press_next = function() {
     let p = shift(presses);
     if (!p) { pressing = false; idle_check(); return; }
     pressing = true;
-    spawn(['mu300-led','wake'], () => {
-        if (parts.led) led_arm();
-        try { press_rest(p[0],p[1]); }
-        catch(e) { log('mu300-sysd','a press failed: '+e); press_next(); }
-    });
+    let original = function() {
+        spawn(['mu300-led','wake'], () => {
+            if (parts.led) led_arm();
+            try { press_rest(p[0],p[1]); }
+            catch(e) { log('mu300-sysd','a press failed: '+e); press_next(); }
+        });
+    };
+    let configurable = button_model() == 'u30air' || button_model() == 'v50';
+    if (is_openwrt() && configurable && !(p[0] == KEY_POWER && p[1] == 'long') &&
+        (function_key(p[0]) || (button_model() == 'u30air' && p[0] == KEY_POWER))) {
+        button_done(['/usr/libexec/unisoc-modem/buttons','run',p[0] == KEY_POWER ? 'power' : 'function',p[1]], (code) => {
+            if (code == 3) original();
+            else { wifi_last = null; if (code != 0) log('mu300-buttons','configured action failed'); press_next(); }
+        });
+    } else original();
 };
-function press(code, kind) {
+function press_enqueue(code, kind) {
     push(presses,[code,kind]);
     if (!pressing) press_next();
+}
+let button_clicks = {};
+function button_click_cancel() {
+    for (let code in button_clicks) {
+        button_clicks[code]?.cancel();
+        button_clicks[code] = null;
+    }
+}
+function press(code, kind) {
+    let configurable = (button_model() == 'u30air' && (function_key(code) || code == KEY_POWER)) || (button_model() == 'v50' && function_key(code));
+    if (!is_openwrt() || !configurable) { press_enqueue(code, kind); return; }
+    if (kind == 'long') {
+        button_clicks[code]?.cancel(); button_clicks[code] = null;
+        press_enqueue(code, kind); // Protected power hold never waits on a click.
+    } else if (button_clicks[code]) {
+        button_clicks[code].cancel(); button_clicks[code] = null;
+        press_enqueue(code, 'double');
+    } else {
+        button_clicks[code] = uloop.timer(500, () => {
+            button_clicks[code] = null;
+            press_enqueue(code, 'short');
+        });
+    }
 }
 
 // The existing LED helper owns policy, custom styles, battery and charger state.
@@ -364,10 +400,11 @@ function on_line(line) {
 		if (parts.led)
 			led_look();
 	}
-	else if ((f[1] == 'short' || f[1] == 'long') && (f[0] == '116' || f[0] == '138') && parts.keys)
+	else if ((f[1] == 'short' || f[1] == 'long') && (+f[0] == KEY_POWER || function_key(+f[0])) && parts.keys)
 		press(+f[0], f[1]);
 }
 function helper_close() {
+	button_click_cancel();
 	if (helper_h)
 		helper_h.delete();
 	if (helper_sock)

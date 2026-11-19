@@ -42,6 +42,8 @@ unset MU300_LIB
 mounted_disk
 lock_take
 trap 'lock_drop; umount "$view" 2>/dev/null || :' EXIT
+# Older installs or manual cleanup may leave the shared boot-state directory absent.
+mkdir -p "$DISK/.mu300"
 dev=$(part_dev "boot_$linux")
 [ -b "$dev" ] && [ "$(blockdev --getsize64 "$dev")" = 67108864 ]
 backup=$DISK/boot/desktop-backup-$(date +%Y%m%d-%H%M%S)-$$

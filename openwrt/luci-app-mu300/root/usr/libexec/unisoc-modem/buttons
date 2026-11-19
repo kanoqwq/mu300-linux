@@ -1,0 +1,2 @@
+#!/bin/sh
+exec python3 "${MU300_DASH_BIN:-/usr/libexec/unisoc-modem}/buttons.py" "$@"
