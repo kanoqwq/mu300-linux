@@ -16,7 +16,7 @@ with sync_playwright() as pw:
                 page.on('pageerror',lambda e:errors.append(str(e)))
                 page.set_content('<style>'+style+'</style><main class="mud"></main>')
                 page.evaluate("""({sources,lang,model})=>{
-                    window.calls=[];window.fail=false;
+                    window.calls=[];window.fail=false;window.appError=null;
                     window.state={ok:1,supported:true,model,power:['u30air','u30pro'].includes(model),
                         short:model==='u30pro'?'page-next':model==='f50pro'?'none':'default',
                         long:['f50pro','u30pro'].includes(model)?'none':'default',
@@ -27,6 +27,7 @@ with sync_playwright() as pw:
                         if(o.method==='button_get')return Promise.resolve({...state});
                         if(o.method==='button_set'){
                             calls.push(args);if(fail)return Promise.reject(Error('transport'));
+                            if(appError)return Promise.resolve({ok:0,error:appError});
                             o.params.forEach((key,i)=>state[key]=args[i]);return Promise.resolve({...state});
                         }
                         throw Error(o.method);
@@ -38,6 +39,15 @@ with sync_playwright() as pw:
                 save=page.locator('.mud-buttons button')
                 page.wait_for_function('!document.querySelector(".mud-buttons button").disabled')
                 assert page.evaluate('calls.length')==0
+                default_labels={
+                    'zh':{'none':'无动作','page':'下一页','screen':'唤醒／熄灭屏幕','led':'唤醒指示灯','wifi':'切换 Wi-Fi 开关','band':'切换 Wi-Fi 频段'},
+                    'en':{'none':'No action','page':'Next page','screen':'Wake / turn off screen','led':'Wake indicator lights','wifi':'Toggle Wi-Fi','band':'Switch Wi-Fi band'},
+                    'tr':{'none':'İşlem yok','page':'Sonraki sayfa','screen':'Ekranı uyandır / kapat','led':'Gösterge ışıklarını uyandır','wifi':'Wi-Fi aç/kapat','band':'Wi-Fi bandını değiştir'}}
+                expected={0:'none',1:'none',2:'none',3:'none',4:'none'}
+                if model=='u30pro':expected.update({0:'page',2:'screen'})
+                elif model=='u30air':expected.update({0:'led',1:'wifi',2:'led',3:'band'})
+                for index,action in expected.items():
+                    assert default_labels[lang][action] in page.locator(f'#mud-button-{index} option[value=default]').text_content()
                 assert page.locator('#mud-button-2').is_visible()==(model in ('u30pro','u30air'))
                 assert not page.locator('[id*=power-long]').count()
                 assert page.locator('#mud-button-4').is_visible()==(model in ('u30pro','u30air'))
@@ -55,8 +65,14 @@ with sync_playwright() as pw:
                 assert page.evaluate('calls[0].slice(0,4)')==['custom','wifi-band',"logger 'hello $world; test'",'']
                 assert page.evaluate('calls[0].slice(6,8)')==['custom','logger double']
                 assert command.input_value()=="logger 'hello $world; test'"
-                page.evaluate('fail=true');save.click()
+                page.evaluate("appError='storage_failed'");save.click()
                 page.wait_for_function('calls.length===2 && !document.querySelector(".mud-buttons button").disabled')
+                assert ('空间' if lang=='zh' else 'space' if lang=='en' else 'alanı') in page.locator('[role=status]').inner_text()
+                assert command.input_value()=="logger 'hello $world; test'"
+                page.evaluate('appError=null');save.click()
+                page.wait_for_function('calls.length===3 && !document.querySelector(".mud-buttons button").disabled')
+                page.evaluate('fail=true');save.click()
+                page.wait_for_function('calls.length===4 && !document.querySelector(".mud-buttons button").disabled')
                 assert page.locator('[role=status]').inner_text()
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
                 if lang!='zh':

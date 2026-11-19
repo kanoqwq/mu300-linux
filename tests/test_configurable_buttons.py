@@ -87,6 +87,15 @@ else:sys.exit(2)
         while not marker.exists() and time.monotonic()<end:time.sleep(.02)
         self.assertEqual(marker.read_text(),'quoted $ ; & text')
 
+    def test_rpc_session_metadata_is_not_a_button_setting(self):
+        for product in ('u30pro','f50pro','u30air','v50'):
+            self.set_model(product)
+            self.assertTrue(self.save(short='wifi-band',ubus_rpc_session='a'*32)['ok'])
+            self.assertEqual(self.get()['short'],'wifi-band')
+            self.assertFalse(any('ubus_rpc_session' in key for key in json.loads(self.db.read_text())))
+            self.assertFalse(self.save(ubus_rpc_session='a'*32,power_long='custom')['ok'])
+            self.assertFalse(self.save(ubus_rpc_session='a'*32,unknown='none')['ok'])
+
     def test_power_long_rejected_even_with_forged_config(self):
         marker=self.root/'forbidden'
         self.assertFalse(self.save(power_long='custom')['ok'])

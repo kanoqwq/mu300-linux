@@ -72,7 +72,12 @@ def validate(product, values):
 
 
 def save(product, values, incoming):
-    if not isinstance(incoming, dict) or set(incoming) - set(values):
+    if not isinstance(incoming, dict):
+        raise ValueError('invalid_button_settings')
+    # rpcd adds the authenticated session to HTTP calls. It is transport
+    # metadata, never a button setting or a substitute for rpcd's ACL checks.
+    incoming = {key: value for key, value in incoming.items() if key != 'ubus_rpc_session'}
+    if set(incoming) - set(values):
         raise ValueError('invalid_button_settings')  # also rejects power_long
     values.update(incoming)
     validate(product, values)
