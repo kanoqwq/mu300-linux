@@ -53,14 +53,27 @@ elif name=='mu300-radio-allowed':sys.exit(0 if s['radio'][int(a[0])] else 1)
 elif name=='sleep':log('sleep '+a[0])
 elif name=='mu300-at':
  cmd=a[-1];slot=int(re.search(r'SPACTCARD=([01]);',cmd)[1]);log(cmd)
- if 'CFUN?' in cmd:print('+CFUN: '+str(s['cfun'][slot]))
+ if 'CFUN?' in cmd:
+  pending=s.get('rf_pending',{});key=str(slot)
+  if key in pending:
+   if pending[key]<=0:s['cfun'][slot]=1;del pending[key]
+   else:pending[key]-=1
+   s['rf_pending']=pending;save()
+  print('+CFUN: '+str(s['cfun'][slot]))
  elif 'SPSWDATA?' in cmd:print('+SPSWDATA: '+str(s.get('actual',s['data_sim'])))
  elif 'CPIN?' in cmd:
   count=s.get('pin_queries',0);s['pin_queries']=count+1;save()
   if count<int(os.environ.get('PIN_DELAY','0')):print('+CME ERROR: 10');sys.exit(0)
   print('+CPIN: READY')
  else:
-  f=int(cmd.rsplit('=',1)[-1]);s['cfun'][slot]=1 if f==4 else 0;save()
+  f=int(cmd.rsplit('=',1)[-1]);s['cfun'][slot]=1 if f==4 else 0
+  if f==4:
+   if os.environ.get('RF_STUCK_ONCE')=='1' and not (p/'rf-stuck-once').exists():
+    (p/'rf-stuck-once').touch();s['cfun'][slot]=0
+   elif os.environ.get('RF_DELAY'):
+    s['cfun'][slot]=0;s.setdefault('rf_pending',{})[str(slot)]=int(os.environ['RF_DELAY'])
+  else:s.setdefault('rf_pending',{}).pop(str(slot),None)
+  save()
   if f==2 and os.environ.get('FAIL_POWER_ON')=='1' and str(slot)==os.environ.get('FAIL_POWER_SLOT',str(slot)) and not (p/'failed-once').exists():
    (p/'failed-once').touch();print('ERROR');sys.exit(1)
  print('OK')

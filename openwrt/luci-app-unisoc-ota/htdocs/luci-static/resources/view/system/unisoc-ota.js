@@ -67,7 +67,7 @@ return view.extend({
         var detail=E('div',{class:'mud-ota-activity',role:'status','aria-live':'polite'});
         var version=E('code'), badge=E('span',{class:'mud-ota-status'});
         var size=E('strong',{},'--'), recoveryNote=E('p',{class:'mud-note'});
-        function action(label,kind,cls){return E('button',{type:'button',class:'mud-btn '+(cls||''),'aria-label':label,disabled:!L.hasViewPermission()},[icon(kind),label]);}
+        function action(label,kind,cls){return E('button',{type:'button',class:'mud-btn '+(cls||''),'aria-label':label,disabled:!L.hasViewPermission()||null},[icon(kind),label]);}
         var button=action(tr('导入差异包','Import patch','Yama içe aktar'),'upload','mud-ota-primary');
         var rollback=action(tr('撤销上次补丁','Roll back last patch','Son yamayı geri al'),'recovery');
         var discard=action(tr('删除恢复副本','Delete recovery copy','Kurtarma kopyasını sil'),'trash','warn');

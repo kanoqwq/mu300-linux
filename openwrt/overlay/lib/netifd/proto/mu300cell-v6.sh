@@ -8,7 +8,8 @@
 # proto_run_command and also implements the standard WAN renew signal (USR1).
 #
 # Every update is sent address-external (matching the setup in mu300cell.sh):
-# the kernel state belongs to RA and to this monitor, netifd only tracks it. A
+# addresses belong to RA and to this monitor. Reported IPv4 routes belong to
+# netifd and inherit the interface's configured metric and routing policy. A
 # report that flips the flag makes netifd delete the address it previously
 # installed, so the monitor never manages what setup did not also send external.
 #
@@ -182,9 +183,8 @@ refresh_bearer() {
 		# ifdown, CGACT cycle or USB event, so an address handover only loses
 		# packets during the carrier's own transition.
 		local applied=0
-		if [ -z "$ip4" ] || { { ip -4 addr add "$ip4/$prefix4" dev "$ifname" 2>/dev/null ||
-			ip -4 addr replace "$ip4/$prefix4" dev "$ifname"; } &&
-			ip -4 route replace default dev "$ifname"; }; then
+		if [ -z "$ip4" ] || { ip -4 addr add "$ip4/$prefix4" dev "$ifname" 2>/dev/null ||
+			ip -4 addr replace "$ip4/$prefix4" dev "$ifname"; }; then
 			report && applied=1
 		fi
 		if [ "$applied" != 1 ]; then
@@ -198,7 +198,6 @@ refresh_bearer() {
 			[ -n "$ip4" ] && [ "$a" = "$ip4/$prefix4" ] ||
 				ip -4 addr del "$a" dev "$ifname" 2>/dev/null || true
 		done
-		[ -n "$ip4" ] || ip -4 route del default dev "$ifname" 2>/dev/null || true
 		logger -t "$logtag" "$reason: bearer updated to $ip4/$prefix4"
 	else
 		logger -t "$logtag" "$reason: bearer unchanged"

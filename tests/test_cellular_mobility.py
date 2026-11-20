@@ -129,6 +129,12 @@ echo "$ip4/$prefix4"
             self.assertIn('proto update wan', calls)
             self.assertNotIn('ip -4 addr del', calls)
 
+    def test_ipv4_default_routes_are_reported_only_to_netifd(self):
+        for shell in self.each_shell():
+            _, calls = self.refresh(shell)
+            self.assertIn('proto route 0.0.0.0 0', calls)
+            self.assertNotIn('ip -4 route ', calls)
+
     def test_sim_two_only_uses_its_owner(self):
         for shell in self.each_shell():
             _, calls = self.refresh(shell, extra='sim_slot=1\n')

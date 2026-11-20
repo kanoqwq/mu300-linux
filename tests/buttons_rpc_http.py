@@ -8,8 +8,7 @@ import time
 
 TOP = Path(__file__).resolve().parents[1]
 REL = 'openwrt/luci-app-mu300/root/usr/libexec/unisoc-modem/'
-FIELDS = ('short', 'long', 'short_command', 'long_command', 'power_short',
-          'power_command', 'double', 'double_command', 'power_double', 'power_double_command')
+FIELDS = ('long', 'long_command', 'double', 'double_command', 'power_double', 'power_double_command')
 
 
 def command(*args):
@@ -102,7 +101,7 @@ exec sleep 300
                 (fixture/'device/etc/mu300/model').write_text(model+'\n')
                 state = call(sid, 'mu300dash', 'button_get', {})[1]
                 values = {key: state[key] for key in FIELDS}
-                values.update(short='wifi-band', double='custom', double_command='logger button-fixture')
+                values.update(long='wifi-band', double='custom', double_command='logger button-fixture')
                 result = call(sid, 'mu300dash', 'button_set', values)
                 assert result[0] == 0 and result[1]['ok'] == 1, (model, result)
                 read = call(login('root'), 'mu300dash', 'button_get', {})[1]

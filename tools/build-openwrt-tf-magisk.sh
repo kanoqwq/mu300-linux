@@ -144,7 +144,7 @@ for f in ./usr/lib/unisoc-bluetooth/events.uc ./etc/init.d/unisoc-bluetooth \
     ./www/luci-static/resources/view/mu300/apn.js \
     ./usr/libexec/unisoc-modem/lock ./usr/libexec/unisoc-modem/boot-replay ./usr/libexec/unisoc-modem/sim-scope.sh \
     ./usr/libexec/unisoc-modem/lock-apply.sh ./usr/libexec/unisoc-modem/lock-jobs.sh \
-    ./usr/libexec/unisoc-modem/traffic ./usr/libexec/unisoc-modem/traffic-policy ./usr/libexec/unisoc-modem/traffic-core.uc ./usr/libexec/unisoc-modem/traffic-csv.uc \
+    ./usr/libexec/unisoc-modem/traffic ./usr/libexec/unisoc-modem/traffic-policy ./usr/libexec/unisoc-modem/traffic-policy.uc ./usr/libexec/unisoc-modem/traffic-core.uc ./usr/libexec/unisoc-modem/traffic-csv.uc \
     ./usr/libexec/unisoc-modem/hotspot ./usr/libexec/unisoc-modem/hotspot.uc \
     ./www/luci-static/resources/view/mu300/traffic.js ./www/luci-static/resources/mu300/traffic-controls.js ./www/luci-static/resources/mu300/traffic-csv.js ./etc/init.d/unisoc-traffic \
     ./www/luci-static/resources/view/mu300/cpu.js ./etc/init.d/unisoc-cpu \

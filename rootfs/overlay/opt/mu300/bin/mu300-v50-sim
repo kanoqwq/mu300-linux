@@ -137,6 +137,19 @@ wait_card() {
     return 1
 }
 
+# SFUN's final OK acknowledges the request, not completed RF startup. Confirm
+# through this same scoped owner before committing a physical source change.
+# Reuse mobile-data's 30 startup checks; never reset CP.
+wait_radio() {
+    local n=0 state
+    while [ "$n" -lt 30 ]; do
+        state=$(query 'AT+CFUN?' 4 | sed -n 's/^+CFUN: *\([0124]\)$/\1/p')
+        case "$state" in 1) return 0;; 0|2|4) ;; *) return 1;; esac
+        n=$((n+1)); [ "$n" -ge 30 ] || sleep 1
+    done
+    return 1
+}
+
 # Only mobile-data, holding the existing RF mutex, may mutate a selector.
 route_one() {
     validate "${2:-}"; hw_ready || fail v50_mux_unavailable
@@ -194,7 +207,7 @@ route_one() {
     fi
     rm -f "$identity" "$replay" "$R/unisoc-apn-sim$stack.json"
     reg=${MU300_REGISTRATION_DIR:-$R/mu300-registration}
-    rm -f "$reg/slot$stack.json" "$reg/sim$stack.json"
+    rm -f "$reg/slot$stack.json" "$reg/slot$stack-nr.json" "$reg/sim$stack.json"
     if [ "$mode" = --route ] || [ "$mode" = --pair-route ]; then
         # A disabled SIM2 can be explicitly enabled by the enclosing data
         # switch. Replay while it is still RF-off, before that controller's
@@ -209,6 +222,7 @@ route_one() {
         # later through the existing RF controller, outside this RF mutex.
         if [ "$card_ready" = 1 ] && "$BIN/mu300-radio-allowed" "$stack"; then
             ok 'AT+SFUN=4' 20 || fail v50_card_power_failed
+            wait_radio || fail v50_card_power_failed
         fi
     fi
     rm -f "$pending"

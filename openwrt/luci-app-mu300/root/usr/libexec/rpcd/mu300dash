@@ -426,7 +426,7 @@ do_list() {
 	"ttl_get": { },
 	"ttl_set": { "value": "String" },
             "button_get": {},
-	"button_set": { "short": "String", "long": "String", "short_command": "String", "long_command": "String", "power_short": "String", "power_command": "String", "double": "String", "double_command": "String", "power_double": "String", "power_double_command": "String" },
+	"button_set": { "long": "String", "long_command": "String", "double": "String", "double_command": "String", "power_double": "String", "power_double_command": "String" },
 	"usb_get": { },
 	"usb_set": { "kind": "String", "value": "String", "scope": "String", "auto": "String" },
 	"apn_get": { },
@@ -545,12 +545,12 @@ call)
             ubus -t 5 call unisoc.traffic "$method" "$params" 2>/dev/null || printf '{"ok":0,"error":"traffic_unavailable"}\n'
             ;;
         traffic_policy_get)
-            printf '%s' "$INPUT" | python3 "$DASH/traffic-policy" get || : ;;
+            printf '%s' "$INPUT" | ucode "$DASH/traffic-policy" get || : ;;
         traffic_policy_set)
             # JSON stays on stdin. The backend validates fields and slot scope.
-            inp '@.payload' | python3 "$DASH/traffic-policy" set || : ;;
+            inp '@.payload' | ucode "$DASH/traffic-policy" set || : ;;
         traffic_policy_run)
-            printf '%s' "$INPUT" | python3 "$DASH/traffic-policy" run || : ;;
+            printf '%s' "$INPUT" | ucode "$DASH/traffic-policy" run || : ;;
         traffic_get)
             ubus -t 3 call unisoc.traffic get "{\"slot\":${MU300_SIM_SLOT:-0}}" 2>/dev/null || printf '{"error":"traffic_unavailable"}\n'
             ;;

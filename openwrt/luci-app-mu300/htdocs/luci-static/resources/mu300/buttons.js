@@ -2,7 +2,7 @@
 'require baseclass';
 'require rpc';
 'require mu300.common as M';
-var params=['short','long','short_command','long_command','power_short','power_command','double','double_command','power_double','power_double_command'];
+var params=['long','long_command','double','double_command','power_double','power_double_command'];
 var get=rpc.declare({object:'mu300dash',method:'button_get',nobatch:true,expect:{'':{}}});
 var set=rpc.declare({object:'mu300dash',method:'button_set',params:params,nobatch:true,expect:{'':{}}});
 var words={
@@ -10,12 +10,13 @@ var words={
  '功能键 · 短按':['Function · short press','İşlev · kısa basma'],
  '功能键 · 双击':['Function · double press','İşlev · çift basma'],
  '电源键 · 双击':['Power · double press','Güç · çift basma'],
- '双击间隔为 500 毫秒。短按会等待此窗口结束，双击不会触发短按动作。':['Double-press window: 500 ms. A single press waits for this window; double presses do not run the single-press action.','Çift basma aralığı 500 ms. Tek basma bu sürenin bitmesini bekler; çift basma tek basma işlemini çalıştırmaz.'],
+ '单击立即响应。未配置双击时，连按逐次响应；已配置时，250 毫秒内再按一次执行双击动作。':['Single presses respond immediately. Without a double-press action, every repeat responds. When configured, press again within 250 ms for the double-press action.','Tek basma hemen yanıt verir. Çift basma atanmamışsa her basış yanıt verir. Atanmışsa 250 ms içinde tekrar basmak çift basma işlemini çalıştırır.'],
  '功能键 · 长按':['Function · long press','İşlev · uzun basma'],
  '电源键 · 短按':['Power · short press','Güç · kısa basma'],
  '电源键长按固定用于关机，不能自定义。':['Holding the power button always keeps its shutdown function.','Güç tuşuna uzun basma kapatma işlevini korur; değiştirilemez.'],
  '保留原有按键行为；设置后重启仍保留。':['Original actions remain until changed. Settings survive reboot.','Değiştirilene kadar mevcut işlevler korunur. Ayarlar yeniden başlatmada korunur.'],
  '默认行为':['Default','Varsayılan'],
+ '原有设置':['Existing setting','Mevcut ayar'],
  '无动作':['No action','İşlem yok'],
  '唤醒指示灯':['Wake indicator lights','Gösterge ışıklarını uyandır'],
  '唤醒／熄灭屏幕':['Wake / turn off screen','Ekranı uyandır / kapat'],
@@ -59,12 +60,13 @@ return baseclass.extend({mount:function(root){
  var writable=typeof L.hasViewPermission!=='function'||L.hasViewPermission();
  fields.style.gridTemplateColumns=powerFields.style.gridTemplateColumns='repeat(auto-fit,minmax(min(100%,220px),1fr))';
  powerFields.style.cssText+=';margin-top:14px;padding-top:10px;border-top:1px solid var(--hairline,var(--border,#ccc))';
- card.append(fields,powerFields,node('p','双击间隔为 500 毫秒。短按会等待此窗口结束，双击不会触发短按动作。','mud-note'));
- [['short','short_command','功能键 · 短按',0],['double','double_command','功能键 · 双击',3],['long','long_command','功能键 · 长按',1],['power_short','power_command','电源键 · 短按',2],['power_double','power_double_command','电源键 · 双击',4]].forEach(function(item){
+ var fixed=node('p',null,'mud-note');card.append(fixed);
+ card.append(fields,powerFields,node('p','单击立即响应。未配置双击时，连按逐次响应；已配置时，250 毫秒内再按一次执行双击动作。','mud-note'));
+ [['double','double_command','功能键 · 双击',3],['long','long_command','功能键 · 长按',1],['power_double','power_double_command','电源键 · 双击',4]].forEach(function(item){
   var index=item[3];
   var row=node('div',null,'mud-device-field'),label=node('label',item[2]),select=node('select');
   select.id='mud-button-'+index;label.htmlFor=select.id;
-  var options=[['default','默认行为'],['none','无动作'],['data-switch','切换上网卡'],['wifi-band','切换 Wi-Fi 频段'],['nfc-toggle','切换 NFC 开关'],['custom','自定义指令']];
+  var options=[['default','默认行为'],['none','无动作'],['data-switch','切换上网卡'],['toggle-wifi','切换 Wi-Fi 开关'],['wifi-band','切换 Wi-Fi 频段'],['nfc-toggle','切换 NFC 开关'],['custom','自定义指令']];
   options.forEach(function(pair){var o=node('option',pair[1]);o.value=pair[0];select.append(o);});
   var commandBox=node('div'),commandLabel=node('label','一行 shell 命令'),command=node('input'),hint=node('p','以 root 身份执行，仅在按键触发时运行。保存不会执行命令。','mud-note');
   command.type='text';command.id=select.id+'-command';commandLabel.htmlFor=command.id;command.maxLength=4096;command.autocomplete='off';command.spellcheck=false;
@@ -80,12 +82,19 @@ return baseclass.extend({mount:function(root){
  function paint(reply){
   if(!reply||!reply.ok)throw replyError(reply);
   card.hidden=!reply.supported;if(!reply.supported)return;
+  fixed.textContent=t('功能键 · 短按')+'：'+t(defaultAction(reply.model,'short'))+(reply.power?' · '+t('电源键 · 短按')+'：'+t(defaultAction(reply.model,'power_short')):'');
   rows.forEach(function(r){r.row.hidden=r.key.indexOf('power_')===0&&!reply.power;});powerNote.hidden=!reply.power;powerFields.hidden=!reply.power;
   rows.forEach(function(r,index){
    var zh=M.uiLanguage()==='zh';
    r.select.querySelector('[value="default"]').textContent=t('默认行为')+(zh?'（':' (')+t(defaultAction(reply.model,r.key))+(zh?'）':')');
-   if(reply.model==='u30pro'&&(r.key==='short'||r.key==='long')&&!r.select.querySelector('[value="page-next"]')){
-    [['page-next','下一页'],['toggle-wifi','切换 Wi-Fi 开关'],['reconnect-cellular','重新拨号'],['refresh-status','刷新状态']].forEach(function(pair){var o=node('option',pair[1]);o.value=pair[0];r.select.append(o);});
+   r.select.querySelectorAll('[data-legacy]').forEach(function(o){o.remove();});
+   if(reply.model==='u30pro'&&r.key==='short'&&!r.select.querySelector('[value="page-next"]')){
+    var next=node('option','下一页');next.value='page-next';r.select.append(next);
+   }
+   var legacy={'page-next':r.key==='long'?'无动作':'下一页','reconnect-cellular':'重新拨号','refresh-status':'刷新状态'};
+   if(reply.model==='u30pro'&&(r.key==='short'||r.key==='long')&&legacy[reply[r.key]]&&!Array.from(r.select.options).some(function(o){return o.value===reply[r.key];})){
+    var previous=node('option');previous.textContent=t('原有设置')+' · '+t(legacy[reply[r.key]]);
+    previous.value=reply[r.key];previous.disabled=true;previous.setAttribute('data-legacy','');r.select.append(previous);
    }
    r.select.value=reply[r.key]||(r.key.indexOf('double')>=0?'none':'default');
    if(!r.select.value)throw Error('invalid action');

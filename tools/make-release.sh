@@ -99,7 +99,7 @@ for f in ./opt/mu300/bin/mu300-at ./opt/mu300/bin/mobile-data \
     ./usr/libexec/unisoc-modem/refresh-config \
     ./usr/libexec/unisoc-modem/lock ./usr/libexec/unisoc-modem/boot-replay ./usr/libexec/unisoc-modem/sim-scope.sh \
     ./usr/libexec/unisoc-modem/lock-apply.sh ./usr/libexec/unisoc-modem/lock-jobs.sh \
-    ./usr/libexec/unisoc-modem/traffic ./usr/libexec/unisoc-modem/traffic-policy ./usr/libexec/unisoc-modem/traffic-core.uc ./usr/libexec/unisoc-modem/traffic-csv.uc \
+    ./usr/libexec/unisoc-modem/traffic ./usr/libexec/unisoc-modem/traffic-policy ./usr/libexec/unisoc-modem/traffic-policy.uc ./usr/libexec/unisoc-modem/traffic-core.uc ./usr/libexec/unisoc-modem/traffic-csv.uc \
     ./usr/libexec/unisoc-modem/hotspot ./usr/libexec/unisoc-modem/hotspot.uc \
     ./sbin/block ./lib/libblkid-tiny.so ./etc/init.d/fstab ./etc/mu300/block-mount.build-id \
     ./usr/libexec/unisoc-modem/apn ./usr/libexec/unisoc-modem/apn.uc ./usr/libexec/unisoc-modem/apn-identity ./etc/config/unisoc_apn \

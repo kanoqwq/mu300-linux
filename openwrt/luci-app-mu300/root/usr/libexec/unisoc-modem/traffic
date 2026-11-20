@@ -5,6 +5,7 @@ import * as ubus from 'ubus';
 import * as uci from 'uci';
 import * as core from './traffic-core.uc';
 import * as csv from './traffic-csv.uc';
+import * as policy from './traffic-policy.uc';
 
 const BASE = getenv('MU300_TRAFFIC_DIR') || '/etc/unisoc-modem/traffic';
 const RUN = getenv('MU300_TRAFFIC_RUN') || '/run/unisoc-modem-traffic';
@@ -198,8 +199,11 @@ for(let l in ledgers) l.sample(true);
 // Reuse the accounting tick; never block ubus on a modem restart.
 let policy_job;
 function policy_tick() {
-    if (policy_job || !fs.stat(BASE + '/policy.json')) return;
-    policy_job = uloop.process('/usr/bin/python3', ['/usr/libexec/unisoc-modem/traffic-policy', 'tick'], {
+    if (policy_job) return;
+    try {
+        if (!policy.needed(read_json(BASE + '/policy.json'),read_json(BASE + '/policy-state.json'))) return;
+    } catch(e) { /* The isolated worker reports an invalid policy file. */ }
+    policy_job = uloop.process('/usr/bin/ucode', ['/usr/libexec/unisoc-modem/traffic-policy', 'tick'], {
         PATH:'/usr/sbin:/usr/bin:/sbin:/bin:/opt/mu300/bin', MU300_TRAFFIC_DIR:BASE, MU300_TRAFFIC_RUN:RUN
     }, function() { policy_job = null; });
 }

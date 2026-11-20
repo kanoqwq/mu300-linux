@@ -3,9 +3,10 @@
 # /etc/config/network:  config interface 'wan' / option proto 'mu300cell' / option apn 'internet'
 # LuCI edits the same options through www/luci-static/resources/protocol/mu300cell.js.
 #
-# The bearer's kernel state is owned here, not by netifd: every update is sent
-# address-external, so netifd tracks addresses, routes and DNS for display and
-# firewall purposes but never installs or removes them. A mixed mode (netifd
+# The bearer's addresses are owned here, not by netifd: every update is sent
+# address-external, so netifd tracks addresses without installing or removing
+# them. Routes reported below remain netifd-owned and inherit its configured
+# metric, route table and defaultroute policy. A mixed mode (netifd
 # installing the v4 during setup, the monitor later reporting external) makes
 # netifd delete the address it installed the moment the first external report
 # arrives - the mobile-data watchdog then saw an address-less WAN and redialled
@@ -125,9 +126,6 @@ proto_mu300cell_setup() {
 	if [ -n "$ip" ]; then
 		ip -4 addr replace "$ip/${prefix:-32}" dev "$ifname" 2>/dev/null ||
 			ip -4 addr add "$ip/${prefix:-32}" dev "$ifname"
-		ip -4 route replace default dev "$ifname"
-	else
-		ip -4 route del default dev "$ifname" 2>/dev/null || true
 	fi
 	local a
 	for a in $(ip -4 -o addr show dev "$ifname" scope global | awk '{print $4}'); do
@@ -137,6 +135,8 @@ proto_mu300cell_setup() {
 	proto_init_update "$ifname" 1 1
 	if [ -n "$ip" ]; then
 		proto_add_ipv4_address "$ip" "${prefix:-32}"
+		# Do not also install a metric-0 kernel route: it would survive a
+		# netifd metric change and override the user's uplink preference.
 		proto_add_ipv4_route "0.0.0.0" 0
 	fi
 	if [ "${peerdns:-1}" != 0 ]; then
@@ -179,7 +179,6 @@ proto_mu300cell_teardown() {
 	# INFINITE lifetimes, so an unflushed SLAAC address (and the default route
 	# an earlier report installed) would survive every redial and stack up.
 	ip -4 addr flush dev "$ifname" scope global 2>/dev/null
-	ip -4 route del default dev "$ifname" 2>/dev/null
 	ip -6 addr flush dev "$ifname" scope global 2>/dev/null
 	ip -6 route flush dev "$ifname" 2>/dev/null
 	rm -f "/run/mu300cell-$config.sim"

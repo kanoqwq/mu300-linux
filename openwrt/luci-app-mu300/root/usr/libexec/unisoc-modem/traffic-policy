@@ -1,301 +1,113 @@
-#!/usr/bin/python3
-"""WAN quota and daily stack restart. Called by the existing accounting timer.
+#!/usr/bin/ucode
+// One-shot policy worker/RPC. Accounting owns the sampling timer.
+import * as fs from 'fs';
+import * as uci from 'uci';
+import * as ubus from 'ubus';
+import * as policy from './traffic-policy.uc';
 
-No AT reader or extra sampling loop: use the accounting snapshots, netifd, and
-the same serialized restart entry point as band changes. Settings/history live
-with the traffic ledger; only a WAN stopped by this policy is later resumed.
-"""
-import datetime as dt
-import fcntl
-import json
-import math
-import os
-from pathlib import Path
-import re
-import subprocess
-import sys
-import time
-
-BASE = Path(os.environ.get('MU300_TRAFFIC_DIR', '/etc/unisoc-modem/traffic'))
-RUN = Path(os.environ.get('MU300_TRAFFIC_RUN', '/run/unisoc-modem-traffic'))
-LIB = Path(__file__).resolve().parent
-
-
-def read(path, default=None):
-    try:
-        return json.loads(path.read_text())
-    except FileNotFoundError:
-        return default
-
-
-def write(path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + '.new')
-    tmp.write_text(json.dumps(data, ensure_ascii=False) + '\n')
-    tmp.chmod(0o600)
-    tmp.replace(path)
-
-
-def config(value=None):
-    if value is None:
-        value = read(BASE / 'policy.json', {})
-    if not isinstance(value, dict):
-        raise ValueError('invalid_config')
-    if not isinstance(value.get('slots', {}), dict):
-        raise ValueError('invalid_config')
-    result = {'slots': {}, 'schedule': value.get('schedule', {'enabled': False, 'time': '07:00'})}
-    for slot in ('0', '1'):
-        c = value.get('slots', {}).get(slot, {'enabled': False, 'limit_gb': 0})
-        if not isinstance(c, dict):
-            raise ValueError('invalid_config')
-        n = c.get('limit_gb')
-        if (type(c.get('enabled')) is not bool or type(n) not in (float, int)
-                or not math.isfinite(n) or not 0 <= n <= 100000 or c['enabled'] and n <= 0):
-            raise ValueError('invalid_config')
-        result['slots'][slot] = {'enabled': c['enabled'], 'limit_gb': n}
-    s = result['schedule']
-    if not isinstance(s, dict) or type(s.get('enabled')) is not bool or not re.fullmatch(r'(?:[01]\d|2[0-3]):[0-5]\d', str(s.get('time', ''))):
-        raise ValueError('invalid_config')
-    result['schedule'] = {'enabled': s['enabled'], 'time': s['time']}
-    return result
-
-
-def next_run(now, clock):
-    # mktime uses the device timezone and resolves DST on the selected date.
-    today = dt.date.fromtimestamp(now)
-    hour, minute = map(int, clock.split(':'))
-    for offset in (0, 1):
-        day = today + dt.timedelta(days=offset)
-        at = time.mktime((day.year, day.month, day.day, hour, minute, 0, -1, -1, -1))
-        if at > now:
-            return int(at)
-
-
-def due(state, schedule, now):
-    if not schedule['enabled'] or now < 1704067200:
-        return False
-    at = state.get('next_run')
-    if not at or state.get('schedule_time') != schedule['time']:
-        state.update(next_run=next_run(now, schedule['time']), schedule_time=schedule['time'])
-        return False
-    if now < at:
-        return False
-    state['next_run'] = next_run(now, schedule['time'])
-    day = dt.date.fromtimestamp(now).isoformat()
-    if state.get('last_day', '') >= day:
-        return False  # Includes a backward clock adjustment and a repeated DST hour.
-    state['last_day'] = day
-    if now - at > 120:
-        state['last'] = {'at': int(now), 'result': 'missed'}
-        return False  # Do not unexpectedly restart after a long power-off.
-    return True
-
-
-def exceeded(settings, snapshot):
-    if not settings['enabled']:
-        return False
-    if snapshot.get('clock_ok') is not True or not isinstance(snapshot.get('cycle_used'), (int, float)):
-        return None  # Unknown usage is not evidence that a previous cutoff can be lifted.
-    return snapshot['cycle_used'] >= settings['limit_gb'] * 1000000000
-
-
-def command(argv, timeout=8, env=None):
-    r = subprocess.run(argv, capture_output=True, text=True, timeout=timeout, env=env)
-    if r.returncode:
-        raise RuntimeError((r.stderr or r.stdout).strip()[-320:] or 'operation_failed')
-    return r.stdout
-
-
-def uci(key, default=''):
-    r = subprocess.run(['uci', '-q', 'get', key], capture_output=True, text=True)
-    return r.stdout.strip() if not r.returncode else default
-
-
-def bus(iface, method):
-    return json.loads(command(['ubus', '-t', '3', 'call', 'network.interface.' + iface, method, '{}']) or '{}')
-
-
-def active_slot():
-    for path in ('/sys/module/sipc_wwan/parameters/card', '/run/mu300-data-sim-actual'):
-        try:
-            value = Path(path).read_text().strip()
-        except FileNotFoundError:
-            continue
-        if value in ('0', '1'):
-            return value
-    value = uci('unisoc_modem.main.data_sim', '0')
-    if value not in ('0', '1'):
-        raise ValueError('invalid_slot')
-    return value
-
-
-def snapshot(slot):
-    # E5 publishes both slots together. MU300/Pro retain their separate ledgers.
-    path = RUN / ('view-sim' + slot + '.json')
-    if not path.exists():
-        path = (RUN / 'sim1' if slot == '1' else RUN) / 'view.json'
-    return read(path, {})
-
-
-def reconcile(state, settings, slot, iface, status, boot):
-    stop = state.get('stopped')
-    if stop and (stop['boot'] != boot or stop['iface'] != iface):
-        # A new boot has its own netifd state; never replay an old ifup.
-        state.pop('stopped')
-        stop = None
-    blocked = exceeded(settings['slots'][slot], snapshot(slot))
-    if blocked is None:
-        blocked = bool(stop)
-    if blocked:
-        if not stop and status.get('autostart') is True:
-            state['stopped'] = {'boot': boot, 'iface': iface}
-            write(BASE / 'policy-state.json', state)  # Record ownership before the down.
-            stop = state['stopped']
-        if stop and (status.get('autostart') is True or status.get('up') or status.get('pending')):
-            bus(iface, 'down')
-    elif stop:
-        # An explicit persistent data-off setting takes precedence over recovery.
-        if status.get('autostart') is not True and uci('network.' + iface + '.disabled', '0') != '1' and uci('network.' + iface + '.auto', '1') != '0':
-            bus(iface, 'up')
-        state.pop('stopped')
-    return blocked
-
-
-def restart(slot):
-    # Scope through the existing adapter, including the slot-1 AT queue. E5's
-    # lock-control resolves its own scope. Both entries own the ordinary lock.
-    env = os.environ.copy()
-    env.pop('MU300_DASH_DIR', None)
-    env.pop('MU300_STATE_DIR', None)
-    env.pop('MU300_SCOPED_SLOT', None)
-    env.pop('MU300_AT_DIR', None)
-    env.pop('MU300_DASH_AT_DIR', None)
-    env['MU300_SIM_SLOT'] = slot
-    if (LIB / 'sim-scope.sh').exists():
-        argv = ['/bin/sh', '-c', '. "$1"; sim_scope "$2" || exit 1; exec "$3" restart',
-                'traffic-policy', str(LIB / 'sim-scope.sh'), slot, str(LIB / 'lock')]
-    else:
-        argv = [str(LIB / 'lock'), 'restart']
-    output = command(argv, timeout=210, env=env)
-    if 'RECONNECT-DEFERRED' in output:
-        return 'radio_off'
-    try:
-        result = json.loads(output)
-    except ValueError:
-        return 'done'  # MU300/Pro's serialized shell entry uses its exit status.
-    if not result.get('ok') or result.get('reconnect') == 'failed':
-        raise RuntimeError(result.get('reconnect_error') or result.get('error') or 'restart_failed')
-    return 'radio_off' if result.get('reconnect') == 'deferred' else 'done'
-
-
-def tick(force=False):
-    now = time.time()
-    settings = config()
-    state = read(BASE / 'policy-state.json', {})
-    before = json.dumps(state, sort_keys=True)
-    if state.get('last', {}).get('result') == 'running':
-        state['last'].update(result='failed', detail='interrupted')
-    slot = active_slot()
-    iface = uci('unisoc_modem.main.data_interface', 'wan')
-    if not re.fullmatch(r'[a-zA-Z0-9_]{1,32}', iface):
-        raise ValueError('invalid_interface')
-    boot = Path('/proc/sys/kernel/random/boot_id').read_text().strip()
-    # Card changes hold this gate; do not act on an intermediate SIM identity.
-    if Path('/run/unisoc-data-sim-switch').exists():
-        return
-    status = bus(iface, 'status')
-    if active_slot() != slot:
-        return
-    blocked = reconcile(state, settings, slot, iface, status, boot)
-    scheduled = due(state, settings['schedule'], now)
-    if force or scheduled:
-        state['last'] = {'at': int(now), 'result': 'running', 'slot': int(slot)}
-        write(BASE / 'policy-state.json', state)  # At-most-once even on process failure.
-        try:
-            result = ('quota_blocked' if blocked else 'wan_disabled' if status.get('autostart') is not True
-                      or uci('network.' + iface + '.disabled', '0') == '1' else restart(slot))
-            state['last']['result'] = result
-        except Exception as error:
-            state['last'].update(result='failed', detail=str(error))
-    if before != json.dumps(state, sort_keys=True):
-        write(BASE / 'policy-state.json', state)
-    write(RUN / 'policy-status.json', {'active_slot': int(slot), 'blocked': blocked, 'last_check': int(now)})
-
-
-def spawn(force=False):
-    with open(os.devnull, 'wb') as output:
-        subprocess.Popen([sys.executable, str(Path(__file__).resolve()), 'tick'] + (['force'] if force else []),
-                         stdin=subprocess.DEVNULL, stdout=output, stderr=output, start_new_session=True)
-
-
-def main(args):
-    op = args[0]
-    if op == 'tick':
-        # A restart can outlive one accounting interval. Never overlap workers.
-        with (RUN / 'policy.lock').open('a') as lock:
-            try:
-                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            except BlockingIOError:
-                return {'ok': 0, 'error': 'operation_busy'}
-            tick(len(args) > 1 and args[1] == 'force')
-        return {'ok': 1}
-    raw = sys.stdin.read(8193)
-    if len(raw) > 8192:
-        raise ValueError('invalid_config')
-    request = json.loads(raw)
-    if not isinstance(request, dict):
-        raise ValueError('invalid_config')
-    if op == 'run':
-        if request.get('confirm') is not True:
-            raise ValueError('confirmation_required')
-        with (RUN / 'policy.lock').open('a') as lock:
-            try:
-                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            except BlockingIOError:
-                raise ValueError('operation_busy')
-        # The worker rechecks quota, WAN autostart and the active card.
-        spawn(True)
-        return {'ok': 1}
-    slot = str(request.get('slot', ''))
-    if slot not in ('0', '1') or slot == '1' and uci('unisoc_modem.main.sim_slots', '1') != '2':
-        raise ValueError('invalid_slot')
-    if op == 'set':
-        patch = request.get('config')
-        if not isinstance(patch, dict):
-            raise ValueError('invalid_config')
-        with (RUN / 'policy-config.lock').open('a') as lock:
-            fcntl.flock(lock, fcntl.LOCK_EX)
-            settings = config()
-            if 'quota' in patch:
-                settings['slots'][slot] = patch['quota']
-            if 'schedule' in patch:
-                settings['schedule'] = patch['schedule']
-            write(BASE / 'policy.json', config(settings))
-        spawn()
-        return {'ok': 1}
-    if op != 'get':
-        raise ValueError('invalid_operation')
-    settings = config()
-    state = read(BASE / 'policy-state.json', {})
-    now = int(time.time())
-    planned = next_run(now, settings['schedule']['time']) if settings['schedule']['enabled'] and now >= 1704067200 else None
-    local = lambda stamp: time.strftime('%Y-%m-%d %H:%M:%S %Z', time.localtime(stamp)) if stamp else None
-    return {'ok': 1, 'slot': int(slot), 'quota': settings['slots'][slot], 'schedule': settings['schedule'],
-            'local_time': local(now), 'next_time': local(planned), 'last_time': local(state.get('last', {}).get('at')),
-            'now': now, 'next_run': planned,
-            'last': state.get('last'), 'runtime': read(RUN / 'policy-status.json', {})}
-
-
-if __name__ == '__main__':
-    os.umask(0o077)
-    try:
-        BASE.mkdir(parents=True, exist_ok=True)
-        RUN.mkdir(parents=True, exist_ok=True)
-        result = main(sys.argv[1:])
-        if sys.argv[1:2] != ['tick'] or not result.get('ok'):
-            print(json.dumps(result, ensure_ascii=False))
-    except Exception as error:
-        if sys.argv[1:2] == ['tick']:
-            write(RUN / 'policy-status.json', {'error': str(error), 'last_check': int(time.time())})
-        print(json.dumps({'ok': 0, 'error': str(error)}, ensure_ascii=False))
-        sys.exit(1)
+const BASE=getenv('MU300_TRAFFIC_DIR') || '/etc/unisoc-modem/traffic';
+const RUN=getenv('MU300_TRAFFIC_RUN') || '/run/unisoc-modem-traffic';
+const SELF=sourcepath(), LIB=fs.dirname(SELF), cfg=uci.cursor();
+let connection;
+function mkdir(path) {
+    if (fs.stat(path)?.type=='directory') return;
+    let parent=fs.dirname(path);
+    if (parent!=path) mkdir(parent);
+    if (!fs.mkdir(path,448)) die('storage_failed');
+}
+function read(path,fallback) {
+    let raw=fs.readfile(path);
+    if (raw==null) { if (fs.stat(path)) die('storage_failed'); return fallback; }
+    return json(raw);
+}
+function write(path,data) {
+    mkdir(fs.dirname(path));
+    let raw=sprintf('%J\n',data), temp=path+'.new';
+    if (fs.writefile(temp,raw)!=length(raw) || !fs.chmod(temp,384) || !fs.rename(temp,path)) {
+        fs.unlink(temp); die('storage_failed');
+    }
+}
+function quote(s) { return "'"+replace(s,/'/g,"'\\''")+"'"; }
+function uci_get(key,fallback) { let p=split(key,'.'); return cfg.get(p[0],p[1],p[2]) ?? fallback; }
+function active_slot() {
+    for (let path in ['/sys/module/sipc_wwan/parameters/card','/run/mu300-data-sim-actual']) {
+        let slot=trim(fs.readfile(path) || '');
+        if (slot in ['0','1']) return slot;
+    }
+    let slot=uci_get('unisoc_modem.main.data_sim','0');
+    if (!(slot in ['0','1'])) die('invalid_slot');
+    return slot;
+}
+function bus(iface,method) {
+    connection ??= ubus.connect(null,3);
+    if (!connection) die('operation_failed');
+    let result=connection.call('network.interface.'+iface,method,{});
+    if (ubus.error(true)) die('operation_failed');
+    return result ?? {};
+}
+function restart(slot) {
+    // Preserve each platform's existing serialized scope and command owner.
+    let argv=fs.stat(LIB+'/sim-scope.sh') ? ['/bin/sh','-c',
+        '. "$1"; sim_scope "$2" || exit 1; exec "$3" restart',
+        'traffic-policy',LIB+'/sim-scope.sh',slot,LIB+'/lock'] : [LIB+'/lock','restart'];
+    let command='env -u MU300_DASH_DIR -u MU300_STATE_DIR -u MU300_SCOPED_SLOT -u MU300_AT_DIR -u MU300_DASH_AT_DIR '+
+        'MU300_SIM_SLOT='+quote(slot)+' '+join(' ',map(argv,quote));
+    // The minimal firmware need not ship a timeout applet. Use ucode's native
+    // deadline; keep output private and owned by this serialized worker.
+    let path=RUN+'/policy-restart-output';
+    if (fs.writefile(path,'')!=0 || !fs.chmod(path,384)) die('storage_failed');
+    let rc=system(command+' >'+quote(path)+' 2>&1',210000);
+    let output=fs.readfile(path) || ''; fs.unlink(path);
+    if (rc!=0) die(trim(substr(output,-320)) || 'restart_failed');
+    if (index(output,'RECONNECT-DEFERRED')>=0) return 'radio_off';
+    let result;
+    try { result=json(output); } catch(e) { return 'done'; }
+    if (!result?.ok || result.reconnect=='failed') die(result?.reconnect_error || result?.error || 'restart_failed');
+    return result.reconnect=='deferred' ? 'radio_off' : 'done';
+}
+function lock(name,nonblocking,fn) {
+    let file=fs.open(RUN+'/'+name,'a');
+    if (!file) die('storage_failed');
+    fs.chmod(RUN+'/'+name,384);
+    if (!file.lock(nonblocking ? 'xn' : 'x')) { file.close(); die('operation_busy'); }
+    let result;
+    try { result=fn(); } catch(e) { file.close(); die(e.message); }
+    file.close(); return result;
+}
+const io={
+    settings:()=>read(BASE+'/policy.json',{}), state:()=>read(BASE+'/policy-state.json',{}),
+    save:(state)=>write(BASE+'/policy-state.json',state),
+    status:(state)=>write(RUN+'/policy-status.json',state), runtime:()=>read(RUN+'/policy-status.json',{}),
+    write_config:(settings)=>write(BASE+'/policy.json',settings),
+    configure:(fn)=>lock('policy-config.lock',false,fn),
+    check_idle:()=>lock('policy.lock',true,()=>null),
+    spawn:(force)=>{
+        let cmd='ucode '+quote(SELF)+' tick'+(force ? ' force' : '')+' </dev/null >/dev/null 2>&1 &';
+        if (system(cmd)!=0) die('operation_failed');
+    },
+    snapshot:(slot)=>{
+        let path=RUN+'/view-sim'+slot+'.json';
+        if (!fs.stat(path)) path=RUN+(slot=='1' ? '/sim1' : '')+'/view.json';
+        return read(path,{});
+    },
+    now:time, active_slot, uci:uci_get, bus, restart,
+    boot:()=>trim(fs.readfile('/proc/sys/kernel/random/boot_id') || ''),
+    switching:()=>!!fs.stat('/run/unisoc-data-sim-switch')
+};
+try {
+    mkdir(BASE); mkdir(RUN);
+    let controller=policy.controller(io), result;
+    if (ARGV[0]=='tick') result=lock('policy.lock',true,()=>{ controller.tick(ARGV[1]=='force'); return {ok:1}; });
+    else {
+        let input=fs.open('/dev/stdin','r'), raw=input?.read(8193) || ''; input?.close();
+        if (length(raw)>8192) die('invalid_config');
+        result=controller.api(ARGV[0],json(raw));
+    }
+    if (ARGV[0]!='tick') print(sprintf('%J\n',result));
+}
+catch(e) {
+    if (ARGV[0]=='tick' && e.message!='operation_busy') {
+        try { write(RUN+'/policy-status.json',{error:e.message,last_check:time()}); } catch(write_error) {}
+    }
+    print(sprintf('%J\n',{ok:0,error:e.message})); exit(1);
+}

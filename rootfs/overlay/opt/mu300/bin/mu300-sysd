@@ -271,7 +271,9 @@ function press_rest(code, kind) {
         });
         return;
     }
+    if (is_openwrt() && (button_model() == 'v50' || button_model() == 'u30air')) { press_next(); return; }
     if (button_model() != 'u30air') { band_toggle(); return; }
+    // The non-OpenWrt path keeps its original double-click owner.
     let stamp = rd(R + '/proc/uptime'), fields = stamp ? split(split(stamp, ' ')[0], '.') : [];
     if (length(fields) != 2 || !digits(fields[0]) || !digits(fields[1])) {
         wifi_last = null; press_next(); return;
@@ -293,17 +295,28 @@ press_next = function() {
         });
     };
     let configurable = button_model() == 'u30air' || button_model() == 'v50';
-    if (is_openwrt() && configurable && !(p[0] == KEY_POWER && p[1] == 'long') &&
+    if (is_openwrt() && configurable && p[1] != 'short' && !(p[0] == KEY_POWER && p[1] == 'long') &&
         (function_key(p[0]) || (button_model() == 'u30air' && p[0] == KEY_POWER))) {
         button_done(['/usr/libexec/unisoc-modem/buttons','run',p[0] == KEY_POWER ? 'power' : 'function',p[1]], (code) => {
             if (code == 3) original();
-            else { wifi_last = null; if (code != 0) log('mu300-buttons','configured action failed'); press_next(); }
+            else { if (code != 0) log('mu300-buttons','configured action failed'); press_next(); }
         });
     } else original();
 };
 function press_enqueue(code, kind) {
     push(presses,[code,kind]);
     if (!pressing) press_next();
+}
+// Read settings only on a key event; no polling or Python on single presses.
+let button_config = null;
+function button_double_enabled(code) {
+    if (button_config == null) button_config = require('uci');
+    let c = button_config.cursor(R + '/etc/config');
+    let model = button_model(), kind = code == KEY_POWER ? 'power_double' : 'double';
+    let action = c.get('unisoc_modem', 'main', model + '_button_' + kind);
+    c.unload('unisoc_modem');
+    if (action == null || action == 'default') return model == 'u30air' && code != KEY_POWER;
+    return action != 'none';
 }
 let button_clicks = {};
 function button_click_cancel() {
@@ -318,14 +331,16 @@ function press(code, kind) {
     if (kind == 'long') {
         button_clicks[code]?.cancel(); button_clicks[code] = null;
         press_enqueue(code, kind); // Protected power hold never waits on a click.
+    } else if (!button_double_enabled(code)) {
+        button_clicks[code]?.cancel(); button_clicks[code] = null;
+        press_enqueue(code, 'short'); // Unmapped doubles must never swallow repeats.
     } else if (button_clicks[code]) {
         button_clicks[code].cancel(); button_clicks[code] = null;
         press_enqueue(code, 'double');
     } else {
-        button_clicks[code] = uloop.timer(500, () => {
-            button_clicks[code] = null;
-            press_enqueue(code, 'short');
-        });
+        // Expiry only forgets double-click history; it never delays an action.
+        button_clicks[code] = uloop.timer(250, () => { button_clicks[code] = null; });
+        press_enqueue(code, 'short');
     }
 }
 

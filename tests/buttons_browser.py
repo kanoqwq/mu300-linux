@@ -47,23 +47,27 @@ with sync_playwright() as pw:
                 if model=='u30pro':expected.update({0:'page',2:'screen'})
                 elif model=='u30air':expected.update({0:'led',1:'wifi',2:'led',3:'band'})
                 for index,action in expected.items():
+                    if index in (0,2):continue
                     assert default_labels[lang][action] in page.locator(f'#mud-button-{index} option[value=default]').text_content()
-                assert page.locator('#mud-button-2').is_visible()==(model in ('u30pro','u30air'))
+                    options=page.locator(f'#mud-button-{index}').evaluate('s=>Array.from(s.options).map(o=>o.value)')
+                    common=['default','none','data-switch','toggle-wifi','wifi-band','nfc-toggle','custom']
+                    assert options==common+(['page-next'] if model=='u30pro' and index==0 else []),(model,index,options)
+                    assert page.locator(f'#mud-button-{index} option[value=toggle-wifi]').text_content()==default_labels[lang]['wifi']
+                assert page.locator('#mud-button-0').count()==0
+                assert page.locator('#mud-button-2').count()==0
                 assert not page.locator('[id*=power-long]').count()
                 assert page.locator('#mud-button-4').is_visible()==(model in ('u30pro','u30air'))
                 page.locator('#mud-button-3').select_option('custom')
                 page.locator('#mud-button-3-command').fill('logger double')
-                page.locator('#mud-button-0').select_option('custom')
-                command=page.locator('#mud-button-0-command')
+                page.locator('#mud-button-1').select_option('custom')
+                command=page.locator('#mud-button-1-command')
                 assert command.is_visible()
                 save.click()
-                assert page.evaluate('calls.length')==0  # empty custom command cannot save
+                assert page.evaluate('calls.length')==0
                 command.fill("logger 'hello $world; test'")
-                page.locator('#mud-button-1').select_option('wifi-band')
                 save.click()
                 page.wait_for_function('calls.length===1 && !document.querySelector(".mud-buttons button").disabled')
-                assert page.evaluate('calls[0].slice(0,4)')==['custom','wifi-band',"logger 'hello $world; test'",'']
-                assert page.evaluate('calls[0].slice(6,8)')==['custom','logger double']
+                assert page.evaluate('calls[0].slice(0,4)')==['custom',"logger 'hello $world; test'",'custom','logger double']
                 assert command.input_value()=="logger 'hello $world; test'"
                 page.evaluate("appError='storage_failed'");save.click()
                 page.wait_for_function('calls.length===2 && !document.querySelector(".mud-buttons button").disabled')
@@ -77,6 +81,21 @@ with sync_playwright() as pw:
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
                 if lang!='zh':
                     assert not page.locator('main').evaluate('e=>/[\\u4e00-\\u9fff]/.test(e.textContent)')
+                if model=='u30pro':
+                    for old in ('page-next','reconnect-cellular','refresh-status'):
+                        page.evaluate("""old=>{
+                            instance.dispose();document.querySelector('main').innerHTML='';
+                            fail=false;state.long=old;instance=widget.mount(document.querySelector('main'));
+                        }""",old)
+                        page.wait_for_function('!document.querySelector(".mud-buttons button").disabled')
+                        assert page.locator('#mud-button-1').input_value()==old
+                        legacy=page.locator('#mud-button-1 option[data-legacy]')
+                        assert legacy.count()==1 and legacy.is_disabled()
+                        assert ('原有设置' if lang=='zh' else 'Existing setting' if lang=='en' else 'Mevcut ayar') in legacy.text_content()
+                        page.locator('#mud-button-1').select_option('toggle-wifi')
+                        save.click()
+                        page.wait_for_function('state.long==="toggle-wifi" && !document.querySelector(".mud-buttons button").disabled')
+                        assert page.locator('#mud-button-1 option[data-legacy]').count()==0
                 # No unsafe rendering of shell text, no execution, and read-only access has no save.
                 page.evaluate("instance.dispose();document.querySelector('main').innerHTML='';L.hasViewPermission=()=>false;widget.mount(document.querySelector('main'))")
                 page.wait_for_timeout(50)

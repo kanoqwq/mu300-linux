@@ -10,8 +10,8 @@ ROOT = Path(os.environ.get('MU300_SYSROOT', '/'))
 BIN = Path(os.environ.get('MU300_BIN', '/opt/mu300/bin'))
 LIB = Path(os.environ.get('MU300_DASH_BIN', '/usr/libexec/unisoc-modem'))
 RUN = Path(os.environ.get('MU300_RUN', '/run'))
-ACTIONS = ('none', 'data-switch', 'wifi-band', 'nfc-toggle', 'custom')
-LEGACY = ('page-next', 'toggle-wifi', 'reconnect-cellular', 'refresh-status')
+ACTIONS = ('none', 'data-switch', 'toggle-wifi', 'wifi-band', 'nfc-toggle', 'custom')
+LEGACY = ('page-next', 'reconnect-cellular', 'refresh-status')
 
 
 def call(argv, **kwargs):
@@ -50,7 +50,9 @@ def settings(product):
                     double='wifi-band' if product == 'u30air' else 'none', double_command='',
                     short_command='', long_command='', power_short='default', power_command='',
                     power_double='none', power_double_command='')
-    return {name: read_setting(key, defaults[name]) for name, key in keys(product).items()}
+    fixed = ('short', 'short_command', 'power_short', 'power_command')
+    return {name: defaults[name] if name in fixed else read_setting(key, defaults[name])
+            for name, key in keys(product).items()}
 
 
 def validate(product, values):
@@ -77,6 +79,8 @@ def save(product, values, incoming):
     # rpcd adds the authenticated session to HTTP calls. It is transport
     # metadata, never a button setting or a substitute for rpcd's ACL checks.
     incoming = {key: value for key, value in incoming.items() if key != 'ubus_rpc_session'}
+    if set(incoming) & {'short', 'short_command', 'power_short', 'power_command'}:
+        raise ValueError('single_press_fixed')
     if set(incoming) - set(values):
         raise ValueError('invalid_button_settings')  # also rejects power_long
     values.update(incoming)
@@ -96,11 +100,47 @@ def save(product, values, incoming):
         subprocess.run(['ubus', '-t', '3', 'call', 'u30pro.panel', 'reload'], capture_output=True)
 
 
+def next_data_target(product):
+    if product in ('u30pro', 'f50pro', 'v50'):
+        owner = 'mu300-v50-sim' if product == 'v50' else 'mu300-physical-sim'
+        state = json.loads(call([BIN / owner, 'status']))
+        if not state.get('ok') or not state.get('supported') or not state.get('ready') or state.get('model') != product:
+            raise ValueError('sim_unavailable')
+        cards = state.get('cards')
+        maximum = 4 if product == 'f50pro' else 3
+        if (not isinstance(cards, list) or not cards or
+                any(type(card) is not int or not 0 <= card <= maximum for card in cards) or
+                len(set(cards)) != len(cards)):
+            raise ValueError('sim_unavailable')
+        # Match SIM management's order: MU3356 external 1 is raw card 4,
+        # external 2 is raw card 3. Board/form filtering stays with the owner.
+        if product == 'f50pro':
+            cards = sorted(cards, key=lambda card: {4: 3, 3: 4}.get(card, card))
+        current = state.get('active_card')
+        if type(current) is not int or current not in cards:
+            raise ValueError('sim_read_failed')
+        if len(cards) == 1:
+            return None
+        return product + '-card-' + str(cards[(cards.index(current) + 1) % len(cards)])
+    slot = (RUN / 'mu300-data-sim-actual').read_text().strip()
+    if slot not in ('0', '1'):
+        raise ValueError('sim_read_failed')
+    return str(1 - int(slot))
+
+
 def execute(product, action, command):
     if action == 'custom':
         argv = ['/bin/sh', '-c', command]
     elif action == 'wifi-band':
         argv = [BIN / 'mu300-wifi-band', 'toggle']
+    elif action == 'toggle-wifi':
+        state = json.loads(call([LIB / 'hotspot', 'status']))
+        if not state.get('available') or type(state.get('enabled')) is not bool:
+            raise ValueError('hotspot_unavailable')
+        result = json.loads(call([LIB / 'hotspot', 'off' if state['enabled'] else 'on']))
+        if not result.get('ok'):
+            raise ValueError(result.get('error', 'wifi_toggle_failed'))
+        return
     elif action == 'nfc-toggle':
         state = json.loads(call([LIB / 'nfc', 'get']))
         if not state.get('ok') or not state.get('supported'):
@@ -110,17 +150,10 @@ def execute(product, action, command):
             raise ValueError(result.get('error', 'nfc_apply_failed'))
         return
     elif action == 'data-switch':
-        slot = (RUN / 'mu300-data-sim-actual').read_text().strip()
-        if slot not in ('0', '1'):
-            raise ValueError('sim_read_failed')
-        target = 1 - int(slot)
-        if product in ('u30pro', 'f50pro'):
-            state = json.loads(call([BIN / 'mu300-physical-sim', 'status']))
-            card = state['logical_cards'][target]
-            if type(card) is not int or not 0 <= card <= 4:
-                raise ValueError('sim_unavailable')
-            target = product + '-card-' + str(card)
-        argv = [LIB / 'data-sim', 'apply', 'data', str(target)]
+        target = next_data_target(product)
+        if target is None:
+            return
+        argv = [LIB / 'data-sim', 'apply', 'data', target]
     elif action in LEGACY and action != 'page-next':
         argv = ['/usr/sbin/u30pro-panel-control', {'toggle-wifi': 'wifi-toggle',
                 'reconnect-cellular': 'reconnect', 'refresh-status': 'key-refresh'}[action]]
@@ -141,6 +174,8 @@ def main():
             return 2
         if button == 'power' and (kind == 'long' or product not in ('u30pro', 'u30air')):
             return 2  # held power stays with the existing shutdown owner
+        if kind == 'short':
+            return 3  # fixed immediate action belongs to the native input owner
         values = settings(product)
         validate(product, values)
         action = values[kind if button == 'function' else 'power_' + kind]
