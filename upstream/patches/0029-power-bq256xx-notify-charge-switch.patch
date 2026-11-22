@@ -1,0 +1,19 @@
+power: supply: bq256xx: notify after a successful charge switch
+
+U30 Air's SGM41513 has no charger IRQ. A userspace pause/resume changes the
+hardware and chg_off, but without a power_supply notification the FGU and
+charging LED can retain the previous state until their safety deadline.
+Publish the successful change after updating the saved charging choice;
+failed writes must not notify or change that choice. Keep charging policy,
+Type-C roles and the existing event consumers unchanged.
+
+--- a/drivers/power/supply/bq256xx_charger.c
++++ b/drivers/power/supply/bq256xx_charger.c
+@@ -1008,6 +1008,7 @@
+ 			return ret;
+ 		/* "N/A" stops charging until "Fast" (or "Trickle"), also across plugs (bq2560x_chg_detect) */
+ 		WRITE_ONCE(bq->chg_off, val->intval == POWER_SUPPLY_CHARGE_TYPE_NONE);
++		power_supply_changed(psy);
+ 		break;
+ 
+ 	default:

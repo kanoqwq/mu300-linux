@@ -152,6 +152,48 @@ time.sleep(60)
         finally:
             daemon.send_signal(signal.SIGTERM);daemon.communicate(timeout=5)
 
+    def test_charge_switch_event_reconciles_before_soc_safety_deadline(self):
+        psy=self.root/'sys/class/power_supply'
+        (psy/'sc27xx-fgu').mkdir(parents=True)
+        (psy/'bq256xx-charger').mkdir()
+        (psy/'sc27xx-fgu/capacity').write_text('4\n')
+        (psy/'sc27xx-fgu/status').write_text('Not charging\n')
+        (psy/'bq256xx-charger/online').write_text('1\n')
+        helper=self.stub('keys','''#!/usr/bin/python3
+import ctypes,os,time
+from pathlib import Path
+ctypes.CDLL(None).prctl(1,15)
+root=Path(os.environ['MU300_SYSROOT'])
+while not (root/'calls').exists():time.sleep(.02)
+time.sleep(.2)
+(root/'sys/class/power_supply/sc27xx-fgu/status').write_text('Charging\\n')
+print('uevent change power_supply bq256xx-charger',flush=True)
+time.sleep(60)
+''')
+        self.stub('mu300-led','''#!/usr/bin/python3
+import os,time
+from pathlib import Path
+root=Path(os.environ['MU300_SYSROOT']);p=root/'run/mu300/led';p.mkdir(exist_ok=True)
+mode='breathe' if (root/'sys/class/power_supply/sc27xx-fgu/status').read_text().strip()=='Charging' else 'steady'
+now=int(float(Path('/proc/uptime').read_text().split()[0]))
+(p/'.tick-hint').write_text('due '+str(now+600)+'\\nbattery red:'+mode+':1\\n')
+with (root/'calls').open('a') as f:f.write(mode+'\\n')
+''')
+        env=dict(self.env,MU300_KEYS_BIN=str(helper),MU300_SYSD_PARTS='led')
+        daemon=subprocess.Popen(['ucode',str(SYSD)],env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        started=time.monotonic()
+        try:
+            until=started+9
+            while time.monotonic()<until:
+                if (self.root/'calls').exists() and len((self.root/'calls').read_text().splitlines())>=2:break
+                time.sleep(.05)
+            self.assertEqual((self.root/'calls').read_text().splitlines(),['steady','breathe'])
+            self.assertLess(time.monotonic()-started,9)
+            time.sleep(.8)
+            self.assertEqual((self.root/'calls').read_text().splitlines(),['steady','breathe'])
+        finally:
+            daemon.send_signal(signal.SIGTERM);daemon.communicate(timeout=5)
+
     def test_color_change_during_tick_is_not_acknowledged_by_completion(self):
         psy=self.root/'sys/class/power_supply'
         (psy/'sc27xx-fgu').mkdir(parents=True)

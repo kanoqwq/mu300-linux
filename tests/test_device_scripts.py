@@ -589,6 +589,7 @@ esac''')
     def nfc(self, shell, *args, device='u30air', **env):
         (self.root / 'run/mu300/device').write_text(device + '\n')
         return self.script(shell, BIN / 'mu300-nfc', *args, MU300_SYSROOT=self.root, MU300_BIN=BIN,
+                           MU300_NFC_ENCODER=TOP/'rootfs/overlay/usr/share/ucode/mu300/nfc-wifi.uc',
                            MU300_HOTSPOT_CONF=self.conf, TEST_NFC_PIN='189' if device=='v50' else '190', **env)
 
     def writes(self):
@@ -596,21 +597,23 @@ esac''')
         return w.read_text().split() if w.exists() else []
 
     def test_wifi_record_is_zte_s(self):
-        # byte for byte what the stock firmware writes (WSC credential, WPA2-PSK, AES)
+        # Keep the stock WSC credential semantics; additional text retains current security details.
         for shell in self.each_shell():
             self.blank()
             r = self.nfc(shell, 'wifi')
             self.assertEqual((r.returncode, r.stdout.strip()), (0, 'wifi: U30 AIR (with its password)'), r.stderr)
             self.assertNotIn('secret', r.stdout + r.stderr)
-            ssid, key = b'U30 AIR', b'secret pass!'
-            cred = (b'\x10\x45\x00' + bytes([len(ssid)]) + ssid + b'\x10\x03\x00\x02\x00\x20\x10\x0f\x00\x02\x00\x08'
-                    + b'\x10\x27\x00' + bytes([len(key)]) + key + b'\x10\x20\x00\x06' + bytes(6)
-                    + b'\x10\x49\x00\x06\x00\x37\x2a\x00\x01\x20')
-            payload = b'\x10\x0e\x00' + bytes([len(cred)]) + cred
-            rec = b'\xd2\x17' + bytes([len(payload)]) + b'application/vnd.wfa.wsc' + payload
-            want = b'\x03' + bytes([len(rec)]) + rec + b'\xfe'
-            data = (self.tmp / 'tag.bin').read_bytes()
-            self.assertEqual(data[16:16 + len(want)], want)
+            from test_nfc_wifi_encoding import records,attributes
+            data=(self.tmp/'tag.bin').read_bytes()
+            length=data[17];offset=18
+            if length==255:length=int.from_bytes(data[18:20],'big');offset=20
+            token=records(data[16:offset+length+1])
+            cred=attributes(attributes(token[0][2])[0x100e])
+            self.assertEqual(cred[0x1045],b'U30 AIR')
+            self.assertEqual(cred[0x1027],b'secret pass!')
+            self.assertEqual(cred[0x1003],b'\0\x20')
+            self.assertEqual(cred[0x100f],b'\0\x08')
+            self.assertIn(b'WIFI:',token[1][2])
             self.assertEqual(data[:16], self.ZTE)                     # UID and capability container untouched
             self.assertFalse((self.tmp / 'held').exists())            # the line is let go
             # again: nothing changed, nothing written
@@ -741,7 +744,8 @@ esac''')
                 fcntl.flock(stream,fcntl.LOCK_EX)
                 process=subprocess.Popen(shell+[str(BIN/'mu300-nfc'),'sync'],
                     stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,
-                    env=self.env(MU300_SYSROOT=self.root,MU300_BIN=BIN,MU300_HOTSPOT_CONF=self.conf))
+                    env=self.env(MU300_SYSROOT=self.root,MU300_BIN=BIN,MU300_HOTSPOT_CONF=self.conf,
+                                 MU300_NFC_ENCODER=TOP/'rootfs/overlay/usr/share/ucode/mu300/nfc-wifi.uc'))
                 try:
                     time.sleep(0.2)
                     self.assertIsNone(process.poll(),'wireless event was discarded while busy')

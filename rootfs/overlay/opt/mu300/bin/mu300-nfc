@@ -20,6 +20,7 @@
 export PATH="$PATH:/opt/mu300/bin:/opt/mu300/busybox-bin:/usr/sbin:/sbin"
 R=${MU300_SYSROOT:-}
 CONF=${MU300_HOTSPOT_CONF:-/etc/mu300/hotspot.conf}
+ENCODER=${MU300_NFC_ENCODER:-/usr/share/ucode/mu300/nfc-wifi.uc}
 BUS=2 ADDR=0x57 LINE=190 START=16 CFG=0x3bf RF_OFF=0x20
 
 die() { echo "mu300-nfc: $*" >&2; exit 1; }
@@ -170,32 +171,46 @@ uri_record() {
     record 1 55 "$code $(hex "$u")"
 }
 text_record() { record 1 54 "02 $(hex en) $(hex "$1")"; }
-wifi_record() {  # wifi_record SSID PSK: WSC credential as ZTE writes it (open network without a PSK)
-    if [ -n "$2" ]; then auth='00 20' enc='00 08'; else auth='00 01' enc='00 01'; fi
-    ssid=$(hex "$1") key=$(hex "$2")
-    cred="10 45 $(be16 "$(count "$ssid")") $ssid 10 03 00 02 $auth 10 0f 00 02 $enc 10 27 $(be16 "$(count "$key")") $key"
-    cred="$cred 10 20 00 06 00 00 00 00 00 00 10 49 00 06 00 37 2a 00 01 20"
-    record 2 "$(hex application/vnd.wfa.wsc)" "10 0e $(be16 "$(count "$cred")") $cred"
-}
-hotspot() {  # SSID and PSK of the hotspot, one per line
+hotspot() {  # Saved SSID, client credential and encryption, one per line
     if [ -e /etc/openwrt_release ] && [ -z "${MU300_HOTSPOT_CONF:-}" ]; then
         s=$(uci -q show wireless | sed -n "s/^wireless\.\([^.=]*\)\.mode='ap'$/\1/p" | head -n1)
         [ -n "$s" ] || die "no access point in /etc/config/wireless"
-        uci -q get "wireless.$s.ssid"
-        case $(uci -q get "wireless.$s.encryption") in none|'') echo ;; *) uci -q get "wireless.$s.key" ;; esac
+        selected=$(uci -q get unisoc_modem.main.wifi_iface || true)
+        if [ -n "$selected" ]; then
+            [ "$(uci -q get "wireless.$selected.mode")" = ap ] || die "selected hotspot is not an AP"
+            s=$selected
+        fi
+        encryption=$(uci -q get "wireless.$s.encryption" || true)
+        key=
+        case ${encryption%%+*} in
+            psk*|sae*) key=$(uci -q get "wireless.$s.key") || return 1;;
+            wep*)
+                key=$(uci -q get "wireless.$s.key") || return 1
+                case $key in 1|2|3|4) key=$(uci -q get "wireless.$s.key$key") || return 1;; esac
+                case $key in s:*) key=${key#s:};; esac;;
+        esac
+        uci -q get "wireless.$s.ssid" || return 1
+        printf '%s\n%s\n%s\n' "$key" "$encryption" "$(uci -q get "wireless.$s.hidden" || true)"
     else
         [ -r "$CONF" ] || die "cannot read $CONF (run as root)"
         sed -n 's/^SSID=//p' "$CONF" | head -n1
         sed -n 's/^PSK=//p' "$CONF" | head -n1
+        encryption=$(sed -n 's/^ENCRYPTION=//p' "$CONF" | head -n1)
+        if [ -z "$encryption" ]; then
+            if grep -q '^PSK=.' "$CONF"; then encryption=psk2; else encryption=none; fi
+        fi
+        printf '%s\n' "$encryption"
+        sed -n 's/^HIDDEN=//p' "$CONF" | head -n1
     fi
 }
 prepare_wifi() {
     network=$(hotspot) || die "cannot read hotspot settings"
-    { IFS= read -r ssid; IFS= read -r psk; } <<EOF
+    { IFS= read -r ssid; IFS= read -r psk; IFS= read -r encryption; IFS= read -r hidden; } <<EOF
 $network
 EOF
     [ -n "$ssid" ] || die "the hotspot has no name"
-    new=$(tlv "$(wifi_record "$ssid" "$psk")")
+    new=$(printf %s "$psk" | ucode "$ENCODER" "$ssid" "$encryption" "$hidden") || die "cannot encode hotspot settings"
+    unset psk
 }
 describe() {  # describe HEX: the NDEF message in words (hex on stdin as words)
     echo "$1" | LC_ALL=C awk '
@@ -280,7 +295,7 @@ case ${1:-show} in
         # custom URLs/text are never replaced by an enable operation.
         data=$(read_ndef) || exit 1
         case $(describe "$data") in
-            wifi:*|empty) prepare_wifi; write_ndef $new || exit 1 ;;
+            wifi:*|empty|text:\ WIFI:*) prepare_wifi; write_ndef $new || exit 1 ;;
         esac
         ;;
 esac
@@ -298,7 +313,7 @@ case ${1:-show} in
         echo "$now"
         [ "$(rf)" = on ] || echo "NFC is off: phones get nothing (sudo mu300-nfc on)" ;;
     sync)
-        case $now in wifi:*|empty) ;; *) echo "the tag holds something else, left as it is: $now"; exit 0 ;; esac
+        case $now in wifi:*|empty|text:\ WIFI:*) ;; *) echo "the tag holds something else, left as it is: $now"; exit 0 ;; esac
         write_ndef $new
         echo "$(describe "$(read_ndef)")" ;;
     *)
