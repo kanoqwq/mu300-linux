@@ -45,6 +45,27 @@
   report failures directly; retain safety checks and recovery within the chosen
   implementation.
 
+# Rootfs and kernel package architecture
+
+- These ports intentionally combine an OpenWrt armsr base rootfs/package ecosystem
+  with a separately built, model-specific kernel and matching modules. The APK
+  database's base-distribution kernel identity is not the running kernel identity;
+  a difference from `uname -r`, a firmware version or an ABI hash alone is not a bug.
+- Preserve the base rootfs's kernel/kmod package metadata and dependency strategy.
+  Do not rewrite them into custom native-kernel identities, generate capability
+  packages or add native-kernel world pins merely to make the records agree.
+  Diagnose actual repository/package conflicts before changing package policy.
+- Validate the delivered Image, modules, source/config receipts and model pairing
+  through the existing build paths. Retaining armsr metadata does not establish
+  compatibility of third-party `.ko` files and is not permission to force-load them
+  or bypass existing module checks. Keep artifact-integrity checks separate from
+  runtime feature gating; do not add fixed firmware/hash allowlists.
+- For updates, preserve unrelated user packages, constraints and configuration.
+  Cleanup of the withdrawn generated native-kernel metadata must remain scoped to
+  confirmed records from that migration and use the normal OTA transaction/rollback.
+  Do not infer an `apk upgrade` boot failure from metadata differences alone.
+- Read `docs/NATIVE-KERNEL-APK.zh-CN.md` before changing kernel package metadata.
+
 # Local builds and release packaging
 
 - Read `docs/LOCAL-BUILD.zh-CN.md` and `docs/AGENT-BUILD.zh-CN.md` before a local build or release. Use the

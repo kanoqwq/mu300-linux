@@ -145,7 +145,6 @@ docker run --rm --platform linux/arm64 \
   -v "$TOP/tools/stage-ra-renew.py":/in/stage-ra-renew.py:ro \
   -v "$TOP/tools/stage-ntp.py":/in/stage-ntp.py:ro \
   -v "$TOP/tools/stage-bluetooth.py":/in/stage-bluetooth.py:ro \
-  -v "$TOP/tools/stage-kernel-packages.py":/in/stage-kernel-packages.py:ro \
   -v "$TOP/tools/ble-decoder":/in/ble-decoder-source:ro \
   -v "$BT_DECODER":/in/ble-decoder-artifacts:ro \
   -v "$TOP/openwrt/patches/wifi-scripts-no-dfs.patch":/in/wifi-scripts-no-dfs.patch:ro \
@@ -155,7 +154,6 @@ docker run --rm --platform linux/arm64 \
   $(opt tools/logdw/logdw logdw) $(opt tools/bt-init/mu300-bt-init bt-init) $(opt tools/keys/mu300-keys keys) $(opt tools/atd-io/mu300-atd-io atd-io) $(opt tools/gpu/cltest cltest) \
   $(opt busybox busybox) $(mainline_opt modules mainline-modules) $(plugin_opt) -v "$ROOTFS_DIR":/out -v "$REGDB":/in/regdb:ro \
   $(mainline_opt modules.builtin mainline-modules.builtin) $(mainline_opt modules.builtin.modinfo mainline-modules.builtin.modinfo) \
-  $(mainline_opt Image native-Image) $(mainline_opt kernel.config native-kernel.config) \
   -v "$THEME_APK":/in/luci-theme-aurora.apk:ro \
   -v "$BLOCK_APK":/in/block-mount-mu300.apk:ro \
   -v "$BLOCK_APK.build-id":/in/block-mount.build-id:ro \
@@ -401,11 +399,6 @@ chmod 0755 $R/usr/libexec/unisoc-modem/disable-stock-upgrade
 ucode $R/usr/libexec/unisoc-modem/disable-stock-upgrade $R
 python3 /in/ota-source/installer/stage-ota.py --root $R
 python3 /in/euicc-source/openwrt/stage-lpac.py --root $R --artifacts /in/lpac
-if [ -d /in/mainline-modules ]; then
-    python3 /in/stage-kernel-packages.py --root $R --config /in/native-kernel.config \
-        --image /in/native-Image --release "$krel" --platform mu300
-fi
-(MU300_LIB=1; . $R/opt/mu300/bin/mu300-update; upk_manual $R openwrt) > $R/etc/mu300/image-packages
 cd $R && tar -czf /out/$OUT .
 ls -la /out/$OUT'
 # Remove optional VPN helpers and reject accidentally inherited VPN packages.
