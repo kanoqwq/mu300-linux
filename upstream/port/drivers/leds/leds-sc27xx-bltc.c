@@ -279,9 +279,10 @@ static int sc27xx_led_pattern_set(struct led_classdev *ldev,
 	if (err)
 		goto out;
 
-	/* Enable the LED breathing mode */
+	/* Select breathing explicitly: a boot/steady frame can leave TYPE set.
+	 * Updating RUN alone would keep the LED steady despite the new curve. */
 	err = regmap_update_bits(regmap, ctrl_base,
-				 SC27XX_LED_RUN << ctrl_shift,
+				 (SC27XX_LED_RUN | SC27XX_LED_TYPE) << ctrl_shift,
 				 SC27XX_LED_RUN << ctrl_shift);
 	if (!err)
 		ldev->brightness = pattern[1].brightness;
