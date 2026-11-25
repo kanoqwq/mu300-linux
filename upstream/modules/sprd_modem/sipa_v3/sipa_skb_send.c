@@ -116,74 +116,31 @@ static bool sipa_sender_can_notify(struct sipa_skb_sender *sender)
 		sender->ep->send_fifo.rx_fifo.fifo_depth / 4;
 }
 
-static void sipa_free_sent_items(void)
+static bool sipa_do_free_skb(struct sipa_node_desc_tag *node)
 {
-	bool status = false;
 	unsigned long flags;
-	u32 i, num = 0, success_cnt = 0, retry_cnt = 10;
-	struct sipa_node_desc_tag *node = NULL;
-	struct sipa_skb_sender *sender;
+	struct sk_buff *skb;
+	struct skb_shared_info *shinfo;
 	struct sipa_skb_dma_addr_pair *iter, *_iter;
 	struct sipa_plat_drv_cfg *ipa = sipa_get_ctrl_pointer();
-	struct skb_shared_info *shinfo;
+	struct sipa_skb_sender *sender = ipa->sender;
 
-	if (!ipa)
-		return;
+	spin_lock_irqsave(&sender->send_lock, flags);
 
-	sender = ipa->sender;
-	sipa_hal_cmn_fifo_get_filled_depth(sender->dev,
-					   sender->ep->send_fifo.idx,
-					   NULL, &num);
-	if (!num)
-		goto notify;
+	if (node->err_code) {
+		if (net_ratelimit())
+			dev_err(sender->dev, "errcode is %d\n",
+				node->err_code);
+	}
 
-	sipa_hal_sync_node_from_tx_fifo(sender->dev,
-					sender->ep->send_fifo.idx, num);
-	for (i = 0; i < num; i++) {
-		node = sipa_hal_get_tx_node_rptr(sender->dev,
-						 sender->ep->send_fifo.idx, i);
+	list_for_each_entry_safe(iter, _iter,
+				 &sender->sending_list, list) {
+		if (iter->dma_addr == node->address) {
+			skb = iter->skb;
+			list_del(&iter->list);
+			list_add_tail(&iter->list,
+				      &sender->pair_free_list);
 
-		if (!node) {
-			dev_err(sender->dev, "sender node is null\n");
-			sipa_hal_add_tx_fifo_rptr(sender->dev,
-						  sender->ep->send_fifo.idx,
-						  1);
-			return;
-		}
-
-		while (!node->address && --retry_cnt)
-			udelay(1);
-
-		/* MU300: per packet, and it comes in bursts while the delegate is not up yet: rate limited */
-		if (node->err_code || !retry_cnt)
-			dev_err_ratelimited(sender->dev,
-				"node->address = 0x%llx, have node transfer err = %d retry_cnt = %d\n",
-				(u64)node->address, node->err_code, retry_cnt);
-
-		retry_cnt = 10;
-check_again:
-		spin_lock_irqsave(&sender->send_lock, flags);
-		if (list_empty(&sender->sending_list)) {
-			dev_err(sender->dev,
-				"fifo id %d: send list is empty i = %d num = %d\n",
-				sender->ep->send_fifo.idx, i, num);
-			spin_unlock_irqrestore(&sender->send_lock, flags);
-			continue;
-		}
-
-		list_for_each_entry_safe(iter, _iter,
-					 &sender->sending_list, list) {
-			if (iter->dma_addr == node->address) {
-				list_del(&iter->list);
-				list_add_tail(&iter->list,
-					      &sender->pair_free_list);
-				status = true;
-				break;
-			}
-		}
-		spin_unlock_irqrestore(&sender->send_lock, flags);
-		if (status) {
-			shinfo = skb_shinfo(iter->skb);
 			if (iter->need_unmap) {
 				iter->need_unmap = false;
 				dma_unmap_single(sender->dev, iter->dma_addr,
@@ -192,30 +149,34 @@ check_again:
 						 DMA_TO_DEVICE);
 			}
 
+			iter->skb = NULL;
+			spin_unlock_irqrestore(&sender->send_lock, flags);
+
+			shinfo = skb_shinfo(skb);
 			if (shinfo->frag_list || shinfo->nr_frags) {
 				dev_err(sender->dev, "skb addr %p, skb nr frags is %d,"
 					"skb has frag list %d\n",
-					iter->skb,
+					skb,
 					shinfo->nr_frags,
-					skb_has_frag_list(iter->skb));
+					skb_has_frag_list(skb));
 #ifdef NET_SKBUFF_DATA_USES_OFFSET
 				dev_err(sender->dev, "skb len %d, skb data len %d,"
 					"skb head room %d, skb head pointer %p,"
 					"skb data pointer %p, skb tail pointer %d,"
 					"skb end poineter %d\n",
-					iter->skb->len, iter->skb->data_len,
-					skb_headroom(iter->skb), iter->skb->head,
-					iter->skb->data, iter->skb->tail,
-					iter->skb->end);
+					skb->len, skb->data_len,
+					skb_headroom(skb), skb->head,
+					skb->data, skb->tail,
+					skb->end);
 #else
 				dev_err(sender->dev, "skb len %d, skb data len %d,"
 					"skb head room %d, skb head pointer %p,"
 					"skb data pointer %p, skb tail pointer %p,"
 					"skb end poineter %p\n",
-					iter->skb->len, iter->skb->data_len,
-					skb_headroom(iter->skb), iter->skb->head,
-					iter->skb->data, iter->skb->tail,
-					iter->skb->end);
+					skb->len, skb->data_len,
+					skb_headroom(skb), skb->head,
+					skb->data, skb->tail,
+					skb->end);
 #endif
 				memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
 
@@ -229,22 +190,75 @@ check_again:
 					atomic_read(&shinfo->dataref) >> SKB_DATAREF_SHIFT,
 					atomic_read(&shinfo->dataref) & SKB_DATAREF_MASK);
 			}
+			dev_kfree_skb_any(skb);
 
-			dev_kfree_skb_any(iter->skb);
-			success_cnt++;
-			status = false;
-		} else if (!status && --retry_cnt) {
-			udelay(1);
-			goto check_again;
+			return true;
 		}
 	}
-	sipa_hal_add_tx_fifo_rptr(sender->dev,
-				  sender->ep->send_fifo.idx, num);
-	atomic_add(success_cnt, &sender->left_cnt);
-	if (num != success_cnt || i != num)
+
+	spin_unlock_irqrestore(&sender->send_lock, flags);
+
+	return false;
+}
+
+static void sipa_free_sent_items(void)
+{
+	u32 i, num = 0, consumed = 0, success_cnt = 0;
+	int retry;
+	bool matched;
+	struct sipa_node_desc_tag *node = NULL;
+	struct sipa_skb_sender *sender;
+	struct sipa_plat_drv_cfg *ipa = sipa_get_ctrl_pointer();
+
+	if (!ipa)
+		return;
+
+	sender = ipa->sender;
+	sipa_hal_cmn_fifo_get_filled_depth(sender->dev,
+					   sender->ep->send_fifo.idx,
+					   NULL, &num);
+	if (!num)
+		goto notify;
+
+	sipa_hal_sync_node_from_tx_fifo(sender->dev,
+					sender->ep->send_fifo.idx, num);
+
+	for (i = 0; i < num; i++) {
+		node = sipa_hal_get_tx_node_rptr(sender->dev,
+						 sender->ep->send_fifo.idx, i);
+		if (!node) {
+			dev_err(sender->dev, "sender node is null\n");
+			break;
+		}
+
+		matched = sipa_do_free_skb(node);
+		for (retry = 0; !matched && retry < 3; retry++) {
+			/* Re-read DMA outside send_lock; repeating the list walk
+			 * while locked cannot make a stale completion visible. */
+			sipa_hal_sync_node_from_tx_fifo(sender->dev,
+						 sender->ep->send_fifo.idx, num);
+			matched = sipa_do_free_skb(node);
+		}
+		consumed++;
+		if (matched)
+			success_cnt++;
+		else if (net_ratelimit())
+			/* No owned skb matches this descriptor: discard only the
+			 * completion, never free another skb or invent a credit. */
+			dev_err(sender->dev, "unmatched tx completion addr=0x%llx\n",
+				(u64)node->address);
+	}
+
+	if (success_cnt != consumed && net_ratelimit())
 		dev_err(sender->dev,
-			"i = %d recv num = %d release num = %d\n",
-			i, num, success_cnt);
+			"tx completions: consumed %u released %u\n",
+			consumed, success_cnt);
+
+	if (consumed)
+		sipa_hal_add_tx_fifo_rptr(sender->dev,
+					  sender->ep->send_fifo.idx, consumed);
+	if (success_cnt)
+		atomic_add(success_cnt, &sender->left_cnt);
 notify:
 	/* A completion can return capacity before the flow request arrives. */
 	if (sipa_sender_can_notify(sender)) {

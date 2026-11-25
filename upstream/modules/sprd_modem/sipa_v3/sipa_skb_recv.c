@@ -158,7 +158,7 @@ static void sipa_alloc_mem(struct sipa_skb_receiver *receiver, u32 chan,
 	skb_mem->page = page;
 	skb_mem->dma_addr = dma_map_single(receiver->dev,
 					   skb_mem->virt, size,
-					   DMA_FROM_DEVICE);
+					   DMA_BIDIRECTIONAL);
 	if (dma_mapping_error(receiver->dev, skb_mem->dma_addr)) {
 		dev_err(receiver->dev, "sipa alloc mem dma map err\n");
 		kfree(skb_mem);
@@ -174,6 +174,19 @@ static void sipa_alloc_mem(struct sipa_skb_receiver *receiver, u32 chan,
 		list_add_tail(&skb_mem->list, &fill_arrays->mem_list);
 }
 
+static struct sk_buff *sipa_build_rx_skb(struct sipa_skb_receiver *receiver,
+				       struct sipa_recv_mem_list *mem, u32 offset)
+{
+	struct sk_buff *skb;
+
+	dma_sync_single_range_for_cpu(receiver->dev, mem->dma_addr, offset,
+				      SIPA_RECV_BUF_LEN, DMA_BIDIRECTIONAL);
+	skb = build_skb(mem->virt + offset, SIPA_RECV_BUF_LEN);
+	if (skb)
+		page_ref_inc(mem->page);
+	return skb;
+}
+
 static void sipa_prepare_free_node(struct sipa_skb_receiver *receiver, u32 chan)
 {
 	int i = 0;
@@ -186,28 +199,36 @@ static void sipa_prepare_free_node(struct sipa_skb_receiver *receiver, u32 chan)
 	enum sipa_cmn_fifo_index fifo_id = receiver->ep->recv_fifo.idx + chan;
 
 	list_for_each_entry(skb_mem, &fill_arrays->mem_list, list) {
-		dma_addr = skb_mem->dma_addr;
 		virt_tail = skb_mem->virt + skb_mem->size;
 		for (virt = skb_mem->virt; virt < virt_tail;
 		     virt += SIPA_RECV_BUF_LEN) {
 			item = sipa_hal_get_rx_node_wptr(receiver->dev,
-							 fifo_id, i++);
+							 fifo_id, i);
 			if (!item) {
 				dev_err(receiver->dev, "sipa get item err\n");
-				i--;
 				goto out;
 			}
 
-			skb = build_skb(virt, SIPA_RECV_BUF_LEN);
-			page_ref_inc(skb_mem->page);
-			sipa_put_recv_array_node(fill_arrays, skb,
-						 dma_addr, false);
+			dma_addr = skb_mem->dma_addr + (virt - skb_mem->virt);
+			skb = sipa_build_rx_skb(receiver, skb_mem, virt - skb_mem->virt);
+			if (!skb) {
+				dev_err(receiver->dev, "%s build skb fail!\n", __func__);
+				continue;
+			}
+
+			if (sipa_put_recv_array_node(fill_arrays, skb, dma_addr, false)) {
+				dev_kfree_skb_any(skb);
+				goto out;
+			}
+			dma_sync_single_range_for_device(receiver->dev, skb_mem->dma_addr,
+						 virt - skb_mem->virt, SIPA_RECV_BUF_LEN,
+						 DMA_BIDIRECTIONAL);
 
 			item->address = dma_addr;
 			item->offset = NET_SKB_PAD;
 			item->length = SIPA_RECV_BUF_LEN - NET_SKB_PAD;
 
-			dma_addr += SIPA_RECV_BUF_LEN;
+			i++;
 		}
 
 		if (i == fill_arrays->depth)
@@ -273,24 +294,18 @@ static void sipa_fill_free_fifo_node(struct sipa_skb_receiver *receiver,
 
 		ready = false;
 		for (j = 0; j < SIPA_PER_PAGE_CAPACITY; j++) {
-			skb = build_skb((void *)(skb_mem->virt +
-						 j * SIPA_RECV_BUF_LEN),
-					SIPA_RECV_BUF_LEN);
-			if (!skb)
+			skb = sipa_build_rx_skb(receiver, skb_mem, j * SIPA_RECV_BUF_LEN);
+			if (!skb) {
+				dev_err(receiver->dev, "%s build skb fail\n", __func__);
 				break;
-			page_ref_inc(skb_mem->page);
+			}
+
 			dma_addr = skb_mem->dma_addr + j * SIPA_RECV_BUF_LEN;
 			if (!dma_addr) {
 				dev_err(receiver->dev, "dma_addr is null\n");
 				dev_kfree_skb_any(skb);
 				break;
 			}
-
-			dma_sync_single_range_for_device(receiver->dev,
-							 dma_addr,
-							 0,
-							 SIPA_RECV_BUF_LEN,
-							 DMA_TO_DEVICE);
 
 			item = sipa_hal_get_rx_node_wptr(receiver->dev, id,
 							 success_cnt);
@@ -304,6 +319,9 @@ static void sipa_fill_free_fifo_node(struct sipa_skb_receiver *receiver,
 				dev_kfree_skb_any(skb);
 				break;
 			}
+			dma_sync_single_range_for_device(receiver->dev, skb_mem->dma_addr,
+						 j * SIPA_RECV_BUF_LEN, SIPA_RECV_BUF_LEN,
+						 DMA_BIDIRECTIONAL);
 			item->address = dma_addr;
 			item->offset = NET_SKB_PAD;
 			item->length = SIPA_RECV_BUF_LEN - NET_SKB_PAD;
@@ -466,24 +484,18 @@ static int sipa_fill_remaining_node(struct sipa_skb_receiver *receiver,
 		cnt = SIPA_PER_PAGE_CAPACITY;
 
 	for (i = 0; i < cnt; i++) {
-		skb = build_skb((void *)(skb_mem->virt +
-					 i * SIPA_RECV_BUF_LEN),
-				SIPA_RECV_BUF_LEN);
-		if (!skb)
+		skb = sipa_build_rx_skb(receiver, skb_mem, i * SIPA_RECV_BUF_LEN);
+		if (!skb) {
+			dev_err(receiver->dev, "%s build skb fail\n", __func__);
 			break;
-		page_ref_inc(skb_mem->page);
+		}
+
 		dma_addr = skb_mem->dma_addr + i * SIPA_RECV_BUF_LEN;
 		if (!dma_addr) {
 			dev_err(receiver->dev, "dma_addr is null\n");
 			dev_kfree_skb_any(skb);
 			break;
 		}
-
-		dma_sync_single_range_for_device(receiver->dev,
-						 dma_addr,
-						 0,
-						 SIPA_RECV_BUF_LEN,
-						 DMA_TO_DEVICE);
 
 		item = sipa_hal_get_rx_node_wptr(receiver->dev, id, i);
 		if (!item) {
@@ -495,6 +507,9 @@ static int sipa_fill_remaining_node(struct sipa_skb_receiver *receiver,
 			dev_kfree_skb_any(skb);
 			break;
 		}
+		dma_sync_single_range_for_device(receiver->dev, skb_mem->dma_addr,
+					 i * SIPA_RECV_BUF_LEN, SIPA_RECV_BUF_LEN,
+					 DMA_BIDIRECTIONAL);
 
 		item->address = dma_addr;
 		item->offset = NET_SKB_PAD;
@@ -755,9 +770,6 @@ struct sk_buff *sipa_recv_skb(struct sipa_skb_receiver *receiver,
 		goto status_err;
 	}
 
-	if (!sipa_check_recv_node_value(node, addr, receiver, id, recv_skb))
-		goto recv_err;
-
 	if (need_unmap) {
 		dma_unmap_single(receiver->dev, addr,
 				 SIPA_RECV_BUF_LEN,
@@ -766,10 +778,13 @@ struct sk_buff *sipa_recv_skb(struct sipa_skb_receiver *receiver,
 		dma_sync_single_range_for_cpu(receiver->dev, addr,
 					      0,
 					      SIPA_RECV_BUF_LEN,
-					      DMA_FROM_DEVICE);
-
-		skb_reserve(recv_skb, NET_SKB_PAD);
+					      DMA_BIDIRECTIONAL);
 	}
+	/* Validation/freeing may touch skb_shared_info: regain CPU ownership first. */
+	if (!sipa_check_recv_node_value(node, addr, receiver, id, recv_skb))
+		goto recv_err;
+	if (!need_unmap)
+		skb_reserve(recv_skb, NET_SKB_PAD);
 
 	*netid = node->net_id;
 	*src_id = node->src;
@@ -786,10 +801,6 @@ struct sk_buff *sipa_recv_skb(struct sipa_skb_receiver *receiver,
 
 recv_err:
 	dev_kfree_skb_any(recv_skb);
-	if (need_unmap)
-		dma_unmap_single(receiver->dev, addr,
-				 SIPA_RECV_BUF_LEN,
-				 DMA_FROM_DEVICE);
 tx_node_err:
 	sipa_hal_add_tx_fifo_rptr(receiver->dev, id, 1);
 status_err:

@@ -111,6 +111,15 @@ static netdev_tx_t sipa_eth_start_xmit(struct sk_buff *skb,
 		return NETDEV_TX_OK;
 	}
 
+	/* Do this before taking pointers to transport checksum fields: expanding
+	 * a cloned/short head can relocate the packet's data. */
+	if (skb->mac_header == skb->network_header &&
+	    unlikely(skb_cow_head(skb, ETH_HLEN))) {
+		stats->tx_dropped++;
+		dev_kfree_skb_any(skb);
+		return NETDEV_TX_OK;
+	}
+
 	netid = pdata->netid;
 	len = skb->len;
 
@@ -155,8 +164,13 @@ static netdev_tx_t sipa_eth_start_xmit(struct sk_buff *skb,
 			skb_pull_inline(skb, ETH_HLEN);
 		if (csum)
 			*csum = saved_csum;
-		pr_err("fail to send, ret %d\n", ret);
-		stats->tx_errors++;
+		if (ret != -EAGAIN && ret != -EINPROGRESS) {
+			pr_err_ratelimited("fail to send, ret %d\n", ret);
+			stats->tx_errors++;
+			stats->tx_dropped++;
+			dev_kfree_skb_any(skb);
+			return NETDEV_TX_OK;
+		}
 		spin_lock_irqsave(&queue_lock, flags);
 		if (sipa_nic_check_flow_ctrl(sipa_eth->nic_id)) {
 			netif_stop_queue(dev);

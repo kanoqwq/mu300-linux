@@ -35,6 +35,7 @@ typedef int netdev_tx_t;
 #define unlikely(x) (x)
 #define pr_err(...) ((void)0)
 #define pr_info(...) ((void)0)
+#define pr_err_ratelimited(...) ((void)0)
 #define spin_lock_irqsave(lock, flags) ((void)(lock), (flags)=0x55)
 #define spin_unlock_irqrestore(lock, flags) ((void)(lock), assert((flags)==0x55))
 static int queue_lock;
@@ -65,13 +66,22 @@ struct sipa_eth {
 };
 struct net_device { struct sipa_eth *priv; };
 static void *netdev_priv(struct net_device *d) { return d->priv; }
-static int linear_fail, frees, result, pushed, flow_requests, queue_stops;
+static int linear_fail, cow_fail, frees, result, pushed, flow_requests, queue_stops;
 static unsigned char *original_data;
 static unsigned int original_len;
 static __sum16 *check_to_zero;
 static int skb_linearize(struct sk_buff *s) { return linear_fail; }
 static void dev_kfree_skb_any(struct sk_buff *s) { ++frees; }
 static unsigned int skb_headroom(struct sk_buff *s) { return s->data-s->head; }
+static int skb_cow_head(struct sk_buff *s,unsigned int n) {
+    if(cow_fail)return cow_fail;
+    unsigned room=skb_headroom(s);
+    if(room<n) {
+        unsigned delta=n-room;memmove(s->data+delta,s->data,s->len);
+        s->data+=delta;s->mac_header+=delta;s->network_header+=delta;s->transport_header+=delta;
+    }
+    return 0;
+}
 static void skb_push(struct sk_buff *s,unsigned int n) {
     assert(skb_headroom(s)>=n);s->data-=n;s->len+=n;
 }
@@ -122,7 +132,7 @@ int main(void) {
         result=0;
         assert(sipa_eth_start_xmit(&skb,&dev)==NETDEV_TX_OK);
         assert(stats.tx_packets==1 && stats.tx_bytes==original_len);
-        assert(stats.tx_errors==50 && frees==free_before);
+        assert(stats.tx_errors==0 && frees==free_before);
         assert(skb.data==original_data-(raw?ETH_HLEN:0));
 
         /* A consumed skb must not be offered to qdisc again. */
@@ -134,6 +144,26 @@ int main(void) {
         assert(frees==free_before+2 && stats.tx_dropped==2);
     }
     assert(flow_requests==16*50 && queue_stops==16*50);
+    for(unsigned room=0;room<64;room++) {
+        struct net_device_stats stats={0};struct sipa_eth_init_data pd={0};
+        struct sipa_eth eth={&pd,&stats,DEV_ON,0};struct net_device dev={&eth};
+        struct sk_buff s={0};s.head=s.storage;s.data=s.head+room;s.len=64;
+        s.mac_header=s.network_header=room;s.transport_header=room+20;
+        memset(s.data,0x5a,64);check_to_zero=NULL;pushed=1;
+        original_data=s.head+(room<14?14:room);original_len=64;
+        for(int retry=0;retry<16;retry++) {
+            result=retry&1?-EAGAIN:-EINPROGRESS;
+            assert(sipa_eth_start_xmit(&s,&dev)==NETDEV_TX_BUSY);
+            assert(s.data==original_data && s.len==64);
+            for(unsigned i=0;i<64;i++)assert(s.data[i]==0x5a);
+        }
+        int before=frees;result=-EIO;
+        assert(sipa_eth_start_xmit(&s,&dev)==NETDEV_TX_OK);
+        assert(frees==before+1 && stats.tx_dropped==1 && stats.tx_errors==1);
+        cow_fail=-ENOMEM;before=frees;
+        assert(sipa_eth_start_xmit(&s,&dev)==NETDEV_TX_OK && frees==before+1);
+        cow_fail=0;
+    }
     return 0;
 }
 ''')
