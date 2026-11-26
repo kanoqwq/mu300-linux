@@ -24,7 +24,8 @@ const words={
 function t(s){const l=M.uiLanguage();return l==='zh'?s:(words[s]||[s,s])[l==='tr'?1:0];}
 function node(tag,text,cls){const e=document.createElement(tag);if(text!=null)e.textContent=t(text);if(cls)e.className=cls;return e;}
 return baseclass.extend({mount:function(root){
- const slot=M.selectedSlot(),card=node('section',null,'mud-sec');
+ let slot=null;
+ const card=node('section',null,'mud-sec');
  const head=node('h3','数据漫游'),refresh=node('button','刷新','mud-btn');refresh.type='button';
  const row=node('div',null,'mud-r mud-voice-row'),label=node('label','允许数据漫游','mud-k');
  const toggle=node('button',null,'mud-btn mud-voice-switch');toggle.type='button';toggle.id='mud-roaming-switch';label.htmlFor=toggle.id;
@@ -41,11 +42,19 @@ return baseclass.extend({mount:function(root){
  function paint(s){state=s;toggle.classList.toggle('on',s.enabled===1);toggle.setAttribute('aria-checked',String(s.enabled===1));text.textContent=t(s.blocked?'当前处于漫游网络，数据连接已禁止':s.enabled?'已允许':'已禁止');}
  async function request(save){
   if(disposed||busy||save&&(!writable||!state))return;
-  if(M.selectedSlot()!==slot){text.textContent=t('查看卡槽已改变，请重新操作');return;}
   busy=true;controls();text.textContent=t(save?'正在保存…':'正在读取…');
   try{
-   const s=save?await set(slot,state.enabled?'0':'1'):await get(slot);
-   if(disposed||M.selectedSlot()!==slot)return;
+   // Follow-data mode is asynchronous at page startup. Bind the state to the
+   // resolved SIM, never the temporary SIM1 display fallback. A refresh may
+   // rebind, while a save must still match the card whose state was displayed.
+   const selected=await M.resolveSelectedSlot();
+   if(disposed)return;
+   if(save&&selected!==slot){state=null;text.textContent=t('查看卡槽已改变，请重新操作');return;}
+   if(!save){slot=selected;state=null;}
+   const target=slot;
+   const s=save?await set(target,state.enabled?'0':'1'):await get(target);
+   if(disposed)return;
+   if(M.selectedSlot()!==target){state=null;text.textContent=t('查看卡槽已改变，请重新操作');return;}
    if(!valid(s))throw Error(s&&s.error||'failed');
    paint(s);if(save)M.toast(t('设置已保存'),{type:'success'});
   }catch(e){

@@ -15,9 +15,10 @@ function fixture(on) {
         callAct(op,arg) { requests.push([op,arg]); return new Promise(resolve => { complete=resolve; }); },
         busy(btn,on) { btn.busy=on; }, toast(message,options){toasts.push({message,options});}
     };
-    const view = new Function('view','uci','R','M','L','SimRadio',source)(
+    M.callBootAct = M.callAct;
+    const view = new Function('view','uci','R','M','L','SimRadio','Boot',source)(
         {extend:o=>o},{},{},M,{resolveDefault:p=>p.catch(()=>undefined)},
-        {wait:(job,active)=>{jobs.push(job);return new Promise((resolve,reject)=>{finishJob=()=>resolve(active()?{ok:1,state:'done'}:null);rejectJob=reject;});}});
+        {wait:(job,active)=>{jobs.push(job);return new Promise((resolve,reject)=>{finishJob=()=>resolve(active()?{ok:1,state:'done'}:null);rejectJob=reject;});}}, new Function('M','baseclass',fs.readFileSync(path.resolve(path.dirname(process.argv[2] || path.join(__dirname, '../openwrt/luci-app-mu300/htdocs/luci-static/resources/view/mu300/home.js')), '../../mu300/boot-controls.js'),'utf8'))(M,{extend:o=>o}));
     view.refreshLock = () => {};
     view.wire(root);
     view.lastInfo = {wan:{up:on},wifi:{available:1,up:on,pending:false}};

@@ -182,5 +182,18 @@
         "/run/unisoc-battery-history/present": "file"
       }
     }
+  },
+  "admin/system/android": {
+    "title": "\u5207\u6362\u5230 Android",
+    "order": 85,
+    "action": {
+      "type": "view",
+      "path": "mu300/boot"
+    },
+    "depends": {
+      "acl": [
+        "luci-app-mu300"
+      ]
+    }
   }
 }

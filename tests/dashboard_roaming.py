@@ -21,6 +21,7 @@ with sync_playwright() as engine:
                  window.readonly=false;const L={env:{lang},hasViewPermission:()=>!window.readonly};
                  window.state={ok:1,slot:0,enabled:0,roaming:0,blocked:0};window.calls=[];window.waits=[];
                  const rpc={declare:o=>(...args)=>{
+                  if(o.object==='mu300dash'&&o.method==='sim_get')return Promise.resolve({slots:2,actual_sim:0,saved_sim:0});
                   if(o.object!=='unisoc-roaming'||!o.nobatch)throw Error('Wrong RPC');
                   if(o.method==='get')return window.rejectGet?Promise.reject(Error('private raw transport')):Promise.resolve({...state});
                   calls.push(args);if(window.fail)return Promise.resolve({ok:0,error:fail});

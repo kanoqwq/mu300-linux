@@ -174,6 +174,30 @@ printf '%s\\n' "$flags" > "$UNISOC_RADIO_POLICY"
     def run_switch(self,shell,target):
         return self.script(shell,self.controller,'apply',target,**self.extra)
 
+    def test_current_queries_owner_and_ignores_stale_saved_and_runtime_snapshot(self):
+        for shell in self.each_shell():
+            for actual in (0,1):
+                self.reset(saved=1-actual,actual=actual,up=False)
+                (self.tmp/'actual').write_text(str(1-actual))
+                before=self.db.read_bytes()
+                result=self.script(shell,self.controller,'current',**self.extra)
+                self.assertEqual(result.returncode,0,result.stderr)
+                self.assertEqual(result.stdout.strip(),str(actual))
+                self.assertEqual(self.db.read_bytes(),before)
+                self.assertEqual((self.tmp/'actual').read_text(),str(1-actual))
+                log=(self.tmp/'commands').read_text()
+                self.assertIn('AT+SPACTCARD=0;+SPSWDATA?',log)
+                self.assertNotIn('ifdown',log);self.assertNotIn('ifup',log)
+                self.assertNotIn('ubus',log)
+
+    def test_current_failure_does_not_guess_saved_card(self):
+        self.reset(saved=1,actual=1)
+        self.stub('mu300-at','echo ERROR; exit 1')
+        result=self.script(['/bin/sh'],self.controller,'current',**self.extra)
+        self.assertNotEqual(result.returncode,0)
+        self.assertEqual(result.stdout,'')
+        self.assertIn('sim_read_failed',result.stderr)
+
     def test_same_card_never_disconnects(self):
         for shell in self.each_shell():
             self.reset()

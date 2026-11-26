@@ -183,18 +183,12 @@ else:sys.exit(2)
 
     def test_builtin_actions_use_existing_transaction_owners(self):
         module=self.backend()
-        (self.root/'mu300-data-sim-actual').write_text('0')
-        with patch.object(module,'call') as call:
-            call.return_value=json.dumps(dict(ok=1,supported=True,ready=True,model='u30pro',
-                                             cards=[0,1,3],active_card=0,logical_cards=[0,3]))
-            module.execute('u30pro','data-switch','')
-            self.assertEqual(call.call_args.args[0][-3:],['apply','data','u30pro-card-1'])
-            call.reset_mock()
-            call.return_value=json.dumps(dict(ok=1,supported=True,ready=True,model='v50',
-                                             cards=[0,1,2],active_card=1,logical_cards=[0,1]))
+        with patch.object(module,'call',side_effect=['1',json.dumps(dict(ok=1,supported=True,ready=True,model='v50',
+                cards=[0,1,2],active_card=0,logical_cards=[0,1])), '']) as call:
             module.execute('v50','data-switch','')
             self.assertEqual(call.call_args.args[0][-3:],['apply','data','v50-card-2'])
-            call.reset_mock();module.execute('u30air','wifi-band','')
+        with patch.object(module,'call',return_value='') as call:
+            module.execute('u30air','wifi-band','')
             self.assertEqual(call.call_args.args[0][-1],'toggle')
 
     def test_physical_button_cycles_every_form_option_through_existing_apply(self):
@@ -213,6 +207,11 @@ else:sys.exit(2)
                                saved_card=order[-1],logical_cards=[0,1])
                     applied=[]
                     def dispatch(argv, **kwargs):
+                        if argv[-1]=='current':
+                            card=state['active_card'];slot=0 if card in (0,3) else 1
+                            state['logical_cards']=[next((c for c in order if c in (0,3)),None),next((c for c in order if c not in (0,3)),None)]
+                            state['logical_cards'][slot]=card
+                            return str(slot)
                         if argv[-1]=='status':
                             owner='mu300-v50-sim' if product=='v50' else 'mu300-physical-sim'
                             self.assertEqual(Path(argv[0]).name,owner)
@@ -233,25 +232,38 @@ else:sys.exit(2)
         module=self.backend()
         valid=dict(ok=1,supported=True,ready=True,model='v50',cards=[0,1,2,3],
                    active_card=3,saved_card=0,logical_cards=[3,2])
-        with patch.object(module,'call',return_value=json.dumps(valid)) as call:
+        with patch.object(module,'call',side_effect=['0',json.dumps(valid),'']) as call:
             module.execute('v50','data-switch','')
             self.assertEqual(call.call_args.args[0][-1],'v50-card-0')
         for change in ({'ready':False},{'ok':0},{'supported':False},{'model':'u30pro'},
-                       {'active_card':None},{'active_card':False},{'active_card':4},
+                       {'logical_cards':None},{'logical_cards':[]},{'logical_cards':[None,2]},
                        {'cards':[]},{'cards':[0,0]},{'cards':[False,1]},
                        {'cards':[0,4]},{'cards':'0,1'}):
-            with self.subTest(change=change),patch.object(module,'call',return_value=json.dumps(dict(valid,**change))) as call:
+            with self.subTest(change=change),patch.object(module,'call',side_effect=['0',json.dumps(dict(valid,**change))]) as call:
                 with self.assertRaises(ValueError):module.execute('v50','data-switch','')
-                self.assertEqual(call.call_count,1)  # status only; no write
+                self.assertEqual(call.call_count,2)  # live stack and routing only; no write
+
+    def test_live_data_stack_controls_first_press_despite_stale_card_snapshot(self):
+        module=self.backend()
+        for actual,wanted in [('0','v50-card-1'),('1','v50-card-3')]:
+            state=dict(ok=1,supported=True,ready=True,model='v50',cards=[0,1,2,3],
+                       active_card=0,saved_card=0,logical_cards=[0,2])
+            with patch.object(module,'call',side_effect=[actual,json.dumps(state),'']) as call:
+                module.execute('v50','data-switch','')
+                self.assertEqual(call.call_args.args[0][-1],wanted)
+        for actual in ('','2','unknown'):
+            with patch.object(module,'call',return_value=actual) as call:
+                with self.assertRaises(ValueError):module.execute('v50','data-switch','')
+                self.assertEqual(call.call_count,1)
 
     def test_u30air_keeps_logical_dual_slot_switching(self):
         module=self.backend()
         for slot,target in [('0','1'),('1','0')]:
             (self.root/'mu300-data-sim-actual').write_text(slot)
-            with patch.object(module,'call',return_value='') as call:
+            with patch.object(module,'call',side_effect=[slot,'']) as call:
                 module.execute('u30air','data-switch','')
                 self.assertEqual(call.call_args.args[0][-3:],['apply','data',target])
-                self.assertEqual(call.call_count,1)
+                self.assertEqual(call.call_count,2)
 
     def test_wifi_toggle_is_available_for_every_supported_key(self):
         for product in ('u30air','v50','u30pro','f50pro'):

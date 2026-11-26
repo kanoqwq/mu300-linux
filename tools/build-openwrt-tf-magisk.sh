@@ -126,6 +126,7 @@ for f in ./usr/lib/unisoc-bluetooth/events.uc ./etc/init.d/unisoc-bluetooth \
     ./opt/mu300/lib/wifi-channels.sh ./usr/share/ucode/wifi/hostapd.uc \
     ./lib/netifd/hostapd-unisoc.sh ./usr/share/ucode/wifi/unisoc-sae.uc \
     ./etc/mu300/wifi-sae.build-id \
+    ./usr/libexec/unisoc-boot-default ./usr/share/ucode/unisoc/boot-default.uc ./opt/mu300/bin/mu300-next-boot \
     ./opt/mu300/bin/mu300-usb ./opt/mu300/bin/v50-led-status ./opt/mu300/bin/mu300-platform-config ./opt/mu300/bin/openwrt-board-check ./opt/mu300/bin/mu300-sim-env ./opt/mu300/bin/mu300-data-sim ./opt/mu300/bin/mu300-dual-radio ./etc/init.d/mu300-post ./etc/init.d/mu300-atd \
     ./etc/init.d/mu300-smsd ./opt/mu300/lib/sms-pool.sh ./opt/mu300/lib/ndp-events.sh ./opt/mu300/lib/ndp-interface.sh ./opt/mu300/lib/data-events.sh ./opt/mu300/bin/mu300-smsd ./opt/mu300/bin/mu300-sms ./etc/sysctl.d/99-mu300-console.conf \
     ./usr/share/luci/menu.d/luci-app-mu300.json ./usr/share/rpcd/ucode/mu300rates.uc ./usr/share/ucode/mu300/rates.uc \

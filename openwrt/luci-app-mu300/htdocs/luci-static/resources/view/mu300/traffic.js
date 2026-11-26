@@ -11,7 +11,7 @@ var ERRORS = { invalid_config: '配置无效', traffic_unavailable: '流量统�
 	storage_failed: '统计数据保存失败', clock_unsynced: '系统时间尚未同步', confirmation_required: '请先确认清空操作' };
 
 return view.extend({
-	load: function() { return L.resolveDefault(M.callTrafficGet(trafficSlot()), {}); },
+	load: function() { return L.resolveDefault(M.resolveSelectedSlot().then(function(slot) { return M.callTrafficGet(slot); }), {}); },
 	render: function(data) {
 		M.injectCss(); M.localizeMenu();
 		this._disposed = false; this._epoch = 0; this._mutating = false; this._confirming = false;

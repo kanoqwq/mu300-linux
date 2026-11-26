@@ -58,7 +58,13 @@ v50_card_map() {
 }
 
 v50_active_card() {
-    case "$1:$2:$3" in
+    # A single fitted source is not a third card just because an unused
+    # selector retained LK's level. Keep board/form topology authoritative.
+    case "$1:$2" in
+        0:0|3:0) echo 0; return;;
+        2:1|3:1) echo 1; return;;
+    esac
+    case "$2:$3:$4" in
         0:*:0) echo 0;; 0:*:1) echo 3;;
         1:0:*) echo 1;; 1:1:*) echo 2;;
         *) return 1;;

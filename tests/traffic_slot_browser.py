@@ -22,7 +22,7 @@ def main():
             page.goto('http://fixture/')
             page.evaluate('''async ([common,source,e5,csv])=>{
                 window.e5=e5;window.calls=[];window.pending=[];window.slow=false;window.fail=false;
-                window.setSlot=s=>{sessionStorage.setItem('mu300-view-slot',s);sessionStorage.setItem('modem-view-slot',s);};
+                window.setSlot=s=>{sessionStorage.setItem('mu300-view-choice',s);sessionStorage.setItem('modem-view-slot',s);};
                 setSlot('0');
                 window.plans=[0,1].map(slot=>({slot,config:{plan_name:'Plan '+slot,monthly_gb:slot?22:11,daily_gb:1,reset_day:slot+1,count_mode:slot?'rx':'total',device:slot?'sipa_eth8':'sipa_eth0'},
                     status:{slot,available:true,clock_ok:true,today_used:(slot+1)*100,month_used:(slot+1)*1000,cycle_used:(slot+1)*1000,remaining:(slot+1)*10000},days:[],months:[]}));

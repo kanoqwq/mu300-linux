@@ -1,6 +1,7 @@
 """First introduction and later button-code updates through the pinned OTA generator."""
 import json
 import os
+import subprocess
 from pathlib import Path
 import sys
 import tempfile
@@ -21,8 +22,16 @@ class Delivery(unittest.TestCase):
             config=b"config modem 'main'\n option u30air_button_double 'custom'\n option u30air_button_double_command 'logger mine'\n"
             native=b"config control 'settings'\n option power_short_action 'none'\n"
             saved={'etc/config/unisoc_modem':config,'etc/config/u30pro_native_control':native,
+                   'etc/mu300/sim-radio':b'1 0\n',
                    'etc/config/wireless':b'USER WIFI','root/user-data':b'KEEP DATA'}
             code={
+              **{'www/luci-static/resources/'+name:(TOP/'openwrt/luci-app-mu300/htdocs/luci-static/resources'/name).read_bytes()
+                 for name in ('mu300/common.js','mu300/roaming.js','view/mu300/home.js','view/mu300/sim.js','view/mu300/traffic.js')},
+              'usr/libexec/rpcd/mu300dash':(TOP/'openwrt/luci-app-mu300/root/usr/libexec/rpcd/mu300dash').read_bytes(),
+              **{str(path.relative_to(TOP/'rootfs/overlay')):path.read_bytes() for path in
+                 [TOP/'rootfs/overlay'/name for name in ('opt/mu300/bin/mu300-v50-sim',
+                  'opt/mu300/bin/mu300-v50-card-pair','opt/mu300/bin/mu300-data-sim',
+                  'opt/mu300/bin/mu300-sim-radio','opt/mu300/lib/v50-card.sh')]},
               'usr/libexec/unisoc-modem/buttons':(TOP/'openwrt/luci-app-mu300/root/usr/libexec/unisoc-modem/buttons').read_bytes(),
               'usr/libexec/unisoc-modem/buttons.py':(TOP/'openwrt/luci-app-mu300/root/usr/libexec/unisoc-modem/buttons.py').read_bytes(),
               'www/luci-static/resources/mu300/buttons.js':(TOP/'openwrt/luci-app-mu300/htdocs/luci-static/resources/mu300/buttons.js').read_bytes(),
@@ -51,6 +60,11 @@ class Delivery(unittest.TestCase):
                 for name,raw in saved.items():self.assertEqual((live/name).read_bytes(),raw)
                 for name,raw in code.items():
                     self.assertEqual((live/name).read_bytes(),raw+(b'\n' if number else b''))
+            engine=TOP/'installer/runtime/luci-app-unisoc-ota/root/usr/lib/unisoc-ota/engine.py'
+            result=subprocess.run([sys.executable,str(engine),'rollback','--root',str(live)],capture_output=True,text=True)
+            self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+            for name,raw in code.items():self.assertEqual((live/name).read_bytes(),raw)
+            for name,raw in saved.items():self.assertEqual((live/name).read_bytes(),raw)
 
 
 if __name__=='__main__':unittest.main()

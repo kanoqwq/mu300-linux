@@ -28,8 +28,8 @@ echo $$ > "$gate/pid"
 trap 'rm -f "$gate/pid"; rmdir "$gate" 2>/dev/null || true' EXIT
 [ ! -d "$R/unisoc-modem-lock-apply" ] || fail modem_busy
 chip=$(cat "$HW/chip_select"); psim=$(cat "$HW/psim_select")
-old_first=$(v50_active_card 0 "$chip" "$psim") || fail sim_read_failed
-old_second=$(v50_active_card 1 "$chip" "$psim") || fail sim_read_failed
+old_first=$(v50_active_card "$board" 0 "$chip" "$psim") || fail sim_read_failed
+old_second=$(v50_active_card "$board" 1 "$chip" "$psim") || fail sim_read_failed
 v50_card_map "$board" "$old_first" >/dev/null && v50_card_map "$board" "$old_second" >/dev/null || fail sim_read_failed
 saved=$(cfg data_sim); actual=$(cat "$R/mu300-data-sim-actual" 2>/dev/null || true)
 case "$saved:$actual" in 0:0|0:1|1:0|1:1) ;; *) fail sim_read_failed;; esac

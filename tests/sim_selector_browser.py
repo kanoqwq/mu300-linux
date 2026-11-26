@@ -13,7 +13,7 @@ def mount(page,lang='zh-cn',slots=2):
         const rpc={declare:options=>(...args)=>{
             rpcCalls.push([options.method,args]);
             sessionStorage.setItem('selector-rpc',JSON.stringify(rpcCalls));
-            return Promise.resolve({slots:window.slots});
+            return Promise.resolve({slots:window.slots,actual_sim:0,saved_sim:0});
         }};
         window.M=new Function('rpc','baseclass','L',source)(rpc,{extend:x=>x},L);
         M.injectCss();
@@ -88,7 +88,7 @@ main{margin:8px auto;max-width:1280px;padding:0 16px}.hero{height:180px;padding:
                     page.evaluate('M.simSelector(document.querySelector(".mud"))')
                     pill.wait_for();pill.locator('summary').click()
                     with page.expect_navigation():pill.locator('select').select_option('1')
-                    assert page.evaluate('sessionStorage.getItem("mu300-view-slot")')=='1'
+                    assert page.evaluate('sessionStorage.getItem("mu300-view-choice")')=='1'
                     assert page.evaluate('JSON.parse(sessionStorage.getItem("selector-rpc")).every(x=>x[0]==="sim_get")')
                     assert not errors,errors
                     page.close();count+=1

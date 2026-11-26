@@ -1,0 +1,22 @@
+#!/usr/bin/ucode
+import * as fs from 'fs';
+import * as uloop from 'uloop';
+import { delay_ms } from 'unisoc.boot-default';
+
+const helper=ARGV[0],config=ARGV[1];
+if(!helper || !config)die('boot-default: missing boot adapter\n');
+let state=trim(fs.readfile(config) || '');
+if(state=='linux' || state!='' && state!='android' || fs.stat('/tmp/.failsafe') ||
+   fs.stat('/run/openwrt-boot-manual'))exit(0);
+const uptime=split(trim(fs.readfile('/proc/uptime') || ''),' ')[0];
+const delay=delay_ms(uptime==''?null:+uptime,!!fs.stat('/run/mu300/charging-boot.json'));
+uloop.init();
+let child;
+const deadline=uloop.timer(delay,()=>{
+    child=uloop.process(helper,['--auto-default'],null,(code)=>{
+        if(code)warn('boot-default: automatic default change failed; previous choice retained\n');
+        child=null;uloop.end();
+    });
+    if(!child){warn('boot-default: cannot start boot adapter\n');uloop.end();}
+});
+uloop.run();

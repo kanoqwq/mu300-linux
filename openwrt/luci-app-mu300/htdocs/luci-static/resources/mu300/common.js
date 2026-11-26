@@ -11,22 +11,49 @@
  * 质量色不用写死的色值，走 --success/--warning/--danger 与 color-mix，
  * 深浅两套模式都跟随主题。 */
 
-function selectedSlot() {
-    try { return sessionStorage.getItem('mu300-view-slot') === '1' ? '1' : '0'; } catch(e) { return '0'; }
+var dataSlot=null, simSelectorUpdate=null;
+function viewChoice() {
+    // The old key mixed the implicit SIM1 default with explicit choices.
+    // Only this new key records a deliberate manual override.
+    try { var value=sessionStorage.getItem('mu300-view-choice');return value==='0'||value==='1'?value:'auto'; }
+    catch(e) { return 'auto'; }
 }
-function selectViewedSlot(slot) {
-    if (String(slot) !== '0' && String(slot) !== '1') return false;
-    try { sessionStorage.setItem('mu300-view-slot', String(slot)); return true; } catch(e) { return false; }
+function selectedSlot() { var choice=viewChoice();return choice==='auto'?(dataSlot || '0'):choice; }
+function resolveSelectedSlot() {
+    if(viewChoice()!=='auto')return Promise.resolve(selectedSlot());
+    return callSimGet().then(function(){
+        if(dataSlot==null)throw new Error(translate('当前上网卡状态暂不可用'));
+        return selectedSlot();
+    });
 }
-function scopedRpc(options) {
+function selectViewedSlot(slot, followData) {
+    slot=String(slot);
+    if (slot!=='0' && slot!=='1' && slot!=='auto') return false;
+    try {
+        sessionStorage.setItem('mu300-view-choice',followData || slot==='auto'?'auto':slot);
+        if(followData && slot!=='auto')dataSlot=slot;
+        return true;
+    } catch(e) { return false; }
+}
+function scopedRpc(options, bindView) {
     var count = (options.params || []).length;
     options.params = (options.params || []).concat(['slot']);
     var call = rpc.declare(options);
     return function() {
         var args = Array.prototype.slice.call(arguments, 0, count);
+        var viewed=bindView && dataSlot!=null?selectedSlot():null;
         while (args.length < count) args.push('');
-        args.push(selectedSlot());
-        return call.apply(null, args);
+        function invoke() {args.push(selectedSlot());return call.apply(null,args);}
+        if(viewChoice()!=='auto')return invoke();
+        // Resolve the actual data stack before the first AT/status request.
+        // Concurrent page requests share this read-only, AT-free query.
+        return callSimGet().then(function(){
+            if(dataSlot==null)throw new Error(translate('当前上网卡状态暂不可用'));
+            // A write belongs to the card the user was viewing, even if a
+            // hardware key switched data while its confirmation was open.
+            if(viewed!=null && selectedSlot()!==viewed)throw new Error(translate('查看卡槽已改变，请重新确认操作'));
+            return invoke();
+        });
     };
 }
 var simInfo=null;
@@ -34,7 +61,17 @@ var rpcSimGet = rpc.declare({ object: 'mu300dash', method: 'sim_get', expect: { 
 var simRequest=null;
 function callSimGet() {
     if(simRequest)return simRequest;
-    simRequest=rpcSimGet().then(function(info){simInfo=info;return info;},function(error){simInfo=null;throw error;})
+    simRequest=rpcSimGet().then(function(info){
+        simInfo=info;
+        var current=info.actual_sim, saved=info.saved_sim;
+        if(current===0 || current===1 || current==='0' || current==='1')dataSlot=String(current);
+        else if(saved===0 || saved===1 || saved==='0' || saved==='1')dataSlot=String(saved);
+        else if(info.slots===1)dataSlot='0';
+        else dataSlot=null;
+        if(viewChoice()!=='auto' && !slotSupported(viewChoice(),info))selectViewedSlot('auto');
+        if(simSelectorUpdate)simSelectorUpdate(info);
+        return info;
+    },function(error){simInfo=null;throw error;})
         .finally(function(){simRequest=null;});
     return simRequest;
 }
@@ -47,6 +84,12 @@ function slotName(slot,info) {
     }
     return 'SIM '+(Number(slot)+1);
 }
+function slotSupported(slot, info) {
+    var physical=(info || simInfo || {}).physical;
+    if(physical && physical.supported && physical.model==='v50' && Array.isArray(physical.cards))
+        return physical.cards.some(function(id){return (id===0 || id===3?0:1)===Number(slot);});
+    return Number(slot)===0 || (info || {}).slots!==1;
+}
 var simSelectorCleanup = null, simSelectorGeneration = 0;
 function simSelector(root, layout) {
     var generation = ++simSelectorGeneration;
@@ -54,7 +97,7 @@ function simSelector(root, layout) {
     callSimGet().then(function(info) {
         if (!root.isConnected || generation !== simSelectorGeneration) return;
         if (info.slots !== 2) {
-            if (selectedSlot() !== '0') { sessionStorage.removeItem('mu300-view-slot'); location.reload(); }
+            if (viewChoice() !== 'auto') { selectViewedSlot('0',true); location.reload(); }
             return;
         }
         var anchor=layout==='hero' && root.querySelector('.mud-hero-meta');
@@ -63,25 +106,34 @@ function simSelector(root, layout) {
         if (!anchor) panel.style.marginBottom='14px';
         var summary=document.createElement('summary');
         summary.className='mud-sim-toggle';
-        var caption=translate('正在查看')+' SIM '+(Number(selectedSlot())+1);
-        summary.textContent=anchor?'SIM '+(Number(selectedSlot())+1):caption;
-        summary.title=caption;summary.setAttribute('aria-label',caption);
         var label=document.createElement('label'), select=document.createElement('select');
         label.className='mud-sim-select-label';label.textContent=translate('查看卡槽')+' ';
-        ['0','1'].forEach(function(v) { var o=document.createElement('option');o.value=v;o.textContent='SIM '+(Number(v)+1);select.appendChild(o); });
-        select.value=selectedSlot();label.appendChild(select);
+        var automatic=document.createElement('option');automatic.value='auto';automatic.textContent=translate('自动跟随上网卡');select.appendChild(automatic);
+        ['0','1'].forEach(function(v) { var o=document.createElement('option');o.value=v;o.textContent=slotName(v,info);select.appendChild(o); });
+        select.value=viewChoice();label.appendChild(select);
+        function update(current) {
+            var caption=translate('正在查看')+' '+slotName(selectedSlot(),current);
+            summary.textContent=anchor?slotName(selectedSlot(),current):caption;
+            summary.title=caption;summary.setAttribute('aria-label',caption);
+            select.value=viewChoice();
+            Array.prototype.forEach.call(select.options,function(o){if(o.value!=='auto'){
+                o.textContent=slotName(o.value,current);o.disabled=!slotSupported(o.value,current);
+            }});
+        }
+        update(info);simSelectorUpdate=update;
         var body=document.createElement('div');body.className='mud-sim-options';
         var note=document.createElement('p');note.className='mud-note';
         note.textContent=translate('仅切换查看与控制对象，不切换上网卡。');
         body.append(label,note);panel.append(summary,body);
         if(anchor)anchor.appendChild(panel);else root.prepend(panel);
-        select.onchange=function() {if(selectViewedSlot(select.value))location.reload();else select.value=selectedSlot();};
+        select.onchange=function() {if(selectViewedSlot(select.value))location.reload();else select.value=viewChoice();};
         function outside(event) {if(anchor && !panel.contains(event.target))panel.open=false;}
         function keydown(event) {if(event.key==='Escape' && panel.open){panel.open=false;summary.focus();event.preventDefault();}}
         var lifetime=new MutationObserver(function(){if(!root.isConnected)cleanup();});
         function cleanup() {
             lifetime.disconnect();panel.remove();
             document.removeEventListener('click',outside);document.removeEventListener('keydown',keydown);
+            if(simSelectorUpdate===update)simSelectorUpdate=null;
             if(simSelectorCleanup===cleanup)simSelectorCleanup=null;
         }
         simSelectorCleanup=cleanup;
@@ -94,13 +146,15 @@ var callCells = scopedRpc({ object: 'mu300status', method: 'cells', nobatch: tru
 var callStatus = scopedRpc({ object: 'mu300status', method: 'status', nobatch: true, expect: { '': {} } });
 var callSignal = scopedRpc({ object: 'mu300.modem', method: 'signal', nobatch: true, expect: { '': {} } });
 var callSysinfo = rpc.declare({ object: 'mu300status', method: 'sysinfo', nobatch: true, expect: { '': {} } });
-var callAct    = scopedRpc({ object: 'mu300dash', method: 'act', params: [ 'op', 'arg' ], expect: { '': {} } });
-var callAt     = scopedRpc({ object: 'mu300dash', method: 'at', nobatch: true, params: [ 'cmd' ], expect: { '': {} } });
+var callAct    = scopedRpc({ object: 'mu300dash', method: 'act', params: [ 'op', 'arg' ], expect: { '': {} } }, true);
+// Boot controls are machine-wide and must also work without a ready data SIM.
+var callBootAct = rpc.declare({ object: 'mu300dash', method: 'act', params: [ 'op', 'arg' ], expect: { '': {} } });
+var callAt     = scopedRpc({ object: 'mu300dash', method: 'at', nobatch: true, params: [ 'cmd' ], expect: { '': {} } }, true);
 var callAtHist = scopedRpc({ object: 'mu300dash', method: 'at_history', expect: { '': {} } });
 var callLockGet = scopedRpc({ object: 'mu300dash', method: 'lock_get', nobatch: true, expect: { '': {} } });
 var callLockFresh = scopedRpc({ object: 'mu300dash', method: 'lock_get', nobatch: true, params: [ 'fresh' ], expect: { '': {} } });
-var callLockSet = scopedRpc({ object: 'mu300dash', method: 'lock_set', nobatch: true, params: [ 'kind', 'val' ], expect: { '': {} } });
-var callLockStatus = scopedRpc({ object: 'mu300dash', method: 'lock_status', nobatch: true, params: [ 'id' ], expect: { '': {} } });
+var callLockSet = scopedRpc({ object: 'mu300dash', method: 'lock_set', nobatch: true, params: [ 'kind', 'val' ], expect: { '': {} } }, true);
+var callLockStatus = scopedRpc({ object: 'mu300dash', method: 'lock_status', nobatch: true, params: [ 'id' ], expect: { '': {} } }, true);
 function waitLockJob(started, active) {
 	return new Promise(function(resolve, reject) {
 		if (!started || !started.ok || !started.id) { reject(new Error(started && started.error || '网络设置提交失败')); return; }
@@ -128,11 +182,11 @@ function waitLockJob(started, active) {
 var callSmsHead = scopedRpc({ object: 'mu300status', method: 'sms_head', nobatch: true, expect: { '': {} } });
 var callSmsList = scopedRpc({ object: 'mu300dash', method: 'sms_list', params: [ 'page' ], expect: { '': {} } });
 var callSmsShow = scopedRpc({ object: 'mu300dash', method: 'sms_show', params: [ 'id' ], expect: { '': {} } });
-var callSmsSend = scopedRpc({ object: 'mu300dash', method: 'sms_send', params: [ 'num', 'text' ], expect: { '': {} } });
+var callSmsSend = scopedRpc({ object: 'mu300dash', method: 'sms_send', params: [ 'num', 'text' ], expect: { '': {} } }, true);
 var smsJobRpc = rpc.declare({ object: 'mu300dash', method: 'sms_job', params: [ 'slot' ], nobatch: true, expect: { '': {} } });
 function callSmsJob(slot) { return smsJobRpc(slot == null ? selectedSlot() : String(slot)); }
-var callSmsDel  = scopedRpc({ object: 'mu300dash', method: 'sms_delete', params: [ 'id', 'sim' ], expect: { '': {} } });
-var callSmsSync = scopedRpc({ object: 'mu300dash', method: 'sms_sync', expect: { '': {} } });
+var callSmsDel  = scopedRpc({ object: 'mu300dash', method: 'sms_delete', params: [ 'id', 'sim' ], expect: { '': {} } }, true);
+var callSmsSync = scopedRpc({ object: 'mu300dash', method: 'sms_sync', expect: { '': {} } }, true);
 var callForwardGet = rpc.declare({ object: 'mu300dash', method: 'forward_get', params: [ 'profile' ], expect: { '': {} } });
 var callForwardStatus = rpc.declare({ object: 'mu300dash', method: 'forward_status', params: [ 'profile' ], expect: { '': {} } });
 var callForwardSet = rpc.declare({ object: 'mu300dash', method: 'forward_set', params: [ 'payload' ], expect: { '': {} } });
@@ -160,6 +214,15 @@ var callUsbNetAdd = rpc.declare({ object: 'mu300dash', method: 'usb_net_add', pa
  * standalone package works in any OpenWrt buildroot without po2lmo or extra
  * language packages. Chinese remains the source/fallback language. */
 var DASH_I18N = {
+    "启动方式": ["Boot mode", "Başlatma modu"],
+    "永久启动 OpenWrt": ["Boot OpenWrt by default", "OpenWrt varsayılan başlatma"],
+    "当前为永久启动 OpenWrt": ["OpenWrt is the default boot system", "OpenWrt varsayılan başlatma sistemi"],
+    "当前启动方式未知": ["Boot mode unavailable", "Başlatma modu bilinmiyor"],
+    "切换为临时启动": ["Use temporary boot", "Geçici başlatmaya geç"],
+    "将默认启动系统设为 Android，当前 OpenWrt 会话继续运行；下次重启进入 Android。": ["Make Android the default boot system. The current OpenWrt session stays running; the next restart enters Android.", "Android varsayılan başlatma sistemi olur. Mevcut OpenWrt oturumu devam eder; sonraki yeniden başlatma Android’e girer."],
+    "启动方式已保存": ["Boot mode saved", "Başlatma modu kaydedildi"],
+    "启动方式设置失败，请重试": ["Could not save boot mode; please retry", "Başlatma modu kaydedilemedi; tekrar deneyin"],
+
     '卡源组合': ['SIM source combination', 'SIM kaynak birleşimi'],
     '卡源': ['SIM source', 'SIM kaynağı'],
     '分别选择两个逻辑栈接入的卡源，重启后保留。卡源选择不改变默认上网卡或射频开关。': ['Choose the SIM source for each logical stack. Saved across reboots; this does not change the default data SIM or radio switches.', 'Her mantıksal yığının SIM kaynağını seçin. Yeniden başlatmada korunur; varsayılan veri SIM’i veya radyo anahtarları değişmez.'],
@@ -743,6 +806,8 @@ var DASH_I18N = {
 	'留空使用平台默认映射，不影响已有流量账本。': ['Leave empty for platform defaults; existing traffic ledgers are preserved.', 'Platform varsayılanları için boş bırakın; mevcut trafik kayıtları korunur.'],
 	'正在查看': ['Viewing', 'Görüntülenen'],
 	'查看卡槽': ['View SIM slot', 'SIM yuvasını görüntüle'],
+	'自动跟随上网卡': ['Follow data SIM automatically', 'Veri SIM kartını otomatik izle'],
+	'当前上网卡状态暂不可用': ['Current data SIM is unavailable', 'Etkin veri SIM durumu şu anda kullanılamıyor'],
 	'仅切换查看与控制对象，不切换上网卡。': ['Changes the SIM being viewed and controlled, not the mobile data SIM.', 'Görüntülenen ve kontrol edilen SIM değişir; mobil veri SIM kartı değişmez.'],
 	'SIM 卡槽不可用': ['SIM slot unavailable', 'SIM yuvası kullanılamıyor'],
 	'请使用 SIM 管理切换卡槽，终端禁止改写卡槽寻址': ['Use SIM management to switch cards; changing SIM addressing in the terminal is blocked', 'Kart değiştirmek için SIM yönetimini kullanın; terminalde SIM adresleme değişikliği engellendi'],
@@ -1701,6 +1766,25 @@ function fmtUptime(s) {
 
 /* ------------------------------------------------------------------ 样式 */
 var CSS = `
+.mud .mud-home-heading{display:flex;align-items:center;gap:8px;min-width:0}
+.mud .mud-home-heading::before{flex-shrink:0;margin-right:0}
+.mud-home-heading .mud-heading-label{flex:1 1 auto;min-width:0}
+.mud-home-heading .mud-home-progress{flex:0 0 11em;max-width:55%;min-width:0;height:1.4em;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.7rem;font-weight:400;letter-spacing:normal;text-align:right;color:var(--text-muted,var(--text-light,#787d85))}
+.mud-home-progress:empty{visibility:hidden}
+.mud-boot-page{display:grid;gap:16px}
+.mud-boot-mode-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:18px;padding:10px 0 4px}
+.mud-boot-mode-row>b{font-size:.95rem}
+.mud-boot-toggle{display:inline-flex;align-items:center;gap:12px;cursor:pointer;position:relative;font-size:.85rem}
+.mud-boot-toggle input{position:absolute!important;opacity:0!important;width:1px!important;height:1px!important}
+.mud-boot-toggle i{display:inline-block;flex:0 0 38px;width:38px;height:22px;border-radius:12px;background:var(--hairline,var(--border,#ddd));position:relative;transition:background .15s}
+.mud-boot-toggle i::after{content:'';position:absolute;width:16px;height:16px;top:3px;left:3px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:transform .15s}
+.mud-boot-toggle input:checked+i{background:var(--brand,var(--primary,#009d95))}
+.mud-boot-toggle input:checked+i::after{transform:translateX(16px)}
+.mud-boot-toggle input:focus-visible+i{outline:2px solid var(--brand,var(--primary,#009d95));outline-offset:3px}
+.mud-boot-toggle:has(input:disabled){opacity:.55;cursor:default}
+.mud-boot-actions .mud-ctl{margin:0;gap:12px;flex-wrap:wrap}
+.mud-boot-actions .mud-btn{min-height:38px}
+
 /* Bootstrap exposes a different token family. Only activate this bridge when
  * Aurora's --surface token is absent, so existing Aurora styling wins intact.
  * Bootstrap's data-darkmode switch updates these aliases without a reload. */
@@ -2234,13 +2318,13 @@ function choiceBox(title, message, choices, opts) {
 
 /* LuCI 的 require 把模块当类工厂：必须返回 baseclass 派生的类，加载后拿到的是它的实例 */
 return baseclass.extend({
-	callRates: callRates, callCells: callCells, mergeCell: mergeCell, callStatus: callStatus, callSignal: callSignal, callSysinfo: callSysinfo, callAct: callAct, callAt: callAt, callAtHist: callAtHist,
+	callRates: callRates, callCells: callCells, mergeCell: mergeCell, callStatus: callStatus, callSignal: callSignal, callSysinfo: callSysinfo, callBootAct: callBootAct, callAct: callAct, callAt: callAt, callAtHist: callAtHist,
 	callLockGet: callLockGet, callLockFresh: callLockFresh, callLockSet: callLockSet,
 	callLockStatus: callLockStatus, waitLockJob: waitLockJob,
 	callSmsList: callSmsList, callSmsShow: callSmsShow, callSmsSend: callSmsSend, callSmsJob: callSmsJob,
 	callSmsDel: callSmsDel, callSmsSync: callSmsSync,
 	callForwardGet: callForwardGet, callForwardStatus: callForwardStatus,
-	callSimGet: callSimGet, simSelector: simSelector, slotName: slotName, selectedSlot: selectedSlot, selectViewedSlot: selectViewedSlot,
+	callSimGet: callSimGet, resolveSelectedSlot: resolveSelectedSlot, viewChoice: viewChoice, simSelector: simSelector, slotName: slotName, selectedSlot: selectedSlot, selectViewedSlot: selectViewedSlot,
 	callForwardSet: callForwardSet, callForwardTest: callForwardTest, callForwardClear: callForwardClear,
 	callTrafficExport: callTrafficExport, callTrafficImport: callTrafficImport,
 	callTrafficGet: callTrafficGet, callTrafficSet: callTrafficSet,

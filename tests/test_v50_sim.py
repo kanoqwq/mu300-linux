@@ -42,14 +42,22 @@ if name=='uci':
    (p/'save-failed-once').touch();sys.exit(1)
   s[key]=int(v);save()
  elif a[:2]==['-q','delete']:s.pop(a[2].split('.')[-1],None);save()
-elif name=='ubus':print(json.dumps(dict(up=s['up'],pending=False,autostart=s['autostart'])))
+elif name=='ubus':
+ if 'notify_proto' in a:
+  s['available']=json.loads(a[-1])['available'];save();print('{}')
+ else:print(json.dumps(dict(up=s['up'],pending=False,autostart=s['autostart'],available=s.get('available',True))))
 elif name=='jsonfilter':
  try:print(str(json.load(sys.stdin)[a[-1][2:]]).lower())
  except Exception:sys.exit(1)
 elif name in ('ifdown','ifup'):
- log(name);s['up']=name=='ifup';save()
+ log(name);s['up']=name=='ifup'
+ if os.environ.get('REAL_NETIFD')=='1':s['autostart']=name=='ifup'
+ save()
 elif name=='mu300-device':print(os.environ.get('TEST_MODEL','v50'))
-elif name=='mu300-radio-allowed':sys.exit(0 if s['radio'][int(a[0])] else 1)
+elif name=='mu300-radio-allowed':
+ if a[0]=='--flags':print(' '.join(map(str,s['radio'])))
+ elif a[0]=='--dsds':sys.exit(2)
+ else:sys.exit(0 if s['radio'][int(a[0])] else 1)
 elif name=='sleep':log('sleep '+a[0])
 elif name=='mu300-at':
  cmd=a[-1];slot=int(re.search(r'SPACTCARD=([01]);',cmd)[1]);log(cmd)
@@ -61,12 +69,18 @@ elif name=='mu300-at':
    s['rf_pending']=pending;save()
   print('+CFUN: '+str(s['cfun'][slot]))
  elif 'SPSWDATA?' in cmd:print('+SPSWDATA: '+str(s.get('actual',s['data_sim'])))
+ elif cmd.endswith('+SPSWDATA'):
+  if os.environ.get('FAIL_SELECT_SLOT')!=str(slot):s['actual']=slot;save()
  elif 'CPIN?' in cmd:
   count=s.get('pin_queries',0);s['pin_queries']=count+1;save()
   if count<int(os.environ.get('PIN_DELAY','0')):print('+CME ERROR: 10');sys.exit(0)
+  if os.environ.get('PIN_REQUIRES_POWER')=='1' and not s.get('sim_power',[1,1])[slot]:print('+CME ERROR: 10');sys.exit(0)
+  if os.environ.get('ABSENT_SLOT')==str(slot):print('+CME ERROR: 10');sys.exit(0)
   print('+CPIN: READY')
  else:
+  if cmd.endswith('+SFUN=4') and os.environ.get('FAIL_RF_SLOT')==str(slot):print('ERROR');sys.exit(1)
   f=int(cmd.rsplit('=',1)[-1]);s['cfun'][slot]=1 if f==4 else 0
+  if f in (2,3):s.setdefault('sim_power',[1,1])[slot]=int(f==2)
   if f==4:
    if os.environ.get('RF_STUCK_ONCE')=='1' and not (p/'rf-stuck-once').exists():
     (p/'rf-stuck-once').touch();s['cfun'][slot]=0
@@ -337,6 +351,8 @@ else:sys.exit(2)
                         (self.hw/'psim_select').write_text(str(psim))
                         status=json.loads(self.call(shell,'status').stdout)
                         routes=[3 if psim else 0,2 if chip else 1]
+                        if board in (0,3):routes[0]=0
+                        if board in (2,3):routes[1]=1
                         self.assertEqual(status['logical_cards'],[r if r in cards else None for r in routes])
                         self.assertEqual(status['model'],'v50')
         self.assertFalse((self.tmp/'commands').exists())

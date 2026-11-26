@@ -3,6 +3,7 @@
 #   mu300-next-boot linux          Linux stays the default (re-armed on every successful boot)
 #   mu300-next-boot android        next reboot (and later ones) go to Android
 #   mu300-next-boot attempts [N]   show, or set, how many boots in a row may fail before Android takes over (1-6)
+#   --auto-default      OpenWrt one-minute task; explicit choices in this boot take priority
 #   mu300-next-boot --rearm        used by mu300-boot-ok.service after a successful boot
 #   mu300-next-boot --trial        try an updated Linux boot without changing the saved default
 #   mu300-next-boot status
@@ -127,9 +128,15 @@ set_default() (
 # Include the successful-boot rearm in the same lock: an Android selection
 # must not be overwritten by a concurrently finishing startup service.
 case "${1:-status}" in
-    linux|android|--rearm|--trial|attempts)
+    linux|android|--auto-default|--rearm|--trial|attempts)
+        mkdir -p /run || exit 1
         exec 9>/run/openwrt-default-boot.lock
         flock -n 9 || { echo "boot control busy" >&2; exit 1; } ;;
+esac
+
+# Explicit choices win over the one-shot automatic promotion for this boot.
+case "${1:-status}" in
+    linux|android) : > /run/openwrt-boot-manual ;;
 esac
 
 case "${1:-status}" in
@@ -142,6 +149,11 @@ case "${1:-status}" in
         d=$(disk_dir) || { echo "cannot find the MU300 disk area" >&2; exit 1; }
         echo "$2" > "$d/boot-attempts.tmp" && mv "$d/boot-attempts.tmp" "$d/boot-attempts" && sync
         [ "$(cat "$CONF" 2>/dev/null)" = linux ] && arm_linux || echo "saved; used once Linux is the default boot" ;;
+    --auto-default)
+        [ ! -e /run/openwrt-boot-manual ] || exit 0
+        choice=$(cat "$CONF" 2>/dev/null || true)
+        case "$choice" in linux) exit 0;; android|'') ;; *) exit 0;; esac
+        set_default linux; echo "normal boot reached one minute; default boot: linux" ;;
     --rearm) clear_boot_tries
              [ "$(cat "$CONF" 2>/dev/null)" = linux ] && arm_linux || echo "default boot is not linux, nothing to do" ;;
     status)  echo "default boot: $(cat "$CONF" 2>/dev/null || echo android)"

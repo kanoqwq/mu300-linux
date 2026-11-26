@@ -73,7 +73,7 @@ status)
     if hw_ready; then
         chip=$(cat "$HW/chip_select"); psim=$(cat "$HW/psim_select")
         logical=$(cat "${MU300_DATA_SIM_ACTUAL:-$R/mu300-data-sim-actual}" 2>/dev/null || true)
-        actual=$(v50_active_card "$logical" "$chip" "$psim") || actual=null
+        actual=$(v50_active_card "$board" "$logical" "$chip" "$psim") || actual=null
         v50_card_map "$board" "$actual" >/dev/null || actual=null
         [ ! -e "$R/mu300-dual-radio-ready" ] || ready=true
     fi
@@ -83,8 +83,8 @@ status)
     cards=$(v50_cards "$board" | tr ' ' ',')
     first=null; second=null
     if hw_ready; then
-        first=$(v50_active_card 0 "$chip" "$psim") || first=null
-        second=$(v50_active_card 1 "$chip" "$psim") || second=null
+        first=$(v50_active_card "$board" 0 "$chip" "$psim") || first=null
+        second=$(v50_active_card "$board" 1 "$chip" "$psim") || second=null
         v50_card_map "$board" "$first" >/dev/null || first=null
         v50_card_map "$board" "$second" >/dev/null || second=null
     fi
@@ -187,8 +187,8 @@ route_one() {
     # answering ATR/CPIN. Do not let the logical switch reject it too early.
     # An unplugged saved card must not prevent the peer stack booting.
     card_ready=0
-    if [ "$mode" = --pair-route ] && ! "$BIN/mu300-radio-allowed" "$stack"; then
-        : # A saved source may be changed while its radio stays disabled.
+    if { [ "$mode" = --pair-route ] || [ "$mode" = --route ]; } && ! "$BIN/mu300-radio-allowed" "$stack"; then
+        : # The logical switch owns explicit RF enable and its CPIN check.
     elif wait_card; then
         card_ready=1
     else
@@ -239,7 +239,11 @@ target=${2:-}; validate "$target"; hw_ready || fail v50_mux_unavailable
 mapping=$(v50_card_map "$board" "$target"); set -- $mapping
 stack=$1; attribute=$2; value=$3
 permission=0; "$BIN/mu300-radio-allowed" "$stack" || permission=$?
-case "$permission:$stack" in 0:*|1:1) ;; *) fail 'Enable the target SIM radio before switching';; esac
+case "$permission:$stack" in
+    0:*|1:1) ;;
+    1:0) [ "$("$BIN/mu300-radio-allowed" --flags)" = '0 1' ] || fail 'Enable the target SIM radio before switching';;
+    *) fail 'Enable the target SIM radio before switching';;
+esac
 
 gate=${MU300_SIM_MUTEX:-$R/unisoc-data-sim-switch}
 mkdir "$gate" 2>/dev/null || fail modem_busy
@@ -263,7 +267,7 @@ if [ -n "$old0$old1" ]; then
     case $(v50_card_map "$board" "$old1") in '1 '*) ;; *) fail v50_card_unavailable;; esac
 fi
 chip=$(cat "$HW/chip_select"); psim=$(cat "$HW/psim_select")
-previous=$(v50_active_card "$stack" "$chip" "$psim") || fail sim_read_failed
+previous=$(v50_active_card "$board" "$stack" "$chip" "$psim") || fail sim_read_failed
 logical() { MU300_DATA_SIM_GATE_HELD=1 "$BIN/mu300-data-sim" apply "$1"; }
 save_preference() {
     uci -q set "unisoc_modem.main.v50_card=$target" || return 1
@@ -284,7 +288,8 @@ restore_preference() {
 }
 # No physical change: let the existing transaction handle same-card no-op,
 # SIM2 opt-in, WAN intent and rollback. Do not add a gratuitous ifdown.
-if [ "$previous" = "$target" ]; then
+if [ "$previous" = "$target" ] && [ "$(cat "$HW/$attribute")" = "$value" ] &&
+   [ ! -e "$R/mu300/v50-route-pending-$stack" ]; then
     logical "$stack" || exit 1
     if save_preference; then exit 0; fi
     logical "$old_actual" && restore_preference || fail sim_rollback_failed
@@ -308,7 +313,9 @@ fi
 mkdir -p "$R/mu300"; : > "$R/mu300/v50-switch-incomplete"
 route() { "$BIN/mobile-data" radio-locked "$BIN/mu300-v50-sim" --route "$1"; }
 restore() {
-    route "$previous" && logical "$old_actual" || return 1
+    # Restore an inactive source without requiring that disabled/empty stack
+    # to answer CPIN. The old data card is verified by the logical owner next.
+    "$BIN/mobile-data" radio-locked "$BIN/mu300-v50-sim" --pair-route "$previous" && logical "$old_actual" || return 1
     restore_preference || return 1
     rm -f "$R/mu300/v50-switch-incomplete"
     [ "$autostart" = false ] || ifup "$wan"

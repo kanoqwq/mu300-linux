@@ -101,6 +101,9 @@ def save(product, values, incoming):
 
 
 def next_data_target(product):
+    actual = call([BIN / 'mu300-data-sim', 'current'])
+    if actual not in ('0', '1'):
+        raise ValueError('sim_read_failed')
     if product in ('u30pro', 'f50pro', 'v50'):
         owner = 'mu300-v50-sim' if product == 'v50' else 'mu300-physical-sim'
         state = json.loads(call([BIN / owner, 'status']))
@@ -116,16 +119,16 @@ def next_data_target(product):
         # external 2 is raw card 3. Board/form filtering stays with the owner.
         if product == 'f50pro':
             cards = sorted(cards, key=lambda card: {4: 3, 3: 4}.get(card, card))
-        current = state.get('active_card')
+        routes = state.get('logical_cards')
+        if not isinstance(routes, list) or len(routes) != 2:
+            raise ValueError('sim_read_failed')
+        current = routes[int(actual)]
         if type(current) is not int or current not in cards:
             raise ValueError('sim_read_failed')
         if len(cards) == 1:
             return None
         return product + '-card-' + str(cards[(cards.index(current) + 1) % len(cards)])
-    slot = (RUN / 'mu300-data-sim-actual').read_text().strip()
-    if slot not in ('0', '1'):
-        raise ValueError('sim_read_failed')
-    return str(1 - int(slot))
+    return str(1 - int(actual))
 
 
 def execute(product, action, command):

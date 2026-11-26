@@ -3,6 +3,7 @@
 'require uci';
 'require mu300.refresh as R';
 'require mu300.common as M';
+'require mu300.boot-controls as Boot';
 'require mu300.sim-radio as SimRadio';
 
 /* MU300 状态看板 -- LuCI 落地页（menu.d 挂在 admin/home）。
@@ -270,8 +271,7 @@ return view.extend({
   </div>
 </div>
 <div class="mud-sec">
-  <h3>邻区</h3>
-  <div class="mud-note mud-progress" id="mud-slow-progress" role="status"></div>
+  <h3 class="mud-home-heading"><span class="mud-heading-label">邻区</span><span class="mud-progress mud-home-progress" id="mud-slow-progress" role="status"></span></h3>
   <div class="mud-scroll">
   <table class="mud-table"><thead><tr><th>制式/频段</th><th>PCI</th><th>频点</th><th>RSRP</th><th>RSRQ</th><th>SINR</th><th></th></tr></thead>
   <tbody id="mud-neigh"><tr><td colspan="7" style="color:var(--text-muted,var(--text-light,#777))">--</td></tr></tbody></table>
@@ -311,7 +311,7 @@ return view.extend({
 			if (op === 'wifi') { if (self._wifiBusy) return; self._wifiBusy = true; btn.disabled = true; }
 			M.busy(btn, true);
 			M.toast(note || ('正在执行 ' + op + ' …'), { type: 'busy' });
-			return L.resolveDefault(M.callAct(op, arg)).then(function(r) {
+			return L.resolveDefault(((op === 'os' || op === 'reboot' || op === 'poweroff') ? M.callBootAct(op, arg) : M.callAct(op, arg))).then(function(r) {
                 if(op==='radio' && r && r.ok && r.id)
                     return SimRadio.wait(r,function(){return !self._disposed && root.isConnected;}).then(function(done) {
                         return done && Object.assign({},done,{op:'radio '+arg});
@@ -364,31 +364,7 @@ return view.extend({
 			return confirmAction(this, '重启调制解调器', '蜂窝连接会中断 1-2 分钟。',
 				{ danger: true }, 'modem-reset', null);
 		};
-		q('btn-reboot').onclick = function() {
-			var btn = this;
-			if (self._disposed || self._quickPending || btn.disabled) return;
-			self._quickPending = true;
-			return M.choiceBox('关机或重启', '请选择关机或重启，执行后所有连接都会断开。', [
-				{ label: '取消', value: undefined },
-				{ label: '关机', value: 'poweroff', danger: true },
-				{ label: '重启', value: 'reboot', danger: true }
-			]).then(function(op) {
-				if ((op !== 'poweroff' && op !== 'reboot') || self._disposed || !root.isConnected) return;
-				return act(op, null, op === 'poweroff' ? '正在关机…' : '正在重启…', btn);
-			}).finally(function() { self._quickPending = false; });
-		};
-		q('btn-default').onclick = function() {
-			return confirmAction(this, '设为默认启动',
-				'以后开机默认进入 OpenWrt；启动失败仍保留 Android 回退。现在不会重启。',
-				{ okText: '确定' }, 'os', 'linux-default');
-		};
-		q('btn-android').onclick = function() {
-			return confirmAction(this, '切换到 Android 系统',
-				'下次启动将进入 Android 并立即重启，此管理页面与蜂窝共享都会断开。\n' +
-				'回到 OpenWrt：在 Android 上执行 mu300-next-boot linux 后重启；\n' +
-				'或什么都不做，连续 7 次开机未完成会自动回退。',
-				{ danger: true, okText: '切换并重启' }, 'os', 'android', '正在武装 Android 引导并重启…');
-		};
+		Boot.bind(self, root, act, function() { return !self._disposed && root.isConnected; });
 		q('reveal').onclick = function() {
 			self.identShown = !self.identShown;
 			M.v('reveal').textContent = self.identShown ? '隐藏卡号信息' : '显示卡号信息';

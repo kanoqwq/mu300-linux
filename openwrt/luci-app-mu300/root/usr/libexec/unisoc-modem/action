@@ -56,6 +56,9 @@ case "${1:-}:${2:-}" in
         sleep 3   # the reply has to make it out first
         "$1"     # procd stops services and unmounts normally; never force
         ;;
+    os:linux-temporary)
+        exec ucode "${MU300_DASH_BIN:-/usr/libexec/unisoc-modem}/boot-temporary.uc"
+        ;;
     os:linux-default)
         if [ ! -x /opt/mu300/bin/mu300-next-boot ]; then
             fail "os linux-default" "启动控制不可用"

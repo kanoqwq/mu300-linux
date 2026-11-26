@@ -43,7 +43,9 @@ dsds|--dsds-locked)
     esac
     slot=$2; enabled=1;;
 --switch-policy)
-    supports_dsds || exit 2
+    if [ "$(mu300-device)" = v50 ]; then
+        export MU300_RADIO_SINGLE=1
+    else supports_dsds || exit 2; fi
     case ${2:-}:${3:-} in 0:0|0:1|1:0|1:1) slot=$2; enabled=$3;; *) exit 2;; esac;;
 apply|--locked)
     case ${2:-}:${3:-} in 0:0|0:1|1:0|1:1) slot=$2; enabled=$3;; *) exit 2;; esac;;
@@ -109,8 +111,9 @@ if [ "$1" = --dsds-locked ]; then
     }
     exit 0
 fi
-if [ "$enabled" = 1 ] && supports_dsds &&
-   [ "$("${MU300_RADIO_ALLOWED:-/opt/mu300/bin/mu300-radio-allowed}" --dsds)" = 0 ]; then
+if [ "$enabled" = 1 ] &&
+   { [ "${MU300_RADIO_SINGLE:-0}" = 1 ] ||
+     { supports_dsds && [ "$("${MU300_RADIO_ALLOWED:-/opt/mu300/bin/mu300-radio-allowed}" --dsds)" = 0 ]; }; }; then
     # The caller already holds the switch/radio locks. Confirm peer RF
     # off before enabling this stack; a failed close must never enable both.
     sh "$0" --locked "$((1-slot))" 0 || exit 1
@@ -142,6 +145,13 @@ if [ "$enabled" = 1 ]; then
         # SFUN=5 may read back as 0 while the SIM remains powered. Only an
         # actually cold SIM needs the original initialization sequence.
         pin=$(at 'AT+CPIN?' 5) || exit 1
+        if [ "$(mu300-device)" = v50 ] && printf '%s\n' "$pin" | grep -qxE '\+CME ERROR: (10|SIM not inserted)'; then
+            ok 'AT+SFUN=2' 10 || { echo 'SIM power-on failed' >&2; exit 1; }
+            pin=$(at 'AT+CPIN?' 5) || exit 1
+            if printf '%s\n' "$pin" | grep -qxE '\+CME ERROR: (10|SIM not inserted)'; then
+                echo sim_not_ready >&2; exit 1
+            fi
+        fi
         case "$pin" in *'+CPIN:'*) ;; *) exit 8;; esac
     fi
     if [ "$state" != 1 ]; then

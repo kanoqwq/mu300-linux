@@ -53,6 +53,12 @@ wait_down() {
     return 1
 }
 case ${1:-} in
+current)
+    # Explicit shortcut requests must use the modem's live data stack, not the
+    # saved preference or a startup snapshot. Keep the existing scoped AT owner.
+    actual=$(data_card)
+    case "$actual" in 0|1) printf '%s\n' "$actual";; *) echo sim_read_failed >&2; exit 1;; esac
+    ;;
 get)
     status=$(net_status); actual=$(cat "$actual_file" 2>/dev/null)
     case "$actual" in 0|1) ;; *) actual=null ;; esac
@@ -97,6 +103,10 @@ apply)
         single=1
         old_flags=$("${MU300_RADIO_ALLOWED:-/opt/mu300/bin/mu300-radio-allowed}" --flags) || exit 1
     fi
+    if [ "$model" = v50 ]; then
+        old_flags=$("${MU300_RADIO_ALLOWED:-/opt/mu300/bin/mu300-radio-allowed}" --flags) || exit 1
+        case "$old_flags" in '1 0'|'0 1') single=1;; esac
+    fi
     # Preserve a pre-policy SIM2 choice when later switching back to SIM1.
     if [ "$single" = 0 ] && [ "$current" = 1 ] && [ ! -e "${UNISOC_RADIO_POLICY:-/etc/mu300/sim-radio}" ]; then
         "${MU300_RADIO_CONTROL:-/opt/mu300/bin/mu300-sim-radio}" --switch-enable 1 1 || exit 1
@@ -135,7 +145,11 @@ apply)
         fi
         exit 0
     fi
-    at_slot "$target" 'AT+CPIN?' | grep -q '^+CPIN: READY' || { echo sim_not_ready >&2; exit 1; }
+    # V50's powered-off stack can report CME 10 for an inserted card. Its
+    # existing RF controller must power/validate it under the same transaction.
+    if [ "$model:$single" != v50:1 ]; then
+        at_slot "$target" 'AT+CPIN?' | grep -q '^+CPIN: READY' || { echo sim_not_ready >&2; exit 1; }
+    fi
     status=$(net_status); was_up=$(field up); was_pending=$(field pending); was_autostart=$(field autostart)
     restore_original() {
         ifdown "$wan"; wait_down || return 1
@@ -166,6 +180,10 @@ apply)
         if ! "${MU300_RADIO_CONTROL:-/opt/mu300/bin/mu300-sim-radio}" --switch-policy "$target" 1; then
             restore_original || { echo sim_rollback_failed >&2; exit 1; }
             echo sim_switch_failed_restored >&2; exit 1
+        fi
+        if [ "$model" = v50 ] && ! at_slot "$target" 'AT+CPIN?' | grep -q '^+CPIN: READY'; then
+            restore_original || { echo sim_rollback_failed >&2; exit 1; }
+            echo sim_not_ready >&2; exit 1
         fi
     fi
     # Selection is a modem operation, NOT an Internet connectivity test.

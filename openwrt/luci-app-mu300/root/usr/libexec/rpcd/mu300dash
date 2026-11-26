@@ -463,8 +463,10 @@ call)
         sim_get)
             slots=$(uci -q get unisoc_modem.main.sim_slots); [ "$slots" = 2 ] || slots=1
             card=$(uci -q get unisoc_modem.main.data_sim); [ "$card" = 1 ] || card=0
+            actual=$(cat /run/mu300-data-sim-actual 2>/dev/null)
+            case "$actual" in 0|1) ;; *) actual=null;; esac
             physical=$(/opt/mu300/bin/mu300-v50-sim status) || physical='{}'
-            printf '{"ok":1,"slots":%s,"saved_sim":%s,"physical":%s}\n' "$slots" "$card" "$physical"
+            printf '{"ok":1,"slots":%s,"saved_sim":%s,"actual_sim":%s,"physical":%s}\n' "$slots" "$card" "$actual" "$physical"
             ;;
         ttl_get) "$DASH/ttl" get ;;
         ttl_set) "$DASH/ttl" set "$(inp '@.value')" ;;

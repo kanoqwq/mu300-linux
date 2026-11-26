@@ -146,7 +146,7 @@ return view.extend({
                     var toast=M.toast('正在切换上网卡…',{type:'busy',timeout:0});
                     return start('v50-card-'+target).then(function(r){
                         if(!r.ok||!r.id)throw new Error(r.error||'网络设置提交失败');return wait(r.id);
-                    }).then(function(){M.selectViewedSlot(target===0||target===3?'0':'1');M.toast('上网卡切换完成',{type:'success'});})
+                    }).then(function(){M.selectViewedSlot(target===0||target===3?'0':'1',true);M.toast('上网卡切换完成',{type:'success'});})
                       .catch(function(e){if(root.isConnected)M.toast(message(e.message),{type:'error'});})
                       .finally(function(){toast.close();});
                 }).finally(function(){
@@ -184,7 +184,7 @@ return view.extend({
                 return start(target).then(function(r) {
                     if(!r.ok || !r.id)throw new Error(r.error||'网络设置提交失败');
                     return wait(r.id);
-                }).then(function() { M.selectViewedSlot(target); M.toast('上网卡切换完成',{type:'success'}); })
+                }).then(function() { M.selectViewedSlot(target,true); M.toast('上网卡切换完成',{type:'success'}); })
                   .catch(function(e) { if(root.isConnected)M.toast(message(e.message),{type:'error'}); })
                   .finally(function() { toast.close(); M.busy(button,false); select.disabled=false; if(root.isConnected)return get().then(function(r){if(root.isConnected)paint(r,true);}).catch(function(){}); });
             }).finally(function(){self.busy=false; paint(last,false);});
