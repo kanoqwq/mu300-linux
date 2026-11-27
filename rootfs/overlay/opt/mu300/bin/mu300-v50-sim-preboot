@@ -1,0 +1,145 @@
+#!/bin/sh
+# V50 board-2 opt-in pre-modem SIM1 routing: persistent cold-start correction, never a live SIM switch.
+# Leave native mu300-v50-sim/mobile-data/Telecom initialization unchanged.
+set -u
+set -f
+umask 077
+BIN=${MU300_BIN:-/opt/mu300/bin}
+PROC=${MU300_V50_PROC:-/proc}
+RUN=${MU300_V50_RUN:-/run}
+HW=${MU300_V50_MUX:-/sys/bus/platform/devices/sim_gpio_ctl}
+STATE=${MU300_V50_PREBOOT_STATE:-/etc/mu300/v50-sim-preboot}
+LIB=${MU300_V50_CARD_LIB:-/opt/mu300/lib/v50-card.sh}
+CFG=${MU300_V50_PREBOOT_UCI:-uci}
+cfg() { "$CFG" -q get "unisoc_modem.main.$1" 2>/dev/null || true; }
+read_level() { cat "$HW/$1" 2>/dev/null; }
+valid_level() { case "$1" in 0|1) return 0;; *) return 1;; esac; }
+die() { printf 'v50-sim-preboot: %s\n' "$*" >&2; exit 1; }
+case ${1:-} in plan|apply) ;; *) die 'usage: plan | apply';; esac
+[ "$#" = 1 ] || die invalid_arguments
+[ "$("$BIN/mu300-device")" = v50 ] || die unsupported_model
+. "$LIB"
+board=$(v50_board_id) || die unknown_board
+# Limit this device-specific correction to the observed board; never force its ID.
+[ "$board" = 2 ] || die board_changed
+[ "$(v50_card_map "$board" 0)" = '0 psim_select 0' ] || die mapping_changed
+[ "$(v50_card_map "$board" 1)" = '1 chip_select 0' ] || die mapping_changed
+saved=$(cfg v50_card)
+data=$(cfg data_sim)
+# Both built-in cards are supported; explicit external or inconsistent choices
+# belong to the native controller and are never overridden here.
+case "$saved:$data" in 0:0|1:1) ;; *) die saved_card_not_supported_or_inconsistent;; esac
+before_psim=$(read_level psim_select) || die psim_unreadable
+before_chip=$(read_level chip_select) || die chip_unreadable
+valid_level "$before_psim" && valid_level "$before_chip" || die invalid_readback
+if [ "$1" = plan ]; then
+    enabled=false; [ "$(cfg v50_preboot_sim1)" = 1 ] && enabled=true
+    suspended=false; [ -e "$STATE/inflight" ] && suspended=true
+    printf '{"mode":"read_only","board_id":2,"data_sim":%s,"saved_card":%s,"psim":%s,"chip":%s,"target_psim":0,"writes_chip":false,"persistent_enabled":%s,"suspended":%s}\n' "$data" "$saved" "$before_psim" "$before_chip" "$enabled" "$suspended"
+    exit 0
+fi
+# Default-off until the affected board is identified by its operator.
+case "$(cfg v50_preboot_sim1)" in
+    1) ;;
+    0|'') exit 0;;
+    *) die invalid_enable_policy;;
+esac
+[ "${MU300_V50_PREBOOT_PARENT:-}" = "$PPID" ] || die boot_caller_required
+tr '\000' '\n' < "$PROC/$PPID/cmdline" | grep -Fxq "$BIN/android-vendor-start" || die boot_caller_required
+for f in "$RUN/mu300-ril-handshake" "$RUN/mu300-dual-radio-ready" "$RUN/mu300-at/cmd" "$RUN/mu300-at4/cmd"; do
+    [ ! -e "$f" ] || die modem_already_started
+done
+pidof modem_control >/dev/null 2>&1 && die modem_already_started
+[ "$(id -u)" = 0 ] || die root_required
+[ ! -L "$STATE" ] || die invalid_state_path
+mkdir -p "$STATE" || die cannot_create_state
+[ ! -e "$STATE/inflight" ] || die suspended_after_failed_or_incomplete_attempt
+# One attempt per boot; a timeout leaves inflight latched across later boots.
+mkdir "$RUN/mu300-v50-sim-preboot-claim" 2>/dev/null || die already_attempted_this_boot
+REPORT=$STATE/last-boot.log
+[ ! -f "$REPORT" ] || cp -p "$REPORT" "$STATE/previous-boot.log" || die cannot_rotate_log
+: > "$REPORT" || die cannot_record_attempt
+exec 3>>"$REPORT" || die cannot_record_attempt
+log() { printf '%s\n' "$*" >&3; }
+log 'revision=V50 board-2 opt-in pre-modem SIM1 routing'
+log "boot_id=$(cat "$PROC/sys/kernel/random/boot_id" 2>/dev/null)"
+log "uptime=$(cat "$PROC/uptime" 2>/dev/null)"
+log "uid=$(id -u) gid=$(id -g) parent=$PPID"
+log "saved_card=$saved data_sim=$data board=$board"
+log "before_psim=$before_psim before_chip=$before_chip target_psim=0"
+ls -ld "$HW" "$HW/psim_select" "$HW/chip_select" >&3 2>&3 || :
+awk '$2=="/" || $2=="/sys" || $2=="/run" {print}' "$PROC/mounts" >&3 2>&3 || :
+grep -E '^(Uid|Gid|CapInh|CapPrm|CapEff|CapBnd|NoNewPrivs):' "$PROC/self/status" >&3 2>&3 || :
+status() {
+    log "status=$1"
+    printf '%s\n' "$1" > "$STATE/status.new" && mv "$STATE/status.new" "$STATE/status" || return 1
+}
+status starting || die cannot_record_attempt
+# Persist an unfinished-attempt marker BEFORE touching the selector. If killed
+# or a write/readback fails, later boots skip this patch until manual review.
+printf 'boot_id=%s;before_psim=%s;before_chip=%s\n' "$(cat "$PROC/sys/kernel/random/boot_id")" "$before_psim" "$before_chip" > "$STATE/inflight.new" || die cannot_record_attempt
+mv "$STATE/inflight.new" "$STATE/inflight" || die cannot_record_attempt
+sync
+# Record os.open/os.write errno and three bounded independent readbacks.
+# Do not suppress a write error merely because the later readback matches.
+write_psim() {
+    MU300_V50_WRITER_PARENT=$$ python3 \
+        "${MU300_V50_SELECTOR_WRITER:-/opt/mu300/bin/mu300-v50-selector-write.py}" \
+        "$HW" "$1" "$before_chip" > "$STATE/write-detail.json" 2> "$STATE/write-error.txt"
+}
+if [ "$before_psim" = 0 ]; then
+    status already_internal || die cannot_record_result
+    log 'No selector written. Native saved-card startup remains authoritative.'
+    rm -f "$STATE/inflight" || die cannot_clear_success_marker
+    sync
+    exit 0
+fi
+write_rc=0
+write_psim 0 || write_rc=$?
+after_psim=$(read_level psim_select) || after_psim=unknown
+after_chip=$(read_level chip_select) || after_chip=unknown
+log "write_rc=$write_rc after_psim=$after_psim after_chip=$after_chip"
+cat "$STATE/write-error.txt" >&3 || :
+cat "$STATE/write-detail.json" >&3 2>/dev/null || :
+if [ "$write_rc:$after_psim:$after_chip" != "0:0:$before_chip" ]; then
+    # Restore only this same SIM1 selector if its readback actually changed.
+    # Never write chip_select, send AT commands, or block native Telecom boot.
+    if valid_level "$after_psim" && [ "$after_psim" != "$before_psim" ]; then
+        restore_rc=0
+        cp "$STATE/write-error.txt" "$STATE/attempt-error.txt" || :
+        cp "$STATE/write-detail.json" "$STATE/attempt-detail.json" || :
+        write_psim "$before_psim" || restore_rc=$?
+        restored=$(read_level psim_select) || restored=unknown
+        log "restore_rc=$restore_rc restored_psim=$restored"
+        cat "$STATE/write-error.txt" >&3 || :
+        cat "$STATE/write-detail.json" >&3 2>/dev/null || :
+    fi
+    status failed_suspended_native_boot_continues || :
+    sync
+    die selector_write_or_readback_failed
+fi
+# Only slot-0 identity caches are invalidated, using native controller paths.
+# Keep a private copy of persistent identity before removing stale data.
+CACHE=${MU300_DASH_CACHE_ROOT:-/tmp/unisoc-modem}
+SD=$(cfg state_dir); SD=${SD:-/etc/unisoc-modem/lock-state.d}
+identity=${SD%/lock-state.d}/sim.json
+cache_rc=0
+if [ -f "$identity" ]; then
+    cp -p "$identity" "$STATE/sim0-identity.before.json" || cache_rc=1
+fi
+mkdir -p "$RUN/mu300" || cache_rc=1
+printf 'preboot:%s\n' "$$" > "$RUN/mu300/v50-generation0.new.$$" &&
+    mv "$RUN/mu300/v50-generation0.new.$$" "$RUN/mu300/v50-generation0" || cache_rc=1
+if [ "$cache_rc" = 0 ]; then
+    REG=${MU300_REGISTRATION_DIR:-$RUN/mu300-registration}
+    rm -f "$CACHE/sig.json" "$CACHE/cell.json" "$CACHE/lock.json" "$identity" \
+        "$RUN/unisoc-modem-lock-replay-done" "$RUN/unisoc-apn-sim0.json" \
+        "$REG/slot0.json" "$REG/sim0.json" || cache_rc=1
+fi
+log "cache_rc=$cache_rc"
+if [ "$cache_rc" = 0 ]; then status selector_verified_waiting_for_modem || :
+else status selector_verified_cache_warning || :; fi
+log 'GPIO readback is not CPIN/registration/data proof. Read modem state after boot.'
+rm -f "$STATE/inflight" || die cannot_clear_success_marker
+sync
+exit 0
