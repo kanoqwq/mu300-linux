@@ -111,6 +111,33 @@ class Fixture(ShellTest):
 
 
 class Check(Fixture):
+    def test_m3_alias_reaches_the_same_plan_and_keeps_platform_checks(self):
+        for shell in self.each_shell():
+            for slot, android, linux in [('_a','a','b'),('_b','b','a')]:
+                self.device(slot=slot, model='MU5352', product='MU5352', differ=('teecfg',))
+                with self.props.open('a') as stream:
+                    stream.write('ro.board.platform=ums9620\n')
+                before=self.snapshot()
+                result=self.run_bc(shell,'check')
+                self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+                self.assertIn(f'BOOTCHAIN-PLAN {android} {linux} teecfg',result.stdout)
+                self.assertEqual(self.snapshot(),before)
+                self.props.write_text(self.props.read_text().replace('ums9620','ums9632'))
+                self.assertNotEqual(self.run_bc(shell,'check').returncode,0)
+                self.assertEqual(self.snapshot(),before)
+
+    def test_m3_alias_does_not_bypass_partition_or_slot_validation(self):
+        for shell in self.each_shell():
+            self.device(model='MU5352',product='MU5352')
+            with self.props.open('a') as stream:
+                stream.write('ro.board.platform=ums9620\n')
+            (self.by/'misc').write_bytes(bytes(4096))
+            before=self.snapshot()
+            result=self.run_bc(shell,'check')
+            self.assertNotEqual(result.returncode,0)
+            self.assertIn('no bootloader_control',result.stdout)
+            self.assertEqual(self.snapshot(),before)
+
     def test_v50_platform_guard_and_read_only_plan(self):
         for shell in self.each_shell():
             self.device(model='V50',product='MU3351',differ=('teecfg',))

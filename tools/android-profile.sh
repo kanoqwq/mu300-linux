@@ -1,4 +1,4 @@
-# Source from the host installer. Return 2 for inconsistent V50 identity,
+# Source from the host installer. Return 2 for inconsistent V50/M3 identity,
 # so an unsafe platform cannot fall through to the legacy F50 confirmation.
 mu300_android_profile() {
     local model device platform
@@ -6,6 +6,11 @@ mu300_android_profile() {
     device=$(printf '%s' "$2" | LC_ALL=C tr 'a-z' 'A-Z' | tr -d '\r')
     platform=$(printf '%s' "$3" | tr -d '\r')
     case "$model/$device" in
+        MU5352/*|*/MU5352)
+            case "$model/$device/$platform" in
+                MU5352/MU5352/ums9620) echo u30air ;;
+                *) return 2 ;;
+            esac ;;
         V50/*|*/V50|MU3351/*|*/MU3351)
             case "$model/$device/$platform" in
                 V50/MU3351/ums9620|MU3351/V50/ums9620) echo v50 ;;
